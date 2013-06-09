@@ -7,7 +7,7 @@ def __parallel_method_helper((obj_name, obj, methodname, args, kwargs)):
     }
 
 
-def parallel_method(obj_dict, methodname, args, kwargs, workers=64):
+def parallel_method(obj_dict, methodname, args=None, kwargs=None, workers=64):
     """
     This will call a method on a bunch of similar objects in parallel.
 
@@ -22,6 +22,11 @@ def parallel_method(obj_dict, methodname, args, kwargs, workers=64):
     Returns a dictionary mapping the identifiers from obj_dict to
     return values of the method calls.
     """
+    if args is None:
+        args = ()
+    if kwargs is None:
+        kwargs = {}
+
     runlist = []
     for obj_name, obj in obj_dict.iteritems():
         runlist.append((obj_name, obj, methodname, args, kwargs))

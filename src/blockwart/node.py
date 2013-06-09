@@ -14,7 +14,9 @@ class RunResult(object):
 
 
 class Node(object):
-    def __init__(self, repo, name, infodict):
+    def __init__(self, repo, name, infodict=None):
+        if infodict is None:
+            infodict = {}
         self.name = name
         self.repo = repo
         if 'hostname' in infodict:
