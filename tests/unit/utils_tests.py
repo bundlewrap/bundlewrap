@@ -3,7 +3,7 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from blockwart.utils import cached_property, import_module
+from blockwart.utils import cached_property, getattr_from_file
 
 
 class CachedPropertyTest(TestCase):
@@ -27,15 +27,23 @@ class CachedPropertyTest(TestCase):
         self.assertEqual(obj.testprop, 1)
 
 
-class ImportTest(TestCase):
+class GetAttrFromFileTest(TestCase):
+    """
+    Tests blockwart.utils.getattr_from_file.
+    """
     def setUp(self):
         self.tmpdir = mkdtemp()
-        with open(join(self.tmpdir, "test.py"), 'w') as f:
+        self.fname = join(self.tmpdir, "test.py")
+        with open(join(self.tmpdir, self.fname), 'w') as f:
             f.write("c = 47")
 
     def tearDown(self):
         rmtree(self.tmpdir)
 
     def test_import(self):
-        m = import_module(join(self.tmpdir, "test.py"))
-        self.assertEqual(m.c, 47)
+        with open(join(self.tmpdir, self.fname), 'w') as f:
+            f.write("c = 47")
+        self.assertEqual(getattr_from_file(self.fname, 'c'), 47)
+        with open(join(self.tmpdir, self.fname), 'w') as f:
+            f.write("c = 48")
+        self.assertEqual(getattr_from_file(self.fname, 'c'), 48)

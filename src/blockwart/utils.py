@@ -1,7 +1,3 @@
-from imp import find_module, load_module
-from os.path import basename, dirname
-
-
 def cached_property(prop):
     """
     A replacement for the property decorator that will only compute the
@@ -16,13 +12,15 @@ def cached_property(prop):
     return property(cache_wrapper)
 
 
-def import_module(path):
+def getattr_from_file(path, attrname):
     """
-    Imports the given file as a Python module.
+    Reads a specific 'attribute' (if it were a module) from a source file.
     """
-    mod_name = basename(path).split(".")[0]
-    (f, pathname, description) = find_module(mod_name, [dirname(path)])
-    return load_module(mod_name, f, pathname, description)
+    with open(path) as f:
+        source = f.read()
+    env = {}
+    exec source in env
+    return env[attrname]
 
 
 def mark_for_translation(s):
