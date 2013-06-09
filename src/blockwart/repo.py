@@ -1,6 +1,9 @@
 from os.path import isdir, join
 
-from blockwart.utils import mark_for_translation as _
+from .node import Node
+from .utils import cached_property, getattr_from_file, \
+    mark_for_translation as _
+
 
 INITIAL_CONTENT = {
     "nodes.py": """
@@ -38,3 +41,25 @@ class Repository(object):
         for filename, content in INITIAL_CONTENT.iteritems():
             with open(join(self.path, filename), 'w') as f:
                 f.write(content.strip() + "\n")
+
+    @cached_property
+    def node_dict(self):
+        try:
+            flat_node_dict = getattr_from_file(
+                join(self.path, "nodes.py"),
+                'nodes',
+            )
+        except KeyError:
+            raise RepositoryError(_("nodes.py must define a 'nodes' variable"))
+        nodes = {}
+        for nodename, infodict in flat_node_dict.iteritems():
+            nodes[nodename] = Node(self, nodename, infodict)
+        return nodes
+
+    @property
+    def node_names(self):
+        return self.node_dict.keys()
+
+    @property
+    def nodes(self):
+        return self.node_dict.values()
