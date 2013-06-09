@@ -1,3 +1,17 @@
+import cProfile
+import pstats
+
+
+class PrintProfiler(object):
+    def __enter__(self):
+        self.pr = cProfile.Profile()
+        self.pr.enable()
+
+    def __exit__(self, type, value, traceback):
+        self.pr.disable()
+        pstats.Stats(self.pr).sort_stats('cumulative').print_stats()
+
+
 def cached_property(prop):
     """
     A replacement for the property decorator that will only compute the
