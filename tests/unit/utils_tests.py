@@ -3,7 +3,28 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from blockwart.utils import import_module
+from blockwart.utils import cached_property, import_module
+
+
+class CachedPropertyTest(TestCase):
+    """
+    Tests blockwart.utils.cached_property.
+    """
+    def test_called_once(self):
+        class ExampleClass(object):
+            def __init__(self):
+                self.counter = 0
+
+            @cached_property
+            def testprop(self):
+                self.counter += 1
+                return self.counter
+
+        obj = ExampleClass()
+
+        self.assertEqual(obj.testprop, 1)
+        # a standard property would now return 2
+        self.assertEqual(obj.testprop, 1)
 
 
 class ImportTest(TestCase):
