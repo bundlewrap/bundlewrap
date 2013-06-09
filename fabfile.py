@@ -43,3 +43,8 @@ def run_tests():
     print(green("\n# Running tests for blockwart\n"))
     with lcd(PROJECT_PATH + "/tests"):
         local("nosetests")
+
+
+def shell():
+    os.environ['PYTHONPATH'] = PROJECT_PATH + "/src"
+    local("python")
