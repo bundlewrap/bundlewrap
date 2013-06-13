@@ -9,11 +9,11 @@ setup(
     url="http://github.com/trehn/blockwart",
     package_dir={'': "src"},
     packages=find_packages("src"),
-    #entry_points={
-    #    'console_scripts': [
-    #        "bw=blockwart.cmdline:main",
-    #    ]
-    #},
+    entry_points={
+        'console_scripts': [
+            "bw=blockwart.cmdline:main",
+        ],
+    },
     keywords=["configuration", "config", "management"],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
