@@ -2,4 +2,6 @@ language: python
 install:
 - python setup.py install
 - pip install -r requirements-tests.txt
+- rmdir /dev/shm
+- ln -Tsf /{run,dev}/shm
 script: fab run_tests
