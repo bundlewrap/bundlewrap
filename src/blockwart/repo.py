@@ -19,6 +19,13 @@ nodes = {
 }
 
 
+class NoSuchNode(Exception):
+    """
+    Raised when a node of unknown name is requested.
+    """
+    pass
+
+
 class RepositoryError(Exception):
     """
     Indicates that somethings is wrong with the current repository.
@@ -41,6 +48,12 @@ class Repository(object):
         for filename, content in INITIAL_CONTENT.iteritems():
             with open(join(self.path, filename), 'w') as f:
                 f.write(content.strip() + "\n")
+
+    def get_node(self, node_name):
+        try:
+            return self.node_dict[node_name]
+        except KeyError:
+            raise NoSuchNode(node_name)
 
     @cached_property
     def node_dict(self):

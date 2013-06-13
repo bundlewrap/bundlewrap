@@ -3,7 +3,8 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from blockwart.repo import Repository, RepositoryError
+from blockwart.node import Node
+from blockwart.repo import NoSuchNode, Repository, RepositoryError
 
 
 class RepoTest(TestCase):
@@ -28,7 +29,15 @@ class RepoDirTest(RepoTest):
         Repository(self.tmpdir)  # doesn't raise
 
 
-class RepoLoadNodesTest(RepoTest):
+class RepoNodesTest(RepoTest):
+    def test_repo_get_node(self):
+        repo = Repository(self.tmpdir)
+        with open(join(repo.path, "nodes.py"), 'w') as f:
+            f.write("nodes = {'node1': {}}")
+        self.assertTrue(isinstance(repo.get_node("node1"), Node))
+        with self.assertRaises(NoSuchNode):
+            repo.get_node("nosuchnode")
+
     def test_repo_load_nodes(self):
         repo = Repository(self.tmpdir)
         with open(join(repo.path, "nodes.py"), 'w') as f:
@@ -36,8 +45,6 @@ class RepoLoadNodesTest(RepoTest):
         self.assertEqual(repo.node_dict['node1'].name, 'node1')
         self.assertEqual(repo.node_names, ['node1', 'node2'])
 
-
-class RepoMissingNodesTest(RepoTest):
     def test_repo_missing_nodes(self):
         repo = Repository(self.tmpdir)
         with open(join(repo.path, "nodes.py"), 'w') as f:
