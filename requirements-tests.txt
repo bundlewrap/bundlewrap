@@ -2,4 +2,3 @@ distribute
 Fabric
 Mako
 mock
-requests
