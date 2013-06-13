@@ -1,0 +1,5 @@
+language: python
+install:
+- python setup.py install
+- pip install -r requirements-tests.txt
+script: fab run_tests
