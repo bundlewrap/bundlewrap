@@ -1,0 +1,36 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="blockwart",
+    version="0.1.0",
+    description="config management for Python addicts",
+    author="Torsten Rehn",
+    author_email="torsten@rehn.tel",
+    url="http://github.com/trehn/blockwart",
+    package_dir={'': "src"},
+    packages=find_packages("src"),
+    #entry_points={
+    #    'console_scripts': [
+    #        "bw=blockwart.cmdline:main",
+    #    ]
+    #},
+    keywords=["configuration", "config", "management"],
+    classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+        "Environment :: Console",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Natural Language :: English",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2.7",
+        "Topic :: System :: Installation/Setup",
+        "Topic :: System :: Systems Administration",
+    ],
+    install_requires=[
+        "distribute",
+        "Fabric",
+        "Mako",
+    ],
+    zip_safe=False,
+)
