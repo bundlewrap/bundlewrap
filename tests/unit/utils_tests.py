@@ -34,11 +34,17 @@ class GetAttrFromFileTest(TestCase):
     def setUp(self):
         self.tmpdir = mkdtemp()
         self.fname = join(self.tmpdir, "test.py")
-        with open(join(self.tmpdir, self.fname), 'w') as f:
-            f.write("c = 47")
 
     def tearDown(self):
         rmtree(self.tmpdir)
+
+    def test_default(self):
+        with open(join(self.tmpdir, self.fname), 'w') as f:
+            f.write("")
+        with self.assertRaises(KeyError):
+            getattr_from_file(self.fname, 'c')
+        self.assertEqual(getattr_from_file(self.fname, 'c', None), None)
+        self.assertEqual(getattr_from_file(self.fname, 'c', 49), 49)
 
     def test_import(self):
         with open(join(self.tmpdir, self.fname), 'w') as f:

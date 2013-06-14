@@ -1,6 +1,8 @@
 import cProfile
 import pstats
 
+GETATTR_NODEFAULT = "very_unlikely_default_value"
+
 
 class PrintProfiler(object):
     def __enter__(self):
@@ -26,7 +28,7 @@ def cached_property(prop):
     return property(cache_wrapper)
 
 
-def getattr_from_file(path, attrname):
+def getattr_from_file(path, attrname, default=GETATTR_NODEFAULT):
     """
     Reads a specific 'attribute' (if it were a module) from a source file.
     """
@@ -34,7 +36,10 @@ def getattr_from_file(path, attrname):
         source = f.read()
     env = {}
     exec source in env
-    return env[attrname]
+    if default == GETATTR_NODEFAULT:
+        return env[attrname]
+    else:
+        return env.get(attrname, default)
 
 
 def mark_for_translation(s):
