@@ -1,7 +1,8 @@
 import cProfile
 import pstats
 
-GETATTR_NODEFAULT = "very_unlikely_default_value"
+__GETATTR_CACHE = {}
+__GETATTR_NODEFAULT = "very_unlikely_default_value"
 
 
 class PrintProfiler(object):
@@ -28,15 +29,27 @@ def cached_property(prop):
     return property(cache_wrapper)
 
 
-def getattr_from_file(path, attrname, default=GETATTR_NODEFAULT):
+def get_file_contents(path):
+    with open(path) as f:
+        content = f.read()
+    return content
+
+
+def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
+                      default=__GETATTR_NODEFAULT,
+                      ):
     """
     Reads a specific 'attribute' (if it were a module) from a source file.
     """
-    with open(path) as f:
-        source = f.read()
-    env = {}
-    exec source in env
-    if default == GETATTR_NODEFAULT:
+    if path not in __GETATTR_CACHE or not cache_read:
+        source = get_file_contents(path)
+        env = {}
+        exec source in env
+        if cache_write:
+            __GETATTR_CACHE[path] = env
+    else:
+        env = __GETATTR_CACHE[path]
+    if default == __GETATTR_NODEFAULT:
         return env[attrname]
     else:
         return env.get(attrname, default)

@@ -3,19 +3,21 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from blockwart.utils import cached_property, getattr_from_file
+from mock import patch
+
+from blockwart import utils
 
 
 class CachedPropertyTest(TestCase):
     """
-    Tests blockwart.utils.cached_property.
+    Tests blockwart.utils.utils.cached_property.
     """
     def test_called_once(self):
         class ExampleClass(object):
             def __init__(self):
                 self.counter = 0
 
-            @cached_property
+            @utils.cached_property
             def testprop(self):
                 self.counter += 1
                 return self.counter
@@ -38,18 +40,54 @@ class GetAttrFromFileTest(TestCase):
     def tearDown(self):
         rmtree(self.tmpdir)
 
+    @patch('blockwart.utils.get_file_contents', return_value="c = 47")
+    def test_cache_enabled(self, *args):
+        utils.getattr_from_file(self.fname, 'c')
+        utils.getattr_from_file(self.fname, 'c')
+        utils.get_file_contents.assert_called_once_with(self.fname)
+
+    @patch('blockwart.utils.get_file_contents', return_value="c = 47")
+    def test_cache_disabled(self, *args):
+        utils.getattr_from_file(self.fname, 'c', cache_write=False)
+        utils.getattr_from_file(self.fname, 'c')
+        self.assertEqual(utils.get_file_contents.call_count, 2)
+
+    @patch('blockwart.utils.get_file_contents', return_value="c = 47")
+    def test_cache_ignore(self, *args):
+        self.assertEqual(
+            utils.getattr_from_file(self.fname, 'c'),
+            47,
+        )
+        utils.get_file_contents.return_value = "c = 48"
+        self.assertEqual(
+            utils.getattr_from_file(self.fname, 'c', cache_read=False),
+            48,
+        )
+        self.assertEqual(utils.get_file_contents.call_count, 2)
+
     def test_default(self):
         with open(join(self.tmpdir, self.fname), 'w') as f:
             f.write("")
         with self.assertRaises(KeyError):
-            getattr_from_file(self.fname, 'c')
-        self.assertEqual(getattr_from_file(self.fname, 'c', None), None)
-        self.assertEqual(getattr_from_file(self.fname, 'c', 49), 49)
+            utils.getattr_from_file(self.fname, 'c')
+        self.assertEqual(
+            utils.getattr_from_file(self.fname, 'c', default=None),
+            None,
+        )
+        self.assertEqual(
+            utils.getattr_from_file(self.fname, 'c', default=49),
+            49,
+        )
 
     def test_import(self):
         with open(join(self.tmpdir, self.fname), 'w') as f:
             f.write("c = 47")
-        self.assertEqual(getattr_from_file(self.fname, 'c'), 47)
+        self.assertEqual(
+            utils.getattr_from_file(self.fname, 'c', cache_read=False),
+            47,
+        )
+        return
         with open(join(self.tmpdir, self.fname), 'w') as f:
             f.write("c = 48")
-        self.assertEqual(getattr_from_file(self.fname, 'c'), 48)
+        self.assertEqual(
+            utils.getattr_from_file(self.fname, 'c'), 48)
