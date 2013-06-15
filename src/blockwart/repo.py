@@ -84,7 +84,9 @@ class Repository(object):
 
     @property
     def groups(self):
-        return self.group_dict.values()
+        result = list(self.group_dict.values())
+        result.sort()
+        return result
 
     @cached_property
     def groups_file(self):
@@ -115,7 +117,9 @@ class Repository(object):
 
     @property
     def nodes(self):
-        return self.node_dict.values()
+        result = list(self.node_dict.values())
+        result.sort()
+        return result
 
     @cached_property
     def nodes_file(self):
