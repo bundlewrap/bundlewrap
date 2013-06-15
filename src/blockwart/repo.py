@@ -4,6 +4,7 @@ from .node import Node
 from .utils import cached_property, getattr_from_file, \
     mark_for_translation as _
 
+FILENAME_NODES = "nodes.py"
 
 INITIAL_CONTENT = {
     "nodes.py": """
@@ -59,11 +60,15 @@ class Repository(object):
     def node_dict(self):
         try:
             flat_node_dict = getattr_from_file(
-                join(self.path, "nodes.py"),
+                self.nodes_file,
                 'nodes',
             )
         except KeyError:
-            raise RepositoryError(_("nodes.py must define a 'nodes' variable"))
+            raise RepositoryError(
+                _("{} must define a 'nodes' variable").format(
+                    self.nodes_file,
+                )
+            )
         nodes = {}
         for nodename, infodict in flat_node_dict.iteritems():
             nodes[nodename] = Node(self, nodename, infodict)
@@ -72,3 +77,7 @@ class Repository(object):
     @property
     def nodes(self):
         return self.node_dict.values()
+
+    @cached_property
+    def nodes_file(self):
+        return join(self.path, FILENAME_NODES)
