@@ -22,6 +22,9 @@ class Group(object):
 
     @cached_property
     def nodes(self):
+        """
+        Iterator for all nodes in this group.
+        """
         profile_patterns = getattr_from_file(
             self.repo.groups_file,
             'profile_patterns',
@@ -30,7 +33,9 @@ class Group(object):
         # TODO
 
     def _check_subgroup_names(self, visited_names):
-        print visited_names
+        """
+        Recursively finds subgroups and checks for loops.
+        """
         for name in self.immediate_subgroup_names:
             if name not in visited_names:
                 group = self.repo.get_group(name)
@@ -60,5 +65,8 @@ class Group(object):
 
     @cached_property
     def subgroups(self):
+        """
+        Iterator over all subgroups as group objects.
+        """
         for group_name in self._check_subgroup_names([self.name]):
             yield self.repo.get_group(group_name)
