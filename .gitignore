@@ -1,2 +1,2 @@
 /doc/_build/
-/.coveralls.yml
+/tests/.coveralls.yml
