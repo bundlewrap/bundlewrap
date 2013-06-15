@@ -1,5 +1,6 @@
 from .exceptions import RepositoryError
 from .utils import cached_property, getattr_from_file
+from .utils import mark_for_translation as _
 
 
 def _build_error_chain(loop_node, last_node, nodes_in_between):
@@ -70,11 +71,11 @@ class Group(object):
                     visited_names,
                 )
                 raise RepositoryError(
-                    "{} can't be a subgroup of itself "
-                    "({})".format(
-                        name,
-                        " -> ".join(error_chain),
-                    )
+                    _("{} can't be a subgroup of itself "
+                      "({})").format(
+                          name,
+                          " -> ".join(error_chain),
+                      )
                 )
         if self.name not in visited_names:
             yield self.name
