@@ -46,9 +46,7 @@ class Group(object):
             else:
                 error_chain = []
                 for visited in visited_names:
-                    if name in error_chain and name != visited:
-                        error_chain.append(visited)
-                    elif name not in error_chain and name == visited:
+                    if (name in error_chain) != (name == visited):
                         error_chain.append(visited)
                 error_chain.append(self.name)
                 error_chain.append(name)
