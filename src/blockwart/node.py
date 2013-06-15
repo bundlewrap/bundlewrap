@@ -24,6 +24,9 @@ class Node(object):
         else:
             self.hostname = self.name
 
+    def __cmp__(self, other):
+        return cmp(self.name, other.name)
+
     @cached_property
     def _ssh_client(self):
         client = SSHClient()

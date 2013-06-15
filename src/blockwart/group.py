@@ -32,8 +32,8 @@ class Group(object):
         self.repo = repo
         self.immediate_subgroup_names = infodict.get('subgroups', [])
 
-    def __eq__(self, other):
-        return self.name == other.name
+    def __cmp__(self, other):
+        return cmp(self.name, other.name)
 
     def __repr__(self):
         return "<Group: {}>".format(self.name)
