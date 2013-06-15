@@ -7,6 +7,14 @@ from .repo import Repository
 from .utils import mark_for_translation as _
 
 
+def bw_nodes(repo, args):
+    for node in repo.nodes:
+        if args.show_hostnames:
+            print(node.hostname)
+        else:
+            print(node.name)
+
+
 def bw_run(repo, args):
     print(commands.run(repo, args.target, args.command))
 
@@ -22,6 +30,17 @@ def build_parser_bw():
         title=_("subcommands"),
         help=_("use 'bw <subcommand> --help' for more info"),
     )
+    # bw nodes
+    parser_nodes = subparsers.add_parser("nodes")
+    parser_nodes.set_defaults(func=bw_nodes)
+    parser_nodes.add_argument(
+        '--hostnames',
+        action='store_true',
+        dest='show_hostnames',
+        help=_("show hostnames instead of node names"),
+    )
+
+    # bw run
     parser_run = subparsers.add_parser("run")
     parser_run.set_defaults(func=bw_run)
     parser_run.add_argument(
