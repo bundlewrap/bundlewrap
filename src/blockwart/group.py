@@ -20,11 +20,6 @@ class Group(object):
     def __str__(self):
         return self.name
 
-    @property
-    def node_names(self):
-        for node in self.nodes:
-            yield node.name
-
     @cached_property
     def nodes(self):
         profile_patterns = getattr_from_file(
