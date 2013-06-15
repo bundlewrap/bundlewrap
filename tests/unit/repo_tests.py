@@ -3,8 +3,8 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
+from blockwart import repo
 from blockwart.node import Node
-from blockwart.repo import NoSuchNode, Repository, RepositoryError
 
 
 class RepoTest(TestCase):
@@ -17,36 +17,36 @@ class RepoTest(TestCase):
 
 class RepoCreateTest(RepoTest):
     def test_repo_create(self):
-        repo = Repository(self.tmpdir)
-        repo.create()
+        r = repo.Repository(self.tmpdir)
+        r.create()
         self.assertTrue(getsize(join(self.tmpdir, "nodes.py")) > 1)
 
 
 class RepoDirTest(RepoTest):
     def test_repo_dir_check(self):
-        with self.assertRaises(RepositoryError):
-            Repository("/dev/null")
-        Repository(self.tmpdir)  # doesn't raise
+        with self.assertRaises(repo.RepositoryError):
+            repo.Repository("/dev/null")
+        repo.Repository(self.tmpdir)  # doesn't raise
 
 
 class RepoNodesTest(RepoTest):
     def test_repo_get_node(self):
-        repo = Repository(self.tmpdir)
-        with open(join(repo.path, "nodes.py"), 'w') as f:
+        r = repo.Repository(self.tmpdir)
+        with open(join(r.path, repo.FILENAME_NODES), 'w') as f:
             f.write("nodes = {'node1': {}}")
-        self.assertTrue(isinstance(repo.get_node("node1"), Node))
-        with self.assertRaises(NoSuchNode):
-            repo.get_node("nosuchnode")
+        self.assertTrue(isinstance(r.get_node("node1"), Node))
+        with self.assertRaises(repo.NoSuchNode):
+            r.get_node("nosuchnode")
 
     def test_repo_load_nodes(self):
-        repo = Repository(self.tmpdir)
-        with open(join(repo.path, "nodes.py"), 'w') as f:
+        r = repo.Repository(self.tmpdir)
+        with open(join(r.path, repo.FILENAME_NODES), 'w') as f:
             f.write("nodes = {'node1': {}, 'node2': {}}")
-        self.assertEqual(repo.node_dict['node1'].name, 'node1')
+        self.assertEqual(r.node_dict['node1'].name, 'node1')
 
     def test_repo_missing_nodes(self):
-        repo = Repository(self.tmpdir)
-        with open(join(repo.path, "nodes.py"), 'w') as f:
+        r = repo.Repository(self.tmpdir)
+        with open(join(r.path, repo.FILENAME_NODES), 'w') as f:
             f.write("")
-        with self.assertRaises(RepositoryError):
-            repo.node_dict
+        with self.assertRaises(repo.RepositoryError):
+            r.node_dict
