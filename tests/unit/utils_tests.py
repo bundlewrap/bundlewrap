@@ -91,3 +91,16 @@ class GetAttrFromFileTest(TestCase):
             f.write("c = 48")
         self.assertEqual(
             utils.getattr_from_file(self.fname, 'c'), 48)
+
+
+class NamesTest(TestCase):
+    """
+    Tests blockwart.utils.names.
+    """
+    def test_names(self):
+        class TestObj(object):
+            def __init__(self, name):
+                self.name = name
+
+        l = (TestObj("obj1"), TestObj("obj2"))
+        self.assertEqual(list(utils.names(l)), ["obj1", "obj2"])

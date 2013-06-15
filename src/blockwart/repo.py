@@ -70,9 +70,5 @@ class Repository(object):
         return nodes
 
     @property
-    def node_names(self):
-        return self.node_dict.keys()
-
-    @property
     def nodes(self):
         return self.node_dict.values()

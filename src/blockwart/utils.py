@@ -57,3 +57,14 @@ def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
 
 def mark_for_translation(s):
     return s
+
+
+def names(obj_list):
+    """
+    Iterator over the name properties of a given list of objects.
+
+    repo.nodes          will give you node objects
+    names(repo.nodes)   will give you node names
+    """
+    for obj in obj_list:
+        yield obj.name
