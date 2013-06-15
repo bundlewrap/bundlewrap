@@ -1,11 +1,59 @@
 from unittest import TestCase
 
 from blockwart.exceptions import RepositoryError
-from blockwart.group import Group
+from blockwart.group import _build_error_chain, Group
 from blockwart.utils import names
 
 
+class ErrorChainTest(TestCase):
+    """
+    Tests blockwart.group._build_error_chain.
+    """
+    def test_direct_loop(self):
+        self.assertEqual(
+            _build_error_chain(
+                "group1",
+                "group1",
+                [],
+            ),
+            ["group1", "group1"],
+        )
+
+    def test_simple_indirect_loop(self):
+        self.assertEqual(
+            _build_error_chain(
+                "group1",
+                "group2",
+                ["group1"],
+            ),
+            ["group1", "group2", "group1"],
+        )
+
+    def test_deep_indirect_loop(self):
+        self.assertEqual(
+            _build_error_chain(
+                "group1",
+                "group3",
+                ["group1", "group2"],
+            ),
+            ["group1", "group2", "group3", "group1"],
+        )
+
+    def test_deep_indirect_inner_loop(self):
+        self.assertEqual(
+            _build_error_chain(
+                "group2",
+                "group3",
+                ["group1", "group2"],
+            ),
+            ["group2", "group3", "group2"],
+        )
+
+
 class HierarchyTest(TestCase):
+    """
+    Tests subgroup functionality of blockwart.group.Group.
+    """
     def test_no_subgroups(self):
         class FakeRepo(object):
             def get_group(self, name):

@@ -2,6 +2,26 @@ from .exceptions import RepositoryError
 from .utils import cached_property, getattr_from_file
 
 
+def _build_error_chain(loop_node, last_node, nodes_in_between):
+    """
+    Used to illustrate subgroup loop paths in error messages.
+
+    loop_node:          name of node that loops back to itself
+    last_node:          name of last node pointing back to loop_node,
+                        causing the loop
+    nodes_in_between:   names of nodes traversed during loop detection,
+                        does include loop_node if not a direct loop,
+                        but not last_node
+    """
+    error_chain = []
+    for visited in nodes_in_between:
+        if (loop_node in error_chain) != (loop_node == visited):
+            error_chain.append(visited)
+    error_chain.append(last_node)
+    error_chain.append(loop_node)
+    return error_chain
+
+
 class Group(object):
     """
     A group of nodes.
@@ -44,13 +64,11 @@ class Group(object):
                 ):
                     yield group_name
             else:
-                error_chain = []
-                for visited in visited_names:
-                    if (name in error_chain) != (name == visited):
-                        error_chain.append(visited)
-                error_chain.append(self.name)
-                error_chain.append(name)
-
+                error_chain = _build_error_chain(
+                    name,
+                    self.name,
+                    visited_names,
+                )
                 raise RepositoryError(
                     "{} can't be a subgroup of itself "
                     "({})".format(
