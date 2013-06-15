@@ -2,7 +2,7 @@ import argparse
 from os import getcwd
 
 from . import VERSION_STRING
-from . import commands
+from .exceptions import NoSuchNode
 from .repo import Repository
 from .utils import mark_for_translation as _
 
@@ -10,13 +10,24 @@ from .utils import mark_for_translation as _
 def bw_nodes(repo, args):
     for node in repo.nodes:
         if args.show_hostnames:
-            print(node.hostname)
+            yield node.hostname
         else:
-            print(node.name)
+            yield node.name
 
 
 def bw_run(repo, args):
-    print(commands.run(repo, args.target, args.command))
+    try:
+        targets = [repo.get_node(args.target)]
+    except NoSuchNode:
+        targets = repo.get_group(args.target).nodes
+    for node in targets:
+        result = node.run(args.command, sudo=args.sudo)
+        if result.stdout.strip():
+            for line in result.stdout.strip().split("\n"):
+                yield "{} (stdout): {}".format(node.name, line)
+        if result.stderr.strip():
+            for line in result.stderr.strip().split("\n"):
+                yield "{} (stderr): {}".format(node.name, line)
 
 
 def build_parser_bw():
@@ -45,15 +56,21 @@ def build_parser_bw():
     parser_run.set_defaults(func=bw_run)
     parser_run.add_argument(
         'target',
-        metavar=_("NODE"),
+        metavar=_("NODE|GROUP"),
         type=str,
-        help=_("target node"),
+        help=_("target node or group"),
     )
     parser_run.add_argument(
         'command',
         metavar=_("COMMAND"),
         type=str,
         help=_("command to run"),
+    )
+    parser_run.add_argument(
+        '--no-sudo',
+        action='store_false',
+        dest='sudo',
+        help=_("do not use sudo, execute with user privs"),
     )
     return parser
 
@@ -65,4 +82,5 @@ def main():
     parser_bw = build_parser_bw()
     args = parser_bw.parse_args()
     repo = Repository(getcwd())
-    args.func(repo, args)
+    for line in args.func(repo, args):
+        print(line)

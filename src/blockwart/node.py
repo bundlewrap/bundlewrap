@@ -39,9 +39,11 @@ class Node(object):
     def groups(self):
         return self.repo.groups_for_node(self)
 
-    def run(self, command):
+    def run(self, command, sudo=True):
         chan = self._ssh_client.get_transport().open_session()
         chan.get_pty()
+        if sudo:
+            command = "sudo " + command
         chan.exec_command(command)
         fstdout = chan.makefile('rb', -1)
         fstderr = chan.makefile_stderr('rb', -1)
