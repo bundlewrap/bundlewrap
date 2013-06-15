@@ -4,3 +4,5 @@ distribute
 Fabric
 Mako
 mock
+nose
+nose-cov

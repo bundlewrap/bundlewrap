@@ -43,7 +43,7 @@ def run_tests(coverage=True):
         if coverage:
             local(
                 "nosetests "
-                "--with-coverage --cover-package blockwart --cover-erase "
+                "--with-cov --cov blockwart "
             )
         else:
             local("nosetests")
