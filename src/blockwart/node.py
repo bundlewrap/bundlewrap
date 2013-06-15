@@ -1,4 +1,4 @@
-from paramiko.client import SSHClient
+from paramiko.client import SSHClient, WarningPolicy
 
 from .utils import cached_property
 
@@ -28,6 +28,7 @@ class Node(object):
     def _ssh_client(self):
         client = SSHClient()
         client.load_system_host_keys()
+        client.set_missing_host_key_policy(WarningPolicy())
         client.connect(self.hostname)
         return client
 
