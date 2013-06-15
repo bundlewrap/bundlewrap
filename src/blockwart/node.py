@@ -31,6 +31,10 @@ class Node(object):
         client.connect(self.hostname)
         return client
 
+    @cached_property
+    def groups(self):
+        return self.repo.groups_for_node(self)
+
     def run(self, command, stdin=None):
         chan = self._ssh_client.get_transport().open_session()
         chan.get_pty()

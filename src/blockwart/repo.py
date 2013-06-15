@@ -1,37 +1,43 @@
 from os.path import isdir, join
 
+from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
+from .group import Group
 from .node import Node
 from .utils import cached_property, getattr_from_file, \
     mark_for_translation as _
 
+FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 
 INITIAL_CONTENT = {
-    "nodes.py": """
-nodes = {
-    #'node1': {
-    #    'groups': (
-    #        'group1',
+    FILENAME_GROUPS: _("""
+groups = {
+    #'group1': {
+    #    'subgroups': (
     #        'group2',
+    #        'group3',
+    #    ),
+    #    'bundles': (
+    #        'bundle1',
+    #        'bundle2',
     #    ),
     #},
 }
-    """,
+
+# node names matching these regexes
+# will be added to the corresponding groups
+group_patterns {
+    ".*": "all",
 }
+    """),
 
-
-class NoSuchNode(Exception):
-    """
-    Raised when a node of unknown name is requested.
-    """
-    pass
-
-
-class RepositoryError(Exception):
-    """
-    Indicates that somethings is wrong with the current repository.
-    """
-    pass
+    FILENAME_NODES: _("""
+nodes = {
+    #'node1': {
+    #},
+}
+    """),
+}
 
 
 class Repository(object):
@@ -50,11 +56,44 @@ class Repository(object):
             with open(join(self.path, filename), 'w') as f:
                 f.write(content.strip() + "\n")
 
+    def get_group(self, group_name):
+        try:
+            return self.group_dict[group_name]
+        except KeyError:
+            raise NoSuchGroup(group_name)
+
     def get_node(self, node_name):
         try:
             return self.node_dict[node_name]
         except KeyError:
             raise NoSuchNode(node_name)
+
+    @cached_property
+    def group_dict(self):
+        try:
+            flat_group_dict = getattr_from_file(
+                self.groups_file,
+                'groups',
+            )
+        except KeyError:
+            raise RepositoryError(_("groups.py must define a 'groups' variable"))
+        groups = {}
+        for groupname, infodict in flat_group_dict.iteritems():
+            groups[groupname] = Group(self, groupname, infodict)
+        return groups
+
+    @property
+    def groups(self):
+        return self.group_dict.values()
+
+    @cached_property
+    def groups_file(self):
+        return join(self.path, FILENAME_GROUPS)
+
+    def groups_for_node(self, node):
+        for group in self.groups:
+            if node in group.nodes:
+                yield group
 
     @cached_property
     def node_dict(self):
