@@ -43,7 +43,6 @@ class RepoNodesTest(RepoTest):
         with open(join(repo.path, "nodes.py"), 'w') as f:
             f.write("nodes = {'node1': {}, 'node2': {}}")
         self.assertEqual(repo.node_dict['node1'].name, 'node1')
-        self.assertEqual(repo.node_names, ['node1', 'node2'])
 
     def test_repo_missing_nodes(self):
         repo = Repository(self.tmpdir)
