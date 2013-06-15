@@ -1,3 +1,5 @@
+import re
+
 from .exceptions import RepositoryError
 from .utils import cached_property, getattr_from_file
 from .utils import mark_for_translation as _
@@ -30,7 +32,9 @@ class Group(object):
     def __init__(self, repo, group_name, infodict):
         self.name = group_name
         self.repo = repo
+
         self.immediate_subgroup_names = infodict.get('subgroups', [])
+        self.static_member_names = infodict.get('nodes', [])
 
     def __cmp__(self, other):
         return cmp(self.name, other.name)
@@ -44,14 +48,41 @@ class Group(object):
     @cached_property
     def nodes(self):
         """
-        Iterator for all nodes in this group.
+        List of all nodes in this group.
         """
-        profile_patterns = getattr_from_file(
+        result = []
+        result += list(self._nodes_from_static_members)
+        result += list(self._nodes_from_subgroups)
+        result += list(self._nodes_from_patterns)
+        result = list(set(result))
+        result.sort()
+        return result
+
+    @property
+    def _nodes_from_static_members(self):
+        for node_name in self.static_member_names:
+            yield self.repo.get_node(node_name)
+
+    @property
+    def _nodes_from_subgroups(self):
+        for subgroup in self.subgroups:
+            for node in subgroup.nodes:
+                yield node
+
+    @property
+    def _nodes_from_patterns(self):
+        group_patterns = getattr_from_file(
             self.repo.groups_file,
-            'profile_patterns',
+            'group_patterns',
             default={},
         )
-        # TODO
+        for pattern, group_name in group_patterns.iteritems():
+            if not group_name == self.name:
+                continue
+            compiled_pattern = re.compile(pattern)
+            for node in self.repo.nodes:
+                if not compiled_pattern.search(node.name) is None:
+                    yield node
 
     def _check_subgroup_names(self, visited_names):
         """

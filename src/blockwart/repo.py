@@ -15,19 +15,22 @@ groups = {
     #'group1': {
     #    'subgroups': (
     #        'group2',
-    #        'group3',
     #    ),
     #    'bundles': (
     #        'bundle1',
-    #        'bundle2',
     #    ),
+    #    'nodes': (
+    #        'node1',
+    #    ),
+    #},
+    #'all': {
     #},
 }
 
 # node names matching these regexes
 # will be added to the corresponding groups
 group_patterns {
-    ".*": "all",
+    r".*": "all",
 }
     """),
 
