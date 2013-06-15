@@ -4,5 +4,5 @@ install:
 - pip install -r requirements-tests.txt
 - sudo rm -rf /dev/shm
 - sudo ln -s /run/shm /dev/shm
-script: fab run_tests:True
-after_success: coveralls
+script: fab run_tests
+after_success: fab submit_coverage

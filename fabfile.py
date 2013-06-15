@@ -37,11 +37,14 @@ def run_pylint(ignore_warnings=True):
     env.warn_only = False
 
 
-def run_tests(coverage=False):
+def run_tests(coverage=True):
     sys.path.append(PROJECT_PATH + "/src")
     with lcd(PROJECT_PATH + "/tests"):
         if coverage:
-            local("nosetests --with-coverage --cover-package=blockwart")
+            local(
+                "nosetests "
+                "--with-coverage --cover-package blockwart --cover-erase "
+            )
         else:
             local("nosetests")
 
@@ -49,3 +52,8 @@ def run_tests(coverage=False):
 def shell():
     os.environ['PYTHONPATH'] = PROJECT_PATH + "/src"
     local("python")
+
+
+def submit_coverage():
+    with lcd(PROJECT_PATH + "/tests"):
+        local("coveralls")
