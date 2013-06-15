@@ -1,10 +1,10 @@
-[![Version](https://pypip.in/v/blockwart/badge.png)](https://crate.io/package/blockwart) [![Downloads](https://pypip.in/d/blockwart/badge.png)](https://crate.io/package/blockwart) [![Build Status](https://travis-ci.org/trehn/blockwart.png)](https://travis-ci.org/trehn/blockwart)
-
-------------------------------------------------------------------------
-
 Blockwart is a decentralized configuration management system that is designed to be powerful, easy to extend and extremely versatile.
 
 For more information, have a look at [blockwart.org](http://blockwart.org/ "blockwart website").
+
+------------------------------------------------------------------------
+
+[![Version](https://pypip.in/v/blockwart/badge.png)](https://crate.io/package/blockwart) [![Downloads](https://pypip.in/d/blockwart/badge.png)](https://crate.io/package/blockwart) [![Build Status](https://travis-ci.org/trehn/blockwart.png)](https://travis-ci.org/trehn/blockwart)
 
 ------------------------------------------------------------------------
 
