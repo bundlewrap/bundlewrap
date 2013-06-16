@@ -42,12 +42,12 @@ def run_tests(coverage=True):
     with lcd(PROJECT_PATH + "/tests"):
         if coverage:
             local(
-                "nosetests --processes=4"
+                "nosetests "
                 "--with-cov --cov blockwart --cov-config .coveragerc"
             )
             local("coverage combine")
         else:
-            local("nosetests --processes=4")
+            local("nosetests")
 
 
 def shell():
