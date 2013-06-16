@@ -1,4 +1,5 @@
 import os
+from os.path import join
 import sys
 
 from fabric.api import *
@@ -17,6 +18,31 @@ def build_docs():
     ):
         with lcd(PROJECT_PATH + "/doc/_build/html"):
             local("open index.html")
+
+
+def release():
+    sys.path.append(PROJECT_PATH + "/src")
+    from blockwart import VERSION_STRING
+    from blockwart.utils import get_file_contents
+
+    setup_py_content = get_file_contents(join(PROJECT_PATH, "setup.py"))
+    if "version=\"{}\"".format(VERSION_STRING) not in setup_py_content:
+        print(red("Error: blockwart.VERSION_STRING does not match setup.py"))
+        sys.exit(1)
+
+    changelog_content = get_file_contents(join(PROJECT_PATH, "CHANGELOG.md"))
+    if "### {}\n".format(VERSION_STRING) not in changelog_content:
+        print(red(
+            "Error: no changelog entry for for {}".format(VERSION_STRING)
+        ))
+        sys.exit(1)
+
+    if confirm(
+        "Do you want to release blockwart {}?".format(VERSION_STRING),
+        default=False,
+    ):
+        with lcd(PROJECT_PATH):
+            local("python setup.py sdist upload")
 
 
 def run_pylint(ignore_warnings=True):
