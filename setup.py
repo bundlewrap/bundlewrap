@@ -16,7 +16,7 @@ setup(
     },
     keywords=["configuration", "config", "management"],
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Environment :: Console",
         "Intended Audience :: System Administrators",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -29,7 +29,6 @@ setup(
     ],
     install_requires=[
         "distribute",
-        "Fabric",
         "Mako",
     ],
     zip_safe=False,
