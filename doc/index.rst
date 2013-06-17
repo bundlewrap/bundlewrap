@@ -12,5 +12,6 @@ Contents:
 
    installation
    requirements
+   repository
    about
    glossary
