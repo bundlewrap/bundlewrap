@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from .. import VERSION_STRING
 from ..utils import mark_for_translation as _
 from .nodes import bw_nodes
+from .repo import bw_repo_create
 from .run import bw_run
 
 
@@ -26,6 +27,12 @@ def build_parser_bw():
         dest='show_hostnames',
         help=_("show hostnames instead of node names"),
     )
+
+    # bw repo
+    parser_repo = subparsers.add_parser("repo")
+    parser_repo_subparsers = parser_repo.add_subparsers()
+    parser_repo_subparsers_create = parser_repo_subparsers.add_parser("create")
+    parser_repo_subparsers_create.set_defaults(func=bw_repo_create)
 
     # bw run
     parser_run = subparsers.add_parser("run")
