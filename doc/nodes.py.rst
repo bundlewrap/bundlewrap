@@ -6,8 +6,8 @@ nodes.py reference
 
 .. toctree::
     :hidden:
-``
-Th--is file lets you specify or dynamically build a list of nodes in your environment.
+
+This file lets you specify or dynamically build a list of nodes in your environment.
 
 Introduction
 ============
