@@ -23,8 +23,8 @@ groups = {
     #        'node1',
     #    ),
     #},
-    #'all': {
-    #},
+    'all': {
+    },
 }
 
 # node names matching these regexes
@@ -36,8 +36,9 @@ group_patterns {
 
     FILENAME_NODES: _("""
 nodes = {
-    #'node1': {
-    #},
+    'node1': {
+        'hostname': "localhost",
+    },
 }
     """),
 }
