@@ -19,10 +19,7 @@ class Node(object):
             infodict = {}
         self.name = name
         self.repo = repo
-        if 'hostname' in infodict:
-            self.hostname = infodict['hostname']
-        else:
-            self.hostname = self.name
+        self.hostname = infodict.get('hostname', self.name)
 
     def __cmp__(self, other):
         return cmp(self.name, other.name)
