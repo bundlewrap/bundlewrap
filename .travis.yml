@@ -4,5 +4,8 @@ install:
 - pip install -r requirements-tests.txt
 - sudo rm -rf /dev/shm
 - sudo ln -s /run/shm /dev/shm
+before_script:
+- ssh-keygen -f ~/.ssh/id_rsa -N ""
+- cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
 script: fab run_tests
 after_success: fab submit_coverage
