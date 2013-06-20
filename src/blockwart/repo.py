@@ -1,4 +1,4 @@
-from os.path import isdir, join
+from os.path import isdir, isfile, join
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .group import Group
@@ -46,12 +46,25 @@ nodes = {
 
 
 class Repository(object):
-    def __init__(self, repo_path):
+    def __init__(self, repo_path, skip_validation=False):
         self.path = repo_path
-        if not isdir(self.path):
+        if not skip_validation and not self.is_repo(repo_path):
             raise RepositoryError(
-                _("'{}' is not a directory").format(self.path)
+                _("'{}' is not a blockwart repository").format(self.path)
             )
+
+    @staticmethod
+    def is_repo(path):
+        """
+        Validates whether the given path is a blockwart repository.
+        """
+        try:
+            assert isdir(path)
+            assert isfile(join(path, "nodes.py"))
+            assert isfile(join(path, "groups.py"))
+        except AssertionError:
+            return False
+        return True
 
     def create(self):
         """
