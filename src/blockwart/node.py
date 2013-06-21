@@ -1,5 +1,6 @@
 from paramiko.client import SSHClient, WarningPolicy
 
+from .bundle import Bundle
 from .utils import cached_property
 
 
@@ -31,6 +32,13 @@ class Node(object):
         client.set_missing_host_key_policy(WarningPolicy())
         client.connect(self.hostname)
         return client
+
+    @cached_property
+    def bundles(self):
+        print self.groups
+        for group in self.groups:
+            for bundle_name in group.bundle_names:
+                yield Bundle(self, bundle_name)
 
     @cached_property
     def groups(self):

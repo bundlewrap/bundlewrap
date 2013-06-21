@@ -159,6 +159,19 @@ class HierarchyTest(TestCase):
             list(group.subgroups)
 
 
+class InitTest(TestCase):
+    """
+    Tests initalization of blockwart.group.Group.
+    """
+    def test_bundles(self):
+        bundles = ("bundle1", "bundle2")
+        infodict = {
+            'bundles': bundles,
+        }
+        g = Group(None, "group1", infodict)
+        self.assertEqual(g.bundle_names, bundles)
+
+
 class MemberTest(TestCase):
     """
     Tests node membership functionality of blockwart.group.Group.

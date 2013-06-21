@@ -33,6 +33,7 @@ class Group(object):
         self.name = group_name
         self.repo = repo
 
+        self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.static_member_names = infodict.get('nodes', [])
 
