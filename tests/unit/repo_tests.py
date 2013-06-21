@@ -1,3 +1,4 @@
+from os import mkdir
 from os.path import getsize, join
 from shutil import rmtree
 from tempfile import mkdtemp
@@ -15,6 +16,23 @@ class RepoTest(TestCase):
 
     def tearDown(self):
         rmtree(self.tmpdir)
+
+
+class RepoBundlesTest(RepoTest):
+    """
+    Tests blockwart.repo.Repository.bundle_names.
+    """
+    @patch('blockwart.repo.Bundle.validate_name', return_value=True)
+    def test_repo_create(self, *args):
+        bundles = ("bundle1", "bundle2")
+        r = repo.Repository(self.tmpdir, skip_validation=True)
+        mkdir(r.bundles_dir)
+        for bundle in bundles:
+            mkdir(join(r.bundles_dir, bundle))
+        self.assertEqual(
+            tuple(r.bundle_names),
+            bundles,
+        )
 
 
 class RepoCreateTest(RepoTest):

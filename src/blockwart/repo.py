@@ -1,11 +1,14 @@
+from os import listdir
 from os.path import isdir, isfile, join
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
+from .bundle import Bundle
 from .group import Group
 from .node import Node
 from .utils import cached_property, getattr_from_file, \
     mark_for_translation as _
 
+DIRNAME_BUNDLES = "bundles"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 
@@ -65,6 +68,19 @@ class Repository(object):
         except AssertionError:
             return False
         return True
+
+    @cached_property
+    def bundle_names(self):
+        """
+        Returns the names of all bundles in this repository.
+        """
+        for dir_entry in listdir(self.bundles_dir):
+            if Bundle.validate_name(dir_entry):
+                yield dir_entry
+
+    @cached_property
+    def bundles_dir(self):
+        return join(self.path, DIRNAME_BUNDLES)
 
     def create(self):
         """
