@@ -35,7 +35,6 @@ class Node(object):
 
     @cached_property
     def bundles(self):
-        print self.groups
         for group in self.groups:
             for bundle_name in group.bundle_names:
                 yield Bundle(self, bundle_name)
