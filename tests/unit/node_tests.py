@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mock import patch
+from mock import MagicMock, patch
 
 from blockwart.group import Group
 from blockwart.node import Node
@@ -12,7 +12,9 @@ class NodeTest(TestCase):
     Tests blockwart.node.Node.
     """
     def test_bundles(self):
-        n = Node(None, "node1", {})
+        repo = MagicMock()
+        repo.bundle_names = ("bundle1", "bundle2", "bundle3")
+        n = Node(repo, "node1", {})
         g1 = Group(None, "group1", {'bundles': ("bundle1", "bundle2")})
         g2 = Group(None, "group2", {'bundles': ("bundle3",)})
         with patch('tests.unit.node_tests.Node.groups', new=(g1, g2)):
