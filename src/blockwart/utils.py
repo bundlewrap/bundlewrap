@@ -1,5 +1,7 @@
 import cProfile
+from inspect import isgenerator
 import pstats
+
 
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
@@ -24,7 +26,10 @@ def cached_property(prop):
         if not hasattr(self, "_cache"):
             self._cache = {}
         if not prop in self._cache:
-            self._cache[prop] = prop(self)
+            return_value = prop(self)
+            if isgenerator(return_value):
+                return_value = tuple(return_value)
+            self._cache[prop] = return_value
         return self._cache[prop]
     return property(cache_wrapper)
 
