@@ -5,7 +5,7 @@ from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .bundle import Bundle
 from .group import Group
 from .node import Node
-from .utils import cached_property, getattr_from_file, \
+from .utils import cached_property, getattr_from_file, names, \
     mark_for_translation as _
 
 DIRNAME_BUNDLES = "bundles"
@@ -117,6 +117,9 @@ class Repository(object):
             )
         groups = {}
         for groupname, infodict in flat_group_dict.iteritems():
+            if groupname in names(self.nodes):
+                raise RepositoryError(_("you cannot have a node and a group "
+                                        "both named '{}'").format(groupname))
             groups[groupname] = Group(self, groupname, infodict)
         return groups
 
