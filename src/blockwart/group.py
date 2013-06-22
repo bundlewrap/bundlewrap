@@ -1,7 +1,7 @@
 import re
 
 from .exceptions import RepositoryError
-from .utils import cached_property, getattr_from_file
+from .utils import cached_property, getattr_from_file, validate_name
 from .utils import mark_for_translation as _
 
 
@@ -30,6 +30,9 @@ class Group(object):
     A group of nodes.
     """
     def __init__(self, repo, group_name, infodict):
+        if not validate_name(group_name):
+            raise RepositoryError(_("'{}' is not a valid group name"))
+
         self.name = group_name
         self.repo = repo
 

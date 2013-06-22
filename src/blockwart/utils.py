@@ -1,10 +1,12 @@
 import cProfile
 from inspect import isgenerator
 import pstats
-
+from string import digits, letters
 
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
+
+VALID_NAME_CHARS = digits + letters + "-_.+"
 
 
 class PrintProfiler(object):
@@ -20,7 +22,8 @@ class PrintProfiler(object):
 def cached_property(prop):
     """
     A replacement for the property decorator that will only compute the
-    attribute's value on the first call and serve cached copy from then on.
+    attribute's value on the first call and serve cached copy from then
+    on.
     """
     def cache_wrapper(self):
         if not hasattr(self, "_cache"):
@@ -44,7 +47,8 @@ def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
                       default=__GETATTR_NODEFAULT,
                       ):
     """
-    Reads a specific 'attribute' (if it were a module) from a source file.
+    Reads a specific 'attribute' (if it were a module) from a source
+    file.
     """
     if path not in __GETATTR_CACHE or not cache_read:
         source = get_file_contents(path)
@@ -73,3 +77,17 @@ def names(obj_list):
     """
     for obj in obj_list:
         yield obj.name
+
+
+def validate_name(name):
+    """
+    Checks whether the given string is a valid name for a node, group,
+    or bundle.
+    """
+    try:
+        for char in name:
+            assert char in VALID_NAME_CHARS
+        assert not name.startswith(".")
+    except AssertionError:
+        return False
+    return True

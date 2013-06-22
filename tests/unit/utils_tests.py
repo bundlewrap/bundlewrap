@@ -104,3 +104,27 @@ class NamesTest(TestCase):
 
         l = (TestObj("obj1"), TestObj("obj2"))
         self.assertEqual(list(utils.names(l)), ["obj1", "obj2"])
+
+
+class NameValidationTest(TestCase):
+    """
+    Tests blockwart.utils.validate_name.
+    """
+    def test_good_names(self):
+        for name in (
+            "foo",
+            "foo-bar2",
+            "foo_bar",
+            "foo.bar",
+            "foo...",
+        ):
+            self.assertTrue(utils.validate_name(name))
+
+    def test_bad_names(self):
+        for name in (
+            ".foo",
+            "foo!bar",
+            "foo,bar",
+            "foo;bar",
+        ):
+            self.assertFalse(utils.validate_name(name))

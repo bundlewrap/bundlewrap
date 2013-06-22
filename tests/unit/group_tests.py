@@ -163,6 +163,11 @@ class InitTest(TestCase):
     """
     Tests initalization of blockwart.group.Group.
     """
+    @patch('blockwart.group.validate_name', return_value=False)
+    def test_bad_bundle_name(self, *args):
+        with self.assertRaises(RepositoryError):
+            Group(MagicMock(), "name", {})
+
     def test_bundles(self):
         bundles = ("bundle1", "bundle2")
         infodict = {

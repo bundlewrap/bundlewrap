@@ -2,9 +2,20 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
+from blockwart.exceptions import RepositoryError
 from blockwart.group import Group
 from blockwart.node import Node
 from blockwart.utils import names
+
+
+class InitTest(TestCase):
+    """
+    Tests initialization of blockwart.node.Node.
+    """
+    @patch('blockwart.node.validate_name', return_value=False)
+    def test_bad_bundle_name(self, *args):
+        with self.assertRaises(RepositoryError):
+            Node(MagicMock(), "name")
 
 
 class NodeTest(TestCase):

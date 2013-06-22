@@ -22,7 +22,6 @@ class RepoBundlesTest(RepoTest):
     """
     Tests blockwart.repo.Repository.bundle_names.
     """
-    @patch('blockwart.repo.Bundle.validate_name', return_value=True)
     def test_repo_create(self, *args):
         bundles = ("bundle1", "bundle2")
         r = repo.Repository(self.tmpdir, skip_validation=True)

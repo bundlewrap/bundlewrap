@@ -1,7 +1,8 @@
 from paramiko.client import SSHClient, WarningPolicy
 
 from .bundle import Bundle
-from .utils import cached_property
+from .exceptions import RepositoryError
+from .utils import cached_property, mark_for_translation as _, validate_name
 
 
 class RunResult(object):
@@ -18,6 +19,10 @@ class Node(object):
     def __init__(self, repo, name, infodict=None):
         if infodict is None:
             infodict = {}
+
+        if not validate_name(name):
+            raise RepositoryError(_("'{}' is not a valid node name"))
+
         self.name = name
         self.repo = repo
         self.hostname = infodict.get('hostname', self.name)
