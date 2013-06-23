@@ -4,8 +4,8 @@ from os.path import isdir, isfile, join
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .group import Group
 from .node import Node
-from .utils import cached_property, getattr_from_file, names, \
-    mark_for_translation as _, validate_name
+from . import utils
+from .utils import mark_for_translation as _
 
 DIRNAME_BUNDLES = "bundles"
 DIRNAME_ITEM_TYPES = "configitems"
@@ -75,13 +75,13 @@ class Repository(object):
             return False
         return True
 
-    @cached_property
+    @utils.cached_property
     def bundle_names(self):
         """
         Returns the names of all bundles in this repository.
         """
         for dir_entry in listdir(self.bundles_dir):
-            if validate_name(dir_entry):
+            if utils.validate_name(dir_entry):
                 yield dir_entry
 
 
@@ -105,10 +105,10 @@ class Repository(object):
         except KeyError:
             raise NoSuchNode(node_name)
 
-    @cached_property
+    @utils.cached_property
     def group_dict(self):
         try:
-            flat_group_dict = getattr_from_file(
+            flat_group_dict = utils.getattr_from_file(
                 self.groups_file,
                 'groups',
             )
@@ -120,7 +120,7 @@ class Repository(object):
             )
         groups = {}
         for groupname, infodict in flat_group_dict.iteritems():
-            if groupname in names(self.nodes):
+            if groupname in utils.names(self.nodes):
                 raise RepositoryError(_("you cannot have a node and a group "
                                         "both named '{}'").format(groupname))
             groups[groupname] = Group(self, groupname, infodict)
@@ -137,10 +137,10 @@ class Repository(object):
             if node in group.nodes:
                 yield group
 
-    @cached_property
+    @utils.cached_property
     def node_dict(self):
         try:
-            flat_node_dict = getattr_from_file(
+            flat_node_dict = utils.getattr_from_file(
                 self.nodes_file,
                 'nodes',
             )
