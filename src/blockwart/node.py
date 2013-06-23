@@ -48,6 +48,12 @@ class Node(object):
     def groups(self):
         return self.repo.groups_for_node(self)
 
+    @property
+    def items(self):
+        for bundle in self.bundles:
+            for item in bundle.items:
+                yield item
+
     def run(self, command, sudo=True):
         chan = self._ssh_client.get_transport().open_session()
         chan.get_pty()
