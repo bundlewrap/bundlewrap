@@ -8,6 +8,7 @@ from .utils import cached_property, getattr_from_file, names, \
     mark_for_translation as _, validate_name
 
 DIRNAME_BUNDLES = "bundles"
+DIRNAME_ITEM_TYPES = "configitems"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 
@@ -50,6 +51,12 @@ nodes = {
 class Repository(object):
     def __init__(self, repo_path, skip_validation=False):
         self.path = repo_path
+
+        self.bundles_dir = join(self.path, DIRNAME_BUNDLES)
+        self.configitems_dir = join(self.path, DIRNAME_ITEM_TYPES)
+        self.groups_file = join(self.path, FILENAME_GROUPS)
+        self.nodes_file = join(self.path, FILENAME_NODES)
+
         if not skip_validation and not self.is_repo(repo_path):
             raise RepositoryError(
                 _("'{}' is not a blockwart repository").format(self.path)
@@ -77,9 +84,6 @@ class Repository(object):
             if validate_name(dir_entry):
                 yield dir_entry
 
-    @cached_property
-    def bundles_dir(self):
-        return join(self.path, DIRNAME_BUNDLES)
 
     def create(self):
         """
@@ -128,10 +132,6 @@ class Repository(object):
         result.sort()
         return result
 
-    @cached_property
-    def groups_file(self):
-        return join(self.path, FILENAME_GROUPS)
-
     def groups_for_node(self, node):
         for group in self.groups:
             if node in group.nodes:
@@ -160,7 +160,3 @@ class Repository(object):
         result = list(self.node_dict.values())
         result.sort()
         return result
-
-    @cached_property
-    def nodes_file(self):
-        return join(self.path, FILENAME_NODES)
