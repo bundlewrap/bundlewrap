@@ -31,7 +31,7 @@ class CachedPropertyTest(TestCase):
 
 class GetAttrFromFileTest(TestCase):
     """
-    Tests blockwart.utils.getattr_from_file.
+    Tests blockwart.utils.getattr_from_file and .get_all_attrs_from_file.
     """
     def setUp(self):
         self.tmpdir = mkdtemp()

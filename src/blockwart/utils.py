@@ -43,11 +43,9 @@ def get_file_contents(path):
     return content
 
 
-def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
-                      default=__GETATTR_NODEFAULT,
-                      ):
+def get_all_attrs_from_file(path, cache_read=True, cache_write=True):
     """
-    Reads a specific 'attribute' (if it were a module) from a source
+    Reads all 'attributes' (if it were a module) from a source
     file.
     """
     if path not in __GETATTR_CACHE or not cache_read:
@@ -58,6 +56,18 @@ def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
             __GETATTR_CACHE[path] = env
     else:
         env = __GETATTR_CACHE[path]
+    return env
+
+
+def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
+                      default=__GETATTR_NODEFAULT,
+                      ):
+    """
+    Reads a specific 'attribute' (if it were a module) from a source
+    file.
+    """
+    env = get_all_attrs_from_file(path, cache_read=cache_read,
+                                  cache_write=cache_write)
     if default == __GETATTR_NODEFAULT:
         return env[attrname]
     else:
