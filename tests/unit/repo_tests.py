@@ -7,6 +7,8 @@ from unittest import TestCase
 from mock import patch
 
 from blockwart import repo
+from blockwart.configitems import ConfigItem
+from blockwart.exceptions import RepositoryError
 from blockwart.node import Node
 
 
@@ -32,6 +34,41 @@ class RepoBundlesTest(RepoTest):
             tuple(r.bundle_names),
             bundles,
         )
+
+
+class RepoConfigItemClasses1Test(RepoTest):
+    """
+    Tests blockwart.repo.Repository.config_item_classes.
+    """
+    def test_no_custom(self):
+        r = repo.Repository(self.tmpdir, skip_validation=True)
+        self.assertGreater(len(r.config_item_classes), 0)
+        for cls in r.config_item_classes:
+            self.assertNotEqual(cls, ConfigItem)
+
+
+class RepoConfigItemClasses2Test(RepoTest):
+    """
+    Tests blockwart.repo.Repository.config_item_classes.
+    """
+    def test_with_custom(self):
+        r = repo.Repository(self.tmpdir, skip_validation=True)
+        ci_dir = join(self.tmpdir, "configitems")
+        mkdir(ci_dir)
+        with open(join(ci_dir, "good1.py"), 'w') as f:
+            f.write("from blockwart.configitems import ConfigItem\n"
+                    "class GoodTestItem(ConfigItem): bad = False\n")
+        with open(join(ci_dir, "_bad1.py"), 'w') as f:
+            f.write("from blockwart.configitems import ConfigItem\n"
+                    "class BadTestItem(ConfigItem): bad = True\n")
+        with open(join(ci_dir, "bad2.py"), 'w') as f:
+            f.write("from blockwart.configitems import ConfigItem\n"
+                    "class _BadTestItem(ConfigItem): bad = True\n")
+        self.assertGreater(len(r.config_item_classes), 0)
+        for cls in r.config_item_classes:
+            if hasattr(cls, 'bad'):
+                self.assertFalse(cls.bad)
+            self.assertTrue(issubclass(cls, ConfigItem))
 
 
 class RepoCreateTest(RepoTest):

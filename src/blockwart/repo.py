@@ -1,6 +1,7 @@
 from os import listdir
 from os.path import isdir, isfile, join
 
+from . import configitems
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .group import Group
 from .node import Node
@@ -84,6 +85,36 @@ class Repository(object):
             if utils.validate_name(dir_entry):
                 yield dir_entry
 
+    @utils.cached_property
+    def config_item_classes(self):
+        """
+        Looks for ConfigItem subclasses in the configitems directory
+        that ships with blockwart and the local configitems dir of this
+        specific repo.
+
+        An alternative method would involve metaclasses (as Django
+        does it), but then it gets very hard to have two separate repos
+        in the same process, because both of them would register config
+        item classes globally.
+        """
+        for path in configitems.__path__ + [self.configitems_dir]:
+            if not isdir(path):
+                continue
+            for filename in listdir(path):
+                filepath = join(path, filename)
+                if not filename.endswith(".py") or \
+                        not isfile(filepath) or \
+                        filename.startswith("_"):
+                    continue
+                for name, obj in \
+                        utils.get_all_attrs_from_file(filepath).iteritems():
+                    if obj == configitems.ConfigItem or name.startswith("_"):
+                        continue
+                    try:
+                        if issubclass(obj, configitems.ConfigItem):
+                            yield obj
+                    except TypeError:
+                        pass
 
     def create(self):
         """
