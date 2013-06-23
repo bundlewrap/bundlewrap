@@ -36,3 +36,8 @@ class ConfigItem(object):
     ITEM_TYPE_NAME = None
 
     depends_static = []
+
+    def __init__(self, bundle, name, attrs):
+        self.attrs = attrs
+        self.bundle = bundle
+        self.name = name

@@ -1,5 +1,10 @@
+from os.path import join
+
 from .exceptions import RepositoryError
-from .utils import mark_for_translation as _, validate_name
+from .utils import cached_property, get_all_attrs_from_file, validate_name
+from .utils import mark_for_translation as _
+
+FILENAME_BUNDLE = "bundle.py"
 
 
 class Bundle(object):
@@ -16,3 +21,18 @@ class Bundle(object):
 
         if not name in self.repo.bundle_names:
             raise RepositoryError(_("bundle not found: {}").format(name))
+
+        self.bundle_dir = join(self.repo.path, self.name)
+        self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
+
+    @cached_property
+    def items(self):
+        bundle_attrs = get_all_attrs_from_file(self.bundle_file)
+        for config_item_class in self.repo.config_item_classes:
+            if config_item_class.BUNDLE_ATTR_NAME not in bundle_attrs:
+                continue
+            for name, attrs in bundle_attrs.get(
+                    config_item_class.BUNDLE_ATTR_NAME,
+                    {},
+            ).iteritems():
+                yield config_item_class(self, name, attrs)
