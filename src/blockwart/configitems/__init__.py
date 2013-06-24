@@ -41,3 +41,7 @@ class ConfigItem(object):
         self.attrs = attrs
         self.bundle = bundle
         self.name = name
+
+    @property
+    def id(self):
+        return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
