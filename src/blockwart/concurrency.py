@@ -1,38 +1,84 @@
-from multiprocessing import Pool
+from multiprocessing import Process, Queue
+from Queue import Empty
+from time import sleep
 
 
-def __parallel_method_helper((obj_name, obj, methodname, args, kwargs)):
-    return {
-        obj_name: getattr(obj, methodname)(*args, **kwargs),
-    }
-
-
-def parallel_method(obj_dict, methodname, args=None, kwargs=None, workers=64):
+class Worker(object):
     """
-    This will call a method on a bunch of similar objects in parallel.
-
-        obj_dict:    a dictionary mapping any kind of identifier
-                     to the target objects
-        methodname:  name of the method that is called on objects in
-                     obj_dict
-        args:        list of positional arguments passed to method
-        kwargs:      dictionary of keyword arguments passed to method
-        workers:     amount of worker processes
-
-    Returns a dictionary mapping the identifiers from obj_dict to
-    return values of the method calls.
+    Manages a background worker process.
     """
-    if args is None:
-        args = ()
-    if kwargs is None:
-        kwargs = {}
+    def __init__(self):
+        self.started = False
 
-    runlist = []
-    for obj_name, obj in obj_dict.iteritems():
-        runlist.append((obj_name, obj, methodname, args, kwargs))
+    def _get_result(self, block=True):
+        try:
+            self._result = self.queue.get(block=block)
+            self.process.join()
+        except Empty:
+            pass
 
-    results = {}
-    p = Pool(workers)
-    for result in p.map(__parallel_method_helper, runlist):
-        results.update(result)
-    return results
+    def start_task(self, target, id=None, args=None, kwargs=None):
+        """
+        target      any callable (includes bound methods)
+        id          something to remember this worker by
+        args        list of positional arguments passed to target
+        kwargs      dictionary of keyword arguments passed to target
+        """
+        if args is None:
+            args = ()
+        if kwargs is None:
+            kwargs = {}
+        if hasattr(self, '_result'):
+            delattr(self, '_result')
+        self.id = id
+        self.queue = Queue()
+        self.process = Process(
+            target=lambda: self.queue.put(target(*args, **kwargs))
+        )
+        self.started = True
+        self.process.start()
+
+    @property
+    def is_busy(self):
+        """
+        False if self.result can be obtained directly without blocking.
+        """
+        if not self.started:
+            return False
+        self._get_result(block=False)
+        return not hasattr(self, '_result')
+
+    @property
+    def result(self):
+        if not self.started:
+            return None
+        if hasattr(self, '_result'):
+            return self._result
+        else:
+            self._get_result(block=True)
+            return self._result
+
+
+class WorkerPool(object):
+    """
+    Manages a bunch of Worker instances.
+    """
+    def __init__(self, workers=4):
+        self.workers = []
+        if workers < 1:
+            raise ValueError("at least one worker is required")
+        for i in xrange(workers):
+            self.workers.append(Worker())
+
+    def get_idle_worker(self):
+        """
+        Blocks until there is a worker available.
+
+        You will probably want to check that workers .id and .result
+        properties to get
+        """
+        while True:
+            for worker in self.workers:
+                if not worker.is_busy:
+                    return worker
+            sleep(.01)

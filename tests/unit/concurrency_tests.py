@@ -1,32 +1,91 @@
+from time import sleep
 from unittest import TestCase
 
-from blockwart.concurrency import parallel_method
+from mock import patch
+
+from blockwart.concurrency import Worker, WorkerPool
 
 
-class ParallelMethodTestHelper(object):
-    def __init__(self, id):
-        self.id = id
-
-    def example_method(self, *args, **kwargs):
-        return {'args': args, 'kwargs': kwargs, 'id': self.id}
-
-
-class ParallelMethodTest(TestCase):
+class WorkerTest(TestCase):
     """
-    Tests blockwart.concurrency.parallel_method.
+    Tests blockwart.concurrency.Worker.
     """
-    def test_usage(self):
-        obj_dict = {
-            'one': ParallelMethodTestHelper(1),
-            'two': ParallelMethodTestHelper(2),
-            'three': ParallelMethodTestHelper(3),
-        }
-        results = parallel_method(
-            obj_dict,
-            'example_method',
-            ('arg1',),
-            {'kwarg1': 'kwval1'},
-        )
-        self.assertEqual(results['one']['id'], 1)
-        self.assertEqual(results['two']['args'], ('arg1',))
-        self.assertEqual(results['three']['kwargs'], {'kwarg1': 'kwval1'})
+    def test_is_busy(self):
+        w = Worker()
+        w.start_task(sleep, args=(.01,))
+        self.assertTrue(w.is_busy)
+        sleep(.02)
+        self.assertFalse(w.is_busy)
+
+    def test_init_not_busy(self):
+        w = Worker()
+        self.assertFalse(w.is_busy)
+
+    def test_method_call(self):
+        class MyClass(object):
+            def __init__(self, state):
+                self.state = state
+
+            def mymethod(self, param):
+                return self.state + param
+
+        obj = MyClass(40)
+        w = Worker()
+        w.start_task(obj.mymethod, args=(7,))
+        self.assertEqual(w.result, 47)
+
+    def test_method_call_immutable(self):
+        class MyClass(object):
+            def __init__(self, state):
+                self.state = state
+
+            def mymethod(self, param):
+                self.state = param
+
+        obj = MyClass(47)
+        w = Worker()
+        w.start_task(obj.mymethod, args=(42,))
+        w.result  # block until done
+        self.assertEqual(obj.state, 47)
+
+    def test_result(self):
+        w = Worker()
+        w.start_task(lambda: 47)
+        sleep(.01)
+        self.assertEqual(w.result, 47)
+        self.assertEqual(w.result, 47)  # try reading again
+        w.start_task(lambda: 48)
+        sleep(.01)
+        self.assertEqual(w.result, 48)
+
+    def test_result_before_started(self):
+        w = Worker()
+        self.assertEqual(w.result, None)
+
+
+class WorkerPoolTest(TestCase):
+    """
+    Tests blockwart.concurrency.WorkerPool.
+    """
+    def test_init(self):
+        with self.assertRaises(ValueError):
+            WorkerPool(workers=0)
+        with self.assertRaises(ValueError):
+            WorkerPool(workers=-1)
+        WorkerPool(workers=1)
+
+    def test_get_idle_worker(self):
+        class MockWorker(object):
+            def __init__(self):
+                self.busy_counter = 0
+
+            @property
+            def is_busy(self):
+                self.busy_counter += 1
+                return self.busy_counter != 47
+
+        with patch('blockwart.concurrency.Worker', new=MockWorker):
+            p = WorkerPool(workers=2)
+            for i in xrange(2):
+                w = p.get_idle_worker()
+                self.assertEqual(w.busy_counter, 47)
