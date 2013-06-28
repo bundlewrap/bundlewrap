@@ -28,11 +28,11 @@ class Bundle(object):
     @cached_property
     def items(self):
         bundle_attrs = get_all_attrs_from_file(self.bundle_file)
-        for config_item_class in self.repo.config_item_classes:
-            if config_item_class.BUNDLE_ATTR_NAME not in bundle_attrs:
+        for item_class in self.repo.item_classes:
+            if item_class.BUNDLE_ATTR_NAME not in bundle_attrs:
                 continue
             for name, attrs in bundle_attrs.get(
-                    config_item_class.BUNDLE_ATTR_NAME,
+                    item_class.BUNDLE_ATTR_NAME,
                     {},
             ).iteritems():
-                yield config_item_class(self, name, attrs)
+                yield item_class(self, name, attrs)

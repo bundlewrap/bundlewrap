@@ -7,7 +7,7 @@ from unittest import TestCase
 from mock import patch
 
 from blockwart import repo
-from blockwart.configitems import ConfigItem
+from blockwart.items import Item
 from blockwart.exceptions import RepositoryError
 from blockwart.node import Node
 
@@ -36,39 +36,39 @@ class RepoBundlesTest(RepoTest):
         )
 
 
-class RepoConfigItemClasses1Test(RepoTest):
+class RepoItemClasses1Test(RepoTest):
     """
-    Tests blockwart.repo.Repository.config_item_classes.
+    Tests blockwart.repo.Repository.item_classes.
     """
     def test_no_custom(self):
         r = repo.Repository(self.tmpdir, skip_validation=True)
-        self.assertGreater(len(r.config_item_classes), 0)
-        for cls in r.config_item_classes:
-            self.assertNotEqual(cls, ConfigItem)
+        self.assertGreater(len(r.item_classes), 0)
+        for cls in r.item_classes:
+            self.assertNotEqual(cls, Item)
 
 
-class RepoConfigItemClasses2Test(RepoTest):
+class RepoItemClasses2Test(RepoTest):
     """
-    Tests blockwart.repo.Repository.config_item_classes.
+    Tests blockwart.repo.Repository.item_classes.
     """
     def test_with_custom(self):
         r = repo.Repository(self.tmpdir, skip_validation=True)
-        ci_dir = join(self.tmpdir, "configitems")
+        ci_dir = join(self.tmpdir, "items")
         mkdir(ci_dir)
         with open(join(ci_dir, "good1.py"), 'w') as f:
-            f.write("from blockwart.configitems import ConfigItem\n"
-                    "class GoodTestItem(ConfigItem): bad = False\n")
+            f.write("from blockwart.items import Item\n"
+                    "class GoodTestItem(Item): bad = False\n")
         with open(join(ci_dir, "_bad1.py"), 'w') as f:
-            f.write("from blockwart.configitems import ConfigItem\n"
-                    "class BadTestItem(ConfigItem): bad = True\n")
+            f.write("from blockwart.items import Item\n"
+                    "class BadTestItem(Item): bad = True\n")
         with open(join(ci_dir, "bad2.py"), 'w') as f:
-            f.write("from blockwart.configitems import ConfigItem\n"
-                    "class _BadTestItem(ConfigItem): bad = True\n")
-        self.assertGreater(len(r.config_item_classes), 0)
-        for cls in r.config_item_classes:
+            f.write("from blockwart.items import Item\n"
+                    "class _BadTestItem(Item): bad = True\n")
+        self.assertGreater(len(r.item_classes), 0)
+        for cls in r.item_classes:
             if hasattr(cls, 'bad'):
                 self.assertFalse(cls.bad)
-            self.assertTrue(issubclass(cls, ConfigItem))
+            self.assertTrue(issubclass(cls, Item))
 
 
 class RepoCreateTest(RepoTest):

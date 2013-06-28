@@ -2,13 +2,13 @@
 Note that modules in this package have to use absolute imports because
 Repository.config_item_classes loads them as files.
 """
-CONFIG_ITEM_CLASSES = {}
-CONFIG_ITEM_CLASSES_LOADED = False
+ITEM_CLASSES = {}
+ITEM_CLASSES_LOADED = False
 
 
-class ConfigItemStatus(object):
+class ItemStatus(object):
     """
-    Holds information on a particular ConfigItem such as whether it needs
+    Holds information on a particular Item such as whether it needs
     fixing, a description of what's wrong etc.
     """
 
@@ -25,10 +25,10 @@ class ConfigItemStatus(object):
         self.status_info = {} if status_info is None else status_info
 
     def __repr__(self):
-        return "<ConfigItemStatus correct:{}>".format(self.correct)
+        return "<ItemStatus correct:{}>".format(self.correct)
 
 
-class ConfigItem(object):
+class Item(object):
     """
     A single piece of literal config (e.g. a file, a package, a service).
     """
@@ -41,6 +41,9 @@ class ConfigItem(object):
         self.attrs = attrs
         self.bundle = bundle
         self.name = name
+
+    def __repr__(self):
+        return "<Item {}>".format(self.id)
 
     @property
     def id(self):

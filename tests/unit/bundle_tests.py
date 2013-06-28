@@ -3,7 +3,7 @@ from unittest import TestCase
 from mock import MagicMock, patch
 
 from blockwart.bundle import Bundle
-from blockwart.configitems import ConfigItem
+from blockwart.items import Item
 from blockwart.exceptions import RepositoryError
 from blockwart.utils import names
 
@@ -27,12 +27,12 @@ class ItemsTest(TestCase):
         'attr2': {'name3': {}},
     })
     def test_items(self, *args):
-        class MyConfigItem(ConfigItem):
+        class MyItem(Item):
             BUNDLE_ATTR_NAME = 'attr1'
             ITEM_TYPE_NAME = 'mystuff'
         node = MagicMock()
         node.repo = MagicMock()
         node.repo.bundle_names = ("mybundle",)
-        node.repo.config_item_classes = (MyConfigItem,)
+        node.repo.item_classes = (MyItem,)
         b = Bundle(node, "mybundle")
         self.assertEqual(set(names(b.items)), set(('name1', 'name2')))

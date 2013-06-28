@@ -1,7 +1,7 @@
 from os import listdir
 from os.path import isdir, isfile, join
 
-from . import configitems
+from . import items
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .group import Group
 from .node import Node
@@ -9,7 +9,7 @@ from . import utils
 from .utils import mark_for_translation as _
 
 DIRNAME_BUNDLES = "bundles"
-DIRNAME_ITEM_TYPES = "configitems"
+DIRNAME_ITEM_TYPES = "items"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 
@@ -54,7 +54,7 @@ class Repository(object):
         self.path = repo_path
 
         self.bundles_dir = join(self.path, DIRNAME_BUNDLES)
-        self.configitems_dir = join(self.path, DIRNAME_ITEM_TYPES)
+        self.items_dir = join(self.path, DIRNAME_ITEM_TYPES)
         self.groups_file = join(self.path, FILENAME_GROUPS)
         self.nodes_file = join(self.path, FILENAME_NODES)
 
@@ -86,18 +86,17 @@ class Repository(object):
                 yield dir_entry
 
     @utils.cached_property
-    def config_item_classes(self):
+    def item_classes(self):
         """
-        Looks for ConfigItem subclasses in the configitems directory
-        that ships with blockwart and the local configitems dir of this
-        specific repo.
+        Looks for Item subclasses in the items directory that ships with
+        blockwart and the local items dir of this specific repo.
 
         An alternative method would involve metaclasses (as Django
         does it), but then it gets very hard to have two separate repos
         in the same process, because both of them would register config
         item classes globally.
         """
-        for path in configitems.__path__ + [self.configitems_dir]:
+        for path in items.__path__ + [self.items_dir]:
             if not isdir(path):
                 continue
             for filename in listdir(path):
@@ -108,10 +107,10 @@ class Repository(object):
                     continue
                 for name, obj in \
                         utils.get_all_attrs_from_file(filepath).iteritems():
-                    if obj == configitems.ConfigItem or name.startswith("_"):
+                    if obj == items.Item or name.startswith("_"):
                         continue
                     try:
-                        if issubclass(obj, configitems.ConfigItem):
+                        if issubclass(obj, items.Item):
                             yield obj
                     except TypeError:
                         pass
