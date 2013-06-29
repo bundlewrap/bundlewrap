@@ -30,6 +30,9 @@ class Node(object):
     def __cmp__(self, other):
         return cmp(self.name, other.name)
 
+    def __repr__(self):
+        return "<Node '{}'>".format(self.name)
+
     @cached_property
     def _ssh_client(self):
         client = SSHClient()

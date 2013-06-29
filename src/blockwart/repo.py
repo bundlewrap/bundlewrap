@@ -63,6 +63,9 @@ class Repository(object):
                 _("'{}' is not a blockwart repository").format(self.path)
             )
 
+    def __repr__(self):
+        return "<Repository at '{}'>".format(self.path)
+
     @staticmethod
     def is_repo(path):
         """
