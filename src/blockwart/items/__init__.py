@@ -36,7 +36,7 @@ class ItemStatus(object):
 
 class Item(object):
     """
-    A single piece of literal config (e.g. a file, a package, a service).
+    A single piece of configuration (e.g. a file, a package, a service).
     """
     BUNDLE_ATTRIBUTE_NAME = None
     ITEM_ATTRIBUTES = {}
