@@ -55,7 +55,7 @@ class AskInteractivelyTest(TestCase):
             utils.ask_interactively("OHAI?", False, get_input=get_input),
             True,
         )
-        self.assertEqual(get_input.call_count, len(answers))
+        self.assertEqual(get_input.call_count, 4)
 
 
 class CachedPropertyTest(TestCase):
