@@ -106,7 +106,7 @@ def validate_name(name):
 def ask_interactively(question, default, get_input=raw_input):
     _ = mark_for_translation
     answers = _("[Y/n]") if default else _("[y/N]")
-    question = question + " " + answers
+    question = question + " " + answers + " "
     while True:
         answer = get_input(question)
         if answer.lower() in (_("y"), _("yes")) or (
