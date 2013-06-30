@@ -1,6 +1,6 @@
 """
 Note that modules in this package have to use absolute imports because
-Repository.config_item_classes loads them as files.
+Repository.item_classes loads them as files.
 """
 from blockwart.exceptions import BundleError
 from blockwart.utils import mark_for_translation as _
