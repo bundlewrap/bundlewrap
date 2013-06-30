@@ -5,6 +5,9 @@ Repository.item_classes loads them as files.
 from blockwart.exceptions import BundleError
 from blockwart.utils import mark_for_translation as _
 
+BUILTIN_ITEM_ATTRIBUTES = {
+    "depends": [],
+}
 ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
 
@@ -52,17 +55,28 @@ class Item(object):
 
         for attribute_name, attribute_default in \
                 self.ITEM_ATTRIBUTES.iteritems():
+            if attribute_name in BUILTIN_ITEM_ATTRIBUTES:
+                continue
             self.attributes[attribute_name] = attributes.get(
                 attribute_name,
                 attribute_default,
             )
+
+        for attribute_name, attribute_default in \
+                BUILTIN_ITEM_ATTRIBUTES.iteritems():
+            setattr(self, attribute_name, attributes.get(
+                attribute_name,
+                attribute_default,
+            ))
 
     def __repr__(self):
         return "<Item {}>".format(self.id)
 
     def _validate_attribute_names(self, attributes):
         invalid_attributes = set(attributes.keys()).difference(
-            set(self.ITEM_ATTRIBUTES.keys()),
+            set(self.ITEM_ATTRIBUTES.keys()).union(
+                set(BUILTIN_ITEM_ATTRIBUTES.keys())
+            ),
         )
         if invalid_attributes:
             raise BundleError(

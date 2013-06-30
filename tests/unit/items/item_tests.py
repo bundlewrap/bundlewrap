@@ -30,13 +30,17 @@ class InitTest(TestCase):
     def test_attribute_name_validation_ok(self):
         item = Item(MagicMock(), MagicMock(), {}, skip_validation=True)
         item.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
-        item._validate_attribute_names({'foo': 49})
+        item._validate_attribute_names({'foo': 49, 'depends': []})
 
     def test_attribute_name_validation_fail(self):
         item = Item(MagicMock(), "item1", {}, skip_validation=True)
         item.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
         with self.assertRaises(BundleError):
-            item._validate_attribute_names({'foobar': 49, 'bar': 50})
+            item._validate_attribute_names({
+                'foobar': 49,
+                'bar': 50,
+                'depends': [],
+            })
 
     def test_subclass_attributes(self):
         class MyItem(Item):
