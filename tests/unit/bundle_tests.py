@@ -28,7 +28,7 @@ class ItemsTest(TestCase):
     })
     def test_items(self, *args):
         class MyItem(Item):
-            BUNDLE_ATTR_NAME = 'attr1'
+            BUNDLE_ATTRIBUTE_NAME = 'attr1'
             ITEM_TYPE_NAME = 'mystuff'
         node = MagicMock()
         node.repo = MagicMock()

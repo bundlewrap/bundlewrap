@@ -2,6 +2,9 @@
 Note that modules in this package have to use absolute imports because
 Repository.config_item_classes loads them as files.
 """
+from blockwart.exceptions import BundleError
+from blockwart.utils import mark_for_translation as _
+
 ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
 
@@ -32,19 +35,53 @@ class Item(object):
     """
     A single piece of literal config (e.g. a file, a package, a service).
     """
-    BUNDLE_ATTR_NAME = None
+    BUNDLE_ATTRIBUTE_NAME = None
+    ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
 
     depends_static = []
 
-    def __init__(self, bundle, name, attrs):
-        self.attrs = attrs
+    def __init__(self, bundle, name, attributes, skip_validation=False):
+        self.attributes = {}
         self.bundle = bundle
         self.name = name
+
+        if not skip_validation:
+            self._validate_attribute_names(attributes)
+            self.validate_attributes(attributes)
+
+        for attribute_name, attribute_default in \
+                self.ITEM_ATTRIBUTES.iteritems():
+            self.attributes[attribute_name] = attributes.get(
+                attribute_name,
+                attribute_default,
+            )
 
     def __repr__(self):
         return "<Item {}>".format(self.id)
 
+    def _validate_attribute_names(self, attributes):
+        invalid_attributes = set(attributes.keys()).difference(
+            set(self.ITEM_ATTRIBUTES.keys()),
+        )
+        if invalid_attributes:
+            raise BundleError(
+                _("invalid attribute(s) for '{}' in bundle '{}': {}").format(
+                    self.id,
+                    self.bundle.name,
+                    ", ".join(invalid_attributes),
+                )
+            )
+
     @property
     def id(self):
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
+
+    def validate_attributes(self, attributes):
+        """
+        Raises BundleError if something is amiss with the user-specified
+        attributes.
+
+        SHOULD be overridden by subclasses.
+        """
+        pass
