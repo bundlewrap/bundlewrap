@@ -35,6 +35,16 @@ def build_parser_bw():
     parser_repo_subparsers_create.set_defaults(func=bw_repo_create)
     parser_repo_subparsers_debug = parser_repo_subparsers.add_parser("debug")
     parser_repo_subparsers_debug.set_defaults(func=bw_repo_debug)
+    parser_repo_subparsers_debug.add_argument(
+        '-n',
+        '--node',
+        default=None,
+        dest='node',
+        metavar=_("NODE"),
+        required=False,
+        type=str,
+        help=_("name of node to inspect"),
+    )
 
     # bw run
     parser_run = subparsers.add_parser("run")
