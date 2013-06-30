@@ -1,8 +1,91 @@
+from copy import copy
+
 from paramiko.client import SSHClient, WarningPolicy
 
 from .bundle import Bundle
-from .exceptions import RepositoryError
+from .exceptions import ItemDependencyError, RepositoryError
 from .utils import cached_property, mark_for_translation as _, validate_name
+
+
+def order_items(unordered_items):
+    """
+    Takes a list of items and returns them in an order that honors
+    dependencies.
+
+    Raises ItemDependencyError if there is a problem (e.g. dependency
+    loop).
+    """
+    class DummyItem(object):
+        """
+        Represents a dependency on all items of a certain type.
+        """
+        def __init__(self, item_type):
+            self.item_type = item_type
+            self._deps = []
+
+        def __repr__(self):
+            return "<DummyItem: {}>".format(self.item_type)
+
+        @property
+        def id(self):
+            return "{}:".format(self.item_type)
+
+    # first, find all types of items and add dummy deps
+    dummy_items = {}
+    for item in unordered_items:
+        # merge static and user-defined deps into a temporary attribute
+        item._deps = item.DEPENDS_STATIC + item.depends
+
+        # create dummy items that depend on each item of their type
+        item_type = item.id.split(":")[0]
+        if item_type not in dummy_items:
+            dummy_items[item_type] = DummyItem(item_type)
+        dummy_items[item_type]._deps.append(item.id)
+
+        # create DummyItem for every type
+        for dep in item._deps:
+            item_type = dep.split(":")[0]
+            if item_type not in dummy_items:
+                dummy_items[item_type] = DummyItem(item_type)
+    all_items = list(dummy_items.values()) + unordered_items
+
+    # find items without deps to start with
+    nodeps = []
+    withdeps = []
+    while all_items:
+        item = all_items.pop()
+        if item._deps:
+            withdeps.append(item)
+        else:
+            nodeps.append(item)
+
+    ordered_items = []
+
+    while nodeps:
+        item = nodeps.pop()
+        if not isinstance(item, DummyItem):
+            # item without pending deps can be added to exec order
+            # this is only done for non-dummy items
+            # dummy items are not needed beyond this point
+            ordered_items.append(item)
+
+        # loop over pending items and remove satisfied dep
+        for pending_item in copy(withdeps):
+            try:
+                pending_item._deps.remove(item.id)
+            except ValueError:
+                pass
+            if not pending_item._deps:
+                nodeps.append(pending_item)
+                withdeps.remove(pending_item)
+    if withdeps:
+        raise ItemDependencyError(
+            "Bad dependencies between these items: {}".format(
+                ", ".join([repr(i) for i in withdeps]),
+            ),
+        )
+
+    return ordered_items
 
 
 class RunResult(object):

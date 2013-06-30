@@ -39,10 +39,9 @@ class Item(object):
     A single piece of configuration (e.g. a file, a package, a service).
     """
     BUNDLE_ATTRIBUTE_NAME = None
+    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
-
-    depends_static = []
 
     def __init__(self, bundle, name, attributes, skip_validation=False):
         self.attributes = {}

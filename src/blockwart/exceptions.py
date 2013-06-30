@@ -24,3 +24,10 @@ class BundleError(RepositoryError):
     Indicates an error in a bundle.
     """
     pass
+
+
+class ItemDependencyError(RepositoryError):
+    """
+    Indicates a problem with item dependencies (e.g. loops).
+    """
+    pass
