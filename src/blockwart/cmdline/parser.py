@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 
 from .. import VERSION_STRING
 from ..utils import mark_for_translation as _
+from .apply import bw_apply
 from .nodes import bw_nodes
 from .repo import bw_repo_create, bw_repo_debug
 from .run import bw_run
@@ -18,6 +19,39 @@ def build_parser_bw():
         title=_("subcommands"),
         help=_("use 'bw <subcommand> --help' for more info"),
     )
+
+    # bw apply
+    parser_apply = subparsers.add_parser("apply")
+    parser_apply.set_defaults(func=bw_apply)
+    parser_apply.add_argument(
+        '-g',
+        '--group',
+        default=None,
+        dest='groups',
+        metavar=_("GROUP"),
+        required=False,
+        type=str,
+        help=_("name of group(s) to apply config to (separate with comma)"),
+    )
+    parser_apply.add_argument(
+        '-i',
+        '--interactive',
+        action='store_true',
+        default=False,
+        dest='interactive',
+        help=_("ask before applying each item"),
+    )
+    parser_apply.add_argument(
+        '-n',
+        '--node',
+        default=None,
+        dest='nodes',
+        metavar=_("NODE"),
+        required=False,
+        type=str,
+        help=_("name of node(s) to apply config to (separate with comma)"),
+    )
+
     # bw nodes
     parser_nodes = subparsers.add_parser("nodes")
     parser_nodes.set_defaults(func=bw_nodes)

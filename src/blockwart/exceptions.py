@@ -31,3 +31,10 @@ class ItemDependencyError(RepositoryError):
     Indicates a problem with item dependencies (e.g. loops).
     """
     pass
+
+
+class UsageException(Exception):
+    """
+    Raised when command line options don't make sense.
+    """
+    pass
