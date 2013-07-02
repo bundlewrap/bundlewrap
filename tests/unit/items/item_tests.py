@@ -6,6 +6,89 @@ from blockwart.items import Item
 from blockwart.exceptions import BundleError
 
 
+class ApplyTest(TestCase):
+    """
+    Tests blockwart.items.Item.apply.
+    """
+    def test_with_recheck(self):
+        status_before = MagicMock()
+        status_before.correct = False
+        status_before.fixable = True
+        item = Item(MagicMock(), "item1", {}, skip_validation=True)
+        item.get_status = MagicMock(return_value=status_before)
+        item.fix = MagicMock()
+        before, after = item.apply(interactive=False, recheck=True)
+        self.assertEqual(before, status_before)
+        self.assertEqual(after, status_before)
+        self.assertEqual(item.fix.call_count, 1)
+        self.assertEqual(item.get_status.call_count, 2)
+
+    def test_without_recheck(self):
+        status_before = MagicMock()
+        status_before.correct = False
+        status_before.fixable = True
+        item = Item(MagicMock(), "item1", {}, skip_validation=True)
+        item.get_status = MagicMock(return_value=status_before)
+        item.fix = MagicMock()
+        before, after = item.apply(recheck=False)
+        self.assertEqual(before, status_before)
+        self.assertEqual(after, None)
+        self.assertEqual(item.fix.call_count, 1)
+        self.assertEqual(item.get_status.call_count, 1)
+
+    @patch('blockwart.items.ask_interactively', return_value=True)
+    def test_interactive(self, ask_interactively):
+        status_before = MagicMock()
+        status_before.correct = False
+        status_before.fixable = True
+        item = Item(MagicMock(), "item1", {}, skip_validation=True)
+        item.get_status = MagicMock(return_value=status_before)
+        item.ask = MagicMock(return_value="?")
+        item.fix = MagicMock()
+        item.apply(interactive=True)
+        self.assertEqual(item.fix.call_count, 1)
+        ask_interactively.assert_called_once_with("?", True)
+
+    @patch('blockwart.items.ask_interactively', return_value=False)
+    def test_interactive_abort(self, ask_interactively):
+        status_before = MagicMock()
+        status_before.correct = False
+        status_before.fixable = True
+        item = Item(MagicMock(), "item1", {}, skip_validation=True)
+        item.get_status = MagicMock(return_value=status_before)
+        item.ask = MagicMock(return_value="?")
+        item.fix = MagicMock()
+        before, after = item.apply(interactive=True)
+        self.assertFalse(item.fix.called)
+        ask_interactively.assert_called_once_with("?", True)
+        self.assertTrue(after.aborted_interactively)
+
+    def test_correct(self):
+        status_before = MagicMock()
+        status_before.correct = True
+        item = Item(MagicMock(), "item1", {}, skip_validation=True)
+        item.get_status = MagicMock(return_value=status_before)
+        item.fix = MagicMock()
+        before, after = item.apply()
+        self.assertFalse(item.fix.called)
+        self.assertTrue(after.correct)
+        self.assertEqual(before.correct, after.correct)
+
+    def test_not_fixable(self):
+        status_before = MagicMock()
+        status_before.correct = False
+        status_before.fixable = False
+        item = Item(MagicMock(), "item1", {}, skip_validation=True)
+        item.get_status = MagicMock(return_value=status_before)
+        item.fix = MagicMock()
+        before, after = item.apply()
+        self.assertFalse(item.fix.called)
+        self.assertFalse(after.correct)
+        self.assertEqual(before.correct, after.correct)
+        self.assertFalse(after.fixable)
+        self.assertEqual(before.fixable, after.fixable)
+
+
 class InitTest(TestCase):
     """
     Tests initialization of blockwart.items.Item.

@@ -2,7 +2,10 @@
 Note that modules in this package have to use absolute imports because
 Repository.item_classes loads them as files.
 """
+from copy import copy
+
 from blockwart.exceptions import BundleError
+from blockwart.utils import ask_interactively
 from blockwart.utils import mark_for_translation as _
 
 BUILTIN_ITEM_ATTRIBUTES = {
@@ -25,6 +28,7 @@ class ItemStatus(object):
         fixable=True,
         status_info=None,
     ):
+        self.aborted_interactively = False
         self.correct = correct
         self.description = description
         self.fixable = fixable
@@ -89,6 +93,51 @@ class Item(object):
     @property
     def id(self):
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
+
+    def apply(self, interactive=False, interactive_default=True,
+              recheck=False):
+        status_before = self.get_status()
+        status_after = None
+        if status_before.correct or not status_before.fixable:
+            status_after = copy(status_before)
+        else:
+            if not interactive:
+                self.fix()
+            else:
+                if ask_interactively(self.ask(), interactive_default):
+                    self.fix()
+                else:
+                    status_after = copy(status_before)
+                    status_after.aborted_interactively = True
+            if recheck:
+                status_after = self.get_status()
+        return (status_before, status_after)
+
+    def ask(self):
+        """
+        Returns a string asking the user if this item should be
+        implemented.
+
+        MUST be overridden by subclasses.
+        """
+        raise NotImplementedError()
+
+    def fix(self):
+        """
+        This is supposed to actually implement stuff on the target node.
+
+        MUST be overridden by subclasses.
+        """
+        raise NotImplementedError()
+
+    def get_status(self):
+        """
+        Returns an ItemStatus instance describing the current status of
+        the item on the actual node. Must not be cached.
+
+        MUST be overridden by subclasses.
+        """
+        raise NotImplementedError()
 
     def validate_attributes(self, attributes):
         """
