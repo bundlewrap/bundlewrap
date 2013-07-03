@@ -4,7 +4,8 @@ from mock import MagicMock, patch
 
 from blockwart.exceptions import ItemDependencyError, RepositoryError
 from blockwart.group import Group
-from blockwart.node import Node, order_items
+from blockwart.node import Node, order_items, split_items_without_deps, \
+    remove_dep_from_items
 from blockwart.utils import names
 
 
@@ -93,6 +94,76 @@ class ItemOrderTest(TestCase):
         self.assertEqual(order_items([i2, i3, i1]), expected_result)
         self.assertEqual(order_items([i3, i1, i2]), expected_result)
         self.assertEqual(order_items([i1, i3, i2]), expected_result)
+
+
+class ItemSplitWithoutDepTest(TestCase):
+    """
+    Tests blockwart.node.split_items_without_deps.
+    """
+    def test_all_deps(self):
+        class FakeItem(object):
+            pass
+        item1 = FakeItem()
+        item1.DEPENDS_STATIC = []
+        item1.depends = ["type1:name1"]
+        item2 = FakeItem()
+        item2.DEPENDS_STATIC = ["type1:"]
+        item2.depends = ["type2:name2"]
+        item3 = FakeItem()
+        item3.DEPENDS_STATIC = ["type2:"]
+        item3.depends = []
+        items = [item1, item2, item3]
+        items, removed_items = split_items_without_deps(items)
+        self.assertEqual(removed_items, [])
+        self.assertEqual(items, [item1, item2, item3])
+
+    def test_no_deps(self):
+        class FakeItem(object):
+            pass
+        item1 = FakeItem()
+        item1.DEPENDS_STATIC = []
+        item1.depends = []
+        item2 = FakeItem()
+        item2.DEPENDS_STATIC = []
+        item2.depends = []
+        item3 = FakeItem()
+        item3.DEPENDS_STATIC = []
+        item3.depends = []
+        items = [item1, item2, item3]
+        items, removed_items = split_items_without_deps(items)
+        self.assertEqual(items, [])
+        self.assertEqual(removed_items, [item1, item2, item3])
+
+    def test_some_deps(self):
+        class FakeItem(object):
+            pass
+        item1 = FakeItem()
+        item1.DEPENDS_STATIC = []
+        item1.depends = []
+        item2 = FakeItem()
+        item2.DEPENDS_STATIC = []
+        item2.depends = []
+        item3 = FakeItem()
+        item3.DEPENDS_STATIC = ["type2:"]
+        item3.depends = []
+        items = [item1, item2, item3]
+        items, removed_items = split_items_without_deps(items)
+        self.assertEqual(removed_items, [item1, item2])
+        self.assertEqual(items, [item3])
+
+
+class ItemsRemoveDepTest(TestCase):
+    """
+    Tests blockwart.node.remove_dep_from_items.
+    """
+    def test_remove(self):
+        item1 = MagicMock()
+        item1._deps = ["foo", "bar"]
+        item2 = MagicMock()
+        item2._deps = ["foo"]
+        items = remove_dep_from_items([item1, item2], "foo")
+        self.assertEqual(items[0]._deps, ["bar"])
+        self.assertEqual(items[1]._deps, [])
 
 
 class NodeTest(TestCase):

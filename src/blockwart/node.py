@@ -88,6 +88,35 @@ def order_items(unordered_items):
     return ordered_items
 
 
+def remove_dep_from_items(items, dep):
+    """
+    Removes the given item id (dep) from the temporary list of
+    dependencies of all items in the given list.
+    """
+    for item in items:
+        try:
+            item._deps.remove(dep)
+        except ValueError:
+            pass
+    return items
+
+
+def split_items_without_deps(items):
+    """
+    Takes a list of items and extracts the ones that don't have any
+    dependencies. The extracted deps are returned as a list.
+    """
+    removed_items = []
+    for item in items:
+        if not hasattr(item, '_deps'):
+            item._deps = item.DEPENDS_STATIC + item.depends
+        if not item._deps:
+            removed_items.append(item)
+    for item in removed_items:
+        items.remove(item)
+    return (items, removed_items)
+
+
 class RunResult(object):
     def __init__(self):
         self.returncode = None
