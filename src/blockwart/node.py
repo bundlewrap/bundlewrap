@@ -1,5 +1,3 @@
-from copy import copy
-
 from paramiko.client import SSHClient, WarningPolicy
 
 from .bundle import Bundle
@@ -7,32 +5,30 @@ from .exceptions import ItemDependencyError, RepositoryError
 from .utils import cached_property, mark_for_translation as _, validate_name
 
 
-def order_items(unordered_items):
+class DummyItem(object):
     """
-    Takes a list of items and returns them in an order that honors
-    dependencies.
-
-    Raises ItemDependencyError if there is a problem (e.g. dependency
-    loop).
+    Represents a dependency on all items of a certain type.
     """
-    class DummyItem(object):
-        """
-        Represents a dependency on all items of a certain type.
-        """
-        def __init__(self, item_type):
-            self.item_type = item_type
-            self._deps = []
+    def __init__(self, item_type):
+        self.item_type = item_type
+        self._deps = []
 
-        def __repr__(self):
-            return "<DummyItem: {}>".format(self.item_type)
+    def __repr__(self):
+        return "<DummyItem: {}>".format(self.item_type)
 
-        @property
-        def id(self):
-            return "{}:".format(self.item_type)
+    @property
+    def id(self):
+        return "{}:".format(self.item_type)
 
+
+def inject_dummy_items(items):
+    """
+    Takes a list of items and adds dummy items depending on each type of
+    item in the list. Returns the appended list.
+    """
     # first, find all types of items and add dummy deps
     dummy_items = {}
-    for item in unordered_items:
+    for item in items:
         # merge static and user-defined deps into a temporary attribute
         item._deps = item.DEPENDS_STATIC + item.depends
 
@@ -47,17 +43,35 @@ def order_items(unordered_items):
             item_type = dep.split(":")[0]
             if item_type not in dummy_items:
                 dummy_items[item_type] = DummyItem(item_type)
-    all_items = list(dummy_items.values()) + unordered_items
+    return list(dummy_items.values()) + items
+
+
+def split_items_without_deps(items):
+    """
+    Takes a list of items and extracts the ones that don't have any
+    dependencies. The extracted deps are returned as a list.
+    """
+    removed_items = []
+    for item in items:
+        if not item._deps:
+            removed_items.append(item)
+    for item in removed_items:
+        items.remove(item)
+    return (items, removed_items)
+
+
+def order_items(unordered_items):
+    """
+    Takes a list of items and returns them in an order that honors
+    dependencies.
+
+    Raises ItemDependencyError if there is a problem (e.g. dependency
+    loop).
+    """
+    unordered_items = inject_dummy_items(unordered_items)
 
     # find items without deps to start with
-    nodeps = []
-    withdeps = []
-    while all_items:
-        item = all_items.pop()
-        if item._deps:
-            withdeps.append(item)
-        else:
-            nodeps.append(item)
+    withdeps, nodeps = split_items_without_deps(unordered_items)
 
     ordered_items = []
 
@@ -69,18 +83,15 @@ def order_items(unordered_items):
             # dummy items are not needed beyond this point
             ordered_items.append(item)
 
-        # loop over pending items and remove satisfied dep
-        for pending_item in copy(withdeps):
-            try:
-                pending_item._deps.remove(item.id)
-            except ValueError:
-                pass
-            if not pending_item._deps:
-                nodeps.append(pending_item)
-                withdeps.remove(pending_item)
+        # consider this item a satisfied dependency
+        withdeps = remove_dep_from_items(withdeps, item.id)
+        # update lists of items with and without deps
+        withdeps, nodeps_new = split_items_without_deps(withdeps)
+        nodeps += nodeps_new
+
     if withdeps:
         raise ItemDependencyError(
-            "Bad dependencies between these items: {}".format(
+            _("bad dependencies between these items: {}").format(
                 ", ".join([repr(i) for i in withdeps]),
             ),
         )
@@ -99,22 +110,6 @@ def remove_dep_from_items(items, dep):
         except ValueError:
             pass
     return items
-
-
-def split_items_without_deps(items):
-    """
-    Takes a list of items and extracts the ones that don't have any
-    dependencies. The extracted deps are returned as a list.
-    """
-    removed_items = []
-    for item in items:
-        if not hasattr(item, '_deps'):
-            item._deps = item.DEPENDS_STATIC + item.depends
-        if not item._deps:
-            removed_items.append(item)
-    for item in removed_items:
-        items.remove(item)
-    return (items, removed_items)
 
 
 class RunResult(object):

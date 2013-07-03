@@ -4,8 +4,8 @@ from mock import MagicMock, patch
 
 from blockwart.exceptions import ItemDependencyError, RepositoryError
 from blockwart.group import Group
-from blockwart.node import Node, order_items, split_items_without_deps, \
-    remove_dep_from_items
+from blockwart.node import DummyItem, Node, inject_dummy_items, order_items, \
+    split_items_without_deps, remove_dep_from_items
 from blockwart.utils import names
 
 
@@ -17,6 +17,43 @@ class InitTest(TestCase):
     def test_bad_bundle_name(self, *args):
         with self.assertRaises(RepositoryError):
             Node(MagicMock(), "name")
+
+
+class InjectDummyItemsTest(TestCase):
+    """
+    Tests blockwart.node.inject_dummy_items.
+    """
+    def test_item_injection(self):
+        class FakeItem(object):
+            pass
+        item1 = FakeItem()
+        item1.DEPENDS_STATIC = []
+        item1.depends = []
+        item1.id = "type1:name1"
+        item2 = FakeItem()
+        item2.DEPENDS_STATIC = []
+        item2.depends = []
+        item2.id = "type1:name2"
+        item3 = FakeItem()
+        item3.DEPENDS_STATIC = []
+        item3.depends = []
+        item3.id = "type2:name1"
+        item4 = FakeItem()
+        item4.DEPENDS_STATIC = []
+        item4.depends = []
+        item4.id = "type3:name1"
+        items = [item1, item2, item3, item4]
+        injected = inject_dummy_items(items)
+        dummy_counter = 0
+        for item in injected:
+            self.assertTrue(hasattr(item, '_deps'))
+            if isinstance(item, DummyItem):
+                self.assertTrue(len(item._deps) > 0)
+                dummy_counter += 1
+                for dep in item._deps:
+                    self.assertTrue(dep.startswith(item.id))
+        self.assertEqual(len(injected), 7)
+        self.assertEqual(dummy_counter, 3)
 
 
 class ItemOrderTest(TestCase):
@@ -104,14 +141,11 @@ class ItemSplitWithoutDepTest(TestCase):
         class FakeItem(object):
             pass
         item1 = FakeItem()
-        item1.DEPENDS_STATIC = []
-        item1.depends = ["type1:name1"]
+        item1._deps = ["type1:name1"]
         item2 = FakeItem()
-        item2.DEPENDS_STATIC = ["type1:"]
-        item2.depends = ["type2:name2"]
+        item2._deps = ["type1:", "type2:name2"]
         item3 = FakeItem()
-        item3.DEPENDS_STATIC = ["type2:"]
-        item3.depends = []
+        item3._deps = ["type2:"]
         items = [item1, item2, item3]
         items, removed_items = split_items_without_deps(items)
         self.assertEqual(removed_items, [])
@@ -121,14 +155,11 @@ class ItemSplitWithoutDepTest(TestCase):
         class FakeItem(object):
             pass
         item1 = FakeItem()
-        item1.DEPENDS_STATIC = []
-        item1.depends = []
+        item1._deps = []
         item2 = FakeItem()
-        item2.DEPENDS_STATIC = []
-        item2.depends = []
+        item2._deps = []
         item3 = FakeItem()
-        item3.DEPENDS_STATIC = []
-        item3.depends = []
+        item3._deps = []
         items = [item1, item2, item3]
         items, removed_items = split_items_without_deps(items)
         self.assertEqual(items, [])
@@ -138,14 +169,11 @@ class ItemSplitWithoutDepTest(TestCase):
         class FakeItem(object):
             pass
         item1 = FakeItem()
-        item1.DEPENDS_STATIC = []
-        item1.depends = []
+        item1._deps = []
         item2 = FakeItem()
-        item2.DEPENDS_STATIC = []
-        item2.depends = []
+        item2._deps = []
         item3 = FakeItem()
-        item3.DEPENDS_STATIC = ["type2:"]
-        item3.depends = []
+        item3._deps = ["type2:"]
         items = [item1, item2, item3]
         items, removed_items = split_items_without_deps(items)
         self.assertEqual(removed_items, [item1, item2])
