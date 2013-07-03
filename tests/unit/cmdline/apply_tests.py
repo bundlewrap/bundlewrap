@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mock import MagicMock
+from mock import MagicMock, patch
 
 from blockwart.cmdline.apply import _get_target_list, bw_apply
 from blockwart.exceptions import UsageException
@@ -11,7 +11,16 @@ class ApplyTest(TestCase):
     """
     Tests blockwart.cmdline.apply.bw_apply.
     """
-    pass
+    @patch('blockwart.cmdline.apply._get_target_list')
+    def test_interactive(self, _get_target_list):
+        node1 = MagicMock()
+        node2 = MagicMock()
+        _get_target_list.return_value = (node1, node2)
+        args = MagicMock()
+        args.interactive = True
+        bw_apply(MagicMock(), args)
+        node1.apply.assert_called_once_with(interactive=True)
+        node2.apply.assert_called_once_with(interactive=True)
 
 
 class GetTargetListTest(TestCase):
