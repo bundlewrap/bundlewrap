@@ -36,6 +36,12 @@ class Worker(object):
             pass
 
     def reap(self):
+        """
+        Block until the result of this worker can be returned.
+
+        The worker is then reset, reap() cannot be called again until
+        another task has been started.
+        """
         while not self.is_reapable:
             sleep(.01)
         r = self._result
@@ -99,10 +105,8 @@ class WorkerPool(object):
 
     def get_idle_worker(self, block=True):
         """
-        Blocks until there is a worker available.
-
-        You will probably want to check that workers .id and .result
-        properties to get
+        Returns an idle worker. If block is True, this will block until
+        there is a worker available. Otherwise, None will be returned.
         """
         while True:
             for worker in self.workers:
@@ -113,6 +117,10 @@ class WorkerPool(object):
             sleep(.01)
 
     def get_reapable_worker(self):
+        """
+        Return a worker that can be .reap()ed. None if no worker is
+        ready.
+        """
         for worker in self.workers:
             if worker.is_reapable:
                 return worker
