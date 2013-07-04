@@ -3,6 +3,10 @@ from Queue import Empty
 from time import sleep
 
 
+def _queue_helper(queue, target, args, kwargs):
+    queue.put(target(*args, **kwargs))
+
+
 class Worker(object):
     """
     Manages a background worker process.
@@ -10,12 +14,49 @@ class Worker(object):
     def __init__(self):
         self.started = False
 
+    @property
+    def is_busy(self):
+        """
+        False if self.result can be obtained directly without blocking.
+        """
+        return self.started and not self.is_reapable
+
+    @property
+    def is_reapable(self):
+        self._get_result(block=False)
+        return hasattr(self, '_result')
+
+    @property
+    def result(self):
+        if not self.started:
+            return None
+        if hasattr(self, '_result'):
+            return self._result
+        else:
+            self._get_result(block=True)
+            return self._result
+
     def _get_result(self, block=True):
+        if not self.started:
+            return
         try:
             self._result = self.queue.get(block=block)
             self.process.join()
         except Empty:
             pass
+
+    def reap(self):
+        while not self.is_reapable:
+            sleep(.01)
+        r = self._result
+        self.reset()
+        return r
+
+    def reset(self):
+        self.id = None
+        self.started = False
+        if hasattr(self, '_result'):
+            delattr(self, '_result')
 
     def start_task(self, target, id=None, args=None, kwargs=None):
         """
@@ -28,35 +69,15 @@ class Worker(object):
             args = ()
         if kwargs is None:
             kwargs = {}
-        if hasattr(self, '_result'):
-            delattr(self, '_result')
+
         self.id = id
         self.queue = Queue()
         self.process = Process(
-            target=lambda: self.queue.put(target(*args, **kwargs))
+            target=_queue_helper,
+            args=(self.queue, target, args, kwargs),
         )
         self.started = True
         self.process.start()
-
-    @property
-    def is_busy(self):
-        """
-        False if self.result can be obtained directly without blocking.
-        """
-        if not self.started:
-            return False
-        self._get_result(block=False)
-        return not hasattr(self, '_result')
-
-    @property
-    def result(self):
-        if not self.started:
-            return None
-        if hasattr(self, '_result'):
-            return self._result
-        else:
-            self._get_result(block=True)
-            return self._result
 
 
 class WorkerPool(object):
@@ -70,7 +91,23 @@ class WorkerPool(object):
         for i in xrange(workers):
             self.workers.append(Worker())
 
-    def get_idle_worker(self):
+    @property
+    def busy_count(self):
+        count = 0
+        for worker in self.workers:
+            if worker.is_busy:
+                count += 1
+        return count
+
+    @property
+    def reapable_count(self):
+        count = 0
+        for worker in self.workers:
+            if worker.is_reapable:
+                count += 1
+        return count
+
+    def get_idle_worker(self, block=True):
         """
         Blocks until there is a worker available.
 
@@ -79,6 +116,14 @@ class WorkerPool(object):
         """
         while True:
             for worker in self.workers:
-                if not worker.is_busy:
+                if not worker.is_busy and not worker.is_reapable:
                     return worker
+            if not block:
+                return None
             sleep(.01)
+
+    def get_reapable_worker(self):
+        for worker in self.workers:
+            if worker.is_reapable:
+                return worker
+        return None

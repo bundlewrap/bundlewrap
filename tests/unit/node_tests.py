@@ -4,9 +4,53 @@ from mock import MagicMock, patch
 
 from blockwart.exceptions import ItemDependencyError, RepositoryError
 from blockwart.group import Group
-from blockwart.node import DummyItem, Node, inject_dummy_items, order_items, \
-    split_items_without_deps, remove_dep_from_items
+from blockwart.node import *
 from blockwart.utils import names
+
+
+class ApplyItemsParallellyTest(TestCase):
+    """
+    Tests blockwart.node.apply_items_parallelly.
+    """
+    def test_apply_dep_loop(self):
+        item1 = MagicMock()
+        item1.id = "type1:name1"
+        item1._deps = ["type1:name2"]
+        item2 = MagicMock()
+        item2.id = "type1:name2"
+        item2._deps = ["type1:name1"]
+        with self.assertRaises(ItemDependencyError):
+            list(apply_items_parallelly([item1, item2], 2))
+
+    def test_apply(self):
+        item1 = MagicMock()
+        item1.id = "type1:name1"
+        item1._deps = ["type1:name2"]
+        item1.apply.return_value = 1
+        item2 = MagicMock()
+        item2.id = "type1:name2"
+        item2._deps = []
+        item2.apply.return_value = 2
+        self.assertEqual(
+            list(apply_items_parallelly([item1, item2], 2)),
+            [2, 1],
+        )
+
+
+class ApplyItemsSeriallyTest(TestCase):
+    """
+    Tests blockwart.node.apply_items_serially.
+    """
+    @patch('blockwart.node.order_items')
+    def test_apply(self, order_items):
+        item1 = MagicMock()
+        item1.apply.return_value = 1
+        item2 = MagicMock()
+        item2.apply.return_value = 2
+        order_items.return_value = [item1, item2]
+        self.assertEqual(list(apply_items_serially([item2, item1])), [1, 2])
+        item1.apply.assert_called_once_with(interactive=True)
+        item2.apply.assert_called_once_with(interactive=True)
 
 
 class InitTest(TestCase):

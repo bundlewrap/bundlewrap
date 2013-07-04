@@ -51,12 +51,9 @@ class WorkerTest(TestCase):
     def test_result(self):
         w = Worker()
         w.start_task(lambda: 47)
-        sleep(.01)
-        self.assertEqual(w.result, 47)
-        self.assertEqual(w.result, 47)  # try reading again
+        self.assertEqual(w.reap(), 47)
         w.start_task(lambda: 48)
-        sleep(.01)
-        self.assertEqual(w.result, 48)
+        self.assertEqual(w.reap(), 48)
 
     def test_result_before_started(self):
         w = Worker()
@@ -78,6 +75,8 @@ class WorkerPoolTest(TestCase):
         class MockWorker(object):
             def __init__(self):
                 self.busy_counter = 0
+                self.is_reapable = False
+                self.result = None
 
             @property
             def is_busy(self):
