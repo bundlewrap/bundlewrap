@@ -46,6 +46,7 @@ def apply_items_parallelly(items, workers):
                 break
             item = items_without_deps.pop()
             worker.start_task(item.apply, id=item.id)
+
         while workers.reapable_count > 0:
             # 2
             worker = workers.get_reapable_worker()
@@ -62,6 +63,7 @@ def apply_items_parallelly(items, workers):
                     )
                 )
             yield result
+
         if (
             workers.busy_count > 0 and
             not items_without_deps and
