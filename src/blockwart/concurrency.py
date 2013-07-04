@@ -26,16 +26,6 @@ class Worker(object):
         self._get_result(block=False)
         return hasattr(self, '_result')
 
-    @property
-    def result(self):
-        if not self.started:
-            return None
-        if hasattr(self, '_result'):
-            return self._result
-        else:
-            self._get_result(block=True)
-            return self._result
-
     def _get_result(self, block=True):
         if not self.started:
             return

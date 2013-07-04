@@ -32,7 +32,7 @@ class WorkerTest(TestCase):
         obj = MyClass(40)
         w = Worker()
         w.start_task(obj.mymethod, args=(7,))
-        self.assertEqual(w.result, 47)
+        self.assertEqual(w.reap(), 47)
 
     def test_method_call_immutable(self):
         class MyClass(object):
@@ -45,7 +45,7 @@ class WorkerTest(TestCase):
         obj = MyClass(47)
         w = Worker()
         w.start_task(obj.mymethod, args=(42,))
-        w.result  # block until done
+        w.reap()
         self.assertEqual(obj.state, 47)
 
     def test_result(self):
@@ -54,10 +54,6 @@ class WorkerTest(TestCase):
         self.assertEqual(w.reap(), 47)
         w.start_task(lambda: 48)
         self.assertEqual(w.reap(), 48)
-
-    def test_result_before_started(self):
-        w = Worker()
-        self.assertEqual(w.result, None)
 
 
 class WorkerPoolTest(TestCase):
