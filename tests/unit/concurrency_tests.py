@@ -4,12 +4,22 @@ from unittest import TestCase
 from mock import patch
 
 from blockwart.concurrency import Worker, WorkerPool
+from blockwart.exceptions import WorkerException
 
 
 class WorkerTest(TestCase):
     """
     Tests blockwart.concurrency.Worker.
     """
+    def test_exception(self):
+        def myfunc():
+            raise Exception()
+
+        w = Worker()
+        w.start_task(myfunc)
+        with self.assertRaises(WorkerException):
+            w.reap()
+
     def test_generator(self):
         def myfunc():
             return xrange(47)

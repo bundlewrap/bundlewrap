@@ -1,10 +1,20 @@
 from multiprocessing import Process, Queue
 from Queue import Empty
+from sys import exc_info
 from time import sleep
+from traceback import format_exception
+
+from .exceptions import WorkerException
 
 
 def _queue_helper(queue, target, args, kwargs):
-    queue.put(target(*args, **kwargs))
+    try:
+        result = target(*args, **kwargs)
+    except Exception as e:
+        traceback = "".join(format_exception(*exc_info()))
+        result = (e, traceback)
+    finally:
+        queue.put(result)
 
 
 class Worker(object):
@@ -32,6 +42,14 @@ class Worker(object):
         try:
             self._result = self.queue.get(block=block)
             self.process.join()
+            if (
+                isinstance(self._result, tuple) and
+                len(self._result) == 2 and
+                isinstance(self._result[0], Exception)
+            ):
+                # check for exception in child process and raise it
+                # here in the parent
+                raise WorkerException(self._result[0], self._result[1])
         except Empty:
             pass
 
