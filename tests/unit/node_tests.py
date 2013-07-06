@@ -4,53 +4,112 @@ from mock import MagicMock, patch
 
 from blockwart.exceptions import ItemDependencyError, RepositoryError
 from blockwart.group import Group
+from blockwart.items import Item
 from blockwart.node import *
 from blockwart.utils import names
 
 
-class ApplyItemsParallellyTest(TestCase):
-    """
-    Tests blockwart.node.apply_items_parallelly.
-    """
-    def test_apply_dep_loop(self):
-        item1 = MagicMock()
-        item1.id = "type1:name1"
-        item1._deps = ["type1:name2"]
-        item2 = MagicMock()
-        item2.id = "type1:name2"
-        item2._deps = ["type1:name1"]
-        with self.assertRaises(ItemDependencyError):
-            list(apply_items_parallelly([item1, item2], 2))
+class MockItem(Item):
+    def __init__(self, itype, name, deps_static, deps):
+        self.ITEM_TYPE_NAME = itype
+        self.DEPENDS_STATIC = deps_static
+        super(MockItem, self).__init__(None, name, {'depends': deps})
 
-    def test_apply(self):
-        item1 = MagicMock()
-        item1.id = "type1:name1"
-        item1._deps = ["type1:name2"]
-        item1.apply.return_value = 1
-        item2 = MagicMock()
-        item2.id = "type1:name2"
-        item2._deps = []
-        item2.apply.return_value = 2
+    def apply(self, *args, **kwargs):
+        return self.name
+
+
+class ApplyItemsTest(TestCase):
+    """
+    Tests blockwart.node.apply_items.
+    """
+    def test_self_loop(self):
+        i1 = MockItem("type1", "name1", [], ["type1:name1"])
+        i2 = MockItem("type1", "name2", [], [])
+        with self.assertRaises(ItemDependencyError):
+            list(apply_items([i1, i2]))
+
+    def test_direct_loop(self):
+        i1 = MagicMock()
+        i1.id = "type1:name1"
+        i1._deps = ["type1:name2"]
+        i2 = MagicMock()
+        i2.id = "type1:name2"
+        i2._deps = ["type1:name1"]
+        with self.assertRaises(ItemDependencyError):
+            list(apply_items([i1, i2]))
+
+    def test_nested_loop(self):
+        i1 = MagicMock()
+        i1.id = "type1:name1"
+        i1._deps = ["type1:name2"]
+        i2 = MagicMock()
+        i2.id = "type1:name2"
+        i2._deps = ["type1:name3"]
+        i3 = MagicMock()
+        i3.id = "type1:name3"
+        i3._deps = ["type1:name4"]
+        i4 = MagicMock()
+        i4.id = "type1:name4"
+        i4._deps = ["type1:name1"]
+        with self.assertRaises(ItemDependencyError):
+            list(apply_items([i1, i2, i3, i4]))
+
+    def test_implicit_loop(self):
+        i1 = MagicMock()
+        i1.id = "type1:name1"
+        i1._deps = ["type1:name2"]
+        i2 = MagicMock()
+        i2.id = "type1:name2"
+        i2._deps = ["type1:"]
+        with self.assertRaises(ItemDependencyError):
+            list(apply_items([i1, i2]))
+
+    def test_simple_order(self):
+        i1 = MockItem("type1", "name1", [], ["type1:name2"])
+        i2 = MockItem("type1", "name2", [], ["type1:name3"])
+        i3 = MockItem("type1", "name3", [], [])
+        expected_result = ["name3", "name2", "name1"]
+        self.assertEqual(list(apply_items([i1, i2, i3])), expected_result)
+        self.assertEqual(list(apply_items([i2, i1, i3])), expected_result)
+        self.assertEqual(list(apply_items([i3, i2, i1])), expected_result)
+        self.assertEqual(list(apply_items([i2, i3, i1])), expected_result)
+        self.assertEqual(list(apply_items([i3, i1, i2])), expected_result)
+        self.assertEqual(list(apply_items([i1, i3, i2])), expected_result)
+
+    def test_implicit_order(self):
+        i1 = MockItem("type1", "name1", [], ["type1:name2"])
+        i2 = MockItem("type1", "name2", [], [])
+        i3 = MockItem("type2", "name3", ["type1:"], [])
+
+        expected_result = ["name2", "name1", "name3"]
+        self.assertEqual(list(apply_items([i1, i2, i3])), expected_result)
+        self.assertEqual(list(apply_items([i2, i1, i3])), expected_result)
+        self.assertEqual(list(apply_items([i3, i2, i1])), expected_result)
+        self.assertEqual(list(apply_items([i2, i3, i1])), expected_result)
+        self.assertEqual(list(apply_items([i3, i1, i2])), expected_result)
+        self.assertEqual(list(apply_items([i1, i3, i2])), expected_result)
+
+    def test_apply_parallel(self):
+        i1 = MockItem("type1", "name1", [], ["type1:name2"])
+        i2 = MockItem("type1", "name2", [], ["type1:name3"])
+        i3 = MockItem("type1", "name3", [], [])
         self.assertEqual(
-            list(apply_items_parallelly([item1, item2], 2)),
-            [2, 1],
+            list(apply_items([i1, i2, i3], workers=2)),
+            ["name3", "name2", "name1"],
         )
 
-
-class ApplyItemsSeriallyTest(TestCase):
-    """
-    Tests blockwart.node.apply_items_serially.
-    """
-    @patch('blockwart.node.order_items')
-    def test_apply(self, order_items):
-        item1 = MagicMock()
-        item1.apply.return_value = 1
-        item2 = MagicMock()
-        item2.apply.return_value = 2
-        order_items.return_value = [item1, item2]
-        self.assertEqual(list(apply_items_serially([item2, item1])), [1, 2])
-        item1.apply.assert_called_once_with(interactive=True)
-        item2.apply.assert_called_once_with(interactive=True)
+    def test_apply_interactive(self):
+        i1 = MockItem("type1", "name1", [], ["type1:name2"])
+        i1.apply = MagicMock(return_value="name1")
+        i2 = MockItem("type1", "name2", [], ["type1:name3"])
+        i2.apply = MagicMock(return_value="name2")
+        i3 = MockItem("type1", "name3", [], [])
+        i3.apply = MagicMock(return_value="name3")
+        self.assertEqual(
+            list(apply_items([i1, i2, i3], interactive=True)),
+            ["name3", "name2", "name1"],
+        )
 
 
 class InitTest(TestCase):
@@ -104,77 +163,14 @@ class ItemOrderTest(TestCase):
     """
     Tests blockwart.node.order_items.
     """
-    class FakeItem(object):
+    class FakeItem1(Item):
         DEPENDS_STATIC = []
+        ITEM_TYPE_NAME = "type1"
 
-        def __init__(self, type_name, name):
-            self.ITEM_TYPE_NAME = type_name
-            self.name = name
-            self.id = "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
-            self.depends = []
+        def apply(self, *args, **kwargs):
+            return self.name
 
-    def test_self_loop(self):
-        i1 = self.FakeItem("type1", "name1")
-        i1.depends = ["type1:name1"]
-        i2 = self.FakeItem("type1", "name2")
-        with self.assertRaises(ItemDependencyError):
-            order_items([i1, i2])
 
-    def test_direct_loop(self):
-        i1 = self.FakeItem("type1", "name1")
-        i1.depends = ["type1:name2"]
-        i2 = self.FakeItem("type1", "name2")
-        i2.depends = ["type1:name1"]
-        with self.assertRaises(ItemDependencyError):
-            order_items([i1, i2])
-
-    def test_nested_loop(self):
-        i1 = self.FakeItem("type1", "name1")
-        i1.depends = ["type1:name2"]
-        i2 = self.FakeItem("type1", "name2")
-        i2.depends = ["type1:name3"]
-        i3 = self.FakeItem("type1", "name3")
-        i3.depends = ["type1:name4"]
-        i4 = self.FakeItem("type1", "name4")
-        i4.depends = ["type1:name1"]
-        with self.assertRaises(ItemDependencyError):
-            order_items([i1, i2, i3, i4])
-
-    def test_implicit_loop(self):
-        i1 = self.FakeItem("type1", "name1")
-        i1.depends = ["type2:name2"]
-        i2 = self.FakeItem("type2", "name2")
-        i2.DEPENDS_STATIC = ["type1:"]
-        with self.assertRaises(ItemDependencyError):
-            order_items([i1, i2])
-
-    def test_simple_order(self):
-        i1 = self.FakeItem("type1", "name1")
-        i1.depends = ["type1:name2"]
-        i2 = self.FakeItem("type1", "name2")
-        i2.depends = ["type1:name3"]
-        i3 = self.FakeItem("type1", "name3")
-        expected_result = [i3, i2, i1]
-        self.assertEqual(order_items([i1, i2, i3]), expected_result)
-        self.assertEqual(order_items([i2, i1, i3]), expected_result)
-        self.assertEqual(order_items([i3, i2, i1]), expected_result)
-        self.assertEqual(order_items([i2, i3, i1]), expected_result)
-        self.assertEqual(order_items([i3, i1, i2]), expected_result)
-        self.assertEqual(order_items([i1, i3, i2]), expected_result)
-
-    def test_implicit_order(self):
-        i1 = self.FakeItem("type1", "name1")
-        i1.depends = ["type1:name2"]
-        i2 = self.FakeItem("type1", "name2")
-        i3 = self.FakeItem("type2", "name1")
-        i3.DEPENDS_STATIC = ["type1:"]
-        expected_result = [i2, i1, i3]
-        self.assertEqual(order_items([i1, i2, i3]), expected_result)
-        self.assertEqual(order_items([i2, i1, i3]), expected_result)
-        self.assertEqual(order_items([i3, i2, i1]), expected_result)
-        self.assertEqual(order_items([i2, i3, i1]), expected_result)
-        self.assertEqual(order_items([i3, i1, i2]), expected_result)
-        self.assertEqual(order_items([i1, i3, i2]), expected_result)
 
 
 class ItemSplitWithoutDepTest(TestCase):
