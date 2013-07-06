@@ -10,6 +10,15 @@ class WorkerTest(TestCase):
     """
     Tests blockwart.concurrency.Worker.
     """
+    def test_generator(self):
+        def myfunc():
+            return xrange(47)
+
+        w = Worker()
+        w.start_task(myfunc)
+        r = w.reap()
+        self.assertEqual(list(xrange(47)), list(r))
+
     def test_is_busy(self):
         w = Worker()
         w.start_task(sleep, args=(.01,))
