@@ -114,7 +114,7 @@ class WorkerPool(object):
                     return worker
             if not block:
                 return None
-            sleep(.01)
+            self.wait()
 
     def get_reapable_worker(self):
         """
@@ -125,3 +125,9 @@ class WorkerPool(object):
             if worker.is_reapable:
                 return worker
         return None
+
+    def wait(self, amount=0.01):
+        """
+        Just a convenience wrapper around time.sleep.
+        """
+        sleep(amount)
