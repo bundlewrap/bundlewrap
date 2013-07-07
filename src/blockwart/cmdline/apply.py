@@ -22,11 +22,23 @@ def _get_target_list(repo, groups, nodes):
     return target_nodes
 
 
+def format_node_result(args, node_name, result):
+    return ("{}: {} correct, {} fixed, {} aborted, {} unfixable, "
+            "{} failed".format(
+                node_name,
+                result.correct,
+                result.fixed,
+                result.aborted,
+                result.unfixable,
+                result.failed,
+            ))
+
+
 def bw_apply(repo, args):
     target_nodes = _get_target_list(repo, args.groups, args.nodes)
     worker_count = 1 if args.interactive else args.node_workers
     workers = WorkerPool(workers=worker_count)
-
+    results = {}
     while target_nodes or workers.busy_count > 0 or workers.reapable_count > 0:
         while target_nodes:
             worker = workers.get_idle_worker(block=False)
@@ -42,8 +54,8 @@ def bw_apply(repo, args):
         while workers.reapable_count > 0:
             worker = workers.get_reapable_worker()
             node_name = worker.id
-            result = worker.reap()
-            print("{}: {}".format(node_name, result))
+            results[node_name] = worker.reap()
+            print(format_node_result(args, node_name, results[node_name]))
         if (
             workers.busy_count > 0 and
             not target_nodes and
