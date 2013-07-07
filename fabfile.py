@@ -69,8 +69,7 @@ def run_tests(coverage=True):
         if coverage:
             local(
                 "nosetests "
-                "--with-cov --cov blockwart --cov-config .coveragerc "
-                "2>&1 | grep -v 'No data was collected.'"
+                "--with-cov --cov blockwart --cov-config .coveragerc 2>&1"
             )
             local("coverage combine")
         else:
