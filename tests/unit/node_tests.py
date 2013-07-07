@@ -308,6 +308,16 @@ class NodeTest(TestCase):
     """
     Tests blockwart.node.Node.
     """
+    @patch('blockwart.node.ApplyResult')
+    @patch('blockwart.node.apply_items')
+    def test_apply(self, apply_items, ApplyResult):
+        n = Node(None, "node1", {})
+        result = MagicMock()
+        ApplyResult.return_value = result
+        self.assertEqual(n.apply(), result)
+        self.assertEqual(apply_items.call_count, 1)
+        ApplyResult.assert_called_once()
+
     def test_bundles(self):
         repo = MagicMock()
         repo.bundle_names = ("bundle1", "bundle2", "bundle3")
