@@ -6,6 +6,36 @@ from .exceptions import ItemDependencyError, RepositoryError
 from .utils import cached_property, mark_for_translation as _, validate_name
 
 
+class ApplyResult(object):
+    """
+    Holds information about an apply run for a node.
+    """
+    def __init__(self, node, item_results):
+        self.node = node
+        self.correct = 0
+        self.fixed = 0
+        self.aborted = 0
+        self.unfixable = 0
+        self.failed = 0
+        for before, after in item_results:
+            if before.correct and after.correct:
+                self.correct += 1
+            elif after.aborted:
+                self.aborted += 1
+            elif not before.fixable or not after.fixable:
+                self.unfixable += 1
+            elif not before.correct and after.correct:
+                self.fixed += 1
+            elif not before.correct and not after.correct:
+                self.failed += 1
+            else:
+                raise RuntimeError(_(
+                    "can't make sense of item results for node '{}'\n"
+                    "before: {}\n"
+                    "after: {}"
+                ).format(self.node.name, before, after))
+
+
 class DummyItem(object):
     """
     Represents a dependency on all items of a certain type.
@@ -194,13 +224,12 @@ class Node(object):
 
     def apply(self, interactive=False, workers=4):
         worker_count = 1 if interactive else workers
-        results = apply_items(
+        item_results = apply_items(
             self.items,
             workers=worker_count,
             interactive=interactive,
         )
-        for result in results:
-            print(result)
+        return ApplyResult(self, item_results)
 
     def run(self, command, sudo=True):
         chan = self._ssh_client.get_transport().open_session()

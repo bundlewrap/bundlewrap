@@ -4,7 +4,7 @@ from mock import MagicMock, patch
 
 from blockwart.exceptions import ItemDependencyError, RepositoryError
 from blockwart.group import Group
-from blockwart.items import Item
+from blockwart.items import Item, ItemStatus
 from blockwart.node import *
 from blockwart.utils import names
 
@@ -110,6 +110,76 @@ class ApplyItemsTest(TestCase):
             list(apply_items([i1, i2, i3], interactive=True)),
             ["name3", "name2", "name1"],
         )
+
+
+class ApplyResultTest(TestCase):
+    """
+    Tests blockwart.node.ApplyResult.
+    """
+    def test_correct(self):
+        input_results = (
+            (ItemStatus(correct=True), ItemStatus(correct=True)),
+        )
+        output_result = ApplyResult(None, input_results)
+        self.assertEqual(output_result.correct, 1)
+        self.assertEqual(output_result.fixed, 0)
+        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.unfixable, 0)
+        self.assertEqual(output_result.failed, 0)
+
+    def test_fixed(self):
+        input_results = (
+            (ItemStatus(correct=False), ItemStatus(correct=True)),
+        )
+        output_result = ApplyResult(None, input_results)
+        self.assertEqual(output_result.correct, 0)
+        self.assertEqual(output_result.fixed, 1)
+        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.unfixable, 0)
+        self.assertEqual(output_result.failed, 0)
+
+    def test_aborted(self):
+        after = ItemStatus(correct=False)
+        after.aborted = True
+        input_results = (
+            (ItemStatus(correct=False), after),
+        )
+        output_result = ApplyResult(None, input_results)
+        self.assertEqual(output_result.correct, 0)
+        self.assertEqual(output_result.fixed, 0)
+        self.assertEqual(output_result.aborted, 1)
+        self.assertEqual(output_result.unfixable, 0)
+        self.assertEqual(output_result.failed, 0)
+
+    def test_unfixable(self):
+        input_results = (
+            (ItemStatus(correct=False), ItemStatus(correct=False,
+                                                   fixable=False)),
+        )
+        output_result = ApplyResult(None, input_results)
+        self.assertEqual(output_result.correct, 0)
+        self.assertEqual(output_result.fixed, 0)
+        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.unfixable, 1)
+        self.assertEqual(output_result.failed, 0)
+
+    def test_failed(self):
+        input_results = (
+            (ItemStatus(correct=False), ItemStatus(correct=False)),
+        )
+        output_result = ApplyResult(None, input_results)
+        self.assertEqual(output_result.correct, 0)
+        self.assertEqual(output_result.fixed, 0)
+        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.unfixable, 0)
+        self.assertEqual(output_result.failed, 1)
+
+    def test_bs(self):
+        input_results = (
+            (ItemStatus(correct=True), ItemStatus(correct=False)),
+        )
+        with self.assertRaises(RuntimeError):
+            ApplyResult(MagicMock(), input_results)
 
 
 class InitTest(TestCase):
