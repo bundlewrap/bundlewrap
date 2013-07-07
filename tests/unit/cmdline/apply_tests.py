@@ -4,7 +4,7 @@ from mock import MagicMock, patch
 
 from blockwart.cmdline.apply import _get_target_list, bw_apply
 from blockwart.exceptions import UsageException
-from blockwart.node import Node
+from blockwart.node import ApplyResult, Node
 
 
 class ApplyTest(TestCase):
@@ -16,6 +16,7 @@ class ApplyTest(TestCase):
         class FakeNode(object):
             def apply(self, interactive=False):
                 assert interactive
+                return ApplyResult(None, ())
         node1 = FakeNode()
         node2 = FakeNode()
         _get_target_list.return_value = [node1, node2]
