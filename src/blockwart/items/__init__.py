@@ -28,7 +28,7 @@ class ItemStatus(object):
         fixable=True,
         status_info=None,
     ):
-        self.aborted_interactively = False
+        self.aborted = False
         self.correct = correct
         self.description = description
         self.fixable = fixable
@@ -108,7 +108,7 @@ class Item(object):
                     self.fix()
                 else:
                     status_after = copy(status_before)
-                    status_after.aborted_interactively = True
+                    status_after.aborted = True
             if recheck:
                 status_after = self.get_status()
         return (status_before, status_after)
