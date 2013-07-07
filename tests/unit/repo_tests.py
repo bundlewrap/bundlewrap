@@ -31,8 +31,8 @@ class RepoBundlesTest(RepoTest):
         for bundle in bundles:
             mkdir(join(r.bundles_dir, bundle))
         self.assertEqual(
-            tuple(r.bundle_names),
-            bundles,
+            set(r.bundle_names),
+            set(bundles),
         )
 
 
