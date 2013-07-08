@@ -22,3 +22,10 @@ This file tells blockwart what nodes (servers, VMs, ...) there are in your envir
 This file allows you to organize your nodes into groups.
 
 .. seealso:: :ref:`groupspy`
+
+``items/``
+==========
+
+This optional subdirectory contains the code for your custom item types.
+
+.. seealso:: :ref:`dev_item`
