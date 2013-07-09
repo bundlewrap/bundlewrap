@@ -69,7 +69,7 @@ class Item(object):
                 BUILTIN_ITEM_ATTRIBUTES.iteritems():
             setattr(self, attribute_name, attributes.get(
                 attribute_name,
-                attribute_default,
+                copy(attribute_default),
             ))
 
     def __repr__(self):
