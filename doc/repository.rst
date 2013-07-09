@@ -23,6 +23,14 @@ This file allows you to organize your nodes into groups.
 
 .. seealso:: :ref:`groupspy`
 
+``bundles/``
+==========
+
+This required subdirectory contains the bulk of your configuration, organized into bundles of related items.
+
+.. seealso:: :ref:`bundles`
+
+
 ``items/``
 ==========
 
