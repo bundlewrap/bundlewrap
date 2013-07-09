@@ -191,6 +191,7 @@ class Node(object):
         self.name = name
         self.repo = repo
         self.hostname = infodict.get('hostname', self.name)
+        self.metadata = infodict.get('metadata', {})
 
     def __cmp__(self, other):
         return cmp(self.name, other.name)
