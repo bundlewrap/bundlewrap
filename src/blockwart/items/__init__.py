@@ -9,8 +9,7 @@ from blockwart.utils import ask_interactively
 from blockwart.utils import mark_for_translation as _
 
 BUILTIN_ITEM_ATTRIBUTES = {
-    'depends': [],
-    'metadata': {},
+    "depends": [],
 }
 ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
