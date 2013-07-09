@@ -60,7 +60,7 @@ One such attribute is ``depends``. It allows for setting up dependencies between
 
     my_items = {
         'item1': {
-            ...
+            [...]
             'depends': [
                 'file:/etc/foo.conf',
             ],
