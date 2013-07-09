@@ -65,3 +65,8 @@ This section is a reference for all possible attributes you can define for a nod
 ------------
 
 A string used as a DNS name when connecting to this node. May also be an IP address.
+
+``metadata``
+------------
+
+This can be a dictionary of arbitrary data. You can access it from your templates as ``node.metadata``. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node.
