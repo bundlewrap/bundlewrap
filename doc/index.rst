@@ -15,4 +15,3 @@ Contents:
    requirements
    repository
    about
-   glossary
