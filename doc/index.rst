@@ -1,9 +1,9 @@
-Home
-====
+Blockwart documentation
+=======================
 
 .. todolist::
 
-blockwart is a free software config management tool not unlike `Chef <http://www.opscode.com/chef/>`_ or `Puppet <http://puppetlabs.com>`_, but features a decentralized architecture without a server component. Configuration is applied from your local machine using SSH.
+For a quick overview of what Blockwart is all about, see `blockwart.org <http://blockwart.org>`_.
 
 Contents:
 
