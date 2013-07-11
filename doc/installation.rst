@@ -3,11 +3,6 @@
 Installation
 ============
 
-.. warning::
-   The following does not work yet.
-
-   For now, just get the code from `GitHub <http://github.com/trehn/blockwart/>`_ and figure things out for yourself.
-
 .. hint::
    You may need to install **pip** first. This can be accomplished through your distribution's package manager, e.g.:
 
