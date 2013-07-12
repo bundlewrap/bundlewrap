@@ -11,7 +11,7 @@ class ApplyResult(object):
     Holds information about an apply run for a node.
     """
     def __init__(self, node, item_results):
-        self.node = node
+        self.node_name = node.name
         self.correct = 0
         self.fixed = 0
         self.aborted = 0
