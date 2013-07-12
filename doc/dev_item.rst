@@ -11,6 +11,7 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
 
     from blockwart.items import Item, ItemStatus
 
+
     class Foo(Item):
         """
         A foo.
@@ -23,10 +24,10 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
         ITEM_TYPE_NAME = "foo"
 
         def ask(self):
-        	"""
-        	Returns a string asking the user if this item should be
-        	implemented.
-        	"""
+            """
+            Returns a string asking the user if this item should be
+            implemented.
+            """
             return ""
 
         def fix(self):
