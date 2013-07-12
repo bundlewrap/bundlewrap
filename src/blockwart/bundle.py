@@ -22,7 +22,7 @@ class Bundle(object):
         if not name in self.repo.bundle_names:
             raise RepositoryError(_("bundle not found: {}").format(name))
 
-        self.bundle_dir = join(self.repo.path, self.name)
+        self.bundle_dir = join(self.repo.bundles_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
 
     @cached_property
