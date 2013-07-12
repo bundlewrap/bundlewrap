@@ -1,4 +1,31 @@
+from collections import defaultdict
+
+from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
+from blockwart.utils import mark_for_translation as _
+
+
+def validator_mode(item_id, value):
+    if not value.isdigit():
+        raise BundleError(
+            _("mode for {} should be written as digits, got: '{}'"
+              "").format(item_id, value)
+        )
+    for digit in value:
+        if int(digit) > 7 or int(digit) < 0:
+            raise BundleError(
+                _("invalid mode for {}: '{}'").format(item_id, value),
+            )
+    if not len(value) == 3 and not len(value) == 4:
+        raise BundleError(
+            _("mode for {} should be three or four digits long, was: '{}'"
+              "").format(item_id, value)
+        )
+
+ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda value: None)
+ATTRIBUTE_VALIDATORS.update({
+    'mode': validator_mode,
+})
 
 
 class File(Item):
@@ -28,4 +55,5 @@ class File(Item):
         )
 
     def validate_attributes(self, attributes):
-        pass
+        for key, value in attributes.items():
+            ATTRIBUTE_VALIDATORS[key](self.id, value)
