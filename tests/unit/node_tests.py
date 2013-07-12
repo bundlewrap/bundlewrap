@@ -241,8 +241,6 @@ class ItemOrderTest(TestCase):
             return self.name
 
 
-
-
 class ItemSplitWithoutDepTest(TestCase):
     """
     Tests blockwart.node.split_items_without_deps.
