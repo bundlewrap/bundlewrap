@@ -62,6 +62,7 @@ def inject_dummy_items(items):
     """
     # first, find all types of items and add dummy deps
     dummy_items = {}
+    items = list(items)
     for item in items:
         # merge static and user-defined deps into a temporary attribute
         item._deps = item.DEPENDS_STATIC + item.depends
