@@ -56,7 +56,7 @@ def bw_apply(repo, args):
             worker = workers.get_reapable_worker()
             node_name = worker.id
             results[node_name] = worker.reap()
-            print(format_node_result(args, node_name, results[node_name]))
+            yield format_node_result(args, node_name, results[node_name])
         if (
             workers.busy_count > 0 and
             not target_nodes and
