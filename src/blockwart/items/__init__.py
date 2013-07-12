@@ -51,6 +51,7 @@ class Item(object):
         self.attributes = {}
         self.bundle = bundle
         self.name = name
+        self.node = bundle.node
 
         if not skip_validation:
             self._validate_attribute_names(attributes)

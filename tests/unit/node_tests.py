@@ -13,7 +13,7 @@ class MockItem(Item):
     def __init__(self, itype, name, deps_static, deps):
         self.ITEM_TYPE_NAME = itype
         self.DEPENDS_STATIC = deps_static
-        super(MockItem, self).__init__(None, name, {'depends': deps})
+        super(MockItem, self).__init__(MagicMock(), name, {'depends': deps})
 
     def apply(self, *args, **kwargs):
         return self.name
