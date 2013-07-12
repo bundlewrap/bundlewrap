@@ -120,7 +120,7 @@ class ApplyResultTest(TestCase):
         input_results = (
             (ItemStatus(correct=True), ItemStatus(correct=True)),
         )
-        output_result = ApplyResult(None, input_results)
+        output_result = ApplyResult(MagicMock(), input_results)
         self.assertEqual(output_result.correct, 1)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 0)
@@ -131,7 +131,7 @@ class ApplyResultTest(TestCase):
         input_results = (
             (ItemStatus(correct=False), ItemStatus(correct=True)),
         )
-        output_result = ApplyResult(None, input_results)
+        output_result = ApplyResult(MagicMock(), input_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 1)
         self.assertEqual(output_result.aborted, 0)
@@ -144,7 +144,7 @@ class ApplyResultTest(TestCase):
         input_results = (
             (ItemStatus(correct=False), after),
         )
-        output_result = ApplyResult(None, input_results)
+        output_result = ApplyResult(MagicMock(), input_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 1)
@@ -156,7 +156,7 @@ class ApplyResultTest(TestCase):
             (ItemStatus(correct=False), ItemStatus(correct=False,
                                                    fixable=False)),
         )
-        output_result = ApplyResult(None, input_results)
+        output_result = ApplyResult(MagicMock(), input_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 0)
@@ -167,7 +167,7 @@ class ApplyResultTest(TestCase):
         input_results = (
             (ItemStatus(correct=False), ItemStatus(correct=False)),
         )
-        output_result = ApplyResult(None, input_results)
+        output_result = ApplyResult(MagicMock(), input_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 0)

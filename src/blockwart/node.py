@@ -33,7 +33,7 @@ class ApplyResult(object):
                     "can't make sense of item results for node '{}'\n"
                     "before: {}\n"
                     "after: {}"
-                ).format(self.node.name, before, after))
+                ).format(self.node_name, before, after))
 
 
 class DummyItem(object):
