@@ -47,6 +47,7 @@ def bw_apply(repo, args):
             node = target_nodes.pop()
             worker.start_task(
                 node.apply,
+                id=node.name,
                 kwargs={
                     'interactive': args.interactive,
                 },
