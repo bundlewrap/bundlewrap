@@ -1,9 +1,9 @@
 from time import sleep
 from unittest import TestCase
 
-from mock import patch
+from mock import MagicMock, patch
 
-from blockwart.concurrency import Worker, WorkerPool
+from blockwart.concurrency import Logger, Worker, WorkerPool
 from blockwart.exceptions import WorkerException
 
 
@@ -11,6 +11,20 @@ class LoggerTest(TestCase):
     """
     Tests blockwart.concurrency.Logger.
     """
+    def test_put(self):
+        queue = MagicMock()
+        l = Logger(queue)
+        l.critical(1)
+        queue.put.assert_called_once_with(('critical', 1))
+        l.debug(2)
+        queue.put.assert_called_with(('debug', 2))
+        l.error(3)
+        queue.put.assert_called_with(('error', 3))
+        l.info(4)
+        queue.put.assert_called_with(('info', 4))
+        l.warning(5)
+        queue.put.assert_called_with(('warning', 5))
+
     def test_logged_lines(self):
         def task():
             from blockwart.utils import LOG
