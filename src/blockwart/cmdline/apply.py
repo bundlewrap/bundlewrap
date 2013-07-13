@@ -1,6 +1,6 @@
 from ..concurrency import WorkerPool
 from ..exceptions import UsageException
-from ..utils import mark_for_translation as _
+from ..utils import LOG, mark_for_translation as _
 
 
 def _get_target_list(repo, groups, nodes):
@@ -62,7 +62,7 @@ def bw_apply(repo, args):
             worker = worker_pool.get_reapable_worker()
             node_name = worker.id
             results[node_name] = worker.reap()
-            yield format_node_result(args, node_name, results[node_name])
+            LOG.info(format_node_result(args, node_name, results[node_name]))
         if (
             worker_pool.busy_count > 0 and
             not target_nodes and

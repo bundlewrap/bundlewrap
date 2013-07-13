@@ -3,7 +3,8 @@ from paramiko.client import SSHClient, WarningPolicy
 from .bundle import Bundle
 from .concurrency import WorkerPool
 from .exceptions import ItemDependencyError, RepositoryError
-from .utils import cached_property, mark_for_translation as _, validate_name
+from .utils import cached_property, LOG, validate_name
+from .utils import mark_for_translation as _
 
 
 class ApplyResult(object):
@@ -237,6 +238,7 @@ class Node(object):
         return ApplyResult(self, item_results)
 
     def run(self, command, sudo=True):
+        LOG.debug(_("running on {}: {}").format(self.name, command))
         chan = self._ssh_client.get_transport().open_session()
         chan.get_pty()
         if sudo:
