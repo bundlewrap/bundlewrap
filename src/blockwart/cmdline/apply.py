@@ -39,7 +39,11 @@ def bw_apply(repo, args):
     worker_count = 1 if args.interactive else args.node_workers
     worker_pool = WorkerPool(workers=worker_count)
     results = {}
-    while target_nodes or worker_pool.busy_count > 0 or worker_pool.reapable_count > 0:
+    while (
+            target_nodes or
+            worker_pool.busy_count > 0 or
+            worker_pool.reapable_count > 0
+    ):
         for worker in worker_pool.workers:
             worker.log()
         while target_nodes:
