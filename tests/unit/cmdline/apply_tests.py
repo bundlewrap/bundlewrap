@@ -14,9 +14,12 @@ class ApplyTest(TestCase):
     @patch('blockwart.cmdline.apply._get_target_list')
     def test_interactive(self, _get_target_list):
         class FakeNode(object):
+            name = "nodename"
+
             def apply(self, interactive=False):
                 assert interactive
-                return ApplyResult(None, ())
+                return ApplyResult(self, ())
+
         node1 = FakeNode()
         node2 = FakeNode()
         _get_target_list.return_value = [node1, node2]
