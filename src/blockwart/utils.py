@@ -13,6 +13,14 @@ LOG = logging.getLogger('blockwart')
 
 
 class PrintProfiler(object):
+    """
+    Will print profiling information.
+
+    Usage:
+
+        with PrintProfiler():
+            [code goes here]
+    """
     def __enter__(self):
         self.pr = cProfile.Profile()
         self.pr.enable()
