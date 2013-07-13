@@ -7,14 +7,36 @@ from traceback import format_exception
 from .exceptions import WorkerException
 
 
-def _queue_helper(queue, target, args, kwargs):
+class Logger(object):
+    def __init__(self, queue):
+        self.queue = queue
+
+    def critical(self, msg):
+        self.queue.put(('critical', msg))
+
+    def debug(self, msg):
+        self.queue.put(('debug', msg))
+
+    def error(self, msg):
+        self.queue.put(('error', msg))
+
+    def info(self, msg):
+        self.queue.put(('info', msg))
+
+    def warning(self, msg):
+        self.queue.put(('warning', msg))
+
+
+def _queue_helper(queue_logger, queue_result, target, args, kwargs):
+    from blockwart import utils
+    utils.LOG = Logger(queue_logger)
     try:
         result = target(*args, **kwargs)
     except Exception as e:
         traceback = "".join(format_exception(*exc_info()))
         result = (e, traceback)
     finally:
-        queue.put(result)
+        queue_result.put(result)
 
 
 class Worker(object):
@@ -36,11 +58,19 @@ class Worker(object):
         self._get_result(block=False)
         return hasattr(self, '_result')
 
+    @property
+    def logged_lines(self):
+        while True:
+            try:
+                yield self.queue_logger.get(block=False)
+            except Empty:
+                break
+
     def _get_result(self, block=True):
         if not self.started:
             return
         try:
-            self._result = self.queue.get(block=block)
+            self._result = self.queue_result.get(block=block)
             self.process.join()
             if (
                 isinstance(self._result, tuple) and
@@ -53,6 +83,13 @@ class Worker(object):
         except Empty:
             pass
 
+    def log(self):
+        if not self.started:
+            return
+        from blockwart.utils import LOG
+        for level, msg in self.logged_lines:
+            getattr(LOG, level)(msg)
+
     def reap(self):
         """
         Block until the result of this worker can be returned.
@@ -63,6 +100,7 @@ class Worker(object):
         while not self.is_reapable:
             sleep(.01)
         r = self._result
+        self.log()
         self.reset()
         return r
 
@@ -85,10 +123,11 @@ class Worker(object):
             kwargs = {}
 
         self.id = id
-        self.queue = Queue()
+        self.queue_logger = Queue()
+        self.queue_result = Queue()
         self.process = Process(
             target=_queue_helper,
-            args=(self.queue, target, args, kwargs),
+            args=(self.queue_logger, self.queue_result, target, args, kwargs),
         )
         self.started = True
         self.process.start()

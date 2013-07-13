@@ -83,7 +83,7 @@ def inject_dummy_items(items):
 
 def apply_items(items, workers=1, interactive=False):
     items = inject_dummy_items(items)
-    workers = WorkerPool(workers=workers)
+    worker_pool = WorkerPool(workers=workers)
     items_with_deps, items_without_deps = \
         split_items_without_deps(items)
     # there are three things we want to do continuously:
@@ -92,12 +92,15 @@ def apply_items(items, workers=1, interactive=False):
     # 3) if there is nothing else to do, wait for a worker to finish
     while (
         items_without_deps or
-        workers.busy_count > 0 or
-        workers.reapable_count > 0
+        worker_pool.busy_count > 0 or
+        worker_pool.reapable_count > 0
     ):
+        for worker in worker_pool.workers:
+            worker.log()
+
         while items_without_deps:
             # 1
-            worker = workers.get_idle_worker(block=False)
+            worker = worker_pool.get_idle_worker(block=False)
             if worker is None:
                 break
             item = items_without_deps.pop()
@@ -107,9 +110,9 @@ def apply_items(items, workers=1, interactive=False):
                 kwargs={'interactive': interactive},
             )
 
-        while workers.reapable_count > 0:
+        while worker_pool.reapable_count > 0:
             # 2
-            worker = workers.get_reapable_worker()
+            worker = worker_pool.get_reapable_worker()
             dep = worker.id
             result = worker.reap()
             # when we started the task (see below) we set
@@ -126,12 +129,12 @@ def apply_items(items, workers=1, interactive=False):
                 yield result
 
         if (
-            workers.busy_count > 0 and
+            worker_pool.busy_count > 0 and
             not items_without_deps and
-            not workers.reapable_count
+            not worker_pool.reapable_count
         ):
             # 3
-            workers.wait()
+            worker_pool.wait()
 
     # we have no items without deps left and none are processing
     # there must be a loop

@@ -37,11 +37,13 @@ def format_node_result(args, node_name, result):
 def bw_apply(repo, args):
     target_nodes = _get_target_list(repo, args.groups, args.nodes)
     worker_count = 1 if args.interactive else args.node_workers
-    workers = WorkerPool(workers=worker_count)
+    worker_pool = WorkerPool(workers=worker_count)
     results = {}
-    while target_nodes or workers.busy_count > 0 or workers.reapable_count > 0:
+    while target_nodes or worker_pool.busy_count > 0 or worker_pool.reapable_count > 0:
+        for worker in worker_pool.workers:
+            worker.log()
         while target_nodes:
-            worker = workers.get_idle_worker(block=False)
+            worker = worker_pool.get_idle_worker(block=False)
             if worker is None:
                 break
             node = target_nodes.pop()
@@ -52,14 +54,14 @@ def bw_apply(repo, args):
                     'interactive': args.interactive,
                 },
             )
-        while workers.reapable_count > 0:
-            worker = workers.get_reapable_worker()
+        while worker_pool.reapable_count > 0:
+            worker = worker_pool.get_reapable_worker()
             node_name = worker.id
             results[node_name] = worker.reap()
             yield format_node_result(args, node_name, results[node_name])
         if (
-            workers.busy_count > 0 and
+            worker_pool.busy_count > 0 and
             not target_nodes and
-            not workers.reapable_count
+            not worker_pool.reapable_count
         ):
-            workers.wait()
+            worker_pool.wait()

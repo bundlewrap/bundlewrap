@@ -1,5 +1,6 @@
 import cProfile
 from inspect import isgenerator
+import logging
 import pstats
 from string import digits, letters
 
@@ -7,6 +8,9 @@ __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
 VALID_NAME_CHARS = digits + letters + "-_.+"
+
+logging.basicConfig(format="%(message)s", level=logging.DEBUG)
+LOG = logging.getLogger('blockwart')
 
 
 class PrintProfiler(object):
