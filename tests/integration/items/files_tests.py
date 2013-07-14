@@ -18,9 +18,6 @@ class StatTest(TestCase):
             return  # TODO FIXME
         node = Node(MagicMock(), "localhost")
         f, filepath = mkstemp()
-        try:
-            stat_result = files.stat(node, filepath)
-            self.assertEqual(stat_result['owner'], getuser())
-            self.assertTrue(stat_result['mode'].isdigit())
-        finally:
-            f.close()
+        stat_result = files.stat(node, filepath)
+        self.assertEqual(stat_result['owner'], getuser())
+        self.assertTrue(stat_result['mode'].isdigit())
