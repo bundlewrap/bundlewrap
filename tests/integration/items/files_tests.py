@@ -15,7 +15,7 @@ class StatTest(TestCase):
     """
     def test_stat(self):
         if system() == "Darwin":
-            return  # TODO FIXME
+            return  # stat on Mac OS X is incompatible
         node = Node(MagicMock(), "localhost")
         f, filepath = mkstemp()
         stat_result = files.stat(node, filepath)
