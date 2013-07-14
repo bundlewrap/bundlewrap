@@ -2,7 +2,7 @@ from paramiko.client import SSHClient, WarningPolicy
 
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, RepositoryError
+from .exceptions import ItemDependencyError, RemoteException, RepositoryError
 from .utils import cached_property, LOG, validate_name
 from .utils import mark_for_translation as _
 
@@ -237,7 +237,7 @@ class Node(object):
         )
         return ApplyResult(self, item_results)
 
-    def run(self, command, sudo=True):
+    def run(self, command, may_fail=False, sudo=True):
         LOG.debug(_("running on {}: {}").format(self.name, command))
         chan = self._ssh_client.get_transport().open_session()
         chan.get_pty()
@@ -250,4 +250,11 @@ class Node(object):
         result.stdout = fstdout.read()
         result.stderr = fstderr.read()
         result.returncode = chan.recv_exit_status()
+        if result.returncode != 0 and not may_fail:
+            raise RemoteException(
+                _("command failed on {}: {}\n"
+                  "stdout: {}\n"
+                  "stderr: {}"
+                  ).format(self.name, command, result.stdout, result.stderr)
+            )
         return result

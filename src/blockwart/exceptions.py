@@ -12,6 +12,13 @@ class NoSuchNode(Exception):
     pass
 
 
+class RemoteException(Exception):
+    """
+    Raised when a shell command on a node fails.
+    """
+    pass
+
+
 class RepositoryError(Exception):
     """
     Indicates that somethings is wrong with the current repository.
