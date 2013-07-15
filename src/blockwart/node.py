@@ -84,58 +84,58 @@ def inject_dummy_items(items):
 
 def apply_items(items, workers=1, interactive=False):
     items = inject_dummy_items(items)
-    worker_pool = WorkerPool(workers=workers)
-    items_with_deps, items_without_deps = \
-        split_items_without_deps(items)
-    # there are three things we want to do continuously:
-    # 1) process items without deps as long as we have free workers
-    # 2) get results from finished ("reapable") workers
-    # 3) if there is nothing else to do, wait for a worker to finish
-    while (
-        items_without_deps or
-        worker_pool.busy_count > 0 or
-        worker_pool.reapable_count > 0
-    ):
-        for worker in worker_pool.workers:
-            worker.log()
-
-        while items_without_deps:
-            # 1
-            worker = worker_pool.get_idle_worker(block=False)
-            if worker is None:
-                break
-            item = items_without_deps.pop()
-            worker.start_task(
-                item.apply,
-                id=item.id,
-                kwargs={'interactive': interactive},
-            )
-
-        while worker_pool.reapable_count > 0:
-            # 2
-            worker = worker_pool.get_reapable_worker()
-            dep = worker.id
-            result = worker.reap()
-            # when we started the task (see below) we set
-            # the worker id to the item id that we can now
-            # remove from the dep lists
-            items_with_deps, items_without_deps = \
-                split_items_without_deps(
-                    remove_dep_from_items(
-                        items_with_deps,
-                        dep,
-                    )
-                )
-            if result is not None:  # ignore 'results' from dummy items
-                yield result
-
-        if (
-            worker_pool.busy_count > 0 and
-            not items_without_deps and
-            not worker_pool.reapable_count
+    with WorkerPool(workers=workers) as worker_pool:
+        items_with_deps, items_without_deps = \
+            split_items_without_deps(items)
+        # there are three things we want to do continuously:
+        # 1) process items without deps as long as we have free workers
+        # 2) get results from finished ("reapable") workers
+        # 3) if there is nothing else to do, wait for a worker to finish
+        while (
+            items_without_deps or
+            worker_pool.busy_count > 0 or
+            worker_pool.reapable_count > 0
         ):
-            # 3
-            worker_pool.wait()
+            for worker in worker_pool.workers:
+                worker.log()
+
+            while items_without_deps:
+                # 1
+                worker = worker_pool.get_idle_worker(block=False)
+                if worker is None:
+                    break
+                item = items_without_deps.pop()
+                worker.start_task(
+                    item.apply,
+                    id=item.id,
+                    kwargs={'interactive': interactive},
+                )
+
+            while worker_pool.reapable_count > 0:
+                # 2
+                worker = worker_pool.get_reapable_worker()
+                dep = worker.id
+                result = worker.reap()
+                # when we started the task (see below) we set
+                # the worker id to the item id that we can now
+                # remove from the dep lists
+                items_with_deps, items_without_deps = \
+                    split_items_without_deps(
+                        remove_dep_from_items(
+                            items_with_deps,
+                            dep,
+                        )
+                    )
+                if result is not None:  # ignore from dummy items
+                    yield result
+
+            if (
+                worker_pool.busy_count > 0 and
+                not items_without_deps and
+                not worker_pool.reapable_count
+            ):
+                # 3
+                worker_pool.wait()
 
     # we have no items without deps left and none are processing
     # there must be a loop

@@ -7,6 +7,24 @@ from blockwart.concurrency import Logger, Worker, WorkerPool
 from blockwart.exceptions import WorkerException
 
 
+def _log_task():
+    from blockwart.utils import LOG
+    LOG.debug(1)
+    LOG.info(2)
+    sleep(.01)
+    LOG.warning(3)
+    sleep(.01)
+    LOG.error(4)
+    LOG.critical(5)
+    return None
+
+
+def _log_redirection_task():
+    from blockwart.utils import LOG
+    LOG.debug("ohai")
+    return None
+
+
 class LoggerTest(TestCase):
     """
     Tests blockwart.concurrency.Logger.
@@ -26,42 +44,58 @@ class LoggerTest(TestCase):
         queue.put.assert_called_with(('warning', 5))
 
     def test_logged_lines(self):
-        def task():
-            from blockwart.utils import LOG
-            LOG.debug(1)
-            LOG.info(2)
-            sleep(.01)
-            LOG.warning(3)
-            sleep(.01)
-            LOG.error(4)
-            LOG.critical(5)
-            return None
-
-        w = Worker()
-        logs = []
-        w.start_task(task)
-        while w.is_busy:
+        with Worker() as w:
+            logs = []
+            w.start_task(_log_task)
+            while w.is_busy:
+                logs += list(w.logged_lines)
             logs += list(w.logged_lines)
-        logs += list(w.logged_lines)
-        self.assertEqual(
-            logs,
-            [('debug', 1), ('info', 2), ('warning', 3), ('error', 4),
-             ('critical', 5)],
-        )
-        w.reap()
-
-    def test_logger_redirection(self):
-        def task():
-            from blockwart.utils import LOG
-            LOG.debug("ohai")
-            return None
-
-        with patch('blockwart.utils.LOG') as PATCHED_LOG:
-            w = Worker()
-            w.start_task(task)
+            self.assertEqual(
+                logs,
+                [('debug', 1), ('info', 2), ('warning', 3), ('error', 4),
+                 ('critical', 5)],
+            )
             w.reap()
 
+    def test_logger_redirection(self):
+        with patch('blockwart.utils.LOG') as PATCHED_LOG:
+            with Worker() as w:
+                w.start_task(_log_redirection_task)
+                w.reap()
+
         PATCHED_LOG.debug.assert_called_once_with("ohai")
+
+
+def _raise_exception():
+    raise Exception()
+
+
+def _return_generator():
+    return xrange(47)
+
+
+class _MethodCallTestClass(object):
+    def __init__(self, state):
+        self.state = state
+
+    def mymethod(self, param):
+        return self.state + param
+
+
+class _ImmutableTestClass(object):
+    def __init__(self, state):
+        self.state = state
+
+    def mymethod(self, param):
+        self.state = param
+
+
+def _fourtyseven():
+    return 47
+
+
+def _fourtyeight():
+    return 48
 
 
 class WorkerTest(TestCase):
@@ -69,67 +103,47 @@ class WorkerTest(TestCase):
     Tests blockwart.concurrency.Worker.
     """
     def test_exception(self):
-        def myfunc():
-            raise Exception()
-
-        w = Worker()
-        w.start_task(myfunc)
-        with self.assertRaises(WorkerException):
-            w.reap()
+        with Worker() as w:
+            w.start_task(_raise_exception)
+            with self.assertRaises(WorkerException):
+                w.reap()
 
     def test_generator(self):
-        def myfunc():
-            return xrange(47)
-
-        w = Worker()
-        w.start_task(myfunc)
-        r = w.reap()
-        self.assertEqual(list(xrange(47)), list(r))
+        with Worker() as w:
+            w.start_task(_return_generator)
+            r = w.reap()
+            self.assertEqual(list(xrange(47)), list(r))
 
     def test_is_busy(self):
-        w = Worker()
-        w.start_task(sleep, args=(.01,))
-        self.assertTrue(w.is_busy)
-        sleep(.02)
-        self.assertFalse(w.is_busy)
+        with Worker() as w:
+            w.start_task(sleep, args=(.01,))
+            self.assertTrue(w.is_busy)
+            sleep(.02)
+            self.assertFalse(w.is_busy)
 
     def test_init_not_busy(self):
-        w = Worker()
-        self.assertFalse(w.is_busy)
+        with Worker() as w:
+            self.assertFalse(w.is_busy)
 
     def test_method_call(self):
-        class MyClass(object):
-            def __init__(self, state):
-                self.state = state
-
-            def mymethod(self, param):
-                return self.state + param
-
-        obj = MyClass(40)
-        w = Worker()
-        w.start_task(obj.mymethod, args=(7,))
-        self.assertEqual(w.reap(), 47)
+        obj = _MethodCallTestClass(40)
+        with Worker() as w:
+            w.start_task(obj.mymethod, args=(7,))
+            self.assertEqual(w.reap(), 47)
 
     def test_method_call_immutable(self):
-        class MyClass(object):
-            def __init__(self, state):
-                self.state = state
-
-            def mymethod(self, param):
-                self.state = param
-
-        obj = MyClass(47)
-        w = Worker()
-        w.start_task(obj.mymethod, args=(42,))
-        w.reap()
-        self.assertEqual(obj.state, 47)
+        obj = _ImmutableTestClass(47)
+        with Worker() as w:
+            w.start_task(obj.mymethod, args=(42,))
+            w.reap()
+            self.assertEqual(obj.state, 47)
 
     def test_result(self):
-        w = Worker()
-        w.start_task(lambda: 47)
-        self.assertEqual(w.reap(), 47)
-        w.start_task(lambda: 48)
-        self.assertEqual(w.reap(), 48)
+        with Worker() as w:
+            w.start_task(_fourtyseven)
+            self.assertEqual(w.reap(), 47)
+            w.start_task(_fourtyeight)
+            self.assertEqual(w.reap(), 48)
 
 
 class WorkerPoolTest(TestCase):
@@ -141,7 +155,8 @@ class WorkerPoolTest(TestCase):
             WorkerPool(workers=0)
         with self.assertRaises(ValueError):
             WorkerPool(workers=-1)
-        WorkerPool(workers=1)
+        with WorkerPool(workers=1) as p:
+            p.shutdown()
 
     def test_get_idle_worker(self):
         class MockWorker(object):
@@ -155,8 +170,11 @@ class WorkerPoolTest(TestCase):
                 self.busy_counter += 1
                 return self.busy_counter != 47
 
+            def shutdown(self):
+                pass
+
         with patch('blockwart.concurrency.Worker', new=MockWorker):
-            p = WorkerPool(workers=2)
-            for i in xrange(2):
-                w = p.get_idle_worker()
-                self.assertEqual(w.busy_counter, 47)
+            with WorkerPool(workers=2) as p:
+                for i in xrange(2):
+                    w = p.get_idle_worker()
+                    self.assertEqual(w.busy_counter, 47)

@@ -9,14 +9,29 @@ from blockwart.node import *
 from blockwart.utils import names
 
 
+class MockNode(object):
+    pass
+
+
+class MockBundle(object):
+    pass
+
+
 class MockItem(Item):
-    def __init__(self, itype, name, deps_static, deps):
-        self.ITEM_TYPE_NAME = itype
-        self.DEPENDS_STATIC = deps_static
-        super(MockItem, self).__init__(MagicMock(), name, {'depends': deps})
+    ITEM_TYPE_NAME = "type1"
+    DEPENDS_STATIC = []
 
     def apply(self, *args, **kwargs):
         return self.name
+
+
+def get_mock_item(itype, name, deps_static, deps):
+    bundle = MockBundle()
+    bundle.node = MockNode()
+    item = MockItem(bundle, name, {'depends': deps}, skip_validation=True)
+    item.ITEM_TYPE_NAME = itype
+    item.DEPENDS_STATIC = deps_static
+    return item
 
 
 class ApplyItemsTest(TestCase):
@@ -24,8 +39,8 @@ class ApplyItemsTest(TestCase):
     Tests blockwart.node.apply_items.
     """
     def test_self_loop(self):
-        i1 = MockItem("type1", "name1", [], ["type1:name1"])
-        i2 = MockItem("type1", "name2", [], [])
+        i1 = get_mock_item("type1", "name1", [], ["type1:name1"])
+        i2 = get_mock_item("type1", "name2", [], [])
         with self.assertRaises(ItemDependencyError):
             list(apply_items([i1, i2]))
 
@@ -66,9 +81,9 @@ class ApplyItemsTest(TestCase):
             list(apply_items([i1, i2]))
 
     def test_simple_order(self):
-        i1 = MockItem("type1", "name1", [], ["type1:name2"])
-        i2 = MockItem("type1", "name2", [], ["type1:name3"])
-        i3 = MockItem("type1", "name3", [], [])
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
+        i3 = get_mock_item("type1", "name3", [], [])
         expected_result = ["name3", "name2", "name1"]
         self.assertEqual(list(apply_items([i1, i2, i3])), expected_result)
         self.assertEqual(list(apply_items([i2, i1, i3])), expected_result)
@@ -78,9 +93,9 @@ class ApplyItemsTest(TestCase):
         self.assertEqual(list(apply_items([i1, i3, i2])), expected_result)
 
     def test_implicit_order(self):
-        i1 = MockItem("type1", "name1", [], ["type1:name2"])
-        i2 = MockItem("type1", "name2", [], [])
-        i3 = MockItem("type2", "name3", ["type1:"], [])
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], [])
+        i3 = get_mock_item("type2", "name3", ["type1:"], [])
 
         expected_result = ["name2", "name1", "name3"]
         self.assertEqual(list(apply_items([i1, i2, i3])), expected_result)
@@ -91,21 +106,18 @@ class ApplyItemsTest(TestCase):
         self.assertEqual(list(apply_items([i1, i3, i2])), expected_result)
 
     def test_apply_parallel(self):
-        i1 = MockItem("type1", "name1", [], ["type1:name2"])
-        i2 = MockItem("type1", "name2", [], ["type1:name3"])
-        i3 = MockItem("type1", "name3", [], [])
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
+        i3 = get_mock_item("type1", "name3", [], [])
         self.assertEqual(
             list(apply_items([i1, i2, i3], workers=2)),
             ["name3", "name2", "name1"],
         )
 
     def test_apply_interactive(self):
-        i1 = MockItem("type1", "name1", [], ["type1:name2"])
-        i1.apply = MagicMock(return_value="name1")
-        i2 = MockItem("type1", "name2", [], ["type1:name3"])
-        i2.apply = MagicMock(return_value="name2")
-        i3 = MockItem("type1", "name3", [], [])
-        i3.apply = MagicMock(return_value="name3")
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
+        i3 = get_mock_item("type1", "name3", [], [])
         self.assertEqual(
             list(apply_items([i1, i2, i3], interactive=True)),
             ["name3", "name2", "name1"],

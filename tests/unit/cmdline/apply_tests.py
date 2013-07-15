@@ -7,19 +7,20 @@ from blockwart.exceptions import UsageException
 from blockwart.node import ApplyResult, Node
 
 
+class FakeNode(object):
+    name = "nodename"
+
+    def apply(self, interactive=False):
+        assert interactive
+        return ApplyResult(self, ())
+
+
 class ApplyTest(TestCase):
     """
     Tests blockwart.cmdline.apply.bw_apply.
     """
     @patch('blockwart.cmdline.apply._get_target_list')
     def test_interactive(self, _get_target_list):
-        class FakeNode(object):
-            name = "nodename"
-
-            def apply(self, interactive=False):
-                assert interactive
-                return ApplyResult(self, ())
-
         node1 = FakeNode()
         node2 = FakeNode()
         _get_target_list.return_value = [node1, node2]

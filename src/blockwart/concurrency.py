@@ -1,4 +1,5 @@
-from multiprocessing import Process, Queue
+from inspect import ismethod
+from multiprocessing import Pipe, Process, Queue
 from Queue import Empty
 from sys import exc_info
 from time import sleep
@@ -27,16 +28,44 @@ class Logger(object):
         self.queue.put(('warning', msg))
 
 
-def _queue_helper(queue_logger, queue_result, target, args, kwargs):
+def _worker_process(pipe, log_queue):
+    """
+    This is what actually runs in the child process.
+    """
+    # replace the child logger with one that will send logs back to the
+    # parent process
     from blockwart import utils
-    utils.LOG = Logger(queue_logger)
-    try:
-        result = target(*args, **kwargs)
-    except Exception as e:
-        traceback = "".join(format_exception(*exc_info()))
-        result = (e, traceback)
-    finally:
-        queue_result.put(result)
+    utils.LOG = Logger(log_queue)
+
+    while True:
+        if not pipe.poll(.01):
+            continue
+        message = pipe.recv()
+        if message['order'] == 'die':
+            return
+        else:
+            try:
+                if message['target_obj'] is None:
+                    target = message['target']
+                else:
+                    target = getattr(message['target_obj'], message['target'])
+
+                result = {
+                    'raised_exception': False,
+                    'return_value': target(
+                        *message['args'],
+                        **message['kwargs']
+                    ),
+                }
+            except Exception as e:
+                traceback = "".join(format_exception(*exc_info()))
+                result = {
+                    'raised_exception': True,
+                    'exception': e,
+                    'traceback': traceback,
+                }
+            finally:
+                pipe.send(result)
 
 
 class Worker(object):
@@ -44,7 +73,21 @@ class Worker(object):
     Manages a background worker process.
     """
     def __init__(self):
+        self.id = None
         self.started = False
+        self.log_queue = Queue()
+        self.pipe, child_pipe = Pipe()
+        self.process = Process(
+            target=_worker_process,
+            args=(child_pipe, self.log_queue),
+        )
+        self.process.start()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.shutdown()
 
     @property
     def is_busy(self):
@@ -62,26 +105,22 @@ class Worker(object):
     def logged_lines(self):
         while True:
             try:
-                yield self.queue_logger.get(block=False)
+                yield self.log_queue.get(block=False)
             except Empty:
                 break
 
     def _get_result(self, block=True):
         if not self.started:
             return
-        try:
-            self._result = self.queue_result.get(block=block)
-            self.process.join()
-            if (
-                isinstance(self._result, tuple) and
-                len(self._result) == 2 and
-                isinstance(self._result[0], Exception)
-            ):
+        if block or self.pipe.poll():
+            self._result = self.pipe.recv()
+            if self._result['raised_exception']:
                 # check for exception in child process and raise it
                 # here in the parent
-                raise WorkerException(self._result[0], self._result[1])
-        except Empty:
-            pass
+                raise WorkerException(
+                    self._result['exception'],
+                    self._result['traceback'],
+                )
 
     def log(self):
         if not self.started:
@@ -102,13 +141,21 @@ class Worker(object):
         r = self._result
         self.log()
         self.reset()
-        return r
+        return r['return_value']
 
     def reset(self):
         self.id = None
         self.started = False
         if hasattr(self, '_result'):
             delattr(self, '_result')
+
+    def shutdown(self):
+        try:
+            self.pipe.send({'order': 'die'})
+        except IOError:
+            pass
+        self.pipe.close()
+        self.process.join()
 
     def start_task(self, target, id=None, args=None, kwargs=None):
         """
@@ -118,19 +165,27 @@ class Worker(object):
         kwargs      dictionary of keyword arguments passed to target
         """
         if args is None:
-            args = ()
+            args = []
+        else:
+            args = list(args)
         if kwargs is None:
             kwargs = {}
 
+        if ismethod(target):
+            target_obj = target.im_self
+            target = target.__name__
+        else:
+            target_obj = None
+
         self.id = id
-        self.queue_logger = Queue()
-        self.queue_result = Queue()
-        self.process = Process(
-            target=_queue_helper,
-            args=(self.queue_logger, self.queue_result, target, args, kwargs),
-        )
+        self.pipe.send({
+            'order': 'run',
+            'target': target,
+            'target_obj': target_obj,
+            'args': args,
+            'kwargs': kwargs,
+        })
         self.started = True
-        self.process.start()
 
 
 class WorkerPool(object):
@@ -143,6 +198,12 @@ class WorkerPool(object):
             raise ValueError("at least one worker is required")
         for i in xrange(workers):
             self.workers.append(Worker())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.shutdown()
 
     @property
     def busy_count(self):
@@ -182,6 +243,10 @@ class WorkerPool(object):
             if worker.is_reapable:
                 return worker
         return None
+
+    def shutdown(self):
+        for worker in self.workers:
+            worker.shutdown()
 
     def wait(self, amount=0.01):
         """
