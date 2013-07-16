@@ -7,6 +7,15 @@ from blockwart.utils import mark_for_translation as _
 from blockwart.utils import LOG
 
 
+def content_processor_binary(attributes):
+    pass
+
+
+CONTENT_PROCESSORS = {
+    'binary': content_processor_binary,
+}
+
+
 def stat(node, filepath):
     result = node.run("stat --printf '%U:%G:%a' {}".format(
         quote(filepath),
@@ -20,6 +29,13 @@ def stat(node, filepath):
         repr(file_stat),
     )))
     return file_stat
+
+
+def validator_content_type(item_id, value):
+    if value not in CONTENT_PROCESSORS:
+        raise BundleError(
+            _("invalid content_type for {}: '{}'").format(item_id, value)
+        )
 
 
 def validator_mode(item_id, value):
@@ -41,6 +57,7 @@ def validator_mode(item_id, value):
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda value: None)
 ATTRIBUTE_VALIDATORS.update({
+    'content_type': validator_content_type,
     'mode': validator_mode,
 })
 
@@ -52,9 +69,12 @@ class File(Item):
     BUNDLE_ATTRIBUTE_NAME = "files"
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
+        'content': None,
+        'content_type': "binary",
         'group': "root",
         'mode': "0664",
         'owner': "root",
+        'source': None,
     }
     ITEM_TYPE_NAME = "file"
 
@@ -62,7 +82,7 @@ class File(Item):
         return ""
 
     def fix(self):
-        raise NotImplementedError
+        CONTENT_PROCESSORS[self.attributes['content_type']](self.attributes)
 
     def get_status(self):
         return ItemStatus(
