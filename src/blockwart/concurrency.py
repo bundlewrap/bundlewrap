@@ -139,7 +139,8 @@ class Worker(object):
         while not self.is_reapable:
             sleep(.01)
         r = self._result
-        self.log()
+        self.log()  # make sure everything is logged, even after the
+                    # user stopped .log()ing in their while
         self.reset()
         return r['return_value']
 

@@ -11,9 +11,7 @@ def _log_task():
     from blockwart.utils import LOG
     LOG.debug(1)
     LOG.info(2)
-    sleep(.01)
     LOG.warning(3)
-    sleep(.01)
     LOG.error(4)
     LOG.critical(5)
     return None
