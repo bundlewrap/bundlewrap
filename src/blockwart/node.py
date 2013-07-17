@@ -96,9 +96,6 @@ def apply_items(items, workers=1, interactive=False):
             worker_pool.busy_count > 0 or
             worker_pool.reapable_count > 0
         ):
-            for worker in worker_pool.workers:
-                worker.log()
-
             while items_without_deps:
                 # 1
                 worker = worker_pool.get_idle_worker(block=False)

@@ -17,51 +17,45 @@ def _log_task():
     return None
 
 
-def _log_redirection_task():
-    from blockwart.utils import LOG
-    LOG.debug("ohai")
-    return None
-
-
 class LoggerTest(TestCase):
     """
     Tests blockwart.concurrency.Logger.
     """
-    def test_put(self):
-        queue = MagicMock()
-        l = Logger(queue)
+    def test_send(self):
+        pipe = MagicMock()
+        l = Logger(pipe)
         l.critical(1)
-        queue.put.assert_called_once_with(('critical', 1))
+        pipe.send.assert_called_once_with(
+            {'log_level': 'critical', 'log_msg': 1}
+        )
         l.debug(2)
-        queue.put.assert_called_with(('debug', 2))
+        pipe.send.assert_called_with(
+            {'log_level': 'debug', 'log_msg': 2}
+        )
         l.error(3)
-        queue.put.assert_called_with(('error', 3))
+        pipe.send.assert_called_with(
+            {'log_level': 'error', 'log_msg': 3}
+        )
         l.info(4)
-        queue.put.assert_called_with(('info', 4))
+        pipe.send.assert_called_with(
+            {'log_level': 'info', 'log_msg': 4}
+        )
         l.warning(5)
-        queue.put.assert_called_with(('warning', 5))
-
-    def test_logged_lines(self):
-        with Worker() as w:
-            logs = []
-            w.start_task(_log_task)
-            while w.is_busy:
-                logs += list(w.logged_lines)
-            logs += list(w.logged_lines)
-            self.assertEqual(
-                logs,
-                [('debug', 1), ('info', 2), ('warning', 3), ('error', 4),
-                 ('critical', 5)],
-            )
-            w.reap()
+        pipe.send.assert_called_with(
+            {'log_level': 'warning', 'log_msg': 5}
+        )
 
     def test_logger_redirection(self):
         with patch('blockwart.utils.LOG') as PATCHED_LOG:
             with Worker() as w:
-                w.start_task(_log_redirection_task)
+                w.start_task(_log_task)
                 w.reap()
 
-        PATCHED_LOG.debug.assert_called_once_with("ohai")
+        PATCHED_LOG.debug.assert_called_once_with(1)
+        PATCHED_LOG.info.assert_called_once_with(2)
+        PATCHED_LOG.warning.assert_called_once_with(3)
+        PATCHED_LOG.error.assert_called_once_with(4)
+        PATCHED_LOG.critical.assert_called_once_with(5)
 
 
 def _raise_exception():

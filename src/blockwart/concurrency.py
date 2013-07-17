@@ -5,37 +5,38 @@ from sys import exc_info
 from time import sleep
 from traceback import format_exception
 
+from . import utils
 from .exceptions import WorkerException
+from .utils import LOG
 
 
 class Logger(object):
-    def __init__(self, queue):
-        self.queue = queue
+    def __init__(self, pipe):
+        self.pipe = pipe
 
     def critical(self, msg):
-        self.queue.put(('critical', msg))
+        self.pipe.send({'log_level': 'critical', 'log_msg': msg})
 
     def debug(self, msg):
-        self.queue.put(('debug', msg))
+        self.pipe.send({'log_level': 'debug', 'log_msg': msg})
 
     def error(self, msg):
-        self.queue.put(('error', msg))
+        self.pipe.send({'log_level': 'error', 'log_msg': msg})
 
     def info(self, msg):
-        self.queue.put(('info', msg))
+        self.pipe.send({'log_level': 'info', 'log_msg': msg})
 
     def warning(self, msg):
-        self.queue.put(('warning', msg))
+        self.pipe.send({'log_level': 'warning', 'log_msg': msg})
 
 
-def _worker_process(pipe, log_queue):
+def _worker_process(pipe):
     """
     This is what actually runs in the child process.
     """
     # replace the child logger with one that will send logs back to the
     # parent process
-    from blockwart import utils
-    utils.LOG = Logger(log_queue)
+    utils.LOG = Logger(pipe)
 
     while True:
         if not pipe.poll(.01):
@@ -51,7 +52,6 @@ def _worker_process(pipe, log_queue):
                     target = getattr(message['target_obj'], message['target'])
 
                 result = {
-                    'raised_exception': False,
                     'return_value': target(
                         *message['args'],
                         **message['kwargs']
@@ -60,7 +60,6 @@ def _worker_process(pipe, log_queue):
             except Exception as e:
                 traceback = "".join(format_exception(*exc_info()))
                 result = {
-                    'raised_exception': True,
                     'exception': e,
                     'traceback': traceback,
                 }
@@ -75,11 +74,10 @@ class Worker(object):
     def __init__(self):
         self.id = None
         self.started = False
-        self.log_queue = Queue()
         self.pipe, child_pipe = Pipe()
         self.process = Process(
             target=_worker_process,
-            args=(child_pipe, self.log_queue),
+            args=(child_pipe,),
         )
         self.process.start()
 
@@ -98,36 +96,25 @@ class Worker(object):
 
     @property
     def is_reapable(self):
-        self._get_result(block=False)
+        self._get_result()
         return hasattr(self, '_result')
 
-    @property
-    def logged_lines(self):
-        while True:
-            try:
-                yield self.log_queue.get(block=False)
-            except Empty:
-                break
-
-    def _get_result(self, block=True):
+    def _get_result(self):
         if not self.started:
             return
-        if block or self.pipe.poll():
-            self._result = self.pipe.recv()
-            if self._result['raised_exception']:
+        while self.pipe.poll():
+            result = self.pipe.recv()
+            if 'log_msg' in result:
+                getattr(LOG, result['log_level'])(result['log_msg'])
+            elif 'exception' in result:
                 # check for exception in child process and raise it
                 # here in the parent
                 raise WorkerException(
-                    self._result['exception'],
-                    self._result['traceback'],
+                    result['exception'],
+                    result['traceback'],
                 )
-
-    def log(self):
-        if not self.started:
-            return
-        from blockwart.utils import LOG
-        for level, msg in self.logged_lines:
-            getattr(LOG, level)(msg)
+            elif 'return_value' in result:
+                self._result = result
 
     def reap(self):
         """
@@ -139,8 +126,6 @@ class Worker(object):
         while not self.is_reapable:
             sleep(.01)
         r = self._result
-        self.log()  # make sure everything is logged, even after the
-                    # user stopped .log()ing in their while
         self.reset()
         return r['return_value']
 

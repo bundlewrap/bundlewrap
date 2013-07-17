@@ -44,8 +44,6 @@ def bw_apply(repo, args):
                 worker_pool.busy_count > 0 or
                 worker_pool.reapable_count > 0
         ):
-            for worker in worker_pool.workers:
-                worker.log()
             while target_nodes:
                 worker = worker_pool.get_idle_worker(block=False)
                 if worker is None:
