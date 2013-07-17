@@ -30,7 +30,6 @@ def _worker_process(pipe, log_queue):
     # parent process
     from blockwart import utils
     for handler in utils.LOG.handlers:
-        assert not isinstance(handler, ChildLogHandler)
         utils.LOG.removeHandler(handler)
     handler = ChildLogHandler(log_queue)
     utils.LOG.addHandler(handler)
