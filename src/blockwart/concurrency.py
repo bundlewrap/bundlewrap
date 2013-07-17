@@ -1,42 +1,40 @@
 from inspect import ismethod
-from multiprocessing import Pipe, Process, Queue
-from Queue import Empty
+from logging import Handler
+from multiprocessing import Manager, Pipe, Process
 from sys import exc_info
 from time import sleep
 from traceback import format_exception
 
-from . import utils
 from .exceptions import WorkerException
 from .utils import LOG
 
 
-class Logger(object):
-    def __init__(self, pipe):
-        self.pipe = pipe
+class ChildLogHandler(Handler):
+    """
+    Captures log events in child processes and inserts them into the
+    queue to be processed by the parent process.
+    """
+    def __init__(self, queue):
+        Handler.__init__(self)
+        self.queue = queue
 
-    def critical(self, msg):
-        self.pipe.send({'log_level': 'critical', 'log_msg': msg})
-
-    def debug(self, msg):
-        self.pipe.send({'log_level': 'debug', 'log_msg': msg})
-
-    def error(self, msg):
-        self.pipe.send({'log_level': 'error', 'log_msg': msg})
-
-    def info(self, msg):
-        self.pipe.send({'log_level': 'info', 'log_msg': msg})
-
-    def warning(self, msg):
-        self.pipe.send({'log_level': 'warning', 'log_msg': msg})
+    def emit(self, record):
+        self.queue.put(record)
 
 
-def _worker_process(pipe):
+def _worker_process(pipe, log_queue):
     """
     This is what actually runs in the child process.
     """
     # replace the child logger with one that will send logs back to the
     # parent process
-    utils.LOG = Logger(pipe)
+    from blockwart import utils
+    for handler in utils.LOG.handlers:
+        assert not isinstance(handler, ChildLogHandler)
+        utils.LOG.removeHandler(handler)
+    handler = ChildLogHandler(log_queue)
+    utils.LOG.addHandler(handler)
+    utils.LOG.setLevel(0)
 
     while True:
         if not pipe.poll(.01):
@@ -52,6 +50,7 @@ def _worker_process(pipe):
                     target = getattr(message['target_obj'], message['target'])
 
                 result = {
+                    'raised_exception': False,
                     'return_value': target(
                         *message['args'],
                         **message['kwargs']
@@ -60,6 +59,7 @@ def _worker_process(pipe):
             except Exception as e:
                 traceback = "".join(format_exception(*exc_info()))
                 result = {
+                    'raised_exception': True,
                     'exception': e,
                     'traceback': traceback,
                 }
@@ -74,10 +74,11 @@ class Worker(object):
     def __init__(self):
         self.id = None
         self.started = False
+        self.log_queue = Manager().Queue()
         self.pipe, child_pipe = Pipe()
         self.process = Process(
             target=_worker_process,
-            args=(child_pipe,),
+            args=(child_pipe, self.log_queue),
         )
         self.process.start()
 
@@ -90,31 +91,34 @@ class Worker(object):
     @property
     def is_busy(self):
         """
-        False if self.result can be obtained directly without blocking.
+        False when self.reap() can return directly without blocking.
         """
         return self.started and not self.is_reapable
 
     @property
     def is_reapable(self):
+        """
+        True when the child process has finished a task.
+        """
         self._get_result()
         return hasattr(self, '_result')
 
     def _get_result(self):
         if not self.started:
             return
-        while self.pipe.poll():
-            result = self.pipe.recv()
-            if 'log_msg' in result:
-                getattr(LOG, result['log_level'])(result['log_msg'])
-            elif 'exception' in result:
+
+        while not self.log_queue.empty():
+            LOG.handle(self.log_queue.get())
+
+        if self.pipe.poll():
+            self._result = self.pipe.recv()
+            if self._result['raised_exception']:
                 # check for exception in child process and raise it
                 # here in the parent
                 raise WorkerException(
-                    result['exception'],
-                    result['traceback'],
+                    self._result['exception'],
+                    self._result['traceback'],
                 )
-            elif 'return_value' in result:
-                self._result = result
 
     def reap(self):
         """

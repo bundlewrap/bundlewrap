@@ -1,9 +1,10 @@
+from logging import getLogger
 from time import sleep
 from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.concurrency import Logger, Worker, WorkerPool
+from blockwart.concurrency import ChildLogHandler, Worker, WorkerPool
 from blockwart.exceptions import WorkerException
 
 
@@ -19,43 +20,27 @@ def _log_task():
 
 class LoggerTest(TestCase):
     """
-    Tests blockwart.concurrency.Logger.
+    Tests blockwart.concurrency.ChildLogHandler.
     """
     def test_send(self):
-        pipe = MagicMock()
-        l = Logger(pipe)
+        queue = MagicMock()
+        clh = ChildLogHandler(queue)
+        l = getLogger('child_log_handler_test_logger')
+        l.addHandler(clh)
         l.critical(1)
-        pipe.send.assert_called_once_with(
-            {'log_level': 'critical', 'log_msg': 1}
-        )
         l.debug(2)
-        pipe.send.assert_called_with(
-            {'log_level': 'debug', 'log_msg': 2}
-        )
         l.error(3)
-        pipe.send.assert_called_with(
-            {'log_level': 'error', 'log_msg': 3}
-        )
         l.info(4)
-        pipe.send.assert_called_with(
-            {'log_level': 'info', 'log_msg': 4}
-        )
         l.warning(5)
-        pipe.send.assert_called_with(
-            {'log_level': 'warning', 'log_msg': 5}
-        )
+        self.assertEqual(queue.put.call_count, 5)
 
     def test_logger_redirection(self):
-        with patch('blockwart.utils.LOG') as PATCHED_LOG:
+        with patch('blockwart.concurrency.LOG') as PATCHED_LOG:
             with Worker() as w:
                 w.start_task(_log_task)
                 w.reap()
 
-        PATCHED_LOG.debug.assert_called_once_with(1)
-        PATCHED_LOG.info.assert_called_once_with(2)
-        PATCHED_LOG.warning.assert_called_once_with(3)
-        PATCHED_LOG.error.assert_called_once_with(4)
-        PATCHED_LOG.critical.assert_called_once_with(5)
+        self.assertEqual(PATCHED_LOG.handle.call_count, 5)
 
 
 def _raise_exception():
