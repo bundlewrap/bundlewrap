@@ -5,7 +5,7 @@ from sys import exc_info
 from time import sleep
 from traceback import format_exception
 
-from fabric import state
+from fabric.network import disconnect_all
 
 from .exceptions import WorkerException
 from .utils import LOG
@@ -43,9 +43,7 @@ def _worker_process(pipe, log_queue):
         message = pipe.recv()
         if message['order'] == 'die':
             # clean up Fabric connections first...
-            for key in state.connections.keys():
-                state.connections[key].close()
-                del state.connections[key]
+            disconnect_all()
             # then die
             return
         else:

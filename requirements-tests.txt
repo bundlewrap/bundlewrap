@@ -1,7 +1,7 @@
 coverage
 coveralls
 distribute
-Fabric
+Fabric>=0.9.4
 Mako
 mock
 nose
