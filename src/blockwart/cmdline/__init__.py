@@ -2,6 +2,8 @@ import logging
 from os import getcwd
 from sys import argv, stdout
 
+from fabric import state
+
 from ..repo import Repository
 from .parser import build_parser_bw
 
@@ -52,3 +54,8 @@ def main(*args):
 
     for output_line in args.func(repo, args):
         print(output_line)
+
+    # clean up Fabric connections
+    for key in state.connections.keys():
+        state.connections[key].close()
+        del state.connections[key]
