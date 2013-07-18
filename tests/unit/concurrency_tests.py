@@ -4,7 +4,8 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.concurrency import ChildLogHandler, Worker, WorkerPool
+from blockwart.concurrency import _worker_process, ChildLogHandler, Worker, \
+    WorkerPool
 from blockwart.exceptions import WorkerException
 
 
@@ -41,6 +42,44 @@ class LoggerTest(TestCase):
                 w.reap()
 
         self.assertEqual(PATCHED_LOG.handle.call_count, 5)
+
+
+class WorkerProcessTest(TestCase):
+    """
+    Tests blockwart.concurrency._worker_process.
+    """
+    def test_simple_callable(self):
+        pipe = MagicMock()
+        pipe.poll.return_value = True
+        target = MagicMock()
+        result = MagicMock()
+        target.return_value = result
+        args = (1, 2)
+        kwargs = {'a': 1, 'b': 2}
+        pipe_input = [
+            {
+                'order': 'run',
+                'target_obj': None,
+                'target': target,
+                'args': args,
+                'kwargs': kwargs,
+            },
+            {
+                'order': 'die',
+            },
+        ]
+
+        def side_effect(*args):
+            return pipe_input.pop(0)
+
+        pipe.recv.side_effect = side_effect
+
+        _worker_process(pipe, MagicMock())
+        target.assert_called_once_with(1, 2, a=1, b=2)
+        pipe.send.assert_called_once_with({
+            'raised_exception': False,
+            'return_value': result,
+        })
 
 
 def _raise_exception():
