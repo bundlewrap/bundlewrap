@@ -216,7 +216,6 @@ class Node(object):
         return ApplyResult(self, item_results)
 
     def run(self, command, may_fail=False, sudo=True):
-        LOG.debug(_("running on {}: {}").format(self.name, command))
         return operations.run(
             self.hostname,
             command,
@@ -225,8 +224,6 @@ class Node(object):
         )
 
     def upload(self, local_path, remote_path):
-        LOG.debug(_("uploading to {}: {} -> {}").format(
-            self.name, local_path, remote_path))
         return operations.upload(
             self.hostname,
             local_path,

@@ -66,6 +66,8 @@ def upload(hostname, local_path, remote_path, ignore_failure=False):
     """
     Upload a file.
     """
+    LOG.debug(_("uploading to {}: {} -> {}").format(
+        hostname, local_path, remote_path))
     env.host_string = hostname
     fabric_result = _fabric_put(
         local_path=local_path,
