@@ -29,6 +29,7 @@ setup(
     ],
     install_requires=[
         "distribute",
+        "Fabric",
         "Mako",
     ],
     zip_safe=False,
