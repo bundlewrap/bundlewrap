@@ -50,4 +50,5 @@ def main(*args):
 
     set_up_logging(debug=args.debug, verbose=args.verbose)
 
-    args.func(repo, args)
+    for output_line in args.func(repo, args):
+        print(output_line)
