@@ -215,12 +215,13 @@ class Node(object):
         )
         return ApplyResult(self, item_results)
 
-    def run(self, command, may_fail=False):
+    def run(self, command, may_fail=False, sudo=True):
         LOG.debug(_("running on {}: {}").format(self.name, command))
-        return operations.sudo(
+        return operations.run(
             self.hostname,
             command,
             ignore_failure=may_fail,
+            sudo=sudo,
         )
 
     def upload(self, local_path, remote_path):

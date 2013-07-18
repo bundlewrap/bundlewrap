@@ -2,6 +2,7 @@ from stat import S_IRUSR, S_IWUSR
 
 from fabric.api import prefix
 from fabric.api import put as _fabric_put
+from fabric.api import run as _fabric_run
 from fabric.api import sudo as _fabric_sudo
 from fabric.state import env, output
 
@@ -24,9 +25,9 @@ class RunResult(object):
         return self.stdout
 
 
-def sudo(hostname, command, ignore_failure=False):
+def run(hostname, command, ignore_failure=False, sudo=True):
     """
-    Runs a command on a remote system via sudo.
+    Runs a command on a remote system.
     """
     env.host_string = hostname
 
@@ -34,8 +35,11 @@ def sudo(hostname, command, ignore_failure=False):
         hostname,
         command
     ))
+
+    runner = _fabric_sudo if sudo else _fabric_run
+
     with prefix("export LANG=C"):
-        fabric_result = _fabric_sudo(
+        fabric_result = runner(
             command,
             shell=True,
             pty=True,
