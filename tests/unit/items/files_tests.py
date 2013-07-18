@@ -4,7 +4,7 @@ from mock import MagicMock, patch
 
 from blockwart.exceptions import BundleError
 from blockwart.items import files
-from blockwart.node import RunResult
+from blockwart.operations import RunResult
 
 
 class StatTest(TestCase):

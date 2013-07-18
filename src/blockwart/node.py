@@ -1,8 +1,7 @@
-from paramiko.client import SSHClient, WarningPolicy
-
+from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, RemoteException, RepositoryError
+from .exceptions import ItemDependencyError, RepositoryError
 from .utils import cached_property, LOG, validate_name
 from .utils import mark_for_translation as _
 
@@ -172,16 +171,6 @@ def remove_dep_from_items(items, dep):
     return items
 
 
-class RunResult(object):
-    def __init__(self):
-        self.returncode = None
-        self.stderr = None
-        self.stdout = None
-
-    def __str__(self):
-        return self.stdout
-
-
 class Node(object):
     def __init__(self, repo, name, infodict=None):
         if infodict is None:
@@ -200,14 +189,6 @@ class Node(object):
 
     def __repr__(self):
         return "<Node '{}'>".format(self.name)
-
-    @cached_property
-    def _ssh_client(self):
-        client = SSHClient()
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(WarningPolicy())
-        client.connect(self.hostname)
-        return client
 
     @cached_property
     def bundles(self):
@@ -234,24 +215,19 @@ class Node(object):
         )
         return ApplyResult(self, item_results)
 
-    def run(self, command, may_fail=False, sudo=True):
+    def run(self, command, may_fail=False):
         LOG.debug(_("running on {}: {}").format(self.name, command))
-        chan = self._ssh_client.get_transport().open_session()
-        chan.get_pty()
-        if sudo:
-            command = "sudo " + command
-        chan.exec_command(command)
-        fstdout = chan.makefile('rb', -1)
-        fstderr = chan.makefile_stderr('rb', -1)
-        result = RunResult()
-        result.stdout = fstdout.read()
-        result.stderr = fstderr.read()
-        result.returncode = chan.recv_exit_status()
-        if result.returncode != 0 and not may_fail:
-            raise RemoteException(
-                _("command failed on {}: {}\n"
-                  "stdout: {}\n"
-                  "stderr: {}"
-                  ).format(self.name, command, result.stdout, result.stderr)
-            )
-        return result
+        return operations.sudo(
+            self.hostname,
+            command,
+            ignore_failure=may_fail,
+        )
+
+    def upload(self, local_path, remote_path):
+        LOG.debug(_("uploading to {}: {} -> {}").format(
+            self.name, local_path, remote_path))
+        return operations.upload(
+            self.hostname,
+            local_path,
+            remote_path,
+        )
