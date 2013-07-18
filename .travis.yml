@@ -9,3 +9,9 @@ before_script:
 - cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
 script: fab run_tests
 after_success: fab submit_coverage
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.org#blockwart"
+    use_notice: true
+    skip_join: true
