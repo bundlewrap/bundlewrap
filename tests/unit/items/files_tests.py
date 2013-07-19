@@ -1,10 +1,45 @@
+from platform import system
+from tempfile import mkstemp
 from unittest import TestCase
 
 from mock import MagicMock, patch
 
 from blockwart.exceptions import BundleError
 from blockwart.items import files
+from blockwart.node import Node
 from blockwart.operations import RunResult
+
+
+class HashLocalTest(TestCase):
+    """
+    Tests blockwart.items.files.hash_local_file.
+    """
+    def test_known_hash(self):
+        _, filename = mkstemp()
+        with open(filename, 'w') as f:
+            f.write("47")
+        self.assertEqual(
+            files.hash_local_file(filename),
+            "827bfc458708f0b442009c9c9836f7e4b65557fb",
+        )
+
+
+class HashRemoteTest(TestCase):
+    """
+    Tests blockwart.items.files.hash_remote_file.
+    """
+    def test_known_hash(self):
+        if system() == "Darwin":
+            # no 'sha1sum' on Mac OS
+            return
+        _, filename = mkstemp()
+        with open(filename, 'w') as f:
+            f.write("47")
+        node = Node(MagicMock(), "localhost")
+        self.assertEqual(
+            files.hash_remote_file(node, filename),
+            "827bfc458708f0b442009c9c9836f7e4b65557fb",
+        )
 
 
 class StatTest(TestCase):

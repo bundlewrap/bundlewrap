@@ -1,4 +1,5 @@
 from collections import defaultdict
+from hashlib import sha1
 from pipes import quote
 
 from blockwart.exceptions import BundleError
@@ -14,6 +15,24 @@ def content_processor_binary(attributes):
 CONTENT_PROCESSORS = {
     'binary': content_processor_binary,
 }
+
+
+def hash_local_file(path):
+    """
+    Retuns the sha1 hash of a file on the local machine.
+    """
+    hasher = sha1()
+    with open(path, 'rb') as f:
+        hasher.update(f.read())
+    return hasher.hexdigest()
+
+
+def hash_remote_file(node, path):
+    """
+    Returns the sha1 hash of a file on the given node.
+    """
+    result = node.run("sha1sum " + quote(path))
+    return result.stdout.strip().split()[0]
 
 
 def stat(node, filepath):
