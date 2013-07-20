@@ -3,6 +3,7 @@ Note that modules in this package have to use absolute imports because
 Repository.item_classes loads them as files.
 """
 from copy import copy
+from os.path import join
 
 from blockwart.exceptions import BundleError
 from blockwart.utils import ask_interactively
@@ -50,6 +51,7 @@ class Item(object):
     def __init__(self, bundle, name, attributes, skip_validation=False):
         self.attributes = {}
         self.bundle = bundle
+        self.item_dir = join(bundle.bundle_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
 
