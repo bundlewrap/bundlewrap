@@ -4,15 +4,10 @@ from pipes import quote
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils import mark_for_translation as _
-
-
-def content_processor_binary(attributes):
-    pass
-
 from blockwart.utils import cached_property, LOG, sha1
 
 CONTENT_PROCESSORS = {
-    'binary': content_processor_binary,
+    'binary': None,
 }
 
 
