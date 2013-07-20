@@ -72,7 +72,7 @@ def validator_mode(item_id, value):
               "").format(item_id, value)
         )
 
-ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda value: None)
+ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
 ATTRIBUTE_VALIDATORS.update({
     'content_type': validator_content_type,
     'mode': validator_mode,
