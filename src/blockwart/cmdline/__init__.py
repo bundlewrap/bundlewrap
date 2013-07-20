@@ -43,6 +43,7 @@ def main(*args):
         args = argv[1:]
 
     if len(args) >= 1 and args[0] == "repo":
+        # don't try to validate existing repo with 'bw repo create' etc.
         repo = Repository(getcwd(), skip_validation=True)
     else:
         repo = Repository(getcwd(), skip_validation=False)
