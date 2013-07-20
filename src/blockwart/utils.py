@@ -1,4 +1,5 @@
 import cProfile
+import hashlib
 from inspect import isgenerator
 import logging
 import pstats
@@ -98,6 +99,15 @@ def names(obj_list):
     """
     for obj in obj_list:
         yield obj.name
+
+
+def sha1(data):
+    """
+    Returns hex SHA1 hash for input.
+    """
+    hasher = hashlib.sha1()
+    hasher.update(data)
+    return hasher.hexdigest()
 
 
 def validate_name(name):

@@ -1,16 +1,15 @@
 from collections import defaultdict
-from hashlib import sha1
 from pipes import quote
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils import mark_for_translation as _
-from blockwart.utils import LOG
 
 
 def content_processor_binary(attributes):
     pass
 
+from blockwart.utils import cached_property, LOG, sha1
 
 CONTENT_PROCESSORS = {
     'binary': content_processor_binary,
@@ -21,10 +20,9 @@ def hash_local_file(path):
     """
     Retuns the sha1 hash of a file on the local machine.
     """
-    hasher = sha1()
     with open(path, 'rb') as f:
-        hasher.update(f.read())
-    return hasher.hexdigest()
+        sha1_hash = sha1(f.read())
+    return sha1_hash
 
 
 def hash_remote_file(node, path):
