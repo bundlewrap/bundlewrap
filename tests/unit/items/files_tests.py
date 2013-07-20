@@ -10,6 +10,24 @@ from blockwart.node import Node
 from blockwart.operations import RunResult
 
 
+class FileContentHashTest(TestCase):
+    """
+    Tests blockwart.items.files.File.content_hash.
+    """
+    @patch('blockwart.items.files.hash_local_file')
+    def test_binary(self, hash_local_file):
+        hash_local_file.return_value = "47"
+        bundle = MagicMock()
+        bundle.bundle_dir = "/b/dir"
+        f = files.File(
+            bundle,
+            "/foo",
+            {'content_type': 'binary', 'source': 'foobar'},
+        )
+        self.assertEqual(f.content_hash, "47")
+        hash_local_file.assert_called_once_with("/b/dir/files/foobar")
+
+
 class HashLocalTest(TestCase):
     """
     Tests blockwart.items.files.hash_local_file.

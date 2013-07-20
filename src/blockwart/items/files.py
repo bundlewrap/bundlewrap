@@ -1,4 +1,5 @@
 from collections import defaultdict
+from os.path import join
 from pipes import quote
 
 from blockwart.exceptions import BundleError
@@ -89,6 +90,21 @@ class File(Item):
         'source': None,
     }
     ITEM_TYPE_NAME = "file"
+
+    @cached_property
+    def content(self):
+        return CONTENT_PROCESSORS[self.attributes['content_type']](self)
+
+    @cached_property
+    def content_hash(self):
+        if self.attributes['content_type'] == 'binary':
+            return hash_local_file(self.template)
+        else:
+            return sha1(self.content)
+
+    @cached_property
+    def template(self):
+        return join(self.item_dir, self.attributes['source'])
 
     def ask(self):
         return ""
