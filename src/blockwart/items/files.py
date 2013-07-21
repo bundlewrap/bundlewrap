@@ -7,8 +7,13 @@ from blockwart.utils import cached_property, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
 
+
+def content_processor_mako(item):
+    pass
+
 CONTENT_PROCESSORS = {
     'binary': None,
+    'mako': content_processor_mako,
 }
 
 
