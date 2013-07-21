@@ -23,14 +23,14 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
         }
         ITEM_TYPE_NAME = "foo"
 
-        def ask(self):
+        def ask(self, status):
             """
             Returns a string asking the user if this item should be
             implemented.
             """
             return ""
 
-        def fix(self):
+        def fix(self, status):
             """
             ConfigItems override this to do their work.
             """

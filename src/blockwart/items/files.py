@@ -83,10 +83,10 @@ class File(Item):
     def template(self):
         return join(self.item_dir, self.attributes['source'])
 
-    def ask(self):
+    def ask(self, status):
         return ""
 
-    def fix(self):
+    def fix(self, status):
         CONTENT_PROCESSORS[self.attributes['content_type']](self.attributes)
 
     def get_status(self):

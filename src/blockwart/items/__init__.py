@@ -105,10 +105,11 @@ class Item(object):
             status_after = copy(status_before)
         else:
             if not interactive:
-                self.fix()
+                self.fix(status_before)
             else:
-                if ask_interactively(self.ask(), interactive_default):
-                    self.fix()
+                if ask_interactively(self.ask(status_before),
+                                     interactive_default):
+                    self.fix(status_before)
                 else:
                     status_after = copy(status_before)
                     status_after.aborted = True
@@ -116,7 +117,7 @@ class Item(object):
                 status_after = self.get_status()
         return (status_before, status_after)
 
-    def ask(self):
+    def ask(self, status):
         """
         Returns a string asking the user if this item should be
         implemented.
@@ -125,7 +126,7 @@ class Item(object):
         """
         raise NotImplementedError()
 
-    def fix(self):
+    def fix(self, status):
         """
         This is supposed to actually implement stuff on the target node.
 
