@@ -1,9 +1,29 @@
 from pipes import quote
 
 
-def exists(node, path):
+def _parse_file_output(file_output):
+    if file_output.startswith("cannot open `"):
+        return ('nonexistent', "")
+    elif file_output in ("directory", "sticky directory"):
+        return ('directory', file_output)
+    elif file_output in ("block special", "character special"):
+        return ('other', file_output)
+    elif file_output.startswith("symbolic link to "):
+        return ('symlink', file_output)
+    else:
+        return ('file', file_output)
+
+
+def get_path_type(node, path):
     """
-    Returns True if the given path exists on the given node
+    Returns (TYPE, DESC) where TYPE is one of:
+
+        'directory', 'file', 'nonexistent', 'other, 'symlink'
+
+    and DESC is the output of the 'file' command line utility.
     """
-    result = node.run("test -e {}".format(quote(path)), may_fail=True)
-    return result.return_code == 0
+    result = node.run("file -h {}".format(quote(path)), may_fail=True)
+    if result.return_code != 0:
+        return ('nonexistent', "")
+    file_output = result.stdout.split(":")[1].strip()
+    return _parse_file_output(file_output)
