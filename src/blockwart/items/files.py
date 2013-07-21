@@ -4,6 +4,7 @@ from os.path import join
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils import cached_property, sha1
+from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
 
 CONTENT_PROCESSORS = {
@@ -89,11 +90,23 @@ class File(Item):
         CONTENT_PROCESSORS[self.attributes['content_type']](self.attributes)
 
     def get_status(self):
-        return ItemStatus(
-            correct=True,
-            description="No description available.",
-            status_info={},
-        )
+        correct = True
+        path_info = PathInfo(self.node, self.name)
+        status_info = {'needs_fixing': [], 'path_info': path_info}
+
+        if path_info.mode != self.attributes['mode']:
+            status_info['needs_fixing'].append('mode')
+        if path_info.owner != self.attributes['owner'] or \
+                path_info.group != self.attributes['group']:
+            status_info['needs_fixing'].append('owner')
+        if path_info.sha1 != self.content_hash:
+            status_info['needs_fixing'].append('content')
+        if not path_info.is_file:
+            status_info['needs_fixing'].append('type')
+
+        if status_info['needs_fixing']:
+            correct = False
+        return ItemStatus(correct=correct, info=status_info)
 
     def validate_attributes(self, attributes):
         for key, value in attributes.items():

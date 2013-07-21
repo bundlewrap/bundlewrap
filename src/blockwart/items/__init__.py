@@ -27,13 +27,13 @@ class ItemStatus(object):
         correct=True,
         description="No description available.",
         fixable=True,
-        status_info=None,
+        info=None,
     ):
         self.aborted = False
         self.correct = correct
         self.description = description
         self.fixable = fixable
-        self.status_info = {} if status_info is None else status_info
+        self.info = {} if info is None else info
 
     def __repr__(self):
         return "<ItemStatus correct:{}>".format(self.correct)
