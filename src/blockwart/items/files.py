@@ -3,7 +3,7 @@ from os.path import join
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
-from blockwart.utils import cached_property, sha1
+from blockwart.utils import cached_property, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
 
@@ -87,7 +87,26 @@ class File(Item):
         return ""
 
     def fix(self, status):
-        CONTENT_PROCESSORS[self.attributes['content_type']](self.attributes)
+        for fix_type in ('type', 'content', 'mode', 'owner'):
+            if fix_type in status.info['needs_fixing']:
+                LOG.debug(_("fixing {} of {} on {}").format(
+                    fix_type,
+                    self.name,
+                    self.node.name,
+                ))
+                getattr(self, "_fix_" + fix_type)(status)
+
+    def _fix_content(self, status):
+        pass
+
+    def _fix_mode(self, status):
+        pass
+
+    def _fix_owner(self, status):
+        pass
+
+    def _fix_type(self, status):
+        pass
 
     def get_status(self):
         correct = True

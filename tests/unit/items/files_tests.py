@@ -4,7 +4,7 @@ from unittest import TestCase
 from mock import MagicMock, patch
 
 from blockwart.exceptions import BundleError
-from blockwart.items import files
+from blockwart.items import files, ItemStatus
 
 
 class FileContentHashTest(TestCase):
@@ -22,6 +22,86 @@ class FileContentHashTest(TestCase):
         )
         self.assertEqual(f.content_hash, "47")
         hash_local_file.assert_called_once_with("/b/dir/files/foobar")
+
+
+class FileFixTest(TestCase):
+    """
+    Tests blockwart.items.files.File.fix.
+    """
+    @patch('blockwart.items.files.File._fix_content')
+    @patch('blockwart.items.files.File._fix_mode')
+    @patch('blockwart.items.files.File._fix_owner')
+    @patch('blockwart.items.files.File._fix_type')
+    def test_type(self, fix_type, fix_owner, fix_mode, fix_content):
+        f = files.File(MagicMock(), "/", {})
+        status = ItemStatus(correct=False, info={
+            'needs_fixing': ['type', 'content', 'mode', 'owner'],
+        })
+        f.fix(status)
+        fix_type.assert_called_once_with(status)
+        fix_content.assert_called_once_with(status)
+        fix_mode.assert_called_once_with(status)
+        fix_owner.assert_called_once_with(status)
+
+    @patch('blockwart.items.files.File._fix_content')
+    @patch('blockwart.items.files.File._fix_mode')
+    @patch('blockwart.items.files.File._fix_owner')
+    @patch('blockwart.items.files.File._fix_type')
+    def test_content(self, fix_type, fix_owner, fix_mode, fix_content):
+        f = files.File(MagicMock(), "/", {})
+        status = ItemStatus(correct=False, info={
+            'needs_fixing': ['content'],
+        })
+        f.fix(status)
+        self.assertFalse(fix_type.called)
+        fix_content.assert_called_once_with(status)
+        self.assertFalse(fix_mode.called)
+        self.assertFalse(fix_owner.called)
+
+    @patch('blockwart.items.files.File._fix_content')
+    @patch('blockwart.items.files.File._fix_mode')
+    @patch('blockwart.items.files.File._fix_owner')
+    @patch('blockwart.items.files.File._fix_type')
+    def test_mode(self, fix_type, fix_owner, fix_mode, fix_content):
+        f = files.File(MagicMock(), "/", {})
+        status = ItemStatus(correct=False, info={
+            'needs_fixing': ['mode'],
+        })
+        f.fix(status)
+        self.assertFalse(fix_type.called)
+        fix_mode.assert_called_once_with(status)
+        self.assertFalse(fix_content.called)
+        self.assertFalse(fix_owner.called)
+
+    @patch('blockwart.items.files.File._fix_content')
+    @patch('blockwart.items.files.File._fix_mode')
+    @patch('blockwart.items.files.File._fix_owner')
+    @patch('blockwart.items.files.File._fix_type')
+    def test_owner(self, fix_type, fix_owner, fix_mode, fix_content):
+        f = files.File(MagicMock(), "/", {})
+        status = ItemStatus(correct=False, info={
+            'needs_fixing': ['owner'],
+        })
+        f.fix(status)
+        self.assertFalse(fix_type.called)
+        fix_owner.assert_called_once_with(status)
+        self.assertFalse(fix_content.called)
+        self.assertFalse(fix_mode.called)
+
+    @patch('blockwart.items.files.File._fix_content')
+    @patch('blockwart.items.files.File._fix_mode')
+    @patch('blockwart.items.files.File._fix_owner')
+    @patch('blockwart.items.files.File._fix_type')
+    def test_combined(self, fix_type, fix_owner, fix_mode, fix_content):
+        f = files.File(MagicMock(), "/", {})
+        status = ItemStatus(correct=False, info={
+            'needs_fixing': ['owner', 'mode'],
+        })
+        f.fix(status)
+        self.assertFalse(fix_type.called)
+        fix_owner.assert_called_once_with(status)
+        fix_mode.assert_called_once_with(status)
+        self.assertFalse(fix_content.called)
 
 
 class FileGetStatusTest(TestCase):
