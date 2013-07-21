@@ -100,9 +100,9 @@ class File(Item):
                 path_info.group != self.attributes['group']:
             status_info['needs_fixing'].append('owner')
         if path_info.sha1 != self.content_hash:
-            status_info['needs_fixing'].append('content')
+            status_info['needs_fixing'] += ['content', 'mode', 'owner']
         if not path_info.is_file:
-            status_info['needs_fixing'].append('type')
+            status_info['needs_fixing'] += ['type', 'content', 'mode', 'owner']
 
         if status_info['needs_fixing']:
             correct = False

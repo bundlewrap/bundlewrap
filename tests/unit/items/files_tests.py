@@ -106,7 +106,10 @@ class FileGetStatusTest(TestCase):
         })
         status = f.get_status()
         self.assertFalse(status.correct)
-        self.assertEqual(status.info['needs_fixing'], ['content'])
+        self.assertEqual(
+            set(status.info['needs_fixing']),
+            set(['content', 'mode', 'owner']),
+        )
 
     @patch('blockwart.items.files.File.content_hash', new="47")
     @patch('blockwart.items.files.PathInfo')
@@ -126,7 +129,10 @@ class FileGetStatusTest(TestCase):
         })
         status = f.get_status()
         self.assertFalse(status.correct)
-        self.assertEqual(status.info['needs_fixing'], ['type'])
+        self.assertEqual(
+            set(status.info['needs_fixing']),
+            set(['type', 'content', 'mode', 'owner']),
+        )
 
     @patch('blockwart.items.files.File.content_hash', new="47")
     @patch('blockwart.items.files.PathInfo')
