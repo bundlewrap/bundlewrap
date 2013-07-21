@@ -55,6 +55,9 @@ class PathInfo(object):
         self.path_type, self.desc = get_path_type(node, path)
         self.stat = stat(node, path)
 
+    def __repr__(self):
+        return "<PathInfo for {}:{}>".format(self.node.name, quote(self.path))
+
     @property
     def exists(self):
         return self.path_type != 'nonexistent'
