@@ -11,7 +11,14 @@ from blockwart.utils.text import mark_for_translation as _
 
 
 def content_processor_mako(item):
-    pass
+    from mako.lookup import TemplateLookup
+    lookup = TemplateLookup(
+        directories=[item.item_dir],
+        input_encoding='utf-8',
+    )
+    template = lookup.get_template(item.attributes['source'])
+    return template.render(item=item, bundle=item.bundle, node=item.node,
+                           repo=item.node.repo)
 
 CONTENT_PROCESSORS = {
     'binary': None,

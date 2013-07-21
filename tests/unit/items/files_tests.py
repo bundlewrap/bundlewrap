@@ -1,10 +1,31 @@
-from tempfile import mkstemp
+from os import makedirs
+from os.path import join
+from tempfile import mkdtemp, mkstemp
 from unittest import TestCase
 
 from mock import MagicMock, patch
 
 from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
+
+
+class ContentProcessorMakoTest(TestCase):
+    """
+    Tests blockwart.items.files.content_processor_mako.
+    """
+    def test_template(self):
+        return
+        item = MagicMock()
+        item.node.name = "localhost"
+        item.item_dir = mkdtemp()
+        makedirs(join(item.item_dir, "a/b"))
+        item.attributes = {'source': "a/b/c"}
+        with open(join(item.item_dir, "a/b/c"), 'w') as f:
+            f.write("Hi from ${node.name}!")
+        self.assertEqual(
+            files.content_processor_mako(item),
+            "Hi from localhost!",
+        )
 
 
 class FileContentHashTest(TestCase):
