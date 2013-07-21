@@ -6,16 +6,17 @@ from unittest import TestCase
 from mock import MagicMock, patch
 
 from blockwart import utils
+from blockwart.utils import text, ui
 
 
 class AskInteractivelyTest(TestCase):
     """
-    Tests blockwart.items._ask_interactively.
+    Tests blockwart.utils.ui.ask_interactively.
     """
     def test_yes(self):
         get_input = MagicMock(return_value="y")
         self.assertEqual(
-            utils.ask_interactively("OHAI?", True, get_input=get_input),
+            ui.ask_interactively("OHAI?", True, get_input=get_input),
             True,
         )
         get_input.assert_called_once_with("OHAI? [Y/n] ")
@@ -23,7 +24,7 @@ class AskInteractivelyTest(TestCase):
     def test_no(self):
         get_input = MagicMock(return_value="n")
         self.assertEqual(
-            utils.ask_interactively("OHAI?", True, get_input=get_input),
+            ui.ask_interactively("OHAI?", True, get_input=get_input),
             False,
         )
         get_input.assert_called_once_with("OHAI? [Y/n] ")
@@ -31,7 +32,7 @@ class AskInteractivelyTest(TestCase):
     def test_default_yes(self):
         get_input = MagicMock(return_value="")
         self.assertEqual(
-            utils.ask_interactively("OHAI?", True, get_input=get_input),
+            ui.ask_interactively("OHAI?", True, get_input=get_input),
             True,
         )
         get_input.assert_called_once_with("OHAI? [Y/n] ")
@@ -39,7 +40,7 @@ class AskInteractivelyTest(TestCase):
     def test_default_no(self):
         get_input = MagicMock(return_value="")
         self.assertEqual(
-            utils.ask_interactively("OHAI?", False, get_input=get_input),
+            ui.ask_interactively("OHAI?", False, get_input=get_input),
             False,
         )
         get_input.assert_called_once_with("OHAI? [y/N] ")
@@ -52,7 +53,7 @@ class AskInteractivelyTest(TestCase):
 
         get_input = MagicMock(side_effect=side_effect)
         self.assertEqual(
-            utils.ask_interactively("OHAI?", False, get_input=get_input),
+            ui.ask_interactively("OHAI?", False, get_input=get_input),
             True,
         )
         self.assertEqual(get_input.call_count, 4)
@@ -60,7 +61,7 @@ class AskInteractivelyTest(TestCase):
 
 class CachedPropertyTest(TestCase):
     """
-    Tests blockwart.utils.utils.cached_property.
+    Tests blockwart.utils.cached_property.
     """
     def test_called_once(self):
         class ExampleClass(object):
@@ -158,7 +159,7 @@ class NamesTest(TestCase):
 
 class NameValidationTest(TestCase):
     """
-    Tests blockwart.utils.validate_name.
+    Tests blockwart.utils.text.validate_name.
     """
     def test_good_names(self):
         for name in (
@@ -168,7 +169,7 @@ class NameValidationTest(TestCase):
             "foo.bar",
             "foo...",
         ):
-            self.assertTrue(utils.validate_name(name))
+            self.assertTrue(text.validate_name(name))
 
     def test_bad_names(self):
         for name in (
@@ -177,4 +178,4 @@ class NameValidationTest(TestCase):
             "foo,bar",
             "foo;bar",
         ):
-            self.assertFalse(utils.validate_name(name))
+            self.assertFalse(text.validate_name(name))

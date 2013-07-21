@@ -7,7 +7,8 @@ from fabric.api import sudo as _fabric_sudo
 from fabric.state import env, output
 
 from .exceptions import RemoteException
-from .utils import LOG, mark_for_translation as _
+from .utils import LOG
+from .utils.text import mark_for_translation as _
 
 env.warn_only = True
 # silence fabric

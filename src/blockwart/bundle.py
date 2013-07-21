@@ -1,8 +1,8 @@
 from os.path import join
 
 from .exceptions import RepositoryError
-from .utils import cached_property, get_all_attrs_from_file, validate_name
-from .utils import mark_for_translation as _
+from .utils import cached_property, get_all_attrs_from_file
+from .utils.text import mark_for_translation as _, validate_name
 
 FILENAME_BUNDLE = "bundle.py"
 

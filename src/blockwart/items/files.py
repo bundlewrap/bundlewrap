@@ -4,8 +4,8 @@ from pipes import quote
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
-from blockwart.utils import mark_for_translation as _
 from blockwart.utils import cached_property, LOG, sha1
+from blockwart.utils.text import mark_for_translation as _
 
 CONTENT_PROCESSORS = {
     'binary': None,

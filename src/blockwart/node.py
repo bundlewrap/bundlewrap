@@ -2,8 +2,8 @@ from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
 from .exceptions import ItemDependencyError, RepositoryError
-from .utils import cached_property, LOG, validate_name
-from .utils import mark_for_translation as _
+from .utils import cached_property
+from .utils.text import mark_for_translation as _, validate_name
 
 
 class ApplyResult(object):

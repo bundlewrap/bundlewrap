@@ -3,12 +3,10 @@ import hashlib
 from inspect import isgenerator
 import logging
 import pstats
-from string import digits, letters
 
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
-VALID_NAME_CHARS = digits + letters + "-_.+"
 
 LOG = logging.getLogger('blockwart')
 
@@ -86,10 +84,6 @@ def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
         return env.get(attrname, default)
 
 
-def mark_for_translation(s):
-    return s
-
-
 def names(obj_list):
     """
     Iterator over the name properties of a given list of objects.
@@ -108,34 +102,3 @@ def sha1(data):
     hasher = hashlib.sha1()
     hasher.update(data)
     return hasher.hexdigest()
-
-
-def validate_name(name):
-    """
-    Checks whether the given string is a valid name for a node, group,
-    or bundle.
-    """
-    try:
-        for char in name:
-            assert char in VALID_NAME_CHARS
-        assert not name.startswith(".")
-    except AssertionError:
-        return False
-    return True
-
-
-def ask_interactively(question, default, get_input=raw_input):
-    _ = mark_for_translation
-    answers = _("[Y/n]") if default else _("[y/N]")
-    question = question + " " + answers + " "
-    while True:
-        answer = get_input(question)
-        if answer.lower() in (_("y"), _("yes")) or (
-            not answer and default
-        ):
-            return True
-        elif answer.lower() in (_("n"), _("no")) or (
-            not answer and not default
-        ):
-            return False
-        print(_("Please answer with 'y(es)' or 'n(o)'."))

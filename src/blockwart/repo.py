@@ -6,7 +6,7 @@ from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .group import Group
 from .node import Node
 from . import utils
-from .utils import mark_for_translation as _
+from .utils.text import mark_for_translation as _, validate_name
 
 DIRNAME_BUNDLES = "bundles"
 DIRNAME_ITEM_TYPES = "items"
@@ -85,7 +85,7 @@ class Repository(object):
         Returns the names of all bundles in this repository.
         """
         for dir_entry in listdir(self.bundles_dir):
-            if utils.validate_name(dir_entry):
+            if validate_name(dir_entry):
                 yield dir_entry
 
     @utils.cached_property

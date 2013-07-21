@@ -1,6 +1,7 @@
 from ..concurrency import WorkerPool
 from ..exceptions import UsageException
-from ..utils import LOG, mark_for_translation as _
+from ..utils import LOG
+from ..utils.text import mark_for_translation as _
 
 
 def _get_target_list(repo, groups, nodes):

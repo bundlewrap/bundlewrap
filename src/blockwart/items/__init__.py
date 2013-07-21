@@ -6,8 +6,8 @@ from copy import copy
 from os.path import join
 
 from blockwart.exceptions import BundleError
-from blockwart.utils import ask_interactively
-from blockwart.utils import mark_for_translation as _
+from blockwart.utils.text import mark_for_translation as _
+from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
     "depends": [],

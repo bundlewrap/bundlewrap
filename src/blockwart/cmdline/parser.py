@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 from .. import VERSION_STRING
-from ..utils import mark_for_translation as _
+from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .nodes import bw_nodes
 from .repo import bw_repo_create, bw_repo_debug

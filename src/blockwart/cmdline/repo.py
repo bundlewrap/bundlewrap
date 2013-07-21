@@ -2,7 +2,7 @@ from code import interact
 
 from .. import VERSION_STRING
 from ..repo import Repository
-from ..utils import mark_for_translation as _
+from ..utils.text import mark_for_translation as _
 
 
 DEBUG_BANNER = _("blockwart {} interactive repository inspector\n"

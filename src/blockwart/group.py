@@ -1,8 +1,8 @@
 import re
 
 from .exceptions import RepositoryError
-from .utils import cached_property, getattr_from_file, validate_name
-from .utils import mark_for_translation as _
+from .utils import cached_property, getattr_from_file
+from .utils.text import mark_for_translation as _, validate_name
 
 
 def _build_error_chain(loop_node, last_node, nodes_in_between):
