@@ -157,6 +157,40 @@ class FileFixContentTest(TestCase):
         node.upload.assert_called_once()
 
 
+class FileFixModeTest(TestCase):
+    """
+    Tests blockwart.items.files.File._fix_mode.
+    """
+    def test_chmod(self):
+        node = MagicMock()
+        bundle = MagicMock()
+        bundle.node = node
+        f = files.File(
+            bundle,
+            "/foo",
+            {'mode': "1234"},
+        )
+        f._fix_mode(MagicMock())
+        node.run.assert_called_once_with("chmod 1234 /foo")
+
+
+class FileFixOwnerTest(TestCase):
+    """
+    Tests blockwart.items.files.File._fix_owner.
+    """
+    def test_chmod(self):
+        node = MagicMock()
+        bundle = MagicMock()
+        bundle.node = node
+        f = files.File(
+            bundle,
+            "/foo",
+            {'owner': "jcleese", 'group': "mp"},
+        )
+        f._fix_owner(MagicMock())
+        node.run.assert_called_once_with("chown jcleese:mp /foo")
+
+
 class FileGetStatusTest(TestCase):
     """
     Tests blockwart.items.files.File.get_status.

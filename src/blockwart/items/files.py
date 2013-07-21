@@ -1,6 +1,7 @@
 from collections import defaultdict
 from os import remove
 from os.path import join
+from pipes import quote
 from tempfile import mkstemp
 
 from blockwart.exceptions import BundleError
@@ -124,10 +125,17 @@ class File(Item):
                 remove(local_path)
 
     def _fix_mode(self, status):
-        pass
+        self.node.run("chmod {} {}".format(
+            self.attributes['mode'],
+            quote(self.name),
+        ))
 
     def _fix_owner(self, status):
-        pass
+        self.node.run("chown {}:{} {}".format(
+            quote(self.attributes['owner']),
+            quote(self.attributes['group']),
+            quote(self.name),
+        ))
 
     def _fix_type(self, status):
         pass
