@@ -1,6 +1,7 @@
 from pipes import quote
 
-from ..utils import cached_property
+from . import cached_property, LOG
+from .text import mark_for_translation as _
 
 
 def _parse_file_output(file_output):
@@ -29,6 +30,21 @@ def get_path_type(node, path):
         return ('nonexistent', "")
     file_output = result.stdout.split(":")[1].strip()
     return _parse_file_output(file_output)
+
+
+def stat(node, filepath):
+    result = node.run("stat --printf '%U:%G:%a' {}".format(
+        quote(filepath),
+    ))
+    owner, group, mode = result.stdout.split(":")
+    mode = mode.zfill(4)
+    file_stat = {'owner': owner, 'group': group, 'mode': mode}
+    LOG.debug(_("stat for '{}' on {}: {}".format(
+        filepath,
+        node.name,
+        repr(file_stat),
+    )))
+    return file_stat
 
 
 class PathInfo(object):

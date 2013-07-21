@@ -5,7 +5,6 @@ from mock import MagicMock, patch
 
 from blockwart.exceptions import BundleError
 from blockwart.items import files
-from blockwart.operations import RunResult
 
 
 class FileContentHashTest(TestCase):
@@ -38,35 +37,6 @@ class HashLocalTest(TestCase):
             files.hash_local_file(filename),
             "827bfc458708f0b442009c9c9836f7e4b65557fb",
         )
-
-
-class StatTest(TestCase):
-    """
-    Tests blockwart.items.files.stat.
-    """
-    def test_long_mode(self):
-        node = MagicMock()
-        run_result = RunResult()
-        run_result.stdout = "user:group:7777"
-        node.run.return_value = run_result
-        stat_result = files.stat(node, "/dev/null")
-        self.assertEqual(stat_result, {
-            'owner': "user",
-            'group': "group",
-            'mode': "7777",
-        })
-
-    def test_short_mode(self):
-        node = MagicMock()
-        run_result = RunResult()
-        run_result.stdout = "user:group:666"
-        node.run.return_value = run_result
-        stat_result = files.stat(node, "/dev/null")
-        self.assertEqual(stat_result, {
-            'owner': "user",
-            'group': "group",
-            'mode': "0666",
-        })
 
 
 class ValidatorModeTest(TestCase):

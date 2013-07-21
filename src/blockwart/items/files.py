@@ -1,10 +1,9 @@
 from collections import defaultdict
 from os.path import join
-from pipes import quote
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
-from blockwart.utils import cached_property, LOG, sha1
+from blockwart.utils import cached_property, sha1
 from blockwart.utils.text import mark_for_translation as _
 
 CONTENT_PROCESSORS = {
@@ -19,21 +18,6 @@ def hash_local_file(path):
     with open(path, 'rb') as f:
         sha1_hash = sha1(f.read())
     return sha1_hash
-
-
-def stat(node, filepath):
-    result = node.run("stat --printf '%U:%G:%a' {}".format(
-        quote(filepath),
-    ))
-    owner, group, mode = result.stdout.split(":")
-    mode = mode.zfill(4)
-    file_stat = {'owner': owner, 'group': group, 'mode': mode}
-    LOG.debug(_("stat for '{}' on {}: {}".format(
-        filepath,
-        node.name,
-        repr(file_stat),
-    )))
-    return file_stat
 
 
 def validator_content_type(item_id, value):
