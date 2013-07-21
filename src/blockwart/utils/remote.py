@@ -32,15 +32,13 @@ def get_path_type(node, path):
     return _parse_file_output(file_output)
 
 
-def stat(node, filepath):
-    result = node.run("stat --printf '%U:%G:%a' {}".format(
-        quote(filepath),
-    ))
+def stat(node, path):
+    result = node.run("stat --printf '%U:%G:%a' {}".format(quote(path)))
     owner, group, mode = result.stdout.split(":")
     mode = mode.zfill(4)
     file_stat = {'owner': owner, 'group': group, 'mode': mode}
     LOG.debug(_("stat for '{}' on {}: {}".format(
-        filepath,
+        path,
         node.name,
         repr(file_stat),
     )))
@@ -55,10 +53,15 @@ class PathInfo(object):
         self.node = node
         self.path = path
         self.path_type, self.desc = get_path_type(node, path)
+        self.stat = stat(node, path)
 
     @property
     def exists(self):
         return self.path_type != 'nonexistent'
+
+    @property
+    def group(self):
+        return self.stat['group']
 
     @property
     def is_binary_file(self):
@@ -79,6 +82,14 @@ class PathInfo(object):
     @property
     def is_text_file(self):
         return self.is_file and "text" in self.desc
+
+    @property
+    def mode(self):
+        return self.stat['mode']
+
+    @property
+    def owner(self):
+        return self.stat['owner']
 
     @cached_property
     def sha1(self):

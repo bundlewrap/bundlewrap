@@ -61,9 +61,10 @@ class PathInfoTest(TestCase):
     """
     Tests blockwart.utils.remote.PathInfo.
     """
+    @patch('blockwart.utils.remote.stat')
     @patch('blockwart.utils.remote.get_path_type', return_value=(
         'nonexistent', ""))
-    def test_nonexistent(self, get_path_type):
+    def test_nonexistent(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
         self.assertFalse(p.exists)
         self.assertFalse(p.is_binary_file)
@@ -74,9 +75,10 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
+    @patch('blockwart.utils.remote.stat')
     @patch('blockwart.utils.remote.get_path_type', return_value=(
         'file', "data"))
-    def test_binary(self, get_path_type):
+    def test_binary(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
         self.assertTrue(p.exists)
         self.assertTrue(p.is_binary_file)
@@ -87,9 +89,10 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
+    @patch('blockwart.utils.remote.stat')
     @patch('blockwart.utils.remote.get_path_type', return_value=(
         'directory', "directory"))
-    def test_directory(self, get_path_type):
+    def test_directory(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
         self.assertTrue(p.exists)
         self.assertFalse(p.is_binary_file)
@@ -100,9 +103,10 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
+    @patch('blockwart.utils.remote.stat')
     @patch('blockwart.utils.remote.get_path_type', return_value=(
         'file', "ASCII English text"))
-    def test_text(self, get_path_type):
+    def test_text(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
         self.assertTrue(p.exists)
         self.assertFalse(p.is_binary_file)
@@ -113,9 +117,10 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
+    @patch('blockwart.utils.remote.stat')
     @patch('blockwart.utils.remote.get_path_type', return_value=(
         'symlink', "symbolic link to `/47'"))
-    def test_symlink(self, get_path_type):
+    def test_symlink(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
         self.assertTrue(p.exists)
         self.assertFalse(p.is_binary_file)
@@ -138,6 +143,17 @@ class PathInfoTest(TestCase):
             p.sha1,
             "827bfc458708f0b442009c9c9836f7e4b65557fb",
         )
+
+    @patch('blockwart.utils.remote.stat', return_value={
+        'owner': "foo",
+        'group': "bar",
+        'mode': "4747",
+    })
+    def test_stat(self, stat):
+        p = remote.PathInfo(MagicMock(), "/")
+        self.assertEqual(p.owner, "foo")
+        self.assertEqual(p.group, "bar")
+        self.assertEqual(p.mode, "4747")
 
 
 class StatTest(TestCase):
