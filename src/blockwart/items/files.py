@@ -1,5 +1,7 @@
 from collections import defaultdict
+from os import remove
 from os.path import join
+from tempfile import mkstemp
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
@@ -102,7 +104,17 @@ class File(Item):
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content(self, status):
-        pass
+        if self.attributes['content_type'] == 'binary':
+            local_path = self.template
+        else:
+            handle, local_path = mkstemp()
+            with open(local_path, 'w') as f:
+                f.write(self.content)
+        try:
+            self.node.upload(local_path, self.name)
+        finally:
+            if self.attributes['content_type'] != 'binary':
+                remove(local_path)
 
     def _fix_mode(self, status):
         pass

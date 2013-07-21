@@ -104,6 +104,38 @@ class FileFixTest(TestCase):
         self.assertFalse(fix_content.called)
 
 
+class FileFixContentTest(TestCase):
+    """
+    Tests blockwart.items.files.File._fix_content.
+    """
+    def test_binary(self):
+        node = MagicMock()
+        bundle = MagicMock()
+        bundle.bundle_dir = "/b/dir"
+        bundle.node = node
+        f = files.File(
+            bundle,
+            "/foo",
+            {'content_type': 'binary', 'source': 'foobar'},
+        )
+        f._fix_content(MagicMock())
+        node.upload.assert_called_once_with("/b/dir/files/foobar", "/foo")
+
+    @patch('blockwart.items.files.File.content', new="47")
+    def test_regular(self):
+        node = MagicMock()
+        bundle = MagicMock()
+        bundle.bundle_dir = "/b/dir"
+        bundle.node = node
+        f = files.File(
+            bundle,
+            "/foo",
+            {'content_type': 'mako'},
+        )
+        f._fix_content(MagicMock())
+        node.upload.assert_called_once()
+
+
 class FileGetStatusTest(TestCase):
     """
     Tests blockwart.items.files.File.get_status.
