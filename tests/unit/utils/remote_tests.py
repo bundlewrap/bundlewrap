@@ -1,4 +1,5 @@
 from os import remove, symlink
+from platform import system
 from tempfile import mkstemp
 from unittest import TestCase
 
@@ -122,3 +123,17 @@ class PathInfoTest(TestCase):
         self.assertTrue(p.is_symlink)
         self.assertFalse(p.is_text_file)
         self.assertEqual(p.symlink_target, "/47")
+
+    def test_sha1(self):
+        if system() == "Darwin":
+            # no 'sha1sum' on Mac OS
+            return
+        _, filename = mkstemp()
+        with open(filename, 'w') as f:
+            f.write("47")
+        node = Node(MagicMock(), "localhost")
+        p = remote.PathInfo(node, filename)
+        self.assertEqual(
+            p.sha1,
+            "827bfc458708f0b442009c9c9836f7e4b65557fb",
+        )

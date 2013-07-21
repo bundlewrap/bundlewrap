@@ -1,5 +1,7 @@
 from pipes import quote
 
+from ..utils import cached_property
+
 
 def _parse_file_output(file_output):
     if file_output.startswith("cannot open `"):
@@ -34,6 +36,7 @@ class PathInfo(object):
     Serves as a proxy to get_path_type.
     """
     def __init__(self, node, path):
+        self.node = node
         self.path = path
         self.path_type, self.desc = get_path_type(node, path)
 
@@ -60,6 +63,11 @@ class PathInfo(object):
     @property
     def is_text_file(self):
         return self.is_file and "text" in self.desc
+
+    @cached_property
+    def sha1(self):
+        result = self.node.run("sha1sum " + quote(self.path))
+        return result.stdout.strip().split()[0]
 
     @property
     def symlink_target(self):

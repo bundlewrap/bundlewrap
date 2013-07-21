@@ -21,14 +21,6 @@ def hash_local_file(path):
     return sha1_hash
 
 
-def hash_remote_file(node, path):
-    """
-    Returns the sha1 hash of a file on the given node.
-    """
-    result = node.run("sha1sum " + quote(path))
-    return result.stdout.strip().split()[0]
-
-
 def stat(node, filepath):
     result = node.run("stat --printf '%U:%G:%a' {}".format(
         quote(filepath),
