@@ -134,7 +134,7 @@ class WorkerTest(TestCase):
         with Worker() as w:
             w.start_task(sleep, args=(.01,))
             self.assertTrue(w.is_busy)
-            sleep(.02)
+            sleep(.03)
             self.assertFalse(w.is_busy)
 
     def test_init_not_busy(self):
