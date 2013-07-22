@@ -14,7 +14,6 @@ class ContentProcessorMakoTest(TestCase):
     Tests blockwart.items.files.content_processor_mako.
     """
     def test_template(self):
-        return
         item = MagicMock()
         item.node.name = "localhost"
         item.item_dir = mkdtemp()
