@@ -138,7 +138,7 @@ class File(Item):
         ))
 
     def _fix_type(self, status):
-        pass
+        self.node.run("rm -rf {}".format(quote(self.name)))
 
     def get_status(self):
         correct = True

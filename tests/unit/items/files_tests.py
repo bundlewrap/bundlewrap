@@ -190,6 +190,23 @@ class FileFixOwnerTest(TestCase):
         node.run.assert_called_once_with("chown jcleese:mp /foo")
 
 
+class FileFixTypeTest(TestCase):
+    """
+    Tests blockwart.items.files.File._fix_type.
+    """
+    def test_rm(self):
+        node = MagicMock()
+        bundle = MagicMock()
+        bundle.node = node
+        f = files.File(
+            bundle,
+            "/foo",
+            {},
+        )
+        f._fix_type(MagicMock())
+        node.run.assert_called_once_with("rm -rf /foo")
+
+
 class FileGetStatusTest(TestCase):
     """
     Tests blockwart.items.files.File.get_status.
