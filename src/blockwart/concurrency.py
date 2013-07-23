@@ -9,6 +9,9 @@ from fabric.network import disconnect_all
 
 from .exceptions import WorkerException
 from .utils import LOG
+from .utils.text import mark_for_translation as _
+
+JOIN_TIMEOUT = 5
 
 
 class ChildLogHandler(Handler):
@@ -149,7 +152,17 @@ class Worker(object):
         except IOError:
             pass
         self.pipe.close()
-        self.process.join()
+        self.process.join(JOIN_TIMEOUT)
+        if self.process.is_alive():
+            LOG.warn(_(
+                "worker process with ID '{}' and PID {} didn't join "
+                "within {} seconds, terminating...").format(
+                    self.id,
+                    self.process.pid,
+                    JOIN_TIMEOUT,
+                )
+            )
+            self.process.terminate()
 
     def start_task(self, target, id=None, args=None, kwargs=None):
         """
