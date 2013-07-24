@@ -99,7 +99,48 @@ class File(Item):
         return join(self.item_dir, self.attributes['source'])
 
     def ask(self, status):
-        return ""
+        if 'type' in status.info['needs_fixing']:
+            return _(
+                "Not a regular file. "
+                "The `file` utility says it's a '{}'.\n"
+                "Do you want it removed and replaced?"
+            ).format(
+                self.name,
+                status.info['path_info'].desc,
+            )
+
+        question = ""
+
+        if 'content' in status.info['needs_fixing']:
+            question += _("Wrong contents.\n")
+            if status.info['path_info'].is_text_file and \
+                    not self.attributes['content_type'] == 'binary':
+                # diff
+                pass
+            else:
+                question += _(
+                    "According to the `file` utility, it contains '{}'.\n"
+                ).format(status.info['path_info'].desc)
+
+        if 'mode' in status.info['needs_fixing']:
+            question += _(
+                "Mode is {}, should be {}.\n"
+            ).format(
+                status.info['path_info'].mode,
+                self.attributes['mode'],
+            )
+
+        if 'owner' in status.info['needs_fixing']:
+            question += _(
+                "Owner/group is '{}:{}', should be '{}:{}'.\n"
+            ).format(
+                status.info['path_info'].owner,
+                status.info['path_info'].group,
+                self.attributes['owner'],
+                self.attributes['group'],
+            )
+
+        return question + _("Fix file '{}'?").format(self.name)
 
     def fix(self, status):
         for fix_type in ('type', 'content', 'mode', 'owner'):
