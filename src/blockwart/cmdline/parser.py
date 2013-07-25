@@ -9,7 +9,9 @@ from .run import bw_run
 
 
 def build_parser_bw():
-    parser = ArgumentParser(prog="bw")
+    parser = ArgumentParser(prog="bw", description=_(
+        "Blockwart - config management for Python addicts"
+    ))
     parser.add_argument(
         '-d',
         '--debug',
