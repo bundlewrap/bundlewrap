@@ -215,6 +215,13 @@ class Node(object):
         )
         return ApplyResult(self, item_results)
 
+    def download(self, remote_path, local_path):
+        return operations.download(
+            self.hostname,
+            remote_path,
+            local_path,
+        )
+
     def run(self, command, may_fail=False, sudo=True):
         return operations.run(
             self.hostname,

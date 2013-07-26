@@ -1,6 +1,7 @@
 from stat import S_IRUSR, S_IWUSR
 
 from fabric.api import prefix
+from fabric.api import get as _fabric_get
 from fabric.api import put as _fabric_put
 from fabric.api import run as _fabric_run
 from fabric.api import sudo as _fabric_sudo
@@ -14,6 +15,26 @@ env.warn_only = True
 # silence fabric
 for key in output:
     output[key] = False
+
+
+def download(hostname, local_path, remote_path, ignore_failure=False):
+    """
+    Download a file.
+    """
+    LOG.debug(_("downloading {}:{} -> {}").format(
+        hostname, remote_path, local_path))
+    env.host_string = hostname
+    fabric_result = _fabric_get(
+        remote_path=remote_path,
+        local_path=local_path,
+    )
+    if not ignore_failure and fabric_result.failed:
+        raise RemoteException(_(
+            "download from {} failed for: {}").format(
+                hostname,
+                ", ".join(fabric_result.failed),
+            )
+        )
 
 
 class RunResult(object):
@@ -67,8 +88,8 @@ def upload(hostname, local_path, remote_path, ignore_failure=False):
     """
     Upload a file.
     """
-    LOG.debug(_("uploading to {}: {} -> {}").format(
-        hostname, local_path, remote_path))
+    LOG.debug(_("uploading {} -> {}:{}").format(
+        local_path, hostname, remote_path))
     env.host_string = hostname
     fabric_result = _fabric_put(
         local_path=local_path,
