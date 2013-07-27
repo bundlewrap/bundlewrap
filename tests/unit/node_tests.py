@@ -24,6 +24,8 @@ class MockItem(Item):
 
     def apply(self, *args, **kwargs):
         return self.name
+del Item.__reduce__  # we don't need the custom pickle-magic for our
+                     # MockItems
 
 
 def get_mock_item(itype, name, deps_static, deps):
