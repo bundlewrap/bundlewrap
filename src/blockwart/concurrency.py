@@ -1,7 +1,8 @@
 from inspect import ismethod
 from logging import Handler
 from multiprocessing import Manager, Pipe, Process
-from sys import exc_info
+from os import dup, fdopen
+import sys
 from time import sleep
 from traceback import format_exception
 
@@ -27,10 +28,13 @@ class ChildLogHandler(Handler):
         self.queue.put(record)
 
 
-def _worker_process(pipe, log_queue):
+def _worker_process(pipe, log_queue, stdin):
     """
     This is what actually runs in the child process.
     """
+    # replace stdin with the one our parent gave us
+    sys.stdin = stdin
+
     # replace the child logger with one that will send logs back to the
     # parent process
     from blockwart import utils
@@ -64,7 +68,7 @@ def _worker_process(pipe, log_queue):
                     ),
                 }
             except Exception as e:
-                traceback = "".join(format_exception(*exc_info()))
+                traceback = "".join(format_exception(*sys.exc_info()))
                 result = {
                     'raised_exception': True,
                     'exception': e,
@@ -83,9 +87,10 @@ class Worker(object):
         self.started = False
         self.log_queue = Manager().Queue()
         self.pipe, child_pipe = Pipe()
+        child_stdin = fdopen(dup(sys.stdin.fileno()))
         self.process = Process(
             target=_worker_process,
-            args=(child_pipe, self.log_queue),
+            args=(child_pipe, self.log_queue, child_stdin),
         )
         self.process.start()
 

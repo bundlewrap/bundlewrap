@@ -1,4 +1,6 @@
 from logging import getLogger
+from os import fdopen, dup
+from sys import stdin
 from time import sleep
 from unittest import TestCase
 
@@ -74,7 +76,7 @@ class WorkerProcessTest(TestCase):
 
         pipe.recv.side_effect = side_effect
 
-        _worker_process(pipe, MagicMock())
+        _worker_process(pipe, MagicMock(), fdopen(dup(stdin.fileno())))
         target.assert_called_once_with(1, 2, a=1, b=2)
         pipe.send.assert_called_once_with({
             'raised_exception': False,
