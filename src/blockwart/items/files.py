@@ -1,4 +1,5 @@
 from collections import defaultdict
+from difflib import unified_diff
 from os import remove
 from os.path import join
 from pipes import quote
@@ -25,6 +26,18 @@ CONTENT_PROCESSORS = {
     'binary': None,
     'mako': content_processor_mako,
 }
+
+
+def diff(content_old, content_new, filename):
+    output = ""
+    for line in unified_diff(
+        content_old.split("\n"),
+        content_new.split("\n"),
+        fromfile=filename,
+        tofile=_("<blockwart content>"),
+    ):
+        output += line + "\n"
+    return output
 
 
 def get_remote_file_contents(node, path):
@@ -127,8 +140,9 @@ class File(Item):
             question += _("Wrong contents.\n")
             if status.info['path_info'].is_text_file and \
                     not self.attributes['content_type'] == 'binary':
-                # diff
-                pass
+                content_is = get_remote_file_contents(self.node, self.name)
+                content_should = self.content
+                question += diff(content_is, content_should, self.name)
             else:
                 question += _(
                     "According to the `file` utility, it contains '{}'.\n"

@@ -27,6 +27,32 @@ class ContentProcessorMakoTest(TestCase):
         )
 
 
+class DiffTest(TestCase):
+    """
+    Tests blockwart.items.files.diff.
+    """
+    def test_diff(self):
+        content_old = (
+            "line1\n"
+            "line2\n"
+        )
+        content_new = (
+            "line1\n"
+            "line3\n"
+        )
+        self.assertEqual(
+            files.diff(content_old, content_new, "/foo"),
+            (
+                "--- /foo\n\n"
+                "+++ <blockwart content>\n\n"
+                "@@ -1,3 +1,3 @@\n\n"
+                " line1\n"
+                "-line2\n"
+                "+line3\n \n"
+            ),
+        )
+
+
 class FileContentHashTest(TestCase):
     """
     Tests blockwart.items.files.File.content_hash.
