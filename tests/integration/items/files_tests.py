@@ -1,3 +1,4 @@
+from getpass import getuser
 from os import mkdir, remove
 from os.path import join
 from platform import system
@@ -37,7 +38,11 @@ class FileCreateTest(TestCase):
         item = files.File(
             bundle,
             target_file,
-            {'content_type': 'mako', 'source': 'my_template'},
+            {
+                'content_type': 'mako',
+                'owner': getuser(),
+                'source': 'my_template',
+            },
         )
         mkdir(item.item_dir)
         with open(join(item.item_dir, "my_template"), 'w') as f:
