@@ -149,7 +149,9 @@ class PathInfoTest(TestCase):
         'group': "bar",
         'mode': "4747",
     })
-    def test_stat(self, stat):
+    @patch('blockwart.utils.remote.get_path_type', return_value=(
+        'file', "data"))
+    def test_stat(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
         self.assertEqual(p.owner, "foo")
         self.assertEqual(p.group, "bar")
