@@ -63,6 +63,17 @@ class Repository(object):
                 _("'{}' is not a blockwart repository").format(self.path)
             )
 
+    def __getstate__(self):
+        """
+        Removes cached item classes prior to pickling because they are loaded
+        dynamically and can't be pickled.
+        """
+        try:
+            del self._cache['item_classes']
+        except:
+            pass
+        return self.__dict__
+
     def __repr__(self):
         return "<Repository at '{}'>".format(self.path)
 

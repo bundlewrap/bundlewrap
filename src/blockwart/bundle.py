@@ -25,6 +25,17 @@ class Bundle(object):
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
 
+    def __getstate__(self):
+        """
+        Removes cached items prior to pickling because their classed are
+        loaded dynamically and can't be pickled.
+        """
+        try:
+            del self._cache['items']
+        except:
+            pass
+        return self.__dict__
+
     @cached_property
     def items(self):
         bundle_attrs = get_all_attrs_from_file(self.bundle_file)
