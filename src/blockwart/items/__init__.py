@@ -115,8 +115,7 @@ class Item(object):
     def id(self):
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
-    def apply(self, interactive=False, interactive_default=True,
-              recheck=False):
+    def apply(self, interactive=False, interactive_default=True):
         status_before = self.get_status()
         status_after = None
         if status_before.correct or not status_before.fixable:
@@ -124,15 +123,15 @@ class Item(object):
         else:
             if not interactive:
                 self.fix(status_before)
+                status_after = self.get_status()
             else:
                 if ask_interactively(self.ask(status_before),
                                      interactive_default):
                     self.fix(status_before)
+                    status_after = self.get_status()
                 else:
                     status_after = copy(status_before)
                     status_after.aborted = True
-            if recheck:
-                status_after = self.get_status()
         return (status_before, status_after)
 
     def ask(self, status):

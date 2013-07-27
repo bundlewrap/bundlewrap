@@ -16,31 +16,18 @@ class ApplyTest(TestCase):
     """
     Tests blockwart.items.Item.apply.
     """
-    def test_with_recheck(self):
+    def test_noninteractive(self):
         status_before = MagicMock()
         status_before.correct = False
         status_before.fixable = True
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.fix = MagicMock()
-        before, after = item.apply(interactive=False, recheck=True)
+        before, after = item.apply(interactive=False)
         self.assertEqual(before, status_before)
         self.assertEqual(after, status_before)
         self.assertEqual(item.fix.call_count, 1)
         self.assertEqual(item.get_status.call_count, 2)
-
-    def test_without_recheck(self):
-        status_before = MagicMock()
-        status_before.correct = False
-        status_before.fixable = True
-        item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
-        item.get_status = MagicMock(return_value=status_before)
-        item.fix = MagicMock()
-        before, after = item.apply(recheck=False)
-        self.assertEqual(before, status_before)
-        self.assertEqual(after, None)
-        self.assertEqual(item.fix.call_count, 1)
-        self.assertEqual(item.get_status.call_count, 1)
 
     @patch('blockwart.items.ask_interactively', return_value=True)
     def test_interactive(self, ask_interactively):
