@@ -27,6 +27,18 @@ CONTENT_PROCESSORS = {
 }
 
 
+def get_remote_file_contents(node, path):
+    """
+    Returns the contents of the given path as a string.
+    """
+    handle, tmp_file = mkstemp()
+    node.download(path, tmp_file)
+    with open(tmp_file) as f:
+        content = f.read()
+    remove(tmp_file)
+    return content
+
+
 def hash_local_file(path):
     """
     Retuns the sha1 hash of a file on the local machine.
