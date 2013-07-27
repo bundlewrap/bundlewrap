@@ -17,7 +17,7 @@ for key in output:
     output[key] = False
 
 
-def download(hostname, local_path, remote_path, ignore_failure=False):
+def download(hostname, remote_path, local_path, ignore_failure=False):
     """
     Download a file.
     """
