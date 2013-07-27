@@ -69,6 +69,14 @@ def build_parser_bw():
         type=str,
         help=_("name of node(s) to apply config to (separate with comma)"),
     )
+    parser_apply.add_argument(
+        '-p',
+        '--parallel-nodes',
+        default=4,
+        dest='node_workers',
+        help=_("number of nodes to apply to simultaneously"),
+        type=int,
+    )
 
     # bw nodes
     parser_nodes = subparsers.add_parser("nodes")
