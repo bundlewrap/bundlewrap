@@ -16,6 +16,13 @@ ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
 
 
+def unpickle_item_class(class_name, bundle, name, attributes):
+    for item_class in bundle.node.repo.item_classes:
+        if item_class.__name__ == class_name:
+            return item_class(bundle, name, attributes)
+    raise RuntimeError(_("unable to unpickle {}").format(class_name))
+
+
 class ItemStatus(object):
     """
     Holds information on a particular Item such as whether it needs
@@ -74,6 +81,17 @@ class Item(object):
                 attribute_name,
                 copy(attribute_default),
             ))
+
+    def __reduce__(self):
+        return (
+            unpickle_item_class,
+            (
+                self.__class__.__name__,
+                self.bundle,
+                self.name,
+                self.attributes,
+            ),
+        )
 
     def __repr__(self):
         return "<Item {}>".format(self.id)
