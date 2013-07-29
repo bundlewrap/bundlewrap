@@ -6,6 +6,7 @@ setup(
     description="config management for Python addicts",
     author="Torsten Rehn",
     author_email="torsten@rehn.tel",
+    license="GPLv3",
     url="http://github.com/trehn/blockwart",
     package_dir={'': "src"},
     packages=find_packages("src"),
