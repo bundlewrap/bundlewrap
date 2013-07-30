@@ -67,11 +67,10 @@ def _worker_process(pipe, log_queue, stdin):
                         **message['kwargs']
                     ),
                 }
-            except Exception as e:
+            except Exception:
                 traceback = "".join(format_exception(*sys.exc_info()))
                 result = {
                     'raised_exception': True,
-                    'exception': e,
                     'traceback': traceback,
                 }
             finally:
@@ -127,10 +126,7 @@ class Worker(object):
             if self._result['raised_exception']:
                 # check for exception in child process and raise it
                 # here in the parent
-                raise WorkerException(
-                    self._result['exception'],
-                    self._result['traceback'],
-                )
+                raise WorkerException(self._result['traceback'])
 
     def reap(self):
         """

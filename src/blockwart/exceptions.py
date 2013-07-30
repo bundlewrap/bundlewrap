@@ -52,14 +52,12 @@ class WorkerException(Exception):
     Raised when a worker process has encountered an exception while
     executing.
     """
-    def __init__(self, nested_exception, traceback):
-        self.nested_exception = nested_exception
+    def __init__(self, traceback):
         self.traceback = traceback
 
     def __str__(self):
-        return ("\n\n--- BEGIN NESTED TRACEBACK ---\n"
-                "\n{}\n{}"
-                "\n--- END NESTED TRACEBACK ---\n".format(
-                    self.traceback,
-                    self.nested_exception,
-                ))
+        output = "\n\n+----- traceback from worker ------\n|\n"
+        for line in self.traceback.strip().split("\n"):
+            output += "|  {}\n".format(line)
+        output += "|\n+----------------------------------\n"
+        return output
