@@ -1,7 +1,7 @@
 from collections import defaultdict
 from difflib import unified_diff
 from os import remove
-from os.path import join
+from os.path import dirname, join
 from pipes import quote
 from tempfile import mkstemp
 
@@ -206,6 +206,7 @@ class File(Item):
 
     def _fix_type(self, status):
         self.node.run("rm -rf {}".format(quote(self.name)))
+        self.node.run("mkdir -p {}".format(quote(dirname(self.name))))
 
     def get_status(self):
         correct = True
