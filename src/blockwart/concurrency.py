@@ -1,5 +1,5 @@
 from inspect import ismethod
-from logging import Handler
+from logging import getLogger, Handler
 from multiprocessing import Manager, Pipe, Process
 from os import dup, fdopen
 import sys
@@ -28,6 +28,14 @@ class ChildLogHandler(Handler):
         self.queue.put(record)
 
 
+def _patch_logger(logger, new_handler=None):
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+    if new_handler is not None:
+        logger.addHandler(new_handler)
+    logger.setLevel(0)
+
+
 def _worker_process(pipe, log_queue, stdin):
     """
     This is what actually runs in the child process.
@@ -38,11 +46,9 @@ def _worker_process(pipe, log_queue, stdin):
     # replace the child logger with one that will send logs back to the
     # parent process
     from blockwart import utils
-    for handler in utils.LOG.handlers:
-        utils.LOG.removeHandler(handler)
-    handler = ChildLogHandler(log_queue)
-    utils.LOG.addHandler(handler)
-    utils.LOG.setLevel(0)
+    child_log_handler = ChildLogHandler(log_queue)
+    _patch_logger(getLogger(), child_log_handler)
+    _patch_logger(utils.LOG)
 
     while True:
         if not pipe.poll(.01):
