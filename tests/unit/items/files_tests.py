@@ -3,7 +3,7 @@ from os.path import join
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase
 
-from mock import MagicMock, patch
+from mock import call, MagicMock, patch
 
 from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
@@ -230,7 +230,10 @@ class FileFixTypeTest(TestCase):
             {},
         )
         f._fix_type(MagicMock())
-        node.run.assert_called_once_with("rm -rf /foo")
+        self.assertEqual(
+            node.run.call_args_list,
+            [call("rm -rf /foo"), call("mkdir -p /")],
+        )
 
 
 class FileGetStatusTest(TestCase):
