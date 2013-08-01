@@ -15,7 +15,6 @@ DEBUG_BANNER_NODE = DEBUG_BANNER + "\n" + \
 
 def bw_repo_create(repo, args):
     repo.create()
-    return ()
 
 
 def bw_repo_debug(repo, args):
@@ -25,4 +24,3 @@ def bw_repo_debug(repo, args):
     else:
         node = repo.get_node(args.node)
         interact(DEBUG_BANNER_NODE, local={'node': node, 'repo': repo})
-    return ()

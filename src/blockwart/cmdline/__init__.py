@@ -53,8 +53,12 @@ def main(*args):
 
     set_up_logging(debug=args.debug, verbose=args.verbose)
 
-    for output_line in args.func(repo, args):
-        print(output_line)
+    output = args.func(repo, args)
+    if output is None:
+        output = ()
+
+    for line in output:
+        print(line)
 
     # clean up Fabric connections
     disconnect_all()
