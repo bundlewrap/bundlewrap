@@ -32,12 +32,11 @@ CONTENT_PROCESSORS = {
 def diff(content_old, content_new, filename):
     output = ""
     for line in unified_diff(
-        content_old.split("\n"),
-        content_new.split("\n"),
+        content_old.splitlines(True),
+        content_new.splitlines(True),
         fromfile=filename,
         tofile=_("<blockwart content>"),
     ):
-        line += "\n"
         if line.startswith("+"):
             line = green(line)
         elif line.startswith("-"):
