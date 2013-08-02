@@ -17,7 +17,7 @@ A typical bundle might look like this::
         '/etc/hosts': {
              'owner': "root",
              'group': "root",
-             'mode': 664,
+             'mode': "664",
              [...]
         },
     }
