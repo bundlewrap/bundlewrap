@@ -10,6 +10,7 @@ from blockwart.items import Item, ItemStatus
 from blockwart.utils import cached_property, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
+from blockwart.utils.text import green, red
 
 
 def content_processor_mako(item):
@@ -36,7 +37,12 @@ def diff(content_old, content_new, filename):
         fromfile=filename,
         tofile=_("<blockwart content>"),
     ):
-        output += line + "\n"
+        line += "\n"
+        if line.startswith("+"):
+            line = green(line)
+        elif line.startswith("-"):
+            line = red(line)
+        output += line
     return output
 
 

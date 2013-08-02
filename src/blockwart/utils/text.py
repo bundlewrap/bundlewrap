@@ -1,5 +1,7 @@
 from string import digits, letters
 
+from fabric.colors import red, yellow, green
+
 VALID_NAME_CHARS = digits + letters + "-_.+"
 
 

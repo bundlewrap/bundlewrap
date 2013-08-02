@@ -7,6 +7,7 @@ from mock import call, MagicMock, patch
 
 from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
+from blockwart.utils.text import green, red
 
 
 class ContentProcessorMakoTest(TestCase):
@@ -43,12 +44,13 @@ class DiffTest(TestCase):
         self.assertEqual(
             files.diff(content_old, content_new, "/foo"),
             (
-                "--- /foo\n\n"
-                "+++ <blockwart content>\n\n"
+                red("--- /foo\n\n") +
+                green("+++ <blockwart content>\n\n") +
                 "@@ -1,3 +1,3 @@\n\n"
-                " line1\n"
-                "-line2\n"
-                "+line3\n \n"
+                " line1\n" +
+                red("-line2\n") +
+                green("+line3\n") +
+                " \n"
             ),
         )
 
