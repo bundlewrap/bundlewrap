@@ -33,7 +33,7 @@ groups = {
 
 # node names matching these regexes
 # will be added to the corresponding groups
-group_patterns {
+group_patterns = {
     r".*": "all",
 }
     """),
