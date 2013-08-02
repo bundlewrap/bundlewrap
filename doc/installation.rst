@@ -42,7 +42,7 @@ Clone the GitHub repository::
 Use ``setup.py`` to install in "development mode"::
 
     cd /opt/blockwart
-    python setup.py developer
+    python setup.py develop
 
 You can now try running the ``bw`` command line utility::
 
