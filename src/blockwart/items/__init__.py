@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
 """
 Note that modules in this package have to use absolute imports because
 Repository.item_classes loads them as files.
 """
+from __future__ import unicode_literals
 from copy import copy
 from os.path import join
 
 from blockwart.exceptions import BundleError
 from blockwart.utils.text import mark_for_translation as _
+from blockwart.utils.text import white
 from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
@@ -21,6 +24,17 @@ def unpickle_item_class(class_name, bundle, name, attributes):
         if item_class.__name__ == class_name:
             return item_class(bundle, name, attributes)
     raise RuntimeError(_("unable to unpickle {}").format(class_name))
+
+
+def wrap_item_question(item_id, question):
+    output = ("\n"
+              " ╭  {}\n"
+              " ┃\n".format(item_id))
+    for line in question.splitlines():
+        output += " ┃   {}\n".format(line)
+    output += (" ┃\n"
+               " ╰  " + white(_("Fix {}?").format(item_id), bold=True))
+    return output
 
 
 class ItemStatus(object):
@@ -125,7 +139,8 @@ class Item(object):
                 self.fix(status_before)
                 status_after = self.get_status()
             else:
-                if ask_interactively(self.ask(status_before),
+                question = wrap_item_question(self.id, self.ask(status_before))
+                if ask_interactively(question,
                                      interactive_default):
                     self.fix(status_before)
                     status_after = self.get_status()

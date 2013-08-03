@@ -40,7 +40,7 @@ class ApplyTest(TestCase):
         item.fix = MagicMock()
         item.apply(interactive=True)
         self.assertEqual(item.fix.call_count, 1)
-        ask_interactively.assert_called_once_with("?", True)
+        ask_interactively.assert_called_once()
 
     @patch('blockwart.items.ask_interactively', return_value=False)
     def test_interactive_abort(self, ask_interactively):
@@ -53,7 +53,7 @@ class ApplyTest(TestCase):
         item.fix = MagicMock()
         before, after = item.apply(interactive=True)
         self.assertFalse(item.fix.called)
-        ask_interactively.assert_called_once_with("?", True)
+        ask_interactively.assert_called_once()
         self.assertTrue(after.aborted_interactively)
 
     def test_correct(self):
