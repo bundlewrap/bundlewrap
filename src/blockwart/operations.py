@@ -17,13 +17,14 @@ for key in output:
     output[key] = False
 
 
-def download(hostname, remote_path, local_path, ignore_failure=False):
+def download(hostname, username, remote_path, local_path, ignore_failure=False):
     """
     Download a file.
     """
     LOG.debug(_("downloading {}:{} -> {}").format(
         hostname, remote_path, local_path))
     env.host_string = hostname
+    env.user = username
     fabric_result = _fabric_get(
         remote_path=remote_path,
         local_path=local_path,
@@ -47,11 +48,12 @@ class RunResult(object):
         return self.stdout
 
 
-def run(hostname, command, ignore_failure=False, sudo=True):
+def run(hostname, username, command, ignore_failure=False, sudo=True):
     """
     Runs a command on a remote system.
     """
     env.host_string = hostname
+    env.user = username
 
     LOG.debug("running on {}: {}".format(
         hostname,
@@ -84,13 +86,14 @@ def run(hostname, command, ignore_failure=False, sudo=True):
     return result
 
 
-def upload(hostname, local_path, remote_path, ignore_failure=False):
+def upload(hostname, username, local_path, remote_path, ignore_failure=False):
     """
     Upload a file.
     """
     LOG.debug(_("uploading {} -> {}:{}").format(
         local_path, hostname, remote_path))
     env.host_string = hostname
+    env.user = username
     fabric_result = _fabric_put(
         local_path=local_path,
         remote_path=remote_path,
