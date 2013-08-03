@@ -37,11 +37,12 @@ def diff(content_old, content_new, filename):
         fromfile=filename,
         tofile=_("<blockwart content>"),
     ):
+        line = line.rstrip("\n")
         if line.startswith("+"):
             line = green(line)
         elif line.startswith("-"):
             line = red(line)
-        output += line
+        output += line + "\n"
     return output
 
 

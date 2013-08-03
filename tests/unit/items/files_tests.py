@@ -44,12 +44,12 @@ class DiffTest(TestCase):
         self.assertEqual(
             files.diff(content_old, content_new, "/foo"),
             (
-                red("--- /foo\n") +
-                green("+++ <blockwart content>\n") +
+                red("--- /foo") + "\n" +
+                green("+++ <blockwart content>") + "\n" +
                 "@@ -1,2 +1,2 @@\n"
                 " line1\n" +
-                red("-line2\n") +
-                green("+line3\n")
+                red("-line2") + "\n" +
+                green("+line3") + "\n"
             ),
         )
 
