@@ -33,7 +33,7 @@ def wrap_item_question(item_id, question):
     for line in question.splitlines():
         output += " ┃   {}\n".format(line)
     output += (" ┃\n"
-               " ╰  " + white(_("Fix {}?").format(item_id), bold=True))
+               " ╰  " + _("Fix {}?").format(white(item_id, bold=True)))
     return output
 
 
