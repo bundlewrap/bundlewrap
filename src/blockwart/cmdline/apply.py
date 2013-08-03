@@ -68,7 +68,7 @@ def bw_apply(repo, args):
                 if args.interactive:
                     yield _("\n  {}: run completed after {} seconds").format(
                         white(node_name, bold=True),
-                        9000,
+                        results[node_name].duration.seconds,
                     )
                     yield "  " + format_node_result(results[node_name]) + "\n"
                 else:

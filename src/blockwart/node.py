@@ -1,3 +1,4 @@
+from datetime import datetime
 from getpass import getuser
 
 from . import operations
@@ -36,6 +37,13 @@ class ApplyResult(object):
                     "before: {}\n"
                     "after: {}"
                 ).format(self.node_name, before, after))
+
+        self.start = None
+        self.end = None
+
+    @property
+    def duration(self):
+        return self.end - self.start
 
 
 class DummyItem(object):
@@ -210,13 +218,17 @@ class Node(object):
                 yield item
 
     def apply(self, interactive=False, workers=4):
+        start = datetime.now()
         worker_count = 1 if interactive else workers
         item_results = apply_items(
             self.items,
             workers=worker_count,
             interactive=interactive,
         )
-        return ApplyResult(self, item_results)
+        result = ApplyResult(self, item_results)
+        result.start = start
+        result.end = datetime.now()
+        return result
 
     def download(self, remote_path, local_path):
         return operations.download(
