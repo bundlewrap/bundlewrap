@@ -239,17 +239,17 @@ class File(Item):
         path_info = PathInfo(self.node, self.name)
         status_info = {'needs_fixing': [], 'path_info': path_info}
 
-        if path_info.mode != self.attributes['mode']:
-            status_info['needs_fixing'].append('mode')
-        if path_info.owner != self.attributes['owner']:
-            status_info['needs_fixing'].append('owner')
-        if path_info.group != self.attributes['group']:
-            status_info['needs_fixing'].append('group')
         if not path_info.is_file:
             status_info['needs_fixing'].append('type')
-        elif path_info.sha1 != self.content_hash:
-            status_info['needs_fixing'].append('content')
-
+        else:
+            if path_info.sha1 != self.content_hash:
+                status_info['needs_fixing'].append('content')
+            if path_info.mode != self.attributes['mode']:
+                status_info['needs_fixing'].append('mode')
+            if path_info.owner != self.attributes['owner']:
+                status_info['needs_fixing'].append('owner')
+            if path_info.group != self.attributes['group']:
+                status_info['needs_fixing'].append('group')
 
         if status_info['needs_fixing']:
             correct = False
