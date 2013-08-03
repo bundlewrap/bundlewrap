@@ -1,26 +1,6 @@
 from ..concurrency import WorkerPool
-from ..exceptions import UsageException
 from ..utils import LOG
-from ..utils.text import mark_for_translation as _
-
-
-def _get_target_list(repo, groups, nodes):
-    target_nodes = []
-    if groups:
-        for group_name in groups.split(","):
-            group_name = group_name.strip()
-            group = repo.get_group(group_name)
-            target_nodes += list(group.nodes)
-    if nodes:
-        for node_name in nodes.split(","):
-            node_name = node_name.strip()
-            node = repo.get_node(node_name)
-            target_nodes.append(node)
-    if not target_nodes:
-        raise UsageException(_("specify at least one node or group"))
-    target_nodes = list(set(target_nodes))
-    target_nodes.sort()
-    return target_nodes
+from ..utils.cmdline import get_target_nodes
 
 
 def format_node_result(args, node_name, result):
@@ -36,7 +16,7 @@ def format_node_result(args, node_name, result):
 
 
 def bw_apply(repo, args):
-    target_nodes = _get_target_list(repo, args.groups, args.nodes)
+    target_nodes = get_target_nodes(repo, args.target)
     worker_count = 1 if args.interactive else args.node_workers
     with WorkerPool(workers=worker_count) as worker_pool:
         results = {}

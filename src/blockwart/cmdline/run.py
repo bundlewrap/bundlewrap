@@ -1,12 +1,7 @@
-from ..exceptions import NoSuchNode
-
+from ..utils.cmdline import get_target_nodes
 
 def bw_run(repo, args):
-    try:
-        targets = [repo.get_node(args.target)]
-    except NoSuchNode:
-        targets = repo.get_group(args.target).nodes
-    for node in targets:
+    for node in get_target_nodes(repo, args.target):
         result = node.run(args.command, sudo=args.sudo)
         if result.stdout.strip():
             for line in result.stdout.strip().split("\n"):

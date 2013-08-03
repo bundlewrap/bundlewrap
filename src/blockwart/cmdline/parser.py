@@ -42,14 +42,10 @@ def build_parser_bw():
     parser_apply = subparsers.add_parser("apply")
     parser_apply.set_defaults(func=bw_apply)
     parser_apply.add_argument(
-        '-g',
-        '--group',
-        default=None,
-        dest='groups',
-        metavar=_("GROUP"),
-        required=False,
+        'target',
+        metavar=_("NODE1,NODE2,GROUP1,..."),
         type=str,
-        help=_("name of group(s) to apply config to (separate with comma)"),
+        help=_("target nodes and/or groups"),
     )
     parser_apply.add_argument(
         '-i',
@@ -58,16 +54,6 @@ def build_parser_bw():
         default=False,
         dest='interactive',
         help=_("ask before applying each item"),
-    )
-    parser_apply.add_argument(
-        '-n',
-        '--node',
-        default=None,
-        dest='nodes',
-        metavar=_("NODE"),
-        required=False,
-        type=str,
-        help=_("name of node(s) to apply config to (separate with comma)"),
     )
     parser_apply.add_argument(
         '-p',
@@ -111,9 +97,9 @@ def build_parser_bw():
     parser_run.set_defaults(func=bw_run)
     parser_run.add_argument(
         'target',
-        metavar=_("NODE|GROUP"),
+        metavar=_("NODE1,NODE2,GROUP1,..."),
         type=str,
-        help=_("target node or group"),
+        help=_("target nodes and/or groups"),
     )
     parser_run.add_argument(
         'command',
