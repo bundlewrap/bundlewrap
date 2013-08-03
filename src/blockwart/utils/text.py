@@ -1,8 +1,21 @@
 from string import digits, letters
+from sys import stdout
 
-from fabric.colors import red, yellow, green
+from fabric import colors as _fabric_colors
 
 VALID_NAME_CHARS = digits + letters + "-_.+"
+
+
+def _color_wrapper(colorizer):
+    if stdout.isatty():
+        return colorizer
+    else:
+        return lambda s, **kwargs: s
+
+green = _color_wrapper(_fabric_colors.green)
+red = _color_wrapper(_fabric_colors.red)
+white = _color_wrapper(_fabric_colors.white)
+yellow = _color_wrapper(_fabric_colors.yellow)
 
 
 def mark_for_translation(s):
