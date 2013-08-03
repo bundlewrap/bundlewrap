@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from collections import defaultdict
 from difflib import unified_diff
 from os import remove
@@ -10,7 +12,7 @@ from blockwart.items import Item, ItemStatus
 from blockwart.utils import cached_property, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import green, red
+from blockwart.utils.text import green, red, white
 
 
 def content_processor_mako(item):
@@ -145,40 +147,52 @@ class File(Item):
         question = ""
 
         if 'content' in status.info['needs_fixing']:
-            question += _("Wrong contents.\n")
+            question += white(_("content "), bold=True)
             if status.info['path_info'].is_text_file and \
                     not self.attributes['content_type'] == 'binary':
                 content_is = get_remote_file_contents(self.node, self.name)
                 content_should = self.content
-                question += diff(content_is, content_should, self.name)
+                question += "\n" + diff(content_is, content_should, self.name) + "\n"
             else:
-                question += _(
-                    "According to the `file` utility, it contains '{}'.\n"
-                ).format(status.info['path_info'].desc)
+                question += "'{}' → {}".format(
+                    status.info['path_info'].desc,
+                    _("<blockwart content>"),
+                )
 
         if 'mode' in status.info['needs_fixing']:
-            question += _(
-                "Mode is {}, should be {}.\n"
-            ).format(
+            question += "{} {} → {}\n".format(
+                white(_("mode"), bold=True),
                 status.info['path_info'].mode,
                 self.attributes['mode'],
             )
 
         if 'owner' in status.info['needs_fixing']:
-            question += _(
-                "Owner/group is '{}:{}', should be '{}:{}'.\n"
-            ).format(
+            question += "{} {} → {}\n".format(
+                white(_("owner"), bold=True),
                 status.info['path_info'].owner,
-                status.info['path_info'].group,
                 self.attributes['owner'],
+            )
+
+        if 'group' in status.info['needs_fixing']:
+            question += "{} {} → {}\n".format(
+                white(_("group"), bold=True),
+                status.info['path_info'].group,
                 self.attributes['group'],
             )
 
-        return question + _("Fix file '{}'?").format(self.name)
+        return question.rstrip("\n")
 
     def fix(self, status):
-        for fix_type in ('type', 'content', 'mode', 'owner'):
+        for fix_type in ('type', 'content', 'mode', 'owner', 'group'):
             if fix_type in status.info['needs_fixing']:
+                if fix_type == 'group' and \
+                        'owner' in status.info['needs_fixing']:
+                    # owner and group are fixed with a single chmod
+                    continue
+                if fix_type in ('mode', 'owner', 'group') and \
+                        'content' in status.info['needs_fixing']:
+                    # fixing content implies settings mode and owner/group
+                    continue
                 LOG.debug(_("fixing {} of {} on {}").format(
                     fix_type,
                     self.name,
@@ -195,6 +209,8 @@ class File(Item):
                 f.write(self.content)
         try:
             self.node.upload(local_path, self.name)
+            self._fix_mode(status)
+            self._fix_owner(status)
         finally:
             if self.attributes['content_type'] != 'binary':
                 remove(local_path)
@@ -211,26 +227,29 @@ class File(Item):
             quote(self.attributes['group']),
             quote(self.name),
         ))
+    _fix_group = _fix_owner
 
     def _fix_type(self, status):
         self.node.run("rm -rf {}".format(quote(self.name)))
         self.node.run("mkdir -p {}".format(quote(dirname(self.name))))
+        self._fix_content(status)
 
     def get_status(self):
         correct = True
         path_info = PathInfo(self.node, self.name)
         status_info = {'needs_fixing': [], 'path_info': path_info}
 
+        if path_info.mode != self.attributes['mode']:
+            status_info['needs_fixing'].append('mode')
+        if path_info.owner != self.attributes['owner']:
+            status_info['needs_fixing'].append('owner')
+        if path_info.group != self.attributes['group']:
+            status_info['needs_fixing'].append('group')
         if not path_info.is_file:
-            status_info['needs_fixing'] += ['type', 'content', 'mode', 'owner']
-        else:
-            if path_info.mode != self.attributes['mode']:
-                status_info['needs_fixing'].append('mode')
-            if path_info.owner != self.attributes['owner'] or \
-                    path_info.group != self.attributes['group']:
-                status_info['needs_fixing'].append('owner')
-            if path_info.sha1 != self.content_hash:
-                status_info['needs_fixing'] += ['content', 'mode', 'owner']
+            status_info['needs_fixing'].append('type')
+        elif path_info.sha1 != self.content_hash:
+            status_info['needs_fixing'].append('content')
+
 
         if status_info['needs_fixing']:
             correct = False

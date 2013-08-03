@@ -87,8 +87,6 @@ class FileFixTest(TestCase):
         f.fix(status)
         fix_type.assert_called_once_with(status)
         fix_content.assert_called_once_with(status)
-        fix_mode.assert_called_once_with(status)
-        fix_owner.assert_called_once_with(status)
 
     @patch('blockwart.items.files.File._fix_content')
     @patch('blockwart.items.files.File._fix_mode')
@@ -221,7 +219,8 @@ class FileFixTypeTest(TestCase):
     """
     Tests blockwart.items.files.File._fix_type.
     """
-    def test_rm(self):
+    @patch('blockwart.items.files.File._fix_content')
+    def test_rm(self, fix_content):
         node = MagicMock()
         bundle = MagicMock()
         bundle.node = node
@@ -231,10 +230,9 @@ class FileFixTypeTest(TestCase):
             {},
         )
         f._fix_type(MagicMock())
-        self.assertEqual(
-            node.run.call_args_list,
-            [call("rm -rf /foo"), call("mkdir -p /")],
-        )
+        assert call("rm -rf /foo") in node.run.call_args_list
+        assert call("mkdir -p /") in node.run.call_args_list
+        fix_content.assert_called_once()
 
 
 class FileGetStatusTest(TestCase):
@@ -299,7 +297,7 @@ class FileGetStatusTest(TestCase):
         })
         status = f.get_status()
         self.assertFalse(status.correct)
-        self.assertEqual(status.info['needs_fixing'], ['owner'])
+        self.assertEqual(status.info['needs_fixing'], ['group'])
 
     @patch('blockwart.items.files.File.content_hash', new="47")
     @patch('blockwart.items.files.PathInfo')
@@ -321,7 +319,7 @@ class FileGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(
             set(status.info['needs_fixing']),
-            set(['content', 'mode', 'owner']),
+            set(['content']),
         )
 
     @patch('blockwart.items.files.File.content_hash', new="47")
@@ -344,7 +342,7 @@ class FileGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(
             set(status.info['needs_fixing']),
-            set(['type', 'content', 'mode', 'owner']),
+            set(['type']),
         )
 
     @patch('blockwart.items.files.File.content_hash', new="47")
