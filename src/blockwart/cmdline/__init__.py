@@ -58,7 +58,7 @@ def main(*args):
         output = ()
 
     for line in output:
-        print(line)
+        print(line.encode('utf-8'))
 
     # clean up Fabric connections
     disconnect_all()
