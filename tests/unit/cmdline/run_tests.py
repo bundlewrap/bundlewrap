@@ -66,7 +66,10 @@ class RunTest(TestCase):
 
         self.assertTrue(node1.run.called)
         self.assertTrue(node2.run.called)
-        self.assertEqual(output, [
-            "node1 (stdout): 47",
-            "node2 (stdout): 47",
-        ])
+        self.assertEqual(
+            set(output),
+            set([
+                "node1 (stdout): 47",
+                "node2 (stdout): 47",
+            ]),
+        )
