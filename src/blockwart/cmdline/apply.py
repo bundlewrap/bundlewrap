@@ -1,19 +1,37 @@
+from datetime import datetime
+
 from ..concurrency import WorkerPool
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
+from ..utils.text import green, red, white, yellow
+from ..utils.text import mark_for_translation as _
 
 
-def format_node_result(args, node_name, result):
-    return ("{}: {} correct, {} fixed, {} aborted, {} unfixable, "
-            "{} failed".format(
-                node_name,
-                result.correct,
-                result.fixed,
-                result.aborted,
-                result.unfixable,
-                result.failed,
-            ))
+def format_node_result(result):
+    output = []
+    output.append(("{} correct").format(result.correct))
 
+    if result.fixed:
+        output.append(green(_("{} fixed").format(result.fixed)))
+    else:
+        output.append(_("{} fixed").format(result.fixed))
+
+    if result.aborted:
+        output.append(yellow(_("{} aborted").format(result.aborted)))
+    else:
+        output.append(_("{} aborted").format(result.aborted))
+
+    if result.unfixable:
+        output.append(red(_("{} unfixable").format(result.unfixable)))
+    else:
+        output.append(_("{} unfixable").format(result.unfixable))
+
+    if result.failed:
+        output.append(red(_("{} failed").format(result.failed)))
+    else:
+        output.append(_("{} failed").format(result.failed))
+
+    return ", ".join(output)
 
 def bw_apply(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
@@ -30,6 +48,12 @@ def bw_apply(repo, args):
                 if worker is None:
                     break
                 node = target_nodes.pop()
+                if args.interactive:
+                    yield _("\n{}: run started at {}").format(
+                        white(node.name, bold=True),
+                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    )
+
                 worker.start_task(
                     node.apply,
                     id=node.name,
@@ -41,8 +65,14 @@ def bw_apply(repo, args):
                 worker = worker_pool.get_reapable_worker()
                 node_name = worker.id
                 results[node_name] = worker.reap()
-                LOG.info(format_node_result(args, node_name,
-                                            results[node_name]))
+                if args.interactive:
+                    yield _("\n  {}: run completed after {} seconds").format(
+                        white(node_name, bold=True),
+                        9000,
+                    )
+                    yield "  " + format_node_result(results[node_name]) + "\n"
+                else:
+                    LOG.info(format_node_result(args, results[node_name]))
             if (
                 worker_pool.busy_count > 0 and
                 not target_nodes and
