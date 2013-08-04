@@ -113,4 +113,11 @@ def build_parser_bw():
         dest='sudo',
         help=_("do not use sudo, execute with user privs"),
     )
+    parser_run.add_argument(
+        '-f',
+        '--may-fail',
+        action='store_true',
+        dest='may_fail',
+        help=_("ignore non-zero exit codes"),
+    )
     return parser

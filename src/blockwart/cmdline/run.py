@@ -3,7 +3,7 @@ from ..utils.cmdline import get_target_nodes
 
 def bw_run(repo, args):
     for node in get_target_nodes(repo, args.target):
-        result = node.run(args.command, sudo=args.sudo)
+        result = node.run(args.command, sudo=args.sudo, may_fail=args.may_fail)
         if result.stdout.strip():
             for line in result.stdout.strip().split("\n"):
                 yield "{} (stdout): {}".format(node.name, line)
