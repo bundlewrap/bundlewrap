@@ -130,7 +130,7 @@ def apply_items(items, workers=1, interactive=False):
                         remove_dep_from_items(
                             items_with_deps,
                             dep,
-                        )
+                        ) + items_without_deps
                     )
                 if result is not None:  # ignore from dummy items
                     yield result
