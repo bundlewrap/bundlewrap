@@ -21,7 +21,7 @@ def get_path_type(node, path):
     """
     Returns (TYPE, DESC) where TYPE is one of:
 
-        'directory', 'file', 'nonexistent', 'other, 'symlink'
+        'directory', 'file', 'nonexistent', 'other', 'symlink'
 
     and DESC is the output of the 'file' command line utility.
     """
