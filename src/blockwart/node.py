@@ -93,7 +93,7 @@ def inject_dummy_items(items):
 
 def apply_items(items, workers=1, interactive=False):
     items = inject_dummy_items(items)
-    with WorkerPool(workers=workers) as worker_pool:
+    with WorkerPool(workers=workers, interactive=interactive) as worker_pool:
         items_with_deps, items_without_deps = \
             split_items_without_deps(items)
         # there are three things we want to do continuously:

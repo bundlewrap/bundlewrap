@@ -37,7 +37,8 @@ def format_node_result(result):
 def bw_apply(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
     worker_count = 1 if args.interactive else args.node_workers
-    with WorkerPool(workers=worker_count) as worker_pool:
+    with WorkerPool(workers=worker_count, interactive=args.interactive) \
+            as worker_pool:
         results = {}
         while (
                 target_nodes or
