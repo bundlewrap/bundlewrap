@@ -105,12 +105,12 @@ class Group(object):
                     self.name,
                     visited_names,
                 )
-                raise RepositoryError(
-                    _("{} can't be a subgroup of itself "
-                      "({})").format(
-                          name,
-                          " -> ".join(error_chain),
-                      )
+                raise RepositoryError(_(
+                    "{} can't be a subgroup of itself "
+                    "({})").format(
+                        name,
+                        " -> ".join(error_chain),
+                    )
                 )
         if self.name not in visited_names:
             yield self.name

@@ -33,6 +33,7 @@ def format_node_result(result):
 
     return ", ".join(output)
 
+
 def bw_apply(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
     worker_count = 1 if args.interactive else args.node_workers
