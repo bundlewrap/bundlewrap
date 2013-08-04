@@ -72,7 +72,7 @@ def bw_apply(repo, args):
                     )
                     yield "  " + format_node_result(results[node_name]) + "\n"
                 else:
-                    LOG.info(format_node_result(args, results[node_name]))
+                    LOG.info(format_node_result(results[node_name]))
             if (
                 worker_pool.busy_count > 0 and
                 not target_nodes and
