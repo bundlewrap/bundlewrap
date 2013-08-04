@@ -48,11 +48,17 @@ def bw_apply(repo, args):
                 if worker is None:
                     break
                 node = target_nodes.pop()
+                start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 if args.interactive:
                     yield _("\n{}: run started at {}").format(
                         white(node.name, bold=True),
-                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        start_time,
                     )
+                else:
+                    LOG.info(_("{}: run started at {}").format(
+                        node.name,
+                        start_time,
+                    ))
 
                 worker.start_task(
                     node.apply,
@@ -66,13 +72,20 @@ def bw_apply(repo, args):
                 node_name = worker.id
                 results[node_name] = worker.reap()
                 if args.interactive:
-                    yield _("\n  {}: run completed after {} seconds").format(
+                    yield _("\n  {}: run completed after {}s").format(
                         white(node_name, bold=True),
                         results[node_name].duration.seconds,
                     )
                     yield "  " + format_node_result(results[node_name]) + "\n"
                 else:
-                    LOG.info(format_node_result(results[node_name]))
+                    LOG.info(_("{}: run completed after {}s").format(
+                        node_name,
+                        results[node_name].duration.seconds,
+                    ))
+                    LOG.info(_("{}: stats: {}").format(
+                        node_name,
+                        format_node_result(results[node_name]),
+                    ))
             if (
                 worker_pool.busy_count > 0 and
                 not target_nodes and

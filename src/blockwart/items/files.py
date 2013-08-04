@@ -193,10 +193,10 @@ class File(Item):
                         'content' in status.info['needs_fixing']:
                     # fixing content implies settings mode and owner/group
                     continue
-                LOG.debug(_("fixing {} of {} on {}").format(
-                    fix_type,
-                    self.name,
+                LOG.info(_("{}:{}: fixing {}...").format(
                     self.node.name,
+                    self.id,
+                    fix_type,
                 ))
                 getattr(self, "_fix_" + fix_type)(status)
 

@@ -23,14 +23,12 @@ def set_up_logging(debug=False, verbose=False):
     handler.setLevel(level)
     formatter = logging.Formatter(format)
     handler.setFormatter(formatter)
-
-    if debug:
-        # add handler to root logger so we can show messages from paramiko
-        logger = logging.getLogger()
-    else:
-        logger = logging.getLogger('blockwart')
+    logger = logging.getLogger('blockwart')
     logger.addHandler(handler)
     logger.setLevel(level)
+
+    if not debug:
+        logging.getLogger('paramiko').setLevel(logging.ERROR)
 
 
 def main(*args):
