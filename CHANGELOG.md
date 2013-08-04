@@ -1,3 +1,14 @@
+### 0.3.0
+
+2013-08-04
+
+* basic file management
+* concurrency improvements
+* logging/output improvements
+* use Fabric for remote operations
+* lots of other small improvements
+
+
 ### 0.2.0
 
 2013-07-12

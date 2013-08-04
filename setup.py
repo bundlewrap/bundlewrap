@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="blockwart",
-    version="0.2.0",
+    version="0.3.0",
     description="config management for Python addicts",
     author="Torsten Rehn",
     author_email="torsten@rehn.tel",
