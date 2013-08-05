@@ -209,7 +209,7 @@ class WorkerPool(object):
     def __init__(self, workers=4):
         self.workers = []
         if workers < 1:
-            raise ValueError("at least one worker is required")
+            raise ValueError(_("at least one worker is required"))
         for i in xrange(workers):
             self.workers.append(Worker())
 
