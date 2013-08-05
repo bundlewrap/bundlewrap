@@ -36,12 +36,13 @@ def _patch_logger(logger, new_handler=None):
     logger.setLevel(0)
 
 
-def _worker_process(pipe, log_queue, stdin):
+def _worker_process(pipe, log_queue, stdin=None):
     """
     This is what actually runs in the child process.
     """
-    # replace stdin with the one our parent gave us
-    sys.stdin = stdin
+    if stdin is not None:
+        # replace stdin with the one our parent gave us
+        sys.stdin = stdin
 
     # replace the child logger with one that will send logs back to the
     # parent process
@@ -87,15 +88,14 @@ class Worker(object):
     """
     Manages a background worker process.
     """
-    def __init__(self):
+    def __init__(self, stdin=None):
         self.id = None
         self.started = False
         self.log_queue = Manager().Queue()
         self.pipe, child_pipe = Pipe()
-        child_stdin = fdopen(dup(sys.stdin.fileno()))
         self.process = Process(
             target=_worker_process,
-            args=(child_pipe, self.log_queue, child_stdin),
+            args=(child_pipe, self.log_queue, stdin),
         )
         self.process.start()
 
@@ -210,8 +210,9 @@ class WorkerPool(object):
         self.workers = []
         if workers < 1:
             raise ValueError(_("at least one worker is required"))
+        stdin = fdopen(dup(sys.stdin.fileno())) if workers == 1 else None
         for i in xrange(workers):
-            self.workers.append(Worker())
+            self.workers.append(Worker(stdin=stdin))
 
     def __enter__(self):
         return self

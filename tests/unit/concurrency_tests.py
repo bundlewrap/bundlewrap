@@ -178,7 +178,7 @@ class WorkerPoolTest(TestCase):
 
     def test_get_idle_worker(self):
         class MockWorker(object):
-            def __init__(self):
+            def __init__(self, stdin=None):
                 self.busy_counter = 0
                 self.is_reapable = False
                 self.result = None
