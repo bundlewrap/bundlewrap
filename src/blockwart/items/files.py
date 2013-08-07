@@ -108,7 +108,7 @@ class File(Item):
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'content': None,
-        'content_type': "binary",
+        'content_type': "mako",
         'group': "root",
         'mode': "0664",
         'owner': "root",
