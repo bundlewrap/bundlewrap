@@ -75,13 +75,13 @@ def bw_apply(repo, args):
                 if args.interactive:
                     yield _("\n  {}: run completed after {}s").format(
                         white(node_name, bold=True),
-                        results[node_name].duration.seconds,
+                        results[node_name].duration.total_seconds(),
                     )
                     yield "  " + format_node_result(results[node_name]) + "\n"
                 else:
                     LOG.info(_("{}: run completed after {}s").format(
                         node_name,
-                        results[node_name].duration.seconds,
+                        results[node_name].duration.total_seconds(),
                     ))
                     LOG.info(_("{}: stats: {}").format(
                         node_name,
