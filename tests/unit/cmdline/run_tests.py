@@ -10,13 +10,15 @@ class RunTest(TestCase):
     """
     Tests blockwart.cmdline.run.bw_run.
     """
-    def test_single_node(self):
+    def test_single_node_fail(self):
         args = MagicMock()
         args.target = "node1"
+        args.verbose = False
 
         node = MagicMock()
         node.name = args.target
         result = MagicMock()
+        result.return_code = 47
         result.stdout = "foo \nbar"
         result.stderr = "pebkac\n"
         node.run = MagicMock(return_value=result)
@@ -28,13 +30,15 @@ class RunTest(TestCase):
 
         repo.get_node.assert_called_once_with(args.target)
         self.assertTrue(node.run.called)
-        self.assertEqual(output, [
+        self.assertEqual(output[0:3], [
             "node1 (stdout): foo ",
             "node1 (stdout): bar",
             "node1 (stderr): pebkac",
         ])
+        self.assertTrue(output[3].startswith("node1: failed after "))
+        self.assertTrue(output[3].endswith("s (return code 47)"))
 
-    def test_group(self):
+    def test_group_success(self):
         def raise_no_node(*args, **kwargs):
             raise NoSuchNode()
 
@@ -44,6 +48,7 @@ class RunTest(TestCase):
         node1 = MagicMock()
         node1.name = "node1"
         result = MagicMock()
+        result.return_code = 0
         result.stdout = "47"
         result.stderr = ""
         node1.run = MagicMock(return_value=result)
@@ -66,10 +71,5 @@ class RunTest(TestCase):
 
         self.assertTrue(node1.run.called)
         self.assertTrue(node2.run.called)
-        self.assertEqual(
-            set(output),
-            set([
-                "node1 (stdout): 47",
-                "node2 (stdout): 47",
-            ]),
-        )
+        self.assertTrue(output[0].startswith("node1: completed successfully after "))
+        self.assertTrue(output[1].startswith("node2: completed successfully after "))

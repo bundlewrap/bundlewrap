@@ -238,12 +238,15 @@ class Node(object):
             local_path,
         )
 
-    def run(self, command, may_fail=False, sudo=True):
+    def run(self, command, may_fail=False, stderr=lambda s: None, stdout=lambda s: None,
+            sudo=True):
         return operations.run(
             self.hostname,
             self.ssh_username,
             command,
             ignore_failure=may_fail,
+            stderr=stderr,
+            stdout=stdout,
             sudo=sudo,
         )
 

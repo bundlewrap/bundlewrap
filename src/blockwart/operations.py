@@ -17,6 +17,36 @@ for key in output:
     output[key] = False
 
 
+class FabricUnsilencer(object):
+    def __enter__(self):
+        output['stderr'] = True
+        output['stdout'] = True
+
+    def __exit__(self, type, value, traceback):
+        output['stderr'] = False
+        output['stdout'] = False
+
+
+class OutputStreamer(object):
+    def __init__(self, target):
+        self.buffer = ""
+        self.target = target
+
+    def flush(self):
+        self.buffer = self.buffer.replace("\r", "\n")
+        s = self.buffer.splitlines(False)
+        if len(s) > 1:
+            # output everything until last newline
+            for i in xrange(len(s) - 1):
+                self.target(s[i])
+            # stuff after last newline remains in buffer
+            self.buffer = s[-1]
+
+    def write(self, msg):
+        self.buffer += msg
+        self.flush()
+
+
 def download(hostname, username, remote_path, local_path, ignore_failure=False):
     """
     Download a file.
@@ -48,7 +78,8 @@ class RunResult(object):
         return self.stdout
 
 
-def run(hostname, username, command, ignore_failure=False, sudo=True):
+def run(hostname, username, command, ignore_failure=False,
+        stderr=lambda s: None, stdout=lambda s: None, pty=False, sudo=True):
     """
     Runs a command on a remote system.
     """
@@ -62,13 +93,16 @@ def run(hostname, username, command, ignore_failure=False, sudo=True):
 
     runner = _fabric_sudo if sudo else _fabric_run
 
-    with prefix("export LANG=C"):
-        fabric_result = runner(
-            command,
-            shell=True,
-            pty=True,
-            combine_stderr=False,
-        )
+    with FabricUnsilencer():
+        with prefix("export LANG=C"):
+            fabric_result = runner(
+                command,
+                shell=True,
+                pty=pty,
+                combine_stderr=False,
+                stdout=OutputStreamer(stdout),
+                stderr=OutputStreamer(stderr),
+            )
 
     if not fabric_result.succeeded and not ignore_failure:
         raise RemoteException(_(
