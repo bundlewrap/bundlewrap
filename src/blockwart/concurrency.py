@@ -1,4 +1,4 @@
-from inspect import ismethod
+from inspect import ismethod, isgenerator
 from logging import getLogger, Handler
 from multiprocessing import Manager, Pipe, Process
 from os import dup, fdopen
@@ -74,6 +74,8 @@ def _worker_process(pipe, log_queue, stdin=None):
                         **message['kwargs']
                     ),
                 }
+                if isgenerator(result['return_value']):
+                    result['return_value'] = list(result['return_value'])
             except Exception:
                 traceback = "".join(format_exception(*sys.exc_info()))
                 result = {

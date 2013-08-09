@@ -1,75 +1,65 @@
 from unittest import TestCase
 
-from mock import MagicMock
+from mock import MagicMock, patch
 
 from blockwart.cmdline import run
-from blockwart.exceptions import NoSuchNode
+from blockwart.operations import RunResult
+
+
+class FakeNode(object):
+    def __init__(self, nodename):
+        self.name = nodename
+        self.result = RunResult()
+        self.result.stdout = "some\noutput"
+        self.result.stderr = "some errors"
+        self.result.return_code = 47
+
+    def run(self, *args, **kwargs):
+        return self.result
 
 
 class RunTest(TestCase):
     """
     Tests blockwart.cmdline.run.bw_run.
     """
-    def test_single_node_fail(self):
+    @patch('blockwart.cmdline.run.get_target_nodes')
+    def test_single_node_fail(self, get_target_nodes):
         args = MagicMock()
-        args.target = "node1"
+        args.command = "foo"
+        args.may_fail = False
+        args.node_workers = 1
+        args.sudo = True
         args.verbose = False
 
-        node = MagicMock()
-        node.name = args.target
-        result = MagicMock()
-        result.return_code = 47
-        result.stdout = "foo \nbar"
-        result.stderr = "pebkac\n"
-        node.run = MagicMock(return_value=result)
+        node = FakeNode("node1")
+        get_target_nodes.return_value = [node]
 
-        repo = MagicMock()
-        repo.get_node = MagicMock(return_value=node)
+        output = list(run.bw_run(MagicMock(), args))
 
-        output = list(run.bw_run(repo, args))
-
-        repo.get_node.assert_called_once_with(args.target)
-        self.assertTrue(node.run.called)
         self.assertEqual(output[0:3], [
-            "node1 (stdout): foo ",
-            "node1 (stdout): bar",
-            "node1 (stderr): pebkac",
+            "node1 (stdout): some",
+            "node1 (stdout): output",
+            "node1 (stderr): some errors",
         ])
         self.assertTrue(output[3].startswith("node1: failed after "))
         self.assertTrue(output[3].endswith("s (return code 47)"))
 
-    def test_group_success(self):
-        def raise_no_node(*args, **kwargs):
-            raise NoSuchNode()
-
+    @patch('blockwart.cmdline.run.get_target_nodes')
+    def test_group_success(self, get_target_nodes):
         args = MagicMock()
-        args.target = "group1"
+        args.command = "foo"
+        args.may_fail = False
+        args.node_workers = 2
+        args.sudo = True
+        args.verbose = False
 
-        node1 = MagicMock()
-        node1.name = "node1"
-        result = MagicMock()
-        result.return_code = 0
-        result.stdout = "47"
-        result.stderr = ""
-        node1.run = MagicMock(return_value=result)
+        node1 = FakeNode("node1")
+        node1.result.return_code = 0
+        node2 = FakeNode("node2")
+        node2.result.return_code = 0
+        get_target_nodes.return_value = [node1, node2]
 
-        node2 = MagicMock()
-        node2.name = "node2"
-        node2.run = MagicMock(return_value=result)
-
-        group = MagicMock()
-        group.nodes = (node1, node2)
-
-        repo = MagicMock()
-        repo.get_group = MagicMock(return_value=group)
-        repo.get_node = MagicMock(side_effect=raise_no_node)
-
-        output = list(run.bw_run(repo, args))
-
-        repo.get_group.assert_called_once_with(args.target)
-        repo.get_node.assert_called_once_with(args.target)
-
-        self.assertTrue(node1.run.called)
-        self.assertTrue(node2.run.called)
-        self.assertTrue(output[0].startswith("node1: completed successfully after "))
-        self.assertTrue(output[1].startswith("node2: completed successfully after "))
+        output = list(run.bw_run(MagicMock(), args))
+        self.assertTrue("completed successfully after" in output[0])
+        self.assertTrue("completed successfully after" in output[1])
+        self.assertEqual(len(output), 2)

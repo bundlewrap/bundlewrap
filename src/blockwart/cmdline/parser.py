@@ -120,4 +120,12 @@ def build_parser_bw():
         dest='may_fail',
         help=_("ignore non-zero exit codes"),
     )
+    parser_run.add_argument(
+        '-p',
+        '--parallel-nodes',
+        default=1,
+        dest='node_workers',
+        help=_("number of nodes to run command on simultaneously"),
+        type=int,
+    )
     return parser
