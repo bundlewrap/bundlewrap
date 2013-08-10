@@ -27,7 +27,7 @@ class FabricUnsilencer(object):
         output['stdout'] = False
 
 
-class OutputStreamer(object):
+class LineBuffer(object):
     def __init__(self, target):
         self.buffer = ""
         self.target = target
@@ -79,7 +79,8 @@ class RunResult(object):
 
 
 def run(hostname, username, command, ignore_failure=False,
-        stderr=lambda s: None, stdout=lambda s: None, pty=False, sudo=True):
+        stderr=lambda s: None, stdout=lambda s: None, pty=False, sudo=True,
+        line_buffered=True):
     """
     Runs a command on a remote system.
     """
@@ -93,6 +94,13 @@ def run(hostname, username, command, ignore_failure=False,
 
     runner = _fabric_sudo if sudo else _fabric_run
 
+    if line_buffered:
+        stdout_action = LineBuffer(stdout)
+        stderr_action = LineBuffer(stderr)
+    else:
+        stdout_action = stdout
+        stderr_action = stderr
+
     with FabricUnsilencer():
         with prefix("export LANG=C"):
             fabric_result = runner(
@@ -100,8 +108,8 @@ def run(hostname, username, command, ignore_failure=False,
                 shell=True,
                 pty=pty,
                 combine_stderr=False,
-                stdout=OutputStreamer(stdout),
-                stderr=OutputStreamer(stderr),
+                stdout=stdout_action,
+                stderr=stderr_action,
             )
 
     if not fabric_result.succeeded and not ignore_failure:

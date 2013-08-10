@@ -1,3 +1,5 @@
+import sys
+
 from datetime import datetime
 
 from ..concurrency import WorkerPool
@@ -15,14 +17,22 @@ def _format_output(nodename, stream, msg):
 
 
 def run_on_node(node, command, may_fail, sudo, verbose, interactive):
+    if interactive:
+        stdout_action = sys.stdout
+        stderr_action = sys.stderr
+    else:
+        stdout_action = lambda msg: LOG.info(_format_output(node.name, "stdout", msg))
+        stderr_action = lambda msg: LOG.info(_format_output(node.name, "stderr", msg))
+
     start = datetime.now()
     result = node.run(
         command,
         may_fail=may_fail,
-        stderr=lambda msg: LOG.warn(_format_output(node.name, "stderr", msg)),
-        stdout=lambda msg: LOG.info(_format_output(node.name, "stdout", msg)),
+        stdout=stdout_action,
+        stderr=stderr_action,
         sudo=sudo,
         pty=interactive,
+        line_buffered=not interactive,
     )
     end = datetime.now()
     duration = end - start
