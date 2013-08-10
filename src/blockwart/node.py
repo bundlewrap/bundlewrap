@@ -239,7 +239,7 @@ class Node(object):
         )
 
     def run(self, command, may_fail=False, stderr=lambda s: None, stdout=lambda s: None,
-            sudo=True):
+            sudo=True, pty=False):
         return operations.run(
             self.hostname,
             self.ssh_username,
@@ -248,6 +248,7 @@ class Node(object):
             stderr=stderr,
             stdout=stdout,
             sudo=sudo,
+            pty=pty,
         )
 
     def upload(self, local_path, remote_path):

@@ -14,7 +14,7 @@ def _format_output(nodename, stream, msg):
     return "{}:{}: {}".format(white(nodename, bold=True), stream, msg)
 
 
-def run_on_node(node, command, may_fail, sudo, verbose):
+def run_on_node(node, command, may_fail, sudo, verbose, interactive):
     start = datetime.now()
     result = node.run(
         command,
@@ -22,6 +22,7 @@ def run_on_node(node, command, may_fail, sudo, verbose):
         stderr=lambda msg: LOG.warn(_format_output(node.name, "stderr", msg)),
         stdout=lambda msg: LOG.info(_format_output(node.name, "stdout", msg)),
         sudo=sudo,
+        pty=interactive,
     )
     end = datetime.now()
     duration = end - start
@@ -73,6 +74,7 @@ def bw_run(repo, args):
                         args.may_fail,
                         args.sudo,
                         args.verbose,
+                        args.node_workers == 1,
                     ),
                 )
             while worker_pool.reapable_count > 0:
