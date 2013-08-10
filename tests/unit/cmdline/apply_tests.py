@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline.apply import bw_apply
+from blockwart.cmdline.apply import bw_apply, format_node_result
 from blockwart.node import ApplyResult
 
 
@@ -26,3 +26,32 @@ class ApplyTest(TestCase):
         args.interactive = True
         args.target = "node1"
         bw_apply(repo, args)
+
+
+class FormatNodeResultTest(TestCase):
+    """
+    Tests blockwart.cmdline.apply.format_node_result.
+    """
+    def test_values(self):
+        result = MagicMock()
+        result.correct = 0
+        result.fixed = 1
+        result.aborted = 2
+        result.unfixable = 3
+        result.failed = 4
+        self.assertEqual(
+            format_node_result(result),
+            "0 correct, 1 fixed, 2 aborted, 3 unfixable, 4 failed",
+        )
+
+    def test_zero(self):
+        result = MagicMock()
+        result.correct = 0
+        result.fixed = 0
+        result.aborted = 0
+        result.unfixable = 0
+        result.failed = 0
+        self.assertEqual(
+            format_node_result(result),
+            "0 correct, 0 fixed, 0 aborted, 0 unfixable, 0 failed",
+        )
