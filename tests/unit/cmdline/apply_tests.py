@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import TestCase
 
 from mock import MagicMock
@@ -11,7 +12,10 @@ class FakeNode(object):
 
     def apply(self, interactive=False):
         assert interactive
-        return ApplyResult(self, ())
+        result = ApplyResult(self, ())
+        result.start = datetime(2013, 8, 10, 0, 0)
+        result.end = datetime(2013, 8, 10, 0, 1)
+        return result
 
 
 class ApplyTest(TestCase):
@@ -25,7 +29,14 @@ class ApplyTest(TestCase):
         args = MagicMock()
         args.interactive = True
         args.target = "node1"
-        bw_apply(repo, args)
+        output = list(bw_apply(repo, args))
+        self.assertTrue(output[0].startswith("\nnodename: run started at "))
+        self.assertTrue(output[1].startswith("\n  nodename: run completed after "))
+        self.assertEqual(
+            output[2],
+            "  0 correct, 0 fixed, 0 aborted, 0 unfixable, 0 failed\n",
+        )
+        self.assertEqual(len(output), 3)
 
 
 class FormatNodeResultTest(TestCase):
