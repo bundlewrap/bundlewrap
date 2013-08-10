@@ -10,8 +10,8 @@ class FakeNode(object):
     def __init__(self, nodename):
         self.name = nodename
         self.result = RunResult()
-        self.result.stdout = "some\noutput"
-        self.result.stderr = "some errors"
+        self.result.stdout = "[node] out: some\n[node] out: output"
+        self.result.stderr = "[node] err: some errors"
         self.result.return_code = 47
 
     def run(self, *args, **kwargs):
@@ -37,9 +37,9 @@ class RunTest(TestCase):
         output = list(run.bw_run(MagicMock(), args))
 
         self.assertEqual(output[0:3], [
-            "node1 (stdout): some",
-            "node1 (stdout): output",
-            "node1 (stderr): some errors",
+            "node1:stdout: some",
+            "node1:stdout: output",
+            "node1:stderr: some errors",
         ])
         self.assertTrue(output[3].startswith("node1: failed after "))
         self.assertTrue(output[3].endswith("s (return code 47)"))
