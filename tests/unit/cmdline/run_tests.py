@@ -37,11 +37,11 @@ class RunTest(TestCase):
         output = list(run.bw_run(MagicMock(), args))
 
         self.assertEqual(output[0:3], [
-            "node1:stdout: some",
-            "node1:stdout: output",
-            "node1:stderr: some errors",
+            "[node1] out: some",
+            "[node1] out: output",
+            "[node1] err: some errors",
         ])
-        self.assertTrue(output[3].startswith("node1: failed after "))
+        self.assertTrue(output[3].startswith("[node1] failed after "))
         self.assertTrue(output[3].endswith("s (return code 47)"))
 
     @patch('blockwart.cmdline.run.get_target_nodes')

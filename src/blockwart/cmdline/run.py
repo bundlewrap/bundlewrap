@@ -6,7 +6,7 @@ from ..concurrency import WorkerPool
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
-from ..utils.text import green, red, white
+from ..utils.text import green, red
 from ..utils.ui import LineBuffer
 
 
@@ -14,7 +14,7 @@ def _format_output(nodename, stream, msg):
     # remove "[host] out: " prefix from Fabric
     needle = ": "
     msg = msg[msg.find(needle) + len(needle):]
-    return "{}:{}: {}".format(white(nodename, bold=True), stream, msg)
+    return "[{}] {}: {}".format(nodename, stream, msg)
 
 
 def run_on_node(node, command, may_fail, sudo, verbose, interactive):
@@ -41,8 +41,8 @@ def run_on_node(node, command, may_fail, sudo, verbose, interactive):
     end = datetime.now()
     duration = end - start
     if result.return_code == 0:
-        yield "{}: {}".format(
-            white(node.name, bold=True),
+        yield "[{}] {}".format(
+            node.name,
             green(_("completed successfully after {}s").format(
                 duration.total_seconds(),
             )),
@@ -51,13 +51,13 @@ def run_on_node(node, command, may_fail, sudo, verbose, interactive):
         if not verbose:
             # show output of failed command if not already shown by -v
             for stream, content in (
-                ("stdout", result.stdout),
-                ("stderr", result.stderr),
+                ("out", result.stdout),
+                ("err", result.stderr),
             ):
                 for line in content.splitlines():
                     yield _format_output(node.name, stream, line)
-        yield "{}: {}".format(
-            white(node.name, bold=True),
+        yield "[{}] {}".format(
+            node.name,
             red(_("failed after {}s (return code {})").format(
                 duration.total_seconds(),
                 result.return_code,
