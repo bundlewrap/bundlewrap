@@ -10,24 +10,13 @@ from ..utils.text import green, red
 from ..utils.ui import LineBuffer
 
 
-def _format_output(nodename, stream, msg):
-    # remove "[host] out: " prefix from Fabric
-    needle = ": "
-    msg = msg[msg.find(needle) + len(needle):]
-    return "[{}] {}: {}".format(nodename, stream, msg)
-
-
 def run_on_node(node, command, may_fail, sudo, verbose, interactive):
     if interactive:
         stdout = sys.stdout
         stderr = sys.stderr
     else:
-        stdout = LineBuffer(
-            lambda msg: LOG.info(_format_output(node.name, "out", msg))
-        )
-        stderr = LineBuffer(
-            lambda msg: LOG.info(_format_output(node.name, "err", msg))
-        )
+        stdout = LineBuffer(LOG.info)
+        stderr = LineBuffer(LOG.info)
 
     start = datetime.now()
     result = node.run(
@@ -48,14 +37,11 @@ def run_on_node(node, command, may_fail, sudo, verbose, interactive):
             )),
         )
     else:
-        if not verbose:
+        if not verbose and not interactive:
             # show output of failed command if not already shown by -v
-            for stream, content in (
-                ("out", result.stdout),
-                ("err", result.stderr),
-            ):
-                for line in content.splitlines():
-                    yield _format_output(node.name, stream, line)
+            for stream in (result.stdout, result.stderr):
+                for line in stream.splitlines():
+                    yield line
         yield "[{}] {}".format(
             node.name,
             red(_("failed after {}s (return code {})").format(
