@@ -7,6 +7,7 @@ from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
 from ..utils.text import green, red, white
+from ..utils.ui import LineBuffer
 
 
 def _format_output(nodename, stream, msg):
@@ -18,21 +19,24 @@ def _format_output(nodename, stream, msg):
 
 def run_on_node(node, command, may_fail, sudo, verbose, interactive):
     if interactive:
-        stdout_action = sys.stdout
-        stderr_action = sys.stderr
+        stdout = sys.stdout
+        stderr = sys.stderr
     else:
-        stdout_action = lambda msg: LOG.info(_format_output(node.name, "stdout", msg))
-        stderr_action = lambda msg: LOG.info(_format_output(node.name, "stderr", msg))
+        stdout = LineBuffer(
+            lambda msg: LOG.info(_format_output(node.name, "out", msg))
+        )
+        stderr = LineBuffer(
+            lambda msg: LOG.info(_format_output(node.name, "err", msg))
+        )
 
     start = datetime.now()
     result = node.run(
         command,
         may_fail=may_fail,
-        stdout=stdout_action,
-        stderr=stderr_action,
+        stdout=stdout,
+        stderr=stderr,
         sudo=sudo,
         pty=interactive,
-        line_buffered=not interactive,
     )
     end = datetime.now()
     duration = end - start

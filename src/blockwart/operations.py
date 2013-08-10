@@ -10,6 +10,7 @@ from fabric.state import env, output
 from .exceptions import RemoteException
 from .utils import LOG
 from .utils.text import mark_for_translation as _
+from .utils.ui import LineBuffer
 
 env.warn_only = True
 # silence fabric
@@ -25,26 +26,6 @@ class FabricUnsilencer(object):
     def __exit__(self, type, value, traceback):
         output['stderr'] = False
         output['stdout'] = False
-
-
-class LineBuffer(object):
-    def __init__(self, target):
-        self.buffer = ""
-        self.target = target
-
-    def flush(self):
-        self.buffer = self.buffer.replace("\r", "\n")
-        s = self.buffer.splitlines(False)
-        if len(s) > 1:
-            # output everything until last newline
-            for i in xrange(len(s) - 1):
-                self.target(s[i])
-            # stuff after last newline remains in buffer
-            self.buffer = s[-1]
-
-    def write(self, msg):
-        self.buffer += msg
-        self.flush()
 
 
 def download(hostname, username, remote_path, local_path, ignore_failure=False):
@@ -78,14 +59,18 @@ class RunResult(object):
         return self.stdout
 
 
-def run(hostname, username, command, ignore_failure=False,
-        stderr=lambda s: None, stdout=lambda s: None, pty=False, sudo=True,
-        line_buffered=True):
+def run(hostname, username, command, ignore_failure=False, stderr=None,
+        stdout=None, pty=False, sudo=True):
     """
     Runs a command on a remote system.
     """
     env.host_string = hostname
     env.user = username
+
+    if stderr is None:
+        stderr = LineBuffer(lambda s: None)
+    if stdout is None:
+        stdout = LineBuffer(lambda s: None)
 
     LOG.debug("running on {}: {}".format(
         hostname,
@@ -94,13 +79,6 @@ def run(hostname, username, command, ignore_failure=False,
 
     runner = _fabric_sudo if sudo else _fabric_run
 
-    if line_buffered:
-        stdout_action = LineBuffer(stdout)
-        stderr_action = LineBuffer(stderr)
-    else:
-        stdout_action = stdout
-        stderr_action = stderr
-
     with FabricUnsilencer():
         with prefix("export LANG=C"):
             fabric_result = runner(
@@ -108,8 +86,8 @@ def run(hostname, username, command, ignore_failure=False,
                 shell=True,
                 pty=pty,
                 combine_stderr=False,
-                stdout=stdout_action,
-                stderr=stderr_action,
+                stdout=stdout,
+                stderr=stderr,
             )
 
     if not fabric_result.succeeded and not ignore_failure:

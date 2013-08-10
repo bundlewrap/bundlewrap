@@ -7,6 +7,7 @@ from .concurrency import WorkerPool
 from .exceptions import ItemDependencyError, RepositoryError
 from .utils import cached_property
 from .utils.text import mark_for_translation as _, validate_name
+from .utils.ui import LineBuffer
 
 
 class ApplyResult(object):
@@ -238,8 +239,12 @@ class Node(object):
             local_path,
         )
 
-    def run(self, command, may_fail=False, stderr=lambda s: None, stdout=lambda s: None,
-            sudo=True, pty=False, line_buffered=True):
+    def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
+            sudo=True):
+        if stderr is None:
+            stderr = LineBuffer(lambda s: None)
+        if stdout is None:
+            stdout = LineBuffer(lambda s: None)
         return operations.run(
             self.hostname,
             self.ssh_username,
@@ -249,7 +254,6 @@ class Node(object):
             stdout=stdout,
             sudo=sudo,
             pty=pty,
-            line_buffered=line_buffered,
         )
 
     def upload(self, local_path, remote_path):
