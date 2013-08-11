@@ -7,7 +7,7 @@ setup(
     author="Torsten Rehn",
     author_email="torsten@rehn.tel",
     license="GPLv3",
-    url="http://github.com/trehn/blockwart",
+    url="http://blockwart.org",
     package_dir={'': "src"},
     packages=find_packages("src"),
     entry_points={
