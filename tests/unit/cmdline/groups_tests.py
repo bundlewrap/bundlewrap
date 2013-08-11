@@ -5,7 +5,7 @@ from mock import MagicMock
 from blockwart.cmdline import groups
 
 
-class NodesTest(TestCase):
+class GroupsTest(TestCase):
     """
     Tests blockwart.cmdline.groups.bw_groups.
     """
