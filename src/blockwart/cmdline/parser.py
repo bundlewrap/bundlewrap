@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
+from .groups import bw_groups
 from .nodes import bw_nodes
 from .repo import bw_repo_create, bw_repo_debug
 from .run import bw_run
@@ -62,6 +63,17 @@ def build_parser_bw():
         dest='node_workers',
         help=_("number of nodes to apply to simultaneously"),
         type=int,
+    )
+
+    # bw groups
+    parser_groups = subparsers.add_parser("groups")
+    parser_groups.set_defaults(func=bw_groups)
+    parser_groups.add_argument(
+        '-n',
+        '--nodes',
+        action='store_true',
+        dest='show_nodes',
+        help=_("show nodes for each group"),
     )
 
     # bw nodes
