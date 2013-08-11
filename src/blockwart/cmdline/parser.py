@@ -73,6 +73,13 @@ def build_parser_bw():
         dest='show_hostnames',
         help=_("show hostnames instead of node names"),
     )
+    parser_nodes.add_argument(
+        '-g',
+        '--groups',
+        action='store_true',
+        dest='show_groups',
+        help=_("show group membership for each node"),
+    )
 
     # bw repo
     parser_repo = subparsers.add_parser("repo")
