@@ -1,48 +1,49 @@
+import sys
+
 from datetime import datetime
 
 from ..concurrency import WorkerPool
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
-from ..utils.text import green, red, white
+from ..utils.text import green, red
+from ..utils.ui import LineBuffer
 
 
-def _format_output(nodename, stream, msg):
-    # remove "[host] out: " prefix from Fabric
-    needle = ": "
-    msg = msg[msg.find(needle) + len(needle):]
-    return "{}:{}: {}".format(white(nodename, bold=True), stream, msg)
+def run_on_node(node, command, may_fail, sudo, verbose, interactive):
+    if interactive:
+        stdout = sys.stdout
+        stderr = sys.stderr
+    else:
+        stdout = LineBuffer(LOG.info)
+        stderr = LineBuffer(LOG.info)
 
-
-def run_on_node(node, command, may_fail, sudo, verbose):
     start = datetime.now()
     result = node.run(
         command,
         may_fail=may_fail,
-        stderr=lambda msg: LOG.warn(_format_output(node.name, "stderr", msg)),
-        stdout=lambda msg: LOG.info(_format_output(node.name, "stdout", msg)),
+        stdout=stdout,
+        stderr=stderr,
         sudo=sudo,
+        pty=interactive,
     )
     end = datetime.now()
     duration = end - start
     if result.return_code == 0:
-        yield "{}: {}".format(
-            white(node.name, bold=True),
+        yield "[{}] {}".format(
+            node.name,
             green(_("completed successfully after {}s").format(
                 duration.total_seconds(),
             )),
         )
     else:
-        if not verbose:
+        if not verbose and not interactive:
             # show output of failed command if not already shown by -v
-            for stream, content in (
-                ("stdout", result.stdout),
-                ("stderr", result.stderr),
-            ):
-                for line in content.splitlines():
-                    yield _format_output(node.name, stream, line)
-        yield "{}: {}".format(
-            white(node.name, bold=True),
+            for stream in (result.stdout, result.stderr):
+                for line in stream.splitlines():
+                    yield line
+        yield "[{}] {}".format(
+            node.name,
             red(_("failed after {}s (return code {})").format(
                 duration.total_seconds(),
                 result.return_code,
@@ -73,6 +74,7 @@ def bw_run(repo, args):
                         args.may_fail,
                         args.sudo,
                         args.verbose,
+                        args.node_workers == 1,
                     ),
                 )
             while worker_pool.reapable_count > 0:
