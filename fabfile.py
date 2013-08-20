@@ -72,6 +72,7 @@ def run_tests(coverage=True):
                 "--with-cov --cov blockwart --cov-config .coveragerc 2>&1"
             )
             local("coverage combine")
+            local("mv .coverage ..")
         else:
             local("nosetests")
 
@@ -82,5 +83,4 @@ def shell():
 
 
 def submit_coverage():
-    with lcd(PROJECT_PATH + "/tests"):
-        local("coveralls")
+    local("coveralls")
