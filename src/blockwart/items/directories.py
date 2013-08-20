@@ -12,8 +12,6 @@ from blockwart.utils.text import white
 
 
 def validator_mode(item_id, value):
-    # XXX: Copied from files.py. Should be moved to a central place so
-    # it can be shared among file, directory, symlink, ...
     if not value.isdigit():
         raise BundleError(
             _("mode for {} should be written as digits, got: '{}'"

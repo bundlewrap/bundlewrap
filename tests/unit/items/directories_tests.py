@@ -2,10 +2,8 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
+from blockwart.exceptions import BundleError
 from blockwart.items import directories, ItemStatus
-
-
-# XXX: Mode validator tests left out, this is already tested in files.py
 
 
 class DirectoryFixTest(TestCase):
@@ -215,3 +213,30 @@ class DirectoryGetStatusTest(TestCase):
         status = f.get_status()
         self.assertTrue(status.correct)
         self.assertEqual(status.info['needs_fixing'], [])
+
+
+class ValidatorModeTest(TestCase):
+    """
+    Tests blockwart.items.directories.validator_mode.
+    """
+    def test_nondigit(self):
+        with self.assertRaises(BundleError):
+            directories.validator_mode("my:item", "ohai")
+
+    def test_too_long(self):
+        with self.assertRaises(BundleError):
+            directories.validator_mode("my:item", "31337")
+
+    def test_too_short(self):
+        with self.assertRaises(BundleError):
+            directories.validator_mode("my:item", "47")
+
+    def test_invalid_digits(self):
+        with self.assertRaises(BundleError):
+            directories.validator_mode("my:item", "4748")
+
+    def test_ok(self):
+        directories.validator_mode("my:item", "0664")
+
+    def test_ok_short(self):
+        directories.validator_mode("my:item", "777")

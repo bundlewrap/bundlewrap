@@ -9,6 +9,7 @@ from tempfile import mkstemp
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
+from blockwart.items.directories import validator_mode
 from blockwart.utils import cached_property, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
@@ -75,23 +76,6 @@ def validator_content_type(item_id, value):
             _("invalid content_type for {}: '{}'").format(item_id, value)
         )
 
-
-def validator_mode(item_id, value):
-    if not value.isdigit():
-        raise BundleError(
-            _("mode for {} should be written as digits, got: '{}'"
-              "").format(item_id, value)
-        )
-    for digit in value:
-        if int(digit) > 7 or int(digit) < 0:
-            raise BundleError(
-                _("invalid mode for {}: '{}'").format(item_id, value),
-            )
-    if not len(value) == 3 and not len(value) == 4:
-        raise BundleError(
-            _("mode for {} should be three or four digits long, was: '{}'"
-              "").format(item_id, value)
-        )
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
 ATTRIBUTE_VALIDATORS.update({
