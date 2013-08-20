@@ -187,7 +187,7 @@ class File(Item):
             if fix_type in status.info['needs_fixing']:
                 if fix_type == 'group' and \
                         'owner' in status.info['needs_fixing']:
-                    # owner and group are fixed with a single chmod
+                    # owner and group are fixed with a single chown
                     continue
                 if fix_type in ('mode', 'owner', 'group') and \
                         'content' in status.info['needs_fixing']:
