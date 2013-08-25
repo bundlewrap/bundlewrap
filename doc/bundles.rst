@@ -47,6 +47,8 @@ This table lists all item types included in Blockwart along with the bundle attr
 +======================================+==================+========================================================================+
 | :doc:`file <item_file>`              | ``files``        | Manages contents, permissions, and ownership for files                 |
 +--------------------------------------+------------------+------------------------------------------------------------------------+
+| :doc:`pkg_apt <item_pkg_apt>`        | ``pkg_apt``      | Installs and removes packages with APT                                 |
++--------------------------------------+------------------+------------------------------------------------------------------------+
 
 Builtin attributes
 ------------------
