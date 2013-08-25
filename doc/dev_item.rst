@@ -44,7 +44,7 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
             return ItemStatus(
                 correct=True,
                 description="No description available.",
-                status_info={},
+                info={},
             )
 
         def validate_attributes(self, attributes):
