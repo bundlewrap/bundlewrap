@@ -4,6 +4,8 @@
 File items
 ##########
 
+Manages regular files.
+
 .. code-block:: python
 
     files = {
