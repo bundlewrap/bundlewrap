@@ -5,7 +5,6 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
-from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
 from blockwart.utils.text import green, red
 
@@ -378,33 +377,6 @@ class HashLocalTest(TestCase):
             files.hash_local_file(filename),
             "827bfc458708f0b442009c9c9836f7e4b65557fb",
         )
-
-
-class ValidatorModeTest(TestCase):
-    """
-    Tests blockwart.items.files.validator_mode.
-    """
-    def test_nondigit(self):
-        with self.assertRaises(BundleError):
-            files.validator_mode("my:item", "ohai")
-
-    def test_too_long(self):
-        with self.assertRaises(BundleError):
-            files.validator_mode("my:item", "31337")
-
-    def test_too_short(self):
-        with self.assertRaises(BundleError):
-            files.validator_mode("my:item", "47")
-
-    def test_invalid_digits(self):
-        with self.assertRaises(BundleError):
-            files.validator_mode("my:item", "4748")
-
-    def test_ok(self):
-        files.validator_mode("my:item", "0664")
-
-    def test_ok_short(self):
-        files.validator_mode("my:item", "777")
 
 
 class ValidateAttributesTest(TestCase):

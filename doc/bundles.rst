@@ -7,6 +7,7 @@ Bundle reference
 .. toctree::
     :hidden:
 
+    item_directory
     item_file
 
 Bundles are subdirectories of the ``bundles/`` directory of your Blockwart repository. Within each bundle, there must be a file called ``bundle.py``. They define any number of magic attributes that are automatically processed by Blockwart. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
@@ -45,6 +46,8 @@ This table lists all item types included in Blockwart along with the bundle attr
 +--------------------------------------+------------------+------------------------------------------------------------------------+
 | Type name                            | Bundle attribute | Purpose                                                                |
 +======================================+==================+========================================================================+
+| :doc:`directory <item_directory>`    | ``directories``  | Manages permissions and ownership for directories                      |
++--------------------------------------+------------------+------------------------------------------------------------------------+
 | :doc:`file <item_file>`              | ``files``        | Manages contents, permissions, and ownership for files                 |
 +--------------------------------------+------------------+------------------------------------------------------------------------+
 | :doc:`pkg_apt <item_pkg_apt>`        | ``pkg_apt``      | Installs and removes packages with APT                                 |
