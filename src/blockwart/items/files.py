@@ -118,14 +118,12 @@ class File(Item):
     def ask(self, status):
         if 'type' in status.info['needs_fixing']:
             if not status.info['path_info'].exists:
-                return _("Doesn't exist. Do you want to create it?")
+                return _("Doesn't exist.")
             else:
-                return _(
-                    "Not a regular file. "
-                    "The `file` utility says it's a '{}'.\n"
-                    "Do you want it removed and replaced?"
-                ).format(
+                return "{} {} → {}\n".format(
+                    white(_("type"), bold=True),
                     status.info['path_info'].desc,
+                    _("file"),
                 )
 
         question = ""
