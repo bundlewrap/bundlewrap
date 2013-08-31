@@ -52,6 +52,8 @@ This table lists all item types included in Blockwart along with the bundle attr
 +--------------------------------------+------------------+------------------------------------------------------------------------+
 | :doc:`pkg_apt <item_pkg_apt>`        | ``pkg_apt``      | Installs and removes packages with APT                                 |
 +--------------------------------------+------------------+------------------------------------------------------------------------+
+| :doc:`user <item_user>`              | ``users``        | Manages users by wrapping ``useradd``, ``usermod`` and ``userdel``     |
++--------------------------------------+------------------+------------------------------------------------------------------------+
 
 Builtin attributes
 ------------------
