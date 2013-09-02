@@ -14,7 +14,7 @@ class User(Item):
         'full_name': "",
         'gid': None,
         'home': None,
-        'password': "x",
+        'password': "!",
         'shell': "",
         'uid': None,
     }
