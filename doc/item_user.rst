@@ -11,7 +11,7 @@ Manages system user accounts.
     users = {
         "jdoe": {
             "full_name": "Jane Doe",
-            "gid": "jdoe",
+            "gid": 2342,
             "home": "/home/jdoe",
             "password": "$6$abcdef$ghijklmnopqrstuvwxyz",
             "shell": "/bin/zsh",
@@ -27,10 +27,10 @@ Attribute reference
 
 Full name of the user.
 
-``group``
-+++++++++
+``gid``
++++++++
 
-Primary group of the user. May be either group name or ID.
+Primary group of the user. Must be numerical ID.
 
 ``home``
 ++++++++
