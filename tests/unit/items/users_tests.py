@@ -6,6 +6,23 @@ from unittest import TestCase
 from mock import MagicMock
 
 from blockwart.items import users
+from blockwart.operations import RunResult
+
+
+class GroupsForUserTest(TestCase):
+    """
+    Tests blockwart.items.users._groups_for_user.
+    """
+    def test_groups(self):
+        node = MagicMock()
+        result = RunResult()
+        result.stdout = "group1 group2\n"
+        node.run.return_value = result
+
+        groups = users._groups_for_user(node, "jdoe")
+
+        node.run.assert_called_once_with("id -Gn jdoe")
+        self.assertEqual(groups, ["group1", "group2"])
 
 
 class ParsePasswdLineTest(TestCase):

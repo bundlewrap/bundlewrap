@@ -4,6 +4,15 @@ from __future__ import unicode_literals
 from blockwart.items import Item
 
 
+def _groups_for_user(node, username):
+    """
+    Returns the list of group names for the given username on the given
+    node.
+    """
+    idcmd = node.run("id -Gn {}".format(username))
+    return idcmd.stdout.strip().split(" ")
+
+
 def _parse_passwd_line(line):
     """
     Parses a line from /etc/passwd and returns the information as a
