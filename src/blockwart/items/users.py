@@ -34,3 +34,30 @@ class User(Item):
         'uid': None,
     }
     ITEM_TYPE_NAME = "user"
+
+
+    @property
+    def line_passwd(self):
+        return ':'.join([
+            self.name,
+            'x',
+            str(self.attributes['uid']),
+            str(self.attributes['gid']),
+            self.attributes['full_name'],
+            self.attributes['home'],
+            self.attributes['shell'],
+        ])
+
+    @property
+    def line_shadow(self):
+        return ':'.join([
+            self.name,
+            self.attributes['password'],
+            '',  # last password change
+            '',  # minimum password age
+            '',  # maximum password age
+            '',  # warning period
+            '',  # inactivity period
+            '',  # expiration date
+            '',  # undefined/reserved
+        ])
