@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from unittest import TestCase
 
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from blockwart.items import users
 from blockwart.operations import RunResult
@@ -46,6 +46,35 @@ class ParsePasswdLineTest(TestCase):
                 'uid': 1123,
                 'username': 'blockwart',
             },
+        )
+
+
+class FixTest(TestCase):
+    """
+    Tests blockwart.items.users.User.fix.
+    """
+    def test_fix(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+        user.fix(MagicMock())
+        self.assertEqual(
+            bundle.node.run.call_args_list,
+            [
+                call("useradd blockwart", may_fail=True),
+                call("usermod -d /home/blockwart -g 2345 -G group1,group2 -p secret -s /bin/bash -u 1123 "),
+            ],
         )
 
 

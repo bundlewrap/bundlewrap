@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from pipes import quote
+
 from blockwart.items import Item, ItemStatus
 
 
@@ -44,6 +46,25 @@ class User(Item):
         'uid': None,
     }
     ITEM_TYPE_NAME = "user"
+
+    def fix(self, status):
+        self.node.run("useradd {}".format(self.name), may_fail=True)
+        self.node.run("usermod "
+            "-d {home} "
+            "-g {gid} "
+            "-G {groups} "
+            "-p {password} "
+            "-s {shell} "
+            "-u {uid} ".format(
+                home=quote(self.attributes['home']),
+                gid=self.attributes['gid'],
+                groups=quote(",".join(self.attributes['groups'])),
+                password=quote(self.attributes['password']),
+                shell=quote(self.attributes['shell']),
+                uid=self.attributes['uid'],
+            )
+        )
+
 
     def get_status(self):
         # verify content of /etc/passwd
