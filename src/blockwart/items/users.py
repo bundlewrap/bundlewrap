@@ -39,7 +39,7 @@ class User(Item):
         'gid': None,
         'home': None,
         'password': "!",
-        'shell': "",
+        'shell': "/bin/bash",
         'uid': None,
     }
     ITEM_TYPE_NAME = "user"
