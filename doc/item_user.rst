@@ -12,6 +12,7 @@ Manages system user accounts.
         "jdoe": {
             "full_name": "Jane Doe",
             "gid": 2342,
+            "groups": ["admins", "users", "wheel"],
             "home": "/home/jdoe",
             "password": "$6$abcdef$ghijklmnopqrstuvwxyz",
             "shell": "/bin/zsh",
@@ -31,6 +32,11 @@ Full name of the user.
 +++++++
 
 Primary group of the user. Must be numerical ID.
+
+``groups``
+++++++++++
+
+List of groups (names, not GIDs) the user should belong to.
 
 ``home``
 ++++++++
