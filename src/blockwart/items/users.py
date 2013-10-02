@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from blockwart.items import Item
+from blockwart.items import Item, ItemStatus
 
 
 def _groups_for_user(node, username):
@@ -37,12 +37,39 @@ class User(Item):
     ITEM_ATTRIBUTES = {
         'full_name': "",
         'gid': None,
+        'groups': [],
         'home': None,
         'password': "!",
         'shell': "/bin/bash",
         'uid': None,
     }
     ITEM_TYPE_NAME = "user"
+
+    def get_status(self):
+        # verify content of /etc/passwd
+        passwd_grep_result = self.node.run(
+            "grep -e '^{}:' /etc/passwd".format(self.name),
+            may_fail=True,
+        )
+        if passwd_grep_result.return_code != 0 or \
+                passwd_grep_result.stdout.strip() != self.line_passwd:
+            return ItemStatus(correct=False)
+
+        # verify content of /etc/shadow
+        shadow_grep_result = self.node.run(
+            "grep -e '^{}:' /etc/shadow".format(self.name),
+            may_fail=True,
+        )
+        if shadow_grep_result.return_code != 0 or \
+                shadow_grep_result.stdout.strip() != self.line_shadow:
+            return ItemStatus(correct=False)
+
+        # verify content of /etc/group
+        if not set(self.attributes['groups']) == \
+                set(_groups_for_user(self.node, self.name)):
+            return ItemStatus(correct=False)
+
+        return ItemStatus(correct=True)
 
 
     @property
