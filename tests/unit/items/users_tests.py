@@ -239,26 +239,3 @@ class LinePasswdTest(TestCase):
             user.line_passwd,
             "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash",
         )
-
-
-class LineShadowTest(TestCase):
-    """
-    Tests blockwart.items.users.line_shadow.
-    """
-    def test_line(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'home': "/home/blockwart",
-                'password': "secret",
-                'shell': "/bin/bash",
-                'uid': 1123,
-            },
-        )
-        self.assertEqual(
-            user.line_shadow,
-            "blockwart:secret:::::::",
-        )
