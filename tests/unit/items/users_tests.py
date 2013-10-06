@@ -41,7 +41,6 @@ class ParsePasswdLineTest(TestCase):
                 'gecos': "Blöck Wart,Building No,01234,56789",
                 'gid': 2345,
                 'home': "/home/blockwart",
-                'password': "x",
                 'shell': "/bin/bash",
                 'uid': 1123,
                 'username': 'blockwart',

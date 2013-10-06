@@ -22,11 +22,12 @@ def _parse_passwd_line(line):
     """
     result = dict(zip(
         ('username', 'password', 'uid', 'gid', 'gecos', 'home', 'shell'),
-        line.lstrip().split(":"),
+        line.strip().split(":"),
     ))
     result['uid'] = int(result['uid'])
     result['gid'] = int(result['gid'])
     result['full_name'] = result['gecos'].split(",")[0]
+    del result['password']  # nothing useful here
     return result
 
 
