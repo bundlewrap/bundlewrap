@@ -113,13 +113,15 @@ class User(Item):
             "-G {groups} "
             "-p {password} "
             "-s {shell} "
-            "-u {uid} ".format(
+            "-u {uid} "
+            "{username}".format(
                 home=quote(self.attributes['home']),
                 gid=self.attributes['gid'],
                 groups=quote(",".join(self.attributes['groups'])),
                 password=quote(self.attributes['password']),
                 shell=quote(self.attributes['shell']),
                 uid=self.attributes['uid'],
+                username=self.name,
             )
         )
 
