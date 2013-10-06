@@ -68,6 +68,7 @@ class Item(object):
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
+    REQUIRED_ATTRIBUTES = []
 
     def __init__(self, bundle, name, attributes, skip_validation=False):
         self.attributes = {}
@@ -78,6 +79,7 @@ class Item(object):
 
         if not skip_validation:
             self._validate_attribute_names(attributes)
+            self._validate_required_attributes(attributes)
             self.validate_attributes(attributes)
 
         for attribute_name, attribute_default in \
@@ -124,6 +126,17 @@ class Item(object):
                     ", ".join(invalid_attributes),
                 )
             )
+
+    def _validate_required_attributes(self, attributes):
+        missing = []
+        for attrname in self.REQUIRED_ATTRIBUTES:
+            if attrname not in attributes:
+                missing.append(attrname)
+        if missing:
+            raise BundleError(_("{} missing required attribute(s): {}").format(
+                self.id,
+                ", ".join(missing),
+            ))
 
     @property
     def id(self):

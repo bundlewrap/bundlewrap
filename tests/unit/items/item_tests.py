@@ -87,20 +87,26 @@ class InitTest(TestCase):
     Tests initialization of blockwart.items.Item.
     """
     @patch('blockwart.items.Item._validate_attribute_names')
+    @patch('blockwart.items.Item._validate_required_attributes')
     @patch('blockwart.items.Item.validate_attributes')
-    def test_init_no_validation(self, validate_names, validate_values):
+    def test_init_no_validation(self, validate_names, validate_required,
+            validate_values):
         bundle = MagicMock()
         i = MockItem(bundle, "item1", {}, skip_validation=True)
         self.assertEqual(i.bundle, bundle)
         self.assertEqual(i.name, "item1")
         self.assertFalse(validate_names.called)
+        self.assertFalse(validate_required.called)
         self.assertFalse(validate_values.called)
 
     @patch('blockwart.items.Item._validate_attribute_names')
+    @patch('blockwart.items.Item._validate_required_attributes')
     @patch('blockwart.items.Item.validate_attributes')
-    def test_init_with_validation(self, validate_names, validate_values):
+    def test_init_with_validation(self, validate_names, validate_required,
+            validate_values):
         MockItem(MagicMock(), MagicMock(), {}, skip_validation=False)
         self.assertTrue(validate_names.called)
+        self.assertTrue(validate_required.called)
         self.assertTrue(validate_values.called)
 
     def test_attribute_name_validation_ok(self):
@@ -113,6 +119,19 @@ class InitTest(TestCase):
         item.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
         with self.assertRaises(BundleError):
             item._validate_attribute_names({
+                'foobar': 49,
+                'bar': 50,
+                'depends': [],
+            })
+
+    def test_required_attributes(self):
+        class ReqMockItem(MockItem):
+            REQUIRED_ATTRIBUTES = ['foo', 'bar', 'baz']
+
+        item = ReqMockItem(MagicMock(), "item1", {}, skip_validation=True)
+        item.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
+        with self.assertRaises(BundleError):
+            item._validate_required_attributes({
                 'foobar': 49,
                 'bar': 50,
                 'depends': [],

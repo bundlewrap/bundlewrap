@@ -22,6 +22,7 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
             'attribute': "default value",
         }
         ITEM_TYPE_NAME = "foo"
+        REQUIRED_ATTRIBUTES = ['attribute']
 
         def ask(self, status):
             """
@@ -79,6 +80,12 @@ Step 2: Define attributes
 ``ITEM_TYPE_NAME`` sets the first part of an items ID. For the file items, this is "file". Therefore, file ID look this this: ``file:/path``. The second part is the name a user assigns to your item in a bundle. Example::
 
     ITEM_TYPE_NAME = "foo"
+
+
+``REQUIRED_ATTRIBUTES`` is a list of attribute names that must be set on each item of this type. If Blockwart encounters an item without all these attributes during bundle inspection, an exception will be raised. Example::
+
+    REQUIRED_ATTRIBUTES = ['attr1', 'attr2']
+
 
 Step 3: Implement methods
 -------------------------
