@@ -73,25 +73,34 @@ class User(Item):
             "grep -e '^{}:' /etc/passwd".format(self.name),
             may_fail=True,
         )
-        if passwd_grep_result.return_code != 0 or \
-                passwd_grep_result.stdout.strip() != self.line_passwd:
-            return ItemStatus(correct=False)
+        if passwd_grep_result.return_code != 0:
+            return ItemStatus(correct=False, info={'exists': False})
+
+        status = ItemStatus(correct=True, info={'exists': True})
+        status.info.update(_parse_passwd_line(passwd_grep_result.stdout))
+
+        if passwd_grep_result.stdout.strip() != self.line_passwd:
+            status.correct = False
 
         # verify content of /etc/shadow
         shadow_grep_result = self.node.run(
             "grep -e '^{}:' /etc/shadow".format(self.name),
             may_fail=True,
         )
-        if shadow_grep_result.return_code != 0 or \
-                shadow_grep_result.stdout.strip() != self.line_shadow:
-            return ItemStatus(correct=False)
+        if shadow_grep_result.return_code != 0:
+            status.correct = False
+            status.info['password'] = None
+        else:
+            status.info['password'] = shadow_grep_result.stdout.split(":")[1]
+            if status.info['password'] != self.attributes['password']:
+                status.correct = False
 
         # verify content of /etc/group
-        if not set(self.attributes['groups']) == \
-                set(_groups_for_user(self.node, self.name)):
-            return ItemStatus(correct=False)
+        status.info['groups'] = _groups_for_user(self.node, self.name)
+        if set(self.attributes['groups']) != set(status.info['groups']):
+            status.correct = False
 
-        return ItemStatus(correct=True)
+        return status
 
 
     @property

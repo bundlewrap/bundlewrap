@@ -149,6 +149,31 @@ class GetStatusTest(TestCase):
         status = user.get_status()
         self.assertFalse(status.correct)
 
+    def test_passwd_fail(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+
+        passwd_grep_result = RunResult()
+        passwd_grep_result.return_code = 1
+
+        bundle.node.run.return_value = passwd_grep_result
+
+        status = user.get_status()
+        self.assertFalse(status.correct)
+        self.assertFalse(status.info['exists'])
+
     @patch('blockwart.items.users._groups_for_user')
     def test_shadow(self, _groups_for_user):
         _groups_for_user.return_value = ["group1", "group2"]
@@ -182,6 +207,40 @@ class GetStatusTest(TestCase):
 
         status = user.get_status()
         self.assertFalse(status.correct)
+
+    @patch('blockwart.items.users._groups_for_user')
+    def test_shadow_fail(self, _groups_for_user):
+        _groups_for_user.return_value = ["group1", "group2"]
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+
+        passwd_grep_result = RunResult()
+        passwd_grep_result.return_code = 0
+        passwd_grep_result.stdout = "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash\n"
+        shadow_grep_result = RunResult()
+        shadow_grep_result.return_code = 1
+        results = [shadow_grep_result, passwd_grep_result]
+
+        def pop_result(*args, **kwargs):
+            return results.pop()
+
+        bundle.node.run.side_effect = pop_result
+
+        status = user.get_status()
+        self.assertFalse(status.correct)
+        self.assertEqual(status.info['password'], None)
 
     @patch('blockwart.items.users._groups_for_user')
     def test_groups(self, _groups_for_user):
