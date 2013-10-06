@@ -66,7 +66,6 @@ class User(Item):
             )
         )
 
-
     def get_status(self):
         # verify content of /etc/passwd
         passwd_grep_result = self.node.run(
@@ -101,7 +100,6 @@ class User(Item):
             status.correct = False
 
         return status
-
 
     @property
     def line_passwd(self):
