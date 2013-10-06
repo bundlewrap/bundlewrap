@@ -48,11 +48,192 @@ class ParsePasswdLineTest(TestCase):
         )
 
 
+class AskTest(TestCase):
+    """
+    Tests blockwart.items.users.User.ask.
+    """
+    def test_user_doesnt_exist(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+        status = ItemStatus(correct=False, info={'exists': False})
+        self.assertEqual(
+            user.ask(status),
+            "'blockwart' not found in /etc/passwd"
+        )
+
+    def test_passwd(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+        status = ItemStatus(correct=False)
+        status.info = {
+            'exists': True,
+            'full_name': "Blockwart",
+            'gid': 2357,
+            'groups': ["group1", "group2"],
+            'home': "/home/blkwrt",
+            'password': "secret",
+            'shell': "/bin/bsh",
+            'uid': 1113,
+        }
+        self.assertEqual(
+            user.ask(status),
+            "shell /bin/bsh → /bin/bash\n"
+            "full name Blockwart → Blöck Wart\n"
+            "GID 2357 → 2345\n"
+            "home dir /home/blkwrt → /home/blockwart\n"
+            "UID 1113 → 1123\n"
+        )
+
+    def test_shadow(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+        status = ItemStatus(correct=False)
+        status.info = {
+            'exists': True,
+            'full_name': "Blöck Wart",
+            'gid': 2345,
+            'groups': ["group1", "group2"],
+            'home': "/home/blockwart",
+            'password': "topsecret",
+            'shell': "/bin/bash",
+            'uid': 1123,
+        }
+        self.assertEqual(
+            user.ask(status),
+            "password topsecret\n" +
+            "       → secret\n"
+        )
+
+    def test_shadow_not_found(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+        status = ItemStatus(correct=False)
+        status.info = {
+            'exists': True,
+            'full_name': "Blöck Wart",
+            'gid': 2345,
+            'groups': ["group1", "group2"],
+            'home': "/home/blockwart",
+            'password': None,
+            'shell': "/bin/bash",
+            'uid': 1123,
+        }
+        self.assertEqual(
+            user.ask(status),
+            "password not found in /etc/shadow\n"
+        )
+
+    def test_groups(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2", "group3"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+        status = ItemStatus(correct=False)
+        status.info = {
+            'exists': True,
+            'full_name': "Blöck Wart",
+            'gid': 2345,
+            'groups': ["group3", "group2", "group4", "group5"],
+            'home': "/home/blockwart",
+            'password': "secret",
+            'shell': "/bin/bash",
+            'uid': 1123,
+        }
+        self.assertEqual(
+            user.ask(status),
+            "missing groups group1\n" +
+            "extra groups group4, group5\n"
+        )
+
+
 class FixTest(TestCase):
     """
     Tests blockwart.items.users.User.fix.
     """
-    def test_fix(self):
+    def test_fix_new(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+            },
+        )
+        status = ItemStatus(correct=False, info={'exists': False})
+        user.fix(status)
+        self.assertEqual(
+            bundle.node.run.call_args_list,
+            [
+                call("useradd blockwart"),
+                call("usermod -d /home/blockwart -g 2345 -G group1,group2 -p secret -s /bin/bash -u 1123 "),
+            ],
+        )
+
+    def test_fix_existing(self):
         bundle = MagicMock()
         user = users.User(
             bundle,

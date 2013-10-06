@@ -4,6 +4,19 @@ from __future__ import unicode_literals
 from pipes import quote
 
 from blockwart.items import Item, ItemStatus
+from blockwart.utils.text import mark_for_translation as _
+from blockwart.utils.text import white
+
+
+_ATTRIBUTE_NAMES = {
+    'full_name': _("full name"),
+    'gid': _("GID"),
+    'groups': _("groups"),
+    'home': _("home dir"),
+    'password': _("password"),
+    'shell': _("shell"),
+    'uid': _("UID"),
+}
 
 
 def _groups_for_user(node, username):
@@ -47,6 +60,48 @@ class User(Item):
         'uid': None,
     }
     ITEM_TYPE_NAME = "user"
+
+    def ask(self, status):
+        if not status.info['exists']:
+            return _("'{}' not found in /etc/passwd").format(self.name)
+
+        output = ""
+        for key, should_value in self.attributes.iteritems():
+            if key in ('groups', 'password'):
+                continue
+            is_value = status.info[key]
+            if should_value != is_value:
+                output += "{} {} → {}\n".format(
+                    white(_ATTRIBUTE_NAMES[key], bold=True),
+                    is_value,
+                    should_value,
+                )
+
+        if status.info['password'] is None:
+            output += white(_ATTRIBUTE_NAMES['password'], bold=True) + " " + \
+                      _("not found in /etc/shadow") + "\n"
+        elif status.info['password'] != self.attributes['password']:
+            output += white(_ATTRIBUTE_NAMES['password'], bold=True) + " " + \
+                      status.info['password'] + "\n"
+            output += " " * (len(_ATTRIBUTE_NAMES['password']) - 1) + "→ " + \
+                      self.attributes['password'] + "\n"
+
+        groups_should = set(self.attributes['groups'])
+        groups_is = set(status.info['groups'])
+        missing_groups = list(groups_should.difference(groups_is))
+        missing_groups.sort()
+        extra_groups = list(groups_is.difference(groups_should))
+        extra_groups.sort()
+
+        if missing_groups:
+            output += white(_("missing groups"), bold=True) + " " + \
+                      ", ".join(missing_groups) + "\n"
+
+        if extra_groups:
+            output += white(_("extra groups"), bold=True) + " " + \
+                      ", ".join(extra_groups) + "\n"
+
+        return output
 
     def fix(self, status):
         if not status.info['exists']:
