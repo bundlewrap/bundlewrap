@@ -49,7 +49,9 @@ class User(Item):
     ITEM_TYPE_NAME = "user"
 
     def fix(self, status):
-        self.node.run("useradd {}".format(self.name), may_fail=True)
+        if not status.info['exists']:
+            self.node.run("useradd {}".format(self.name))
+
         self.node.run("usermod "
             "-d {home} "
             "-g {gid} "

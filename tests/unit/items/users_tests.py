@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from mock import MagicMock, patch, call
 
-from blockwart.items import users
+from blockwart.items import ItemStatus, users
 from blockwart.operations import RunResult
 
 
@@ -67,11 +67,11 @@ class FixTest(TestCase):
                 'uid': 1123,
             },
         )
-        user.fix(MagicMock())
+        status = ItemStatus(correct=False, info={'exists': True})
+        user.fix(status)
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("useradd blockwart", may_fail=True),
                 call("usermod -d /home/blockwart -g 2345 -G group1,group2 -p secret -s /bin/bash -u 1123 "),
             ],
         )
