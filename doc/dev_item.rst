@@ -61,7 +61,7 @@ Step 2: Define attributes
 
 ``BUNDLE_ATTRIBUTE_NAME`` is the name of the variable defined in a bundle module that holds the items of this type. If your bundle looks like this::
 
-   foo = { {...] }
+   foo = { [...] }
 
 ...then you should put ``BUNDLE_ATTRIBUTE_NAME = "foo"`` here.
 
@@ -74,6 +74,7 @@ Step 2: Define attributes
 ``ITEM_ATTRIBUTES`` is a dictionary of the attributes users will be able to configure for your item. For files, that would be stuff like owner, group, and permissions. Every attribute (even if it's mandatory) needs a default value, ``None`` is totally acceptable::
 
     ITEM_ATTRIBUTES = {'attr1': "default1"}
+
 
 ``ITEM_TYPE_NAME`` sets the first part of an items ID. For the file items, this is "file". Therefore, file ID look this this: ``file:/path``. The second part is the name a user assigns to your item in a bundle. Example::
 
