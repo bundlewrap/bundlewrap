@@ -12,7 +12,7 @@ class SymlinkFixTest(TestCase):
     @patch('blockwart.items.symlinks.Symlink._fix_owner')
     @patch('blockwart.items.symlinks.Symlink._fix_type')
     def test_type(self, fix_type, fix_owner):
-        f = symlinks.Symlink(MagicMock(), "/", {})
+        f = symlinks.Symlink(MagicMock(), "/", {'target': "/bar"})
         status = ItemStatus(correct=False, info={
             'needs_fixing': ['type', 'owner'],
         })
@@ -22,7 +22,7 @@ class SymlinkFixTest(TestCase):
     @patch('blockwart.items.symlinks.Symlink._fix_owner')
     @patch('blockwart.items.symlinks.Symlink._fix_type')
     def test_owner(self, fix_type, fix_owner):
-        f = symlinks.Symlink(MagicMock(), "/", {})
+        f = symlinks.Symlink(MagicMock(), "/", {'target': "/bar"})
         status = ItemStatus(correct=False, info={
             'needs_fixing': ['owner'],
         })
@@ -42,7 +42,7 @@ class SymlinkFixOwnerTest(TestCase):
         f = symlinks.Symlink(
             bundle,
             "/foo",
-            {'owner': "jcleese", 'group': "mp"},
+            {'owner': "jcleese", 'group': "mp", 'target': "/bar"},
         )
         f._fix_owner(MagicMock())
         node.run.assert_called_once_with("chown -h jcleese:mp /foo")
@@ -84,6 +84,7 @@ class SymlinkGetStatusTest(TestCase):
         f = symlinks.Symlink(MagicMock(), "/", {
             'owner': "root",
             'group': "root",
+            'target': "/bar",
         })
         status = f.get_status()
         self.assertFalse(status.correct)
@@ -101,6 +102,7 @@ class SymlinkGetStatusTest(TestCase):
         f = symlinks.Symlink(MagicMock(), "/", {
             'owner': "root",
             'group': "root",
+            'target': "/bar",
         })
         status = f.get_status()
         self.assertFalse(status.correct)
@@ -118,6 +120,7 @@ class SymlinkGetStatusTest(TestCase):
         f = symlinks.Symlink(MagicMock(), "/", {
             'owner': "root",
             'group': "root",
+            'target': "/bar",
         })
         status = f.get_status()
         self.assertFalse(status.correct)
@@ -138,6 +141,7 @@ class SymlinkGetStatusTest(TestCase):
         f = symlinks.Symlink(MagicMock(), "/", {
             'owner': "root",
             'group': "root",
+            'target': "/bar",
         })
         status = f.get_status()
         self.assertTrue(status.correct)
@@ -155,7 +159,8 @@ class ValidateAttributesTest(TestCase):
             'attr2': validator,
         }
         with patch('blockwart.items.symlinks.ATTRIBUTE_VALIDATORS', new=attr_val):
-            f = symlinks.Symlink(MagicMock(), "test", {}, skip_validation=True)
+            f = symlinks.Symlink(MagicMock(), "test", {'target': "/bar"},
+                                 skip_validation=True)
             f.validate_attributes({'attr1': 1, 'attr2': 2})
         validator.assert_any_call(f.id, 1)
         validator.assert_any_call(f.id, 2)

@@ -30,4 +30,4 @@ Username of the symlink's owner.
 ``target``
 ++++++++++
 
-File or directory this symlink points to.
+File or directory this symlink points to. This attribute is required.

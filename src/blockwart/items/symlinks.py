@@ -25,6 +25,7 @@ class Symlink(Item):
         'target': None,
     }
     ITEM_TYPE_NAME = "symlink"
+    REQUIRED_ATTRIBUTES = ['target']
 
     def ask(self, status):
         if 'type' in status.info['needs_fixing']:
