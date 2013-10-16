@@ -3,12 +3,12 @@ Requirements for managed systems
 
 While the following list might appear long, even very minimal systems should provide everything that's needed.
 
-* ``apt-cache`` (only used with ``packages_debian``)
-* ``apt-get`` (only used with ``packages_debian``)
+* ``apt-get`` (only used with ``pkg_apt``)
+* ``bash``
 * ``cat``
 * ``chmod``
 * ``chown``
-* ``dpkg`` (only used with ``packages_debian``)
+* ``dpkg`` (only used with ``pkg_apt``)
 * ``echo``
 * ``export``
 * ``file``
@@ -18,6 +18,6 @@ While the following list might appear long, even very minimal systems should pro
 * ``rm``
 * ``sed``
 * ``test``
-* sftp-enabled SSH server (only used with remotely managed systems)
-* ``sudo`` (access to all other commands listed here, without password)
-* depending on the configured ``hashmethod`` setting, at least one of: ``md5sum``, ``sha1sum``, ``sha224sum``, ``sha256sum``, ``sha384sum``, ``sha512sum``
+* sftp-enabled SSH server
+* ``sudo`` (without password)
+* ``sha1sum``

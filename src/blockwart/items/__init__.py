@@ -78,9 +78,12 @@ class Item(object):
         self.node = bundle.node
 
         if not skip_validation:
+            self.validate_name(name)
             self._validate_attribute_names(attributes)
             self._validate_required_attributes(attributes)
             self.validate_attributes(attributes)
+
+        attributes = self.patch_attributes(attributes)
 
         for attribute_name, attribute_default in \
                 self.ITEM_ATTRIBUTES.iteritems():
@@ -188,11 +191,29 @@ class Item(object):
         """
         raise NotImplementedError()
 
+    def patch_attributes(self, attributes):
+        """
+        Allows an item to preprocess the attributes it is initialized
+        with. Returns the modified attributes dictionary.
+
+        MAY be overridden by subclasses.
+        """
+        return attributes
+
     def validate_attributes(self, attributes):
         """
         Raises BundleError if something is amiss with the user-specified
         attributes.
 
         SHOULD be overridden by subclasses.
+        """
+        pass
+
+    def validate_name(self, name):
+        """
+        Raise BundleError if the given name is not valid (e.g. contains
+        invalid characters for this kind of item.
+
+        MAY be overridden by subclasses.
         """
         pass
