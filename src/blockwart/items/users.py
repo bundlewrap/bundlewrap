@@ -60,6 +60,7 @@ class User(Item):
         'uid': None,
     }
     ITEM_TYPE_NAME = "user"
+    REQUIRED_ATTRIBUTES = ['gid', 'groups', 'uid']
 
     def ask(self, status):
         if not status.info['exists']:
