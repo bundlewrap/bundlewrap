@@ -48,14 +48,6 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
                 info={},
             )
 
-        def validate_attributes(self, attributes):
-            """
-            Raises blockwart.exceptions.BundleError if something is amiss with
-            the user-specified attributes.
-            """
-            pass
-
-
 
 Step 2: Define attributes
 -------------------------
