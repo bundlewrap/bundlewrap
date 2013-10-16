@@ -469,6 +469,7 @@ class LinePasswdTest(TestCase):
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
+                'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
                 'password': "secret",
                 'shell': "/bin/bash",
