@@ -83,6 +83,8 @@ class Item(object):
             self._validate_required_attributes(attributes)
             self.validate_attributes(attributes)
 
+        attributes = self.patch_attributes(attributes)
+
         for attribute_name, attribute_default in \
                 self.ITEM_ATTRIBUTES.iteritems():
             if attribute_name in BUILTIN_ITEM_ATTRIBUTES:
@@ -188,6 +190,15 @@ class Item(object):
         MUST be overridden by subclasses.
         """
         raise NotImplementedError()
+
+    def patch_attributes(self, attributes):
+        """
+        Allows an item to preprocess the attributes it is initialized
+        with. Returns the modified attributes dictionary.
+
+        MAY be overridden by subclasses.
+        """
+        return attributes
 
     def validate_attributes(self, attributes):
         """
