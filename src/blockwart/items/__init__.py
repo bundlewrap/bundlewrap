@@ -78,6 +78,7 @@ class Item(object):
         self.node = bundle.node
 
         if not skip_validation:
+            self.validate_name(name)
             self._validate_attribute_names(attributes)
             self._validate_required_attributes(attributes)
             self.validate_attributes(attributes)
@@ -194,5 +195,14 @@ class Item(object):
         attributes.
 
         SHOULD be overridden by subclasses.
+        """
+        pass
+
+    def validate_name(self, name):
+        """
+        Raise BundleError if the given name is not valid (e.g. contains
+        invalid characters for this kind of item.
+
+        MAY be overridden by subclasses.
         """
         pass
