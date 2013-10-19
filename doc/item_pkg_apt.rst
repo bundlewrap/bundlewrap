@@ -20,6 +20,10 @@ Handles packages installed by ``apt-get`` on Debian-based systems.
 Attribute reference
 -------------------
 
+
+Optional attributes
+===================
+
 ``installed``
 +++++++++++++
 
