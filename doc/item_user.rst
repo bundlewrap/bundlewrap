@@ -14,19 +14,19 @@ Manages system user accounts.
             "gid": 2342,
             "groups": ["admins", "users", "wheel"],
             "home": "/home/jdoe",
-            "password": "$6$abcdef$ghijklmnopqrstuvwxyz",
+            "password_hash": "$6$abcdef$ghijklmnopqrstuvwxyz",
             "shell": "/bin/zsh",
             "uid": 4747,
         },
     }
 
+
 Attribute reference
 -------------------
 
-``full_name``
-+++++++++++++
 
-Full name of the user.
+Required attributes
+===================
 
 ``gid``
 +++++++
@@ -36,7 +36,21 @@ Primary group of the user. Must be numerical ID.
 ``groups``
 ++++++++++
 
-List of groups (names, not GIDs) the user should belong to.
+List of groups (names, not GIDs) the user should belong to. MUST include the group referenced by ``gid``.
+
+``uid``
++++++++
+
+Numerical user ID. It's your job to make sure it's unique.
+
+
+Optional attributes
+===================
+
+``full_name``
++++++++++++++
+
+Full name of the user.
 
 ``home``
 ++++++++
@@ -68,8 +82,3 @@ Recommended for use with the ``password`` attribute. Blockwart will use 5000 rou
 +++++++++
 
 Path to login shell executable.
-
-``uid``
-+++++++
-
-Numerical user ID. It's your job to make sure it's unique.
