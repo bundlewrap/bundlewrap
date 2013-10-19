@@ -5,6 +5,7 @@ from unittest import TestCase
 
 from mock import MagicMock, patch, call
 
+from blockwart.exceptions import BundleError
 from blockwart.items import ItemStatus, users
 from blockwart.operations import RunResult
 
@@ -480,3 +481,23 @@ class LinePasswdTest(TestCase):
             user.line_passwd,
             "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash",
         )
+
+
+class ValidateNameTest(TestCase):
+    """
+    Tests blockwart.items.users.validate_name.
+    """
+    def test_invalid_char(self):
+        with self.assertRaises(BundleError):
+            users.User.validate_name("block wart")
+
+    def test_ends_in_dash(self):
+        with self.assertRaises(BundleError):
+            users.User.validate_name("blockwart-")
+
+    def test_too_long(self):
+        with self.assertRaises(BundleError):
+            users.User.validate_name("blockwartblockwartblockwartblockwart")
+
+    def test_valid(self):
+        users.User.validate_name("blockwart")

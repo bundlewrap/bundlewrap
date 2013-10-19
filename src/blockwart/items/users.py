@@ -2,7 +2,9 @@
 from __future__ import unicode_literals
 
 from pipes import quote
+from string import ascii_lowercase, digits
 
+from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import white
@@ -18,6 +20,7 @@ _ATTRIBUTE_NAMES = {
     'uid': _("UID"),
 }
 
+_USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
 
 def _groups_for_user(node, username):
     """
@@ -172,3 +175,21 @@ class User(Item):
             self.attributes['home'],
             self.attributes['shell'],
         ])
+
+    @classmethod
+    def validate_name(cls, name):
+        for char in name:
+            if char not in _USERNAME_VALID_CHARACTERS:
+                raise BundleError(
+                    _("Invalid character in username '{}': {}").format(name, char)
+                )
+
+        if name.endswith("_") or name.endswith("-"):
+            raise BundleError(
+                _("Username '{}' must not end in dash or underscore")
+            )
+
+        if len(name) > 30:
+            raise BundleError(
+                _("Username '{}' is longer than 30 characters")
+            )
