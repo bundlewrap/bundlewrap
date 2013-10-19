@@ -63,7 +63,7 @@ class AskTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -83,8 +83,7 @@ class AskTest(TestCase):
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -96,15 +95,15 @@ class AskTest(TestCase):
             'gid': 2357,
             'groups': ["group1", "group2"],
             'home': "/home/blkwrt",
-            'password': "secret",
+            'password_hash': "secret",
             'shell': "/bin/bsh",
             'uid': 1113,
         }
         self.assertEqual(
             user.ask(status),
             "shell /bin/bsh → /bin/bash\n"
-            "full name Blockwart → Blöck Wart\n"
             "GID 2357 → 2345\n"
+            "full name Blockwart → Blöck Wart\n"
             "home dir /home/blkwrt → /home/blockwart\n"
             "UID 1113 → 1123\n"
         )
@@ -119,7 +118,7 @@ class AskTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -131,14 +130,14 @@ class AskTest(TestCase):
             'gid': 2345,
             'groups': ["group1", "group2"],
             'home': "/home/blockwart",
-            'password': "topsecret",
+            'password_hash': "topsecret",
             'shell': "/bin/bash",
             'uid': 1123,
         }
         self.assertEqual(
             user.ask(status),
-            "password topsecret\n" +
-            "       → secret\n"
+            "password hash topsecret\n" +
+            "            → secret\n"
         )
 
     def test_shadow_not_found(self):
@@ -151,7 +150,7 @@ class AskTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -163,13 +162,13 @@ class AskTest(TestCase):
             'gid': 2345,
             'groups': ["group1", "group2"],
             'home': "/home/blockwart",
-            'password': None,
+            'password_hash': None,
             'shell': "/bin/bash",
             'uid': 1123,
         }
         self.assertEqual(
             user.ask(status),
-            "password not found in /etc/shadow\n"
+            "password hash not found in /etc/shadow\n"
         )
 
     def test_groups(self):
@@ -182,7 +181,7 @@ class AskTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2", "group3"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -194,7 +193,7 @@ class AskTest(TestCase):
             'gid': 2345,
             'groups': ["group3", "group2", "group4", "group5"],
             'home': "/home/blockwart",
-            'password': "secret",
+            'password_hash': "secret",
             'shell': "/bin/bash",
             'uid': 1123,
         }
@@ -219,7 +218,7 @@ class FixTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -244,7 +243,7 @@ class FixTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -275,7 +274,7 @@ class GetStatusTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -309,7 +308,7 @@ class GetStatusTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -341,7 +340,7 @@ class GetStatusTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -368,7 +367,7 @@ class GetStatusTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -402,7 +401,7 @@ class GetStatusTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -422,7 +421,7 @@ class GetStatusTest(TestCase):
 
         status = user.get_status()
         self.assertFalse(status.correct)
-        self.assertEqual(status.info['password'], None)
+        self.assertEqual(status.info['password_hash'], None)
 
     @patch('blockwart.items.users._groups_for_user')
     def test_groups(self, _groups_for_user):
@@ -436,7 +435,7 @@ class GetStatusTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -461,7 +460,7 @@ class GetStatusTest(TestCase):
 
 class LinePasswdTest(TestCase):
     """
-    Tests blockwart.items.users.line_passwd.
+    Tests blockwart.items.users.User.line_passwd.
     """
     def test_line(self):
         user = users.User(
@@ -472,7 +471,7 @@ class LinePasswdTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password': "secret",
+                'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
             },
@@ -483,9 +482,110 @@ class LinePasswdTest(TestCase):
         )
 
 
+class PatchAttributesTest(TestCase):
+    """
+    Tests blockwart.items.users.User.patch_attributes.
+    """
+    def test_without_salt(self):
+        user = users.User(
+            MagicMock(),
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'password': "secret",
+                'uid': 1123,
+            },
+        )
+        self.assertEqual(
+            user.attributes['password_hash'],
+            "$6$uJzJlYdG$jsPJZhc5CD2lEDJZ5EBi4xNqNNXXA8EyJEe7Usez5p6H4Ing.Z9S.CQsUJfGTphLwG5qcbSyqFo2FQfcGuUpB/",
+        )
+
+    def test_with_salt(self):
+        user = users.User(
+            MagicMock(),
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'password': "secret",
+                'salt': "FQb/rpR/",
+                'uid': 1123,
+            },
+        )
+        self.assertEqual(
+            user.attributes['password_hash'],
+            "$6$FQb/rpR/$vBiqJJ8PZbRhA9TUlxOXYxNBtonojM1qa2qb338vVb58cIzGGMdJzZUkmgCXYeFQONuh4/6/m3aGyeTqizjyx1",
+        )
+
+
+class ValidateAttributesTest(TestCase):
+    """
+    Tests blockwart.items.users.User.validate_attributes.
+    """
+    def test_password_hash_with_password(self):
+        user = users.User(
+            MagicMock(),
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'password_hash': "secret_hash",
+                'uid': 1123,
+            },
+            skip_validation=True,
+        )
+        with self.assertRaises(BundleError):
+            user.validate_attributes({
+                'password': "secret",
+                'password_hash': "secret_hash",
+            })
+
+    def test_password_hash_with_salt(self):
+        user = users.User(
+            MagicMock(),
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'password_hash': "secret_hash",
+                'uid': 1123,
+            },
+            skip_validation=True,
+        )
+        with self.assertRaises(BundleError):
+            user.validate_attributes({
+                'password_hash': "secret_hash",
+                'salt': "salt",
+            })
+
+    def test_lonely_salt(self):
+        user = users.User(
+            MagicMock(),
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'password_hash': "secret_hash",
+                'uid': 1123,
+            },
+            skip_validation=True,
+        )
+        with self.assertRaises(BundleError):
+            user.validate_attributes({
+                'salt': "salt",
+            })
+
+
 class ValidateNameTest(TestCase):
     """
-    Tests blockwart.items.users.validate_name.
+    Tests blockwart.items.users.User.validate_name.
     """
     def test_invalid_char(self):
         with self.assertRaises(BundleError):

@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 from pipes import quote
 from string import ascii_lowercase, digits
 
+from passlib.hash import sha512_crypt
+
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils.text import mark_for_translation as _
@@ -15,12 +17,16 @@ _ATTRIBUTE_NAMES = {
     'gid': _("GID"),
     'groups': _("groups"),
     'home': _("home dir"),
-    'password': _("password"),
+    'password_hash': _("password hash"),
     'shell': _("shell"),
     'uid': _("UID"),
 }
 
+# a random static salt if users don't provide one
+_DEFAULT_SALT = "uJzJlYdG"
+
 _USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
+
 
 def _groups_for_user(node, username):
     """
@@ -58,7 +64,9 @@ class User(Item):
         'gid': None,
         'groups': [],
         'home': None,
-        'password': "!",
+        'password': None,
+        'password_hash': "!",
+        'salt': None,
         'shell': "/bin/bash",
         'uid': None,
     }
@@ -71,7 +79,7 @@ class User(Item):
 
         output = ""
         for key, should_value in self.attributes.iteritems():
-            if key in ('groups', 'password'):
+            if key in ('groups', 'password', 'password_hash', 'salt'):
                 continue
             is_value = status.info[key]
             if should_value != is_value:
@@ -81,14 +89,14 @@ class User(Item):
                     should_value,
                 )
 
-        if status.info['password'] is None:
-            output += white(_ATTRIBUTE_NAMES['password'], bold=True) + " " + \
+        if status.info['password_hash'] is None:
+            output += white(_ATTRIBUTE_NAMES['password_hash'], bold=True) + " " + \
                       _("not found in /etc/shadow") + "\n"
-        elif status.info['password'] != self.attributes['password']:
-            output += white(_ATTRIBUTE_NAMES['password'], bold=True) + " " + \
-                      status.info['password'] + "\n"
-            output += " " * (len(_ATTRIBUTE_NAMES['password']) - 1) + "→ " + \
-                      self.attributes['password'] + "\n"
+        elif status.info['password_hash'] != self.attributes['password_hash']:
+            output += white(_ATTRIBUTE_NAMES['password_hash'], bold=True) + " " + \
+                      status.info['password_hash'] + "\n"
+            output += " " * (len(_ATTRIBUTE_NAMES['password_hash']) - 1) + "→ " + \
+                      self.attributes['password_hash'] + "\n"
 
         groups_should = set(self.attributes['groups'])
         groups_is = set(status.info['groups'])
@@ -115,14 +123,14 @@ class User(Item):
             "-d {home} "
             "-g {gid} "
             "-G {groups} "
-            "-p {password} "
+            "-p {password_hash} "
             "-s {shell} "
             "-u {uid} "
             "{username}".format(
                 home=quote(self.attributes['home']),
                 gid=self.attributes['gid'],
                 groups=quote(",".join(self.attributes['groups'])),
-                password=quote(self.attributes['password']),
+                password_hash=quote(self.attributes['password_hash']),
                 shell=quote(self.attributes['shell']),
                 uid=self.attributes['uid'],
                 username=self.name,
@@ -151,10 +159,10 @@ class User(Item):
         )
         if shadow_grep_result.return_code != 0:
             status.correct = False
-            status.info['password'] = None
+            status.info['password_hash'] = None
         else:
-            status.info['password'] = shadow_grep_result.stdout.split(":")[1]
-            if status.info['password'] != self.attributes['password']:
+            status.info['password_hash'] = shadow_grep_result.stdout.split(":")[1]
+            if status.info['password_hash'] != self.attributes['password_hash']:
                 status.correct = False
 
         # verify content of /etc/group
@@ -175,6 +183,34 @@ class User(Item):
             self.attributes['home'],
             self.attributes['shell'],
         ])
+
+    def patch_attributes(self, attributes):
+        if 'home' not in attributes:
+            attributes['home'] = "/home/{}".format(self.name)
+
+        if 'password_hash' not in attributes:
+            attributes['password_hash'] = sha512_crypt.encrypt(
+                attributes['password'],
+                rounds=5000,  # default from glibc
+                salt=attributes.get('salt', _DEFAULT_SALT),
+            )
+
+        return attributes
+
+    def validate_attributes(self, attributes):
+        if 'password_hash' in attributes and (
+            'password' in attributes or
+            'salt' in attributes
+        ):
+            raise BundleError(
+                _("{}: 'password_hash' cannot be used "
+                  "with 'password' or 'salt'").format(self.id)
+            )
+
+        if 'salt' in attributes and 'password' not in attributes:
+            raise BundleError(
+                _("{}: salt given without a password").format(self.id)
+            )
 
     @classmethod
     def validate_name(cls, name):
