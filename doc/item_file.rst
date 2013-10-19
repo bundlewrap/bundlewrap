@@ -37,7 +37,7 @@ How the file pointed to by ``source`` should be interpreted.
 ``group``
 +++++++++
 
-Name of the group this file belongs to.
+Name of the group this file belongs to. Defaults to ``root``.
 
 ``mode``
 ++++++++
@@ -47,7 +47,7 @@ File mode as returned by ``stat -c %a <file>``.
 ``owner``
 +++++++++
 
-Username of the file's owner.
+Username of the file's owner. Defaults to ``root``.
 
 ``source``
 ++++++++++
