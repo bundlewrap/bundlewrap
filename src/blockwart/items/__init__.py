@@ -209,7 +209,8 @@ class Item(object):
         """
         pass
 
-    def validate_name(self, name):
+    @classmethod
+    def validate_name(cls, name):
         """
         Raise BundleError if the given name is not valid (e.g. contains
         invalid characters for this kind of item.
