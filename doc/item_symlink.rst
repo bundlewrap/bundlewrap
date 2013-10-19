@@ -17,17 +17,25 @@ Symlink items
 Attribute reference
 -------------------
 
-``group``
-+++++++++
 
-Name of the group this symlink belongs to.
-
-``owner``
-+++++++++
-
-Username of the symlink's owner.
+Required attributes
+===================
 
 ``target``
 ++++++++++
 
 File or directory this symlink points to. This attribute is required.
+
+
+Optional attributes
+===================
+
+``group``
++++++++++
+
+Name of the group this symlink belongs to. Defaults to ``root``.
+
+``owner``
++++++++++
+
+Username of the symlink's owner. Defaults to ``root``.
