@@ -212,6 +212,10 @@ class User(Item):
                 _("{}: salt given without a password").format(self.id)
             )
 
+        if 'password' not in attributes and 'password_hash' not in attributes:
+            raise BundleError(_("{} needs to specify either "
+                                "a password or a password hash").format(self.id))
+
     @classmethod
     def validate_name(cls, name):
         for char in name:
