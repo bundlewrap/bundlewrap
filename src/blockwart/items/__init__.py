@@ -22,7 +22,7 @@ ITEM_CLASSES_LOADED = False
 def unpickle_item_class(class_name, bundle, name, attributes):
     for item_class in bundle.node.repo.item_classes:
         if item_class.__name__ == class_name:
-            return item_class(bundle, name, attributes)
+            return item_class(bundle, name, attributes, skip_validation=True)
     raise RuntimeError(_("unable to unpickle {}").format(class_name))
 
 
