@@ -13,11 +13,16 @@ While the following list might appear long, even very minimal systems should pro
 * ``export``
 * ``file``
 * ``grep``
+* ``groupadd``
+* ``groupmod``
+* ``id``
 * ``mkdir``
 * ``mv``
 * ``rm``
 * ``sed``
-* ``test``
 * sftp-enabled SSH server
 * ``sudo`` (without password)
 * ``sha1sum``
+* ``test``
+* ``useradd``
+* ``usermod``
