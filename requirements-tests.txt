@@ -6,3 +6,4 @@ Mako
 mock
 nose
 nose-cov
+passlib

@@ -32,6 +32,7 @@ setup(
         "distribute",
         "Fabric >= 0.9.4",
         "Mako",
+        "passlib",
     ],
     zip_safe=False,
 )
