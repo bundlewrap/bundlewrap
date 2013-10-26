@@ -598,6 +598,25 @@ class ValidateAttributesTest(TestCase):
         with self.assertRaises(BundleError):
             user.validate_attributes({})
 
+    def test_invalid_hash_method(self):
+        user = users.User(
+            MagicMock(),
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'password_hash': "secret_hash",
+                'uid': 1123,
+            },
+            skip_validation=True,
+        )
+        with self.assertRaises(BundleError):
+            user.validate_attributes({
+                'hash_method': "3des",
+                'password_hash': "secret_hash",
+            })
+
 
 class ValidateNameTest(TestCase):
     """

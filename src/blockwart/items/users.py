@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from pipes import quote
 from string import ascii_lowercase, digits
 
-from passlib.hash import sha512_crypt
+from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
@@ -24,6 +24,12 @@ _ATTRIBUTE_NAMES = {
 
 # a random static salt if users don't provide one
 _DEFAULT_SALT = "uJzJlYdG"
+
+HASH_METHODS = {
+    'md5': md5_crypt,
+    'sha256': sha256_crypt,
+    'sha512': sha512_crypt,
+}
 
 _USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
 
@@ -63,6 +69,7 @@ class User(Item):
         'full_name': "",
         'gid': None,
         'groups': [],
+        'hash_method': 'sha512',
         'home': None,
         'password': None,
         'password_hash': "!",
@@ -79,7 +86,7 @@ class User(Item):
 
         output = ""
         for key, should_value in self.attributes.iteritems():
-            if key in ('groups', 'password', 'password_hash', 'salt'):
+            if key in ('groups', 'hash_method', 'password', 'password_hash', 'salt'):
                 continue
             is_value = status.info[key]
             if should_value != is_value:
@@ -189,7 +196,12 @@ class User(Item):
             attributes['home'] = "/home/{}".format(self.name)
 
         if 'password_hash' not in attributes:
-            attributes['password_hash'] = sha512_crypt.encrypt(
+            # defaults aren't set yet
+            hash_method = HASH_METHODS[attributes.get(
+                'hash_method',
+                self.ITEM_ATTRIBUTES['hash_method'],
+            )]
+            attributes['password_hash'] = hash_method.encrypt(
                 attributes['password'],
                 rounds=5000,  # default from glibc
                 salt=attributes.get('salt', _DEFAULT_SALT),
@@ -198,6 +210,15 @@ class User(Item):
         return attributes
 
     def validate_attributes(self, attributes):
+        if 'hash_method' in attributes and \
+                attributes['hash_method'] not in HASH_METHODS:
+            raise BundleError(
+                _("Invalid hash method for {}: '{}'").format(
+                    self.id,
+                    attributes['hash_method'],
+                )
+            )
+
         if 'password_hash' in attributes and (
             'password' in attributes or
             'salt' in attributes

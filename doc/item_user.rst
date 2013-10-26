@@ -52,6 +52,17 @@ Optional attributes
 
 Full name of the user.
 
+``hash_method``
++++++++++++++++
+
+One of:
+
+* ``md5``
+* ``sha256``
+* ``sha512``
+
+Defaults to ``sha512``.
+
 ``home``
 ++++++++
 
