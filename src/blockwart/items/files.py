@@ -21,6 +21,7 @@ def content_processor_mako(item):
     lookup = TemplateLookup(
         directories=[item.item_dir],
         input_encoding='utf-8',
+        output_encoding='utf-8',
     )
     template = lookup.get_template(item.attributes['source'])
     return template.render(item=item, bundle=item.bundle, node=item.node,
