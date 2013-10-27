@@ -41,6 +41,10 @@ def diff(content_old, content_new, filename):
         fromfile=filename,
         tofile=_("<blockwart content>"),
     ):
+        try:
+            line = line.decode('UTF-8')
+        except UnicodeDecodeError:
+            line = line[0] + _("<line not encoded in UTF-8>")
         line = line.rstrip("\n")
         if line.startswith("+"):
             line = green(line)
