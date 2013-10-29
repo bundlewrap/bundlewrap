@@ -55,6 +55,8 @@ This table lists all item types included in Blockwart along with the bundle attr
 +--------------------------------------+------------------+------------------------------------------------------------------------+
 | :doc:`pkg_apt <item_pkg_apt>`        | ``pkg_apt``      | Installs and removes packages with APT                                 |
 +--------------------------------------+------------------+------------------------------------------------------------------------+
+| :doc:`pkg_pacman <item_pkg_pacman>`  | ``pkg_pacman``   | Installs and removes packages with pacman                              |
++--------------------------------------+------------------+------------------------------------------------------------------------+
 | :doc:`symlink <item_symlink>`        | ``symlinks``     | Manages symbolic links and their ownership                             |
 +--------------------------------------+------------------+------------------------------------------------------------------------+
 | :doc:`user <item_user>`              | ``users``        | Manages users by wrapping ``useradd``, ``usermod`` and ``userdel``     |
