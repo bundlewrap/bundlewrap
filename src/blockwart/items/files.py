@@ -21,6 +21,7 @@ def content_processor_mako(item):
     lookup = TemplateLookup(
         directories=[item.item_dir],
         input_encoding='utf-8',
+        output_encoding='utf-8',
     )
     template = lookup.get_template(item.attributes['source'])
     return template.render(item=item, bundle=item.bundle, node=item.node,
@@ -40,6 +41,10 @@ def diff(content_old, content_new, filename):
         fromfile=filename,
         tofile=_("<blockwart content>"),
     ):
+        try:
+            line = line.decode('UTF-8')
+        except UnicodeDecodeError:
+            line = line[0] + _("<line not encoded in UTF-8>")
         line = line.rstrip("\n")
         if line.startswith("+"):
             line = green(line)
