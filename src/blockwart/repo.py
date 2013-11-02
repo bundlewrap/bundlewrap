@@ -42,7 +42,6 @@ group_patterns = {
 nodes = {
     'node1': {
         'hostname': "localhost",
-        #'ssh_username': "jdoe",
     },
 }
     """),

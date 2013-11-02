@@ -25,7 +25,7 @@ The contents should be fairly self-explanatory, but you can always check the doc
 .. seealso:: :ref:`nodespy`
 .. seealso:: :ref:`groupspy`
 
-At this point you will want to edit ``nodes.py`` and maybe change "localhost" to the hostname of a system you have passwordless SSH access to. Uncomment and edit the ``ssh_username`` attribute if your local username and the one on the remote machine do not match.
+At this point you will want to edit ``nodes.py`` and maybe change "localhost" to the hostname of a system you have passwordless SSH access to. Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com`` works in your terminal, so will Blockwart.
 
 The first thing you can do is run a command on your army of one node::
 
