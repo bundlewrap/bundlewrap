@@ -12,6 +12,7 @@ from .utils import LOG
 from .utils.text import mark_for_translation as _
 from .utils.ui import LineBuffer
 
+env.use_ssh_config = True
 env.warn_only = True
 # silence fabric
 for key in output:
@@ -28,14 +29,13 @@ class FabricUnsilencer(object):
         output['stdout'] = False
 
 
-def download(hostname, username, remote_path, local_path, ignore_failure=False):
+def download(hostname, remote_path, local_path, ignore_failure=False):
     """
     Download a file.
     """
     LOG.debug(_("downloading {}:{} -> {}").format(
         hostname, remote_path, local_path))
     env.host_string = hostname
-    env.user = username
     fabric_result = _fabric_get(
         remote_path=remote_path,
         local_path=local_path,
@@ -59,13 +59,12 @@ class RunResult(object):
         return self.stdout
 
 
-def run(hostname, username, command, ignore_failure=False, stderr=None,
+def run(hostname, command, ignore_failure=False, stderr=None,
         stdout=None, pty=False, sudo=True):
     """
     Runs a command on a remote system.
     """
     env.host_string = hostname
-    env.user = username
 
     if stderr is None:
         stderr = LineBuffer(lambda s: None)
@@ -106,14 +105,13 @@ def run(hostname, username, command, ignore_failure=False, stderr=None,
     return result
 
 
-def upload(hostname, username, local_path, remote_path, ignore_failure=False):
+def upload(hostname, local_path, remote_path, ignore_failure=False):
     """
     Upload a file.
     """
     LOG.debug(_("uploading {} -> {}:{}").format(
         local_path, hostname, remote_path))
     env.host_string = hostname
-    env.user = username
     fabric_result = _fabric_put(
         local_path=local_path,
         remote_path=remote_path,

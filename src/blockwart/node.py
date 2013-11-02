@@ -1,5 +1,4 @@
 from datetime import datetime
-from getpass import getuser
 
 from . import operations
 from .bundle import Bundle
@@ -194,7 +193,6 @@ class Node(object):
         self.repo = repo
         self.hostname = infodict.get('hostname', self.name)
         self.metadata = infodict.get('metadata', {})
-        self.ssh_username = infodict.get('ssh_username', getuser())
 
     def __cmp__(self, other):
         return cmp(self.name, other.name)
@@ -234,7 +232,6 @@ class Node(object):
     def download(self, remote_path, local_path):
         return operations.download(
             self.hostname,
-            self.ssh_username,
             remote_path,
             local_path,
         )
@@ -247,7 +244,6 @@ class Node(object):
             stdout = LineBuffer(lambda s: None)
         return operations.run(
             self.hostname,
-            self.ssh_username,
             command,
             ignore_failure=may_fail,
             stderr=stderr,
@@ -259,7 +255,6 @@ class Node(object):
     def upload(self, local_path, remote_path):
         return operations.upload(
             self.hostname,
-            self.ssh_username,
             local_path,
             remote_path,
         )
