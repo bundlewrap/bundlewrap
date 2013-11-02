@@ -12,7 +12,7 @@ This page describes the various subdirectories and files than can exist inside a
 ``nodes.py``
 ============
 
-This file tells blockwart what nodes (servers, VMs, ...) there are in your environment and lets you configure options such as hostnames and SSH usernames.
+This file tells blockwart what nodes (servers, VMs, ...) there are in your environment and lets you configure options such as hostnames.
 
 .. seealso:: :ref:`nodespy`
 

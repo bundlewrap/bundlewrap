@@ -66,6 +66,9 @@ This section is a reference for all possible attributes you can define for a nod
 
 A string used as a DNS name when connecting to this node. May also be an IP address.
 
+.. note::
+   The username and SSH private key for connecting to the node cannot be configured in Blockwart. If you need to customize those, Blockwart will honor your ``~/.ssh/config``.
+
 ``metadata``
 ------------
 
