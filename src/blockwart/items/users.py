@@ -63,7 +63,7 @@ class User(Item):
     A user account.
     """
     BUNDLE_ATTRIBUTE_NAME = "users"
-    DEPENDS_STATIC = []
+    DEPENDS_STATIC = ["group:"]
     ITEM_ATTRIBUTES = {
         'full_name': "",
         'gid': None,
@@ -131,10 +131,7 @@ class User(Item):
         return output
 
     def fix(self, status):
-        if not status.info['exists']:
-            self.node.run("useradd {}".format(self.name))
-
-        self.node.run("usermod "
+        self.node.run("{command} "
             "-d {home} "
             "-g {gid} "
             "-G {groups} "
@@ -142,6 +139,7 @@ class User(Item):
             "-s {shell} "
             "-u {uid} "
             "{username}".format(
+                command="useradd" if not status.info['exists'] else "usermod",
                 home=quote(self.attributes['home']),
                 gid=self.attributes['gid'],
                 groups=quote(",".join(self.attributes['groups'])),

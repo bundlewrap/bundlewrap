@@ -264,8 +264,7 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("useradd blockwart"),
-                call("usermod -d /home/blockwart -g 2345 -G group1,group2 -p secret -s /bin/bash -u 1123 blockwart"),
+                call("useradd -d /home/blockwart -g 2345 -G group1,group2 -p secret -s /bin/bash -u 1123 blockwart"),
             ],
         )
 
