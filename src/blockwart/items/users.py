@@ -49,13 +49,12 @@ def _parse_passwd_line(line):
     dictionary.
     """
     result = dict(zip(
-        ('username', 'password', 'uid', 'gid', 'gecos', 'home', 'shell'),
+        ('username', 'passwd_hash', 'uid', 'gid', 'gecos', 'home', 'shell'),
         line.strip().split(":"),
     ))
     result['uid'] = int(result['uid'])
     result['gid'] = int(result['gid'])
     result['full_name'] = result['gecos'].split(",")[0]
-    del result['password']  # nothing useful here
     return result
 
 
@@ -76,6 +75,7 @@ class User(Item):
         'salt': None,
         'shell': "/bin/bash",
         'uid': None,
+        'use_shadow': True,
     }
     ITEM_TYPE_NAME = "user"
     REQUIRED_ATTRIBUTES = ['gid', 'groups', 'uid']
@@ -86,7 +86,8 @@ class User(Item):
 
         output = ""
         for key, should_value in self.attributes.iteritems():
-            if key in ('groups', 'hash_method', 'password', 'password_hash', 'salt'):
+            if key in ('groups', 'hash_method', 'password', 'password_hash',
+                       'salt', 'use_shadow'):
                 continue
             is_value = status.info[key]
             if should_value != is_value:
@@ -96,12 +97,19 @@ class User(Item):
                     should_value,
                 )
 
-        if status.info['password_hash'] is None:
+        if self.attributes['use_shadow']:
+            filename = "/etc/shadow"
+            found_hash = status.info['shadow_hash']
+        else:
+            filename = "/etc/passwd"
+            found_hash = status.info['passwd_hash']
+
+        if found_hash is None:
             output += white(_ATTRIBUTE_NAMES['password_hash'], bold=True) + " " + \
-                      _("not found in /etc/shadow") + "\n"
-        elif status.info['password_hash'] != self.attributes['password_hash']:
+                      _("not found in {}").format(filename) + "\n"
+        elif found_hash != self.attributes['password_hash']:
             output += white(_ATTRIBUTE_NAMES['password_hash'], bold=True) + " " + \
-                      status.info['password_hash'] + "\n"
+                      found_hash + "\n"
             output += " " * (len(_ATTRIBUTE_NAMES['password_hash']) - 1) + "→ " + \
                       self.attributes['password_hash'] + "\n"
 
@@ -159,17 +167,21 @@ class User(Item):
         if passwd_grep_result.stdout.strip() != self.line_passwd:
             status.correct = False
 
-        # verify content of /etc/shadow
-        shadow_grep_result = self.node.run(
-            "grep -e '^{}:' /etc/shadow".format(self.name),
-            may_fail=True,
-        )
-        if shadow_grep_result.return_code != 0:
-            status.correct = False
-            status.info['password_hash'] = None
+        if self.attributes['use_shadow']:
+            # verify content of /etc/shadow
+            shadow_grep_result = self.node.run(
+                "grep -e '^{}:' /etc/shadow".format(self.name),
+                may_fail=True,
+            )
+            if shadow_grep_result.return_code != 0:
+                status.correct = False
+                status.info['shadow_hash'] = None
+            else:
+                status.info['shadow_hash'] = shadow_grep_result.stdout.split(":")[1]
+                if status.info['shadow_hash'] != self.attributes['password_hash']:
+                    status.correct = False
         else:
-            status.info['password_hash'] = shadow_grep_result.stdout.split(":")[1]
-            if status.info['password_hash'] != self.attributes['password_hash']:
+            if status.info['passwd_hash'] != self.attributes['password_hash']:
                 status.correct = False
 
         # verify content of /etc/group
@@ -183,7 +195,7 @@ class User(Item):
     def line_passwd(self):
         return ':'.join([
             self.name,
-            'x',
+            'x' if self.attributes['use_shadow'] else self.attributes['password_hash'],
             str(self.attributes['uid']),
             str(self.attributes['gid']),
             self.attributes['full_name'],

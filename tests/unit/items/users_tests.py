@@ -42,6 +42,7 @@ class ParsePasswdLineTest(TestCase):
                 'gecos': "Blöck Wart,Building No,01234,56789",
                 'gid': 2345,
                 'home': "/home/blockwart",
+                'passwd_hash': "x",
                 'shell': "/bin/bash",
                 'uid': 1123,
                 'username': 'blockwart',
@@ -83,9 +84,10 @@ class AskTest(TestCase):
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'password_hash': "secret",
+                'password_hash': "topsecret",
                 'shell': "/bin/bash",
                 'uid': 1123,
+                'use_shadow': False,
             },
         )
         status = ItemStatus(correct=False)
@@ -95,17 +97,19 @@ class AskTest(TestCase):
             'gid': 2357,
             'groups': ["group1", "group2"],
             'home': "/home/blkwrt",
-            'password_hash': "secret",
+            'passwd_hash': "secret",
             'shell': "/bin/bsh",
             'uid': 1113,
         }
         self.assertEqual(
             user.ask(status),
             "shell /bin/bsh → /bin/bash\n"
-            "GID 2357 → 2345\n"
             "full name Blockwart → Blöck Wart\n"
+            "GID 2357 → 2345\n"
             "home dir /home/blkwrt → /home/blockwart\n"
             "UID 1113 → 1123\n"
+            "password hash secret\n"
+            "            → topsecret\n"
         )
 
     def test_shadow(self):
@@ -130,7 +134,7 @@ class AskTest(TestCase):
             'gid': 2345,
             'groups': ["group1", "group2"],
             'home': "/home/blockwart",
-            'password_hash': "topsecret",
+            'shadow_hash': "topsecret",
             'shell': "/bin/bash",
             'uid': 1123,
         }
@@ -138,6 +142,38 @@ class AskTest(TestCase):
             user.ask(status),
             "password hash topsecret\n" +
             "            → secret\n"
+        )
+
+    def test_passwd_not_found(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'home': "/home/blockwart",
+                'password_hash': "secret",
+                'shell': "/bin/bash",
+                'uid': 1123,
+                'use_shadow': False,
+            },
+        )
+        status = ItemStatus(correct=False)
+        status.info = {
+            'exists': True,
+            'full_name': "Blöck Wart",
+            'gid': 2345,
+            'groups': ["group1", "group2"],
+            'home': "/home/blockwart",
+            'passwd_hash': None,
+            'shell': "/bin/bash",
+            'uid': 1123,
+        }
+        self.assertEqual(
+            user.ask(status),
+            "password hash not found in /etc/passwd\n"
         )
 
     def test_shadow_not_found(self):
@@ -162,7 +198,7 @@ class AskTest(TestCase):
             'gid': 2345,
             'groups': ["group1", "group2"],
             'home': "/home/blockwart",
-            'password_hash': None,
+            'shadow_hash': None,
             'shell': "/bin/bash",
             'uid': 1123,
         }
@@ -193,7 +229,7 @@ class AskTest(TestCase):
             'gid': 2345,
             'groups': ["group3", "group2", "group4", "group5"],
             'home': "/home/blockwart",
-            'password_hash': "secret",
+            'shadow_hash': "secret",
             'shell': "/bin/bash",
             'uid': 1123,
         }
@@ -308,9 +344,10 @@ class GetStatusTest(TestCase):
                 'gid': 2345,
                 'groups': ["group1", "group2"],
                 'home': "/home/blockwart",
-                'password_hash': "secret",
+                'password_hash': "topsecret",
                 'shell': "/bin/bash",
                 'uid': 1123,
+                'use_shadow': False,
             },
         )
 
@@ -421,7 +458,7 @@ class GetStatusTest(TestCase):
 
         status = user.get_status()
         self.assertFalse(status.correct)
-        self.assertEqual(status.info['password_hash'], None)
+        self.assertEqual(status.info['shadow_hash'], None)
 
     @patch('blockwart.items.users._groups_for_user')
     def test_groups(self, _groups_for_user):

@@ -93,3 +93,11 @@ Recommended for use with the ``password`` attribute. Blockwart will use 5000 rou
 +++++++++
 
 Path to login shell executable.
+
+``use_shadow``
+++++++++++++++
+
+.. warning::
+   Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.
+
+Defaults to ``True``. If set to ``False`` this user's password hash will be written directly to ``/etc/passwd`` instead of ``/etc/shadow``.
