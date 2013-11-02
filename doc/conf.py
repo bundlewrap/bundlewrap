@@ -241,6 +241,7 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if on_rtd:
     sys.path.append("/var/build/user_builds/blockwart/checkouts/latest/src")
     todo_include_todos = False
+    html_theme = 'default'
 else:
     todo_include_todos = True
 
