@@ -1,8 +1,8 @@
 .. _bundles:
 
-================
-Bundle reference
-================
+=======
+Bundles
+=======
 
 .. toctree::
     :hidden:

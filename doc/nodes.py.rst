@@ -1,8 +1,8 @@
 .. _nodespy:
 
-##################
-nodes.py reference
-##################
+########
+nodes.py
+########
 
 .. toctree::
     :hidden:

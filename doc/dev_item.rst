@@ -1,8 +1,8 @@
 .. _dev_item:
 
-============================
-Creating your own item types
-============================
+=================
+Custom item types
+=================
 
 .. toctree::
 

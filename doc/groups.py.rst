@@ -1,8 +1,8 @@
 .. _groupspy:
 
-###################
-groups.py reference
-###################
+#########
+groups.py
+#########
 
 .. toctree::
     :hidden:
