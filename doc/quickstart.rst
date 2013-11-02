@@ -22,10 +22,7 @@ You will note that some files have been created. Let's check them out::
 	cat nodes.py
 	cat groups.py
 
-The contents should be fairly self-explanatory, but you can always check the docs on these files if you want to go deeper.
-
-.. seealso:: :ref:`nodespy`
-.. seealso:: :ref:`groupspy`
+The contents should be fairly self-explanatory, but you can always check the :doc:`docs <repository>` on these files if you want to go deeper.
 
 At this point you will want to edit ``nodes.py`` and maybe change "localhost" to the hostname of a system you have passwordless SSH access to. Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com`` works in your terminal, so will Blockwart.
 
