@@ -9,7 +9,11 @@ Bundles
 
     item_directory
     item_file
+    item_group
+    item_pkg_apt
+    item_pkg_pacman
     item_symlink
+    item_user
 
 Bundles are subdirectories of the ``bundles/`` directory of your Blockwart repository. Within each bundle, there must be a file called ``bundle.py``. They define any number of magic attributes that are automatically processed by Blockwart. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
 
