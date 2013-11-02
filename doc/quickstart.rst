@@ -3,6 +3,8 @@
 Quickstart
 ==========
 
+.. toctree::
+
 This is the 5 minute intro into Blockwart. Fasten your seatbelt.
 
 First, open a terminal and install Blockwart::

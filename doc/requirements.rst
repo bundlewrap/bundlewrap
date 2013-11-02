@@ -1,6 +1,8 @@
 Requirements for managed systems
 ================================
 
+.. toctree::
+
 While the following list might appear long, even very minimal systems should provide everything that's needed.
 
 * ``apt-get`` (only used with :doc:`pkg_apt <item_pkg_apt>` items)

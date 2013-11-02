@@ -4,6 +4,8 @@
 Creating your own item types
 ============================
 
+.. toctree::
+
 Step 1: Create an item module
 -----------------------------
 

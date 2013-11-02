@@ -3,6 +3,8 @@
 Installation
 ============
 
+.. toctree::
+
 .. hint::
    You may need to install **pip** first. This can be accomplished through your distribution's package manager, e.g.:
 

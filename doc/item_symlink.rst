@@ -4,6 +4,8 @@
 Symlink items
 #############
 
+.. toctree::
+
 .. code-block:: python
 
     symlinks = {
