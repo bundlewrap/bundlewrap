@@ -3,12 +3,12 @@ Requirements for managed systems
 
 While the following list might appear long, even very minimal systems should provide everything that's needed.
 
-* ``apt-get`` (only used with ``pkg_apt``)
+* ``apt-get`` (only used with :doc:`pkg_apt <item_pkg_apt>` items)
 * ``bash``
 * ``cat``
 * ``chmod``
 * ``chown``
-* ``dpkg`` (only used with ``pkg_apt``)
+* ``dpkg`` (only used with :doc:`pkg_apt <item_pkg_apt>` items)
 * ``echo``
 * ``export``
 * ``file``
@@ -18,7 +18,7 @@ While the following list might appear long, even very minimal systems should pro
 * ``id``
 * ``mkdir``
 * ``mv``
-* ``pacman`` (only used with ``pkg_pacman``)
+* ``pacman`` (only used with :doc:`pkg_pacman <item_pkg_pacman>` items)
 * ``rm``
 * ``sed``
 * sftp-enabled SSH server
