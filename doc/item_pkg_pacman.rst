@@ -18,7 +18,7 @@ Handles packages installed by ``pacman`` (e.g., Arch Linux).
     }
 
 .. warning::
-    System updates on Arch Linux should *always* be performed manually and with great care. Thus, this item type installs packages with a simple ``pacman -S $pkgname`` instead of the commonly recommended ``pacman -Syu $pkgname``. You should *manually* do a full system update before installing new packages via blockwart!
+    System updates on Arch Linux should *always* be performed manually and with great care. Thus, this item type installs packages with a simple ``pacman -S $pkgname`` instead of the commonly recommended ``pacman -Syu $pkgname``. You should *manually* do a full system update before installing new packages via Blockwart!
 
 
 Attribute reference

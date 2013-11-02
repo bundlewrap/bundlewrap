@@ -3,9 +3,9 @@
 Quickstart
 ==========
 
-This is the 5 minute intro into blockwart. Fasten your seatbelt.
+This is the 5 minute intro into Blockwart. Fasten your seatbelt.
 
-First, open a terminal and install blockwart::
+First, open a terminal and install Blockwart::
 
 	pip install blockwart
 

@@ -1,6 +1,6 @@
-# blockwart Individual Contributor Copyright Assignment Agreement
+# Blockwart Individual Contributor Copyright Assignment Agreement
 
-Thank you for your interest in contributing to the blockwart open-source project, currently owned and represented by Torsten Rehn (<torsten@rehn.tel>) ("We" or "Us").
+Thank you for your interest in contributing to the Blockwart open-source project, currently owned and represented by Torsten Rehn (<torsten@rehn.tel>) ("We" or "Us").
 
 This contributor agreement ("Agreement") documents the rights granted by contributors to Us. To make this document effective, please sign it and send it to Us by email or electronic submission, following the instructions at http://blockwart.org/contributing. This is a legally binding document, so please read it carefully before agreeing to it. The Agreement may cover more than one software project managed by Us.
 

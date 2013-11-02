@@ -21,7 +21,7 @@ From git
 --------
 
 .. warning::
-    This type of install will give you the very latest (and thus possibly broken) bleeding edge version of blockwart.
+    This type of install will give you the very latest (and thus possibly broken) bleeding edge version of Blockwart.
     You should only use this if you know what you're doing.
 
 .. note::

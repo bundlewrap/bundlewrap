@@ -23,7 +23,7 @@ All you have to do here is define a Python dictionary called ``nodes``. It shoul
 
 
 .. note::
-	With blockwart, the DNS name and the internal identifier for a node are two separate things. This allows for clean and sortable hierarchies::
+	With Blockwart, the DNS name and the internal identifier for a node are two separate things. This allows for clean and sortable hierarchies::
 
 		nodes = {
 			'cluster1.node1': {
@@ -33,7 +33,7 @@ All you have to do here is define a Python dictionary called ``nodes``. It shoul
 
 
 
-All fields for a node (including ``hostname``) are optional. If you don't give one, blockwart will attempt to use the internal identifier to connect to a node::
+All fields for a node (including ``hostname``) are optional. If you don't give one, Blockwart will attempt to use the internal identifier to connect to a node::
 
 	nodes = {
 		'node1.example.com': {},

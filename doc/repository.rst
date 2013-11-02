@@ -5,14 +5,14 @@ Repository reference
 .. toctree::
     :hidden:
 
-A blockwart repository contains everything you need to contruct the configuration for your systems.
+A Blockwart repository contains everything you need to contruct the configuration for your systems.
 
 This page describes the various subdirectories and files than can exist inside a repo.
 
 ``nodes.py``
 ============
 
-This file tells blockwart what nodes (servers, VMs, ...) there are in your environment and lets you configure options such as hostnames.
+This file tells Blockwart what nodes (servers, VMs, ...) there are in your environment and lets you configure options such as hostnames.
 
 .. seealso:: :ref:`nodespy`
 
