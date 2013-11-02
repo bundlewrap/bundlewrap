@@ -193,6 +193,7 @@ class Node(object):
         self.repo = repo
         self.hostname = infodict.get('hostname', self.name)
         self.metadata = infodict.get('metadata', {})
+        self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
     def __cmp__(self, other):
         return cmp(self.name, other.name)

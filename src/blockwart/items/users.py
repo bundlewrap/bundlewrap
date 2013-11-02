@@ -75,7 +75,7 @@ class User(Item):
         'salt': None,
         'shell': "/bin/bash",
         'uid': None,
-        'use_shadow': True,
+        'use_shadow': None,
     }
     ITEM_TYPE_NAME = "user"
     REQUIRED_ATTRIBUTES = ['gid', 'groups', 'uid']
@@ -218,6 +218,9 @@ class User(Item):
                 rounds=5000,  # default from glibc
                 salt=attributes.get('salt', _DEFAULT_SALT),
             )
+
+        if 'use_shadow' not in attributes:
+            attributes['use_shadow'] = self.node.use_shadow_passwords
 
         return attributes
 
