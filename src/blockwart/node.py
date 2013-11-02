@@ -1,12 +1,16 @@
 from datetime import datetime
+from getpass import getuser
+from os import uname
+from tempfile import mkstemp
 
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, RepositoryError
-from .utils import cached_property
+from .exceptions import ItemDependencyError, NodeAlreadyLockedException, \
+                        RepositoryError
+from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _, validate_name
-from .utils.ui import LineBuffer
+from .utils.ui import ask_interactively, LineBuffer
 
 
 class ApplyResult(object):
@@ -217,25 +221,77 @@ class Node(object):
             for item in bundle.items:
                 yield item
 
+    def acquire_lock(self, interactive):
+        handle, local_path = mkstemp()
+
+        result = self.run('mkdir /tmp/bw.lock', may_fail=True)
+        if result.return_code != 0:
+            self.download('/tmp/bw.lock/info', local_path, ignore_failure=True)
+            info = _('<no locking info found>')
+            with open(local_path, 'r') as f:
+                info = f.read()
+            if interactive:
+                if ask_interactively((_('{node} is already locked:') +
+                                        '\n\n\t"{info}"\n\n' +
+                                      _('Override lock?')).format(
+                                       node=self, info=info), False):
+                    # Continue below with placing our own lock
+                    pass
+                else:
+                    raise NodeAlreadyLockedException(info)
+            else:
+                raise NodeAlreadyLockedException(info)
+
+        with open(local_path, 'w') as f:
+            f.write(_('Locked at {date} by {user} on {hostname}').format(
+                    date=datetime.now(),
+                    user=getuser(),
+                    hostname=uname()[1]))
+        self.upload(local_path, '/tmp/bw.lock/info')
+
+        # See issue #19. We've just opened an SSH connection to the node,
+        # but before we can fork(), all connections *MUST* be closed!
+        # XXX: Revise this once we're using Fabric 2.0.
+        operations.disconnect_all()
+
     def apply(self, interactive=False, workers=4):
         start = datetime.now()
         worker_count = 1 if interactive else workers
-        item_results = apply_items(
-            self.items,
-            workers=worker_count,
-            interactive=interactive,
-        )
+        try:
+            with NodeLock(self, interactive):
+                item_results = list(apply_items(
+                    self.items,
+                    workers=worker_count,
+                    interactive=interactive,
+                ))
+        except NodeAlreadyLockedException as e:
+            LOG.error(_('{node} already locked: {info}').format(node=self,
+                                                                info=e.args))
+            item_results = []
         result = ApplyResult(self, item_results)
         result.start = start
         result.end = datetime.now()
         return result
 
-    def download(self, remote_path, local_path):
+    def download(self, remote_path, local_path, ignore_failure=False):
         return operations.download(
             self.hostname,
             remote_path,
             local_path,
+            ignore_failure=ignore_failure,
         )
+
+    def release_lock(self):
+        result = self.run("rm -R /tmp/bw.lock", may_fail=True)
+
+        # See acquire_lock(). Most likely we won't fork() again now.
+        # Nevertheless, clean up the state so a future code change won't
+        # cause chaos.
+        # XXX: Revise this once we're using Fabric 2.0.
+        operations.disconnect_all()
+
+        if result.return_code != 0:
+            LOG.error(_('Could not release lock for {node}').format(node=self))
 
     def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
             sudo=True):
@@ -259,3 +315,15 @@ class Node(object):
             local_path,
             remote_path,
         )
+
+
+class NodeLock(object):
+    def __init__(self, node, interactive):
+        self.node = node
+        self.interactive = interactive
+
+    def __enter__(self):
+        self.node.acquire_lock(self.interactive)
+
+    def __exit__(self, type, value, traceback):
+        self.node.release_lock()
