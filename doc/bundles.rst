@@ -17,7 +17,9 @@ Bundles
 
 Bundles are subdirectories of the ``bundles/`` directory of your Blockwart repository. Within each bundle, there must be a file called ``bundle.py``. They define any number of magic attributes that are automatically processed by Blockwart. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
 
-A typical bundle might look like this::
+A typical bundle might look like this:
+
+.. code-block:: python
 
     files = {
         '/etc/hosts': {
@@ -74,7 +76,9 @@ There are also attributes that can be applied to any kind of item.
 Item dependencies
 #################
 
-One such attribute is ``depends``. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on all directories). Here are two examples::
+One such attribute is ``depends``. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on all directories). Here are two examples:
+
+.. code-block:: python
 
     my_items = {
         'item1': {
