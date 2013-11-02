@@ -18,6 +18,7 @@ While the following list might appear long, even very minimal systems should pro
 * ``id``
 * ``mkdir``
 * ``mv``
+* ``pacman`` (only used with ``pkg_pacman``)
 * ``rm``
 * ``sed``
 * sftp-enabled SSH server
