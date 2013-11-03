@@ -300,7 +300,7 @@ class NodeLock(object):
 
         with open(local_path, 'w') as f:
             f.write(_("Locked at {date} by {user} on {hostname}").format(
-                    date=datetime.now(),
+                    date=datetime.utcnow(),
                     user=getuser(),
                     hostname=gethostname()))
         self.node.upload(local_path, "/tmp/bw.lock/info")
