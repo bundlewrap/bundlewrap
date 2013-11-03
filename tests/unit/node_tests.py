@@ -285,6 +285,44 @@ class InjectConcurrencyBlockersTest(TestCase):
         for item in injected:
             self.assertEqual(item._deps, deps_should[item])
 
+    def test_noop(self):
+        class FakeItem(object):
+            pass
+
+        def make_item(item_id):
+            item = FakeItem()
+            item._deps = []
+            item.ITEM_TYPE_NAME = item_id.split(":")[0]
+            item.PARALLEL_APPLY = True
+            item.id = item_id
+            return item
+
+        item11 = make_item("type1:name1")
+        item12 = make_item("type1:name2")
+        item21 = make_item("type2:name1")
+        item22 = make_item("type2:name2")
+        item23 = make_item("type2:name3")
+        item31 = make_item("type3:name1")
+        item32 = make_item("type3:name2")
+
+        items = [item11, item32, item22, item12, item21, item23, item31]
+        injected = inject_concurrency_blockers(items)
+
+        deps_should = {
+            item11: [],
+            item32: [],
+            item22: [],
+            item12: [],
+            item21: [],
+            item23: [],
+            item31: [],
+        }
+
+        self.assertEqual(len(injected), len(items))
+
+        for item in injected:
+            self.assertEqual(item._deps, deps_should[item])
+
 
 class ItemOrderTest(TestCase):
     """
