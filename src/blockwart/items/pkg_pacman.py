@@ -38,6 +38,7 @@ class PacmanPkg(Item):
         'installed': True,
     }
     ITEM_TYPE_NAME = "pkg_pacman"
+    PARALLEL_APPLY = False
 
     def ask(self, status):
         before = _("installed") if status.info['installed'] \
