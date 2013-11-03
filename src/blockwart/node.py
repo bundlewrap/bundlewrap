@@ -1,7 +1,9 @@
 from datetime import datetime
 from getpass import getuser
+import json
 from socket import gethostname
 from tempfile import mkstemp
+from time import time
 
 from . import operations
 from .bundle import Bundle
@@ -9,7 +11,8 @@ from .concurrency import WorkerPool
 from .exceptions import ItemDependencyError, NodeAlreadyLockedException, \
                         RepositoryError
 from .utils import cached_property, LOG
-from .utils.text import mark_for_translation as _, validate_name
+from .utils.text import mark_for_translation as _
+from .utils.text import red, validate_name, white
 from .utils.ui import ask_interactively, LineBuffer
 
 
@@ -232,8 +235,11 @@ class Node(object):
                     interactive=interactive,
                 ))
         except NodeAlreadyLockedException as e:
-            LOG.error(_('{node} already locked: {info}').format(node=self,
-                                                                info=e.args))
+            if not interactive:
+                LOG.error(_("Node '{node}' already locked: {info}").format(
+                    node=self.name,
+                    info=e.args,
+                ))
             item_results = []
         result = ApplyResult(self, item_results)
         result.start = start
@@ -285,24 +291,33 @@ class NodeLock(object):
             self.node.download("/tmp/bw.lock/info", local_path, ignore_failure=True)
             info = _("<no locking info found>")
             with open(local_path, 'r') as f:
-                info = f.read()
-            if self.interactive:
-                if ask_interactively((_("{node} is already locked:") +
-                                        "\n\n\t\"{info}\"\n\n" +
-                                      _("Override lock?")).format(
-                                       node=self.node, info=info), False):
-                    # Continue below with placing our own lock
-                    pass
-                else:
-                    raise NodeAlreadyLockedException(info)
+                info = json.loads(f.read())
+            if self.interactive and ask_interactively(_(
+                "  {warning}\n\n"
+                "  Looks like somebody is currently using Blockwart on this node.\n"
+                "  You should let them finish or override the lock if it has gone stale.\n\n"
+                "  locked by: {user}@{host}\n"
+                "  lock acquired: {duration} ago ({date})\n\n"
+                "  Override lock?").format(
+                    warning=red(_("WARNING")),
+                    node=white(self.node.name, bold=True),
+                    user=white(info['user'], bold=True),
+                    host=info['host'],
+                    date=datetime.fromtimestamp(info['date']).strftime("%c"),
+                    duration=white(str(
+                        datetime.now() - datetime.fromtimestamp(info['date'])
+                    ).split(".")[0], bold=True),
+            ), False):
+                pass
             else:
                 raise NodeAlreadyLockedException(info)
 
         with open(local_path, 'w') as f:
-            f.write(_("Locked at {date} by {user} on {hostname}").format(
-                    date=datetime.utcnow(),
-                    user=getuser(),
-                    hostname=gethostname()))
+            f.write(json.dumps({
+                'date': time(),
+                'user': getuser(),
+                'host': gethostname()
+            }))
         self.node.upload(local_path, "/tmp/bw.lock/info")
 
         # See issue #19. We've just opened an SSH connection to the node,
