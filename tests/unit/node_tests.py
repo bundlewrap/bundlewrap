@@ -49,38 +49,22 @@ class ApplyItemsTest(TestCase):
             list(apply_items([i1, i2]))
 
     def test_direct_loop(self):
-        i1 = MagicMock()
-        i1.id = "type1:name1"
-        i1._deps = ["type1:name2"]
-        i2 = MagicMock()
-        i2.id = "type1:name2"
-        i2._deps = ["type1:name1"]
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:name1"])
         with self.assertRaises(ItemDependencyError):
             list(apply_items([i1, i2]))
 
     def test_nested_loop(self):
-        i1 = MagicMock()
-        i1.id = "type1:name1"
-        i1._deps = ["type1:name2"]
-        i2 = MagicMock()
-        i2.id = "type1:name2"
-        i2._deps = ["type1:name3"]
-        i3 = MagicMock()
-        i3.id = "type1:name3"
-        i3._deps = ["type1:name4"]
-        i4 = MagicMock()
-        i4.id = "type1:name4"
-        i4._deps = ["type1:name1"]
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
+        i3 = get_mock_item("type1", "name3", [], ["type1:name4"])
+        i4 = get_mock_item("type1", "name4", [], ["type1:name1"])
         with self.assertRaises(ItemDependencyError):
             list(apply_items([i1, i2, i3, i4]))
 
     def test_implicit_loop(self):
-        i1 = MagicMock()
-        i1.id = "type1:name1"
-        i1._deps = ["type1:name2"]
-        i2 = MagicMock()
-        i2.id = "type1:name2"
-        i2._deps = ["type1:"]
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:"])
         with self.assertRaises(ItemDependencyError):
             list(apply_items([i1, i2]))
 
