@@ -182,6 +182,44 @@ class ApplyResultTest(TestCase):
             ApplyResult(MagicMock(), input_results)
 
 
+class FlattenDependenciesTest(TestCase):
+    """
+    Tests blockwart.node.flatten_dependencies.
+    """
+    def test_flatten(self):
+        class FakeItem(object):
+            pass
+
+        def make_item(item_id):
+            item = FakeItem()
+            item._deps = []
+            item.id = item_id
+            return item
+
+        item1 = make_item("type1:name1")
+        item2 = make_item("type1:name2")
+        item3 = make_item("type2:name1")
+        item3._deps = ["type1:"]
+        item4 = make_item("type3:name1")
+        item4._deps = ["type2:name1"]
+        item5 = make_item("type1:")
+        item5._deps = ["type1:name1", "type1:name2"]
+        items = [item1, item2, item3, item4, item5]
+
+        items = flatten_dependencies(items)
+
+        deps_should = {
+            item1: [],
+            item2: [],
+            item3: ["type1:", "type1:name1", "type1:name2"],
+            item4: ["type1:", "type1:name1", "type1:name2", "type2:name1"],
+            item5: ["type1:name1", "type1:name2"],
+        }
+
+        for item in items:
+            self.assertEqual(set(item._deps), set(deps_should[item]))
+
+
 class InitTest(TestCase):
     """
     Tests initialization of blockwart.node.Node.
