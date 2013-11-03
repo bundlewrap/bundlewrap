@@ -91,7 +91,16 @@ def inject_dummy_items(items):
     return list(dummy_items.values()) + items
 
 
+def inject_concurrency_blockers(items):
+    """
+    Looks for items with PARALLEL_APPLY set to False and inserts
+    dependencies to force a sequential apply.
+    """
+    return items
+
+
 def apply_items(items, workers=1, interactive=False):
+    items = inject_concurrency_blockers(items)
     items = inject_dummy_items(items)
     with WorkerPool(workers=workers) as worker_pool:
         items_with_deps, items_without_deps = \
