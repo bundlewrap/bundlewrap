@@ -1,6 +1,6 @@
 from datetime import datetime
 from getpass import getuser
-from os import uname
+from socket import gethostname
 from tempfile import mkstemp
 
 from . import operations
@@ -302,7 +302,7 @@ class NodeLock(object):
             f.write(_("Locked at {date} by {user} on {hostname}").format(
                     date=datetime.now(),
                     user=getuser(),
-                    hostname=uname()[1]))
+                    hostname=gethostname()))
         self.node.upload(local_path, "/tmp/bw.lock/info")
 
         # See issue #19. We've just opened an SSH connection to the node,
