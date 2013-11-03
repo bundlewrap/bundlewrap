@@ -97,6 +97,14 @@ def inject_concurrency_blockers(items):
     Looks for items with PARALLEL_APPLY set to False and inserts
     dependencies to force a sequential apply.
     """
+    last_items = {}
+    for item in items:
+        if item.PARALLEL_APPLY:
+            continue
+        previous_item = last_items.get(item.ITEM_TYPE_NAME, None)
+        if previous_item is not None:
+            item._deps.append(previous_item.id)
+        last_items[item.ITEM_TYPE_NAME] = item
     return items
 
 

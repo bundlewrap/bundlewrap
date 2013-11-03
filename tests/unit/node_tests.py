@@ -34,6 +34,7 @@ def get_mock_item(itype, name, deps_static, deps):
     item = MockItem(bundle, name, {'depends': deps}, skip_validation=True)
     item.ITEM_TYPE_NAME = itype
     item.DEPENDS_STATIC = deps_static
+    item.PARALLEL_APPLY = True
     return item
 
 
@@ -252,9 +253,9 @@ class InjectConcurrencyBlockersTest(TestCase):
 
         def make_item(item_id, parallel_apply):
             item = FakeItem()
-            item.DEPENDS_STATIC = []
+            item._deps = []
+            item.ITEM_TYPE_NAME = item_id.split(":")[0]
             item.PARALLEL_APPLY = parallel_apply
-            item.depends = []
             item.id = item_id
             return item
 
