@@ -83,16 +83,26 @@ def _find_items_of_type(item_type, items):
     )
 
 
-def _get_deps_for_item(item, items):
+def _get_deps_for_item(item, items, deps_found=None):
     """
     Recursively retrieves and returns a list of all inherited
     dependencies of the given item.
+
+    Note: This can handle loops, but won't detect them.
     """
+    if deps_found is None:
+        deps_found = []
     deps = []
     for dep in item._deps:
-        deps.append(dep)
-        deps.append(_get_deps_for_item(_find_item(dep, items)))
-    return set(deps)
+        if dep not in deps_found:
+            deps.append(dep)
+            deps_found.append(dep)
+            deps += _get_deps_for_item(
+                _find_item(dep, items),
+                items,
+                deps_found,
+            )
+    return deps
 
 
 def flatten_dependencies(items):
@@ -101,11 +111,9 @@ def flatten_dependencies(items):
     listed in item._deps.
     """
     for item in items:
-        item._deps = list(
-            set(item._deps) +
-            _get_deps_for_item(item, items)
-        )
-
+        item._deps = list(set(
+            item._deps + _get_deps_for_item(item, items)
+        ))
     return items
 
 
@@ -140,7 +148,11 @@ def inject_concurrency_blockers(items):
     # find every item type that cannot be applied in parallel
     item_types = []
     for item in items:
-        if item.PARALLEL_APPLY or item.ITEM_TYPE_NAME in item_types:
+        if (
+            isinstance(item, DummyItem) or
+            item.PARALLEL_APPLY or
+            item.ITEM_TYPE_NAME in item_types
+        ):
             continue
         else:
             item_types.append(item.ITEM_TYPE_NAME)
