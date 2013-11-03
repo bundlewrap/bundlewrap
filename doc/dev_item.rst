@@ -24,6 +24,7 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
             'attribute': "default value",
         }
         ITEM_TYPE_NAME = "foo"
+        PARALLEL_APPLY = True
         REQUIRED_ATTRIBUTES = ['attribute']
 
         def ask(self, status):
@@ -74,6 +75,11 @@ Step 2: Define attributes
 ``ITEM_TYPE_NAME`` sets the first part of an items ID. For the file items, this is "file". Therefore, file ID look this this: ``file:/path``. The second part is the name a user assigns to your item in a bundle. Example::
 
     ITEM_TYPE_NAME = "foo"
+
+
+``PARALLEL_APPLY`` indicates whether multiple instances of this item can be applied in parallel. For most items this is OK (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time)::
+
+    PARALLEL_APPLY = False
 
 
 ``REQUIRED_ATTRIBUTES`` is a list of attribute names that must be set on each item of this type. If Blockwart encounters an item without all these attributes during bundle inspection, an exception will be raised. Example::
