@@ -244,6 +244,49 @@ class InjectDummyItemsTest(TestCase):
         self.assertEqual(dummy_counter, 3)
 
 
+class InjectConcurrencyBlockersTest(TestCase):
+    """
+    Tests blockwart.node.inject_concurrency_blockers.
+    """
+    def test_blockers(self):
+        class FakeItem(object):
+            pass
+
+        def make_item(item_id, parallel_apply):
+            item = FakeItem()
+            item.DEPENDS_STATIC = []
+            item.PARALLEL_APPLY = parallel_apply
+            item.depends = []
+            item.id = item_id
+            return item
+
+        item11 = make_item("type1:name1", True)
+        item12 = make_item("type1:name2", True)
+        item21 = make_item("type2:name1", False)
+        item22 = make_item("type2:name2", False)
+        item23 = make_item("type2:name3", False)
+        item31 = make_item("type3:name1", False)
+        item32 = make_item("type3:name2", False)
+
+        items = [item11, item32, item22, item12, item21, item23, item31]
+        injected = inject_concurrency_blockers(items)
+
+        deps_should = {
+            item11: [],
+            item32: [],
+            item22: [],
+            item12: [],
+            item21: ["type2:name2"],
+            item23: ["type2:name1"],
+            item31: ["type3:name2"],
+        }
+
+        self.assertEqual(len(injected), len(items))
+
+        for item in injected:
+            self.assertEqual(item._deps, deps_should[item])
+
+
 class ItemOrderTest(TestCase):
     """
     Tests blockwart.node.order_items.
