@@ -224,16 +224,16 @@ class Node(object):
     def acquire_lock(self, interactive):
         handle, local_path = mkstemp()
 
-        result = self.run('mkdir /tmp/bw.lock', may_fail=True)
+        result = self.run("mkdir /tmp/bw.lock", may_fail=True)
         if result.return_code != 0:
-            self.download('/tmp/bw.lock/info', local_path, ignore_failure=True)
-            info = _('<no locking info found>')
+            self.download("/tmp/bw.lock/info", local_path, ignore_failure=True)
+            info = _("<no locking info found>")
             with open(local_path, 'r') as f:
                 info = f.read()
             if interactive:
-                if ask_interactively((_('{node} is already locked:') +
-                                        '\n\n\t"{info}"\n\n' +
-                                      _('Override lock?')).format(
+                if ask_interactively((_("{node} is already locked:") +
+                                        "\n\n\t\"{info}\"\n\n" +
+                                      _("Override lock?")).format(
                                        node=self, info=info), False):
                     # Continue below with placing our own lock
                     pass
@@ -243,11 +243,11 @@ class Node(object):
                 raise NodeAlreadyLockedException(info)
 
         with open(local_path, 'w') as f:
-            f.write(_('Locked at {date} by {user} on {hostname}').format(
+            f.write(_("Locked at {date} by {user} on {hostname}").format(
                     date=datetime.now(),
                     user=getuser(),
                     hostname=uname()[1]))
-        self.upload(local_path, '/tmp/bw.lock/info')
+        self.upload(local_path, "/tmp/bw.lock/info")
 
         # See issue #19. We've just opened an SSH connection to the node,
         # but before we can fork(), all connections *MUST* be closed!
