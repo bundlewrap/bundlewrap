@@ -65,6 +65,50 @@ class DummyItem(object):
         return None
 
 
+def _find_item(item_id, items):
+    """
+    Returns the first item with the given ID within the given list of
+    items.
+    """
+    return filter(lambda item: item.id == item_id, items)[0]
+
+
+def _find_items_of_type(item_type, items):
+    """
+    Returns a subset of items with the given type.
+    """
+    return filter(
+        lambda item: item.id.startswith(item_type + ":"),
+        items,
+    )
+
+
+def _get_deps_for_item(item, items):
+    """
+    Recursively retrieves and returns a list of all inherited
+    dependencies of the given item.
+    """
+    deps = []
+    for dep in item._deps:
+        deps.append(dep)
+        deps.append(_get_deps_for_item(_find_item(dep, items)))
+    return set(deps)
+
+
+def flatten_dependencies(items):
+    """
+    This will cause all dependencies - direct AND inherited - to be
+    listed in item._deps.
+    """
+    for item in items:
+        item._deps = list(
+            set(item._deps) +
+            _get_deps_for_item(item, items)
+        )
+
+    return items
+
+
 def inject_dummy_items(items):
     """
     Takes a list of items and adds dummy items depending on each type of
@@ -74,10 +118,6 @@ def inject_dummy_items(items):
     dummy_items = {}
     items = list(items)
     for item in items:
-        # merge static and user-defined deps into a temporary attribute
-        item._deps += item.DEPENDS_STATIC
-        item._deps += item.depends
-
         # create dummy items that depend on each item of their type
         item_type = item.id.split(":")[0]
         if item_type not in dummy_items:
@@ -97,22 +137,55 @@ def inject_concurrency_blockers(items):
     Looks for items with PARALLEL_APPLY set to False and inserts
     dependencies to force a sequential apply.
     """
-    last_items = {}
+    # find every item type that cannot be applied in parallel
+    item_types = []
     for item in items:
-        if item.PARALLEL_APPLY:
+        if item.PARALLEL_APPLY or item.ITEM_TYPE_NAME in item_types:
             continue
-        previous_item = last_items.get(item.ITEM_TYPE_NAME, None)
-        if previous_item is not None:
-            item._deps.append(previous_item.id)
-        last_items[item.ITEM_TYPE_NAME] = item
+        else:
+            item_types.append(item.ITEM_TYPE_NAME)
+
+    # daisy-chain all other items of the same type (linked list style)
+    # while respecting existing inter-item dependencies
+    for item_type in item_types:
+        type_items = _find_items_of_type(item_type, items)
+        processed_items = []
+        for item in type_items:
+            # disregard deps to items of other types
+            item.__deps = filter(
+                lambda dep: dep.startswith(item_type + ":"),
+                item._deps,
+            )
+        previous_item = None
+        while len(processed_items) < len(type_items):
+            # find the first item without same-type deps we haven't
+            # processed yet
+            item = filter(
+                lambda item: not item.__deps and item not in processed_items,
+                type_items,
+            )[0]
+            if previous_item is not None:  # unless we're at the first item
+                # add dep to previous item
+                item._deps.append(previous_item.id)
+            previous_item = item
+            processed_items.append(item)
+            for other_item in type_items:
+                try:
+                    other_item.__deps.remove(item.id)
+                except ValueError:
+                    pass
     return items
 
 
 def apply_items(items, workers=1, interactive=False):
     for item in items:
-        item._deps = []
-    items = inject_concurrency_blockers(items)
+        # merge static and user-defined deps
+        item._deps = item.DEPENDS_STATIC
+        item._deps += item.depends
+
     items = inject_dummy_items(items)
+    items = flatten_dependencies(items)
+    items = inject_concurrency_blockers(items)
 
     with WorkerPool(workers=workers) as worker_pool:
         items_with_deps, items_without_deps = \
