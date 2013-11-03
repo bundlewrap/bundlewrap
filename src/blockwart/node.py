@@ -335,4 +335,6 @@ class NodeLock(object):
         operations.disconnect_all()
 
         if result.return_code != 0:
-            LOG.error(_("Could not release lock for {node}").format(node=self))
+            LOG.error(_("Could not release lock for node '{node}'").format(
+                node=self.node.name,
+            ))
