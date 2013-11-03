@@ -190,6 +190,9 @@ def inject_concurrency_blockers(items):
 
 
 def apply_items(items, workers=1, interactive=False):
+    # make sure items is not a generator
+    items = list(items)
+
     for item in items:
         # merge static and user-defined deps
         item._deps = item.DEPENDS_STATIC
