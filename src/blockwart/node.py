@@ -75,7 +75,8 @@ def inject_dummy_items(items):
     items = list(items)
     for item in items:
         # merge static and user-defined deps into a temporary attribute
-        item._deps = item.DEPENDS_STATIC + item.depends
+        item._deps += item.DEPENDS_STATIC
+        item._deps += item.depends
 
         # create dummy items that depend on each item of their type
         item_type = item.id.split(":")[0]
@@ -100,8 +101,11 @@ def inject_concurrency_blockers(items):
 
 
 def apply_items(items, workers=1, interactive=False):
+    for item in items:
+        item._deps = []
     items = inject_concurrency_blockers(items)
     items = inject_dummy_items(items)
+
     with WorkerPool(workers=workers) as worker_pool:
         items_with_deps, items_without_deps = \
             split_items_without_deps(items)

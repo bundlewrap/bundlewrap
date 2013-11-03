@@ -214,27 +214,25 @@ class InjectDummyItemsTest(TestCase):
     def test_item_injection(self):
         class FakeItem(object):
             pass
-        item1 = FakeItem()
-        item1.DEPENDS_STATIC = []
-        item1.depends = []
-        item1.id = "type1:name1"
-        item2 = FakeItem()
-        item2.DEPENDS_STATIC = []
-        item2.depends = []
-        item2.id = "type1:name2"
-        item3 = FakeItem()
-        item3.DEPENDS_STATIC = []
-        item3.depends = []
-        item3.id = "type2:name1"
-        item4 = FakeItem()
-        item4.DEPENDS_STATIC = []
-        item4.depends = []
-        item4.id = "type3:name1"
+
+        def make_item(item_id):
+            item = FakeItem()
+            item._deps = []
+            item.DEPENDS_STATIC = []
+            item.depends = []
+            item.id = item_id
+            return item
+
+        item1 = make_item("type1:name1")
+        item2 = make_item("type1:name2")
+        item3 = make_item("type2:name1")
+        item4 = make_item("type3:name1")
         items = [item1, item2, item3, item4]
+
         injected = inject_dummy_items(items)
+
         dummy_counter = 0
         for item in injected:
-            self.assertTrue(hasattr(item, '_deps'))
             if isinstance(item, DummyItem):
                 self.assertTrue(len(item._deps) > 0)
                 dummy_counter += 1
