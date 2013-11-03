@@ -53,14 +53,15 @@ def get_file_contents(path):
     return content
 
 
-def get_all_attrs_from_file(path, cache_read=True, cache_write=True):
+def get_all_attrs_from_file(path, cache_read=True, cache_write=True,
+                            base_env={}):
     """
     Reads all 'attributes' (if it were a module) from a source
     file.
     """
     if path not in __GETATTR_CACHE or not cache_read:
         source = get_file_contents(path)
-        env = {}
+        env = base_env.copy()
         exec source in env
         if cache_write:
             __GETATTR_CACHE[path] = env
