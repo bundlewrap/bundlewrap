@@ -311,7 +311,7 @@ class NodeLock(object):
         operations.disconnect_all()
 
     def __exit__(self, type, value, traceback):
-        result = self.run("rm -R /tmp/bw.lock", may_fail=True)
+        result = self.node.run("rm -R /tmp/bw.lock", may_fail=True)
 
         # See acquire_lock(). Most likely we won't fork() again now.
         # Nevertheless, clean up the state so a future code change won't
