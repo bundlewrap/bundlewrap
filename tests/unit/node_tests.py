@@ -34,6 +34,7 @@ def get_mock_item(itype, name, deps_static, deps):
     item = MockItem(bundle, name, {'depends': deps}, skip_validation=True)
     item.ITEM_TYPE_NAME = itype
     item.DEPENDS_STATIC = deps_static
+    item.PARALLEL_APPLY = True
     return item
 
 
@@ -48,38 +49,22 @@ class ApplyItemsTest(TestCase):
             list(apply_items([i1, i2]))
 
     def test_direct_loop(self):
-        i1 = MagicMock()
-        i1.id = "type1:name1"
-        i1._deps = ["type1:name2"]
-        i2 = MagicMock()
-        i2.id = "type1:name2"
-        i2._deps = ["type1:name1"]
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:name1"])
         with self.assertRaises(ItemDependencyError):
             list(apply_items([i1, i2]))
 
     def test_nested_loop(self):
-        i1 = MagicMock()
-        i1.id = "type1:name1"
-        i1._deps = ["type1:name2"]
-        i2 = MagicMock()
-        i2.id = "type1:name2"
-        i2._deps = ["type1:name3"]
-        i3 = MagicMock()
-        i3.id = "type1:name3"
-        i3._deps = ["type1:name4"]
-        i4 = MagicMock()
-        i4.id = "type1:name4"
-        i4._deps = ["type1:name1"]
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
+        i3 = get_mock_item("type1", "name3", [], ["type1:name4"])
+        i4 = get_mock_item("type1", "name4", [], ["type1:name1"])
         with self.assertRaises(ItemDependencyError):
             list(apply_items([i1, i2, i3, i4]))
 
     def test_implicit_loop(self):
-        i1 = MagicMock()
-        i1.id = "type1:name1"
-        i1._deps = ["type1:name2"]
-        i2 = MagicMock()
-        i2.id = "type1:name2"
-        i2._deps = ["type1:"]
+        i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
+        i2 = get_mock_item("type1", "name2", [], ["type1:"])
         with self.assertRaises(ItemDependencyError):
             list(apply_items([i1, i2]))
 
@@ -197,6 +182,44 @@ class ApplyResultTest(TestCase):
             ApplyResult(MagicMock(), input_results)
 
 
+class FlattenDependenciesTest(TestCase):
+    """
+    Tests blockwart.node.flatten_dependencies.
+    """
+    def test_flatten(self):
+        class FakeItem(object):
+            pass
+
+        def make_item(item_id):
+            item = FakeItem()
+            item._deps = []
+            item.id = item_id
+            return item
+
+        item1 = make_item("type1:name1")
+        item2 = make_item("type1:name2")
+        item3 = make_item("type2:name1")
+        item3._deps = ["type1:"]
+        item4 = make_item("type3:name1")
+        item4._deps = ["type2:name1"]
+        item5 = make_item("type1:")
+        item5._deps = ["type1:name1", "type1:name2"]
+        items = [item1, item2, item3, item4, item5]
+
+        items = flatten_dependencies(items)
+
+        deps_should = {
+            item1: [],
+            item2: [],
+            item3: ["type1:", "type1:name1", "type1:name2"],
+            item4: ["type1:", "type1:name1", "type1:name2", "type2:name1"],
+            item5: ["type1:name1", "type1:name2"],
+        }
+
+        for item in items:
+            self.assertEqual(set(item._deps), set(deps_should[item]))
+
+
 class InitTest(TestCase):
     """
     Tests initialization of blockwart.node.Node.
@@ -214,27 +237,25 @@ class InjectDummyItemsTest(TestCase):
     def test_item_injection(self):
         class FakeItem(object):
             pass
-        item1 = FakeItem()
-        item1.DEPENDS_STATIC = []
-        item1.depends = []
-        item1.id = "type1:name1"
-        item2 = FakeItem()
-        item2.DEPENDS_STATIC = []
-        item2.depends = []
-        item2.id = "type1:name2"
-        item3 = FakeItem()
-        item3.DEPENDS_STATIC = []
-        item3.depends = []
-        item3.id = "type2:name1"
-        item4 = FakeItem()
-        item4.DEPENDS_STATIC = []
-        item4.depends = []
-        item4.id = "type3:name1"
+
+        def make_item(item_id):
+            item = FakeItem()
+            item._deps = []
+            item.DEPENDS_STATIC = []
+            item.depends = []
+            item.id = item_id
+            return item
+
+        item1 = make_item("type1:name1")
+        item2 = make_item("type1:name2")
+        item3 = make_item("type2:name1")
+        item4 = make_item("type3:name1")
         items = [item1, item2, item3, item4]
+
         injected = inject_dummy_items(items)
+
         dummy_counter = 0
         for item in injected:
-            self.assertTrue(hasattr(item, '_deps'))
             if isinstance(item, DummyItem):
                 self.assertTrue(len(item._deps) > 0)
                 dummy_counter += 1
@@ -242,6 +263,87 @@ class InjectDummyItemsTest(TestCase):
                     self.assertTrue(dep.startswith(item.id))
         self.assertEqual(len(injected), 7)
         self.assertEqual(dummy_counter, 3)
+
+
+class InjectConcurrencyBlockersTest(TestCase):
+    """
+    Tests blockwart.node.inject_concurrency_blockers.
+    """
+    def test_blockers(self):
+        class FakeItem(object):
+            pass
+
+        def make_item(item_id, parallel_apply):
+            item = FakeItem()
+            item._deps = []
+            item.ITEM_TYPE_NAME = item_id.split(":")[0]
+            item.PARALLEL_APPLY = parallel_apply
+            item.id = item_id
+            return item
+
+        item11 = make_item("type1:name1", True)
+        item12 = make_item("type1:name2", True)
+        item21 = make_item("type2:name1", False)
+        item22 = make_item("type2:name2", False)
+        item23 = make_item("type2:name3", False)
+        item31 = make_item("type3:name1", False)
+        item32 = make_item("type3:name2", False)
+
+        items = [item11, item32, item22, item12, item21, item23, item31]
+        injected = inject_concurrency_blockers(items)
+
+        deps_should = {
+            item11: [],
+            item32: [],
+            item22: [],
+            item12: [],
+            item21: ["type2:name2"],
+            item23: ["type2:name1"],
+            item31: ["type3:name2"],
+        }
+
+        self.assertEqual(len(injected), len(items))
+
+        for item in injected:
+            self.assertEqual(item._deps, deps_should[item])
+
+    def test_noop(self):
+        class FakeItem(object):
+            pass
+
+        def make_item(item_id):
+            item = FakeItem()
+            item._deps = []
+            item.ITEM_TYPE_NAME = item_id.split(":")[0]
+            item.PARALLEL_APPLY = True
+            item.id = item_id
+            return item
+
+        item11 = make_item("type1:name1")
+        item12 = make_item("type1:name2")
+        item21 = make_item("type2:name1")
+        item22 = make_item("type2:name2")
+        item23 = make_item("type2:name3")
+        item31 = make_item("type3:name1")
+        item32 = make_item("type3:name2")
+
+        items = [item11, item32, item22, item12, item21, item23, item31]
+        injected = inject_concurrency_blockers(items)
+
+        deps_should = {
+            item11: [],
+            item32: [],
+            item22: [],
+            item12: [],
+            item21: [],
+            item23: [],
+            item31: [],
+        }
+
+        self.assertEqual(len(injected), len(items))
+
+        for item in injected:
+            self.assertEqual(item._deps, deps_should[item])
 
 
 class ItemOrderTest(TestCase):

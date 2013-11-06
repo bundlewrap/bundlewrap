@@ -68,6 +68,7 @@ class Item(object):
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
+    PARALLEL_APPLY = True
     REQUIRED_ATTRIBUTES = []
 
     def __init__(self, bundle, name, attributes, skip_validation=False):
