@@ -89,6 +89,8 @@ def run(hostname, command, ignore_failure=False, stderr=None,
                 stderr=stderr,
             )
 
+    LOG.debug("command finished with return code {}".format(fabric_result.return_code))
+
     if not fabric_result.succeeded and not ignore_failure:
         raise RemoteException(_(
             "Non-zero return code running '{}' on '{}': {}").format(
