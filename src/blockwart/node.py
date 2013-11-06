@@ -177,8 +177,9 @@ def inject_concurrency_blockers(items):
                 type_items,
             )[0]
             if previous_item is not None:  # unless we're at the first item
-                # add dep to previous item
-                item._deps.append(previous_item.id)
+                # add dep to previous item -- unless it's already in there
+                if not previous_item.id in item._deps:
+                    item._deps.append(previous_item.id)
             previous_item = item
             processed_items.append(item)
             for other_item in type_items:
