@@ -1,6 +1,7 @@
 from datetime import datetime
 from getpass import getuser
 import json
+from pipes import quote
 from socket import gethostname
 from tempfile import mkstemp
 from time import time
@@ -14,6 +15,9 @@ from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
 from .utils.text import red, validate_name, white
 from .utils.ui import ask_interactively, LineBuffer
+
+LOCK_PATH = "/tmp/blockwart.lock"
+LOCK_FILE = LOCK_PATH + "/info"
 
 
 class ApplyResult(object):
@@ -286,9 +290,9 @@ class NodeLock(object):
     def __enter__(self):
         handle, local_path = mkstemp()
 
-        result = self.node.run("mkdir /tmp/bw.lock", may_fail=True)
+        result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
         if result.return_code != 0:
-            self.node.download("/tmp/bw.lock/info", local_path, ignore_failure=True)
+            self.node.download(LOCK_FILE, local_path, ignore_failure=True)
             with open(local_path, 'r') as f:
                 try:
                     info = json.loads(f.read())
@@ -309,7 +313,7 @@ class NodeLock(object):
                 'user': getuser(),
                 'host': gethostname()
             }))
-        self.node.upload(local_path, "/tmp/bw.lock/info")
+        self.node.upload(local_path, LOCK_FILE)
 
         # See issue #19. We've just opened an SSH connection to the node,
         # but before we can fork(), all connections *MUST* be closed!
@@ -317,7 +321,7 @@ class NodeLock(object):
         operations.disconnect_all()
 
     def __exit__(self, type, value, traceback):
-        result = self.node.run("rm -R /tmp/bw.lock", may_fail=True)
+        result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
 
         # See acquire_lock(). Most likely we won't fork() again now.
         # Nevertheless, clean up the state so a future code change won't
