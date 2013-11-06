@@ -9,7 +9,6 @@ from blockwart.utils.text import mark_for_translation as _
 
 
 def pkg_install(node, pkgname):
-    print node.run
     return node.run("apt-get -qy --no-install-recommends "
                     "install {}".format(quote(pkgname)))
 

@@ -9,7 +9,6 @@ from blockwart.utils.text import mark_for_translation as _
 
 
 def pkg_install(node, pkgname):
-    print node.run
     return node.run("pacman --noconfirm -S {}".format(quote(pkgname)))
 
 
