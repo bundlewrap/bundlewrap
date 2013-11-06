@@ -311,7 +311,7 @@ class NodeLock(object):
             f.write(json.dumps({
                 'date': time(),
                 'user': getuser(),
-                'host': gethostname()
+                'host': gethostname(),
             }))
         self.node.upload(local_path, LOCK_FILE)
 
