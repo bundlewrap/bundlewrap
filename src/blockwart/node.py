@@ -289,25 +289,16 @@ class NodeLock(object):
         result = self.node.run("mkdir /tmp/bw.lock", may_fail=True)
         if result.return_code != 0:
             self.node.download("/tmp/bw.lock/info", local_path, ignore_failure=True)
-            info = _("<no locking info found>")
             with open(local_path, 'r') as f:
-                info = json.loads(f.read())
-            if self.interactive and ask_interactively(_(
-                "  {warning}\n\n"
-                "  Looks like somebody is currently using Blockwart on this node.\n"
-                "  You should let them finish or override the lock if it has gone stale.\n\n"
-                "  locked by: {user}@{host}\n"
-                "  lock acquired: {duration} ago ({date})\n\n"
-                "  Override lock?").format(
-                    warning=red(_("WARNING")),
-                    node=white(self.node.name, bold=True),
-                    user=white(info['user'], bold=True),
-                    host=info['host'],
-                    date=datetime.fromtimestamp(info['date']).strftime("%c"),
-                    duration=white(str(
-                        datetime.now() - datetime.fromtimestamp(info['date'])
-                    ).split(".")[0], bold=True),
-            ), False):
+                try:
+                    info = json.loads(f.read())
+                except:
+                    LOG.warn(_("unable to read or parse lock file contents"))
+                    info = {}
+            if self.interactive and ask_interactively(
+                self._warning_message(info),
+                False,
+            ):
                 pass
             else:
                 raise NodeAlreadyLockedException(info)
@@ -338,3 +329,27 @@ class NodeLock(object):
             LOG.error(_("Could not release lock for node '{node}'").format(
                 node=self.node.name,
             ))
+
+    def _warning_message(self, info):
+        try:
+            d = info['date']
+            date = datetime.fromtimestamp(d).strftime("%c")
+            duration = str(datetime.now() - datetime.fromtimestamp(d)).split(".")[0]
+        except KeyError:
+            date = _("<unknown>")
+            duration = _("<unknown>")
+        return _(
+            "  {warning}\n\n"
+            "  Looks like somebody is currently using Blockwart on this node.\n"
+            "  You should let them finish or override the lock if it has gone stale.\n\n"
+            "  locked by: {user}@{host}\n"
+            "  lock acquired: {duration} ago ({date})\n\n"
+            "  Override lock?"
+        ).format(
+            warning=red(_("WARNING")),
+            node=white(self.node.name, bold=True),
+            user=white(info.get('user', _("<unknown>")), bold=True),
+            host=info.get('host', _("<unknown>")),
+            date=date,
+            duration=white(duration, bold=True),
+        )
