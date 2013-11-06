@@ -195,7 +195,7 @@ def apply_items(items, workers=1, interactive=False):
 
     for item in items:
         # merge static and user-defined deps
-        item._deps = item.DEPENDS_STATIC
+        item._deps = list(item.DEPENDS_STATIC)
         item._deps += item.depends
 
     items = inject_dummy_items(items)
