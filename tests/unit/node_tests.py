@@ -17,13 +17,20 @@ class MockBundle(object):
     bundle_dir = ""
 
 
+class MockItemStatus(object):
+    pass
+
+
 class MockItem(Item):
     BUNDLE_ATTRIBUTE_NAME = "mock"
     ITEM_TYPE_NAME = "type1"
     DEPENDS_STATIC = []
 
     def apply(self, *args, **kwargs):
-        return self.name
+        status = MockItemStatus()
+        status.correct = True
+        status._name = self.name
+        return (status, status)
 del Item.__reduce__  # we don't need the custom pickle-magic for our
                      # MockItems
 
@@ -72,44 +79,47 @@ class ApplyItemsTest(TestCase):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
         i3 = get_mock_item("type1", "name3", [], [])
-        expected_result = ["name3", "name2", "name1"]
-        self.assertEqual(list(apply_items([i1, i2, i3])), expected_result)
-        self.assertEqual(list(apply_items([i2, i1, i3])), expected_result)
-        self.assertEqual(list(apply_items([i3, i2, i1])), expected_result)
-        self.assertEqual(list(apply_items([i2, i3, i1])), expected_result)
-        self.assertEqual(list(apply_items([i3, i1, i2])), expected_result)
-        self.assertEqual(list(apply_items([i1, i3, i2])), expected_result)
+
+        results = list(apply_items([i1, i2, i3]))
+
+        self.assertEqual(results[0][1]._name, "name3")
+        self.assertEqual(results[1][1]._name, "name2")
+        self.assertEqual(results[2][1]._name, "name1")
+
 
     def test_implicit_order(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], [])
         i3 = get_mock_item("type2", "name3", ["type1:"], [])
 
-        expected_result = ["name2", "name1", "name3"]
-        self.assertEqual(list(apply_items([i1, i2, i3])), expected_result)
-        self.assertEqual(list(apply_items([i2, i1, i3])), expected_result)
-        self.assertEqual(list(apply_items([i3, i2, i1])), expected_result)
-        self.assertEqual(list(apply_items([i2, i3, i1])), expected_result)
-        self.assertEqual(list(apply_items([i3, i1, i2])), expected_result)
-        self.assertEqual(list(apply_items([i1, i3, i2])), expected_result)
+        results = list(apply_items([i1, i2, i3]))
+
+        self.assertEqual(results[0][1]._name, "name2")
+        self.assertEqual(results[1][1]._name, "name1")
+        self.assertEqual(results[2][1]._name, "name3")
 
     def test_apply_parallel(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
         i3 = get_mock_item("type1", "name3", [], [])
-        self.assertEqual(
-            list(apply_items([i1, i2, i3], workers=2)),
-            ["name3", "name2", "name1"],
-        )
+
+        results = list(apply_items([i1, i2, i3], workers=2))
+
+        self.assertEqual(results[0][1]._name, "name3")
+        self.assertEqual(results[1][1]._name, "name2")
+        self.assertEqual(results[2][1]._name, "name1")
+
 
     def test_apply_interactive(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
         i3 = get_mock_item("type1", "name3", [], [])
-        self.assertEqual(
-            list(apply_items([i1, i2, i3], interactive=True)),
-            ["name3", "name2", "name1"],
-        )
+
+        results = list(apply_items([i1, i2, i3], interactive=True))
+
+        self.assertEqual(results[0][1]._name, "name3")
+        self.assertEqual(results[1][1]._name, "name2")
+        self.assertEqual(results[2][1]._name, "name1")
 
 
 class ApplyResultTest(TestCase):
@@ -417,6 +427,31 @@ class ItemsRemoveDepTest(TestCase):
         items = remove_dep_from_items([item1, item2], "foo")
         self.assertEqual(items[0]._deps, ["bar"])
         self.assertEqual(items[1]._deps, [])
+
+
+class RemoveItemDependentsTest(TestCase):
+    """
+    Tests blockwart.node.remove_item_dependents.
+    """
+    def test_remove_empty(self):
+        self.assertEqual(remove_item_dependents([], "foo"), ([], []))
+
+    def test_recursive_removal(self):
+        item1 = MagicMock()
+        item1.id = "item1"
+        item1._deps = ["item2"]
+        item2 = MagicMock()
+        item2.id = "item2"
+        item2._deps = ["item3"]
+        item3 = MagicMock()
+        item3.id = "item3"
+        item3._deps = []
+        items = [item1, item2, item3]
+
+        self.assertEqual(
+            remove_item_dependents(items, "item3"),
+            ([item3], [item2, item1]),
+        )
 
 
 class NodeTest(TestCase):

@@ -11,6 +11,7 @@ from .bundle import Bundle
 from .concurrency import WorkerPool
 from .exceptions import ItemDependencyError, NodeAlreadyLockedException, \
                         RepositoryError
+from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
 from .utils.text import red, validate_name, white
@@ -73,7 +74,7 @@ class DummyItem(object):
         return "{}:".format(self.item_type)
 
     def apply(self, *args, **kwargs):
-        return None
+        return (None, None)
 
 
 def _find_item(item_id, items):
@@ -241,20 +242,45 @@ def apply_items(items, workers=1, interactive=False):
             while worker_pool.reapable_count > 0:
                 # 2
                 worker = worker_pool.get_reapable_worker()
+                # when we started the task (see above) we set
+                # the worker id to the item id
                 dep = worker.id
-                result = worker.reap()
-                # when we started the task (see below) we set
-                # the worker id to the item id that we can now
-                # remove from the dep lists
-                items_with_deps, items_without_deps = \
-                    split_items_without_deps(
-                        remove_dep_from_items(
-                            items_with_deps,
-                            dep,
-                        ) + items_without_deps
+                status_before, status_after = worker.reap()
+
+                if status_after is not None and not status_after.correct:
+                    # if an item fails or is aborted, all items that depend on
+                    # it shall be removed from the queue
+                    items_with_deps, cancelled_items = remove_item_dependents(
+                        items_with_deps,
+                        dep,
                     )
-                if result is not None:  # ignore from dummy items
-                    yield result
+                    # since we removed them from further processing, we
+                    # fake the status of the removed items so they still
+                    # show up in the result statistics
+                    for cancelled_item in cancelled_items:
+                        if isinstance(cancelled_item, DummyItem):
+                            continue
+                        cancelled_item_status = ItemStatus(correct=False)
+                        cancelled_item_status.aborted = True
+                        yield (cancelled_item_status, cancelled_item_status)
+                else:
+                    # if an item is applied successfully, all
+                    # dependencies on it can be removed from the
+                    # remaining items
+                    items_with_deps = remove_dep_from_items(
+                        items_with_deps,
+                        dep,
+                    )
+
+                # now that we removed some deps from items_with_deps, we
+                # again need to look for items that don't have any deps
+                # left and can be processed next
+                items_with_deps, items_without_deps = \
+                    split_items_without_deps(items_with_deps + items_without_deps)
+
+                if not (status_before is None and status_after is None):
+                    #   ^- ignore from dummy items
+                    yield (status_before, status_after)
 
             if (
                 worker_pool.busy_count > 0 and
@@ -300,6 +326,34 @@ def remove_dep_from_items(items, dep):
         except ValueError:
             pass
     return items
+
+
+def remove_item_dependents(items, dep):
+    """
+    Removes the items with the given id from the list of items.
+    """
+    removed_items = []
+    for item in items:
+        if dep in item._deps:
+            items.remove(item)
+            removed_items.append(item)
+
+    if removed_items:
+        LOG.debug(
+            "aborted these items because they depend on {}, which was "
+            "aborted previously: {}".format(
+                dep,
+                ", ".join([item.id for item in removed_items]),
+            )
+        )
+
+    all_recursively_removed_items = []
+    for removed_item in removed_items:
+        items, recursively_removed_items = \
+            remove_item_dependents(items, removed_item.id)
+        all_recursively_removed_items += recursively_removed_items
+
+    return (items, removed_items + all_recursively_removed_items)
 
 
 class Node(object):
