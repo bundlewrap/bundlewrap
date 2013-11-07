@@ -424,11 +424,14 @@ class NodeTest(TestCase):
     Tests blockwart.node.Node.
     """
     @patch('blockwart.node.ApplyResult')
+    @patch('blockwart.node.NodeLock')
     @patch('blockwart.node.apply_items')
-    def test_apply(self, apply_items, ApplyResult):
+    def test_apply(self, apply_items, NodeLock, ApplyResult):
         n = Node(None, "node1", {})
         result = MagicMock()
         ApplyResult.return_value = result
+        NodeLock.__enter__ = lambda x: x
+        NodeLock.__exit__ = lambda x: x
         self.assertEqual(n.apply(), result)
         self.assertEqual(apply_items.call_count, 1)
         ApplyResult.assert_called_once()

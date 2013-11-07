@@ -1,12 +1,23 @@
 from datetime import datetime
+from getpass import getuser
+import json
+from pipes import quote
+from socket import gethostname
+from tempfile import mkstemp
+from time import time
 
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, RepositoryError
-from .utils import cached_property
-from .utils.text import mark_for_translation as _, validate_name
-from .utils.ui import LineBuffer
+from .exceptions import ItemDependencyError, NodeAlreadyLockedException, \
+                        RepositoryError
+from .utils import cached_property, LOG
+from .utils.text import mark_for_translation as _
+from .utils.text import red, validate_name, white
+from .utils.ui import ask_interactively, LineBuffer
+
+LOCK_PATH = "/tmp/blockwart.lock"
+LOCK_FILE = LOCK_PATH + "/info"
 
 
 class ApplyResult(object):
@@ -330,21 +341,31 @@ class Node(object):
     def apply(self, interactive=False, workers=4):
         start = datetime.now()
         worker_count = 1 if interactive else workers
-        item_results = apply_items(
-            self.items,
-            workers=worker_count,
-            interactive=interactive,
-        )
+        try:
+            with NodeLock(self, interactive):
+                item_results = list(apply_items(
+                    self.items,
+                    workers=worker_count,
+                    interactive=interactive,
+                ))
+        except NodeAlreadyLockedException as e:
+            if not interactive:
+                LOG.error(_("Node '{node}' already locked: {info}").format(
+                    node=self.name,
+                    info=e.args,
+                ))
+            item_results = []
         result = ApplyResult(self, item_results)
         result.start = start
         result.end = datetime.now()
         return result
 
-    def download(self, remote_path, local_path):
+    def download(self, remote_path, local_path, ignore_failure=False):
         return operations.download(
             self.hostname,
             remote_path,
             local_path,
+            ignore_failure=ignore_failure,
         )
 
     def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
@@ -368,4 +389,81 @@ class Node(object):
             self.hostname,
             local_path,
             remote_path,
+        )
+
+
+class NodeLock(object):
+    def __init__(self, node, interactive):
+        self.node = node
+        self.interactive = interactive
+
+    def __enter__(self):
+        handle, local_path = mkstemp()
+
+        result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
+        if result.return_code != 0:
+            self.node.download(LOCK_FILE, local_path, ignore_failure=True)
+            with open(local_path, 'r') as f:
+                try:
+                    info = json.loads(f.read())
+                except:
+                    LOG.warn(_("unable to read or parse lock file contents"))
+                    info = {}
+            if self.interactive and ask_interactively(
+                self._warning_message(info),
+                False,
+            ):
+                pass
+            else:
+                raise NodeAlreadyLockedException(info)
+
+        with open(local_path, 'w') as f:
+            f.write(json.dumps({
+                'date': time(),
+                'user': getuser(),
+                'host': gethostname(),
+            }))
+        self.node.upload(local_path, LOCK_FILE)
+
+        # See issue #19. We've just opened an SSH connection to the node,
+        # but before we can fork(), all connections *MUST* be closed!
+        # XXX: Revise this once we're using Fabric 2.0.
+        operations.disconnect_all()
+
+    def __exit__(self, type, value, traceback):
+        result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
+
+        # See acquire_lock(). Most likely we won't fork() again now.
+        # Nevertheless, clean up the state so a future code change won't
+        # cause chaos.
+        # XXX: Revise this once we're using Fabric 2.0.
+        operations.disconnect_all()
+
+        if result.return_code != 0:
+            LOG.error(_("Could not release lock for node '{node}'").format(
+                node=self.node.name,
+            ))
+
+    def _warning_message(self, info):
+        try:
+            d = info['date']
+            date = datetime.fromtimestamp(d).strftime("%c")
+            duration = str(datetime.now() - datetime.fromtimestamp(d)).split(".")[0]
+        except KeyError:
+            date = _("<unknown>")
+            duration = _("<unknown>")
+        return _(
+            "  {warning}\n\n"
+            "  Looks like somebody is currently using Blockwart on this node.\n"
+            "  You should let them finish or override the lock if it has gone stale.\n\n"
+            "  locked by: {user}@{host}\n"
+            "  lock acquired: {duration} ago ({date})\n\n"
+            "  Override lock?"
+        ).format(
+            warning=red(_("WARNING")),
+            node=white(self.node.name, bold=True),
+            user=white(info.get('user', _("<unknown>")), bold=True),
+            host=info.get('host', _("<unknown>")),
+            date=date,
+            duration=white(duration, bold=True),
         )

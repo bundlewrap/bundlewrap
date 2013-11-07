@@ -5,6 +5,7 @@ from fabric.api import get as _fabric_get
 from fabric.api import put as _fabric_put
 from fabric.api import run as _fabric_run
 from fabric.api import sudo as _fabric_sudo
+from fabric.network import disconnect_all as _fabric_disconnect_all
 from fabric.state import env, output
 
 from .exceptions import RemoteException
@@ -57,6 +58,13 @@ class RunResult(object):
 
     def __str__(self):
         return self.stdout
+
+
+def disconnect_all():
+    """
+    Close all open connections.
+    """
+    _fabric_disconnect_all()
 
 
 def run(hostname, command, ignore_failure=False, stderr=None,

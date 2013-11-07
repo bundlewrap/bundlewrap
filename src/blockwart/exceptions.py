@@ -61,3 +61,10 @@ class WorkerException(Exception):
             output += "|  {}\n".format(line)
         output += "|\n+----------------------------------\n"
         return output
+
+
+class NodeAlreadyLockedException(Exception):
+    """
+    Raised when a node is already locked during an 'apply' run.
+    """
+    pass
