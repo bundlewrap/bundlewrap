@@ -39,8 +39,18 @@ def bw_repo_plot(repo, args):
     print("rankdir = LR")
 
     # Global attributes
-    print("graph [style=filled; fill=lightgrey]")
-    print("node [style=filled; fillcolor=lightblue]")
+    print("graph [style=\"rounded,dashed\"; "
+                 "shape=box; "
+                 "color=\"#303030\"; "
+                 "fillcolor=\"#FCF8E3\"; "
+                 "fontname=Helvetica]")
+    print("node [style=\"rounded,filled\"; "
+                "shape=box; "
+                "color=\"#303030\"; "
+                "fillcolor=\"#303030\"; "
+                "fontcolor=white; "
+                "fontname=Helvetica]")
+    print("edge [arrowhead=vee]")
 
     # Define which items belong to which bundle
     bundle_number = 0
@@ -55,17 +65,17 @@ def bw_repo_plot(repo, args):
 
     # Define dependencies between items
     for item in node.items:
-        deps = []
         if args.depends_static:
-            deps += item.DEPENDS_STATIC
+            for dep in item.DEPENDS_STATIC:
+                print("\"{}\" -> \"{}\" [color=\"#3991CC\"]".format(item.id, dep))
+
         if args.depends_regular:
-            deps += item.depends
-        for dep in deps:
-            print("\"{}\" -> \"{}\"".format(item.id, dep))
+            for dep in item.depends:
+                print("\"{}\" -> \"{}\" [color=\"#C24948\"]".format(item.id, dep))
 
     # Global graph title
     print("labelloc = \"t\"")
-    print("fontsize = 36")
+    print("fontsize = 28")
     print("label = \"{}\"".format(node.name))
 
     print("}")
