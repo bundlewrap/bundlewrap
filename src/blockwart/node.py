@@ -63,6 +63,7 @@ class DummyItem(object):
     Represents a dependency on all items of a certain type.
     """
     def __init__(self, item_type):
+        self.depends = []
         self.item_type = item_type
         self._deps = []
 
@@ -334,7 +335,11 @@ def remove_item_dependents(items, dep):
     """
     removed_items = []
     for item in items:
-        if dep in item._deps:
+        try:
+            item._deps.remove(dep)
+        except ValueError:
+            pass
+        if dep in item.depends:
             items.remove(item)
             removed_items.append(item)
 
