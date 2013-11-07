@@ -32,7 +32,7 @@ def bw_repo_plot(repo, args):
     print("digraph blockwart")
     print("{")
 
-    # Print(subgraphs *below* each other
+    # Print subgraphs *below* each other
     print("rankdir = LR")
 
     # Global attributes
