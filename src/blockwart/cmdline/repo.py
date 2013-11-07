@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from code import interact
 
 from .. import VERSION_STRING
+from ..node import flatten_dependencies, inject_concurrency_blockers, inject_dummy_items
 from ..repo import Repository
 from ..utils.text import mark_for_translation as _
 
@@ -63,8 +64,21 @@ def bw_repo_plot(repo, args):
             print("\"{}\"".format(item.id))
         print("}")
 
+
+    items = list(node.items)
+
+    for item in items:
+        # merge static and user-defined deps
+        item._deps = list(item.DEPENDS_STATIC)
+        item._deps += item.depends
+
+    items = inject_dummy_items(items)
+    items = flatten_dependencies(items)
+    items = inject_concurrency_blockers(items)
+
+
     # Define dependencies between items
-    for item in node.items:
+    for item in items:
         if args.depends_static:
             for dep in item.DEPENDS_STATIC:
                 print("\"{}\" -> \"{}\" [color=\"#3991CC\"]".format(item.id, dep))
@@ -72,6 +86,11 @@ def bw_repo_plot(repo, args):
         if args.depends_regular:
             for dep in item.depends:
                 print("\"{}\" -> \"{}\" [color=\"#C24948\"]".format(item.id, dep))
+
+        if args.depends_auto:
+            for dep in item._deps:
+                if dep not in item.DEPENDS_STATIC and dep not in item.depends:
+                    print("\"{}\" -> \"{}\" [color=\"#6BB753\"]".format(item.id, dep))
 
     # Global graph title
     print("labelloc = \"t\"")

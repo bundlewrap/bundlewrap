@@ -63,6 +63,7 @@ class DummyItem(object):
     Represents a dependency on all items of a certain type.
     """
     def __init__(self, item_type):
+        self.DEPENDS_STATIC = []
         self.depends = []
         self.item_type = item_type
         self._deps = []
@@ -124,7 +125,7 @@ def flatten_dependencies(items):
     listed in item._deps.
     """
     for item in items:
-        item._deps = list(set(
+        item._flattened_deps = list(set(
             item._deps + _get_deps_for_item(item, items)
         ))
     return items
@@ -179,7 +180,7 @@ def inject_concurrency_blockers(items):
             # disregard deps to items of other types
             item.__deps = filter(
                 lambda dep: dep.startswith(item_type + ":"),
-                item._deps,
+                item._flattened_deps,
             )
         previous_item = None
         while len(processed_items) < len(type_items):

@@ -227,7 +227,7 @@ class FlattenDependenciesTest(TestCase):
         }
 
         for item in items:
-            self.assertEqual(set(item._deps), set(deps_should[item]))
+            self.assertEqual(set(item._flattened_deps), set(deps_should[item]))
 
 
 class InitTest(TestCase):
@@ -286,6 +286,7 @@ class InjectConcurrencyBlockersTest(TestCase):
         def make_item(item_id, parallel_apply):
             item = FakeItem()
             item._deps = []
+            item._flattened_deps = []
             item.ITEM_TYPE_NAME = item_id.split(":")[0]
             item.PARALLEL_APPLY = parallel_apply
             item.id = item_id

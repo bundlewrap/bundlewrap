@@ -125,16 +125,22 @@ def build_parser_bw():
         help=_("node to plot"),
     )
     parser_repo_subparsers_plot.add_argument(
-        '--no-depends-static',
+        '--no-depends-auto',
         action='store_false',
-        dest='depends_static',
-        help=_("do not show static dependencies"),
+        dest='depends_auto',
+        help=_("do not show auto-generated dependencies and items"),
     )
     parser_repo_subparsers_plot.add_argument(
         '--no-depends-regular',
         action='store_false',
         dest='depends_regular',
-        help=_("do not show regular dependencies"),
+        help=_("do not show regular user-defined dependencies"),
+    )
+    parser_repo_subparsers_plot.add_argument(
+        '--no-depends-static',
+        action='store_false',
+        dest='depends_static',
+        help=_("do not show static dependencies"),
     )
 
     # bw run
