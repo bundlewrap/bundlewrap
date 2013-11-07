@@ -96,8 +96,12 @@ def build_parser_bw():
     # bw repo
     parser_repo = subparsers.add_parser("repo")
     parser_repo_subparsers = parser_repo.add_subparsers()
+
+    # bw repo create
     parser_repo_subparsers_create = parser_repo_subparsers.add_parser("create")
     parser_repo_subparsers_create.set_defaults(func=bw_repo_create)
+
+    # bw repo debug
     parser_repo_subparsers_debug = parser_repo_subparsers.add_parser("debug")
     parser_repo_subparsers_debug.set_defaults(func=bw_repo_debug)
     parser_repo_subparsers_debug.add_argument(
@@ -110,6 +114,8 @@ def build_parser_bw():
         type=str,
         help=_("name of node to inspect"),
     )
+
+    # bw repo plot
     parser_repo_subparsers_plot = parser_repo_subparsers.add_parser("plot")
     parser_repo_subparsers_plot.set_defaults(func=bw_repo_plot)
     parser_repo_subparsers_plot.add_argument(
