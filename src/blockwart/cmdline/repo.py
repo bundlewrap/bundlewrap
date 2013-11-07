@@ -29,26 +29,26 @@ def bw_repo_debug(repo, args):
 def bw_repo_plot(repo, args):
     node = repo.get_node(args.node)
 
-    print "digraph blockwart"
-    print "{"
+    print("digraph blockwart")
+    print("{")
 
-    # Print subgraphs *below* each other
-    print "rankdir = LR"
+    # Print(subgraphs *below* each other
+    print("rankdir = LR")
 
     # Global attributes
-    print "graph [style=filled; fill=lightgrey]"
-    print "node [style=filled; fillcolor=lightblue]"
+    print("graph [style=filled; fill=lightgrey]")
+    print("node [style=filled; fillcolor=lightblue]")
 
     # Define which items belong to which bundle
     bundle_number = 0
     for bundle in node.bundles:
-        print "subgraph cluster_{}".format(bundle_number)
+        print("subgraph cluster_{}".format(bundle_number))
         bundle_number += 1
-        print "{"
-        print "label = \"{}\"".format(bundle.name)
+        print("{")
+        print("label = \"{}\"".format(bundle.name))
         for item in bundle.items:
-            print "\"{}\"".format(item.id)
-        print "}"
+            print("\"{}\"".format(item.id))
+        print("}")
 
     # Define dependencies between items
     for item in node.items:
@@ -58,11 +58,11 @@ def bw_repo_plot(repo, args):
         if args.depends_regular:
             deps += item.depends
         for dep in deps:
-            print "\"{}\" -> \"{}\"".format(item.id, dep)
+            print("\"{}\" -> \"{}\"".format(item.id, dep))
 
     # Global graph title
-    print "labelloc = \"t\""
-    print "fontsize = 36"
-    print "label = \"{}\"".format(node.name)
+    print("labelloc = \"t\"")
+    print("fontsize = 36")
+    print("label = \"{}\"".format(node.name))
 
-    print "}"
+    print("}")
