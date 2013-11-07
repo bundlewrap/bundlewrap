@@ -331,14 +331,16 @@ def remove_dep_from_items(items, dep):
 
 def remove_item_dependents(items, dep):
     """
-    Removes the items with the given id from the list of items.
+    Removes the items depending on the given id from the list of items.
     """
     removed_items = []
     for item in items:
+        # remove failed item from static and concurrency blocker deps
         try:
             item._deps.remove(dep)
         except ValueError:
             pass
+        # only cascade item abort if it was an explicit dep
         if dep in item.depends:
             items.remove(item)
             removed_items.append(item)
