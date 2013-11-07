@@ -5,7 +5,7 @@ from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .groups import bw_groups
 from .nodes import bw_nodes
-from .repo import bw_repo_create, bw_repo_debug
+from .repo import bw_repo_create, bw_repo_debug, bw_repo_plot
 from .run import bw_run
 
 
@@ -109,6 +109,26 @@ def build_parser_bw():
         required=False,
         type=str,
         help=_("name of node to inspect"),
+    )
+    parser_repo_subparsers_plot = parser_repo_subparsers.add_parser("plot")
+    parser_repo_subparsers_plot.set_defaults(func=bw_repo_plot)
+    parser_repo_subparsers_plot.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("node to plot"),
+    )
+    parser_repo_subparsers_plot.add_argument(
+        '--no-depends-static',
+        action='store_false',
+        dest='depends_static',
+        help=_("do not show static dependencies"),
+    )
+    parser_repo_subparsers_plot.add_argument(
+        '--no-depends-regular',
+        action='store_false',
+        dest='depends_regular',
+        help=_("do not show regular dependencies"),
     )
 
     # bw run
