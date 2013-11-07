@@ -33,36 +33,36 @@ def bw_repo_debug(repo, args):
 def bw_repo_plot(repo, args):
     node = repo.get_node(args.node)
 
-    print("digraph blockwart")
-    print("{")
+    yield "digraph blockwart"
+    yield "{"
 
     # Print subgraphs *below* each other
-    print("rankdir = LR")
+    yield "rankdir = LR"
 
     # Global attributes
-    print("graph [style=\"rounded,dashed\"; "
+    yield ("graph [style=\"rounded,dashed\"; "
                  "shape=box; "
                  "color=\"#303030\"; "
                  "fillcolor=\"#FCF8E3\"; "
                  "fontname=Helvetica]")
-    print("node [style=\"rounded,filled\"; "
+    yield ("node [style=\"rounded,filled\"; "
                 "shape=box; "
                 "color=\"#303030\"; "
                 "fillcolor=\"#303030\"; "
                 "fontcolor=white; "
                 "fontname=Helvetica]")
-    print("edge [arrowhead=vee]")
+    yield "edge [arrowhead=vee]"
 
     # Define which items belong to which bundle
     bundle_number = 0
     for bundle in node.bundles:
-        print("subgraph cluster_{}".format(bundle_number))
+        yield "subgraph cluster_{}".format(bundle_number)
         bundle_number += 1
-        print("{")
-        print("label = \"{}\"".format(bundle.name))
+        yield "{"
+        yield "label = \"{}\"".format(bundle.name)
         for item in bundle.items:
-            print("\"{}\"".format(item.id))
-        print("}")
+            yield "\"{}\"".format(item.id)
+        yield "}"
 
 
     items = list(node.items)
@@ -81,20 +81,20 @@ def bw_repo_plot(repo, args):
     for item in items:
         if args.depends_static:
             for dep in item.DEPENDS_STATIC:
-                print("\"{}\" -> \"{}\" [color=\"#3991CC\"]".format(item.id, dep))
+                yield "\"{}\" -> \"{}\" [color=\"#3991CC\"]".format(item.id, dep)
 
         if args.depends_regular:
             for dep in item.depends:
-                print("\"{}\" -> \"{}\" [color=\"#C24948\"]".format(item.id, dep))
+                yield "\"{}\" -> \"{}\" [color=\"#C24948\"]".format(item.id, dep)
 
         if args.depends_auto:
             for dep in item._deps:
                 if dep not in item.DEPENDS_STATIC and dep not in item.depends:
-                    print("\"{}\" -> \"{}\" [color=\"#6BB753\"]".format(item.id, dep))
+                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\"]".format(item.id, dep)
 
     # Global graph title
-    print("labelloc = \"t\"")
-    print("fontsize = 28")
-    print("label = \"{}\"".format(node.name))
+    yield "labelloc = \"t\""
+    yield "fontsize = 28"
+    yield "label = \"{}\"".format(node.name)
 
-    print("}")
+    yield "}"
