@@ -40,16 +40,16 @@ def bw_repo_plot(repo, args):
     yield "rankdir = LR"
 
     # Global attributes
-    yield ("graph [style=\"rounded,dashed\"; "
+    yield ("graph [color=\"#303030\"; "
+                  "fontname=Helvetica; "
                   "shape=box; "
-                  "color=\"#303030\"; "
-                  "fontname=Helvetica]")
-    yield ("node [style=\"rounded,filled\"; "
-                 "shape=box; "
-                 "color=\"#303030\"; "
+                  "style=\"rounded,dashed\"]")
+    yield ("node [color=\"#303030\"; "
                  "fillcolor=\"#303030\"; "
                  "fontcolor=white; "
-                 "fontname=Helvetica]")
+                 "fontname=Helvetica; "
+                 "shape=box; "
+                 "style=\"rounded,filled\"]")
     yield "edge [arrowhead=vee]"
 
     # Define which items belong to which bundle
@@ -90,8 +90,7 @@ def bw_repo_plot(repo, args):
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\"]".format(item.id, dep)
 
     # Global graph title
-    yield "labelloc = \"t\""
     yield "fontsize = 28"
     yield "label = \"{}\"".format(node.name)
-
+    yield "labelloc = \"t\""
     yield "}"
