@@ -41,15 +41,15 @@ def bw_repo_plot(repo, args):
 
     # Global attributes
     yield ("graph [style=\"rounded,dashed\"; "
+                  "shape=box; "
+                  "color=\"#303030\"; "
+                  "fontname=Helvetica]")
+    yield ("node [style=\"rounded,filled\"; "
                  "shape=box; "
                  "color=\"#303030\"; "
+                 "fillcolor=\"#303030\"; "
+                 "fontcolor=white; "
                  "fontname=Helvetica]")
-    yield ("node [style=\"rounded,filled\"; "
-                "shape=box; "
-                "color=\"#303030\"; "
-                "fillcolor=\"#303030\"; "
-                "fontcolor=white; "
-                "fontname=Helvetica]")
     yield "edge [arrowhead=vee]"
 
     # Define which items belong to which bundle
