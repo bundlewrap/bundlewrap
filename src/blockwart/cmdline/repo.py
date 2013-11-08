@@ -42,6 +42,7 @@ def bw_repo_plot(repo, args):
     # Global attributes
     yield ("graph [color=\"#303030\"; "
                   "fontname=Helvetica; "
+                  "penwidth=2; "
                   "shape=box; "
                   "style=\"rounded,dashed\"]")
     yield ("node [color=\"#303030\"; "
