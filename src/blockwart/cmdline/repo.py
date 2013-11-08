@@ -79,16 +79,16 @@ def bw_repo_plot(repo, args):
     for item in items:
         if args.depends_static:
             for dep in item.DEPENDS_STATIC:
-                yield "\"{}\" -> \"{}\" [color=\"#3991CC\"]".format(item.id, dep)
+                yield "\"{}\" -> \"{}\" [color=\"#3991CC\",penwidth=2]".format(item.id, dep)
 
         if args.depends_regular:
             for dep in item.depends:
-                yield "\"{}\" -> \"{}\" [color=\"#C24948\"]".format(item.id, dep)
+                yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep)
 
         if args.depends_auto:
             for dep in item._deps:
                 if dep not in item.DEPENDS_STATIC and dep not in item.depends:
-                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\"]".format(item.id, dep)
+                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
 
     # Global graph title
     yield "fontsize = 28"
