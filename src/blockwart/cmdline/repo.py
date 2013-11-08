@@ -43,7 +43,6 @@ def bw_repo_plot(repo, args):
     yield ("graph [style=\"rounded,dashed\"; "
                  "shape=box; "
                  "color=\"#303030\"; "
-                 "fillcolor=\"#FCF8E3\"; "
                  "fontname=Helvetica]")
     yield ("node [style=\"rounded,filled\"; "
                 "shape=box; "
@@ -64,7 +63,6 @@ def bw_repo_plot(repo, args):
             yield "\"{}\"".format(item.id)
         yield "}"
 
-
     items = list(node.items)
 
     for item in items:
@@ -75,7 +73,6 @@ def bw_repo_plot(repo, args):
     items = inject_dummy_items(items)
     items = flatten_dependencies(items)
     items = inject_concurrency_blockers(items)
-
 
     # Define dependencies between items
     for item in items:
