@@ -120,7 +120,46 @@ class PathInfoTest(TestCase):
     @patch('blockwart.utils.remote.stat')
     @patch('blockwart.utils.remote.get_path_type', return_value=(
         'symlink', "symbolic link to `/47'"))
-    def test_symlink(self, stat, get_path_type):
+    def test_symlink_normal(self, stat, get_path_type):
+        p = remote.PathInfo(MagicMock(), "/")
+        self.assertTrue(p.exists)
+        self.assertFalse(p.is_binary_file)
+        self.assertFalse(p.is_directory)
+        self.assertFalse(p.is_file)
+        self.assertTrue(p.is_symlink)
+        self.assertFalse(p.is_text_file)
+        self.assertEqual(p.symlink_target, "/47")
+
+    @patch('blockwart.utils.remote.stat')
+    @patch('blockwart.utils.remote.get_path_type', return_value=(
+        'symlink', "broken symbolic link to `/47'"))
+    def test_symlink_broken(self, stat, get_path_type):
+        p = remote.PathInfo(MagicMock(), "/")
+        self.assertTrue(p.exists)
+        self.assertFalse(p.is_binary_file)
+        self.assertFalse(p.is_directory)
+        self.assertFalse(p.is_file)
+        self.assertTrue(p.is_symlink)
+        self.assertFalse(p.is_text_file)
+        self.assertEqual(p.symlink_target, "/47")
+
+    @patch('blockwart.utils.remote.stat')
+    @patch('blockwart.utils.remote.get_path_type', return_value=(
+        'symlink', "symbolic link to /47"))
+    def test_symlink_noquotes(self, stat, get_path_type):
+        p = remote.PathInfo(MagicMock(), "/")
+        self.assertTrue(p.exists)
+        self.assertFalse(p.is_binary_file)
+        self.assertFalse(p.is_directory)
+        self.assertFalse(p.is_file)
+        self.assertTrue(p.is_symlink)
+        self.assertFalse(p.is_text_file)
+        self.assertEqual(p.symlink_target, "/47")
+
+    @patch('blockwart.utils.remote.stat')
+    @patch('blockwart.utils.remote.get_path_type', return_value=(
+        'symlink', "broken symbolic link to /47"))
+    def test_symlink_noquotes_broken(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
         self.assertTrue(p.exists)
         self.assertFalse(p.is_binary_file)

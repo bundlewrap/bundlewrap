@@ -11,7 +11,8 @@ def _parse_file_output(file_output):
         return ('directory', file_output)
     elif file_output in ("block special", "character special"):
         return ('other', file_output)
-    elif file_output.startswith("symbolic link to "):
+    elif file_output.startswith("symbolic link to ") or \
+            file_output.startswith("broken symbolic link to "):
         return ('symlink', file_output)
     else:
         return ('file', file_output)
@@ -25,10 +26,10 @@ def get_path_type(node, path):
 
     and DESC is the output of the 'file' command line utility.
     """
-    result = node.run("file -h {}".format(quote(path)), may_fail=True)
+    result = node.run("file -bh {}".format(quote(path)), may_fail=True)
     if result.return_code != 0:
         return ('nonexistent', "")
-    file_output = result.stdout.split(":")[1].strip()
+    file_output = result.stdout.strip()
     return _parse_file_output(file_output)
 
 
@@ -105,5 +106,11 @@ class PathInfo(object):
             raise ValueError("{} is not a symlink".format(quote(self.path)))
         if self.desc.startswith("symbolic link to `"):
             return self.desc[18:-1]
-        else:
+        elif self.desc.startswith("broken symbolic link to `"):
+            return self.desc[25:-1]
+        elif self.desc.startswith("symbolic link to "):
             return self.desc[17:]
+        elif self.desc.startswith("broken symbolic link to "):
+            return self.desc[24:]
+        else:
+            raise ValueError("unable to find target for {}".format(quote(self.path)))
