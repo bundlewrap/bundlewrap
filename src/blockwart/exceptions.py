@@ -1,3 +1,10 @@
+class ActionFailure(Exception):
+    """
+    Raised when an action failes to meet the expected rcode/output.
+    """
+    pass
+
+
 class NoSuchGroup(Exception):
     """
     Raised when a group of unknown name is requested.

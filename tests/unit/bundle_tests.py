@@ -2,13 +2,132 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.bundle import Bundle
+from blockwart.bundle import Action, Bundle
 from blockwart.items import Item
-from blockwart.exceptions import RepositoryError
+from blockwart.exceptions import ActionFailure, BundleError, RepositoryError
 from blockwart.utils import names
 
 
-class InitTest(TestCase):
+class ActionInitTest(TestCase):
+    """
+    Tests initialization of blockwart.bundle.Action.
+    """
+    def test_ok(self):
+        Action(MagicMock(), "action", { 'command': "/bin/true" })
+
+    def test_no_command(self):
+        with self.assertRaises(BundleError):
+            Action(MagicMock(), "action", {})
+
+    def test_invalid_timing(self):
+        with self.assertRaises(BundleError):
+            Action(MagicMock(), "action", {
+                'command': "/bin/true",
+                'timing': "tomorrow",
+            })
+
+
+class ActionRunTest(TestCase):
+    """
+    Tests blockwart.bundle.Action.run.
+    """
+    def test_ok(self):
+        run_result = MagicMock()
+        run_result.return_code = 0
+        run_result.stderr = ""
+        run_result.stdout = ""
+
+        bundle = MagicMock()
+        bundle.node.run.return_value = run_result
+
+        action = Action(bundle, "action", { 'command': "/bin/true" })
+
+        self.assertEqual(action.run(), run_result)
+
+    def test_return_code(self):
+        run_result = MagicMock()
+        run_result.return_code = 1
+        run_result.stderr = ""
+        run_result.stdout = ""
+
+        bundle = MagicMock()
+        bundle.node.run.return_value = run_result
+
+        action = Action(bundle, "action", { 'command': "/bin/true" })
+
+        with self.assertRaises(ActionFailure):
+            action.run()
+
+    def test_stderr_static(self):
+        run_result = MagicMock()
+        run_result.return_code = 0
+        run_result.stderr = "47"
+        run_result.stdout = ""
+
+        bundle = MagicMock()
+        bundle.node.run.return_value = run_result
+
+        action = Action(bundle, "action", {
+            'command': "/bin/true",
+            'expected_stderr': "48"
+        })
+
+        with self.assertRaises(ActionFailure):
+            action.run()
+
+    def test_stderr_callable(self):
+        run_result = MagicMock()
+        run_result.return_code = 0
+        run_result.stderr = "47"
+        run_result.stdout = ""
+
+        bundle = MagicMock()
+        bundle.node.run.return_value = run_result
+
+        action = Action(bundle, "action", {
+            'command': "/bin/true",
+            'expected_stderr': lambda s: "48" in s,
+        })
+
+        with self.assertRaises(ActionFailure):
+            action.run()
+
+    def test_stdout_static(self):
+        run_result = MagicMock()
+        run_result.return_code = 0
+        run_result.stderr = ""
+        run_result.stdout = "47"
+
+        bundle = MagicMock()
+        bundle.node.run.return_value = run_result
+
+        action = Action(bundle, "action", {
+            'command': "/bin/true",
+            'expected_stdout': "48"
+        })
+
+        with self.assertRaises(ActionFailure):
+            action.run()
+
+    def test_stdout_callable(self):
+        run_result = MagicMock()
+        run_result.return_code = 0
+        run_result.stderr = ""
+        run_result.stdout = "47"
+
+        bundle = MagicMock()
+        bundle.node.run.return_value = run_result
+
+        action = Action(bundle, "action", {
+            'command': "/bin/true",
+            'expected_stdout': lambda s: "48" in s,
+        })
+
+        with self.assertRaises(ActionFailure):
+            action.run()
+
+
+class BundleInitTest(TestCase):
     """
     Tests initialization of blockwart.bundle.Bundle.
     """
@@ -18,7 +137,7 @@ class InitTest(TestCase):
             Bundle(MagicMock(), "name")
 
 
-class ItemsTest(TestCase):
+class BundleItemsTest(TestCase):
     """
     Tests blockwart.bundle.Bundle.items.
     """
