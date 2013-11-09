@@ -168,7 +168,6 @@ class BundleItemsTest(TestCase):
             BUNDLE_ATTRIBUTE_NAME = 'attr1'
             ITEM_TYPE_NAME = 'mystuff'
         node = MagicMock()
-        node.repo = MagicMock()
         node.repo.bundle_names = ("mybundle",)
         node.repo.item_classes = (MyItem,)
         b = Bundle(node, "mybundle")
