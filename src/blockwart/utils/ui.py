@@ -5,11 +5,11 @@ from .text import mark_for_translation as _
 
 class LineBuffer(object):
     def __init__(self, target):
-        self.buffer = ""
+        self.buffer = b""
         self.target = target
 
     def flush(self):
-        self.buffer = self.buffer.replace("\r", "\n")
+        self.buffer = self.buffer.replace(b"\r", b"\n")
         s = self.buffer.splitlines(False)
         if len(s) > 1:
             # output everything until last newline
