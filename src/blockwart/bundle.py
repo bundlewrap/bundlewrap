@@ -108,18 +108,21 @@ class Bundle(object):
         return self.__dict__
 
     @cached_property
-    def items(self):
-        bundle_attrs = get_all_attrs_from_file(
+    def _bundle_attrs(self):
+        return get_all_attrs_from_file(
             self.bundle_file,
             base_env={
                 'node': self.node,
                 'repo': self.repo,
             },
         )
+
+    @cached_property
+    def items(self):
         for item_class in self.repo.item_classes:
-            if item_class.BUNDLE_ATTRIBUTE_NAME not in bundle_attrs:
+            if item_class.BUNDLE_ATTRIBUTE_NAME not in self._bundle_attrs:
                 continue
-            for name, attrs in bundle_attrs.get(
+            for name, attrs in self._bundle_attrs.get(
                     item_class.BUNDLE_ATTRIBUTE_NAME,
                     {},
             ).iteritems():
