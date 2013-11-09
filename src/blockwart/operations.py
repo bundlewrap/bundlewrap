@@ -1,3 +1,5 @@
+from base64 import b64decode
+from pipes import quote
 from stat import S_IRUSR, S_IWUSR
 
 from fabric.api import prefix
@@ -34,20 +36,30 @@ def download(hostname, remote_path, local_path, ignore_failure=False):
     """
     Download a file.
     """
+
+    # See issue #39.
+    # XXX: Revise this once we're using Fabric 2.0.
+
     LOG.debug(_("downloading {}:{} -> {}").format(
         hostname, remote_path, local_path))
     env.host_string = hostname
-    fabric_result = _fabric_get(
-        remote_path=remote_path,
-        local_path=local_path,
+    fabric_result = _fabric_sudo(
+        "base64 {}".format(quote(remote_path)),
+        shell=True,
+        pty=False,
+        combine_stderr=False,
     )
-    if not ignore_failure and fabric_result.failed:
-        raise RemoteException(_(
-            "download from {} failed for: {}").format(
-                hostname,
-                ", ".join(fabric_result.failed),
+    if fabric_result.succeeded:
+        with open(local_path, "w") as f:
+            f.write(b64decode(fabric_result.stdout))
+    elif not ignore_failure:
+            raise RemoteException(_(
+                "reading file '{}' on {} failed: {}").format(
+                    remote_path,
+                    hostname,
+                    fabric_result.stderr,
+                )
             )
-        )
 
 
 class RunResult(object):

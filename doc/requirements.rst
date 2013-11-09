@@ -6,6 +6,7 @@ Requirements for managed systems
 While the following list might appear long, even very minimal systems should provide everything that's needed.
 
 * ``apt-get`` (only used with :doc:`pkg_apt <item_pkg_apt>` items)
+* ``base64``
 * ``bash``
 * ``cat``
 * ``chmod``
