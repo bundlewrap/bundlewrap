@@ -137,6 +137,24 @@ class BundleInitTest(TestCase):
             Bundle(MagicMock(), "name")
 
 
+class BundleActionsTest(TestCase):
+    """
+    Tests blockwart.bundle.Bundle.actions.
+    """
+    @patch('blockwart.bundle.get_all_attrs_from_file', return_value={
+        'actions': {'name1': { 'command': "" }, 'name2': { 'command': "" }},
+        'attr2': {'name3': {}},
+    })
+    def test_actions(self, *args):
+        node = MagicMock()
+        node.repo.bundle_names = ("mybundle",)
+        b = Bundle(node, "mybundle")
+        self.assertEqual(
+            set([b.actions[0].name, b.actions[1].name]),
+            set(['name1', 'name2']),
+        )
+
+
 class BundleItemsTest(TestCase):
     """
     Tests blockwart.bundle.Bundle.items.

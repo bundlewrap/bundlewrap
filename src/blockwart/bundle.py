@@ -118,6 +118,12 @@ class Bundle(object):
         )
 
     @cached_property
+    def actions(self):
+        bundle_actions = self._bundle_attrs.get('actions', {})
+        for name, config in bundle_actions.iteritems():
+            yield Action(self, name, config)
+
+    @cached_property
     def items(self):
         for item_class in self.repo.item_classes:
             if item_class.BUNDLE_ATTRIBUTE_NAME not in self._bundle_attrs:
