@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from os.path import basename, join
 from pipes import quote
 
 from blockwart.exceptions import BundleError
@@ -8,8 +9,16 @@ from blockwart.utils.text import green, red, white
 from blockwart.utils.text import mark_for_translation as _
 
 
-def pkg_install(node, pkgname):
-    return node.run("pacman --noconfirm -S {}".format(quote(pkgname)))
+def pkg_install(node, pkgname, operation='S'):
+    return node.run("pacman --noconfirm -{} {}".format(operation,
+                                                       quote(pkgname)))
+
+
+def pkg_install_tarball(node, local_file):
+    remote_file = "/tmp/{}".format(basename(local_file))
+    node.upload(local_file, remote_file)
+    pkg_install(node, remote_file, operation='U')
+    node.run("rm {}".format(quote(remote_file)))
 
 
 def pkg_installed(node, pkgname):
@@ -35,6 +44,7 @@ class PacmanPkg(Item):
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'installed': True,
+        'tarball': None,
     }
     ITEM_TYPE_NAME = "pkg_pacman"
     PARALLEL_APPLY = False
@@ -54,7 +64,11 @@ class PacmanPkg(Item):
         if self.attributes['installed'] is False:
             pkg_remove(self.node, self.name)
         else:
-            pkg_install(self.node, self.name)
+            if self.attributes['tarball']:
+                pkg_install_tarball(self.node, join(self.item_dir,
+                                                    self.attributes['tarball']))
+            else:
+                pkg_install(self.node, self.name)
 
     def get_status(self):
         install_status = pkg_installed(self.node, self.name)

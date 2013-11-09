@@ -15,6 +15,9 @@ Handles packages installed by ``pacman`` (e.g., Arch Linux).
         "bar": {
             "installed": False,
         },
+        "somethingelse": {
+            "tarball": "something-1.0.pkg.tar.gz",
+        }
     }
 
 .. warning::
@@ -32,3 +35,8 @@ Optional attributes
 +++++++++++++
 
 ``True`` when the package is expected to be present on the system; ``False`` if this package and all dependencies that are no longer needed should be removed.
+
+``tarball``
++++++++++++++
+
+Upload a local file to the node and install it using ``pacman -U``. The value of ``tarball`` must point to a file relative to the ``pkg_pacman`` subdirectory of the current bundle.
