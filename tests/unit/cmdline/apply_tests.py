@@ -3,7 +3,8 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline.apply import bw_apply, format_node_result
+from blockwart.cmdline.apply import bw_apply, format_node_action_result, \
+    format_node_item_result
 from blockwart.node import ApplyResult
 
 
@@ -34,14 +35,43 @@ class ApplyTest(TestCase):
         self.assertTrue(output[1].startswith("\n  nodename: run completed after "))
         self.assertEqual(
             output[2],
-            "  0 correct, 0 fixed, 0 aborted, 0 unfixable, 0 failed\n",
+            "  items: 0 correct, 0 fixed, 0 aborted, 0 unfixable, 0 failed",
         )
-        self.assertEqual(len(output), 3)
+        self.assertEqual(
+            output[3],
+            "  actions: 0 ok, 0 aborted, 0 failed\n",
+        )
+        self.assertEqual(len(output), 4)
 
 
-class FormatNodeResultTest(TestCase):
+class FormatNodeActionResultTest(TestCase):
     """
-    Tests blockwart.cmdline.apply.format_node_result.
+    Tests blockwart.cmdline.apply.format_node_action_result.
+    """
+    def test_values(self):
+        result = MagicMock()
+        result.actions_ok = 1
+        result.actions_aborted = 2
+        result.actions_failed = 3
+        self.assertEqual(
+            format_node_action_result(result),
+            "1 ok, 2 aborted, 3 failed",
+        )
+
+    def test_zero(self):
+        result = MagicMock()
+        result.actions_ok = 0
+        result.actions_aborted = 0
+        result.actions_failed = 0
+        self.assertEqual(
+            format_node_action_result(result),
+            "0 ok, 0 aborted, 0 failed",
+        )
+
+
+class FormatNodeItemResultTest(TestCase):
+    """
+    Tests blockwart.cmdline.apply.format_node_item_result.
     """
     def test_values(self):
         result = MagicMock()
@@ -51,7 +81,7 @@ class FormatNodeResultTest(TestCase):
         result.unfixable = 3
         result.failed = 4
         self.assertEqual(
-            format_node_result(result),
+            format_node_item_result(result),
             "0 correct, 1 fixed, 2 aborted, 3 unfixable, 4 failed",
         )
 
@@ -63,6 +93,6 @@ class FormatNodeResultTest(TestCase):
         result.unfixable = 0
         result.failed = 0
         self.assertEqual(
-            format_node_result(result),
+            format_node_item_result(result),
             "0 correct, 0 fixed, 0 aborted, 0 unfixable, 0 failed",
         )

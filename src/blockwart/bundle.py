@@ -90,7 +90,7 @@ class Action(object):
                 self.bundle.name,
             ))
 
-        LOG.info("{}:action:{}: {}".format(
+        LOG.debug("{}:action:{}: {}".format(
             self.bundle.node.name,
             self.name,
             green(_("OK")),
