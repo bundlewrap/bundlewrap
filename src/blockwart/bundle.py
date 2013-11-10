@@ -1,8 +1,8 @@
 from os.path import join
 
 from .exceptions import ActionFailure, BundleError, RepositoryError
-from .utils import cached_property, get_all_attrs_from_file
-from .utils.text import mark_for_translation as _, validate_name
+from .utils import cached_property, get_all_attrs_from_file, LOG
+from .utils.text import green, mark_for_translation as _, red, validate_name
 
 FILENAME_BUNDLE = "bundle.py"
 
@@ -30,6 +30,11 @@ class Action(object):
         )
 
         if not result.return_code == self.expected_return_code:
+            LOG.warn("{}:action:{}: {}".format(
+                self.bundle.node.name,
+                self.name,
+                red(_("FAILED")),
+            ))
             raise ActionFailure(_(
                 "wrong return code for action '{}' in bundle '{}': "
                 "expected {}, but was {}"
@@ -45,6 +50,11 @@ class Action(object):
         else:
             stderr_correct = result.stderr == self.expected_stderr
         if not stderr_correct:
+            LOG.warn("{}:action:{}: {}".format(
+                self.bundle.node.name,
+                self.name,
+                red(_("FAILED")),
+            ))
             raise ActionFailure(_(
                 "wrong stderr for action '{}' in bundle '{}'"
             ).format(
@@ -57,12 +67,23 @@ class Action(object):
         else:
             stdout_correct = result.stdout == self.expected_stdout
         if not stdout_correct:
+            LOG.warn("{}:action:{}: {}".format(
+                self.bundle.node.name,
+                self.name,
+                red(_("FAILED")),
+            ))
             raise ActionFailure(_(
                 "wrong stdout for action '{}' in bundle '{}'"
             ).format(
                 self.name,
                 self.bundle.name,
             ))
+
+        LOG.info("{}:action:{}: {}".format(
+            self.bundle.node.name,
+            self.name,
+            green(_("OK")),
+        ))
 
         return result
 
