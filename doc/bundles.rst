@@ -7,6 +7,7 @@ Bundles
 .. toctree::
     :hidden:
 
+    actions
     item_directory
     item_file
     item_group
@@ -50,23 +51,29 @@ Item types
 
 This table lists all item types included in Blockwart along with the bundle attributes they understand.
 
-+--------------------------------------+------------------+------------------------------------------------------------------------+
-| Type name                            | Bundle attribute | Purpose                                                                |
-+======================================+==================+========================================================================+
-| :doc:`directory <item_directory>`    | ``directories``  | Manages permissions and ownership for directories                      |
-+--------------------------------------+------------------+------------------------------------------------------------------------+
-| :doc:`file <item_file>`              | ``files``        | Manages contents, permissions, and ownership for files                 |
-+--------------------------------------+------------------+------------------------------------------------------------------------+
-| :doc:`group <item_group>`            | ``groups``       | Manages groups by wrapping ``groupadd``, ``groupmod`` and ``groupdel`` |
-+--------------------------------------+------------------+------------------------------------------------------------------------+
-| :doc:`pkg_apt <item_pkg_apt>`        | ``pkg_apt``      | Installs and removes packages with APT                                 |
-+--------------------------------------+------------------+------------------------------------------------------------------------+
-| :doc:`pkg_pacman <item_pkg_pacman>`  | ``pkg_pacman``   | Installs and removes packages with pacman                              |
-+--------------------------------------+------------------+------------------------------------------------------------------------+
-| :doc:`symlink <item_symlink>`        | ``symlinks``     | Manages symbolic links and their ownership                             |
-+--------------------------------------+------------------+------------------------------------------------------------------------+
-| :doc:`user <item_user>`              | ``users``        | Manages users by wrapping ``useradd``, ``usermod`` and ``userdel``     |
-+--------------------------------------+------------------+------------------------------------------------------------------------+
+.. raw:: html
+
+   <style type="text/css">.wy-table-responsive table td { vertical-align: top !important; white-space: normal !important; }</style>
+
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| Type name                            | Bundle attribute | Purpose                                                                                |
++======================================+==================+========================================================================================+
+| :doc:`action <actions>`              | ``actions``      | While not technically an item, actions allow you to run commands on every ``bw apply`` |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`directory <item_directory>`    | ``directories``  | Manages permissions and ownership for directories                                      |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`file <item_file>`              | ``files``        | Manages contents, permissions, and ownership for files                                 |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`group <item_group>`            | ``groups``       | Manages groups by wrapping ``groupadd``, ``groupmod`` and ``groupdel``                 |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`pkg_apt <item_pkg_apt>`        | ``pkg_apt``      | Installs and removes packages with APT                                                 |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`pkg_pacman <item_pkg_pacman>`  | ``pkg_pacman``   | Installs and removes packages with pacman                                              |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`symlink <item_symlink>`        | ``symlinks``     | Manages symbolic links and their ownership                                             |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`user <item_user>`              | ``users``        | Manages users by wrapping ``useradd``, ``usermod`` and ``userdel``                     |
++--------------------------------------+------------------+----------------------------------------------------------------------------------------+
 
 Builtin attributes
 ------------------
