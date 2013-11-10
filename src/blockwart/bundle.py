@@ -30,7 +30,8 @@ class Action(object):
         if interactive and not ask_interactively(
             wrap_question(self.name, self.command, _("Run action {}?").format(
                 white(self.name, bold=True),
-            ))
+            )),
+            interactive_default,
         ):
             return None
         try:
