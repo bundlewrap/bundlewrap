@@ -52,11 +52,14 @@ class ApplyResult(object):
 
         self.actions_ok = 0
         self.actions_failed = 0
+        self.actions_aborted = 0
         for result in action_results:
             if result is True:
                 self.actions_ok += 1
-            else:
+            elif result is False:
                 self.actions_failed += 1
+            else:
+                self.actions_aborted += 1
 
         self.start = None
         self.end = None

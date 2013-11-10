@@ -127,10 +127,10 @@ class ApplyResultTest(TestCase):
     Tests blockwart.node.ApplyResult.
     """
     def test_correct(self):
-        input_results = (
+        item_results = (
             (ItemStatus(correct=True), ItemStatus(correct=True)),
         )
-        output_result = ApplyResult(MagicMock(), input_results)
+        output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 1)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 0)
@@ -138,10 +138,10 @@ class ApplyResultTest(TestCase):
         self.assertEqual(output_result.failed, 0)
 
     def test_fixed(self):
-        input_results = (
+        item_results = (
             (ItemStatus(correct=False), ItemStatus(correct=True)),
         )
-        output_result = ApplyResult(MagicMock(), input_results)
+        output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 1)
         self.assertEqual(output_result.aborted, 0)
@@ -151,10 +151,10 @@ class ApplyResultTest(TestCase):
     def test_aborted(self):
         after = ItemStatus(correct=False)
         after.aborted = True
-        input_results = (
+        item_results = (
             (ItemStatus(correct=False), after),
         )
-        output_result = ApplyResult(MagicMock(), input_results)
+        output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 1)
@@ -162,11 +162,11 @@ class ApplyResultTest(TestCase):
         self.assertEqual(output_result.failed, 0)
 
     def test_unfixable(self):
-        input_results = (
+        item_results = (
             (ItemStatus(correct=False), ItemStatus(correct=False,
                                                    fixable=False)),
         )
-        output_result = ApplyResult(MagicMock(), input_results)
+        output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 0)
@@ -174,10 +174,10 @@ class ApplyResultTest(TestCase):
         self.assertEqual(output_result.failed, 0)
 
     def test_failed(self):
-        input_results = (
+        item_results = (
             (ItemStatus(correct=False), ItemStatus(correct=False)),
         )
-        output_result = ApplyResult(MagicMock(), input_results)
+        output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.aborted, 0)
@@ -185,11 +185,11 @@ class ApplyResultTest(TestCase):
         self.assertEqual(output_result.failed, 1)
 
     def test_bs(self):
-        input_results = (
+        item_results = (
             (ItemStatus(correct=True), ItemStatus(correct=False)),
         )
         with self.assertRaises(RuntimeError):
-            ApplyResult(MagicMock(), input_results)
+            ApplyResult(MagicMock(), item_results, [])
 
 
 class FlattenDependenciesTest(TestCase):
