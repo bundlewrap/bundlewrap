@@ -58,7 +58,7 @@ class ActionRunTest(TestCase):
         with self.assertRaises(ActionFailure):
             action.run()
 
-    def test_stderr_static(self):
+    def test_stderr(self):
         run_result = MagicMock()
         run_result.return_code = 0
         run_result.stderr = "47"
@@ -75,24 +75,7 @@ class ActionRunTest(TestCase):
         with self.assertRaises(ActionFailure):
             action.run()
 
-    def test_stderr_callable(self):
-        run_result = MagicMock()
-        run_result.return_code = 0
-        run_result.stderr = "47"
-        run_result.stdout = ""
-
-        bundle = MagicMock()
-        bundle.node.run.return_value = run_result
-
-        action = Action(bundle, "action", {
-            'command': "/bin/true",
-            'expected_stderr': lambda s: "48" in s,
-        })
-
-        with self.assertRaises(ActionFailure):
-            action.run()
-
-    def test_stdout_static(self):
+    def test_stdout(self):
         run_result = MagicMock()
         run_result.return_code = 0
         run_result.stderr = ""
@@ -104,23 +87,6 @@ class ActionRunTest(TestCase):
         action = Action(bundle, "action", {
             'command': "/bin/true",
             'expected_stdout': "48"
-        })
-
-        with self.assertRaises(ActionFailure):
-            action.run()
-
-    def test_stdout_callable(self):
-        run_result = MagicMock()
-        run_result.return_code = 0
-        run_result.stderr = ""
-        run_result.stdout = "47"
-
-        bundle = MagicMock()
-        bundle.node.run.return_value = run_result
-
-        action = Action(bundle, "action", {
-            'command': "/bin/true",
-            'expected_stdout': lambda s: "48" in s,
         })
 
         with self.assertRaises(ActionFailure):

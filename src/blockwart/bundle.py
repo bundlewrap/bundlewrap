@@ -22,8 +22,8 @@ class Action(object):
 
         self.command = config['command']
         self.expected_return_code = config.get('expected_return_code', 0)
-        self.expected_stderr = config.get('expected_stderr', lambda s: True)
-        self.expected_stdout = config.get('expected_stdout', lambda s: True)
+        self.expected_stderr = config.get('expected_stderr', None)
+        self.expected_stdout = config.get('expected_stdout', None)
         self.timing = config.get('timing', "pre")
 
     def get_result(self, interactive=False, interactive_default=True):
@@ -61,11 +61,8 @@ class Action(object):
                 result.return_code,
             ))
 
-        if callable(self.expected_stderr):
-            stderr_correct = self.expected_stderr(result.stderr)
-        else:
-            stderr_correct = result.stderr == self.expected_stderr
-        if not stderr_correct:
+        if self.expected_stderr is not None and \
+                result.stderr != self.expected_stderr:
             LOG.warn("{}:action:{}: {}".format(
                 self.bundle.node.name,
                 self.name,
@@ -78,11 +75,8 @@ class Action(object):
                 self.bundle.name,
             ))
 
-        if callable(self.expected_stdout):
-            stdout_correct = self.expected_stdout(result.stdout)
-        else:
-            stdout_correct = result.stdout == self.expected_stdout
-        if not stdout_correct:
+        if self.expected_stdout is not None and \
+                result.stdout != self.expected_stdout:
             LOG.warn("{}:action:{}: {}".format(
                 self.bundle.node.name,
                 self.name,
