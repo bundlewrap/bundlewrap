@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from string import digits, letters
 from sys import stdout
 
@@ -20,6 +23,7 @@ yellow = _color_wrapper(_fabric_colors.yellow)
 
 def mark_for_translation(s):
     return s
+_ = mark_for_translation
 
 
 def validate_name(name):
@@ -34,3 +38,14 @@ def validate_name(name):
     except AssertionError:
         return False
     return True
+
+
+def wrap_question(title, body, question):
+    output = ("\n"
+              " ╭  {}\n"
+              " ┃\n".format(title))
+    for line in body.splitlines():
+        output += " ┃   {}\n".format(line)
+    output += (" ┃\n"
+               " ╰  " + question)
+    return output
