@@ -2,7 +2,10 @@ from os.path import join
 
 from .exceptions import ActionFailure, BundleError, RepositoryError
 from .utils import cached_property, get_all_attrs_from_file, LOG
-from .utils.text import green, mark_for_translation as _, red, validate_name
+from .utils.text import mark_for_translation as _
+from .utils.text import green, red, validate_name, white, wrap_question
+from .utils.ui import ask_interactively
+
 
 FILENAME_BUNDLE = "bundle.py"
 
@@ -22,6 +25,19 @@ class Action(object):
         self.expected_stderr = config.get('expected_stderr', lambda s: True)
         self.expected_stdout = config.get('expected_stdout', lambda s: True)
         self.timing = config.get('timing', "pre")
+
+    def get_result(self, interactive=False, interactive_default=True):
+        if interactive and not ask_interactively(
+            wrap_question(self.name, self.command, _("Run action {}?").format(
+                white(self.name, bold=True),
+            ))
+        ):
+            return None
+        try:
+            self.run()
+            return True
+        except ActionFailure:
+            return False
 
     def run(self):
         result = self.bundle.node.run(
