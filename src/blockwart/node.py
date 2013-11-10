@@ -9,8 +9,8 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, NodeAlreadyLockedException, \
-                        RepositoryError
+from .exceptions import ActionFailure, ItemDependencyError, \
+    NodeAlreadyLockedException, RepositoryError
 from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
@@ -25,7 +25,7 @@ class ApplyResult(object):
     """
     Holds information about an apply run for a node.
     """
-    def __init__(self, node, item_results):
+    def __init__(self, node, item_results, action_results):
         self.node_name = node.name
         self.correct = 0
         self.fixed = 0
@@ -49,6 +49,14 @@ class ApplyResult(object):
                     "before: {}\n"
                     "after: {}"
                 ).format(self.node_name, before, after))
+
+        self.actions_ok = 0
+        self.actions_failed = 0
+        for result in action_results:
+            if result is True:
+                self.actions_ok += 1
+            else:
+                self.actions_failed += 1
 
         self.start = None
         self.end = None
@@ -384,6 +392,22 @@ class Node(object):
     def __repr__(self):
         return "<Node '{}'>".format(self.name)
 
+    def _run_actions(self, timing, interactive):
+        for action in self.actions:
+            if action.timing != timing:
+                continue
+            try:
+                action.run()
+                yield True
+            except ActionFailure:
+                yield False
+
+    @property
+    def actions(self):
+        for bundle in self.bundles:
+            for action in bundle.actions:
+                yield action
+
     @cached_property
     def bundles(self):
         for group in self.groups:
@@ -402,14 +426,20 @@ class Node(object):
 
     def apply(self, interactive=False, workers=4):
         start = datetime.now()
+        action_results = []
         worker_count = 1 if interactive else workers
         try:
             with NodeLock(self, interactive):
+                action_results += list(self._run_actions('pre', interactive))
+
                 item_results = list(apply_items(
                     self.items,
                     workers=worker_count,
                     interactive=interactive,
                 ))
+
+                action_results += list(self._run_actions('post', interactive))
+
         except NodeAlreadyLockedException as e:
             if not interactive:
                 LOG.error(_("Node '{node}' already locked: {info}").format(
@@ -417,7 +447,7 @@ class Node(object):
                     info=e.args,
                 ))
             item_results = []
-        result = ApplyResult(self, item_results)
+        result = ApplyResult(self, item_results, action_results)
         result.start = start
         result.end = datetime.now()
         return result
