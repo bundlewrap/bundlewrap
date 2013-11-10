@@ -139,27 +139,31 @@ class Bundle(object):
         return self.__dict__
 
     @cached_property
-    def _bundle_attrs(self):
-        return get_all_attrs_from_file(
+    def actions(self):
+        bundle_attrs = get_all_attrs_from_file(
             self.bundle_file,
             base_env={
                 'node': self.node,
                 'repo': self.repo,
             },
         )
-
-    @cached_property
-    def actions(self):
-        bundle_actions = self._bundle_attrs.get('actions', {})
+        bundle_actions = bundle_attrs.get('actions', {})
         for name, config in bundle_actions.iteritems():
             yield Action(self, name, config)
 
     @cached_property
     def items(self):
+        bundle_attrs = get_all_attrs_from_file(
+            self.bundle_file,
+            base_env={
+                'node': self.node,
+                'repo': self.repo,
+            },
+        )
         for item_class in self.repo.item_classes:
-            if item_class.BUNDLE_ATTRIBUTE_NAME not in self._bundle_attrs:
+            if item_class.BUNDLE_ATTRIBUTE_NAME not in bundle_attrs:
                 continue
-            for name, attrs in self._bundle_attrs.get(
+            for name, attrs in bundle_attrs.get(
                     item_class.BUNDLE_ATTRIBUTE_NAME,
                     {},
             ).iteritems():
