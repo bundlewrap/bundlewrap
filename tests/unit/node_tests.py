@@ -461,8 +461,9 @@ class NodeTest(TestCase):
     """
     @patch('blockwart.node.ApplyResult')
     @patch('blockwart.node.NodeLock')
+    @patch('blockwart.node.run_actions')
     @patch('blockwart.node.apply_items')
-    def test_apply(self, apply_items, NodeLock, ApplyResult):
+    def test_apply(self, apply_items, run_actions, NodeLock, ApplyResult):
         n = Node(None, "node1", {})
         result = MagicMock()
         ApplyResult.return_value = result
@@ -470,6 +471,7 @@ class NodeTest(TestCase):
         NodeLock.__exit__ = lambda x: x
         self.assertEqual(n.apply(), result)
         self.assertEqual(apply_items.call_count, 1)
+        self.assertEqual(run_actions.call_count, 2)
         ApplyResult.assert_called_once()
 
     def test_bundles(self):

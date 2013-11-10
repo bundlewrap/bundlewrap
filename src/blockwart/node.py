@@ -9,8 +9,7 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ActionFailure, ItemDependencyError, \
-    NodeAlreadyLockedException, RepositoryError
+from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
@@ -375,6 +374,39 @@ def remove_item_dependents(items, dep):
     return (items, removed_items + all_recursively_removed_items)
 
 
+def run_actions(actions, timing, workers=1, interactive=False):
+    # filter actions with wrong timing
+    actions = [action for action in actions if action.timing == timing]
+
+    with WorkerPool(workers=workers) as worker_pool:
+        while (
+            actions or
+            worker_pool.busy_count > 0 or
+            worker_pool.reapable_count > 0
+        ):
+            while actions:
+                worker = worker_pool.get_idle_worker(block=False)
+                if worker is None:
+                    break
+                action = actions.pop()
+                worker.start_task(
+                    action.get_result,
+                    id=action.name,
+                    kwargs={'interactive': interactive},
+                )
+
+            while worker_pool.reapable_count > 0:
+                worker = worker_pool.get_reapable_worker()
+                yield worker.reap()
+
+            if (
+                worker_pool.busy_count > 0 and
+                not actions and
+                not worker_pool.reapable_count
+            ):
+                worker_pool.wait()
+
+
 class Node(object):
     def __init__(self, repo, name, infodict=None):
         if infodict is None:
@@ -394,16 +426,6 @@ class Node(object):
 
     def __repr__(self):
         return "<Node '{}'>".format(self.name)
-
-    def _run_actions(self, timing, interactive):
-        for action in self.actions:
-            if action.timing != timing:
-                continue
-            try:
-                action.run()
-                yield True
-            except ActionFailure:
-                yield False
 
     @property
     def actions(self):
@@ -433,7 +455,12 @@ class Node(object):
         worker_count = 1 if interactive else workers
         try:
             with NodeLock(self, interactive):
-                action_results += list(self._run_actions('pre', interactive))
+                action_results += list(run_actions(
+                    self.actions,
+                    'pre',
+                    workers=worker_count,
+                    interactive=interactive,
+                ))
 
                 item_results = list(apply_items(
                     self.items,
@@ -441,7 +468,12 @@ class Node(object):
                     interactive=interactive,
                 ))
 
-                action_results += list(self._run_actions('post', interactive))
+                action_results += list(run_actions(
+                    self.actions,
+                    'post',
+                    workers=worker_count,
+                    interactive=interactive,
+                ))
 
         except NodeAlreadyLockedException as e:
             if not interactive:
