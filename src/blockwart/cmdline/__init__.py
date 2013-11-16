@@ -52,9 +52,14 @@ def main(*args):
     parser_bw = build_parser_bw()
     args = parser_bw.parse_args(args)
 
+    try:
+        interactive = args.interactive
+    except AttributeError:
+        interactive = False
+
     set_up_logging(
         debug=args.debug,
-        interactive=args.interactive,
+        interactive=interactive,
         verbose=args.verbose,
     )
 
