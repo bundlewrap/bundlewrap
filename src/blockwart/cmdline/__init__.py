@@ -8,13 +8,16 @@ from ..repo import Repository
 from .parser import build_parser_bw
 
 
-def set_up_logging(debug=False, verbose=False):
+def set_up_logging(debug=False, interactive=False, verbose=False):
     if debug:
         format = "%(asctime)s [%(levelname)s:%(name)s:%(process)d] %(message)s"
         level = logging.DEBUG
     elif verbose:
         format = "%(message)s"
         level = logging.INFO
+    elif interactive:
+        format = "%(message)s"
+        level = logging.ERROR
     else:
         format = "%(message)s"
         level = logging.WARNING
@@ -49,7 +52,16 @@ def main(*args):
     parser_bw = build_parser_bw()
     args = parser_bw.parse_args(args)
 
-    set_up_logging(debug=args.debug, verbose=args.verbose)
+    try:
+        interactive = args.interactive
+    except AttributeError:
+        interactive = False
+
+    set_up_logging(
+        debug=args.debug,
+        interactive=interactive,
+        verbose=args.verbose,
+    )
 
     output = args.func(repo, args)
     if output is None:

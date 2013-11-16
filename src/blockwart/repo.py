@@ -47,6 +47,8 @@ nodes = {
     """),
 }
 
+RESERVED_ITEM_TYPE_NAMES = ("actions",)
+
 
 class Repository(object):
     def __init__(self, repo_path, skip_validation=False):
@@ -124,7 +126,12 @@ class Repository(object):
                         continue
                     try:
                         if issubclass(obj, items.Item):
-                            yield obj
+                            if obj.ITEM_TYPE_NAME in RESERVED_ITEM_TYPE_NAMES:
+                                raise RepositoryError(_(
+                                    "'{}' is a reserved item type name"
+                                ).format(obj.ITEM_TYPE_NAME))
+                            else:
+                                yield obj
                     except TypeError:
                         pass
 

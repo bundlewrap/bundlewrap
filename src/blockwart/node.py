@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from datetime import datetime
 from getpass import getuser
 import json
@@ -9,12 +12,11 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, NodeAlreadyLockedException, \
-                        RepositoryError
+from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
-from .utils.text import red, validate_name, white
+from .utils.text import green, red, validate_name, white
 from .utils.ui import ask_interactively, LineBuffer
 
 LOCK_PATH = "/tmp/blockwart.lock"
@@ -25,7 +27,7 @@ class ApplyResult(object):
     """
     Holds information about an apply run for a node.
     """
-    def __init__(self, node, item_results):
+    def __init__(self, node, item_results, action_results):
         self.node_name = node.name
         self.correct = 0
         self.fixed = 0
@@ -49,6 +51,17 @@ class ApplyResult(object):
                     "before: {}\n"
                     "after: {}"
                 ).format(self.node_name, before, after))
+
+        self.actions_ok = 0
+        self.actions_failed = 0
+        self.actions_aborted = 0
+        for result in action_results:
+            if result is True:
+                self.actions_ok += 1
+            elif result is False:
+                self.actions_failed += 1
+            else:
+                self.actions_aborted += 1
 
         self.start = None
         self.end = None
@@ -364,6 +377,52 @@ def remove_item_dependents(items, dep):
     return (items, removed_items + all_recursively_removed_items)
 
 
+def run_actions(actions, timing, workers=1, interactive=False):
+    # filter actions with wrong timing
+    actions = [action for action in actions if action.timing == timing]
+
+    with WorkerPool(workers=workers) as worker_pool:
+        while (
+            actions or
+            worker_pool.busy_count > 0 or
+            worker_pool.reapable_count > 0
+        ):
+            while actions:
+                worker = worker_pool.get_idle_worker(block=False)
+                if worker is None:
+                    break
+                action = actions.pop()
+                worker.start_task(
+                    action.get_result,
+                    id=action.name,
+                    kwargs={'interactive': interactive},
+                )
+
+            while worker_pool.reapable_count > 0:
+                worker = worker_pool.get_reapable_worker()
+                action_name = worker.id
+                result = worker.reap()
+                if interactive:
+                    if result is False:
+                        print(_("\n  {} action:{} failed").format(
+                            red("✘"),
+                            white(action_name, bold=True),
+                        ))
+                    else:
+                        print(_("\n  {} action:{} succeeded").format(
+                            green("✓"),
+                            white(action_name, bold=True),
+                        ))
+                yield result
+
+            if (
+                worker_pool.busy_count > 0 and
+                not actions and
+                not worker_pool.reapable_count
+            ):
+                worker_pool.wait()
+
+
 class Node(object):
     def __init__(self, repo, name, infodict=None):
         if infodict is None:
@@ -384,6 +443,12 @@ class Node(object):
     def __repr__(self):
         return "<Node '{}'>".format(self.name)
 
+    @property
+    def actions(self):
+        for bundle in self.bundles:
+            for action in bundle.actions:
+                yield action
+
     @cached_property
     def bundles(self):
         for group in self.groups:
@@ -402,14 +467,30 @@ class Node(object):
 
     def apply(self, interactive=False, workers=4):
         start = datetime.now()
+        action_results = []
         worker_count = 1 if interactive else workers
         try:
             with NodeLock(self, interactive):
+                action_results += list(run_actions(
+                    self.actions,
+                    'pre',
+                    workers=worker_count,
+                    interactive=interactive,
+                ))
+
                 item_results = list(apply_items(
                     self.items,
                     workers=worker_count,
                     interactive=interactive,
                 ))
+
+                action_results += list(run_actions(
+                    self.actions,
+                    'post',
+                    workers=worker_count,
+                    interactive=interactive,
+                ))
+
         except NodeAlreadyLockedException as e:
             if not interactive:
                 LOG.error(_("Node '{node}' already locked: {info}").format(
@@ -417,7 +498,7 @@ class Node(object):
                     info=e.args,
                 ))
             item_results = []
-        result = ApplyResult(self, item_results)
+        result = ApplyResult(self, item_results, action_results)
         result.start = start
         result.end = datetime.now()
         return result

@@ -7,7 +7,24 @@ from ..utils.text import green, red, white, yellow
 from ..utils.text import mark_for_translation as _
 
 
-def format_node_result(result):
+def format_node_action_result(result):
+    output = []
+    output.append(_("{} ok").format(result.actions_ok))
+
+    if result.actions_aborted:
+        output.append(yellow(_("{} aborted").format(result.actions_aborted)))
+    else:
+        output.append(_("{} aborted").format(result.actions_aborted))
+
+    if result.actions_failed:
+        output.append(red(_("{} failed").format(result.actions_failed)))
+    else:
+        output.append(_("{} failed").format(result.actions_failed))
+
+    return ", ".join(output)
+
+
+def format_node_item_result(result):
     output = []
     output.append(("{} correct").format(result.correct))
 
@@ -73,19 +90,26 @@ def bw_apply(repo, args):
                 node_name = worker.id
                 results[node_name] = worker.reap()
                 if args.interactive:
-                    yield _("\n  {}: run completed after {}s").format(
+                    yield _("\n  {}: run completed after {}s\n").format(
                         white(node_name, bold=True),
                         results[node_name].duration.total_seconds(),
                     )
-                    yield "  " + format_node_result(results[node_name]) + "\n"
+                    yield _("  items: ") + \
+                        format_node_item_result(results[node_name])
+                    yield _("  actions: ") + \
+                        format_node_action_result(results[node_name]) + "\n"
                 else:
                     LOG.info(_("{}: run completed after {}s").format(
                         node_name,
                         results[node_name].duration.total_seconds(),
                     ))
-                    LOG.info(_("{}: stats: {}").format(
+                    LOG.info(_("{}: item stats: {}").format(
                         node_name,
-                        format_node_result(results[node_name]),
+                        format_node_item_result(results[node_name]),
+                    ))
+                    LOG.info(_("{}: action stats: {}").format(
+                        node_name,
+                        format_node_action_result(results[node_name]),
                     ))
             if (
                 worker_pool.busy_count > 0 and
