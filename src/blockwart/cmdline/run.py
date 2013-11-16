@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import sys
 
 from datetime import datetime
@@ -30,11 +33,12 @@ def run_on_node(node, command, may_fail, sudo, verbose, interactive):
     end = datetime.now()
     duration = end - start
     if result.return_code == 0:
-        yield "[{}] {}".format(
+        yield "[{}] {} {}".format(
             node.name,
-            green(_("completed successfully after {}s").format(
+            green("✓"),
+            _("completed successfully after {}s").format(
                 duration.total_seconds(),
-            )),
+            ),
         )
     else:
         if not verbose and not interactive:
@@ -42,12 +46,13 @@ def run_on_node(node, command, may_fail, sudo, verbose, interactive):
             for stream in (result.stdout, result.stderr):
                 for line in stream.splitlines():
                     yield line
-        yield "[{}] {}".format(
+        yield "[{}] {} {}".format(
             node.name,
-            red(_("failed after {}s (return code {})").format(
+            red("✘"),
+            _("failed after {}s (return code {})").format(
                 duration.total_seconds(),
                 result.return_code,
-            )),
+            ),
         )
 
 

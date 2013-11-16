@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from unittest import TestCase
 
 from mock import MagicMock, patch
@@ -41,7 +44,7 @@ class RunTest(TestCase):
             "[node] out: output",
             "[node] err: some errors",
         ])
-        self.assertTrue(output[3].startswith("[node1] failed after "))
+        self.assertTrue(output[3].startswith("[node1] ✘ failed after "))
         self.assertTrue(output[3].endswith("s (return code 47)"))
 
     @patch('blockwart.cmdline.run.get_target_nodes')
