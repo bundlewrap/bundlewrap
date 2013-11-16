@@ -8,3 +8,4 @@ nose
 nose-cov
 passlib
 Sphinx
+wheel

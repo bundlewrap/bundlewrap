@@ -43,6 +43,7 @@ def release():
     ):
         with lcd(PROJECT_PATH):
             local("python setup.py sdist upload")
+            local("python setup.py bdist_wheel upload")
 
 
 def run_pylint(ignore_warnings=True):
