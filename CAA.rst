@@ -28,13 +28,13 @@ This contributor agreement ("Agreement") documents the rights granted by contrib
 2.1 Copyright Assignment
 ------------------------
 
-* (a) At the time the Contribution is Submitted, You assign to Us all right, title, and interest worldwide in all Copyright covering the Contribution; provided that this transfer is conditioned upon compliance with Section 2.3.
+a) At the time the Contribution is Submitted, You assign to Us all right, title, and interest worldwide in all Copyright covering the Contribution; provided that this transfer is conditioned upon compliance with Section 2.3.
 
-* (b) To the extent that any of the rights in Section 2.1(a) cannot be assigned by You to Us, You grant to Us a perpetual, worldwide, exclusive, royalty-free, transferable, irrevocable license under such non-assigned rights, with rights to sublicense through multiple tiers of sublicensees, to practice such non-assigned rights, including, but not limited to, the right to reproduce, modify, display, perform and distribute the Contribution; provided that this license is conditioned upon compliance with Section 2.3.
+b) To the extent that any of the rights in Section 2.1(a) cannot be assigned by You to Us, You grant to Us a perpetual, worldwide, exclusive, royalty-free, transferable, irrevocable license under such non-assigned rights, with rights to sublicense through multiple tiers of sublicensees, to practice such non-assigned rights, including, but not limited to, the right to reproduce, modify, display, perform and distribute the Contribution; provided that this license is conditioned upon compliance with Section 2.3.
 
-* (c) To the extent that any of the rights in Section 2.1(a) can neither be assigned nor licensed by You to Us, You irrevocably waive and agree never to assert such rights against Us, any of our successors in interest, or any of our licensees, either direct or indirect; provided that this agreement not to assert is conditioned upon compliance with Section 2.3.
+c) To the extent that any of the rights in Section 2.1(a) can neither be assigned nor licensed by You to Us, You irrevocably waive and agree never to assert such rights against Us, any of our successors in interest, or any of our licensees, either direct or indirect; provided that this agreement not to assert is conditioned upon compliance with Section 2.3.
 
-* (d) Upon such transfer of rights to Us, to the maximum extent possible, We immediately grant to You a perpetual, worldwide, non-exclusive, royalty-free, transferable, irrevocable license under such rights covering the Contribution, with rights to sublicense through multiple tiers of sublicensees, to reproduce, modify, display, perform, and distribute the Contribution. The intention of the parties is that this license will be as broad as possible and to provide You with rights as similar as possible to the owner of the rights that You transferred. This license back is limited to the Contribution and does not provide any rights to the Material.
+d) Upon such transfer of rights to Us, to the maximum extent possible, We immediately grant to You a perpetual, worldwide, non-exclusive, royalty-free, transferable, irrevocable license under such rights covering the Contribution, with rights to sublicense through multiple tiers of sublicensees, to reproduce, modify, display, perform, and distribute the Contribution. The intention of the parties is that this license will be as broad as possible and to provide You with rights as similar as possible to the owner of the rights that You transferred. This license back is limited to the Contribution and does not provide any rights to the Material.
 
 2.2 Patent License
 ------------------
@@ -66,13 +66,13 @@ Any rights not expressly assigned or licensed under this section are expressly r
 
 You confirm that:
 
-* (a) You have the legal authority to enter into this Agreement.
+a) You have the legal authority to enter into this Agreement.
 
-* (b) You own the Copyright and patent claims covering the Contribution which are required to grant the rights under Section 2.
+b) You own the Copyright and patent claims covering the Contribution which are required to grant the rights under Section 2.
 
-* (c) The grant of rights under Section 2 does not violate any grant of rights which You have made to third parties, including Your employer. If You are an employee, You have had Your employer approve this Agreement or sign the Entity version of this document. If You are less than eighteen years old, please have Your parents or guardian sign the Agreement.
+c) The grant of rights under Section 2 does not violate any grant of rights which You have made to third parties, including Your employer. If You are an employee, You have had Your employer approve this Agreement or sign the Entity version of this document. If You are less than eighteen years old, please have Your parents or guardian sign the Agreement.
 
-* (d) You have followed the instructions in http://blockwart.org/contributing, if You do not own the Copyright in the entire work of authorship Submitted.
+d) You have followed the instructions in http://blockwart.org/contributing, if You do not own the Copyright in the entire work of authorship Submitted.
 
 4. Disclaimer
 +++++++++++++
