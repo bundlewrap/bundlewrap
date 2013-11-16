@@ -187,17 +187,16 @@ class MemberTest(TestCase):
                 return name
 
         repo = FakeRepo()
-        group = Group(repo, "group1", {'nodes': ("node2", "node1")})
+        group = Group(repo, "group1", {'members': ("node2", "node1")})
         self.assertEqual(
             set(group._nodes_from_static_members),
             set(("node1", "node2")),
         )
 
-    @patch("blockwart.group.Group._nodes_from_patterns", return_value=())
     def test_static_subgroup_members(self, *args):
         class FakeRepo(object):
             def get_group(self, name):
-                return Group(self, name, {'nodes': ("node3", "node4")})
+                return Group(self, name, {'members': ("node3", "node4")})
 
             def get_node(self, name):
                 return name
@@ -209,22 +208,18 @@ class MemberTest(TestCase):
             set(("node3", "node4")),
         )
 
-    @patch("blockwart.group.getattr_from_file", return_value={
-        r".*": "all",
-        "2$": "group2",
-    })
     def test_pattern_members(self, *args):
         repo = MagicMock()
         repo.nodes = (
             Node(repo, "node1", {}),
             Node(repo, "node2", {}),
         )
-        group = Group(repo, "all", {})
+        group = Group(repo, "all", { 'member_patterns': (r".*",) })
         self.assertEqual(
             list(names(group.nodes)),
             ["node1", "node2"],
         )
-        group = Group(repo, "group2", {})
+        group = Group(repo, "group2", { 'member_patterns': (r".*2",)} )
         self.assertEqual(
             list(names(group.nodes)),
             ["node2"],

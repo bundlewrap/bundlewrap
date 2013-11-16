@@ -38,7 +38,8 @@ class Group(object):
 
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
-        self.static_member_names = infodict.get('nodes', [])
+        self.patterns = infodict.get('member_patterns', [])
+        self.static_member_names = infodict.get('members', [])
 
     def __cmp__(self, other):
         return cmp(self.name, other.name)
@@ -75,14 +76,7 @@ class Group(object):
 
     @property
     def _nodes_from_patterns(self):
-        group_patterns = getattr_from_file(
-            self.repo.groups_file,
-            'group_patterns',
-            default={},
-        )
-        for pattern, group_name in group_patterns.iteritems():
-            if not group_name == self.name:
-                continue
+        for pattern in self.patterns:
             compiled_pattern = re.compile(pattern)
             for node in self.repo.nodes:
                 if not compiled_pattern.search(node.name) is None:

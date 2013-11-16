@@ -17,24 +17,21 @@ INITIAL_CONTENT = {
     FILENAME_GROUPS: _("""
 groups = {
     #'group1': {
-    #    'subgroups': (
-    #        'group2',
-    #    ),
     #    'bundles': (
     #        'bundle1',
     #    ),
-    #    'nodes': (
+    #    'members': (
     #        'node1',
+    #    ),
+    #    'subgroups': (
+    #        'group2',
     #    ),
     #},
     'all': {
+        'member_patterns': (
+            r".*",
+        ),
     },
-}
-
-# node names matching these regexes
-# will be added to the corresponding groups
-group_patterns = {
-    r".*": "all",
 }
     """),
 

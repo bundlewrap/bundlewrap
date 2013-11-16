@@ -12,28 +12,44 @@ This file lets you specify or dynamically build a list of groups in your environ
 Introduction
 ============
 
-As with ``nodes.py``, you define your groups as a dictionary::
+As with ``nodes.py``, you define your groups as a dictionary:
+
+.. code-block:: python
 
 	groups = {
-		'group1': {
-			'members': (
-				'node1',
-			),
-		},
+	    'all': {
+	        'member_patterns': (
+	            r".*",
+	        ),
+	    },
+	    'group1': {
+	        'members': (
+	            'node1',
+	        ),
+	    },
 	}
 
-All fields for a group are optional.
+All group attributes are optional.
 
 Group attribute reference
 =========================
 
-This section is a reference for all possible attributes you can define for a group::
+This section is a reference for all possible attributes you can define for a group:
+
+.. code-block:: python
 
 	groups = {
-		'group1': {
-			# THIS PART IS EXPLAINED HERE
-		},
+	     'group1': {
+	         # THIS PART IS EXPLAINED HERE
+	     },
 	}
+
+``member_patterns``
+-------------------
+
+A list of regular expressions. Node names matching these expressions will be added to the group members.
+
+Matches are determined using `the search() method <http://docs.python.org/2/library/re.html#re.RegexObject.search>`_.
 
 ``members``
 -----------
@@ -44,16 +60,3 @@ A tuple or list of node names that belong to this group.
 -------------
 
 A tuple or list of group names whose members should be recursively included in this group.
-
-Group patterns
-==============
-
-You may want to define an aditional dictionary called ``group_patterns`` that maps regular expressions to group names::
-
-	group_patterns = {
-		r".*": "all",
-		r"^cluster1\.": "cluster1",
-		r"(.+\.)?app\d+": "appservers",
-	}
-
-Node names will be matched against these regexes and placed into groups accordingly. In the above example, a node named "cluster1.app03" would be added to the groups "all", "cluster1" and "appservers".
