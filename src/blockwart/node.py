@@ -408,7 +408,7 @@ def run_actions(actions, timing, workers=1, interactive=False):
                             red("✘"),
                             white(action_name, bold=True),
                         ))
-                    else:
+                    elif result is True:
                         print(_("\n  {} action:{} succeeded").format(
                             green("✓"),
                             white(action_name, bold=True),
