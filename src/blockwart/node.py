@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from datetime import datetime
 from getpass import getuser
 import json
@@ -13,7 +16,7 @@ from .exceptions import ItemDependencyError, NodeAlreadyLockedException, Reposit
 from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
-from .utils.text import red, validate_name, white
+from .utils.text import green, red, validate_name, white
 from .utils.ui import ask_interactively, LineBuffer
 
 LOCK_PATH = "/tmp/blockwart.lock"
@@ -397,7 +400,20 @@ def run_actions(actions, timing, workers=1, interactive=False):
 
             while worker_pool.reapable_count > 0:
                 worker = worker_pool.get_reapable_worker()
-                yield worker.reap()
+                action_name = worker.id
+                result = worker.reap()
+                if interactive:
+                    if result is False:
+                        print(_("\n  {} action:{} failed").format(
+                            red("✘"),
+                            white(action_name, bold=True),
+                        ))
+                    else:
+                        print(_("\n  {} action:{} succeeded").format(
+                            green("✓"),
+                            white(action_name, bold=True),
+                        ))
+                yield result
 
             if (
                 worker_pool.busy_count > 0 and
