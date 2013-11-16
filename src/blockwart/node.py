@@ -576,7 +576,7 @@ class NodeLock(object):
     def __exit__(self, type, value, traceback):
         result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
 
-        # See acquire_lock(). Most likely we won't fork() again now.
+        # See __enter__(). Most likely we won't fork() again now.
         # Nevertheless, clean up the state so a future code change won't
         # cause chaos.
         # XXX: Revise this once we're using Fabric 2.0.
