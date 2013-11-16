@@ -5,11 +5,17 @@ Quickstart
 
 .. toctree::
 
-This is the 5 minute intro into Blockwart. Fasten your seatbelt.
+This is the 10 minute intro into Blockwart. Fasten your seatbelt.
+
+Installation
+------------
 
 First, open a terminal and install Blockwart::
 
 	pip install blockwart
+
+Create a repository
+-------------------
 
 Now you'll need to create your repository::
 
@@ -24,14 +30,100 @@ You will note that some files have been created. Let's check them out::
 
 The contents should be fairly self-explanatory, but you can always check the :doc:`docs <repository>` on these files if you want to go deeper.
 
-At this point you will want to edit ``nodes.py`` and maybe change "localhost" to the hostname of a system you have passwordless SSH access to.
+.. hint::
+
+	It is highly recommended to use git or another SCM tool to keep track of your repository. You may want to start doing that right away.
+
+At this point you will want to edit ``nodes.py`` and maybe change "localhost" to the hostname of a system you have passwordless (including sudo) SSH access to.
 
 .. note::
 
-   Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com`` works in your terminal, so will Blockwart.
+	Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com`` works in your terminal, so will Blockwart.
+
+Run a command
+-------------
 
 The first thing you can do is run a command on your army of one node::
 
 	bw run node1 "uptime"
 
+You should see something like this::
+
+	[node1] out:  17:23:19 up 97 days,  2:51,  2 users,  load average: 0.08, 0.03, 0.05
+	[node1] out:
+	[node1] ✓ completed successfully after 1.18188s
+
 Instead of a node name ("node1" in this case) you can also use a group name (such as "all") from your ``groups.py``.
+
+Create a bundle
+---------------
+
+Blockwart stores node configuration in bundles. A bundle is a collection of items such as files, system packages or users. To create your first bundle, type::
+
+	bw repo bundle create mybundle
+
+Create a file template
+----------------------
+
+To manage a file, you need two things:
+
+	1. a file item in your bundle
+	2. a template for the file contents
+
+Add this to your ``bundles/mybundle/bundle.py``:
+
+.. code-block:: python
+
+	files = {
+	    '/etc/motd': {
+	        'source': "etc/motd",
+	    },
+	}
+
+Then write the file template::
+
+	mkdir bundles/mybundle/files/etc
+	vim bundles/mybundle/files/etc/motd
+
+You can use this for example content::
+
+	Welcome to ${node.name}!
+
+Note that the "source" attribute in ``bundle.py`` contains a path relative to the ``files`` directory of your bundle. It's up to you how to organize the contents of this directory.
+
+Apply configuration
+-------------------
+
+Now all that's left is to run ``bw apply``::
+
+	bw apply -i node1
+
+Blockwart will ask to replace your previous MOTD::
+
+	node1: run started at 2013-11-16 18:26:29
+
+	 ╭  file:/etc/motd
+	 ┃
+	 ┃   content
+	 ┃   --- /etc/motd
+	 ┃   +++ <blockwart content>
+	 ┃   @@ -1 +1 @@
+	 ┃   -your old motd
+	 ┃   +Welcome to node1!
+	 ┃
+	 ╰  Fix file:/etc/motd? [Y/n]
+
+That completes the quickstart tutorial!
+
+Further reading
+---------------
+
+Here are some suggestions on what to do next:
+
+* take a moment to think about what groups and bundles you will create
+* read up on how a :doc:`Blockwart repository <repository>` is laid out
+* ...especially what types of items you can add to your :doc:`bundles <bundles>`
+* familiarize yourself with `the Mako template language <http://www.makotemplates.org/>`_
+* use ``bw --help`` to explore the command line utility
+
+Have fun! If you have any questions, feel free to drop by `on IRC <irc://chat.freenode.net/blockwart>`_.
