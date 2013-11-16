@@ -31,7 +31,7 @@ def release():
         sys.exit(1)
 
     changelog_content = get_file_contents(join(PROJECT_PATH, "CHANGELOG.md"))
-    if "### {}\n".format(VERSION_STRING) not in changelog_content:
+    if "{}\n{}".format(VERSION_STRING, "=" * len(VERSION_STRING)) not in changelog_content:
         print(red(
             "Error: no changelog entry for for {}".format(VERSION_STRING)
         ))
