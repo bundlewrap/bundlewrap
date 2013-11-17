@@ -9,7 +9,7 @@ from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import white
+from blockwart.utils.text import bold
 
 
 _ATTRIBUTE_NAMES = {
@@ -92,7 +92,7 @@ class User(Item):
             is_value = status.info[key]
             if should_value != is_value:
                 output += "{} {} → {}\n".format(
-                    white(_ATTRIBUTE_NAMES[key], bold=True),
+                    bold(_ATTRIBUTE_NAMES[key]),
                     is_value,
                     should_value,
                 )
@@ -105,10 +105,10 @@ class User(Item):
             found_hash = status.info['passwd_hash']
 
         if found_hash is None:
-            output += white(_ATTRIBUTE_NAMES['password_hash'], bold=True) + " " + \
+            output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
                       _("not found in {}").format(filename) + "\n"
         elif found_hash != self.attributes['password_hash']:
-            output += white(_ATTRIBUTE_NAMES['password_hash'], bold=True) + " " + \
+            output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
                       found_hash + "\n"
             output += " " * (len(_ATTRIBUTE_NAMES['password_hash']) - 1) + "→ " + \
                       self.attributes['password_hash'] + "\n"
@@ -121,11 +121,11 @@ class User(Item):
         extra_groups.sort()
 
         if missing_groups:
-            output += white(_("missing groups"), bold=True) + " " + \
+            output += bold(_("missing groups")) + " " + \
                       ", ".join(missing_groups) + "\n"
 
         if extra_groups:
-            output += white(_("extra groups"), bold=True) + " " + \
+            output += bold(_("extra groups")) + " " + \
                       ", ".join(extra_groups) + "\n"
 
         return output

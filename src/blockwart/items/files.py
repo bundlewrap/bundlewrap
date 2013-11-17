@@ -13,7 +13,7 @@ from blockwart.items.directories import validator_mode
 from blockwart.utils import cached_property, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import green, red, white
+from blockwart.utils.text import bold, green, red
 
 
 def content_processor_mako(item):
@@ -126,7 +126,7 @@ class File(Item):
                 return _("Doesn't exist.")
             else:
                 return "{} {} → {}\n".format(
-                    white(_("type"), bold=True),
+                    bold(_("type")),
                     status.info['path_info'].desc,
                     _("file"),
                 )
@@ -134,7 +134,7 @@ class File(Item):
         question = ""
 
         if 'content' in status.info['needs_fixing']:
-            question += white(_("content "), bold=True)
+            question += bold(_("content "))
             if status.info['path_info'].is_text_file and \
                     not self.attributes['content_type'] == 'binary':
                 content_is = get_remote_file_contents(self.node, self.name)
@@ -148,21 +148,21 @@ class File(Item):
 
         if 'mode' in status.info['needs_fixing']:
             question += "{} {} → {}\n".format(
-                white(_("mode"), bold=True),
+                bold(_("mode")),
                 status.info['path_info'].mode,
                 self.attributes['mode'],
             )
 
         if 'owner' in status.info['needs_fixing']:
             question += "{} {} → {}\n".format(
-                white(_("owner"), bold=True),
+                bold(_("owner")),
                 status.info['path_info'].owner,
                 self.attributes['owner'],
             )
 
         if 'group' in status.info['needs_fixing']:
             question += "{} {} → {}\n".format(
-                white(_("group"), bold=True),
+                bold(_("group")),
                 status.info['path_info'].group,
                 self.attributes['group'],
             )

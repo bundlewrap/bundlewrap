@@ -9,7 +9,7 @@ from os.path import join
 
 from blockwart.exceptions import BundleError
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import white, wrap_question
+from blockwart.utils.text import bold, wrap_question
 from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
@@ -148,7 +148,7 @@ class Item(object):
                 question = wrap_question(
                     self.id,
                     self.ask(status_before),
-                    _("Fix {}?").format(white(self.id, bold=True)),
+                    _("Fix {}?").format(bold(self.id)),
                 )
                 if ask_interactively(question,
                                      interactive_default):

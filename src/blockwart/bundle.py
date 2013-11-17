@@ -3,7 +3,7 @@ from os.path import join
 from .exceptions import ActionFailure, BundleError, RepositoryError
 from .utils import cached_property, get_all_attrs_from_file, LOG
 from .utils.text import mark_for_translation as _
-from .utils.text import green, red, validate_name, white, wrap_question
+from .utils.text import bold, green, red, validate_name, wrap_question
 from .utils.ui import ask_interactively
 
 
@@ -29,7 +29,7 @@ class Action(object):
     def get_result(self, interactive=False, interactive_default=True):
         if interactive and not ask_interactively(
             wrap_question(self.name, self.command, _("Run action {}?").format(
-                white(self.name, bold=True),
+                bold(self.name),
             )),
             interactive_default,
         ):

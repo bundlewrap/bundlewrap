@@ -7,7 +7,7 @@ from blockwart.items import Item, ItemStatus
 from blockwart.utils import LOG
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import white
+from blockwart.utils.text import bold
 
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
@@ -33,7 +33,7 @@ class Symlink(Item):
                 return _("Doesn't exist.")
             else:
                 return "{} {} → {}\n".format(
-                    white(_("type"), bold=True),
+                    bold(_("type")),
                     status.info['path_info'].desc,
                     _("file"),
                 )
@@ -42,14 +42,14 @@ class Symlink(Item):
 
         if 'owner' in status.info['needs_fixing']:
             question += "{} {} → {}\n".format(
-                white(_("owner"), bold=True),
+                bold(_("owner")),
                 status.info['path_info'].owner,
                 self.attributes['owner'],
             )
 
         if 'group' in status.info['needs_fixing']:
             question += "{} {} → {}\n".format(
-                white(_("group"), bold=True),
+                bold(_("group")),
                 status.info['path_info'].group,
                 self.attributes['group'],
             )

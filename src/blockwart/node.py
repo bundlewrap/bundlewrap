@@ -16,7 +16,7 @@ from .exceptions import ItemDependencyError, NodeAlreadyLockedException, Reposit
 from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
-from .utils.text import green, red, validate_name, white
+from .utils.text import bold, green, red, validate_name
 from .utils.ui import ask_interactively, LineBuffer
 
 LOCK_PATH = "/tmp/blockwart.lock"
@@ -406,12 +406,12 @@ def run_actions(actions, timing, workers=1, interactive=False):
                     if result is False:
                         print(_("\n  {} action:{} failed").format(
                             red("✘"),
-                            white(action_name, bold=True),
+                            bold(action_name),
                         ))
                     elif result is True:
                         print(_("\n  {} action:{} succeeded").format(
                             green("✓"),
-                            white(action_name, bold=True),
+                            bold(action_name),
                         ))
                 yield result
 
@@ -604,9 +604,9 @@ class NodeLock(object):
             "  Override lock?"
         ).format(
             warning=red(_("WARNING")),
-            node=white(self.node.name, bold=True),
-            user=white(info.get('user', _("<unknown>")), bold=True),
+            node=bold(self.node.name),
+            user=bold(info.get('user', _("<unknown>"))),
             host=info.get('host', _("<unknown>")),
             date=date,
-            duration=white(duration, bold=True),
+            duration=bold(duration),
         )

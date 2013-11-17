@@ -5,7 +5,7 @@ from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.items.users import _USERNAME_VALID_CHARACTERS
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import white
+from blockwart.utils.text import bold
 
 
 def _parse_group_line(line):
@@ -39,7 +39,7 @@ class Group(Item):
             return _("'{}' not found in /etc/group").format(self.name)
 
         return "{} {} → {}\n".format(
-            white(_("GID"), bold=True),
+            bold(_("GID")),
             status.info['gid'],
             self.attributes['gid'],
         )

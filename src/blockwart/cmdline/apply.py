@@ -3,7 +3,7 @@ from datetime import datetime
 from ..concurrency import WorkerPool
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import green, red, white, yellow
+from ..utils.text import bold, green, red, yellow
 from ..utils.text import mark_for_translation as _
 
 
@@ -69,7 +69,7 @@ def bw_apply(repo, args):
                 start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 if args.interactive:
                     yield _("\n{}: run started at {}").format(
-                        white(node.name, bold=True),
+                        bold(node.name),
                         start_time,
                     )
                 else:
@@ -91,7 +91,7 @@ def bw_apply(repo, args):
                 results[node_name] = worker.reap()
                 if args.interactive:
                     yield _("\n  {}: run completed after {}s\n").format(
-                        white(node_name, bold=True),
+                        bold(node_name),
                         results[node_name].duration.total_seconds(),
                     )
                     yield _("  items: ") + \

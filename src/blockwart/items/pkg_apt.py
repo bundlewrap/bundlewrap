@@ -4,7 +4,7 @@ from pipes import quote
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
-from blockwart.utils.text import green, red, white
+from blockwart.utils.text import bold, green, red
 from blockwart.utils.text import mark_for_translation as _
 
 
@@ -46,7 +46,7 @@ class AptPkg(Item):
         after = green(_("installed")) if self.attributes['installed'] \
             else red(_("not installed"))
         return "{} {} → {}\n".format(
-            white(_("status"), bold=True),
+            bold(_("status")),
             before,
             after,
         )
