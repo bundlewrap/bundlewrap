@@ -5,7 +5,7 @@ from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .groups import bw_groups
 from .nodes import bw_nodes
-from .repo import bw_repo_create, bw_repo_debug, bw_repo_plot
+from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_plot
 from .run import bw_run
 
 
@@ -104,6 +104,21 @@ def build_parser_bw():
     # bw repo
     parser_repo = subparsers.add_parser("repo")
     parser_repo_subparsers = parser_repo.add_subparsers()
+
+    # bw repo bundle
+    parser_repo_subparsers_bundle = parser_repo_subparsers.add_parser("bundle")
+    parser_repo_subparsers_bundle_subparsers = parser_repo_subparsers_bundle.add_subparsers()
+
+    # bw repo bundle create
+    parser_repo_subparsers_bundle_create = \
+        parser_repo_subparsers_bundle_subparsers.add_parser("create")
+    parser_repo_subparsers_bundle_create.set_defaults(func=bw_repo_bundle_create)
+    parser_repo_subparsers_bundle_create.add_argument(
+        'bundle',
+        metavar=_("BUNDLE"),
+        type=str,
+        help=_("name of bundle to create"),
+    )
 
     # bw repo create
     parser_repo_subparsers_create = parser_repo_subparsers.add_parser("create")

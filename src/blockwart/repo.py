@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, mkdir
 from os.path import isdir, isfile, join
 
 from . import items
@@ -139,6 +139,24 @@ class Repository(object):
         for filename, content in INITIAL_CONTENT.iteritems():
             with open(join(self.path, filename), 'w') as f:
                 f.write(content.strip() + "\n")
+        mkdir(self.bundles_dir)
+        mkdir(self.items_dir)
+
+    def create_bundle(self, bundle_name):
+        """
+        Creates an empty bundle.
+        """
+        if not validate_name(bundle_name):
+            raise ValueError(_("'{}' is not a valid bundle name").format(bundle_name))
+
+        bundle_dir = join(self.bundles_dir, bundle_name)
+
+        # deliberately not using makedirs() so this will raise an
+        # exception if the directory exists
+        mkdir(bundle_dir)
+        mkdir(join(bundle_dir, "files"))
+
+        open(join(bundle_dir, "bundle.py"), 'a').close()
 
     def get_group(self, group_name):
         try:

@@ -17,6 +17,10 @@ DEBUG_BANNER_NODE = DEBUG_BANNER + "\n" + \
     _("> You can access the selected node as 'node'.")
 
 
+def bw_repo_bundle_create(repo, args):
+    repo.create_bundle(args.bundle)
+
+
 def bw_repo_create(repo, args):
     repo.create()
 
