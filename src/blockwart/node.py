@@ -262,6 +262,24 @@ def apply_items(items, workers=1, interactive=False):
                 dep = worker.id
                 status_before, status_after = worker.reap()
 
+                if (
+                    status_before is None or
+                    status_before.correct or
+                    status_after.aborted or
+                    not interactive
+                ):
+                    pass
+                elif status_after.correct:
+                    print(_("\n  {} fixed {}").format(
+                        green("✓"),
+                        bold(dep),
+                    ))
+                else:
+                    print(_("\n  {} failed to fix {}").format(
+                        red("✘"),
+                        bold(dep),
+                    ))
+
                 if status_after is not None and not status_after.correct:
                     # if an item fails or is aborted, all items that depend on
                     # it shall be removed from the queue
