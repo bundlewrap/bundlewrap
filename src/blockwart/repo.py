@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isdir, isfile, join
 
 from . import items
-from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
+from .exceptions import NoSuchGroup, NoSuchNode, NoSuchRepository, RepositoryError
 from .group import Group
 from .node import Node
 from . import utils
@@ -57,7 +57,7 @@ class Repository(object):
         self.nodes_file = join(self.path, FILENAME_NODES)
 
         if not skip_validation and not self.is_repo(repo_path):
-            raise RepositoryError(
+            raise NoSuchRepository(
                 _("'{}' is not a blockwart repository").format(self.path)
             )
 

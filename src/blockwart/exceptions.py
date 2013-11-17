@@ -47,6 +47,14 @@ class ItemDependencyError(RepositoryError):
     pass
 
 
+class NoSuchRepository(RepositoryError):
+    """
+    Raised when trying to get a Repository object from a directory that
+    is not in fact a repository.
+    """
+    pass
+
+
 class UsageException(Exception):
     """
     Raised when command line options don't make sense.

@@ -1,10 +1,12 @@
 import logging
 from os import getcwd
-from sys import argv, stdout
+from sys import argv, exit, stdout
 
 from fabric.network import disconnect_all
 
+from ..exceptions import NoSuchRepository
 from ..repo import Repository
+from ..utils.text import mark_for_translation as _, red
 from .parser import build_parser_bw
 
 
@@ -47,7 +49,12 @@ def main(*args):
         # don't try to validate existing repo with 'bw repo create' etc.
         repo = Repository(getcwd(), skip_validation=True)
     else:
-        repo = Repository(getcwd(), skip_validation=False)
+        try:
+            repo = Repository(getcwd(), skip_validation=False)
+        except NoSuchRepository:
+            print(_("{} The current working directory "
+                    "is not a Blockwart repository.".format(red("!"))))
+            exit(1)
 
     parser_bw = build_parser_bw()
     args = parser_bw.parse_args(args)
