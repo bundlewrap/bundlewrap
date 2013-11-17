@@ -160,11 +160,9 @@ class Repository(object):
                 'groups',
             )
         except KeyError:
-            raise RepositoryError(
-                _("{} must define a 'nodes' variable").format(
-                    self.groups_file,
-                )
-            )
+            raise RepositoryError(_(
+                "{} must define a 'groups' variable"
+            ).format(self.groups_file))
         groups = {}
         for groupname, infodict in flat_group_dict.iteritems():
             if groupname in utils.names(self.nodes):
