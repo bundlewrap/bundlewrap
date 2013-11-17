@@ -17,7 +17,7 @@ def _ansi_wrapper(colorizer):
 
 
 def _bold_wrapper(text):
-    return "\033[1;m{}\033[0m".format(text)
+    return "\033[1m{}\033[0m".format(text)
 
 
 bold = _ansi_wrapper(_bold_wrapper)
