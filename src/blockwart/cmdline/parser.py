@@ -64,6 +64,14 @@ def build_parser_bw():
         help=_("number of nodes to apply to simultaneously"),
         type=int,
     )
+    parser_apply.add_argument(
+        '-P',
+        '--parallel-items',
+        default=4,
+        dest='item_workers',
+        help=_("number of items to apply to simultaneously on each node"),
+        type=int,
+    )
 
     # bw groups
     parser_groups = subparsers.add_parser("groups")

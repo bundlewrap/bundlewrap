@@ -83,6 +83,7 @@ def bw_apply(repo, args):
                     id=node.name,
                     kwargs={
                         'interactive': args.interactive,
+                        'workers': args.item_workers,
                     },
                 )
             while worker_pool.reapable_count > 0:

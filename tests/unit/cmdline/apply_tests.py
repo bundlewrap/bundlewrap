@@ -11,7 +11,7 @@ from blockwart.node import ApplyResult
 class FakeNode(object):
     name = "nodename"
 
-    def apply(self, interactive=False):
+    def apply(self, interactive=False, workers=4):
         assert interactive
         result = ApplyResult(self, (), ())
         result.start = datetime(2013, 8, 10, 0, 0)
@@ -29,6 +29,7 @@ class ApplyTest(TestCase):
         repo.get_node.return_value = node1
         args = MagicMock()
         args.interactive = True
+        args.item_workers = 4
         args.target = "node1"
         output = list(bw_apply(repo, args))
         self.assertTrue(output[0].startswith("\nnodename: run started at "))
