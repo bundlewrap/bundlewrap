@@ -1,7 +1,7 @@
 import re
 
 from .exceptions import RepositoryError
-from .utils import cached_property, getattr_from_file
+from .utils import cached_property
 from .utils.text import mark_for_translation as _, validate_name
 
 
