@@ -10,13 +10,10 @@ from ..utils.text import mark_for_translation as _, red
 from .parser import build_parser_bw
 
 
-def set_up_logging(debug=False, interactive=False, verbose=False):
+def set_up_logging(debug=False, interactive=False):
     if debug:
         format = "%(asctime)s [%(levelname)s:%(name)s:%(process)d] %(message)s"
         level = logging.DEBUG
-    elif verbose:
-        format = "%(message)s"
-        level = logging.INFO
     elif interactive:
         format = "%(message)s"
         level = logging.ERROR
@@ -67,7 +64,6 @@ def main(*args):
     set_up_logging(
         debug=args.debug,
         interactive=interactive,
-        verbose=args.verbose,
     )
 
     output = args.func(repo, args)
