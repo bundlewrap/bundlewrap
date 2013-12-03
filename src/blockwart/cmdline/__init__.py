@@ -1,6 +1,6 @@
 import logging
 from os import getcwd
-from sys import argv, exit, stdout
+from sys import argv, exit, stderr, stdout
 
 from fabric.network import disconnect_all
 
@@ -8,6 +8,16 @@ from ..exceptions import NoSuchRepository
 from ..repo import Repository
 from ..utils.text import mark_for_translation as _, red
 from .parser import build_parser_bw
+
+
+class StdErrFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno >= logging.WARNING
+
+
+class StdOutFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno < logging.WARNING
 
 
 def set_up_logging(debug=False, interactive=False):
@@ -19,14 +29,23 @@ def set_up_logging(debug=False, interactive=False):
         level = logging.ERROR
     else:
         format = "%(message)s"
-        level = logging.WARNING
+        level = logging.INFO
 
-    handler = logging.StreamHandler(stdout)
-    handler.setLevel(level)
     formatter = logging.Formatter(format)
-    handler.setFormatter(formatter)
+
+    handler_stdout = logging.StreamHandler(stdout)
+    handler_stdout.addFilter(StdOutFilter())
+    handler_stdout.setFormatter(formatter)
+    handler_stdout.setLevel(level)
+
+    handler_stderr = logging.StreamHandler(stderr)
+    handler_stderr.addFilter(StdErrFilter())
+    handler_stderr.setFormatter(formatter)
+    handler_stderr.setLevel(level)
+
     logger = logging.getLogger('blockwart')
-    logger.addHandler(handler)
+    logger.addHandler(handler_stdout)
+    logger.addHandler(handler_stderr)
     logger.setLevel(level)
 
     if not debug:

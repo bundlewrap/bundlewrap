@@ -19,7 +19,7 @@ def run_on_node(node, command, may_fail, sudo, interactive):
         stderr = sys.stderr
     else:
         stdout = LineBuffer(LOG.info)
-        stderr = LineBuffer(LOG.info)
+        stderr = LineBuffer(LOG.error)
 
     start = datetime.now()
     result = node.run(
