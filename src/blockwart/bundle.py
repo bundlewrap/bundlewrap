@@ -47,7 +47,7 @@ class Action(object):
         )
 
         if not result.return_code == self.expected_return_code:
-            LOG.warn("{}:action:{}: {}".format(
+            LOG.error("{}:action:{}: {}".format(
                 self.bundle.node.name,
                 self.name,
                 red(_("FAILED")),
@@ -64,7 +64,7 @@ class Action(object):
 
         if self.expected_stderr is not None and \
                 result.stderr != self.expected_stderr:
-            LOG.warn("{}:action:{}: {}".format(
+            LOG.error("{}:action:{}: {}".format(
                 self.bundle.node.name,
                 self.name,
                 red(_("FAILED")),
@@ -78,7 +78,7 @@ class Action(object):
 
         if self.expected_stdout is not None and \
                 result.stdout != self.expected_stdout:
-            LOG.warn("{}:action:{}: {}".format(
+            LOG.error("{}:action:{}: {}".format(
                 self.bundle.node.name,
                 self.name,
                 red(_("FAILED")),
