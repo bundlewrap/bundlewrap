@@ -10,14 +10,26 @@ from ..utils.text import mark_for_translation as _, red
 from .parser import build_parser_bw
 
 
-class StdErrFilter(logging.Filter):
-    def filter(self, record):
-        return record.levelno >= logging.WARNING
+class FilteringHandler(logging.Handler):
+    def emit(self, record):
+        if record.levelno >= logging.WARNING:
+            stream = stderr
+        else:
+            stream = stdout
 
+        try:
+            msg = self.format(record)
 
-class StdOutFilter(logging.Filter):
-    def filter(self, record):
-        return record.levelno < logging.WARNING
+            stream.write(msg)
+            stream.write("\n")
+
+            self.acquire()
+            try:
+                stream.flush()
+            finally:
+                self.release()
+        except:
+            self.handleError(record)
 
 
 def set_up_logging(debug=False, interactive=False):
@@ -33,19 +45,12 @@ def set_up_logging(debug=False, interactive=False):
 
     formatter = logging.Formatter(format)
 
-    handler_stdout = logging.StreamHandler(stdout)
-    handler_stdout.addFilter(StdOutFilter())
-    handler_stdout.setFormatter(formatter)
-    handler_stdout.setLevel(level)
-
-    handler_stderr = logging.StreamHandler(stderr)
-    handler_stderr.addFilter(StdErrFilter())
-    handler_stderr.setFormatter(formatter)
-    handler_stderr.setLevel(level)
+    handler = FilteringHandler()
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
 
     logger = logging.getLogger('blockwart')
-    logger.addHandler(handler_stdout)
-    logger.addHandler(handler_stderr)
+    logger.addHandler(handler)
     logger.setLevel(level)
 
     if not debug:
