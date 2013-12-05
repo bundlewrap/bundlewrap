@@ -32,20 +32,14 @@ class RunTest(TestCase):
         args.may_fail = False
         args.node_workers = 2
         args.sudo = True
-        args.verbose = False
 
         node = FakeNode("node1")
         get_target_nodes.return_value = [node]
 
         output = list(run.bw_run(MagicMock(), args))
 
-        self.assertEqual(output[0:3], [
-            "[node] out: some",
-            "[node] out: output",
-            "[node] err: some errors",
-        ])
-        self.assertTrue(output[3].startswith("[node1] ✘ failed after "))
-        self.assertTrue(output[3].endswith("s (return code 47)"))
+        self.assertTrue(output[0].startswith("[node1] ✘ failed after "))
+        self.assertTrue(output[0].endswith("s (return code 47)"))
 
     @patch('blockwart.cmdline.run.get_target_nodes')
     def test_group_success(self, get_target_nodes):
@@ -54,7 +48,6 @@ class RunTest(TestCase):
         args.may_fail = False
         args.node_workers = 2
         args.sudo = True
-        args.verbose = False
 
         node1 = FakeNode("node1")
         node1.result.return_code = 0

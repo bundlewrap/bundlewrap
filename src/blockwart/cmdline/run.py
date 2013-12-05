@@ -13,13 +13,13 @@ from ..utils.text import green, red
 from ..utils.ui import LineBuffer
 
 
-def run_on_node(node, command, may_fail, sudo, verbose, interactive):
+def run_on_node(node, command, may_fail, sudo, interactive):
     if interactive:
         stdout = sys.stdout
         stderr = sys.stderr
     else:
         stdout = LineBuffer(LOG.info)
-        stderr = LineBuffer(LOG.info)
+        stderr = LineBuffer(LOG.error)
 
     start = datetime.now()
     result = node.run(
@@ -41,11 +41,6 @@ def run_on_node(node, command, may_fail, sudo, verbose, interactive):
             ),
         )
     else:
-        if not verbose and not interactive:
-            # show output of failed command if not already shown by -v
-            for stream in (result.stdout, result.stderr):
-                for line in stream.splitlines():
-                    yield line
         yield "[{}] {} {}".format(
             node.name,
             red("✘"),
@@ -78,7 +73,6 @@ def bw_run(repo, args):
                         args.command,
                         args.may_fail,
                         args.sudo,
-                        args.verbose,
                         args.node_workers == 1,
                     ),
                 )

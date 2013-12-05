@@ -22,14 +22,6 @@ def build_parser_bw():
         help=_("print debugging info (implies -v)"),
     )
     parser.add_argument(
-        '-v',
-        '--verbose',
-        action='store_true',
-        default=False,
-        dest='verbose',
-        help=_("more verbose output"),
-    )
-    parser.add_argument(
         "--version",
         action='version',
         version=VERSION_STRING,
