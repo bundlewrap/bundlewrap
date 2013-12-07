@@ -20,6 +20,17 @@ class RepoTest(TestCase):
         rmtree(self.tmpdir)
 
 
+class LibsProxyTest(RepoTest):
+    """
+    Tests blockwart.repo.LibsProxy.
+    """
+    def test_module(self):
+        with open(join(self.tmpdir, "proxytest.py"), 'w') as f:
+            f.write("answer = 42")
+        p = repo.LibsProxy(self.tmpdir)
+        self.assertEqual(p.proxytest.answer, 42)
+
+
 class RepoBundlesTest(RepoTest):
     """
     Tests blockwart.repo.Repository.bundle_names.

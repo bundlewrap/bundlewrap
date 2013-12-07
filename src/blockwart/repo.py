@@ -1,3 +1,4 @@
+from imp import load_source
 from os import listdir, mkdir
 from os.path import isdir, isfile, join
 
@@ -10,6 +11,7 @@ from .utils.text import mark_for_translation as _, validate_name
 
 DIRNAME_BUNDLES = "bundles"
 DIRNAME_ITEM_TYPES = "items"
+DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 
@@ -47,6 +49,20 @@ nodes = {
 RESERVED_ITEM_TYPE_NAMES = ("actions",)
 
 
+class LibsProxy(object):
+    def __init__(self, path):
+        self.__module_cache = {}
+        self.__path = path
+
+    def __getattr__(self, attrname):
+        if attrname not in self.__module_cache:
+            filename = attrname + ".py"
+            filepath = join(self.__path, filename)
+            m = load_source("blockwart.repo.libs.{}".format(attrname), filepath)
+            self.__module_cache[attrname] = m
+        return self.__module_cache[attrname]
+
+
 class Repository(object):
     def __init__(self, repo_path, skip_validation=False):
         self.path = repo_path
@@ -54,7 +70,10 @@ class Repository(object):
         self.bundles_dir = join(self.path, DIRNAME_BUNDLES)
         self.items_dir = join(self.path, DIRNAME_ITEM_TYPES)
         self.groups_file = join(self.path, FILENAME_GROUPS)
+        self.libs_dir = join(self.path, DIRNAME_LIBS)
         self.nodes_file = join(self.path, FILENAME_NODES)
+
+        self.libs = LibsProxy(self.libs_dir)
 
         if not skip_validation and not self.is_repo(repo_path):
             raise NoSuchRepository(

@@ -21,6 +21,8 @@ This page describes the various subdirectories and files than can exist inside a
 +-----------------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------+
 | ``items/``      | :ref:`dev_item` | This optional subdirectory contains the code for your custom item types.                                                                 |
 +-----------------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------+
+| ``libs/``       | :ref:`libs`     | This optional subdirectory contains reusable custom code for your bundles.                                                               |
++-----------------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------+
 
 
 
@@ -36,6 +38,7 @@ This page describes the various subdirectories and files than can exist inside a
    groups.py
    bundles
    dev_item
+   libs
 
 .. raw:: html
 
