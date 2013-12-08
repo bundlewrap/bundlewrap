@@ -86,6 +86,12 @@ def build_parser_bw():
         type=str,
         help=_("list items for this node"),
     )
+    parser_items.add_argument(
+        '--repr',
+        action='store_true',
+        dest='show_repr',
+        help=_("show more verbose representation of each item"),
+    )
 
     # bw nodes
     parser_nodes = subparsers.add_parser("nodes")
