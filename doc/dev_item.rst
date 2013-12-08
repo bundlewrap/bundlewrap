@@ -27,6 +27,9 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
         PARALLEL_APPLY = True
         REQUIRED_ATTRIBUTES = ['attribute']
 
+        def __repr__(self):
+            return "<Foo attribute:{}>".format(self.attributes['attribute'])
+
         def ask(self, status):
             """
             Returns a string asking the user if this item should be
