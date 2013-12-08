@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from os import environ
 from string import digits, letters
 
 from fabric import colors as _fabric_colors
@@ -8,13 +9,21 @@ from fabric import colors as _fabric_colors
 VALID_NAME_CHARS = digits + letters + "-_.+"
 
 
-def bold(text):
+def _ansi_wrapper(colorizer):
+    if environ.get("BWCOLORS", "1") != "0":
+        return colorizer
+    else:
+        return lambda s, **kwargs: s
+
+
+def _bold_wrapper(text):
     return "\033[1m{}\033[0m".format(text)
 
 
-green = _fabric_colors.green
-red = _fabric_colors.red
-yellow = _fabric_colors.yellow
+bold = _ansi_wrapper(_bold_wrapper)
+green = _ansi_wrapper(_fabric_colors.green)
+red = _ansi_wrapper(_fabric_colors.red)
+yellow = _ansi_wrapper(_fabric_colors.yellow)
 
 
 def mark_for_translation(s):
