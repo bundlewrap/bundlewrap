@@ -4,6 +4,7 @@ from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .groups import bw_groups
+from .items import bw_items
 from .nodes import bw_nodes
 from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_plot
 from .run import bw_run
@@ -74,6 +75,16 @@ def build_parser_bw():
         action='store_true',
         dest='show_nodes',
         help=_("show nodes for each group"),
+    )
+
+    # bw items
+    parser_items = subparsers.add_parser("items")
+    parser_items.set_defaults(func=bw_items)
+    parser_items.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("list items for this node"),
     )
 
     # bw nodes
