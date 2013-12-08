@@ -40,6 +40,12 @@ class AptPkg(Item):
     ITEM_TYPE_NAME = "pkg_apt"
     PARALLEL_APPLY = False
 
+    def __repr__(self):
+        return "<AptPkg name:{} installed:{}>".format(
+            self.name,
+            self.attributes['installed'],
+        )
+
     def ask(self, status):
         before = _("installed") if status.info['installed'] \
             else _("not installed")

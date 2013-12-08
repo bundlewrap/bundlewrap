@@ -34,6 +34,12 @@ class Group(Item):
     ITEM_TYPE_NAME = "group"
     REQUIRED_ATTRIBUTES = ['gid']
 
+    def __repr__(self):
+        return "<Group name:{} gid:{}>".format(
+            self.name,
+            self.attributes['gid'],
+        )
+
     def ask(self, status):
         if not status.info['exists']:
             return _("'{}' not found in /etc/group").format(self.name)

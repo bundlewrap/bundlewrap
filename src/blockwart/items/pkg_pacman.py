@@ -49,6 +49,13 @@ class PacmanPkg(Item):
     ITEM_TYPE_NAME = "pkg_pacman"
     PARALLEL_APPLY = False
 
+    def __repr__(self):
+        return "<PacmanPkg name:{} installed:{} tarball:{}>".format(
+            self.name,
+            self.attributes['installed'],
+            self.attributes['tarball'],
+        )
+
     def ask(self, status):
         before = _("installed") if status.info['installed'] \
             else _("not installed")

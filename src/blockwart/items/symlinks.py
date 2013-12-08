@@ -27,6 +27,14 @@ class Symlink(Item):
     ITEM_TYPE_NAME = "symlink"
     REQUIRED_ATTRIBUTES = ['target']
 
+    def __repr__(self):
+        return "<Symlink path:{} target:{} owner:{} group:{}>".format(
+            quote(self.name),
+            self.attributes['target'],
+            self.attributes['owner'],
+            self.attributes['group'],
+        )
+
     def ask(self, status):
         if 'type' in status.info['needs_fixing']:
             if not status.info['path_info'].exists:

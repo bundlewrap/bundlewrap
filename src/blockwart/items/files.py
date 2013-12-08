@@ -105,6 +105,15 @@ class File(Item):
     }
     ITEM_TYPE_NAME = "file"
 
+    def __repr__(self):
+        return "<File path:{} owner:{} group:{} mode:{} content_hash:{}>".format(
+            quote(self.name),
+            self.attributes['owner'],
+            self.attributes['group'],
+            self.attributes['mode'],
+            self.content_hash,
+        )
+
     @cached_property
     def content(self):
         return CONTENT_PROCESSORS[self.attributes['content_type']](self)
