@@ -87,6 +87,15 @@ def build_parser_bw():
     )
     parser_nodes.add_argument(
         '-g',
+        '--filter-group',
+        default=None,
+        dest='filter_group',
+        metavar=_("GROUP"),
+        required=False,
+        type=str,
+        help=_("show only nodes in the given group"),
+    )
+    parser_nodes.add_argument(
         '--groups',
         action='store_true',
         dest='show_groups',

@@ -28,9 +28,12 @@ class NodesTest(TestCase):
         node3.hostname = "node3.example.com"
         node3.groups = []
         self.repo.nodes = [node1, node2, node3]
+        group2.nodes = [node1, node2]
+        self.repo.get_group.return_value = group2
 
     def test_simple_node_list(self):
         args = MagicMock()
+        args.filter_group = None
         args.show_hostnames = False
         args.show_groups = False
         output = list(nodes.bw_nodes(self.repo, args))
@@ -41,6 +44,7 @@ class NodesTest(TestCase):
 
     def test_hostname_list(self):
         args = MagicMock()
+        args.filter_group = None
         args.show_hostnames = True
         args.show_groups = False
         output = list(nodes.bw_nodes(self.repo, args))
@@ -51,6 +55,7 @@ class NodesTest(TestCase):
 
     def test_groups_list(self):
         args = MagicMock()
+        args.filter_group = None
         args.show_hostnames = False
         args.show_groups = True
         output = list(nodes.bw_nodes(self.repo, args))
@@ -60,5 +65,19 @@ class NodesTest(TestCase):
                 "node1: group1, group2",
                 "node2: group2",
                 "node3: ",
+            ],
+        )
+
+    def test_group_filter(self):
+        args = MagicMock()
+        args.filter_group = "group2"
+        args.show_hostnames = False
+        args.show_groups = False
+        output = list(nodes.bw_nodes(self.repo, args))
+        self.assertEqual(
+            output,
+            [
+                "node1",
+                "node2",
             ],
         )

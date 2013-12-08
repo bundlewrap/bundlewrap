@@ -2,7 +2,11 @@ from ..utils import names
 
 
 def bw_nodes(repo, args):
-    for node in repo.nodes:
+    if args.filter_group is not None:
+        nodes = repo.get_group(args.filter_group).nodes
+    else:
+        nodes = repo.nodes
+    for node in nodes:
         line = ""
         if args.show_hostnames:
             line += node.hostname
