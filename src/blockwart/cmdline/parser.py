@@ -87,6 +87,16 @@ def build_parser_bw():
         help=_("list items for this node"),
     )
     parser_items.add_argument(
+        '-w',
+        '--write-file-previews',
+        default=None,
+        dest='file_preview_path',
+        metavar=_("DIRECTORY"),
+        required=False,
+        type=str,
+        help=_("create DIRECTORY and fill it with rendered file previews"),
+    )
+    parser_items.add_argument(
         '--repr',
         action='store_true',
         dest='show_repr',
