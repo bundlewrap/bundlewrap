@@ -2,28 +2,19 @@
 from __future__ import unicode_literals
 
 from string import digits, letters
-from sys import stdout
 
 from fabric import colors as _fabric_colors
 
 VALID_NAME_CHARS = digits + letters + "-_.+"
 
 
-def _ansi_wrapper(colorizer):
-    if stdout.isatty():
-        return colorizer
-    else:
-        return lambda s, **kwargs: s
-
-
-def _bold_wrapper(text):
+def bold(text):
     return "\033[1m{}\033[0m".format(text)
 
 
-bold = _ansi_wrapper(_bold_wrapper)
-green = _ansi_wrapper(_fabric_colors.green)
-red = _ansi_wrapper(_fabric_colors.red)
-yellow = _ansi_wrapper(_fabric_colors.yellow)
+green = _fabric_colors.green
+red = _fabric_colors.red
+yellow = _fabric_colors.yellow
 
 
 def mark_for_translation(s):
