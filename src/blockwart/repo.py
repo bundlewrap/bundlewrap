@@ -62,6 +62,13 @@ class LibsProxy(object):
             self.__module_cache[attrname] = m
         return self.__module_cache[attrname]
 
+    def __getstate__(self):
+        return self.__path
+
+    def __setstate__(self, state):
+        self.__module_cache = {}
+        self.__path = state
+
 
 class Repository(object):
     def __init__(self, repo_path, skip_validation=False):
