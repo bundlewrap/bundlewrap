@@ -47,6 +47,14 @@ class Directory(Item):
     }
     ITEM_TYPE_NAME = "directory"
 
+    def __repr__(self):
+        return "<Directory path:{} owner:{} group:{} mode:{}>".format(
+            quote(self.name),
+            self.attributes['owner'],
+            self.attributes['group'],
+            self.attributes['mode'],
+        )
+
     def ask(self, status):
         if 'type' in status.info['needs_fixing']:
             if not status.info['path_info'].exists:

@@ -91,6 +91,9 @@ class Item(object):
                 copy(attribute_default),
             ))
 
+    def __str__(self):
+        return self.id
+
     def __reduce__(self):
         return (
             unpickle_item_class,

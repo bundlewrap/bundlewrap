@@ -80,6 +80,16 @@ class User(Item):
     ITEM_TYPE_NAME = "user"
     REQUIRED_ATTRIBUTES = ['gid', 'groups', 'uid']
 
+    def __repr__(self):
+        return "<User name:{} uid:{} gid:{} home:{} shell:{} groups:{}>".format(
+            self.name,
+            self.attributes['uid'],
+            self.attributes['gid'],
+            self.attributes['home'],
+            self.attributes['shell'],
+            ",".join(self.attributes['groups']),
+        )
+
     def ask(self, status):
         if not status.info['exists']:
             return _("'{}' not found in /etc/passwd").format(self.name)
