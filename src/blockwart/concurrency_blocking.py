@@ -67,26 +67,20 @@ def _worker_process(wid, messages, pipe, stdin=None):
                 else:
                     target = getattr(msg['target_obj'], msg['target'])
 
-                result = {
-                    'raised_exception': False,
-                    'return_value': target(
-                        *msg['args'],
-                        **msg['kwargs']
-                    ),
-                }
-                if isgenerator(result['return_value']):
-                    result['return_value'] = list(result['return_value'])
+                traceback = None
+                return_value = target(*msg['args'], **msg['kwargs'])
+
+                if isgenerator(return_value):
+                    return_value = list(return_value)
             except Exception:
                 traceback = "".join(format_exception(*sys.exc_info()))
-                result = {
-                    'raised_exception': True,
-                    'traceback': traceback,
-                }
+                return_value = None
             finally:
                 messages.put({'msg': 'FINISHED_WORK',
                               'wid': wid,
                               'task_id': msg['task_id'],
-                              'result': result})
+                              'return_value': return_value,
+                              'traceback': traceback})
 
 
 class BlockingWorkerPool(object):
@@ -119,7 +113,16 @@ class BlockingWorkerPool(object):
         """
         Blocks until a message from a worker is received.
         """
-        return self.messages.get()
+        msg = self.messages.get()
+        if msg['msg'] == 'FINISHED_WORK':
+            self.jobs_open -= 1
+            if not msg['traceback'] is None:
+                # check for exception in child process and raise it
+                # here in the parent
+                raise WorkerException(msg['traceback'])
+        elif msg['msg'] == 'LOG_ENTRY':
+            LOG.handle(msg['log_entry'])
+        return msg
 
     def start_task(self, wid, target, task_id=None, args=None, kwargs=None):
         """
@@ -161,9 +164,6 @@ class BlockingWorkerPool(object):
         # The worker will simply keep blocking at his "pipe.read()".
         self.idle_workers.append(wid)
 
-    def job_done(self):
-        self.jobs_open -= 1
-
     def quit(self, wid):
         """
         Shutdown a worker.
@@ -200,3 +200,6 @@ class BlockingWorkerPool(object):
             (process, pipe) = self.workers[wid]
             pipe.send({'msg': 'NOOP'})
         self.idle_workers = []
+
+    def keep_running(self):
+        return self.jobs_open > 0 or self.workers_alive

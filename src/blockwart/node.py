@@ -237,12 +237,11 @@ def apply_items(items, workers=1, interactive=False):
 
         # This whole thing is set in motion because every worker
         # initially asks for work. He also reports back when he finished
-        # a job.
-        while worker_pool.jobs_open > 0 or worker_pool.workers_alive:
+        # a job. Actually, all these conditions are internal to
+        # worker_pool -- it will tell us whether we must keep going:
+        while worker_pool.keep_running():
             msg = worker_pool.get_event()
-            if msg['msg'] == 'LOG_ENTRY':
-                LOG.handle(msg['log_entry'])
-            elif msg['msg'] == 'REQUEST_WORK':
+            if msg['msg'] == 'REQUEST_WORK':
                 if items_without_deps:
                     # There's work! Do it.
                     item = items_without_deps.pop()
@@ -265,12 +264,12 @@ def apply_items(items, workers=1, interactive=False):
                         # quit() decreases workers_alive.
                         worker_pool.quit(msg['wid'])
             elif msg['msg'] == 'FINISHED_WORK':
-                # First element of this tuple is the task's id.
-                dep = msg['task_id']
-                status_before, status_after = msg['result']['return_value']
+                # worker_pool automatically decreases jobs_open when it
+                # sees a 'FINISHED_WORK' message.
 
-                # job_done() decreases jobs_open.
-                worker_pool.job_done()
+                # The task's id is the item we just processed.
+                dep = msg['task_id']
+                status_before, status_after = msg['return_value']
 
                 # This worker is now free again. He will ask for new
                 # work on his own.
