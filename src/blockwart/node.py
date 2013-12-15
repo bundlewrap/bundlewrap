@@ -441,6 +441,49 @@ def run_actions(actions, timing, workers=1, interactive=False):
                 worker_pool.wait()
 
 
+def verify_items(items, workers=1):
+    # make sure items is not a generator
+    items = list(items)
+
+    with WorkerPool(workers=workers) as worker_pool:
+        while (
+            items or
+            worker_pool.busy_count > 0 or
+            worker_pool.reapable_count > 0
+        ):
+            while items:
+                worker = worker_pool.get_idle_worker(block=False)
+                if worker is None:
+                    break
+                item = items.pop()
+                worker.start_task(
+                    item.get_status,
+                    id=item.node.name + ":" + item.id,
+                )
+
+            while worker_pool.reapable_count > 0:
+                worker = worker_pool.get_reapable_worker()
+                item_id = worker.id
+                item_status = worker.reap()
+                if not item_status.correct:
+                    LOG.warning("{} {}".format(
+                        red("✘"),
+                        item_id,
+                    ))
+                else:
+                    LOG.info("{} {}".format(
+                        green("✓"),
+                        item_id,
+                    ))
+
+            if (
+                worker_pool.busy_count > 0 and
+                not items and
+                not worker_pool.reapable_count
+            ):
+                worker_pool.wait()
+
+
 class Node(object):
     def __init__(self, repo, name, infodict=None):
         if infodict is None:
@@ -550,6 +593,12 @@ class Node(object):
             self.hostname,
             local_path,
             remote_path,
+        )
+
+    def verify(self, workers=4):
+        verify_items(
+            self.items,
+            workers=workers,
         )
 
 

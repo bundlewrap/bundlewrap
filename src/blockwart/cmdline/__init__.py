@@ -1,5 +1,9 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import logging
 from os import getcwd
+import re
 from sys import argv, exit, stderr, stdout
 
 from fabric.network import disconnect_all
@@ -8,6 +12,8 @@ from ..exceptions import NoSuchRepository
 from ..repo import Repository
 from ..utils.text import mark_for_translation as _, red
 from .parser import build_parser_bw
+
+ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
 
 
 class FilteringHandler(logging.Handler):
@@ -20,7 +26,10 @@ class FilteringHandler(logging.Handler):
         try:
             msg = self.format(record)
 
-            stream.write(msg)
+            if stream.isatty():
+                stream.write(msg)
+            else:
+                stream.write(ANSI_ESCAPE.sub("", msg).encode('UTF-8'))
             stream.write("\n")
 
             self.acquire()

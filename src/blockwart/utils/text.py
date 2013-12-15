@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from os import environ
 from string import digits, letters
-from sys import stdout
 
 from fabric import colors as _fabric_colors
 
@@ -10,7 +10,7 @@ VALID_NAME_CHARS = digits + letters + "-_.+"
 
 
 def _ansi_wrapper(colorizer):
-    if stdout.isatty():
+    if environ.get("BWCOLORS", "1") != "0":
         return colorizer
     else:
         return lambda s, **kwargs: s

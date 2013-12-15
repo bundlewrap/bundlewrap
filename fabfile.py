@@ -66,6 +66,7 @@ def run_pylint(ignore_warnings=True):
 
 def run_tests(coverage=True):
     sys.path.append(PROJECT_PATH + "/src")
+    os.environ['BWCOLORS'] = "0"
     with lcd(PROJECT_PATH + "/tests"):
         if coverage:
             local(
