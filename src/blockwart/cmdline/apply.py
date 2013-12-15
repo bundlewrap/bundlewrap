@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ..concurrency import WorkerPool
+from ..concurrency_blocking import BlockingWorkerPool
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, red, yellow
@@ -54,42 +54,39 @@ def format_node_item_result(result):
 def bw_apply(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
     worker_count = 1 if args.interactive else args.node_workers
-    with WorkerPool(workers=worker_count) as worker_pool:
+    with BlockingWorkerPool(workers=worker_count) as worker_pool:
         results = {}
-        while (
-                target_nodes or
-                worker_pool.busy_count > 0 or
-                worker_pool.reapable_count > 0
-        ):
-            while target_nodes:
-                worker = worker_pool.get_idle_worker(block=False)
-                if worker is None:
-                    break
-                node = target_nodes.pop()
-                start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                if args.interactive:
-                    yield _("\n{}: run started at {}").format(
-                        bold(node.name),
-                        start_time,
+        while worker_pool.keep_running():
+            msg = worker_pool.get_event()
+            if msg['msg'] == 'REQUEST_WORK':
+                if target_nodes:
+                    node = target_nodes.pop()
+                    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    if args.interactive:
+                        yield _("\n{}: run started at {}").format(
+                            bold(node.name),
+                            start_time,
+                        )
+                    else:
+                        LOG.info(_("{}: run started at {}").format(
+                            node.name,
+                            start_time,
+                        ))
+
+                    worker_pool.start_task(
+                        msg['wid'],
+                        node.apply,
+                        task_id=node.name,
+                        kwargs={
+                            'interactive': args.interactive,
+                            'workers': args.item_workers,
+                        },
                     )
                 else:
-                    LOG.info(_("{}: run started at {}").format(
-                        node.name,
-                        start_time,
-                    ))
-
-                worker.start_task(
-                    node.apply,
-                    id=node.name,
-                    kwargs={
-                        'interactive': args.interactive,
-                        'workers': args.item_workers,
-                    },
-                )
-            while worker_pool.reapable_count > 0:
-                worker = worker_pool.get_reapable_worker()
-                node_name = worker.id
-                results[node_name] = worker.reap()
+                    worker_pool.quit(msg['wid'])
+            elif msg['msg'] == 'FINISHED_WORK':
+                node_name = msg['task_id']
+                results[node_name] = msg['return_value']
                 if args.interactive:
                     yield _("\n  {}: run completed after {}s\n").format(
                         bold(node_name),
@@ -112,9 +109,3 @@ def bw_apply(repo, args):
                         node_name,
                         format_node_action_result(results[node_name]),
                     ))
-            if (
-                worker_pool.busy_count > 0 and
-                not target_nodes and
-                not worker_pool.reapable_count
-            ):
-                worker_pool.wait()
