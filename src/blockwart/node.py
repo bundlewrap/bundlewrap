@@ -407,27 +407,28 @@ def run_actions(actions, timing, workers=1, interactive=False):
     # filter actions with wrong timing
     actions = [action for action in actions if action.timing == timing]
 
-    with WorkerPool(workers=workers) as worker_pool:
-        while (
-            actions or
-            worker_pool.busy_count > 0 or
-            worker_pool.reapable_count > 0
-        ):
-            while actions:
-                worker = worker_pool.get_idle_worker(block=False)
-                if worker is None:
-                    break
-                action = actions.pop()
-                worker.start_task(
-                    action.get_result,
-                    id=action.name,
-                    kwargs={'interactive': interactive},
-                )
-
-            while worker_pool.reapable_count > 0:
-                worker = worker_pool.get_reapable_worker()
-                action_name = worker.id
-                result = worker.reap()
+    # Unlike Node.apply_items, "actions" is a simple list of jobs that
+    # have to be done. No fancy stuff such as dependencies. Thus, the
+    # code's a lot shorter.
+    with BlockingWorkerPool(workers=workers) as worker_pool:
+        while worker_pool.keep_running():
+            msg = worker_pool.get_event()
+            if msg['msg'] == 'REQUEST_WORK':
+                if actions:
+                    action = actions.pop()
+                    worker_pool.start_task(
+                        msg['wid'],
+                        action.get_result,
+                        task_id=action.name,
+                        kwargs={'interactive': interactive},
+                    )
+                else:
+                    # Just as in real life: If there's no job left, this
+                    # worker must die.
+                    worker_pool.quit(msg['wid'])
+            elif msg['msg'] == 'FINISHED_WORK':
+                action_name = msg['task_id']
+                result = msg['return_value']
                 if interactive:
                     if result is False:
                         print(_("\n  {} action:{} failed").format(
@@ -440,13 +441,6 @@ def run_actions(actions, timing, workers=1, interactive=False):
                             bold(action_name),
                         ))
                 yield result
-
-            if (
-                worker_pool.busy_count > 0 and
-                not actions and
-                not worker_pool.reapable_count
-            ):
-                worker_pool.wait()
 
 
 def verify_items(items, workers=1):
