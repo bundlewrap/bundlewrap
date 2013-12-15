@@ -5,7 +5,7 @@ import sys
 
 from datetime import datetime
 
-from ..concurrency_blocking import BlockingWorkerPool
+from ..concurrency import WorkerPool
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
@@ -53,7 +53,7 @@ def run_on_node(node, command, may_fail, sudo, interactive):
 
 def bw_run(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
-    with BlockingWorkerPool(workers=args.node_workers) as worker_pool:
+    with WorkerPool(workers=args.node_workers) as worker_pool:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
             if msg['msg'] == 'REQUEST_WORK':

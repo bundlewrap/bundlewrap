@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ..concurrency_blocking import BlockingWorkerPool
+from ..concurrency import WorkerPool
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, red, yellow
@@ -54,7 +54,7 @@ def format_node_item_result(result):
 def bw_apply(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
     worker_count = 1 if args.interactive else args.node_workers
-    with BlockingWorkerPool(workers=worker_count) as worker_pool:
+    with WorkerPool(workers=worker_count) as worker_pool:
         results = {}
         while worker_pool.keep_running():
             msg = worker_pool.get_event()

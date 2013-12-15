@@ -11,7 +11,7 @@ from time import time
 
 from . import operations
 from .bundle import Bundle
-from .concurrency_blocking import BlockingWorkerPool
+from .concurrency import WorkerPool
 from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from .items import ItemStatus
 from .utils import cached_property, LOG
@@ -230,7 +230,7 @@ def apply_items(items, workers=1, interactive=False):
     items = flatten_dependencies(items)
     items = inject_concurrency_blockers(items)
 
-    with BlockingWorkerPool(workers=workers) as worker_pool:
+    with WorkerPool(workers=workers) as worker_pool:
         items_with_deps, items_without_deps = \
             split_items_without_deps(items)
 
@@ -409,7 +409,7 @@ def run_actions(actions, timing, workers=1, interactive=False):
     # Unlike Node.apply_items, "actions" is a simple list of jobs that
     # have to be done. No fancy stuff such as dependencies. Thus, the
     # code's a lot shorter.
-    with BlockingWorkerPool(workers=workers) as worker_pool:
+    with WorkerPool(workers=workers) as worker_pool:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
             if msg['msg'] == 'REQUEST_WORK':
@@ -446,7 +446,7 @@ def verify_items(items, workers=1):
     # make sure items is not a generator
     items = list(items)
 
-    with BlockingWorkerPool(workers=workers) as worker_pool:
+    with WorkerPool(workers=workers) as worker_pool:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
             if msg['msg'] == 'REQUEST_WORK':
