@@ -233,34 +233,45 @@ def apply_items(items, workers=1, interactive=False):
     with WorkerPool(workers=workers) as worker_pool:
         items_with_deps, items_without_deps = \
             split_items_without_deps(items)
-        # there are three things we want to do continuously:
-        # 1) process items without deps as long as we have free workers
-        # 2) get results from finished ("reapable") workers
-        # 3) if there is nothing else to do, wait for a worker to finish
-        while (
-            items_without_deps or
-            worker_pool.busy_count > 0 or
-            worker_pool.reapable_count > 0
-        ):
-            while items_without_deps:
-                # 1
-                worker = worker_pool.get_idle_worker(block=False)
-                if worker is None:
-                    break
-                item = items_without_deps.pop()
-                worker.start_task(
-                    item.apply,
-                    id=item.id,
-                    kwargs={'interactive': interactive},
-                )
 
-            while worker_pool.reapable_count > 0:
-                # 2
-                worker = worker_pool.get_reapable_worker()
-                # when we started the task (see above) we set
-                # the worker id to the item id
-                dep = worker.id
-                status_before, status_after = worker.reap()
+        # This whole thing is set in motion because every worker
+        # initially asks for work. He also reports back when he finished
+        # a job. Actually, all these conditions are internal to
+        # worker_pool -- it will tell us whether we must keep going:
+        while worker_pool.keep_running():
+            msg = worker_pool.get_event()
+            if msg['msg'] == 'REQUEST_WORK':
+                if items_without_deps:
+                    # There's work! Do it.
+                    item = items_without_deps.pop()
+
+                    # start_task() increases jobs_open.
+                    worker_pool.start_task(
+                        msg['wid'],
+                        item.apply,
+                        task_id=item.id,
+                        kwargs={'interactive': interactive},
+                    )
+                else:
+                    if worker_pool.jobs_open > 0:
+                        # No work right now, but another worker might
+                        # finish and "create" a new job. Keep this
+                        # worker idle.
+                        worker_pool.mark_idle(msg['wid'])
+                    else:
+                        # No work, no outstanding jobs. We're done.
+                        # quit() decreases workers_alive.
+                        worker_pool.quit(msg['wid'])
+            elif msg['msg'] == 'FINISHED_WORK':
+                # worker_pool automatically decreases jobs_open when it
+                # sees a 'FINISHED_WORK' message.
+
+                # The task's id is the item we just processed.
+                dep = msg['task_id']
+                status_before, status_after = msg['return_value']
+
+                # This worker is now free again. He will ask for new
+                # work on his own.
 
                 if (
                     status_before is None or
@@ -315,13 +326,9 @@ def apply_items(items, workers=1, interactive=False):
                     #   ^- ignore from dummy items
                     yield (status_before, status_after)
 
-            if (
-                worker_pool.busy_count > 0 and
-                not items_without_deps and
-                not worker_pool.reapable_count
-            ):
-                # 3
-                worker_pool.wait()
+                # Finally, we have a new job queue. Thus, tell all idle
+                # workers to ask for work again.
+                worker_pool.activate_idle_workers()
 
     # we have no items without deps left and none are processing
     # there must be a loop
@@ -399,27 +406,28 @@ def run_actions(actions, timing, workers=1, interactive=False):
     # filter actions with wrong timing
     actions = [action for action in actions if action.timing == timing]
 
+    # Unlike Node.apply_items, "actions" is a simple list of jobs that
+    # have to be done. No fancy stuff such as dependencies. Thus, the
+    # code's a lot shorter.
     with WorkerPool(workers=workers) as worker_pool:
-        while (
-            actions or
-            worker_pool.busy_count > 0 or
-            worker_pool.reapable_count > 0
-        ):
-            while actions:
-                worker = worker_pool.get_idle_worker(block=False)
-                if worker is None:
-                    break
-                action = actions.pop()
-                worker.start_task(
-                    action.get_result,
-                    id=action.name,
-                    kwargs={'interactive': interactive},
-                )
-
-            while worker_pool.reapable_count > 0:
-                worker = worker_pool.get_reapable_worker()
-                action_name = worker.id
-                result = worker.reap()
+        while worker_pool.keep_running():
+            msg = worker_pool.get_event()
+            if msg['msg'] == 'REQUEST_WORK':
+                if actions:
+                    action = actions.pop()
+                    worker_pool.start_task(
+                        msg['wid'],
+                        action.get_result,
+                        task_id=action.name,
+                        kwargs={'interactive': interactive},
+                    )
+                else:
+                    # Just as in real life: If there's no job left, this
+                    # worker must die.
+                    worker_pool.quit(msg['wid'])
+            elif msg['msg'] == 'FINISHED_WORK':
+                action_name = msg['task_id']
+                result = msg['return_value']
                 if interactive:
                     if result is False:
                         print(_("\n  {} action:{} failed").format(
@@ -433,38 +441,27 @@ def run_actions(actions, timing, workers=1, interactive=False):
                         ))
                 yield result
 
-            if (
-                worker_pool.busy_count > 0 and
-                not actions and
-                not worker_pool.reapable_count
-            ):
-                worker_pool.wait()
-
 
 def verify_items(items, workers=1):
     # make sure items is not a generator
     items = list(items)
 
     with WorkerPool(workers=workers) as worker_pool:
-        while (
-            items or
-            worker_pool.busy_count > 0 or
-            worker_pool.reapable_count > 0
-        ):
-            while items:
-                worker = worker_pool.get_idle_worker(block=False)
-                if worker is None:
-                    break
-                item = items.pop()
-                worker.start_task(
-                    item.get_status,
-                    id=item.node.name + ":" + item.id,
-                )
-
-            while worker_pool.reapable_count > 0:
-                worker = worker_pool.get_reapable_worker()
-                item_id = worker.id
-                item_status = worker.reap()
+        while worker_pool.keep_running():
+            msg = worker_pool.get_event()
+            if msg['msg'] == 'REQUEST_WORK':
+                if items:
+                    item = items.pop()
+                    worker_pool.start_task(
+                        msg['wid'],
+                        item.get_status,
+                        task_id=item.node.name + ":" + item.id,
+                    )
+                else:
+                    worker_pool.quit(msg['wid'])
+            elif msg['msg'] == 'FINISHED_WORK':
+                item_id = msg['task_id']
+                item_status = msg['return_value']
                 if not item_status.correct:
                     LOG.warning("{} {}".format(
                         red("✘"),
@@ -475,13 +472,6 @@ def verify_items(items, workers=1):
                         green("✓"),
                         item_id,
                     ))
-
-            if (
-                worker_pool.busy_count > 0 and
-                not items and
-                not worker_pool.reapable_count
-            ):
-                worker_pool.wait()
 
 
 class Node(object):

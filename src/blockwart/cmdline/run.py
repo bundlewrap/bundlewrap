@@ -54,35 +54,25 @@ def run_on_node(node, command, may_fail, sudo, interactive):
 def bw_run(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
     with WorkerPool(workers=args.node_workers) as worker_pool:
-        while (
-                target_nodes or
-                worker_pool.busy_count > 0 or
-                worker_pool.reapable_count > 0
-        ):
-            while target_nodes:
-                worker = worker_pool.get_idle_worker(block=False)
-                if worker is None:
-                    break
-                node = target_nodes.pop()
-
-                worker.start_task(
-                    run_on_node,
-                    id=node.name,
-                    args=(
-                        node,
-                        args.command,
-                        args.may_fail,
-                        args.sudo,
-                        args.node_workers == 1,
-                    ),
-                )
-            while worker_pool.reapable_count > 0:
-                worker = worker_pool.get_reapable_worker()
-                for line in worker.reap():
+        while worker_pool.keep_running():
+            msg = worker_pool.get_event()
+            if msg['msg'] == 'REQUEST_WORK':
+                if target_nodes:
+                    node = target_nodes.pop()
+                    worker_pool.start_task(
+                        msg['wid'],
+                        run_on_node,
+                        task_id=node.name,
+                        args=(
+                            node,
+                            args.command,
+                            args.may_fail,
+                            args.sudo,
+                            args.node_workers == 1,
+                        ),
+                    )
+                else:
+                    worker_pool.quit(msg['wid'])
+            elif msg['msg'] == 'FINISHED_WORK':
+                for line in msg['return_value']:
                     yield line
-            if (
-                worker_pool.busy_count > 0 and
-                not target_nodes and
-                not worker_pool.reapable_count
-            ):
-                worker_pool.wait()

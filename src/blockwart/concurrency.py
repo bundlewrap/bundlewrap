@@ -3,7 +3,6 @@ from logging import getLogger, Handler
 from multiprocessing import Manager, Pipe, Process
 from os import dup, fdopen
 import sys
-from time import sleep
 from traceback import format_exception
 
 from fabric.network import disconnect_all
@@ -20,12 +19,12 @@ class ChildLogHandler(Handler):
     Captures log events in child processes and inserts them into the
     queue to be processed by the parent process.
     """
-    def __init__(self, queue):
+    def __init__(self, messages):
         Handler.__init__(self)
-        self.queue = queue
+        self.messages = messages
 
     def emit(self, record):
-        self.queue.put(record)
+        self.messages.put({'msg': 'LOG_ENTRY', 'log_entry': record})
 
 
 def _patch_logger(logger, new_handler=None):
@@ -36,7 +35,7 @@ def _patch_logger(logger, new_handler=None):
     logger.setLevel(0)
 
 
-def _worker_process(pipe, log_queue, stdin=None):
+def _worker_process(wid, messages, pipe, stdin=None):
     """
     This is what actually runs in the child process.
     """
@@ -47,59 +46,92 @@ def _worker_process(pipe, log_queue, stdin=None):
     # replace the child logger with one that will send logs back to the
     # parent process
     from blockwart import utils
-    child_log_handler = ChildLogHandler(log_queue)
+    child_log_handler = ChildLogHandler(messages)
     _patch_logger(getLogger(), child_log_handler)
     _patch_logger(utils.LOG)
 
     while True:
-        if not pipe.poll(.01):
-            continue
-        message = pipe.recv()
-        if message['order'] == 'die':
+        # These two calls can block for an infinite amount of time. We
+        # request work via the public queue and, eventually, some day,
+        # we might get an answer via our private pipe.
+        messages.put({'msg': 'REQUEST_WORK', 'wid': wid})
+        msg = pipe.recv()
+        if msg['msg'] == 'DIE':
             # clean up Fabric connections first...
             disconnect_all()
             # then die
             return
-        else:
+        elif msg['msg'] == 'NOOP':
+            pass
+        elif msg['msg'] == 'RUN':
             try:
-                if message['target_obj'] is None:
-                    target = message['target']
+                if msg['target_obj'] is None:
+                    target = msg['target']
                 else:
-                    target = getattr(message['target_obj'], message['target'])
+                    target = getattr(msg['target_obj'], msg['target'])
 
-                result = {
-                    'raised_exception': False,
-                    'return_value': target(
-                        *message['args'],
-                        **message['kwargs']
-                    ),
-                }
-                if isgenerator(result['return_value']):
-                    result['return_value'] = list(result['return_value'])
+                traceback = None
+                return_value = target(*msg['args'], **msg['kwargs'])
+
+                if isgenerator(return_value):
+                    return_value = list(return_value)
             except Exception:
                 traceback = "".join(format_exception(*sys.exc_info()))
-                result = {
-                    'raised_exception': True,
-                    'traceback': traceback,
-                }
+                return_value = None
             finally:
-                pipe.send(result)
+                messages.put({'msg': 'FINISHED_WORK',
+                              'wid': wid,
+                              'task_id': msg['task_id'],
+                              'return_value': return_value,
+                              'traceback': traceback})
 
 
-class Worker(object):
+class WorkerPool(object):
     """
-    Manages a background worker process.
+    Manages a bunch of worker processes.
     """
-    def __init__(self, stdin=None):
-        self.id = None
-        self.started = False
-        self.log_queue = Manager().Queue()
-        self.pipe, child_pipe = Pipe()
-        self.process = Process(
-            target=_worker_process,
-            args=(child_pipe, self.log_queue, stdin),
-        )
-        self.process.start()
+    def __init__(self, workers=4):
+        if workers < 1:
+            raise ValueError(_("at least one worker is required"))
+
+        # A "worker" is simply a tuple consisting of a Process object
+        # and our end of a pipe. Each worker is always adressed with
+        # it's "worker id" (wid): That's the index of the tuple in
+        # self.workers.
+        self.workers = []
+
+        # Lists of wids. idle_workers are those that are marked
+        # explicitly as idle (don't confuse this with workers that
+        # aren't processing a job right now).
+        self.idle_workers = []
+        self.workers_alive = range(workers)
+
+        # We don't need to know *which* worker is currently processing a
+        # job. We only need to know how many there are.
+        self.jobs_open = 0
+
+        # The public message queue. Workers ask for jobs here, report
+        # finished work and log items.
+        # Note: There's (at least) two ways to organize a pool like
+        # this. One is to only open a pipe to each worker. Then, you can
+        # use select() to see which pipe can be read from. Problem is,
+        # this is not really supported by the multiprocessing module;
+        # you have to dig into the internals and that's ugly. So, we go
+        # for another option: A managed queue. Multiple processes can
+        # write to it (all the workers do) and the parent can read from
+        # it. However, this is only feasible when workers must talk to
+        # the parent. The parent can't talk to the workers using this
+        # queue. Thus, we still need a dedicated pipe to each worker
+        # (see below).
+        self.messages = Manager().Queue()
+
+        stdin = fdopen(dup(sys.stdin.fileno())) if workers == 1 else None
+        for i in xrange(workers):
+            (parent_conn, child_conn) = Pipe()
+            p = Process(target=_worker_process,
+                        args=(i, self.messages, child_conn, stdin,))
+            p.start()
+            self.workers.append((p, parent_conn))
 
     def __enter__(self):
         return self
@@ -107,76 +139,26 @@ class Worker(object):
     def __exit__(self, type, value, traceback):
         self.shutdown()
 
-    @property
-    def is_busy(self):
+    def get_event(self):
         """
-        False when self.reap() can return directly without blocking.
+        Blocks until a message from a worker is received.
         """
-        return self.started and not self.is_reapable
+        msg = self.messages.get()
+        if msg['msg'] == 'FINISHED_WORK':
+            self.jobs_open -= 1
+            # check for exception in child process and raise it
+            # here in the parent
+            if not msg['traceback'] is None:
+                raise WorkerException(msg['traceback'])
+        elif msg['msg'] == 'LOG_ENTRY':
+            LOG.handle(msg['log_entry'])
+        return msg
 
-    @property
-    def is_reapable(self):
+    def start_task(self, wid, target, task_id=None, args=None, kwargs=None):
         """
-        True when the child process has finished a task.
-        """
-        self._get_result()
-        return hasattr(self, '_result')
-
-    def _get_result(self):
-        if not self.started:
-            return
-
-        while not self.log_queue.empty():
-            LOG.handle(self.log_queue.get())
-
-        if self.pipe.poll():
-            self._result = self.pipe.recv()
-            if self._result['raised_exception']:
-                # check for exception in child process and raise it
-                # here in the parent
-                raise WorkerException(self._result['traceback'])
-
-    def reap(self):
-        """
-        Block until the result of this worker can be returned.
-
-        The worker is then reset, reap() cannot be called again until
-        another task has been started.
-        """
-        while not self.is_reapable:
-            sleep(.01)
-        r = self._result
-        self.reset()
-        return r['return_value']
-
-    def reset(self):
-        self.id = None
-        self.started = False
-        if hasattr(self, '_result'):
-            delattr(self, '_result')
-
-    def shutdown(self):
-        try:
-            self.pipe.send({'order': 'die'})
-        except IOError:
-            pass
-        self.pipe.close()
-        self.process.join(JOIN_TIMEOUT)
-        if self.process.is_alive():
-            LOG.warn(_(
-                "worker process with ID '{}' and PID {} didn't join "
-                "within {} seconds, terminating...").format(
-                    self.id,
-                    self.process.pid,
-                    JOIN_TIMEOUT,
-                )
-            )
-            self.process.terminate()
-
-    def start_task(self, target, id=None, args=None, kwargs=None):
-        """
+        wid         id of the worker to use
         target      any callable (includes bound methods)
-        id          something to remember this worker by
+        task_id     something to remember this worker by
         args        list of positional arguments passed to target
         kwargs      dictionary of keyword arguments passed to target
         """
@@ -193,80 +175,69 @@ class Worker(object):
         else:
             target_obj = None
 
-        self.id = id
-        self.pipe.send({
-            'order': 'run',
+        (process, pipe) = self.workers[wid]
+        pipe.send({
+            'msg': 'RUN',
+            'task_id': task_id,
             'target': target,
             'target_obj': target_obj,
             'args': args,
             'kwargs': kwargs,
         })
-        self.started = True
 
+        self.jobs_open += 1
 
-class WorkerPool(object):
-    """
-    Manages a bunch of Worker instances.
-    """
-    def __init__(self, workers=4):
-        self.workers = []
-        if workers < 1:
-            raise ValueError(_("at least one worker is required"))
-        stdin = fdopen(dup(sys.stdin.fileno())) if workers == 1 else None
-        for i in xrange(workers):
-            self.workers.append(Worker(stdin=stdin))
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.shutdown()
-
-    @property
-    def busy_count(self):
-        count = 0
-        for worker in self.workers:
-            if worker.is_busy:
-                count += 1
-        return count
-
-    @property
-    def reapable_count(self):
-        count = 0
-        for worker in self.workers:
-            if worker.is_reapable:
-                count += 1
-        return count
-
-    def get_idle_worker(self, block=True):
+    def mark_idle(self, wid):
         """
-        Returns an idle worker. If block is True, this will block until
-        there is a worker available. Otherwise, None will be returned.
+        Mark a worker as "idle".
         """
-        while True:
-            for worker in self.workers:
-                if not worker.is_busy and not worker.is_reapable:
-                    return worker
-            if not block:
-                return None
-            self.wait()
+        # We don't really need to do something here. The worker will
+        # simply keep blocking at his "pipe.read()". Just store his id
+        # so we can answer him later.
+        self.idle_workers.append(wid)
 
-    def get_reapable_worker(self):
+    def quit(self, wid):
         """
-        Return a worker that can be .reap()ed. None if no worker is
-        ready.
+        Shutdown a worker.
         """
-        for worker in self.workers:
-            if worker.is_reapable:
-                return worker
-        return None
+        (process, pipe) = self.workers[wid]
+        try:
+            pipe.send({'msg': 'DIE'})
+        except IOError:
+            pass
+        pipe.close()
+        process.join(JOIN_TIMEOUT)
+        if process.is_alive():
+            LOG.warn(_(
+                "worker process with PID {} didn't join "
+                "within {} seconds, terminating...").format(
+                    process.pid,
+                    JOIN_TIMEOUT,
+                )
+            )
+            process.terminate()
+        self.workers_alive.remove(wid)
 
     def shutdown(self):
-        for worker in self.workers:
-            worker.shutdown()
+        """
+        Shutdown all workers.
+        """
+        while self.workers_alive:
+            self.quit(self.workers_alive[0])
 
-    def wait(self, amount=0.01):
+    def activate_idle_workers(self):
         """
-        Just a convenience wrapper around time.sleep.
+        Tell all idle workers to ask for work again.
         """
-        sleep(amount)
+        for wid in self.idle_workers:
+            # Send a noop to this worker. He will simply ask for new
+            # work again.
+            (process, pipe) = self.workers[wid]
+            pipe.send({'msg': 'NOOP'})
+        self.idle_workers = []
+
+    def keep_running(self):
+        """
+        Returns True if this pool is not ready to die.
+        """
+        return self.jobs_open > 0 or self.workers_alive
