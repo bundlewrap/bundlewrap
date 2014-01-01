@@ -16,6 +16,6 @@ For more information, have a look at `blockwart.org <http://blockwart.org/>`_.
 .. image:: https://coveralls.io/repos/trehn/blockwart/badge.png?branch=master
         :target: https://coveralls.io/r/trehn/blockwart?branch=master
 
-Blockwart is Copyright (c) 2013 `Torsten Rehn <mailto:torsten@rehn.tel>`_
+Blockwart is Copyright (c) 2014 `Torsten Rehn <mailto:torsten@rehn.tel>`_
 
 Blockwart is published under the GNU General Public License, version 3.
