@@ -30,7 +30,7 @@ def release():
         print(red("Error: blockwart.VERSION_STRING does not match setup.py"))
         sys.exit(1)
 
-    changelog_content = get_file_contents(join(PROJECT_PATH, "CHANGELOG.md"))
+    changelog_content = get_file_contents(join(PROJECT_PATH, "CHANGELOG.rst"))
     if "{}\n{}".format(VERSION_STRING, "=" * len(VERSION_STRING)) not in changelog_content:
         print(red(
             "Error: no changelog entry for for {}".format(VERSION_STRING)
