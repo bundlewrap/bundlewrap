@@ -1,3 +1,16 @@
+0.6.0
+=====
+
+2014-01-01
+
+* added actions
+* reworked group patterns (BACKWARDS INCOMPATIBLE)
+* reworked output verbosity (BACKWARDS INCOMPATIBLE)
+* added support for libs directory
+* fixed high CPU load while waiting for interactive response
+* various other minor fixes and improvements
+
+
 0.5.0
 =====
 
