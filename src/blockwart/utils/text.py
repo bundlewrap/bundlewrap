@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from os import environ
+from random import choice
 from string import digits, letters
 
 from fabric import colors as _fabric_colors
@@ -29,6 +30,13 @@ yellow = _ansi_wrapper(_fabric_colors.yellow)
 def mark_for_translation(s):
     return s
 _ = mark_for_translation
+
+
+def randstr(length=24):
+    """
+    Returns a random alphanumeric string of the given length.
+    """
+    return ''.join(choice(letters + digits) for c in range(length))
 
 
 def validate_name(name):
