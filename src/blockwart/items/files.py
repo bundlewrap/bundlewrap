@@ -16,6 +16,10 @@ from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold, green, red
 
 
+DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
+DIFF_MAX_LINE_LENGTH = 128
+
+
 def content_processor_mako(item):
     from mako.lookup import TemplateLookup
     lookup = TemplateLookup(
@@ -46,6 +50,9 @@ def diff(content_old, content_new, filename):
         except UnicodeDecodeError:
             line = line[0] + _("<line not encoded in UTF-8>")
         line = line.rstrip("\n")
+        if len(line) > DIFF_MAX_LINE_LENGTH:
+            line = line[:DIFF_MAX_LINE_LENGTH] + \
+                _("... <line truncated after {} characters>").format(DIFF_MAX_LINE_LENGTH)
         if line.startswith("+"):
             line = green(line)
         elif line.startswith("-"):
@@ -144,11 +151,22 @@ class File(Item):
 
         if 'content' in status.info['needs_fixing']:
             question += bold(_("content "))
-            if status.info['path_info'].is_text_file and \
-                    not self.attributes['content_type'] == 'binary':
-                content_is = get_remote_file_contents(self.node, self.name)
-                content_should = self.content
-                question += "\n" + diff(content_is, content_should, self.name) + "\n"
+            if (
+                status.info['path_info'].is_text_file and
+                not self.attributes['content_type'] == 'binary'
+            ):
+                if status.info['path_info'].size > DIFF_MAX_FILE_SIZE:
+                    question += _("(remote file larger than {} bytes, skipping diff)\n").format(
+                        DIFF_MAX_FILE_SIZE,
+                    )
+                elif len(self.content) > DIFF_MAX_FILE_SIZE:
+                    question += _("(new content larger than {} bytes, skipping diff)\n").format(
+                        DIFF_MAX_FILE_SIZE,
+                    )
+                else:
+                    content_is = get_remote_file_contents(self.node, self.name)
+                    content_should = self.content
+                    question += "\n" + diff(content_is, content_should, self.name) + "\n"
             else:
                 question += "'{}' → {}\n".format(
                     status.info['path_info'].desc,
