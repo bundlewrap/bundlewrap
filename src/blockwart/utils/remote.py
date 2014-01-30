@@ -34,10 +34,15 @@ def get_path_type(node, path):
 
 
 def stat(node, path):
-    result = node.run("stat --printf '%U:%G:%a' {}".format(quote(path)))
-    owner, group, mode = result.stdout.split(":")
+    result = node.run("stat --printf '%U:%G:%a:%s' {}".format(quote(path)))
+    owner, group, mode, size = result.stdout.split(":")
     mode = mode.zfill(4)
-    file_stat = {'owner': owner, 'group': group, 'mode': mode}
+    file_stat = {
+        'owner': owner,
+        'group': group,
+        'mode': mode,
+        'size': int(size),
+    }
     LOG.debug(_("stat for '{}' on {}: {}".format(
         path,
         node.name,
@@ -99,6 +104,10 @@ class PathInfo(object):
     def sha1(self):
         result = self.node.run("sha1sum " + quote(self.path))
         return result.stdout.strip().split()[0]
+
+    @property
+    def size(self):
+        return self.stat['size']
 
     @property
     def symlink_target(self):
