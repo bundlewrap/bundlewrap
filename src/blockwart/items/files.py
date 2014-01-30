@@ -150,7 +150,7 @@ class File(Item):
                 content_should = self.content
                 question += "\n" + diff(content_is, content_should, self.name) + "\n"
             else:
-                question += "'{}' → {}".format(
+                question += "'{}' → {}\n".format(
                     status.info['path_info'].desc,
                     _("<blockwart content>"),
                 )
