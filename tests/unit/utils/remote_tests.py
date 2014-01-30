@@ -187,6 +187,7 @@ class PathInfoTest(TestCase):
         'owner': "foo",
         'group': "bar",
         'mode': "4747",
+        'size': 4848,
     })
     @patch('blockwart.utils.remote.get_path_type', return_value=(
         'file', "data"))
@@ -195,6 +196,7 @@ class PathInfoTest(TestCase):
         self.assertEqual(p.owner, "foo")
         self.assertEqual(p.group, "bar")
         self.assertEqual(p.mode, "4747")
+        self.assertEqual(p.size, 4848)
 
 
 class StatTest(TestCase):
@@ -204,23 +206,25 @@ class StatTest(TestCase):
     def test_long_mode(self):
         node = MagicMock()
         run_result = RunResult()
-        run_result.stdout = "user:group:7777"
+        run_result.stdout = "user:group:7777:1234"
         node.run.return_value = run_result
         stat_result = remote.stat(node, "/dev/null")
         self.assertEqual(stat_result, {
             'owner': "user",
             'group': "group",
             'mode': "7777",
+            'size': 1234,
         })
 
     def test_short_mode(self):
         node = MagicMock()
         run_result = RunResult()
-        run_result.stdout = "user:group:666"
+        run_result.stdout = "user:group:666:4321"
         node.run.return_value = run_result
         stat_result = remote.stat(node, "/dev/null")
         self.assertEqual(stat_result, {
             'owner': "user",
             'group': "group",
             'mode': "0666",
+            'size': 4321,
         })
