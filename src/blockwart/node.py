@@ -578,11 +578,14 @@ class Node(object):
             pty=pty,
         )
 
-    def upload(self, local_path, remote_path):
+    def upload(self, local_path, remote_path, mode=None, owner="", group=""):
         return operations.upload(
             self.hostname,
             local_path,
             remote_path,
+            mode=mode,
+            owner=owner,
+            group=group,
         )
 
     def verify(self, workers=4):

@@ -204,9 +204,13 @@ class File(Item):
             with open(local_path, 'w') as f:
                 f.write(self.content)
         try:
-            self.node.upload(local_path, self.name)
-            self._fix_mode(status)
-            self._fix_owner(status)
+            self.node.upload(
+                local_path,
+                self.name,
+                mode=self.attributes['mode'],
+                owner=self.attributes['owner'],
+                group=self.attributes['group'],
+            )
         finally:
             if self.attributes['content_type'] != 'binary':
                 remove(local_path)

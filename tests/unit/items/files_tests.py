@@ -163,7 +163,13 @@ class FileFixContentTest(TestCase):
             {'content_type': 'binary', 'source': 'foobar'},
         )
         f._fix_content(MagicMock())
-        node.upload.assert_called_once_with("/b/dir/files/foobar", "/foo")
+        node.upload.assert_called_once_with(
+            "/b/dir/files/foobar",
+            "/foo",
+            owner="root",
+            group="root",
+            mode="0664",
+        )
 
     @patch('blockwart.items.files.File.content', new="47")
     def test_regular(self):

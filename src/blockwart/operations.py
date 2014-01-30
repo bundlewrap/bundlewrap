@@ -12,7 +12,7 @@ from fabric.state import env, output
 
 from .exceptions import RemoteException
 from .utils import LOG
-from .utils.text import mark_for_translation as _
+from .utils.text import mark_for_translation as _, randstr
 from .utils.ui import LineBuffer
 
 env.use_ssh_config = True
@@ -127,17 +127,19 @@ def run(hostname, command, ignore_failure=False, stderr=None,
     return result
 
 
-def upload(hostname, local_path, remote_path, ignore_failure=False):
+def upload(hostname, local_path, remote_path, mode=None, owner="",
+           group="", ignore_failure=False):
     """
     Upload a file.
     """
     LOG.debug(_("uploading {} -> {}:{}").format(
         local_path, hostname, remote_path))
     env.host_string = hostname
+    temp_filename = ".blockwart_tmp_" + randstr()
+
     fabric_result = _fabric_put(
         local_path=local_path,
-        remote_path=remote_path,
-        use_sudo=True,
+        remote_path=temp_filename,
         mirror_local_mode=False,
         mode=S_IRUSR | S_IWUSR,
     )
@@ -148,3 +150,30 @@ def upload(hostname, local_path, remote_path, ignore_failure=False):
                 ", ".join(fabric_result.failed),
             )
         )
+
+    if owner or group:
+        run(
+            hostname,
+            "chown {}:{} {}".format(
+                quote(owner),
+                quote(group),
+                quote(temp_filename),
+            ),
+        )
+
+    if mode:
+        run(
+            hostname,
+            "chmod {} {}".format(
+                mode,
+                quote(temp_filename),
+            ),
+        )
+
+    run(
+        hostname,
+        "mv -f {} {}".format(
+            quote(temp_filename),
+            quote(remote_path),
+        ),
+    )
