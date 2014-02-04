@@ -27,6 +27,24 @@ class ContentProcessorMakoTest(TestCase):
         )
 
 
+class ContentProcessorTextTest(TestCase):
+    """
+    Tests blockwart.items.files.content_processor_text.
+    """
+    def test_template(self):
+        item = MagicMock()
+        item.node.name = "localhost"
+        item.item_dir = mkdtemp()
+        makedirs(join(item.item_dir, "a/b"))
+        item.attributes = {'source': "a/b/c"}
+        with open(join(item.item_dir, "a/b/c"), 'w') as f:
+            f.write("Hi from ${node.name}!")
+        self.assertEqual(
+            files.content_processor_text(item),
+            "Hi from ${node.name}!",
+        )
+
+
 class DiffTest(TestCase):
     """
     Tests blockwart.items.files.diff.

@@ -31,9 +31,18 @@ def content_processor_mako(item):
     return template.render(item=item, bundle=item.bundle, node=item.node,
                            repo=item.node.repo)
 
+
+def content_processor_text(item):
+    filename = join(item.item_dir, item.attributes['source'])
+    with open(filename) as f:
+        content = f.read()
+    return content
+
+
 CONTENT_PROCESSORS = {
     'binary': None,
     'mako': content_processor_mako,
+    'text': content_processor_text,
 }
 
 
