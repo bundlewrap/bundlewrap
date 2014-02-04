@@ -77,21 +77,21 @@ def diff(content_old, content_new, filename, encoding_hint=None):
         try:
             line = line.decode('UTF-8')
         except UnicodeDecodeError:
-            suffix = _(" (line not encoded in UTF-8)")
             if encoding_hint and encoding_hint.lower() != "utf-8":
                 try:
                     line = line.decode(encoding_hint)
-                    suffix = _(" (line encoded in {})").format(encoding_hint)
+                    suffix += _(" (line encoded in {})").format(encoding_hint)
                 except UnicodeDecodeError:
                     line = line[0]
-                    suffix = _(" (line not encoded in UTF-8 or {})").format(encoding_hint)
+                    suffix += _(" (line not encoded in UTF-8 or {})").format(encoding_hint)
             else:
                 line = line[0]
+                suffix += _(" (line not encoded in UTF-8)")
 
         line = line.rstrip("\n")
         if len(line) > DIFF_MAX_LINE_LENGTH:
             line = line[:DIFF_MAX_LINE_LENGTH]
-            suffix = _("... (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)
+            suffix += _(" (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)
         if line.startswith("+"):
             line = green(line)
         elif line.startswith("-"):
