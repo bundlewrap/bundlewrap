@@ -25,7 +25,7 @@ def content_processor_mako(item):
     lookup = TemplateLookup(
         directories=[item.item_dir],
         input_encoding='utf-8',
-        output_encoding='utf-8',
+        output_encoding=item.attributes['encoding'],
     )
     template = lookup.get_template(item.attributes['source'])
     return template.render(item=item, bundle=item.bundle, node=item.node,
@@ -36,6 +36,9 @@ def content_processor_text(item):
     filename = join(item.item_dir, item.attributes['source'])
     with open(filename) as f:
         content = f.read()
+    if item.attributes['encoding'].lower() != "utf-8":
+        content = content.decode("utf-8")
+        content = content.encode(item.attributes['encoding'])
     return content
 
 
@@ -46,7 +49,7 @@ CONTENT_PROCESSORS = {
 }
 
 
-def diff(content_old, content_new, filename):
+def diff(content_old, content_new, filename, encoding_hint=None):
     output = ""
     for line in unified_diff(
         content_old.splitlines(True),
@@ -54,19 +57,30 @@ def diff(content_old, content_new, filename):
         fromfile=filename,
         tofile=_("<blockwart content>"),
     ):
+        suffix = ""
         try:
             line = line.decode('UTF-8')
         except UnicodeDecodeError:
-            line = line[0] + _("<line not encoded in UTF-8>")
+            suffix = _(" (line not encoded in UTF-8)")
+            if encoding_hint and encoding_hint.lower() != "utf-8":
+                try:
+                    line = line.decode(encoding_hint)
+                    suffix = _(" (line encoded in {})").format(encoding_hint)
+                except UnicodeDecodeError:
+                    line = line[0]
+                    suffix = _(" (line not encoded in UTF-8 or {})").format(encoding_hint)
+            else:
+                line = line[0]
+
         line = line.rstrip("\n")
         if len(line) > DIFF_MAX_LINE_LENGTH:
-            line = line[:DIFF_MAX_LINE_LENGTH] + \
-                _("... <line truncated after {} characters>").format(DIFF_MAX_LINE_LENGTH)
+            line = line[:DIFF_MAX_LINE_LENGTH]
+            suffix = _("... (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)
         if line.startswith("+"):
             line = green(line)
         elif line.startswith("-"):
             line = red(line)
-        output += line + "\n"
+        output += line + suffix + "\n"
     return output
 
 
@@ -114,6 +128,7 @@ class File(Item):
     ITEM_ATTRIBUTES = {
         'content': None,
         'content_type': "mako",
+        'encoding': "utf-8",
         'group': "root",
         'mode': "0664",
         'owner': "root",
@@ -175,7 +190,12 @@ class File(Item):
                 else:
                     content_is = get_remote_file_contents(self.node, self.name)
                     content_should = self.content
-                    question += "\n" + diff(content_is, content_should, self.name) + "\n"
+                    question += "\n" + diff(
+                        content_is,
+                        content_should,
+                        self.name,
+                        encoding_hint=self.attributes['encoding'],
+                    ) + "\n"
             else:
                 question += "'{}' → {}\n".format(
                     status.info['path_info'].desc,

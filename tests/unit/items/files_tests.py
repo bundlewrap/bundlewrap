@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from os import makedirs
 from os.path import join
 from tempfile import mkdtemp, mkstemp
@@ -18,7 +20,7 @@ class ContentProcessorMakoTest(TestCase):
         item.node.name = "localhost"
         item.item_dir = mkdtemp()
         makedirs(join(item.item_dir, "a/b"))
-        item.attributes = {'source': "a/b/c"}
+        item.attributes = {'encoding': "utf-8", 'source': "a/b/c"}
         with open(join(item.item_dir, "a/b/c"), 'w') as f:
             f.write("Hi from ${node.name}!")
         self.assertEqual(
@@ -36,12 +38,25 @@ class ContentProcessorTextTest(TestCase):
         item.node.name = "localhost"
         item.item_dir = mkdtemp()
         makedirs(join(item.item_dir, "a/b"))
-        item.attributes = {'source': "a/b/c"}
+        item.attributes = {'encoding': "utf-8", 'source': "a/b/c"}
         with open(join(item.item_dir, "a/b/c"), 'w') as f:
             f.write("Hi from ${node.name}!")
         self.assertEqual(
             files.content_processor_text(item),
             "Hi from ${node.name}!",
+        )
+
+    def test_encoding(self):
+        item = MagicMock()
+        item.node.name = "localhost"
+        item.item_dir = mkdtemp()
+        makedirs(join(item.item_dir, "a/b"))
+        item.attributes = {'encoding': "latin-1", 'source': "a/b/c"}
+        with open(join(item.item_dir, "a/b/c"), 'w') as f:
+            f.write("Hellö!".encode("utf-8"))
+        self.assertEqual(
+            files.content_processor_text(item).decode("latin-1"),
+            "Hellö!",
         )
 
 
@@ -67,6 +82,42 @@ class DiffTest(TestCase):
                 " line1\n" +
                 red("-line2") + "\n" +
                 green("+line3") + "\n"
+            ),
+        )
+
+    def test_encoding(self):
+        content_old = (
+            "lineö1\n".encode("utf-8")
+        )
+        content_new = (
+            "lineö1\n".encode("latin-1")
+        )
+        self.assertEqual(
+            files.diff(content_old, content_new, "/foo", encoding_hint="latin-1"),
+            (
+                red("--- /foo") + "\n" +
+                green("+++ <blockwart content>") + "\n" +
+                "@@ -1 +1 @@\n" +
+                red("-lineö1") + "\n" +
+                green("+lineö1") + " (line encoded in latin-1)\n"
+            ),
+        )
+
+    def test_encoding_unknown(self):
+        content_old = (
+            "lineö1\n".encode("utf-8")
+        )
+        content_new = (
+            "lineö1\n".encode("latin-1")
+        )
+        self.assertEqual(
+            files.diff(content_old, content_new, "/foo", encoding_hint="ascii"),
+            (
+                red("--- /foo") + "\n" +
+                green("+++ <blockwart content>") + "\n" +
+                "@@ -1 +1 @@\n" +
+                red("-lineö1") + "\n" +
+                green("+") + " (line not encoded in UTF-8 or ascii)\n"
             ),
         )
 
