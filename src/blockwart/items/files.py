@@ -61,6 +61,12 @@ CONTENT_PROCESSORS = {
 
 def diff(content_old, content_new, filename, encoding_hint=None):
     output = ""
+    LOG.debug("diffing {}: {} B before, {} B after".format(
+        filename,
+        len(content_old),
+        len(content_new),
+    ))
+    start = datetime.now()
     for line in unified_diff(
         content_old.splitlines(True),
         content_new.splitlines(True),
@@ -91,6 +97,11 @@ def diff(content_old, content_new, filename, encoding_hint=None):
         elif line.startswith("-"):
             line = red(line)
         output += line + suffix + "\n"
+    duration = datetime.now() - start
+    LOG.debug("diffing {}: complete after {}s".format(
+        filename,
+        duration.total_seconds(),
+    ))
     return output
 
 
