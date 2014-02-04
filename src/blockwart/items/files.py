@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from collections import defaultdict
+from datetime import datetime
 from difflib import unified_diff
 from os import remove
 from os.path import dirname, join
@@ -28,8 +29,17 @@ def content_processor_mako(item):
         output_encoding=item.attributes['encoding'],
     )
     template = lookup.get_template(item.attributes['source'])
-    return template.render(item=item, bundle=item.bundle, node=item.node,
-                           repo=item.node.repo)
+    LOG.debug("{}:{}: rendering with Mako...".format(item.node.name, item.id))
+    start = datetime.now()
+    content = template.render(item=item, bundle=item.bundle, node=item.node,
+                              repo=item.node.repo)
+    duration = datetime.now() - start
+    LOG.debug("{}:{}: rendered in {}s".format(
+        item.node.name,
+        item.id,
+        duration.total_seconds(),
+    ))
+    return content
 
 
 def content_processor_text(item):
