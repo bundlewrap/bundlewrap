@@ -121,6 +121,25 @@ class DiffTest(TestCase):
             ),
         )
 
+    def test_long_line(self):
+        content_old = (
+            "line1\n"
+        )
+        content_new = (
+            "line1" + 500 * "1" + "\n"
+        )
+        self.assertEqual(
+            files.diff(content_old, content_new, "/foo"),
+            (
+                red("--- /foo") + "\n" +
+                green("+++ <blockwart content>") + "\n" +
+                "@@ -1 +1 @@\n" +
+                red("-line1") + "\n" +
+                green("+line111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111") +
+                " (line truncated after 128 characters)\n"
+            ),
+        )
+
 
 class FileContentHashTest(TestCase):
     """
