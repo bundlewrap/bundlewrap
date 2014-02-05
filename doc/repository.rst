@@ -37,6 +37,7 @@ This page describes the various subdirectories and files than can exist inside a
    nodes.py
    groups.py
    bundles
+   hooks
    dev_item
    libs
 
