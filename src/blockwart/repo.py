@@ -10,10 +10,25 @@ from . import utils
 from .utils.text import mark_for_translation as _, validate_name
 
 DIRNAME_BUNDLES = "bundles"
+DIRNAME_HOOKS = "hooks"
 DIRNAME_ITEM_TYPES = "items"
 DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
+
+HOOK_EVENTS = (
+    'apply_start',
+    'apply_end',
+    'item_apply_start',
+    'item_apply_end',
+    'item_apply_aborted',
+    'node_apply_start',
+    'node_apply_end',
+    'node_run_start',
+    'node_run_end',
+    'run_start',
+    'run_end',
+)
 
 INITIAL_CONTENT = {
     FILENAME_GROUPS: _("""
@@ -49,6 +64,93 @@ nodes = {
 RESERVED_ITEM_TYPE_NAMES = ("actions",)
 
 
+class HooksProxy(object):
+    def __init__(self, path):
+        self.__hook_cache = {}
+        self.__module_cache = {}
+        self.__path = path
+        self.__registered_hooks = None
+
+    def __getattr__(self, attrname):
+        if attrname not in HOOK_EVENTS:
+            raise AttributeError
+
+        if self.__registered_hooks is None:
+            self._register_hooks()
+
+        event = attrname
+
+        if event not in self.__hook_cache:
+            # build a list of files that define a hook for the event
+            files = []
+            for filename, events in self.__registered_hooks.iteritems():
+                if event in events:
+                    files.append(filename)
+
+            # check the cache for the imported function,
+            # import if necessary
+            for filename in files:
+                if filename not in self.__module_cache:
+                    self.__module_cache[filename] = {}
+                    filepath = join(self.__path, filename)
+                    for name, obj in utils.get_all_attrs_from_file(filepath).iteritems():
+                        if name not in HOOK_EVENTS:
+                            continue
+                        self.__module_cache[filename][name] = obj
+
+            # define a function that calls all hook functions
+            def hook(*args, **kwargs):
+                for filename in files:
+                    self.__module_cache[filename][event](*args, **kwargs)
+            self.__hook_cache[event] = hook
+
+        return self.__hook_cache[event]
+
+    def __getstate__(self):
+        return (self.__path, self.__registered_hooks)
+
+    def __setstate__(self, state):
+        self.__hook_cache = {}
+        self.__module_cache = {}
+        self.__path = state[0]
+        self.__registered_hooks = state[1]
+
+    def _register_hooks(self):
+        """
+        Builds an internal dictionary of defined hooks that is used in
+        __getstate__ to avoid reimporting all hook modules in child
+        processes.
+
+        We have to do this since we cannot pass the imported functions
+        to a child process. The dumb-but-simple approach would be to
+        rediscover hooks in every child process (which might be costly).
+
+        From this dictionary the child process knows which hooks exist
+        and can import them only as needed.
+
+        Priming __module_cache here is just a performance shortcut and
+        could be left out.
+        """
+        self.__registered_hooks = {}
+
+        if not isdir(self.__path):
+            return
+
+        for filename in listdir(self.__path):
+            filepath = join(self.__path, filename)
+            if not filename.endswith(".py") or \
+                    not isfile(filepath) or \
+                    filename.startswith("_"):
+                continue
+            self.__module_cache[filename] = {}
+            self.__registered_hooks[filename] = []
+            for name, obj in utils.get_all_attrs_from_file(filepath).iteritems():
+                if name not in HOOK_EVENTS:
+                    continue
+                self.__module_cache[filename][name] = obj
+                self.__registered_hooks[filename].append(name)
+
+
 class LibsProxy(object):
     def __init__(self, path):
         self.__module_cache = {}
@@ -75,11 +177,13 @@ class Repository(object):
         self.path = repo_path
 
         self.bundles_dir = join(self.path, DIRNAME_BUNDLES)
+        self.hooks_dir = join(self.path, DIRNAME_HOOKS)
         self.items_dir = join(self.path, DIRNAME_ITEM_TYPES)
         self.groups_file = join(self.path, FILENAME_GROUPS)
         self.libs_dir = join(self.path, DIRNAME_LIBS)
         self.nodes_file = join(self.path, FILENAME_NODES)
 
+        self.hooks = HooksProxy(self.hooks_dir)
         self.libs = LibsProxy(self.libs_dir)
 
         if not skip_validation and not self.is_repo(repo_path):
