@@ -517,6 +517,11 @@ class Node(object):
                 yield item
 
     def apply(self, interactive=False, workers=4):
+        self.repo.hooks.node_apply_start(
+            self.repo,
+            self,
+        )
+
         start = datetime.now()
         action_results = []
         worker_count = 1 if interactive else workers
@@ -552,6 +557,14 @@ class Node(object):
         result = ApplyResult(self, item_results, action_results)
         result.start = start
         result.end = datetime.now()
+
+        self.repo.hooks.node_apply_end(
+            self.repo,
+            self,
+            duration=result.duration,
+            result=result,
+        )
+
         return result
 
     def download(self, remote_path, local_path, ignore_failure=False):

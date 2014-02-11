@@ -1,5 +1,6 @@
 from os import mkdir
 from os.path import getsize, join
+from pickle import dumps, loads
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
@@ -18,6 +19,55 @@ class RepoTest(TestCase):
 
     def tearDown(self):
         rmtree(self.tmpdir)
+
+
+class HooksProxyTest(RepoTest):
+    """
+    Tests blockwart.repo.HooksProxy.
+    """
+    def test_hook(self):
+        with open(join(self.tmpdir, "hook1.py"), 'w') as f:
+            f.write(
+"""
+def apply_start(arg, kwarg=0):
+    with open("{}", 'w') as f:
+        f.write(arg + kwarg)
+""".format(join(self.tmpdir, "test.log"))
+            )
+        p = repo.HooksProxy(self.tmpdir)
+        p.apply_start("foo", kwarg="bar")
+        with open(join(self.tmpdir, "test.log")) as f:
+            content = f.read()
+        self.assertEqual(content, "foobar")
+
+    def test_unpickle(self):
+        with open(join(self.tmpdir, "hook2.py"), 'w') as f:
+            f.write(
+"""
+def apply_start(arg, kwarg=0):
+    with open("{}", 'w') as f:
+        f.write(arg + kwarg)
+""".format(join(self.tmpdir, "test2.log"))
+            )
+        p = repo.HooksProxy(self.tmpdir)
+        p.apply_start("foo", kwarg="bar")
+
+        pstr = dumps(p)
+        p = loads(pstr)
+
+        p.apply_start("bar", kwarg="foo")
+        with open(join(self.tmpdir, "test2.log")) as f:
+            content = f.read()
+        self.assertEqual(content, "barfoo")
+
+    def test_unknown(self):
+        p = repo.HooksProxy(self.tmpdir)
+        with self.assertRaises(AttributeError):
+            p.foo()
+
+    def test_not_existing(self):
+        p = repo.HooksProxy(join(self.tmpdir, "404"))
+        p.apply_start()
 
 
 class LibsProxyTest(RepoTest):

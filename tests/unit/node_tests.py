@@ -464,7 +464,7 @@ class NodeTest(TestCase):
     @patch('blockwart.node.run_actions')
     @patch('blockwart.node.apply_items')
     def test_apply(self, apply_items, run_actions, NodeLock, ApplyResult):
-        n = Node(None, "node1", {})
+        n = Node(MagicMock(), "node1", {})
         result = MagicMock()
         ApplyResult.return_value = result
         NodeLock.__enter__ = lambda x: x
