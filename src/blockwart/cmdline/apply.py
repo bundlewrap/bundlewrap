@@ -53,6 +53,16 @@ def format_node_item_result(result):
 
 def bw_apply(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
+
+    repo.hooks.apply_start(
+        repo,
+        args.target,
+        target_nodes,
+        interactive=args.interactive,
+    )
+
+    start_time = datetime.now()
+
     worker_count = 1 if args.interactive else args.node_workers
     with WorkerPool(workers=worker_count) as worker_pool:
         results = {}
@@ -61,16 +71,17 @@ def bw_apply(repo, args):
             if msg['msg'] == 'REQUEST_WORK':
                 if target_nodes:
                     node = target_nodes.pop()
-                    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    node_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
                     if args.interactive:
                         yield _("\n{}: run started at {}").format(
                             bold(node.name),
-                            start_time,
+                            node_start_time,
                         )
                     else:
                         LOG.info(_("{}: run started at {}").format(
                             node.name,
-                            start_time,
+                            node_start_time,
                         ))
 
                     worker_pool.start_task(
@@ -87,6 +98,7 @@ def bw_apply(repo, args):
             elif msg['msg'] == 'FINISHED_WORK':
                 node_name = msg['task_id']
                 results[node_name] = msg['return_value']
+
                 if args.interactive:
                     yield _("\n  {}: run completed after {}s\n").format(
                         bold(node_name),
@@ -109,3 +121,10 @@ def bw_apply(repo, args):
                         node_name,
                         format_node_action_result(results[node_name]),
                     ))
+
+    repo.hooks.apply_end(
+        repo,
+        args.target,
+        target_nodes,
+        duration=datetime.now() - start_time,
+    )

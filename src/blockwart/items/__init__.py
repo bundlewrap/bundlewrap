@@ -5,6 +5,7 @@ Repository.item_classes loads them as files.
 """
 from __future__ import unicode_literals
 from copy import copy
+from datetime import datetime
 from os.path import join
 
 from blockwart.exceptions import BundleError
@@ -139,6 +140,13 @@ class Item(object):
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
     def apply(self, interactive=False, interactive_default=True):
+        self.node.repo.hooks.item_apply_start(
+            self.node.repo,
+            self.node,
+            self,
+        )
+        start_time = datetime.now()
+
         status_before = self.get_status()
         status_after = None
         if status_before.correct or not status_before.fixable:
@@ -160,6 +168,16 @@ class Item(object):
                 else:
                     status_after = copy(status_before)
                     status_after.aborted = True
+
+        self.node.repo.hooks.item_apply_end(
+            self.node.repo,
+            self.node,
+            self,
+            duration=datetime.now() - start_time,
+            status_before=status_before,
+            status_after=status_after,
+        )
+
         return (status_before, status_after)
 
     def ask(self, status):

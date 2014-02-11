@@ -21,6 +21,12 @@ def run_on_node(node, command, may_fail, sudo, interactive):
         stdout = LineBuffer(LOG.info)
         stderr = LineBuffer(LOG.error)
 
+    node.repo.hooks.node_run_start(
+        node.repo,
+        node,
+        command,
+    )
+
     start = datetime.now()
     result = node.run(
         command,
@@ -32,6 +38,17 @@ def run_on_node(node, command, may_fail, sudo, interactive):
     )
     end = datetime.now()
     duration = end - start
+
+    node.repo.hooks.node_run_end(
+        node.repo,
+        node,
+        command,
+        duration=duration,
+        return_code=result.return_code,
+        stdout=result.stdout,
+        stderr=result.stderr,
+    )
+
     if result.return_code == 0:
         yield "[{}] {} {}".format(
             node.name,
@@ -53,6 +70,15 @@ def run_on_node(node, command, may_fail, sudo, interactive):
 
 def bw_run(repo, args):
     target_nodes = get_target_nodes(repo, args.target)
+
+    repo.hooks.run_start(
+        repo,
+        args.target,
+        target_nodes,
+        args.command,
+    )
+    start_time = datetime.now()
+
     with WorkerPool(workers=args.node_workers) as worker_pool:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
@@ -76,3 +102,11 @@ def bw_run(repo, args):
             elif msg['msg'] == 'FINISHED_WORK':
                 for line in msg['return_value']:
                     yield line
+
+    repo.hooks.run_end(
+        repo,
+        args.target,
+        target_nodes,
+        args.command,
+        duration=datetime.now() - start_time,
+    )
