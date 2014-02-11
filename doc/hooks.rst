@@ -34,9 +34,6 @@ Functions
 This is a list of all functions a hook file may implement.
 
 
-``apply_start``
-###############
-
 .. py:function:: apply_start(repo, target, nodes, interactive=False, **kwargs)
 
     Called when you start a ``bw apply`` command.
@@ -46,9 +43,6 @@ This is a list of all functions a hook file may implement.
     :param list nodes: A list of node objects affected.
     :param bool interactive: Indicates whether the apply is interactive or not.
 
-
-``apply_end``
-#############
 
 .. py:function:: apply_end(repo, target, nodes, duration=None, **kwargs)
 
@@ -60,9 +54,6 @@ This is a list of all functions a hook file may implement.
     :param timedelta duration: How long the apply took.
 
 
-``item_apply_start``
-####################
-
 .. py:function:: item_apply_start(repo, node, item, **kwargs)
 
     Called each time a ``bw apply`` command reaches a new item.
@@ -71,9 +62,6 @@ This is a list of all functions a hook file may implement.
     :param Node node: The current node.
     :param Item item: The current item.
 
-
-``item_apply_end``
-##################
 
 .. py:function:: item_apply_end(repo, node, item, duration=None, status_before=None, status_after=None, **kwargs)
 
@@ -87,10 +75,6 @@ This is a list of all functions a hook file may implement.
     :param ItemStatus status_after: See ``status_before``.
 
 
-
-``node_apply_start``
-####################
-
 .. py:function:: node_apply_start(repo, node, **kwargs)
 
     Called each time a ``bw apply`` command reaches a new node.
@@ -98,9 +82,6 @@ This is a list of all functions a hook file may implement.
     :param Repository repo: The current repository.
     :param Node node: The current node.
 
-
-``node_apply_end``
-##################
 
 .. py:function:: node_apply_end(repo, node, duration=None, result=None, **kwargs)
 
@@ -112,9 +93,6 @@ This is a list of all functions a hook file may implement.
     :param ApplyResult result: An object with these attributes: ``correct``, ``fixed``, ``aborted``, ``unfixable``, ``failed``.
 
 
-``node_run_start``
-##################
-
 .. py:function:: node_run_start(repo, node, command, **kwargs)
 
     Called each time a ``bw run`` command reaches a new node.
@@ -123,9 +101,6 @@ This is a list of all functions a hook file may implement.
     :param Node node: The current node.
     :param str command: The command that will be run on the node.
 
-
-``node_run_end``
-################
 
 .. py:function:: node_run_start(repo, node, command, duration=None, return_code=None, stdout="", stderr="", **kwargs)
 
@@ -140,9 +115,6 @@ This is a list of all functions a hook file may implement.
     :param str stderr: The captured stderr stream of the remote command.
 
 
-``run_start``
-#############
-
 .. py:function:: run_start(repo, target, nodes, command, **kwargs)
 
     Called each time a ``bw run`` command starts.
@@ -152,9 +124,6 @@ This is a list of all functions a hook file may implement.
     :param list nodes: A list of node objects affected.
     :param str command: The command that will be run on the node.
 
-
-``run_end``
-###########
 
 .. py:function:: run_start(repo, target, nodes, command, duration=None, **kwargs)
 
