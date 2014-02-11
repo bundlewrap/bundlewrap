@@ -7,11 +7,18 @@ from mock import MagicMock, patch
 
 from blockwart.cmdline import run
 from blockwart.operations import RunResult
+from blockwart.repo import HooksProxy
+
+
+class FakeRepo(object):
+    def __init__(self):
+        self.hooks = HooksProxy("/invalid/path/404/not/found")
 
 
 class FakeNode(object):
     def __init__(self, nodename):
         self.name = nodename
+        self.repo = FakeRepo()
         self.result = RunResult()
         self.result.stdout = "[node] out: some\n[node] out: output"
         self.result.stderr = "[node] err: some errors"
