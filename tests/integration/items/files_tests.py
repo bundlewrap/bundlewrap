@@ -34,7 +34,7 @@ class FileCreateTest(TestCase):
         remove(target_file)
         bundle = MagicMock()
         bundle.bundle_dir = mkdtemp()
-        bundle.node = Node(None, 'localhost', {})
+        bundle.node = Node(MagicMock(), 'localhost', {})
         item = files.File(
             bundle,
             target_file,
