@@ -24,7 +24,7 @@ While the following list might appear long, even very minimal systems should pro
 * ``pacman`` (only used with :doc:`pkg_pacman <item_pkg_pacman>` items)
 * ``rm``
 * ``sed``
-* sftp-enabled SSH server
+* sftp-enabled SSH server (your home directory must be writable)
 * ``sudo`` (without password)
 * ``sha1sum``
 * ``test``
