@@ -19,6 +19,7 @@ While the following list might appear long, even very minimal systems should pro
 * ``groupadd``
 * ``groupmod``
 * ``id``
+* ``initctl`` (only used with :doc:`svc_upstart <item_svc_upstart>` items)
 * ``mkdir``
 * ``mv``
 * ``pacman`` (only used with :doc:`pkg_pacman <item_pkg_pacman>` items)
