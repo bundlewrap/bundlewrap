@@ -38,7 +38,7 @@ This is a list of all functions a hook file may implement.
 
     Called when you start a ``bw apply`` command.
 
-    :param Repository repo: The current repository.
+    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
     :param list nodes: A list of node objects affected.
     :param bool interactive: Indicates whether the apply is interactive or not.
