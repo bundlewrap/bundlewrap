@@ -1,8 +1,8 @@
 .. _item_pkg_pacman:
 
-################
-Pkg_pacman items
-################
+####################
+Pacman package items
+####################
 
 Handles packages installed by ``pacman`` (e.g., Arch Linux).
 

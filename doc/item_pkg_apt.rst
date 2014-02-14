@@ -1,8 +1,8 @@
 .. _item_pkg_apt:
 
-#############
-Pkg_apt items
-#############
+#################
+APT package items
+#################
 
 Handles packages installed by ``apt-get`` on Debian-based systems.
 

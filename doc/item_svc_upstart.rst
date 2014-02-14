@@ -1,8 +1,8 @@
 .. _item_svc_upstart:
 
-#################
-Svc_upstart items
-#################
+#####################
+Upstart service items
+#####################
 
 Handles services managed by Upstart.
 
