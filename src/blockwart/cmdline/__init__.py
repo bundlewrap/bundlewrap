@@ -75,7 +75,7 @@ def main(*args):
     if not args:
         args = argv[1:]
 
-    if len(args) >= 1 and args[0] == "repo":
+    if len(args) >= 1 and args[0] in ("repo", "-h", "--help", "--version"):
         # don't try to validate existing repo with 'bw repo create' etc.
         repo = Repository(getcwd(), skip_validation=True)
     else:
