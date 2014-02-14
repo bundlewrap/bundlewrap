@@ -3,7 +3,7 @@ About
 
 .. toctree::
 
-Development on Blockwart started in July 2012, borrowing a lot of ideas from `Bcfg2 <http://bcfg2.org/>`_. The key differences between blockwart and Bcfg2 are meant to be:
+Development on Blockwart started in July 2012, borrowing a lot of ideas from `Bcfg2 <http://bcfg2.org/>`_. The key differences between Blockwart and Bcfg2 are meant to be:
 
 * decentralized architecture
 * more pythonic and easily extendable
