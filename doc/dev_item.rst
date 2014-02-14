@@ -54,6 +54,7 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
                 info={},
             )
 
+|
 
 Step 2: Define attributes
 -------------------------
@@ -89,6 +90,7 @@ Step 2: Define attributes
 
     REQUIRED_ATTRIBUTES = ['attr1', 'attr2']
 
+|
 
 Step 3: Implement methods
 -------------------------

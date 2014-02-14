@@ -47,6 +47,8 @@ A typical bundle might look like this:
 
 This bundle defines the attributes ``files`` and ``users``. Within the ``users`` attribute, there are two ``user`` items. Each item maps its name to a dictionary that is understood by the specific kind of item. Below you will find a reference of all builtin item types and the attributes they understand. You can also :doc:`define your own item types <dev_item>`.
 
+|
+
 Item types
 ----------
 
@@ -77,6 +79,8 @@ This table lists all item types included in Blockwart along with the bundle attr
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`user <item_user>`               | ``users``        | Manages users by wrapping ``useradd``, ``usermod`` and ``userdel``                     |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
+
+|
 
 Builtin attributes
 ------------------

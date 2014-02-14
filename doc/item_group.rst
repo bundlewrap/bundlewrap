@@ -14,10 +14,10 @@ Manages system groups. Group members are managed through the :doc:`user <item_us
         },
     }
 
+|
 
 Attribute reference
 -------------------
-
 
 Required attributes
 ===================

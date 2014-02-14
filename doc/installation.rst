@@ -19,6 +19,8 @@ It's as simple as::
 
     pip install blockwart
 
+|
+
 From git
 --------
 

@@ -5,6 +5,8 @@ Blockwart documentation
 
 By allowing for easy and low-overhead config management, Blockwart fills the gap between complex deployments using Chef or Puppet and old school system administration over SSH.
 
+|
+
 How does it work?
 -----------------
 

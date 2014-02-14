@@ -7,12 +7,16 @@ Quickstart
 
 This is the 10 minute intro into Blockwart. Fasten your seatbelt.
 
+|
+
 Installation
 ------------
 
 First, open a terminal and install Blockwart::
 
 	pip install blockwart
+
+|
 
 Create a repository
 -------------------
@@ -40,6 +44,8 @@ At this point you will want to edit ``nodes.py`` and maybe change "localhost" to
 
 	Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com`` works in your terminal, so will Blockwart.
 
+|
+
 Run a command
 -------------
 
@@ -55,12 +61,16 @@ You should see something like this::
 
 Instead of a node name ("node1" in this case) you can also use a group name (such as "all") from your ``groups.py``.
 
+|
+
 Create a bundle
 ---------------
 
 Blockwart stores node configuration in bundles. A bundle is a collection of items such as files, system packages or users. To create your first bundle, type::
 
 	bw repo bundle create mybundle
+
+|
 
 Create a file template
 ----------------------
@@ -91,6 +101,8 @@ You can use this for example content::
 
 Note that the "source" attribute in ``bundle.py`` contains a path relative to the ``files`` directory of your bundle. It's up to you how to organize the contents of this directory.
 
+|
+
 Apply configuration
 -------------------
 
@@ -114,6 +126,8 @@ Blockwart will ask to replace your previous MOTD::
 	 ╰  Fix file:/etc/motd? [Y/n]
 
 That completes the quickstart tutorial!
+
+|
 
 Further reading
 ---------------

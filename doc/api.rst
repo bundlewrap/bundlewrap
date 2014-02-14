@@ -25,9 +25,12 @@ Here's a short example of how to use Blockwart to get the uptime for a node.
 	uptime = node.run("uptime")
 	print(uptime.stdout)
 
+|
 
 Reference
 #########
+
+|
 
 .. py:module:: blockwart.repo
 
@@ -44,6 +47,9 @@ Reference
 		:rtype: Node
 
 
+|
+|
+
 .. py:module:: blockwart.node
 
 .. py:class:: Node()
@@ -56,6 +62,8 @@ Reference
 
 		:param str remote_path: Which file to get from the node
 		:param str local_path: Where to put the file
+
+	|
 
 	.. py:method:: run(command, may_fail=False)
 
