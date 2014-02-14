@@ -38,13 +38,41 @@ Reference
 
 	The starting point of any interaction with Blockwart. An object of this class represents the repository at the given path.
 
+	.. py:attribute:: groups
+
+		A list of all groups in the repo (instances of :py:class:`blockwart.group.Group`).
+
+	.. py:attribute:: group_names
+
+		A list of all group names in this repo.
+
+	.. py:attribute:: nodes
+
+		A list of all nodes in the repo (instances of :py:class:`blockwart.node.Node`).
+
+	.. py:attribute:: node_names
+
+		A list of all node names in this repo.
+
+	|
+
+	.. py:method:: get_group(group_name)
+
+		Get the group object with the given name.
+
+		:param str group_name: Name of the desired group
+		:return: The group object for the given name
+		:rtype: :py:class:`blockwart.group.Group`
+
+	|
+
 	.. py:method:: get_node(node_name)
 
 		Get the node object with the given name.
 
 		:param str node_name: Name of the desired node
 		:return: The node object for the given name
-		:rtype: Node
+		:rtype: :py:class:`blockwart.node.Node`
 
 
 |
@@ -55,6 +83,24 @@ Reference
 .. py:class:: Node()
 
 	A system managed by Blockwart.
+
+	.. py:attribute:: groups
+
+		A list of :py:class:`blockwart.group.Group` objects this node belongs to
+
+	.. py:attribute:: hostname
+
+		The DNS name Blockwart uses to connect to this node
+
+	.. py:attribute:: metadata
+
+		A dictionary of custom metadata as defined in :doc:`nodes.py <nodes.py>`
+
+	.. py:attribute:: name
+
+		The internal identifier for this node
+
+	|
 
 	.. py:method:: download(remote_path, local_path)
 
@@ -71,5 +117,19 @@ Reference
 
 		:param str command: What should be executed on the node
 		:param bool may_fail: If ``False``, :py:exc:`blockwart.exceptions.RemoteException` will be raised if the command does not return 0.
-		:return: The node object for the given name
-		:rtype: Node
+		:return: An object that holds the return code as well as captured stdout and stderr.
+		:rtype: :py:class:`blockwart.operations.RunResult`
+
+	|
+
+	.. py:method:: upload(local_path, remote_path, mode=None, owner="", group="")
+
+		Uploads a file to the node.
+
+		:param str local_path: Which file to upload
+		:param str remote_path: Where to put the file on the target node
+		:param str mode: File mode, e.g. "0644"
+		:param str owner: Username of the file owner
+		:param str group: Group name of the file group
+
+	|
