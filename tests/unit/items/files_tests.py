@@ -7,6 +7,7 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
+from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
 from blockwart.utils.text import green, red
 
@@ -326,6 +327,24 @@ class FileFixTypeTest(TestCase):
         assert call("rm -rf /foo") in node.run.call_args_list
         assert call("mkdir -p /") in node.run.call_args_list
         fix_content.assert_called_once()
+
+
+class FileGetAutoDepsTest(TestCase):
+    """
+    Tests blockwart.items.files.File.get_auto_deps.
+    """
+    def test_file_collision(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "file"
+        item1.id = "file:/foo/bar/baz"
+        item1.name = "/foo/bar/baz"
+
+        f = files.File(MagicMock(), "/foo/bar/baz", {})
+
+        items = [item1, f]
+
+        with self.assertRaises(BundleError):
+            f.get_auto_deps(items)
 
 
 class FileGetStatusTest(TestCase):

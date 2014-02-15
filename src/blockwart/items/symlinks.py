@@ -106,10 +106,31 @@ class Symlink(Item):
     def get_auto_deps(self, items):
         deps = []
         for item in items:
-            if item == self or item.ITEM_TYPE_NAME not in ("directory", "symlink"):
+            if item == self:
                 continue
-            if is_subdirectory(item.name, self.name):
-                deps.append(item.id)
+            if (
+                (
+                    item.ITEM_TYPE_NAME == "file" and
+                    is_subdirectory(item.name, self.name)
+                )
+                or
+                (
+                    item.ITEM_TYPE_NAME in ("file", "symlink") and
+                    item.name == self.name
+                )
+            ):
+                raise BundleError(_(
+                    "{} (from bundle '{}') blocking path to "
+                    "{} (from bundle '{}')"
+                ).format(
+                    item.id,
+                    item.bundle.name,
+                    self.id,
+                    self.bundle.name,
+                ))
+            elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
+                if is_subdirectory(item.name, self.name):
+                    deps.append(item.id)
         return deps
 
     def get_status(self):

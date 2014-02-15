@@ -14,7 +14,7 @@ from blockwart.items.directories import validator_mode
 from blockwart.utils import cached_property, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold, green, red
+from blockwart.utils.text import bold, green, is_subdirectory, red
 
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
@@ -301,6 +301,22 @@ class File(Item):
         self.node.run("rm -rf {}".format(quote(self.name)))
         self.node.run("mkdir -p {}".format(quote(dirname(self.name))))
         self._fix_content(status)
+
+    def get_auto_deps(self, items):
+        for item in items:
+            if item == self or item.ITEM_TYPE_NAME != "file":
+                continue
+            if is_subdirectory(item.name, self.name) or item.name == self.name:
+                raise BundleError(_(
+                    "{} (from bundle '{}') blocking path to "
+                    "{} (from bundle '{}')"
+                ).format(
+                    item.id,
+                    item.bundle.name,
+                    self.id,
+                    self.bundle.name,
+                ))
+        return []
 
     def get_status(self):
         correct = True

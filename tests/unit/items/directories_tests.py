@@ -121,6 +121,45 @@ class DirectoryGetAutoDepsTest(TestCase):
     """
     Tests blockwart.items.directories.Directory.get_auto_deps.
     """
+    def test_directory_collision(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "directory"
+        item1.id = "directory:/foo/bar/baz"
+        item1.name = "/foo/bar/baz"
+
+        d = directories.Directory(MagicMock(), "/foo/bar/baz", {})
+
+        items = [item1, d]
+
+        with self.assertRaises(BundleError):
+            d.get_auto_deps(items)
+
+    def test_file_collision(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "file"
+        item1.id = "file:/foo/bar/baz"
+        item1.name = "/foo/bar/baz"
+
+        d = directories.Directory(MagicMock(), "/foo/bar/baz", {})
+
+        items = [item1, d]
+
+        with self.assertRaises(BundleError):
+            d.get_auto_deps(items)
+
+    def test_file_parent(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "file"
+        item1.id = "file:/foo/bar"
+        item1.name = "/foo/bar"
+
+        d = directories.Directory(MagicMock(), "/foo/bar/baz", {})
+
+        items = [item1, d]
+
+        with self.assertRaises(BundleError):
+            d.get_auto_deps(items)
+
     def test_subdir(self):
         item1 = MagicMock()
         item1.ITEM_TYPE_NAME = "directory"
@@ -132,8 +171,8 @@ class DirectoryGetAutoDepsTest(TestCase):
         item2.name = "/bar/foo"
         item3 = MagicMock()
         item3.ITEM_TYPE_NAME = "file"
-        item3.id = "file:/foo/bar"
-        item3.name = "/foo/bar"
+        item3.id = "file:/foo/baz"
+        item3.name = "/foo/baz"
 
         d = directories.Directory(MagicMock(), "/foo/bar/baz", {})
 
@@ -152,14 +191,27 @@ class DirectoryGetAutoDepsTest(TestCase):
         item2.name = "/bar/foo"
         item3 = MagicMock()
         item3.ITEM_TYPE_NAME = "file"
-        item3.id = "file:/foo/bar"
-        item3.name = "/foo/bar"
+        item3.id = "file:/foo/baz"
+        item3.name = "/foo/baz"
 
         d = directories.Directory(MagicMock(), "/foo/bar/baz", {})
 
         items = [item1, item2, item3, d]
 
         self.assertEqual(d.get_auto_deps(items), ["symlink:/foo/bar"])
+
+    def test_symlink_collision(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "symlink"
+        item1.id = "symlink:/foo/bar/baz"
+        item1.name = "/foo/bar/baz"
+
+        d = directories.Directory(MagicMock(), "/foo/bar/baz", {})
+
+        items = [item1, d]
+
+        with self.assertRaises(BundleError):
+            d.get_auto_deps(items)
 
 
 class DirectoryGetStatusTest(TestCase):

@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
+from blockwart.exceptions import BundleError
 from blockwart.items import symlinks, ItemStatus
 
 
@@ -72,6 +73,32 @@ class SymlinkGetAutoDepsTest(TestCase):
     """
     Tests blockwart.items.symlinks.Symlink.get_auto_deps.
     """
+    def test_file_collision(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "file"
+        item1.id = "file:/foo/bar/baz"
+        item1.name = "/foo/bar/baz"
+
+        s = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
+
+        items = [item1, s]
+
+        with self.assertRaises(BundleError):
+            s.get_auto_deps(items)
+
+    def test_file_parent(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "file"
+        item1.id = "file:/foo/bar"
+        item1.name = "/foo/bar"
+
+        s = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
+
+        items = [item1, s]
+
+        with self.assertRaises(BundleError):
+            s.get_auto_deps(items)
+
     def test_subdir(self):
         item1 = MagicMock()
         item1.ITEM_TYPE_NAME = "directory"
@@ -83,14 +110,14 @@ class SymlinkGetAutoDepsTest(TestCase):
         item2.name = "/bar/foo"
         item3 = MagicMock()
         item3.ITEM_TYPE_NAME = "file"
-        item3.id = "file:/foo/bar"
-        item3.name = "/foo/bar"
+        item3.id = "file:/foo/baz"
+        item3.name = "/foo/baz"
 
-        d = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
+        s = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
 
-        items = [item1, item2, item3, d]
+        items = [item1, item2, item3, s]
 
-        self.assertEqual(d.get_auto_deps(items), ["directory:/foo/bar"])
+        self.assertEqual(s.get_auto_deps(items), ["directory:/foo/bar"])
 
     def test_symlink(self):
         item1 = MagicMock()
@@ -103,14 +130,27 @@ class SymlinkGetAutoDepsTest(TestCase):
         item2.name = "/bar/foo"
         item3 = MagicMock()
         item3.ITEM_TYPE_NAME = "file"
-        item3.id = "file:/foo/bar"
-        item3.name = "/foo/bar"
+        item3.id = "file:/foo/baz"
+        item3.name = "/foo/baz"
 
-        d = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
+        s = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
 
-        items = [item1, item2, item3, d]
+        items = [item1, item2, item3, s]
 
-        self.assertEqual(d.get_auto_deps(items), ["symlink:/foo/bar"])
+        self.assertEqual(s.get_auto_deps(items), ["symlink:/foo/bar"])
+
+    def test_symlink_collision(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "symlink"
+        item1.id = "symlink:/foo/bar/baz"
+        item1.name = "/foo/bar/baz"
+
+        s = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
+
+        items = [item1, s]
+
+        with self.assertRaises(BundleError):
+            s.get_auto_deps(items)
 
 
 class SymlinkGetStatusTest(TestCase):
