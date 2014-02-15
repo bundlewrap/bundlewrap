@@ -3,6 +3,33 @@ from unittest import TestCase
 from blockwart.utils import text
 
 
+class IsSubdirectoryTest(TestCase):
+    """
+    Tests blockwart.utils.text.is_subdirectory.
+    """
+    def test_simple_subdir(self):
+        self.assertTrue(text.is_subdirectory("/foo/bar", "/foo/bar/baz"))
+
+    def test_simple_nosubdir(self):
+        self.assertFalse(text.is_subdirectory("/foo/bar", "/foo/baz/baz"))
+
+    def test_simple_substr(self):
+        self.assertFalse(text.is_subdirectory("/foo/bar", "/foo/barbaz"))
+
+    def test_root(self):
+        self.assertTrue(text.is_subdirectory("/", "/foo"))
+
+    def test_identical(self):
+        self.assertFalse(text.is_subdirectory("/foo", "/foo"))
+
+    def test_slash(self):
+        self.assertFalse(text.is_subdirectory("/foo", "/foo\/bar"))
+
+    def test_relative(self):
+        with self.assertRaises(ValueError):
+            text.is_subdirectory("/foo", "bar")
+
+
 class NameValidationTest(TestCase):
     """
     Tests blockwart.utils.text.validate_name.

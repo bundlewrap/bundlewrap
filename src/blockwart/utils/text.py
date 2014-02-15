@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from os import environ
+from os.path import normpath
 from random import choice
 from string import digits, letters
 
@@ -25,6 +26,25 @@ bold = _ansi_wrapper(_bold_wrapper)
 green = _ansi_wrapper(_fabric_colors.green)
 red = _ansi_wrapper(_fabric_colors.red)
 yellow = _ansi_wrapper(_fabric_colors.yellow)
+
+
+def is_subdirectory(parent, child):
+    """
+    Returns True if the given child is a subdirectory of the parent.
+    """
+    parent = normpath(parent)
+    child = normpath(child)
+
+    if not parent.startswith("/") or not child.startswith("/"):
+        raise ValueError(_("directory paths must be absolute"))
+
+    if parent == child:
+        return False
+
+    if parent == "/":
+        return True
+
+    return child.startswith(parent + "/")
 
 
 def mark_for_translation(s):
