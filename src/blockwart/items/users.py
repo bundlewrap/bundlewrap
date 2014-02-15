@@ -261,19 +261,19 @@ class User(Item):
                                 "a password or a password hash").format(self.id))
 
     @classmethod
-    def validate_name(cls, name):
+    def validate_name(cls, bundle, name):
         for char in name:
             if char not in _USERNAME_VALID_CHARACTERS:
-                raise BundleError(
-                    _("Invalid character in username '{}': {}").format(name, char)
-                )
+                raise BundleError(_(
+                    "Invalid character in username '{}': {} (bundle '{}')"
+                ).format(name, char, bundle.name))
 
         if name.endswith("_") or name.endswith("-"):
-            raise BundleError(
-                _("Username '{}' must not end in dash or underscore")
-            )
+            raise BundleError(_(
+                "Username '{}' must not end in dash or underscore (bundle '{}')"
+            ).format(name, bundle.name))
 
         if len(name) > 30:
-            raise BundleError(
-                _("Username '{}' is longer than 30 characters")
-            )
+            raise BundleError(_(
+                "Username '{}' is longer than 30 characters (bundle '{}')"
+            ).format(name, bundle.name))

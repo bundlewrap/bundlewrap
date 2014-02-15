@@ -69,7 +69,7 @@ class Item(object):
         self.node = bundle.node
 
         if not skip_validation:
-            self.validate_name(name)
+            self.validate_name(bundle, name)
             self._validate_attribute_names(attributes)
             self._validate_required_attributes(attributes)
             self.validate_attributes(attributes)
@@ -225,7 +225,7 @@ class Item(object):
         pass
 
     @classmethod
-    def validate_name(cls, name):
+    def validate_name(cls, bundle, name):
         """
         Raise BundleError if the given name is not valid (e.g. contains
         invalid characters for this kind of item.

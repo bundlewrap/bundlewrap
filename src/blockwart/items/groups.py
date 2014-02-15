@@ -77,19 +77,20 @@ class Group(Item):
         return status
 
     @classmethod
-    def validate_name(cls, name):
+    def validate_name(cls, bundle, name):
         for char in name:
             if char not in _USERNAME_VALID_CHARACTERS:
-                raise BundleError(
-                    _("Invalid character in group name '{}': {}").format(name, char)
-                )
+                raise BundleError(_(
+                    "Invalid character in group name '{}': {} (bundle '{}')"
+                ).format(name, char, bundle.name))
 
         if name.endswith("_") or name.endswith("-"):
-            raise BundleError(
-                _("Group name '{}' must not end in dash or underscore")
-            )
+            raise BundleError(_(
+                "Group name '{}' must not end in dash or underscore (bundle '{}')"
+            ).format(name, bundle.name))
 
         if len(name) > 30:
-            raise BundleError(
-                _("Group name '{}' is longer than 30 characters")
-            )
+            raise BundleError(_(
+                "Group name '{}' is longer than 30 characters (bundle '{}')"
+            ).format(name, bundle.name))
+

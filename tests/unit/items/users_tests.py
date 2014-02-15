@@ -660,15 +660,15 @@ class ValidateNameTest(TestCase):
     """
     def test_invalid_char(self):
         with self.assertRaises(BundleError):
-            users.User.validate_name("block wart")
+            users.User.validate_name(MagicMock(), "block wart")
 
     def test_ends_in_dash(self):
         with self.assertRaises(BundleError):
-            users.User.validate_name("blockwart-")
+            users.User.validate_name(MagicMock(), "blockwart-")
 
     def test_too_long(self):
         with self.assertRaises(BundleError):
-            users.User.validate_name("blockwartblockwartblockwartblockwart")
+            users.User.validate_name(MagicMock(), "blockwartblockwartblockwartblockwart")
 
     def test_valid(self):
-        users.User.validate_name("blockwart")
+        users.User.validate_name(MagicMock(), "blockwart")
