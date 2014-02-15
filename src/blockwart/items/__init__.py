@@ -197,6 +197,19 @@ class Item(object):
         """
         raise NotImplementedError()
 
+    def get_auto_deps(self, items):
+        """
+        Return a list of item IDs this item should have dependencies on.
+
+        Be very careful when using this. There are few circumstances
+        where this is really necessary. Only use this if you really need
+        to examine the actual list of items in order to figure out your
+        dependencies.
+
+        MAY be overridden by subclasses.
+        """
+        return []
+
     def get_status(self):
         """
         Returns an ItemStatus instance describing the current status of
