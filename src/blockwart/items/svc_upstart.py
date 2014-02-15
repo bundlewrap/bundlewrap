@@ -29,7 +29,7 @@ class SvcUpstart(Item):
     A service managed by Upstart.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_upstart"
-    DEPENDS_STATIC = []
+    DEPENDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
     ITEM_ATTRIBUTES = {
         'running': True,
     }

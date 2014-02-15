@@ -32,7 +32,7 @@ class SvcSystemd(Item):
     A service managed by systemd.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_systemd"
-    DEPENDS_STATIC = []
+    DEPENDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
     ITEM_ATTRIBUTES = {
         'running': True,
     }
