@@ -68,6 +68,51 @@ class SymlinkFixTypeTest(TestCase):
         fix_owner.assert_called_once()
 
 
+class SymlinkGetAutoDepsTest(TestCase):
+    """
+    Tests blockwart.items.symlinks.Symlink.get_auto_deps.
+    """
+    def test_subdir(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "directory"
+        item1.id = "directory:/foo/bar"
+        item1.name = "/foo/bar"
+        item2 = MagicMock()
+        item2.ITEM_TYPE_NAME = "directory"
+        item2.id = "directory:/bar/foo"
+        item2.name = "/bar/foo"
+        item3 = MagicMock()
+        item3.ITEM_TYPE_NAME = "file"
+        item3.id = "file:/foo/bar"
+        item3.name = "/foo/bar"
+
+        d = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
+
+        items = [item1, item2, item3, d]
+
+        self.assertEqual(d.get_auto_deps(items), ["directory:/foo/bar"])
+
+    def test_symlink(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "symlink"
+        item1.id = "symlink:/foo/bar"
+        item1.name = "/foo/bar"
+        item2 = MagicMock()
+        item2.ITEM_TYPE_NAME = "directory"
+        item2.id = "directory:/bar/foo"
+        item2.name = "/bar/foo"
+        item3 = MagicMock()
+        item3.ITEM_TYPE_NAME = "file"
+        item3.id = "file:/foo/bar"
+        item3.name = "/foo/bar"
+
+        d = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
+
+        items = [item1, item2, item3, d]
+
+        self.assertEqual(d.get_auto_deps(items), ["symlink:/foo/bar"])
+
+
 class SymlinkGetStatusTest(TestCase):
     """
     Tests blockwart.items.symlinks.Symlink.get_status.

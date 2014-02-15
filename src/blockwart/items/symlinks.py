@@ -9,7 +9,7 @@ from blockwart.items import Item, ItemStatus
 from blockwart.utils import LOG
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold
+from blockwart.utils.text import bold, is_subdirectory
 
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
@@ -20,7 +20,7 @@ class Symlink(Item):
     A symbolic link.
     """
     BUNDLE_ATTRIBUTE_NAME = "symlinks"
-    DEPENDS_STATIC = ["directory:"]
+    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'group': "root",
         'owner': "root",
@@ -102,6 +102,15 @@ class Symlink(Item):
         self.node.run("ln -s {} {}".format(quote(self.attributes['target']),
                                            quote(self.name)))
         self._fix_owner(status)
+
+    def get_auto_deps(self, items):
+        deps = []
+        for item in items:
+            if item == self or item.ITEM_TYPE_NAME not in ("directory", "symlink"):
+                continue
+            if is_subdirectory(item.name, self.name):
+                deps.append(item.id)
+        return deps
 
     def get_status(self):
         correct = True

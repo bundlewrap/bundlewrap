@@ -9,7 +9,7 @@ from blockwart.items import Item, ItemStatus
 from blockwart.utils import LOG
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold
+from blockwart.utils.text import bold, is_subdirectory
 
 
 def validator_mode(item_id, value):
@@ -136,6 +136,15 @@ class Directory(Item):
         self.node.run("mkdir -p {}".format(quote(self.name)))
         self._fix_mode(status)
         self._fix_owner(status)
+
+    def get_auto_deps(self, items):
+        deps = []
+        for item in items:
+            if item.ITEM_TYPE_NAME not in ("directory", "symlink"):
+                continue
+            if is_subdirectory(item.name, self.name):
+                deps.append(item.id)
+        return deps
 
     def get_status(self):
         correct = True
