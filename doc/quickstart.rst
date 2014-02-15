@@ -138,6 +138,6 @@ Here are some suggestions on what to do next:
 * read up on how a :doc:`Blockwart repository <repository>` is laid out
 * ...especially what types of items you can add to your :doc:`bundles <bundles>`
 * familiarize yourself with `the Mako template language <http://www.makotemplates.org/>`_
-* use ``bw --help`` to explore the command line utility
+* explore the :doc:`command line interface <cli>`
 
 Have fun! If you have any questions, feel free to drop by `on IRC <irc://chat.freenode.net/blockwart>`_.
