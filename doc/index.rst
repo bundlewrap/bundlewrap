@@ -25,6 +25,7 @@ Check out the :doc:`quickstart tutorial <quickstart>` to get started.
    installation
    requirements
    repository
+   cli
    api
    about
 
