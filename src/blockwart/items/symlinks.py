@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from collections import defaultdict
+from os.path import normpath
 from pipes import quote
 
+from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils import LOG
 from blockwart.utils.remote import PathInfo
@@ -121,3 +123,14 @@ class Symlink(Item):
     def validate_attributes(self, attributes):
         for key, value in attributes.items():
             ATTRIBUTE_VALIDATORS[key](self.id, value)
+
+    @classmethod
+    def validate_name(cls, bundle, name):
+        if normpath(name) != name:
+            raise BundleError(_(
+                "'{}' is an invalid symlink path, should be '{}' (bundle '{}')"
+            ).format(
+                name,
+                normpath(name),
+                bundle.name,
+            ))

@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from difflib import unified_diff
 from os import remove
-from os.path import dirname, join
+from os.path import dirname, join, normpath
 from pipes import quote
 from tempfile import mkstemp
 
@@ -326,3 +326,14 @@ class File(Item):
     def validate_attributes(self, attributes):
         for key, value in attributes.items():
             ATTRIBUTE_VALIDATORS[key](self.id, value)
+
+    @classmethod
+    def validate_name(cls, bundle, name):
+        if normpath(name) != name:
+            raise BundleError(_(
+                "'{}' is an invalid file path, should be '{}' (bundle '{}')"
+            ).format(
+                name,
+                normpath(name),
+                bundle.name,
+            ))
