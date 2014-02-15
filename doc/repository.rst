@@ -19,6 +19,8 @@ This page describes the various subdirectories and files than can exist inside a
 +-----------------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------+
 | ``bundles/``    | :ref:`bundles`  | This required subdirectory contains the bulk of your configuration, organized into bundles of related items.                             |
 +-----------------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------+
+| ``hooks/``      | :ref:`hooks`    | This optional subdirectory contains hooks you can use to act on certain events when using Blockwart.                                     |
++-----------------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------+
 | ``items/``      | :ref:`dev_item` | This optional subdirectory contains the code for your custom item types.                                                                 |
 +-----------------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------+
 | ``libs/``       | :ref:`libs`     | This optional subdirectory contains reusable custom code for your bundles.                                                               |
