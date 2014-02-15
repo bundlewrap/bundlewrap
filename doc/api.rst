@@ -40,7 +40,7 @@ Reference
 
 	.. py:attribute:: groups
 
-		A list of all groups in the repo (instances of :py:class:`blockwart.group.Group`).
+		A list of all groups in the repo (instances of :py:class:`blockwart.group.Group`)
 
 	.. py:attribute:: group_names
 
@@ -48,11 +48,11 @@ Reference
 
 	.. py:attribute:: nodes
 
-		A list of all nodes in the repo (instances of :py:class:`blockwart.node.Node`).
+		A list of all nodes in the repo (instances of :py:class:`blockwart.node.Node`)
 
 	.. py:attribute:: node_names
 
-		A list of all node names in this repo.
+		A list of all node names in this repo
 
 	|
 
@@ -83,6 +83,10 @@ Reference
 .. py:class:: Node()
 
 	A system managed by Blockwart.
+
+	.. py:attribute:: bundles
+
+		A list of all bundles associated with this node (instances of :py:class:`blockwart.bundle.Bundle`)
 
 	.. py:attribute:: groups
 
@@ -117,7 +121,7 @@ Reference
 
 		:param str command: What should be executed on the node
 		:param bool may_fail: If ``False``, :py:exc:`blockwart.exceptions.RemoteException` will be raised if the command does not return 0.
-		:return: An object that holds the return code as well as captured stdout and stderr.
+		:return: An object that holds the return code as well as captured stdout and stderr
 		:rtype: :py:class:`blockwart.operations.RunResult`
 
 	|
@@ -132,4 +136,19 @@ Reference
 		:param str owner: Username of the file owner
 		:param str group: Group name of the file group
 
-	|
+|
+|
+
+.. py:module:: blockwart.group
+
+.. py:class:: Group
+
+	A user-defined group of nodes.
+
+	.. py:attribute:: name
+
+		The name of this group
+
+	.. py:attribute:: nodes
+
+		A list of all nodes in this group (instances of :py:class:`blockwart.node.Node`, includes subgroup members)
