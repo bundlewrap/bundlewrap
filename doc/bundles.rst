@@ -14,6 +14,7 @@ Bundles
     item_pkg_apt
     item_pkg_pacman
     item_svc_upstart
+    item_svc_systemd
     item_symlink
     item_user
 
@@ -74,6 +75,8 @@ This table lists all item types included in Blockwart along with the bundle attr
 | :doc:`pkg_pacman <item_pkg_pacman>`   | ``pkg_pacman``   | Installs and removes packages with pacman                                              |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`svc_upstart <item_svc_upstart>` | ``svc_upstart``  | Starts and stops services with Upstart                                                 |
++---------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`svc_systemd <item_svc_systemd>` | ``svc_systemd``  | Starts and stops services with systemd                                                 |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`symlink <item_symlink>`         | ``symlinks``     | Manages symbolic links and their ownership                                             |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
