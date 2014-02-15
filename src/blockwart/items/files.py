@@ -145,7 +145,7 @@ class File(Item):
     A file.
     """
     BUNDLE_ATTRIBUTE_NAME = "files"
-    DEPENDS_STATIC = []
+    DEPENDS_STATIC = ["user:"]
     ITEM_ATTRIBUTES = {
         'content': None,
         'content_type': "mako",

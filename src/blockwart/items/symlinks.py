@@ -20,7 +20,7 @@ class Symlink(Item):
     A symbolic link.
     """
     BUNDLE_ATTRIBUTE_NAME = "symlinks"
-    DEPENDS_STATIC = []
+    DEPENDS_STATIC = ["user:"]
     ITEM_ATTRIBUTES = {
         'group': "root",
         'owner': "root",

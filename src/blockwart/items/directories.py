@@ -40,7 +40,7 @@ class Directory(Item):
     A directory.
     """
     BUNDLE_ATTRIBUTE_NAME = "directories"
-    DEPENDS_STATIC = []
+    DEPENDS_STATIC = ["user:"]
     ITEM_ATTRIBUTES = {
         'group': "root",
         'mode': "0775",
