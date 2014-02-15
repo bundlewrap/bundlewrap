@@ -1,8 +1,8 @@
 .. _cli:
 
-###
-CLI
-###
+######################
+Command Line Interface
+######################
 
 The ``bw`` utility is Blockwart's command line interface.
 
