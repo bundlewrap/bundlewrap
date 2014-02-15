@@ -145,7 +145,7 @@ class File(Item):
     A file.
     """
     BUNDLE_ATTRIBUTE_NAME = "files"
-    DEPENDS_STATIC = ["directory:"]
+    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'content': None,
         'content_type': "mako",
@@ -303,10 +303,14 @@ class File(Item):
         self._fix_content(status)
 
     def get_auto_deps(self, items):
+        deps = []
         for item in items:
-            if item == self or item.ITEM_TYPE_NAME != "file":
+            if item == self:
                 continue
-            if is_subdirectory(item.name, self.name) or item.name == self.name:
+            if item.ITEM_TYPE_NAME == "file" and (
+                is_subdirectory(item.name, self.name) or
+                item.name == self.name
+            ):
                 raise BundleError(_(
                     "{} (from bundle '{}') blocking path to "
                     "{} (from bundle '{}')"
@@ -316,7 +320,10 @@ class File(Item):
                     self.id,
                     self.bundle.name,
                 ))
-        return []
+            elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
+                if is_subdirectory(item.name, self.name):
+                    deps.append(item.id)
+        return deps
 
     def get_status(self):
         correct = True
