@@ -15,6 +15,7 @@ from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
     "depends": [],
+    "triggers": [],
 }
 ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False

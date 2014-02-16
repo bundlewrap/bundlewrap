@@ -17,6 +17,7 @@ class Action(object):
     def __init__(self, bundle, name, config):
         self.bundle = bundle
         self.name = name
+        self.triggered = False
 
         self.validate_config(bundle, name, config)
 
@@ -100,7 +101,7 @@ class Action(object):
 
     @classmethod
     def validate_config(cls, bundle, name, config):
-        if config.get('timing', "pre") not in ("pre", "post"):
+        if config.get('timing', "pre") not in ("pre", "post", "triggered"):
             raise BundleError(_(
                 "invalid timing for action '{}' in bundle '{}'"
             ).format(name, bundle.name))

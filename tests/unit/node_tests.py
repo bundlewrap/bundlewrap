@@ -52,35 +52,46 @@ class ApplyItemsTest(TestCase):
     def test_self_loop(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name1"])
         i2 = get_mock_item("type1", "name2", [], [])
+        node = MagicMock()
+        node.items = [i1, i2]
         with self.assertRaises(ItemDependencyError):
-            list(apply_items([i1, i2]))
+            list(apply_items(node))
 
     def test_direct_loop(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], ["type1:name1"])
+        node = MagicMock()
+        node.items = [i1, i2]
         with self.assertRaises(ItemDependencyError):
-            list(apply_items([i1, i2]))
+            list(apply_items(node))
 
     def test_nested_loop(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
         i3 = get_mock_item("type1", "name3", [], ["type1:name4"])
         i4 = get_mock_item("type1", "name4", [], ["type1:name1"])
+        node = MagicMock()
+        node.items = [i1, i2, i3, i4]
         with self.assertRaises(ItemDependencyError):
-            list(apply_items([i1, i2, i3, i4]))
+            list(apply_items(node))
 
     def test_implicit_loop(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], ["type1:"])
+        node = MagicMock()
+        node.items = [i1, i2]
         with self.assertRaises(ItemDependencyError):
-            list(apply_items([i1, i2]))
+            list(apply_items(node))
 
     def test_simple_order(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
         i3 = get_mock_item("type1", "name3", [], [])
 
-        results = list(apply_items([i1, i2, i3]))
+        node = MagicMock()
+        node.items = [i1, i2, i3]
+
+        results = list(apply_items(node))
 
         self.assertEqual(results[0][1]._name, "name3")
         self.assertEqual(results[1][1]._name, "name2")
@@ -92,7 +103,10 @@ class ApplyItemsTest(TestCase):
         i2 = get_mock_item("type1", "name2", [], [])
         i3 = get_mock_item("type2", "name3", ["type1:"], [])
 
-        results = list(apply_items([i1, i2, i3]))
+        node = MagicMock()
+        node.items = [i1, i2, i3]
+
+        results = list(apply_items(node))
 
         self.assertEqual(results[0][1]._name, "name2")
         self.assertEqual(results[1][1]._name, "name1")
@@ -103,7 +117,10 @@ class ApplyItemsTest(TestCase):
         i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
         i3 = get_mock_item("type1", "name3", [], [])
 
-        results = list(apply_items([i1, i2, i3], workers=2))
+        node = MagicMock()
+        node.items = [i1, i2, i3]
+
+        results = list(apply_items(node, workers=2))
 
         self.assertEqual(results[0][1]._name, "name3")
         self.assertEqual(results[1][1]._name, "name2")
@@ -115,7 +132,10 @@ class ApplyItemsTest(TestCase):
         i2 = get_mock_item("type1", "name2", [], ["type1:name3"])
         i3 = get_mock_item("type1", "name3", [], [])
 
-        results = list(apply_items([i1, i2, i3], interactive=True))
+        node = MagicMock()
+        node.items = [i1, i2, i3]
+
+        results = list(apply_items(node, interactive=True))
 
         self.assertEqual(results[0][1]._name, "name3")
         self.assertEqual(results[1][1]._name, "name2")
@@ -471,7 +491,7 @@ class NodeTest(TestCase):
         NodeLock.__exit__ = lambda x: x
         self.assertEqual(n.apply(), result)
         self.assertEqual(apply_items.call_count, 1)
-        self.assertEqual(run_actions.call_count, 2)
+        self.assertEqual(run_actions.call_count, 3)
         ApplyResult.assert_called_once()
 
     def test_bundles(self):
