@@ -12,7 +12,8 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
+from .exceptions import BundleError, ItemDependencyError, NodeAlreadyLockedException, \
+    RepositoryError
 from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
@@ -217,9 +218,9 @@ def inject_concurrency_blockers(items):
     return items
 
 
-def apply_items(items, workers=1, interactive=False):
+def apply_items(node, workers=1, interactive=False):
     # make sure items is not a generator
-    items = list(items)
+    items = list(node.items)
 
     for item in items:
         # merge static and user-defined deps
@@ -267,7 +268,11 @@ def apply_items(items, workers=1, interactive=False):
                 # sees a 'FINISHED_WORK' message.
 
                 # The task's id is the item we just processed.
-                dep = msg['task_id']
+                item_id = msg['task_id']
+                item = None
+                for i in items:
+                    if i.id == item_id:
+                        item = i
                 status_before, status_after = msg['return_value']
 
                 # This worker is now free again. He will ask for new
@@ -283,12 +288,14 @@ def apply_items(items, workers=1, interactive=False):
                 elif status_after.correct:
                     print(_("\n  {} fixed {}").format(
                         green("✓"),
-                        bold(dep),
+                        bold(item.id),
                     ))
+                    for triggered_action in item.triggers:
+                        node.trigger_action(triggered_action)
                 else:
                     print(_("\n  {} failed to fix {}").format(
                         red("✘"),
-                        bold(dep),
+                        bold(item.id),
                     ))
 
                 if status_after is not None and not status_after.correct:
@@ -296,7 +303,7 @@ def apply_items(items, workers=1, interactive=False):
                     # it shall be removed from the queue
                     items_with_deps, cancelled_items = remove_item_dependents(
                         items_with_deps,
-                        dep,
+                        item.id,
                     )
                     # since we removed them from further processing, we
                     # fake the status of the removed items so they still
@@ -313,7 +320,7 @@ def apply_items(items, workers=1, interactive=False):
                     # remaining items
                     items_with_deps = remove_dep_from_items(
                         items_with_deps,
-                        dep,
+                        item.id,
                     )
 
                 # now that we removed some deps from items_with_deps, we
@@ -405,6 +412,9 @@ def remove_item_dependents(items, dep):
 def run_actions(actions, timing, workers=1, interactive=False):
     # filter actions with wrong timing
     actions = [action for action in actions if action.timing == timing]
+
+    if timing == "triggered":
+        actions = [action for action in actions if action.triggered]
 
     # Unlike Node.apply_items, "actions" is a simple list of jobs that
     # have to be done. No fancy stuff such as dependencies. Thus, the
@@ -535,7 +545,14 @@ class Node(object):
                 ))
 
                 item_results = list(apply_items(
-                    self.items,
+                    self,
+                    workers=worker_count,
+                    interactive=interactive,
+                ))
+
+                action_results += list(run_actions(
+                    self.actions,
+                    'triggered',
                     workers=worker_count,
                     interactive=interactive,
                 ))
@@ -590,6 +607,13 @@ class Node(object):
             sudo=sudo,
             pty=pty,
         )
+
+    def trigger_action(self, action_name):
+        for action in self.actions:
+            if action.name == action_name:
+                action.triggered = True
+                return
+        raise BundleError(_("triggered action '{}' was not found").format(action_name))
 
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
         return operations.upload(
