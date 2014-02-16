@@ -71,9 +71,11 @@ def bw_repo_plot(repo, args):
     items = list(node.items)
 
     for item in items:
+        item._check_bundle_collisions(items)
         # merge static and user-defined deps
         item._deps = list(item.DEPENDS_STATIC)
         item._deps += item.depends
+        item._deps += list(item.get_auto_deps(items))
 
     items = inject_dummy_items(items)
     items = flatten_dependencies(items)

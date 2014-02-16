@@ -7,6 +7,7 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
+from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
 from blockwart.utils.text import green, red
 
@@ -326,6 +327,51 @@ class FileFixTypeTest(TestCase):
         assert call("rm -rf /foo") in node.run.call_args_list
         assert call("mkdir -p /") in node.run.call_args_list
         fix_content.assert_called_once()
+
+
+class FileGetAutoDepsTest(TestCase):
+    """
+    Tests blockwart.items.files.File.get_auto_deps.
+    """
+    def test_subdir(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "directory"
+        item1.id = "directory:/foo/bar"
+        item1.name = "/foo/bar"
+        item2 = MagicMock()
+        item2.ITEM_TYPE_NAME = "directory"
+        item2.id = "directory:/bar/foo"
+        item2.name = "/bar/foo"
+        item3 = MagicMock()
+        item3.ITEM_TYPE_NAME = "file"
+        item3.id = "file:/foo/baz"
+        item3.name = "/foo/baz"
+
+        f = files.File(MagicMock(), "/foo/bar/baz", {})
+
+        items = [item1, item2, item3, f]
+
+        self.assertEqual(f.get_auto_deps(items), ["directory:/foo/bar"])
+
+    def test_symdir(self):
+        item1 = MagicMock()
+        item1.ITEM_TYPE_NAME = "symlink"
+        item1.id = "symlink:/foo/bar"
+        item1.name = "/foo/bar"
+        item2 = MagicMock()
+        item2.ITEM_TYPE_NAME = "directory"
+        item2.id = "directory:/bar/foo"
+        item2.name = "/bar/foo"
+        item3 = MagicMock()
+        item3.ITEM_TYPE_NAME = "file"
+        item3.id = "file:/foo/baz"
+        item3.name = "/foo/baz"
+
+        f = files.File(MagicMock(), "/foo/bar/baz", {})
+
+        items = [item1, item2, item3, f]
+
+        self.assertEqual(f.get_auto_deps(items), ["symlink:/foo/bar"])
 
 
 class FileGetStatusTest(TestCase):

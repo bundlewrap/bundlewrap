@@ -143,3 +143,19 @@ class InitTest(TestCase):
 
         i = MyItem(MagicMock(), MagicMock(), {'foo': 49})
         self.assertEqual(i.attributes, {'foo': 49, 'bar': 48})
+
+
+class BundleCollisionTest(TestCase):
+    """
+    Tests blockwart.items.__init__.Item._check_bundle_collisions.
+    """
+    def test_collision(self):
+        item1 = MockItem(MagicMock(), "item1", {}, skip_validation=True)
+        item2 = MockItem(MagicMock(), "item1", {}, skip_validation=True)
+        with self.assertRaises(BundleError):
+            item1._check_bundle_collisions([item1, item2])
+
+    def test_no_collision(self):
+        item1 = MockItem(MagicMock(), "item1", {}, skip_validation=True)
+        item2 = MockItem(MagicMock(), "item2", {}, skip_validation=True)
+        item1._check_bundle_collisions([item1, item2])

@@ -110,6 +110,19 @@ class Item(object):
     def __repr__(self):
         return "<Item {}>".format(self.id)
 
+    def _check_bundle_collisions(self, items):
+        for item in items:
+            if item == self:
+                continue
+            if item.id == self.id:
+                raise BundleError(_(
+                    "duplicate definition of {} in bundles '{}' and '{}'"
+                ).format(
+                    item.id,
+                    item.bundle.name,
+                    self.bundle.name,
+                ))
+
     def _validate_attribute_names(self, attributes):
         invalid_attributes = set(attributes.keys()).difference(
             set(self.ITEM_ATTRIBUTES.keys()).union(
@@ -197,6 +210,19 @@ class Item(object):
         MUST be overridden by subclasses.
         """
         raise NotImplementedError()
+
+    def get_auto_deps(self, items):
+        """
+        Return a list of item IDs this item should have dependencies on.
+
+        Be very careful when using this. There are few circumstances
+        where this is really necessary. Only use this if you really need
+        to examine the actual list of items in order to figure out your
+        dependencies.
+
+        MAY be overridden by subclasses.
+        """
+        return []
 
     def get_status(self):
         """
