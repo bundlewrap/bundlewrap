@@ -1,3 +1,20 @@
+0.7.0
+=====
+
+2014-02-16
+
+* added safety checks to prevent diffs of unwieldy files
+* added a "text" content type for files
+* added support for arbitrary encodings in managed files
+* addes systemd and Upstart service items
+* added hooks
+* added action triggers (for service restarts after config changes)
+* lots of new documentation
+* better error messages when defining duplicate items
+* better dependencies between files, directories and symlinks
+* fixed a bug that prevented managing /etc/sudoers
+
+
 0.6.0
 =====
 
