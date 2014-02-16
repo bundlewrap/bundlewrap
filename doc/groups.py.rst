@@ -31,6 +31,8 @@ As with ``nodes.py``, you define your groups as a dictionary:
 
 All group attributes are optional.
 
+|
+
 Group attribute reference
 =========================
 
@@ -51,10 +53,14 @@ A list of regular expressions. Node names matching these expressions will be add
 
 Matches are determined using `the search() method <http://docs.python.org/2/library/re.html#re.RegexObject.search>`_.
 
+|
+
 ``members``
 -----------
 
 A tuple or list of node names that belong to this group.
+
+|
 
 ``subgroups``
 -------------

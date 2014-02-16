@@ -9,6 +9,8 @@ nodes.py
 
 This file lets you specify or dynamically build a list of nodes in your environment.
 
+|
+
 Introduction
 ============
 
@@ -39,6 +41,8 @@ All fields for a node (including ``hostname``) are optional. If you don't give o
 		'node1.example.com': {},
 	}
 
+|
+
 Dynamic node list
 =================
 
@@ -49,6 +53,8 @@ You are not confined to the static way of defining a node list as shown above. Y
 	    return ldap_nodes
 
 	nodes = get_my_nodes_from_ldap()
+
+|
 
 Node attribute reference
 ========================
@@ -69,10 +75,14 @@ A string used as a DNS name when connecting to this node. May also be an IP addr
 .. note::
    The username and SSH private key for connecting to the node cannot be configured in Blockwart. If you need to customize those, Blockwart will honor your ``~/.ssh/config``.
 
+|
+
 ``metadata``
 ------------
 
 This can be a dictionary of arbitrary data. You can access it from your templates as ``node.metadata``. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node.
+
+|
 
 ``use_shadow_passwords``
 ------------------------
