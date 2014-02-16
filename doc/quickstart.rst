@@ -70,6 +70,21 @@ Blockwart stores node configuration in bundles. A bundle is a collection of item
 
 	bw repo bundle create mybundle
 
+Now that you have created your bundle, it's important to tell Blockwart which nodes will have this bundle. You can't directly associate a bundle with a node though, bundles are always assigned to groups. Open your ``groups.py`` and edit the "all" group to include your new bundle:
+
+.. code-block:: python
+
+	groups = {
+	    'all': {
+	        'bundles': (
+	            "mybundle",
+	        ),
+	        'member_patterns': (
+	            r".*",
+	        ),
+	    },
+	}
+
 |
 
 Create a file template
