@@ -121,19 +121,6 @@ class DirectoryGetAutoDepsTest(TestCase):
     """
     Tests blockwart.items.directories.Directory.get_auto_deps.
     """
-    def test_directory_collision(self):
-        item1 = MagicMock()
-        item1.ITEM_TYPE_NAME = "directory"
-        item1.id = "directory:/foo/bar/baz"
-        item1.name = "/foo/bar/baz"
-
-        d = directories.Directory(MagicMock(), "/foo/bar/baz", {})
-
-        items = [item1, d]
-
-        with self.assertRaises(BundleError):
-            d.get_auto_deps(items)
-
     def test_file_collision(self):
         item1 = MagicMock()
         item1.ITEM_TYPE_NAME = "file"

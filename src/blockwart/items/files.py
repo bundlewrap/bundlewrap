@@ -305,12 +305,7 @@ class File(Item):
     def get_auto_deps(self, items):
         deps = []
         for item in items:
-            if item == self:
-                continue
-            if item.ITEM_TYPE_NAME == "file" and (
-                is_subdirectory(item.name, self.name) or
-                item.name == self.name
-            ):
+            if item.ITEM_TYPE_NAME == "file" and is_subdirectory(item.name, self.name):
                 raise BundleError(_(
                     "{} (from bundle '{}') blocking path to "
                     "{} (from bundle '{}')"

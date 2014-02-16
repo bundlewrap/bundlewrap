@@ -333,19 +333,6 @@ class FileGetAutoDepsTest(TestCase):
     """
     Tests blockwart.items.files.File.get_auto_deps.
     """
-    def test_file_collision(self):
-        item1 = MagicMock()
-        item1.ITEM_TYPE_NAME = "file"
-        item1.id = "file:/foo/bar/baz"
-        item1.name = "/foo/bar/baz"
-
-        f = files.File(MagicMock(), "/foo/bar/baz", {})
-
-        items = [item1, f]
-
-        with self.assertRaises(BundleError):
-            f.get_auto_deps(items)
-
     def test_subdir(self):
         item1 = MagicMock()
         item1.ITEM_TYPE_NAME = "directory"

@@ -109,6 +109,19 @@ class Item(object):
     def __repr__(self):
         return "<Item {}>".format(self.id)
 
+    def _check_bundle_collisions(self, items):
+        for item in items:
+            if item == self:
+                continue
+            if item.id == self.id:
+                raise BundleError(_(
+                    "duplicate definition of {} in bundles '{}' and '{}'"
+                ).format(
+                    item.id,
+                    item.bundle.name,
+                    self.bundle.name,
+                ))
+
     def _validate_attribute_names(self, attributes):
         invalid_attributes = set(attributes.keys()).difference(
             set(self.ITEM_ATTRIBUTES.keys()).union(

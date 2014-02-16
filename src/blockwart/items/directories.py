@@ -149,7 +149,7 @@ class Directory(Item):
                 )
                 or
                 (
-                    item.ITEM_TYPE_NAME in ("directory", "file", "symlink") and
+                    item.ITEM_TYPE_NAME in ("file", "symlink") and
                     item.name == self.name
                 )
             ):

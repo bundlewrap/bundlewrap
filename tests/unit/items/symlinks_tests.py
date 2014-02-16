@@ -139,19 +139,6 @@ class SymlinkGetAutoDepsTest(TestCase):
 
         self.assertEqual(s.get_auto_deps(items), ["symlink:/foo/bar"])
 
-    def test_symlink_collision(self):
-        item1 = MagicMock()
-        item1.ITEM_TYPE_NAME = "symlink"
-        item1.id = "symlink:/foo/bar/baz"
-        item1.name = "/foo/bar/baz"
-
-        s = symlinks.Symlink(MagicMock(), "/foo/bar/baz", {'target': "/404"})
-
-        items = [item1, s]
-
-        with self.assertRaises(BundleError):
-            s.get_auto_deps(items)
-
 
 class SymlinkGetStatusTest(TestCase):
     """

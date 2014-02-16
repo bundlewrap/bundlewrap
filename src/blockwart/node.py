@@ -222,6 +222,7 @@ def apply_items(items, workers=1, interactive=False):
     items = list(items)
 
     for item in items:
+        item._check_bundle_collisions(items)
         # merge static and user-defined deps
         item._deps = list(item.DEPENDS_STATIC)
         item._deps += item.depends
