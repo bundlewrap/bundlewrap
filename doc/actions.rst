@@ -55,4 +55,4 @@ Same as ``expected_stdout``, but with stderr.
 ``timing``
 ++++++++++
 
-Can be either ``"pre"`` or ``"post"``, depending on whether you want the action to be run before or after items are applied. Defaults to ``"pre"``.
+Acceptable values are ``"pre"``, ``"post"`` or ``"triggered"``. Choose ``pre`` or ``post`` depending on whether you want the action to be run before or after items are applied. When set to ``triggered``, the action will only be executed by :ref:`action_triggers`. Defaults to ``"pre"``.

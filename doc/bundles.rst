@@ -113,3 +113,32 @@ One such attribute is ``depends``. It allows for setting up dependencies between
 	}
 
 The first item (``item1``, specific attributes have been omitted) depends on a file called ``/etc/foo.conf``, while ``item2`` depends on all users.
+
+|
+
+.. _action_triggers:
+
+Action triggers
+###############
+
+In some scenarios, you may want to execute an :ref:`action <action>` only when an item is fixed (e.g. restart a daemon after a config file has changed or run ``postmap`` after updating an alias file). To do this, Blockwart has the builtin atttribute ``triggers``. You can use it to point to any action that has its ``timing`` attribute set to ``triggered``.
+
+.. code-block:: python
+
+	file = {
+	    '/etc/daemon.conf': {
+	        [...]
+	        'triggers': [
+	            'restart_daemon',
+	        ],
+	    },
+	}
+
+	actions = {
+	    "restart_daemon": {
+	    	"command": "service daemon restart",
+	    	"timing": "triggered",
+	    },
+	}
+
+The above example will run ``service daemon restart`` every time Blockwart successfully applies a change to ``/etc/daemon.conf``. If an action is triggered multiple times, it will only be run once.
