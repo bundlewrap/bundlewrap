@@ -9,6 +9,7 @@ from datetime import datetime
 from os.path import join
 
 from blockwart.exceptions import BundleError
+from blockwart.utils import LOG
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold, wrap_question
 from blockwart.utils.ui import ask_interactively
@@ -16,6 +17,7 @@ from blockwart.utils.ui import ask_interactively
 BUILTIN_ITEM_ATTRIBUTES = {
     "depends": [],
     "triggers": [],
+    "unless": "",
 }
 ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
@@ -97,13 +99,16 @@ class Item(object):
         return self.id
 
     def __reduce__(self):
+        attrs = copy(self.attributes)
+        for attribute_name in BUILTIN_ITEM_ATTRIBUTES.keys():
+            attrs[attribute_name] = getattr(self, attribute_name)
         return (
             unpickle_item_class,
             (
                 self.__class__.__name__,
                 self.bundle,
                 self.name,
-                self.attributes,
+                attrs,
             ),
         )
 
@@ -163,6 +168,13 @@ class Item(object):
 
         status_before = self.get_status()
         status_after = None
+
+        if self.unless and not status_before.correct:
+            unless_result = self.node.run(self.unless)
+            if unless_result.return_code == 0:
+                LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
+                status_before.correct = True
+
         if status_before.correct or not status_before.fixable:
             status_after = copy(status_before)
         else:

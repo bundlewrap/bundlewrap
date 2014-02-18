@@ -81,6 +81,45 @@ class ApplyTest(TestCase):
         self.assertFalse(after.fixable)
         self.assertEqual(before.fixable, after.fixable)
 
+    def test_unless(self):
+        status_before = MagicMock()
+        status_before.correct = False
+        item = MockItem(
+            MagicMock(),
+            "item1",
+            {'unless': "true"},
+            skip_validation=True,
+        )
+        item.get_status = MagicMock(return_value=status_before)
+        item.fix = MagicMock()
+
+        run_result = MagicMock()
+        run_result.return_code = 0
+        item.node.run.return_value = run_result
+
+        before, after = item.apply()
+        self.assertFalse(item.fix.called)
+        self.assertTrue(after.correct)
+        self.assertEqual(before.correct, after.correct)
+
+    def test_unless_fails(self):
+        status_before = MagicMock()
+        status_before.correct = False
+        item = MockItem(
+            MagicMock(),
+            "item1",
+            {'unless': "false"},
+            skip_validation=True,
+        )
+        item.get_status = MagicMock(return_value=status_before)
+        item.fix = MagicMock()
+
+        run_result = MagicMock()
+        run_result.return_code = 1
+        item.node.run.return_value = run_result
+
+        before, after = item.apply()
+        self.assertTrue(item.fix.called)
 
 class InitTest(TestCase):
     """

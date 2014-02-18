@@ -142,3 +142,23 @@ In some scenarios, you may want to execute an :ref:`action <action>` only when a
 	}
 
 The above example will run ``service daemon restart`` every time Blockwart successfully applies a change to ``/etc/daemon.conf``. If an action is triggered multiple times, it will only be run once.
+
+|
+
+.. _unless:
+
+Preconditions
+#############
+
+Another builtin item attribute is ``unless``. For example, it can be used to construct a one-off file item where Blockwart will only create the file once, but won't check or modify its contents once it exists.
+
+.. code-block:: python
+
+	file = {
+		"/path/to/file": {
+			[...]
+			"unless": "test -x /path/to/file",
+		},
+	}
+
+This will run `test -x /path/to/file` before doing anything with the item. If the command returns 0, no action will be taken to "correct" the item.
