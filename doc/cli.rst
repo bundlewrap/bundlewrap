@@ -30,7 +30,7 @@ The most important and most used part of Blockwart, ``bw apply`` will apply your
 
 	$ bw run mygroup "uname -a"
 
-Unsurprisingly, the ``run`` subcommand is used to run commands on nodes. As with most commands that accept node names, you can also give a group name or any combination of node and group names, separated by commas (without spaces, e.g. ``node1,group2,node3``).
+Unsurprisingly, the ``run`` subcommand is used to run commands on nodes. As with most commands that accept node names, you can also give a group name or any combination of node and group names, separated by commas (without spaces, e.g. ``node1,group2,node3``). A third option is to use a bundle selector like ``bundle:my_bundle``. It will select all nodes with the named bundle. You can freely mix and match node names, group names, and bundle selectors.
 
 |
 

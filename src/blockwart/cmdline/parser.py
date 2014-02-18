@@ -38,9 +38,9 @@ def build_parser_bw():
     parser_apply.set_defaults(func=bw_apply)
     parser_apply.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,..."),
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
         type=str,
-        help=_("target nodes and/or groups"),
+        help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_apply.add_argument(
         '-i',
@@ -200,9 +200,9 @@ def build_parser_bw():
     parser_run.set_defaults(func=bw_run)
     parser_run.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,..."),
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
         type=str,
-        help=_("target nodes and/or groups"),
+        help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_run.add_argument(
         'command',
@@ -237,9 +237,9 @@ def build_parser_bw():
     parser_verify.set_defaults(func=bw_verify)
     parser_verify.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,..."),
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
         type=str,
-        help=_("target nodes and/or groups"),
+        help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_verify.add_argument(
         '-p',

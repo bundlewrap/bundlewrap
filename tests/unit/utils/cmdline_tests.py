@@ -66,3 +66,22 @@ class GetTargetNodesTest(TestCase):
         repo.get_node = get_node
         with self.assertRaises(UsageException):
             cmdline.get_target_nodes(repo, "node1")
+
+    def test_bundle(self):
+        bundle1 = MagicMock()
+        bundle1.name = "goodbundle"
+        bundle2 = MagicMock()
+        bundle2.name = "badbundle"
+
+        node1 = MagicMock()
+        node1.bundles = (bundle1, bundle2)
+        node2 = MagicMock()
+        node2.bundles = (bundle2,)
+
+        repo = MagicMock()
+        repo.nodes = (node1, node2)
+
+        self.assertEqual(
+            cmdline.get_target_nodes(repo, "bundle:goodbundle"),
+            [node1],
+        )
