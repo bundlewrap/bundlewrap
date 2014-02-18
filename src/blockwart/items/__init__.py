@@ -99,13 +99,16 @@ class Item(object):
         return self.id
 
     def __reduce__(self):
+        attrs = copy(self.attributes)
+        for attribute_name in BUILTIN_ITEM_ATTRIBUTES.keys():
+            attrs[attribute_name] = getattr(self, attribute_name)
         return (
             unpickle_item_class,
             (
                 self.__class__.__name__,
                 self.bundle,
                 self.name,
-                self.attributes,
+                attrs,
             ),
         )
 
