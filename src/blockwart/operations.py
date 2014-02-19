@@ -3,7 +3,6 @@ from pipes import quote
 from stat import S_IRUSR, S_IWUSR
 
 from fabric.api import prefix
-from fabric.api import get as _fabric_get
 from fabric.api import put as _fabric_put
 from fabric.api import run as _fabric_run
 from fabric.api import sudo as _fabric_sudo
