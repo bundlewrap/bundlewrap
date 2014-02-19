@@ -56,7 +56,7 @@ Reference
 
 	.. py:attribute:: revision
 
-		The current git or hg revision of this repo. ``None`` if no SCM was detected.
+		The current git, hg or bzr revision of this repo. ``None`` if no SCM was detected.
 
 	|
 
