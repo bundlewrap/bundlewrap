@@ -15,8 +15,19 @@ def get_git_rev():
         return None
 
 
+def get_hg_rev():
+    try:
+        return check_output(
+            "hg --debug id -i",
+            shell=True,
+            stderr=STDOUT,
+        ).strip().rstrip("+")
+    except CalledProcessError:
+        return None
+
+
 def get_rev():
-    for scm_rev in (get_git_rev,):
+    for scm_rev in (get_git_rev, get_hg_rev):
         rev = scm_rev()
         if rev is not None:
             return rev
