@@ -596,10 +596,6 @@ class Node(object):
 
     def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
             sudo=True):
-        if stderr is None:
-            stderr = LineBuffer(lambda s: None)
-        if stdout is None:
-            stdout = LineBuffer(lambda s: None)
         return operations.run(
             self.hostname,
             command,

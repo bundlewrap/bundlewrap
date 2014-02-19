@@ -21,10 +21,13 @@ for key in output:
     output[key] = False
 
 
-class FabricUnsilencer(object):
+class FabricOutput(object):
+    def __init__(self, silent=False):
+        self.silent = silent
+
     def __enter__(self):
-        output['stderr'] = True
-        output['stdout'] = True
+        output['stderr'] = not self.silent
+        output['stdout'] = not self.silent
 
     def __exit__(self, type, value, traceback):
         output['stderr'] = False
@@ -85,6 +88,8 @@ def run(hostname, command, ignore_failure=False, stderr=None,
     """
     env.host_string = hostname
 
+    silent_fabric = stderr is None and stdout is None
+
     if stderr is None:
         stderr = LineBuffer(lambda s: None)
     if stdout is None:
@@ -97,7 +102,7 @@ def run(hostname, command, ignore_failure=False, stderr=None,
 
     runner = _fabric_sudo if sudo else _fabric_run
 
-    with FabricUnsilencer():
+    with FabricOutput(silent=silent_fabric):
         with prefix("export LANG=C"):
             fabric_result = runner(
                 command,
