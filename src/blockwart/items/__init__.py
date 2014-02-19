@@ -170,7 +170,7 @@ class Item(object):
         status_after = None
 
         if self.unless and not status_before.correct:
-            unless_result = self.node.run(self.unless)
+            unless_result = self.node.run(self.unless, may_fail=True)
             if unless_result.return_code == 0:
                 LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
                 status_before.correct = True
