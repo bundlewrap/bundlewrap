@@ -43,6 +43,14 @@ def build_parser_bw():
         help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_apply.add_argument(
+        '-f',
+        '--force',
+        action='store_true',
+        default=False,
+        dest='force',
+        help=_("ignore existing node locks"),
+    )
+    parser_apply.add_argument(
         '-i',
         '--interactive',
         action='store_true',

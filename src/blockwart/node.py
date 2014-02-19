@@ -528,7 +528,7 @@ class Node(object):
             for item in bundle.items:
                 yield item
 
-    def apply(self, interactive=False, workers=4):
+    def apply(self, interactive=False, force=False, workers=4):
         self.repo.hooks.node_apply_start(
             self.repo,
             self,
@@ -538,7 +538,7 @@ class Node(object):
         action_results = []
         worker_count = 1 if interactive else workers
         try:
-            with NodeLock(self, interactive):
+            with NodeLock(self, interactive, ignore=force):
                 action_results += list(run_actions(
                     self.actions,
                     'pre',
@@ -635,8 +635,9 @@ class Node(object):
 
 
 class NodeLock(object):
-    def __init__(self, node, interactive):
+    def __init__(self, node, interactive, ignore=False):
         self.node = node
+        self.ignore = ignore
         self.interactive = interactive
 
     def __enter__(self):
@@ -651,10 +652,10 @@ class NodeLock(object):
                 except:
                     LOG.warn(_("unable to read or parse lock file contents"))
                     info = {}
-            if self.interactive and ask_interactively(
+            if self.ignore or (self.interactive and ask_interactively(
                 self._warning_message(info),
                 False,
-            ):
+            )):
                 pass
             else:
                 raise NodeAlreadyLockedException(info)
