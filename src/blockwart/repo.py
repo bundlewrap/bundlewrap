@@ -7,6 +7,7 @@ from .exceptions import NoSuchGroup, NoSuchNode, NoSuchRepository, RepositoryErr
 from .group import Group
 from .node import Node
 from . import utils
+from .utils.scm import get_rev
 from .utils.text import mark_for_translation as _, validate_name
 
 DIRNAME_BUNDLES = "bundles"
@@ -353,3 +354,7 @@ class Repository(object):
         result = list(self.node_dict.values())
         result.sort()
         return result
+
+    @utils.cached_property
+    def revision(self):
+        return get_rev()

@@ -54,6 +54,10 @@ Reference
 
 		A list of all node names in this repo
 
+	.. py:attribute:: revision
+
+		The current git revision of this repo. ``None`` if no SCM was detected.
+
 	|
 
 	.. py:method:: get_group(group_name)
