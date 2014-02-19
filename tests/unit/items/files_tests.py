@@ -7,7 +7,6 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
-from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
 from blockwart.utils.text import green, red
 
