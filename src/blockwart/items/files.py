@@ -32,7 +32,7 @@ def content_processor_mako(item):
     LOG.debug("{}:{}: rendering with Mako...".format(item.node.name, item.id))
     start = datetime.now()
     content = template.render(item=item, bundle=item.bundle, node=item.node,
-                              repo=item.node.repo)
+                              repo=item.node.repo, **item.attributes['context'])
     duration = datetime.now() - start
     LOG.debug("{}:{}: rendered in {}s".format(
         item.node.name,
@@ -149,6 +149,7 @@ class File(Item):
     ITEM_ATTRIBUTES = {
         'content': None,
         'content_type': "mako",
+        'context': None,
         'encoding': "utf-8",
         'group': "root",
         'mode': "0664",
@@ -340,6 +341,11 @@ class File(Item):
         if status_info['needs_fixing']:
             correct = False
         return ItemStatus(correct=correct, info=status_info)
+
+    def patch_attributes(self, attributes):
+        if 'context' not in attributes:
+            attributes['context'] = {}
+        return attributes
 
     def validate_attributes(self, attributes):
         for key, value in attributes.items():

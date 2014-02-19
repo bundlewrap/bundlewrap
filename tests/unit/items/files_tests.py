@@ -20,12 +20,18 @@ class ContentProcessorMakoTest(TestCase):
         item.node.name = "localhost"
         item.item_dir = mkdtemp()
         makedirs(join(item.item_dir, "a/b"))
-        item.attributes = {'encoding': "utf-8", 'source': "a/b/c"}
+        item.attributes = {
+            'context': {
+                'number': "47",
+            },
+            'encoding': "utf-8",
+            'source': "a/b/c",
+        }
         with open(join(item.item_dir, "a/b/c"), 'w') as f:
-            f.write("Hi from ${node.name}!")
+            f.write("Hi from ${number}@${node.name}!")
         self.assertEqual(
             files.content_processor_mako(item),
-            "Hi from localhost!",
+            "Hi from 47@localhost!",
         )
 
 
