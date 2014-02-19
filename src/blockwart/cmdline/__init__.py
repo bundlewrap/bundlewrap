@@ -62,9 +62,8 @@ def set_up_logging(debug=False, interactive=False):
     logger.addHandler(handler)
     logger.setLevel(level)
 
-    if not debug:
-        logging.getLogger('paramiko').setLevel(logging.ERROR)
-
+    logging.getLogger('paramiko').setLevel(logging.ERROR)
+    logging.getLogger('passlib').setLevel(logging.ERROR)
 
 def main(*args):
     """
