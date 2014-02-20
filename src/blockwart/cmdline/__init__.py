@@ -65,6 +65,7 @@ def set_up_logging(debug=False, interactive=False):
     logging.getLogger('paramiko').setLevel(logging.ERROR)
     logging.getLogger('passlib').setLevel(logging.ERROR)
 
+
 def main(*args):
     """
     Entry point for the 'bw' command line utility.
