@@ -512,25 +512,39 @@ class Node(object):
             for action in bundle.actions:
                 yield action
 
-    @property
-    def bundle_names(self):
-        for bundle in self.bundles:
-            yield bundle.name
-
     @cached_property
     def bundles(self):
         for group in self.groups:
             for bundle_name in group.bundle_names:
                 yield Bundle(self, bundle_name)
 
-    @property
-    def group_names(self):
-        for group in self.groups:
-            yield group.name
-
     @cached_property
     def groups(self):
         return self.repo.groups_for_node(self)
+
+    def has_any_bundle(self, bundle_list):
+        for bundle_name in bundle_list:
+            if self.has_bundle(bundle_name):
+                return True
+        return False
+
+    def has_bundle(self, bundle_name):
+        for bundle in self.bundles:
+            if bundle.name == bundle_name:
+                return True
+        return False
+
+    def in_any_group(self, group_list):
+        for group_name in group_list:
+            if self.in_group(group_name):
+                return True
+        return False
+
+    def in_group(self, group_name):
+        for group in self.groups:
+            if group.name == group_name:
+                return True
+        return False
 
     @property
     def items(self):

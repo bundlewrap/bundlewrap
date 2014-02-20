@@ -88,17 +88,9 @@ Reference
 
 	A system managed by Blockwart.
 
-	.. py:attribute:: bundle_names
-
-		A list of the names of all bundles this node has.
-
 	.. py:attribute:: bundles
 
 		A list of all bundles associated with this node (instances of :py:class:`blockwart.bundle.Bundle`)
-
-	.. py:attribute:: group_names
-
-		A list of the names of all groups this node belongs to.
 
 	.. py:attribute:: groups
 
@@ -124,6 +116,42 @@ Reference
 
 		:param str remote_path: Which file to get from the node
 		:param str local_path: Where to put the file
+
+	|
+
+	.. py:method:: has_bundle(bundle_name)
+
+		``True`` if the node has a bundle with the given name.
+
+		:param str bundle_name: Name of the bundle to look for
+		:rtype: bool
+
+	|
+
+	.. py:method:: has_any_bundle(bundle_names)
+
+		``True`` if the node has a bundle with any of the given names.
+
+		:param list bundle_names: List of bundle names to look for
+		:rtype: bool
+
+	|
+
+	.. py:method:: in_group(group_name)
+
+		``True`` if the node is in a group with the given name.
+
+		:param str group_name: Name of the group to look for
+		:rtype: bool
+
+	|
+
+	.. py:method:: in_any_group(group_names)
+
+		``True`` if the node is in a group with any of the given names.
+
+		:param list group_names: List of group names to look for
+		:rtype: bool
 
 	|
 
