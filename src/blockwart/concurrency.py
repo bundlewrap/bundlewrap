@@ -126,7 +126,7 @@ class WorkerPool(object):
         self.messages = Manager().Queue()
 
         stdin = fdopen(dup(sys.stdin.fileno())) if workers == 1 else None
-        for i in xrange(workers):
+        for i in range(workers):
             (parent_conn, child_conn) = Pipe()
             p = Process(target=_worker_process,
                         args=(i, self.messages, child_conn, stdin,))

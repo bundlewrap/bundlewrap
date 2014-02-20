@@ -13,7 +13,7 @@ class LineBuffer(object):
         s = self.buffer.splitlines(False)
         if len(s) > 1:
             # output everything until last newline
-            for i in xrange(len(s) - 1):
+            for i in range(len(s) - 1):
                 self.target(s[i])
             # stuff after last newline remains in buffer
             self.buffer = s[-1]
