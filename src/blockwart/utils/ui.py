@@ -10,13 +10,9 @@ class LineBuffer(object):
 
     def flush(self):
         self.buffer = self.buffer.replace(b"\r", b"\n")
-        s = self.buffer.splitlines(False)
-        if len(s) > 1:
-            # output everything until last newline
-            for i in range(len(s) - 1):
-                self.target(s[i])
-            # stuff after last newline remains in buffer
-            self.buffer = s[-1]
+        while b"\n" in self.buffer:
+            chunk, self.buffer = self.buffer.split(b"\n", 1)
+            self.target(chunk)
 
     def write(self, msg):
         self.buffer += msg

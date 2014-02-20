@@ -1,9 +1,34 @@
 from unittest import TestCase
 
-from mock import MagicMock
+from mock import call, MagicMock
 
 from blockwart.utils import ui
 
+
+class LineBufferTest(TestCase):
+    """
+    Tests blockwart.utils.ui.LineBuffer.
+    """
+    def test_buffer(self):
+        target = MagicMock()
+        buffer = ui.LineBuffer(target)
+        buffer.write("aaaaaa\nbbb")
+        buffer.write("bb\ncccc\n")
+        buffer.write("ddd\nee")
+        buffer.write("\n")
+        buffer.write("f\n")
+
+        self.assertEqual(
+            target.call_args_list,
+            [
+                call("aaaaaa"),
+                call("bbbbb"),
+                call("cccc"),
+                call("ddd"),
+                call("ee"),
+                call("f"),
+            ],
+        )
 
 class AskInteractivelyTest(TestCase):
     """
