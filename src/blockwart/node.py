@@ -512,11 +512,21 @@ class Node(object):
             for action in bundle.actions:
                 yield action
 
+    @property
+    def bundle_names(self):
+        for bundle in self.bundles:
+            yield bundle.name
+
     @cached_property
     def bundles(self):
         for group in self.groups:
             for bundle_name in group.bundle_names:
                 yield Bundle(self, bundle_name)
+
+    @property
+    def group_names(self):
+        for group in self.groups:
+            yield group.name
 
     @cached_property
     def groups(self):

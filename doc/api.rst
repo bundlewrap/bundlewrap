@@ -88,9 +88,17 @@ Reference
 
 	A system managed by Blockwart.
 
+	.. py:attribute:: bundle_names
+
+		A list of the names of all bundles this node has.
+
 	.. py:attribute:: bundles
 
 		A list of all bundles associated with this node (instances of :py:class:`blockwart.bundle.Bundle`)
+
+	.. py:attribute:: group_names
+
+		A list of the names of all groups this node belongs to.
 
 	.. py:attribute:: groups
 
