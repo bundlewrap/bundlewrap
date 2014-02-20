@@ -31,7 +31,7 @@ class Group(object):
     """
     def __init__(self, repo, group_name, infodict):
         if not validate_name(group_name):
-            raise RepositoryError(_("'{}' is not a valid group name"))
+            raise RepositoryError(_("'{}' is not a valid group name").format(group_name))
 
         self.name = group_name
         self.repo = repo
