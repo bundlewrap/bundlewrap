@@ -161,7 +161,7 @@ class LibsProxy(object):
         if attrname not in self.__module_cache:
             filename = attrname + ".py"
             filepath = join(self.__path, filename)
-            m = load_source("blockwart.repo.libs.{}".format(attrname), filepath)
+            m = load_source("blockwart.repo.libs_{}".format(attrname), filepath)
             self.__module_cache[attrname] = m
         return self.__module_cache[attrname]
 
