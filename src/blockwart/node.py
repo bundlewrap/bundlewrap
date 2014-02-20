@@ -18,7 +18,7 @@ from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name
-from .utils.ui import ask_interactively, LineBuffer
+from .utils.ui import ask_interactively
 
 LOCK_PATH = "/tmp/blockwart.lock"
 LOCK_FILE = LOCK_PATH + "/info"
