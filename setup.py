@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="blockwart",
-    version="0.8.0-dev",
+    version="0.8.0",
     description="config management for Python addicts",
     long_description=(
         "By allowing for easy and low-overhead config management, Blockwart fills the gap between complex deployments using Chef or Puppet and old school system administration over SSH.\n"
@@ -21,7 +21,7 @@ setup(
     },
     keywords=["configuration", "config", "management"],
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: System Administrators",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",

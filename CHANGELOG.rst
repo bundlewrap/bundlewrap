@@ -1,3 +1,18 @@
+0.8.0
+=====
+
+2014-02-21
+
+* move from Alpha into Beta stage
+* added builtin item attribute 'unless'
+* added lightweight git/hg/bzr integration
+* added -f switch to `bw apply`
+* template context can now be customized
+* added Node.has_bundle, .in_group etc.
+* fixed a LineBuffer bug
+* prevented output of some extraneous whitespace
+
+
 0.7.0
 =====
 
