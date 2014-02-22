@@ -8,6 +8,7 @@ from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
+from blockwart.utils import LOG
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold
 
@@ -141,6 +142,12 @@ class User(Item):
         return output
 
     def fix(self, status):
+        if status.info['exists']:
+            msg = _("{}:{}: updating...")
+        else:
+            msg = _("{}:{}: creating...")
+        LOG.info(msg.format(self.node.name, self.id))
+
         self.node.run("{command} "
             "-d {home} "
             "-g {gid} "

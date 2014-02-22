@@ -5,6 +5,7 @@ from pipes import quote
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
+from blockwart.utils import LOG
 from blockwart.utils.text import bold, green, red
 from blockwart.utils.text import mark_for_translation as _
 
@@ -69,12 +70,24 @@ class PacmanPkg(Item):
 
     def fix(self, status):
         if self.attributes['installed'] is False:
+            LOG.info(_("{}:{}: removing...").format(
+                self.node.name,
+                self.id,
+            ))
             pkg_remove(self.node, self.name)
         else:
             if self.attributes['tarball']:
+                LOG.info(_("{}:{}: installing tarball...").format(
+                    self.node.name,
+                    self.id,
+                ))
                 pkg_install_tarball(self.node, join(self.item_dir,
                                                     self.attributes['tarball']))
             else:
+                LOG.info(_("{}:{}: installing...").format(
+                    self.node.name,
+                    self.id,
+                ))
                 pkg_install(self.node, self.name)
 
     def get_status(self):

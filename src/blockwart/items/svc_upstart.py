@@ -4,6 +4,7 @@ from pipes import quote
 
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
+from blockwart.utils import LOG
 from blockwart.utils.text import bold, green, red
 from blockwart.utils.text import mark_for_translation as _
 
@@ -54,8 +55,16 @@ class SvcUpstart(Item):
 
     def fix(self, status):
         if self.attributes['running'] is False:
+            LOG.info(_("{}:{}: stopping...").format(
+                self.node.name,
+                self.id,
+            ))
             svc_stop(self.node, self.name)
         else:
+            LOG.info(_("{}:{}: starting...").format(
+                self.node.name,
+                self.id,
+            ))
             svc_start(self.node, self.name)
 
     def get_status(self):

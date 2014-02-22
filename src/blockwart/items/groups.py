@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from blockwart.exceptions import BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.items.users import _USERNAME_VALID_CHARACTERS
+from blockwart.utils import LOG
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold
 
@@ -52,8 +53,10 @@ class Group(Item):
 
     def fix(self, status):
         if not status.info['exists']:
+            LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
             self.node.run("groupadd {}".format(self.name))
 
+        LOG.info(_("{}:{}: updating...").format(self.node.name, self.id))
         self.node.run("groupmod -g {gid} {groupname}".format(
             gid=self.attributes['gid'],
             groupname=self.name,
