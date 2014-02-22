@@ -258,11 +258,10 @@ class File(Item):
                         'content' in status.info['needs_fixing']:
                     # fixing content implies settings mode and owner/group
                     continue
-                LOG.info(_("{}:{}: fixing {}...").format(
-                    self.node.name,
-                    self.id,
-                    fix_type,
-                ))
+                if status.info['path_info'].exists:
+                    LOG.info(_("{}:{}: fixing {}...").format(self.node.name, self.id, fix_type))
+                else:
+                    LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content(self, status):

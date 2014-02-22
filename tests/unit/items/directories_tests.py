@@ -15,7 +15,10 @@ class DirectoryFixTest(TestCase):
     @patch('blockwart.items.directories.Directory._fix_type')
     def test_type(self, fix_type, fix_owner, fix_mode):
         f = directories.Directory(MagicMock(), "/", {})
+        pinfo = MagicMock()
+        pinfo.exists = False
         status = ItemStatus(correct=False, info={
+            'path_info': pinfo,
             'needs_fixing': ['type', 'mode', 'owner'],
         })
         f.fix(status)

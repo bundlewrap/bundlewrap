@@ -174,7 +174,10 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_type')
     def test_type(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/", {})
+        pinfo = MagicMock()
+        pinfo.exists = False
         status = ItemStatus(correct=False, info={
+            'path_info': pinfo,
             'needs_fixing': ['type', 'content', 'mode', 'owner'],
         })
         f.fix(status)
@@ -187,7 +190,10 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_type')
     def test_content(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/", {})
+        pinfo = MagicMock()
+        pinfo.exists = False
         status = ItemStatus(correct=False, info={
+            'path_info': pinfo,
             'needs_fixing': ['content'],
         })
         f.fix(status)
@@ -202,7 +208,10 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_type')
     def test_mode(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/", {})
+        pinfo = MagicMock()
+        pinfo.exists = False
         status = ItemStatus(correct=False, info={
+            'path_info': pinfo,
             'needs_fixing': ['mode'],
         })
         f.fix(status)
@@ -217,7 +226,10 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_type')
     def test_owner(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/", {})
+        pinfo = MagicMock()
+        pinfo.exists = False
         status = ItemStatus(correct=False, info={
+            'path_info': pinfo,
             'needs_fixing': ['owner'],
         })
         f.fix(status)
@@ -232,7 +244,10 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_type')
     def test_combined(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/", {})
+        pinfo = MagicMock()
+        pinfo.exists = False
         status = ItemStatus(correct=False, info={
+            'path_info': pinfo,
             'needs_fixing': ['owner', 'mode'],
         })
         f.fix(status)

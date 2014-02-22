@@ -97,10 +97,10 @@ class Directory(Item):
     def fix(self, status):
         if 'type' in status.info['needs_fixing']:
             # fixing the type fixes everything
-            LOG.info(_("{}:{}: fixing type...").format(
-                self.node.name,
-                self.id,
-            ))
+            if status.info['path_info'].exists:
+                LOG.info(_("{}:{}: fixing type...").format(self.node.name, self.id))
+            else:
+                LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
             self._fix_type(status)
             return
 

@@ -14,7 +14,10 @@ class SymlinkFixTest(TestCase):
     @patch('blockwart.items.symlinks.Symlink._fix_type')
     def test_type(self, fix_type, fix_owner):
         f = symlinks.Symlink(MagicMock(), "/", {'target': "/bar"})
+        pinfo = MagicMock()
+        pinfo.exists = False
         status = ItemStatus(correct=False, info={
+            'path_info': pinfo,
             'needs_fixing': ['type', 'owner'],
         })
         f.fix(status)
