@@ -67,8 +67,10 @@ class WorkerException(Exception):
     Raised when a worker process has encountered an exception while
     executing.
     """
-    def __init__(self, traceback):
+    def __init__(self, task_id, wrapped_exception, traceback):
+        self.task_id = task_id
         self.traceback = traceback
+        self.wrapped_exception = wrapped_exception
 
     def __str__(self):
         output = "\n\n+----- traceback from worker ------\n|\n"
