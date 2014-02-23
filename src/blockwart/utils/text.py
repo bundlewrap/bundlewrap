@@ -28,6 +28,24 @@ red = _ansi_wrapper(_fabric_colors.red)
 yellow = _ansi_wrapper(_fabric_colors.yellow)
 
 
+def error_summary(errors):
+    if not errors:
+        return
+
+    if len(errors) == 1:
+        print(_("\n{} There was an error, repeated below.\n").format(
+            red("!!!"),
+        ))
+    else:
+        print(_("\n{} There were {} errors, repeated below.\n").format(
+            red("!!!"),
+            len(errors),
+        ))
+
+    for e in errors:
+        print(e)
+
+
 def is_subdirectory(parent, child):
     """
     Returns True if the given child is a subdirectory of the parent.

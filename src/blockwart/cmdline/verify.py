@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import mark_for_translation as _, red
+from ..utils.text import error_summary, red
 
 
 def bw_verify(repo, args):
@@ -40,11 +40,4 @@ def bw_verify(repo, args):
                     worker_pool.quit(msg['wid'])
             # Nothing to do for the 'FINISHED_WORK' message.
 
-    if errors:
-        yield _("\n{} There were {} error(s), repeated below.\n").format(
-            red("!!!"),
-            len(errors),
-        )
-
-    for e in errors:
-        yield e
+    error_summary(errors)

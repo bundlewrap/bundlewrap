@@ -5,7 +5,7 @@ from ..exceptions import WorkerException
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, red, yellow
-from ..utils.text import mark_for_translation as _
+from ..utils.text import error_summary, mark_for_translation as _
 
 
 def format_node_action_result(result):
@@ -133,14 +133,7 @@ def bw_apply(repo, args):
                         format_node_action_result(results[node_name]),
                     ))
 
-    if errors:
-        yield _("\n{} There were {} error(s), repeated below.\n").format(
-            red("!!!"),
-            len(errors),
-        )
-
-    for e in errors:
-        yield e
+    error_summary(errors)
 
     repo.hooks.apply_end(
         repo,

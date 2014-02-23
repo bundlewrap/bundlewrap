@@ -10,7 +10,7 @@ from ..exceptions import WorkerException
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
-from ..utils.text import green, red
+from ..utils.text import error_summary, green, red
 from ..utils.ui import LineBuffer
 
 
@@ -117,14 +117,7 @@ def bw_run(repo, args):
                 for line in msg['return_value']:
                     yield line
 
-    if errors:
-        yield _("\n{} There were {} error(s), repeated below.\n").format(
-            red("!!!"),
-            len(errors),
-        )
-
-    for e in errors:
-        yield e
+    error_summary(errors)
 
     repo.hooks.run_end(
         repo,
