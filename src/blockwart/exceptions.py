@@ -55,6 +55,13 @@ class NoSuchRepository(RepositoryError):
     pass
 
 
+class TemplateError(RepositoryError):
+    """
+    Raised when an error occurs while rendering a template.
+    """
+    pass
+
+
 class UsageException(Exception):
     """
     Raised when command line options don't make sense.
