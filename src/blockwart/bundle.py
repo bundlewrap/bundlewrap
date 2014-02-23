@@ -109,6 +109,17 @@ class Action(object):
             raise BundleError(_(
                 "action '{}' in bundle '{}' has no command set"
             ).format(name, bundle.name))
+        unknown_attributes = set(config.keys()).difference(set((
+            'command',
+            'expected_stderr',
+            'expected_stdout',
+            'expected_return_code',
+            'timing',
+        )))
+        if unknown_attributes:
+            raise BundleError(_(
+                "unknown attributes for action '{}' in bundle '{}': {}"
+            ).format(name, bundle.name, ", ".join(unknown_attributes)))
 
 
 class Bundle(object):
