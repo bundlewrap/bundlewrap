@@ -292,8 +292,6 @@ def apply_items(node, workers=1, interactive=False):
                         green("✓"),
                         bold(item.id),
                     ))
-                    for triggered_action in item.triggers:
-                        node.trigger_action(triggered_action)
                 else:
                     print(_("\n  {} failed to fix {}").format(
                         red("✘"),
@@ -333,6 +331,11 @@ def apply_items(node, workers=1, interactive=False):
 
                 if not (status_before is None and status_after is None):
                     #   ^- ignore from dummy items
+
+                    if not status_before.correct and status_after.correct:
+                        for triggered_action in item.triggers:
+                            node.trigger_action(triggered_action)
+
                     yield (status_before, status_after)
 
                 # Finally, we have a new job queue. Thus, tell all idle
