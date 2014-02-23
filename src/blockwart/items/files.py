@@ -6,7 +6,9 @@ from difflib import unified_diff
 from os import remove
 from os.path import dirname, join, normpath
 from pipes import quote
+from sys import exc_info
 from tempfile import mkstemp
+from traceback import format_exception
 
 from blockwart.exceptions import BundleError, TemplateError
 from blockwart.items import Item, ItemStatus
@@ -40,6 +42,7 @@ def content_processor_mako(item):
             **item.attributes['context']
         )
     except Exception as e:
+        LOG.debug("".join(format_exception(*exc_info())))
         if isinstance(e, NameError) and e.message == "Undefined":
             # Mako isn't very verbose here. Try to give a more useful
             # error message - even though we can't pinpoint the excat
