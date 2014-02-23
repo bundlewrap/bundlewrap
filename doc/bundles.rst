@@ -93,7 +93,7 @@ There are also attributes that can be applied to any kind of item.
 Item dependencies
 #################
 
-One such attribute is ``depends``. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on all directories). Here are two examples:
+One such attribute is ``depends``. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on all users). Here are two examples:
 
 .. code-block:: python
 
@@ -107,12 +107,12 @@ One such attribute is ``depends``. It allows for setting up dependencies between
 	    'item2': {
 	        ...
 	        'depends': [
-	            'user:',
+	            'pkg_apt:',
 	        ],
 	    }
 	}
 
-The first item (``item1``, specific attributes have been omitted) depends on a file called ``/etc/foo.conf``, while ``item2`` depends on all users.
+The first item (``item1``, specific attributes have been omitted) depends on a file called ``/etc/foo.conf``, while ``item2`` depends on all APT packages being installed.
 
 |
 
