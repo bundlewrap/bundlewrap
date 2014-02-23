@@ -1,10 +1,11 @@
 from datetime import datetime
 
 from ..concurrency import WorkerPool
+from ..exceptions import WorkerException
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, red, yellow
-from ..utils.text import mark_for_translation as _
+from ..utils.text import error_summary, mark_for_translation as _
 
 
 def format_node_action_result(result):
@@ -52,6 +53,7 @@ def format_node_item_result(result):
 
 
 def bw_apply(repo, args):
+    errors = []
     target_nodes = get_target_nodes(repo, args.target)
 
     repo.hooks.apply_start(
@@ -67,7 +69,15 @@ def bw_apply(repo, args):
     with WorkerPool(workers=worker_count) as worker_pool:
         results = {}
         while worker_pool.keep_running():
-            msg = worker_pool.get_event()
+            try:
+                msg = worker_pool.get_event()
+            except WorkerException as e:
+                msg = "{} {}".format(red("!"), e.wrapped_exception)
+                if args.debug:
+                    yield e.traceback
+                yield msg
+                errors.append(msg)
+                continue
             if msg['msg'] == 'REQUEST_WORK':
                 if target_nodes:
                     node = target_nodes.pop()
@@ -122,6 +132,8 @@ def bw_apply(repo, args):
                         node_name,
                         format_node_action_result(results[node_name]),
                     ))
+
+    error_summary(errors)
 
     repo.hooks.apply_end(
         repo,

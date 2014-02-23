@@ -64,26 +64,42 @@ def _worker_process(wid, messages, pipe, stdin=None):
         elif msg['msg'] == 'NOOP':
             pass
         elif msg['msg'] == 'RUN':
+            exception = None
+            exception_task_id = None
+            return_value = None
+            traceback = None
+
             try:
                 if msg['target_obj'] is None:
                     target = msg['target']
                 else:
                     target = getattr(msg['target_obj'], msg['target'])
 
-                traceback = None
                 return_value = target(*msg['args'], **msg['kwargs'])
 
                 if isgenerator(return_value):
                     return_value = list(return_value)
-            except Exception:
+
+            except Exception as e:
+                if isinstance(e, WorkerException):
+                    exception = e.wrapped_exception
+                    exception_task_id = e.task_id
+                else:
+                    exception = str(e)
+                    exception_task_id = msg['task_id']
                 traceback = "".join(format_exception(*sys.exc_info()))
                 return_value = None
+
             finally:
-                messages.put({'msg': 'FINISHED_WORK',
-                              'wid': wid,
-                              'task_id': msg['task_id'],
-                              'return_value': return_value,
-                              'traceback': traceback})
+                messages.put({
+                    'exception': exception,
+                    'exception_task_id': exception_task_id,
+                    'msg': 'FINISHED_WORK',
+                    'return_value': return_value,
+                    'task_id': msg['task_id'],
+                    'traceback': traceback,
+                    'wid': wid,
+                })
 
 
 class WorkerPool(object):
@@ -149,7 +165,11 @@ class WorkerPool(object):
             # check for exception in child process and raise it
             # here in the parent
             if not msg['traceback'] is None:
-                raise WorkerException(msg['traceback'])
+                raise WorkerException(
+                    msg['exception_task_id'],
+                    msg['exception'],
+                    msg['traceback'],
+                )
         elif msg['msg'] == 'LOG_ENTRY':
             LOG.handle(msg['log_entry'])
         return msg

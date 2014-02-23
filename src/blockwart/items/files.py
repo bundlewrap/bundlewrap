@@ -6,9 +6,11 @@ from difflib import unified_diff
 from os import remove
 from os.path import dirname, join, normpath
 from pipes import quote
+from sys import exc_info
 from tempfile import mkstemp
+from traceback import format_exception
 
-from blockwart.exceptions import BundleError
+from blockwart.exceptions import BundleError, TemplateError
 from blockwart.items import Item, ItemStatus
 from blockwart.items.directories import validator_mode
 from blockwart.utils import cached_property, LOG, sha1
@@ -31,8 +33,28 @@ def content_processor_mako(item):
     template = lookup.get_template(item.attributes['source'])
     LOG.debug("{}:{}: rendering with Mako...".format(item.node.name, item.id))
     start = datetime.now()
-    content = template.render(item=item, bundle=item.bundle, node=item.node,
-                              repo=item.node.repo, **item.attributes['context'])
+    try:
+        content = template.render(
+            item=item,
+            bundle=item.bundle,
+            node=item.node,
+            repo=item.node.repo,
+            **item.attributes['context']
+        )
+    except Exception as e:
+        LOG.debug("".join(format_exception(*exc_info())))
+        if isinstance(e, NameError) and e.message == "Undefined":
+            # Mako isn't very verbose here. Try to give a more useful
+            # error message - even though we can't pinpoint the excat
+            # location of the error. :/
+            e = _("Undefined variable (look for '${...}')")
+        raise TemplateError(_(
+            "Error while rendering template for {}:{}: {}"
+        ).format(
+            item.node.name,
+            item.id,
+            e,
+        ))
     duration = datetime.now() - start
     LOG.debug("{}:{}: rendered in {}s".format(
         item.node.name,
