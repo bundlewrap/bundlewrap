@@ -10,7 +10,8 @@ from blockwart.utils.text import mark_for_translation as _
 
 
 def pkg_install(node, pkgname):
-    return node.run("apt-get -qy --no-install-recommends "
+    return node.run("DEBIAN_FRONTEND=noninteractive "
+                    "apt-get -qy --no-install-recommends "
                     "install {}".format(quote(pkgname)))
 
 
@@ -26,7 +27,8 @@ def pkg_installed(node, pkgname):
 
 
 def pkg_remove(node, pkgname):
-    return node.run("apt-get -qy purge {}".format(quote(pkgname)))
+    return node.run("DEBIAN_FRONTEND=noninteractive "
+                    "apt-get -qy purge {}".format(quote(pkgname)))
 
 
 class AptPkg(Item):
