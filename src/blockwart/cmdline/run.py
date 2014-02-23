@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 
 from ..concurrency import WorkerPool
+from ..exceptions import WorkerException
 from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
@@ -69,6 +70,7 @@ def run_on_node(node, command, may_fail, sudo, interactive):
 
 
 def bw_run(repo, args):
+    errors = []
     target_nodes = get_target_nodes(repo, args.target)
 
     repo.hooks.run_start(
@@ -81,7 +83,19 @@ def bw_run(repo, args):
 
     with WorkerPool(workers=args.node_workers) as worker_pool:
         while worker_pool.keep_running():
-            msg = worker_pool.get_event()
+            try:
+                msg = worker_pool.get_event()
+            except WorkerException as e:
+                msg = "[{}] {} {}".format(
+                    e.task_id,
+                    red("!"),
+                    e.wrapped_exception,
+                )
+                if args.debug:
+                    yield e.traceback
+                yield msg
+                errors.append(msg)
+                continue
             if msg['msg'] == 'REQUEST_WORK':
                 if target_nodes:
                     node = target_nodes.pop()
@@ -102,6 +116,15 @@ def bw_run(repo, args):
             elif msg['msg'] == 'FINISHED_WORK':
                 for line in msg['return_value']:
                     yield line
+
+    if errors:
+        yield _("\n{} There were {} error(s), repeated below.\n").format(
+            red("!!!"),
+            len(errors),
+        )
+
+    for e in errors:
+        yield e
 
     repo.hooks.run_end(
         repo,
