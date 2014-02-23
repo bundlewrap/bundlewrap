@@ -56,3 +56,10 @@ Same as ``expected_stdout``, but with stderr.
 ++++++++++
 
 Acceptable values are ``"pre"``, ``"post"`` or ``"triggered"``. Choose ``pre`` or ``post`` depending on whether you want the action to be run before or after items are applied. When set to ``triggered``, the action will only be executed by :ref:`action_triggers`. Defaults to ``"pre"``.
+
+|
+
+``unless``
+++++++++++
+
+Works just like the ``unless`` attribute :ref:`on items <unless>`.

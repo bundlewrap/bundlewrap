@@ -26,8 +26,21 @@ class Action(object):
         self.expected_stderr = config.get('expected_stderr', None)
         self.expected_stdout = config.get('expected_stdout', None)
         self.timing = config.get('timing', "pre")
+        self.unless = config.get('unless', "")
 
     def get_result(self, interactive=False, interactive_default=True):
+        if self.unless:
+            unless_result = self.bundle.node.run(
+                self.unless,
+                may_fail=True,
+            )
+            if unless_result.return_code == 0:
+                LOG.debug("{}:action:{}: failed 'unless', not running".format(
+                    self.bundle.node.name,
+                    self.name,
+                ))
+                return True
+
         if interactive and not ask_interactively(
             wrap_question(self.name, self.command, _("Run action {}?").format(
                 bold(self.name),
@@ -115,6 +128,7 @@ class Action(object):
             'expected_stdout',
             'expected_return_code',
             'timing',
+            'unless',
         )))
         if unknown_attributes:
             raise BundleError(_(
