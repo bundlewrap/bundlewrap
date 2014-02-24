@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from collections import defaultdict
-from os.path import normpath
+from os.path import dirname, normpath
 from pipes import quote
 
 from blockwart.exceptions import BundleError
@@ -99,6 +99,7 @@ class Symlink(Item):
 
     def _fix_type(self, status):
         self.node.run("rm -rf {}".format(quote(self.name)))
+        self.node.run("mkdir -p {}".format(quote(dirname(self.name))))
         self.node.run("ln -s {} {}".format(quote(self.attributes['target']),
                                            quote(self.name)))
         self._fix_owner(status)
