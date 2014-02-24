@@ -517,9 +517,12 @@ class Node(object):
 
     @cached_property
     def bundles(self):
+        found_bundles = []
         for group in self.groups:
             for bundle_name in group.bundle_names:
-                yield Bundle(self, bundle_name)
+                if bundle_name not in found_bundles:
+                    found_bundles.append(bundle_name)
+                    yield Bundle(self, bundle_name)
 
     @cached_property
     def groups(self):
