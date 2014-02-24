@@ -309,7 +309,7 @@ class FileFixModeTest(TestCase):
             {'mode': "1234"},
         )
         f._fix_mode(MagicMock())
-        node.run.assert_called_once_with("chmod 1234 /foo")
+        node.run.assert_called_once_with("chmod 1234 -- /foo")
 
 
 class FileFixOwnerTest(TestCase):
@@ -326,7 +326,7 @@ class FileFixOwnerTest(TestCase):
             {'owner': "jcleese", 'group': "mp"},
         )
         f._fix_owner(MagicMock())
-        node.run.assert_called_once_with("chown jcleese:mp /foo")
+        node.run.assert_called_once_with("chown jcleese:mp -- /foo")
 
 
 class FileFixTypeTest(TestCase):
@@ -344,8 +344,8 @@ class FileFixTypeTest(TestCase):
             {},
         )
         f._fix_type(MagicMock())
-        assert call("rm -rf /foo") in node.run.call_args_list
-        assert call("mkdir -p /") in node.run.call_args_list
+        assert call("rm -rf -- /foo") in node.run.call_args_list
+        assert call("mkdir -p -- /") in node.run.call_args_list
         fix_content.assert_called_once()
 
 

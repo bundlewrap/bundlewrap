@@ -19,7 +19,7 @@ def pkg_install_tarball(node, local_file):
     remote_file = "/tmp/{}".format(basename(local_file))
     node.upload(local_file, remote_file)
     pkg_install(node, remote_file, operation='U')
-    node.run("rm {}".format(quote(remote_file)))
+    node.run("rm -- {}".format(quote(remote_file)))
 
 
 def pkg_installed(node, pkgname):

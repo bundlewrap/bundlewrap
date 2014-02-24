@@ -10,12 +10,12 @@ from blockwart.utils.text import mark_for_translation as _
 
 
 def svc_start(node, svcname):
-    return node.run("systemctl start {}".format(quote(svcname)))
+    return node.run("systemctl start -- {}".format(quote(svcname)))
 
 
 def svc_running(node, svcname):
     result = node.run(
-        "systemctl status {}".format(quote(svcname)),
+        "systemctl status -- {}".format(quote(svcname)),
         may_fail=True,
     )
     if result.return_code != 0:
@@ -25,7 +25,7 @@ def svc_running(node, svcname):
 
 
 def svc_stop(node, svcname):
-    return node.run("systemctl stop {}".format(quote(svcname)))
+    return node.run("systemctl stop -- {}".format(quote(svcname)))
 
 
 class SvcSystemd(Item):

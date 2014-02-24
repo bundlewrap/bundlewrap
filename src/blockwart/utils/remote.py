@@ -26,7 +26,7 @@ def get_path_type(node, path):
 
     and DESC is the output of the 'file' command line utility.
     """
-    result = node.run("file -bh {}".format(quote(path)), may_fail=True)
+    result = node.run("file -bh -- {}".format(quote(path)), may_fail=True)
     if result.return_code != 0:
         return ('nonexistent', "")
     file_output = result.stdout.strip()
@@ -34,7 +34,7 @@ def get_path_type(node, path):
 
 
 def stat(node, path):
-    result = node.run("stat --printf '%U:%G:%a:%s' {}".format(quote(path)))
+    result = node.run("stat --printf '%U:%G:%a:%s' -- {}".format(quote(path)))
     owner, group, mode, size = result.stdout.split(":")
     mode = mode.zfill(4)
     file_stat = {
@@ -102,7 +102,7 @@ class PathInfo(object):
 
     @cached_property
     def sha1(self):
-        result = self.node.run("sha1sum " + quote(self.path))
+        result = self.node.run("sha1sum -- " + quote(self.path))
         return result.stdout.strip().split()[0]
 
     @property

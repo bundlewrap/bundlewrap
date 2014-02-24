@@ -118,13 +118,13 @@ class Directory(Item):
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_mode(self, status):
-        self.node.run("chmod {} {}".format(
+        self.node.run("chmod {} -- {}".format(
             self.attributes['mode'],
             quote(self.name),
         ))
 
     def _fix_owner(self, status):
-        self.node.run("chown {}:{} {}".format(
+        self.node.run("chown {}:{} -- {}".format(
             quote(self.attributes['owner']),
             quote(self.attributes['group']),
             quote(self.name),
@@ -132,8 +132,8 @@ class Directory(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        self.node.run("rm -rf {}".format(quote(self.name)))
-        self.node.run("mkdir -p {}".format(quote(self.name)))
+        self.node.run("rm -rf -- {}".format(quote(self.name)))
+        self.node.run("mkdir -p -- {}".format(quote(self.name)))
         self._fix_mode(status)
         self._fix_owner(status)
 

@@ -306,13 +306,13 @@ class File(Item):
                 remove(local_path)
 
     def _fix_mode(self, status):
-        self.node.run("chmod {} {}".format(
+        self.node.run("chmod {} -- {}".format(
             self.attributes['mode'],
             quote(self.name),
         ))
 
     def _fix_owner(self, status):
-        self.node.run("chown {}:{} {}".format(
+        self.node.run("chown {}:{} -- {}".format(
             quote(self.attributes['owner']),
             quote(self.attributes['group']),
             quote(self.name),
@@ -320,8 +320,8 @@ class File(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        self.node.run("rm -rf {}".format(quote(self.name)))
-        self.node.run("mkdir -p {}".format(quote(dirname(self.name))))
+        self.node.run("rm -rf -- {}".format(quote(self.name)))
+        self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
         self._fix_content(status)
 
     def get_auto_deps(self, items):

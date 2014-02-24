@@ -49,7 +49,7 @@ class SymlinkFixOwnerTest(TestCase):
             {'owner': "jcleese", 'group': "mp", 'target': "/bar"},
         )
         f._fix_owner(MagicMock())
-        node.run.assert_called_once_with("chown -h jcleese:mp /foo")
+        node.run.assert_called_once_with("chown -h jcleese:mp -- /foo")
 
 
 class SymlinkFixTypeTest(TestCase):
@@ -67,8 +67,8 @@ class SymlinkFixTypeTest(TestCase):
             {'target': "/bar"},
         )
         f._fix_type(MagicMock())
-        assert call("rm -rf /foo") in node.run.call_args_list
-        assert call("ln -s /bar /foo") in node.run.call_args_list
+        assert call("rm -rf -- /foo") in node.run.call_args_list
+        assert call("ln -s -- /bar /foo") in node.run.call_args_list
         fix_owner.assert_called_once()
 
 

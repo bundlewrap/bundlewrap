@@ -90,7 +90,7 @@ class Symlink(Item):
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_owner(self, status):
-        self.node.run("chown -h {}:{} {}".format(
+        self.node.run("chown -h {}:{} -- {}".format(
             quote(self.attributes['owner']),
             quote(self.attributes['group']),
             quote(self.name),
@@ -98,9 +98,9 @@ class Symlink(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        self.node.run("rm -rf {}".format(quote(self.name)))
-        self.node.run("mkdir -p {}".format(quote(dirname(self.name))))
-        self.node.run("ln -s {} {}".format(quote(self.attributes['target']),
+        self.node.run("rm -rf -- {}".format(quote(self.name)))
+        self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
+        self.node.run("ln -s -- {} {}".format(quote(self.attributes['target']),
                                            quote(self.name)))
         self._fix_owner(status)
 
