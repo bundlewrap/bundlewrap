@@ -1,3 +1,15 @@
+0.9.0
+=====
+
+2014-02-24
+
+* added 'unless' for actions
+* improved exception handling
+* fixed actions not triggering in noninteractive mode
+* fixed noninteractive installation of Debian packages
+* slightly more verbose output
+
+
 0.8.0
 =====
 
