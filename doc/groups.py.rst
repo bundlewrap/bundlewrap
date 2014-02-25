@@ -46,6 +46,13 @@ This section is a reference for all possible attributes you can define for a gro
 	     },
 	}
 
+``bundles``
+-----------
+
+A list of :doc:`bundles <bundles>` to be assigned to each node in this group.
+
+|
+
 ``member_patterns``
 -------------------
 
