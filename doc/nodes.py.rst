@@ -67,6 +67,13 @@ This section is a reference for all possible attributes you can define for a nod
 		},
 	}
 
+``bundles``
+-----------
+
+A list of :doc:`bundles <bundles>` to be assigned to this node.
+
+|
+
 ``hostname``
 ------------
 

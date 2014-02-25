@@ -499,6 +499,7 @@ class Node(object):
 
         self.name = name
         self.repo = repo
+        self._bundles = infodict.get('bundles', [])
         self.hostname = infodict.get('hostname', self.name)
         self.metadata = infodict.get('metadata', {})
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
@@ -517,12 +518,16 @@ class Node(object):
 
     @cached_property
     def bundles(self):
+        added_bundles = []
         found_bundles = []
         for group in self.groups:
             for bundle_name in group.bundle_names:
-                if bundle_name not in found_bundles:
-                    found_bundles.append(bundle_name)
-                    yield Bundle(self, bundle_name)
+                found_bundles.append(bundle_name)
+
+        for bundle_name in found_bundles + list(self._bundles):
+            if bundle_name not in added_bundles:
+                added_bundles.append(bundle_name)
+                yield Bundle(self, bundle_name)
 
     @cached_property
     def groups(self):
