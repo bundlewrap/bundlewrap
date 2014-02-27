@@ -29,6 +29,8 @@ class Action(object):
         self.unless = config.get('unless', "")
 
     def get_result(self, interactive=False, interactive_default=True):
+        if not interactive and self.timing == "interactive":
+            return None
         if self.unless:
             unless_result = self.bundle.node.run(
                 self.unless,
@@ -39,7 +41,7 @@ class Action(object):
                     self.bundle.node.name,
                     self.name,
                 ))
-                return True
+                return None
 
         if interactive and not ask_interactively(
             wrap_question(self.name, self.command, _("Run action {}?").format(
@@ -49,23 +51,24 @@ class Action(object):
         ):
             return None
         try:
-            self.run()
+            self.run(interactive=interactive)
             return True
         except ActionFailure:
             return False
 
-    def run(self):
+    def run(self, interactive=False):
         result = self.bundle.node.run(
             self.command,
             may_fail=True,
         )
 
         if not result.return_code == self.expected_return_code:
-            LOG.error("{}:action:{}: {}".format(
-                self.bundle.node.name,
-                self.name,
-                red(_("FAILED")),
-            ))
+            if not interactive:
+                LOG.error("{}:action:{}: {}".format(
+                    self.bundle.node.name,
+                    self.name,
+                    red(_("FAILED")),
+                ))
             raise ActionFailure(_(
                 "wrong return code for action '{}' in bundle '{}': "
                 "expected {}, but was {}"
@@ -114,7 +117,12 @@ class Action(object):
 
     @classmethod
     def validate_config(cls, bundle, name, config):
-        if config.get('timing', "pre") not in ("pre", "post", "triggered"):
+        if config.get('timing', "pre") not in (
+            "interactive",
+            "pre",
+            "post",
+            "triggered",
+        ):
             raise BundleError(_(
                 "invalid timing for action '{}' in bundle '{}'"
             ).format(name, bundle.name))

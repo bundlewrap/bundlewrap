@@ -12,10 +12,10 @@ def format_node_action_result(result):
     output = []
     output.append(_("{} ok").format(result.actions_ok))
 
-    if result.actions_aborted:
-        output.append(yellow(_("{} aborted").format(result.actions_aborted)))
+    if result.actions_skipped:
+        output.append(yellow(_("{} skipped").format(result.actions_skipped)))
     else:
-        output.append(_("{} aborted").format(result.actions_aborted))
+        output.append(_("{} skipped").format(result.actions_skipped))
 
     if result.actions_failed:
         output.append(red(_("{} failed").format(result.actions_failed)))
@@ -34,10 +34,10 @@ def format_node_item_result(result):
     else:
         output.append(_("{} fixed").format(result.fixed))
 
-    if result.aborted:
-        output.append(yellow(_("{} aborted").format(result.aborted)))
+    if result.skipped:
+        output.append(yellow(_("{} skipped").format(result.skipped)))
     else:
-        output.append(_("{} aborted").format(result.aborted))
+        output.append(_("{} skipped").format(result.skipped))
 
     if result.unfixable:
         output.append(red(_("{} unfixable").format(result.unfixable)))

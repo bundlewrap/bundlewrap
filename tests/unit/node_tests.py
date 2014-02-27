@@ -153,7 +153,7 @@ class ApplyResultTest(TestCase):
         output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 1)
         self.assertEqual(output_result.fixed, 0)
-        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.skipped, 0)
         self.assertEqual(output_result.unfixable, 0)
         self.assertEqual(output_result.failed, 0)
 
@@ -164,20 +164,20 @@ class ApplyResultTest(TestCase):
         output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 1)
-        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.skipped, 0)
         self.assertEqual(output_result.unfixable, 0)
         self.assertEqual(output_result.failed, 0)
 
-    def test_aborted(self):
+    def test_skipped(self):
         after = ItemStatus(correct=False)
-        after.aborted = True
+        after.skipped = True
         item_results = (
             (ItemStatus(correct=False), after),
         )
         output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
-        self.assertEqual(output_result.aborted, 1)
+        self.assertEqual(output_result.skipped, 1)
         self.assertEqual(output_result.unfixable, 0)
         self.assertEqual(output_result.failed, 0)
 
@@ -189,7 +189,7 @@ class ApplyResultTest(TestCase):
         output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
-        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.skipped, 0)
         self.assertEqual(output_result.unfixable, 1)
         self.assertEqual(output_result.failed, 0)
 
@@ -200,7 +200,7 @@ class ApplyResultTest(TestCase):
         output_result = ApplyResult(MagicMock(), item_results, [])
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
-        self.assertEqual(output_result.aborted, 0)
+        self.assertEqual(output_result.skipped, 0)
         self.assertEqual(output_result.unfixable, 0)
         self.assertEqual(output_result.failed, 1)
 
@@ -491,7 +491,7 @@ class NodeTest(TestCase):
         NodeLock.__exit__ = lambda x: x
         self.assertEqual(n.apply(), result)
         self.assertEqual(apply_items.call_count, 1)
-        self.assertEqual(run_actions.call_count, 3)
+        self.assertEqual(run_actions.call_count, 4)
         ApplyResult.assert_called_once()
 
     def test_bundles(self):

@@ -37,11 +37,11 @@ class ApplyTest(TestCase):
         self.assertTrue(output[1].startswith("\n  nodename: run completed after "))
         self.assertEqual(
             output[2],
-            "  items: 0 correct, 0 fixed, 0 aborted, 0 unfixable, 0 failed",
+            "  items: 0 correct, 0 fixed, 0 skipped, 0 unfixable, 0 failed",
         )
         self.assertEqual(
             output[3],
-            "  actions: 0 ok, 0 aborted, 0 failed\n",
+            "  actions: 0 ok, 0 skipped, 0 failed\n",
         )
         self.assertEqual(len(output), 4)
 
@@ -53,21 +53,21 @@ class FormatNodeActionResultTest(TestCase):
     def test_values(self):
         result = MagicMock()
         result.actions_ok = 1
-        result.actions_aborted = 2
+        result.actions_skipped = 2
         result.actions_failed = 3
         self.assertEqual(
             format_node_action_result(result),
-            "1 ok, 2 aborted, 3 failed",
+            "1 ok, 2 skipped, 3 failed",
         )
 
     def test_zero(self):
         result = MagicMock()
         result.actions_ok = 0
-        result.actions_aborted = 0
+        result.actions_skipped = 0
         result.actions_failed = 0
         self.assertEqual(
             format_node_action_result(result),
-            "0 ok, 0 aborted, 0 failed",
+            "0 ok, 0 skipped, 0 failed",
         )
 
 
@@ -79,22 +79,22 @@ class FormatNodeItemResultTest(TestCase):
         result = MagicMock()
         result.correct = 0
         result.fixed = 1
-        result.aborted = 2
+        result.skipped = 2
         result.unfixable = 3
         result.failed = 4
         self.assertEqual(
             format_node_item_result(result),
-            "0 correct, 1 fixed, 2 aborted, 3 unfixable, 4 failed",
+            "0 correct, 1 fixed, 2 skipped, 3 unfixable, 4 failed",
         )
 
     def test_zero(self):
         result = MagicMock()
         result.correct = 0
         result.fixed = 0
-        result.aborted = 0
+        result.skipped = 0
         result.unfixable = 0
         result.failed = 0
         self.assertEqual(
             format_node_item_result(result),
-            "0 correct, 0 fixed, 0 aborted, 0 unfixable, 0 failed",
+            "0 correct, 0 fixed, 0 skipped, 0 unfixable, 0 failed",
         )

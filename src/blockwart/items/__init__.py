@@ -43,7 +43,7 @@ class ItemStatus(object):
         fixable=True,
         info=None,
     ):
-        self.aborted = False
+        self.skipped = False
         self.correct = correct
         self.description = description
         self.fixable = fixable
@@ -193,7 +193,7 @@ class Item(object):
                     status_after = self.get_status()
                 else:
                     status_after = copy(status_before)
-                    status_after.aborted = True
+                    status_after.skipped = True
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,

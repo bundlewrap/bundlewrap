@@ -17,7 +17,7 @@ from .exceptions import BundleError, ItemDependencyError, NodeAlreadyLockedExcep
 from .items import ItemStatus
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
-from .utils.text import bold, green, red, validate_name
+from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
 
 LOCK_PATH = "/tmp/blockwart.lock"
@@ -32,14 +32,14 @@ class ApplyResult(object):
         self.node_name = node.name
         self.correct = 0
         self.fixed = 0
-        self.aborted = 0
+        self.skipped = 0
         self.unfixable = 0
         self.failed = 0
         for before, after in item_results:
             if before.correct and after.correct:
                 self.correct += 1
-            elif after.aborted:
-                self.aborted += 1
+            elif after.skipped:
+                self.skipped += 1
             elif not before.fixable or not after.fixable:
                 self.unfixable += 1
             elif not before.correct and after.correct:
@@ -55,14 +55,14 @@ class ApplyResult(object):
 
         self.actions_ok = 0
         self.actions_failed = 0
-        self.actions_aborted = 0
+        self.actions_skipped = 0
         for result in action_results:
             if result is True:
                 self.actions_ok += 1
             elif result is False:
                 self.actions_failed += 1
             else:
-                self.actions_aborted += 1
+                self.actions_skipped += 1
 
         self.start = None
         self.end = None
@@ -454,6 +454,11 @@ def run_actions(actions, timing, workers=1, interactive=False):
                             green("✓"),
                             bold(action_name),
                         ))
+                    elif result is None:
+                        print(_("\n  {} action:{} skipped").format(
+                            yellow("»"),
+                            bold(action_name),
+                        ))
                 yield result
 
 
@@ -587,19 +592,13 @@ class Node(object):
                     interactive=interactive,
                 ))
 
-                action_results += list(run_actions(
-                    self.actions,
-                    'triggered',
-                    workers=worker_count,
-                    interactive=interactive,
-                ))
-
-                action_results += list(run_actions(
-                    self.actions,
-                    'post',
-                    workers=worker_count,
-                    interactive=interactive,
-                ))
+                for action_type in ('triggered', 'interactive', 'post'):
+                    action_results += list(run_actions(
+                        self.actions,
+                        action_type,
+                        workers=worker_count,
+                        interactive=interactive,
+                    ))
 
         except NodeAlreadyLockedException as e:
             if not interactive:
