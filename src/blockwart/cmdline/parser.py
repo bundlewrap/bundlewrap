@@ -116,6 +116,12 @@ def build_parser_bw():
     parser_nodes = subparsers.add_parser("nodes")
     parser_nodes.set_defaults(func=bw_nodes)
     parser_nodes.add_argument(
+        "--bundles",
+        action='store_true',
+        dest='show_bundles',
+        help=_("show bundles for each node"),
+    )
+    parser_nodes.add_argument(
         "--hostnames",
         action='store_true',
         dest='show_hostnames',

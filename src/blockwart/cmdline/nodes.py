@@ -12,6 +12,8 @@ def bw_nodes(repo, args):
             line += node.hostname
         else:
             line += node.name
-        if args.show_groups:
+        if args.show_bundles:
+            line += ": " + ", ".join(names(node.bundles))
+        elif args.show_groups:
             line += ": " + ", ".join(names(node.groups))
         yield line
