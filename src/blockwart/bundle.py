@@ -29,7 +29,7 @@ class Action(object):
         self.unless = config.get('unless', "")
 
     def get_result(self, interactive=False, interactive_default=True):
-        if not interactive and self.timing == "interactive":
+        if not interactive and self.timing == 'interactive':
             return None
         if self.unless:
             unless_result = self.bundle.node.run(
@@ -118,10 +118,10 @@ class Action(object):
     @classmethod
     def validate_config(cls, bundle, name, config):
         if config.get('timing', "pre") not in (
-            "interactive",
-            "pre",
-            "post",
-            "triggered",
+            'interactive',
+            'pre',
+            'post',
+            'triggered',
         ):
             raise BundleError(_(
                 "invalid timing for action '{}' in bundle '{}'"

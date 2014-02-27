@@ -16,8 +16,8 @@ def build_parser_bw():
         "Blockwart - config management for Python addicts"
     ))
     parser.add_argument(
-        '-d',
-        '--debug',
+        "-d",
+        "--debug",
         action='store_true',
         default=False,
         dest='debug',
@@ -43,32 +43,32 @@ def build_parser_bw():
         help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_apply.add_argument(
-        '-f',
-        '--force',
+        "-f",
+        "--force",
         action='store_true',
         default=False,
         dest='force',
         help=_("ignore existing node locks"),
     )
     parser_apply.add_argument(
-        '-i',
-        '--interactive',
+        "-i",
+        "--interactive",
         action='store_true',
         default=False,
         dest='interactive',
         help=_("ask before applying each item"),
     )
     parser_apply.add_argument(
-        '-p',
-        '--parallel-nodes',
+        "-p",
+        "--parallel-nodes",
         default=4,
         dest='node_workers',
         help=_("number of nodes to apply to simultaneously"),
         type=int,
     )
     parser_apply.add_argument(
-        '-P',
-        '--parallel-items',
+        "-P",
+        "--parallel-items",
         default=4,
         dest='item_workers',
         help=_("number of items to apply to simultaneously on each node"),
@@ -79,8 +79,8 @@ def build_parser_bw():
     parser_groups = subparsers.add_parser("groups")
     parser_groups.set_defaults(func=bw_groups)
     parser_groups.add_argument(
-        '-n',
-        '--nodes',
+        "-n",
+        "--nodes",
         action='store_true',
         dest='show_nodes',
         help=_("show nodes for each group"),
@@ -96,8 +96,8 @@ def build_parser_bw():
         help=_("list items for this node"),
     )
     parser_items.add_argument(
-        '-w',
-        '--write-file-previews',
+        "-w",
+        "--write-file-previews",
         default=None,
         dest='file_preview_path',
         metavar=_("DIRECTORY"),
@@ -106,7 +106,7 @@ def build_parser_bw():
         help=_("create DIRECTORY and fill it with rendered file previews"),
     )
     parser_items.add_argument(
-        '--repr',
+        "--repr",
         action='store_true',
         dest='show_repr',
         help=_("show more verbose representation of each item"),
@@ -116,14 +116,14 @@ def build_parser_bw():
     parser_nodes = subparsers.add_parser("nodes")
     parser_nodes.set_defaults(func=bw_nodes)
     parser_nodes.add_argument(
-        '--hostnames',
+        "--hostnames",
         action='store_true',
         dest='show_hostnames',
         help=_("show hostnames instead of node names"),
     )
     parser_nodes.add_argument(
-        '-g',
-        '--filter-group',
+        "-g",
+        "--filter-group",
         default=None,
         dest='filter_group',
         metavar=_("GROUP"),
@@ -132,7 +132,7 @@ def build_parser_bw():
         help=_("show only nodes in the given group"),
     )
     parser_nodes.add_argument(
-        '--groups',
+        "--groups",
         action='store_true',
         dest='show_groups',
         help=_("show group membership for each node"),
@@ -165,8 +165,8 @@ def build_parser_bw():
     parser_repo_subparsers_debug = parser_repo_subparsers.add_parser("debug")
     parser_repo_subparsers_debug.set_defaults(func=bw_repo_debug)
     parser_repo_subparsers_debug.add_argument(
-        '-n',
-        '--node',
+        "-n",
+        "--node",
         default=None,
         dest='node',
         metavar=_("NODE"),
@@ -185,19 +185,19 @@ def build_parser_bw():
         help=_("node to plot"),
     )
     parser_repo_subparsers_plot.add_argument(
-        '--no-depends-auto',
+        "--no-depends-auto",
         action='store_false',
         dest='depends_auto',
         help=_("do not show auto-generated dependencies and items"),
     )
     parser_repo_subparsers_plot.add_argument(
-        '--no-depends-regular',
+        "--no-depends-regular",
         action='store_false',
         dest='depends_regular',
         help=_("do not show regular user-defined dependencies"),
     )
     parser_repo_subparsers_plot.add_argument(
-        '--no-depends-static',
+        "--no-depends-static",
         action='store_false',
         dest='depends_static',
         help=_("do not show static dependencies"),
@@ -219,21 +219,21 @@ def build_parser_bw():
         help=_("command to run"),
     )
     parser_run.add_argument(
-        '--no-sudo',
+        "--no-sudo",
         action='store_false',
         dest='sudo',
         help=_("do not use sudo, execute with user privs"),
     )
     parser_run.add_argument(
-        '-f',
-        '--may-fail',
+        "-f",
+        "--may-fail",
         action='store_true',
         dest='may_fail',
         help=_("ignore non-zero exit codes"),
     )
     parser_run.add_argument(
-        '-p',
-        '--parallel-nodes',
+        "-p",
+        "--parallel-nodes",
         default=1,
         dest='node_workers',
         help=_("number of nodes to run command on simultaneously"),
@@ -250,16 +250,16 @@ def build_parser_bw():
         help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_verify.add_argument(
-        '-p',
-        '--parallel-nodes',
+        "-p",
+        "--parallel-nodes",
         default=4,
         dest='node_workers',
         help=_("number of nodes to verify to simultaneously"),
         type=int,
     )
     parser_verify.add_argument(
-        '-P',
-        '--parallel-items',
+        "-P",
+        "--parallel-items",
         default=4,
         dest='item_workers',
         help=_("number of items to verify to simultaneously on each node"),
