@@ -39,7 +39,7 @@ Create a new file called ``/your/blockwart/repo/items/foo.py``. You can use this
 
         def fix(self, status):
             """
-            ConfigItems override this to do their work.
+            Do whatever is necessary to correct this item.
             """
             raise NotImplementedError
 
