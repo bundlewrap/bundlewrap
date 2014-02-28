@@ -2,11 +2,16 @@
 from __future__ import unicode_literals
 
 from code import interact
+from copy import copy
+from sys import exit
 
 from .. import VERSION_STRING
+from ..concurrency import WorkerPool
+from ..exceptions import WorkerException
 from ..node import flatten_dependencies, inject_concurrency_blockers, inject_dummy_items
 from ..repo import Repository
-from ..utils.text import mark_for_translation as _
+from ..utils.cmdline import get_target_nodes
+from ..utils.text import mark_for_translation as _, red
 
 
 DEBUG_BANNER = _("blockwart {} interactive repository inspector\n"
@@ -101,3 +106,36 @@ def bw_repo_plot(repo, args):
     yield "label = \"{}\"".format(node.name)
     yield "labelloc = \"t\""
     yield "}"
+
+
+def bw_repo_test(repo, args):
+    if args.target:
+        target_nodes = get_target_nodes(repo, args.target)
+    else:
+        target_nodes = copy(list(repo.nodes))
+    with WorkerPool(workers=args.node_workers) as worker_pool:
+        while worker_pool.keep_running():
+            try:
+                msg = worker_pool.get_event()
+            except WorkerException as e:
+                msg = "{} {}\n".format(
+                    red("✘"),
+                    e.task_id,
+                )
+                yield msg
+                yield e.traceback
+                exit(1)
+                break  # for testing, when exit() is patched
+            if msg['msg'] == 'REQUEST_WORK':
+                if target_nodes:
+                    node = target_nodes.pop()
+                    worker_pool.start_task(
+                        msg['wid'],
+                        node.test,
+                        task_id=node.name,
+                        kwargs={
+                            'workers': args.item_workers,
+                        },
+                    )
+                else:
+                    worker_pool.quit(msg['wid'])

@@ -5,7 +5,9 @@ from mock import MagicMock, patch
 from blockwart.exceptions import ItemDependencyError, RepositoryError
 from blockwart.group import Group
 from blockwart.items import Item, ItemStatus
-from blockwart.node import *
+from blockwart.node import ApplyResult, apply_items, DummyItem, flatten_dependencies, \
+    inject_concurrency_blockers, inject_dummy_items, Node, remove_dep_from_items, \
+    remove_item_dependents, split_items_without_deps
 from blockwart.utils import names
 
 

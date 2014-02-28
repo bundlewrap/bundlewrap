@@ -6,7 +6,7 @@ from .apply import bw_apply
 from .groups import bw_groups
 from .items import bw_items
 from .nodes import bw_nodes
-from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_plot
+from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_plot, bw_repo_test
 from .run import bw_run
 from .verify import bw_verify
 
@@ -207,6 +207,34 @@ def build_parser_bw():
         action='store_false',
         dest='depends_static',
         help=_("do not show static dependencies"),
+    )
+
+    # bw repo test
+    parser_repo_subparsers_test = parser_repo_subparsers.add_parser("test")
+    parser_repo_subparsers_test.set_defaults(func=bw_repo_test)
+    parser_repo_subparsers_test.add_argument(
+        'target',
+        default=None,
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        nargs='?',
+        type=str,
+        help=_("target nodes, groups and/or bundle selectors"),
+    )
+    parser_repo_subparsers_test.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=1,
+        dest='node_workers',
+        help=_("number of nodes to test simultaneously"),
+        type=int,
+    )
+    parser_repo_subparsers_test.add_argument(
+        "-P",
+        "--parallel-items",
+        default=4,
+        dest='item_workers',
+        help=_("number of items to test simultaneously for each node"),
+        type=int,
     )
 
     # bw run

@@ -254,6 +254,16 @@ class Item(object):
         """
         return attributes
 
+    def test(self):
+        """
+        Used by `bw repo test`. Should do as much as possible to detect
+        what would become a runtime error during a `bw apply`. Files
+        will attempt to render their templates for example.
+
+        SHOULD be overridden by subclasses
+        """
+        pass
+
     def validate_attributes(self, attributes):
         """
         Raises BundleError if something is amiss with the user-specified

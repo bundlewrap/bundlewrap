@@ -462,6 +462,31 @@ def run_actions(actions, timing, workers=1, interactive=False):
                 yield result
 
 
+def test_items(items, workers=1):
+    # make sure items is not a generator
+    items = list(items)
+
+    with WorkerPool(workers=workers) as worker_pool:
+        while worker_pool.keep_running():
+            msg = worker_pool.get_event()
+            if msg['msg'] == 'REQUEST_WORK':
+                if items:
+                    item = items.pop()
+                    worker_pool.start_task(
+                        msg['wid'],
+                        item.test,
+                        task_id=item.node.name + ":" + item.id,
+                    )
+                else:
+                    worker_pool.quit(msg['wid'])
+            elif msg['msg'] == 'FINISHED_WORK':
+                item_id = msg['task_id']
+                LOG.info("{} {}".format(
+                    green("✓"),
+                    item_id,
+                ))
+
+
 def verify_items(items, workers=1):
     # make sure items is not a generator
     items = list(items)
@@ -638,6 +663,12 @@ class Node(object):
             stdout=stdout,
             sudo=sudo,
             pty=pty,
+        )
+
+    def test(self, workers=4):
+        test_items(
+            self.items,
+            workers=workers,
         )
 
     def trigger_action(self, action_name):
