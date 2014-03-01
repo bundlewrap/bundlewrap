@@ -2,11 +2,14 @@
 from __future__ import unicode_literals
 from os import makedirs
 from os.path import join
+from shutil import rmtree
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase
 
+from mako.exceptions import CompileException
 from mock import call, MagicMock, patch
 
+from blockwart.exceptions import BundleError
 from blockwart.items import files, ItemStatus
 from blockwart.utils.text import green, red
 
@@ -523,6 +526,41 @@ class FileGetStatusTest(TestCase):
         status = f.get_status()
         self.assertTrue(status.correct)
         self.assertEqual(status.info['needs_fixing'], [])
+
+
+class FileTestTest(TestCase):
+    """
+    Tests blockwart.items.files.File.test.
+    """
+    def setUp(self):
+        makedirs("/tmp/bw_file_test/files")
+        with open("/tmp/bw_file_test/files/fail", 'w') as template:
+            template.write("%goto fail")
+        with open("/tmp/bw_file_test/files/success", 'w') as template:
+            template.write("Hi!")
+
+    def tearDown(self):
+        rmtree("/tmp/bw_file_test")
+
+    def test_missing_template(self):
+        bundle = MagicMock()
+        bundle.bundle_dir = "/bogus"
+        f = files.File(bundle, "foo", { 'source': "bogus" })
+        with self.assertRaises(BundleError):
+            f.test()
+
+    def test_content_fails(self):
+        bundle = MagicMock()
+        bundle.bundle_dir = "/tmp/bw_file_test"
+        f = files.File(bundle, "foo", { 'content_type': 'mako', 'source': "fail" })
+        with self.assertRaises(CompileException):
+            f.test()
+
+    def test_content_ok(self):
+        bundle = MagicMock()
+        bundle.bundle_dir = "/tmp/bw_file_test"
+        f = files.File(bundle, "foo", { 'content_type': 'mako', 'source': "success" })
+        f.test()
 
 
 class HashLocalTest(TestCase):

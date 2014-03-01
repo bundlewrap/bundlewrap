@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from difflib import unified_diff
 from os import remove
-from os.path import dirname, join, normpath
+from os.path import dirname, exists, join, normpath
 from pipes import quote
 from sys import exc_info
 from tempfile import mkstemp
@@ -367,6 +367,18 @@ class File(Item):
         if 'context' not in attributes:
             attributes['context'] = {}
         return attributes
+
+    def test(self):
+        if not exists(self.template):
+            raise BundleError(_(
+                "{} from bundle '{}' refers to missing file '{}' in its 'source' attribute"
+            ).format(
+                self.id,
+                self.bundle.name,
+                self.template,
+            ))
+        if self.attributes['content_type'] in ('mako', 'text'):
+            self.content
 
     def validate_attributes(self, attributes):
         for key, value in attributes.items():
