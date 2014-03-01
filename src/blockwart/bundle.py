@@ -62,7 +62,8 @@ class Action(object):
             may_fail=True,
         )
 
-        if not result.return_code == self.expected_return_code:
+        if self.expected_return_code is not None and \
+                not result.return_code == self.expected_return_code:
             if not interactive:
                 LOG.error("{}:action:{}: {}".format(
                     self.bundle.node.name,

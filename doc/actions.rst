@@ -34,7 +34,7 @@ The only required attribute. This is the command that will be run on the node wi
 ``expected_return_code``
 ++++++++++++++++++++++++
 
-Defaults to ``0``. If the return code of your command is anything else, the action is considered failed.
+Defaults to ``0``. If the return code of your command is anything else, the action is considered failed. You can also set this to ``None`` and any return code will be accepted.
 
 |
 
