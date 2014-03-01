@@ -19,6 +19,13 @@ class ActionInitTest(TestCase):
         with self.assertRaises(BundleError):
             Action(MagicMock(), "action", {})
 
+    def test_unknown_attr(self):
+        with self.assertRaises(BundleError):
+            Action(MagicMock(), "action", {
+                'command': "/bin/true",
+                'foo': "bar",
+            })
+
     def test_invalid_timing(self):
         with self.assertRaises(BundleError):
             Action(MagicMock(), "action", {
