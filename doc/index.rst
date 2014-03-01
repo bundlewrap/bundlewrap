@@ -54,6 +54,7 @@ You might be better served with a different config management system if you:
    repository
    cli
    api
+   dev_contrib
    about
 
 .. raw:: html
