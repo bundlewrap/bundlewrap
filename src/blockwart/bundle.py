@@ -173,7 +173,7 @@ class Bundle(object):
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
 
-    def __getstate__(self):
+    def __getstate__(self):  # pragma: no cover
         """
         Removes cached items prior to pickling because their classed are
         loaded dynamically and can't be pickled.
