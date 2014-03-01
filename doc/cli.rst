@@ -72,3 +72,28 @@ This command will drop you into a Python shell with direct access to Blockwart's
 You won't be using this every day, but it's pretty cool. The above command will create an SVG file (you can open these in your browser) that shows the item dependency graph for the given node. You will see bundles as dashed rectangles, static dependencies (defined in Blockwart itself) in green, auto-generated dependencies (calculated dynamically each time you run ``bw apply``) in blue and dependencies you defined yourself in red.
 
 It offers an interesting view into the internal complexities Blockwart has to deal with when figuring out the order in which your items can be applied to your node.
+
+|
+
+``bw repo test``
+----------------
+
+.. code-block:: console
+
+	$ bw repo test
+	✓ node1:pkg_apt:samba
+	✘ node1:file:/etc/samba/smb.conf
+
+	[...]
+
+	+----- traceback from worker ------
+	|
+	|  Traceback (most recent call last):
+	|    File "/Users/trehn/Projects/software/blockwart/src/blockwart/concurrency.py", line 78, in _worker_process
+	|      return_value = target(*msg['args'], **msg['kwargs'])
+	|    File "<string>", line 378, in test
+	|  BundleError: file:/etc/samba/smb.conf from bundle 'samba' refers to missing file '/path/to/blockwart/repo/bundles/samba/files/smb.conf'
+	|
+	+----------------------------------
+
+This command is meant to be run automatically like a test suite after every commit. It will try to catch any errors in your bundles and file templates by initializing every item for every node (but without touching the network).
