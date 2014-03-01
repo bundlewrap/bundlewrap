@@ -26,6 +26,13 @@ class ActionInitTest(TestCase):
                 'foo': "bar",
             })
 
+    def test_invalid_interactive(self):
+        with self.assertRaises(BundleError):
+            Action(MagicMock(), "action", {
+                'command': "/bin/true",
+                'interactive': "maybe",
+            })
+
     def test_invalid_timing(self):
         with self.assertRaises(BundleError):
             Action(MagicMock(), "action", {

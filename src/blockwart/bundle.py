@@ -25,12 +25,14 @@ class Action(object):
         self.expected_return_code = config.get('expected_return_code', 0)
         self.expected_stderr = config.get('expected_stderr', None)
         self.expected_stdout = config.get('expected_stdout', None)
+        self.interactive = config.get('interactive', None)
         self.timing = config.get('timing', "pre")
         self.unless = config.get('unless', "")
 
     def get_result(self, interactive=False, interactive_default=True):
-        if not interactive and self.timing == 'interactive':
+        if interactive is False and self.interactive is True:
             return None
+
         if self.unless:
             unless_result = self.bundle.node.run(
                 self.unless,
@@ -43,11 +45,15 @@ class Action(object):
                 ))
                 return None
 
-        if interactive and not ask_interactively(
-            wrap_question(self.name, self.command, _("Run action {}?").format(
-                bold(self.name),
-            )),
-            interactive_default,
+        if (
+            interactive and
+            self.interactive is not False
+            and not ask_interactively(
+                wrap_question(self.name, self.command, _("Run action {}?").format(
+                    bold(self.name),
+                )),
+                interactive_default,
+            )
         ):
             return None
         try:
@@ -118,8 +124,11 @@ class Action(object):
 
     @classmethod
     def validate_config(cls, bundle, name, config):
+        if config.get('interactive', None) not in (True, False, None):
+            raise BundleError(_(
+                "invalid interactive setting for action '{}' in bundle '{}'"
+            ).format(name, bundle.name))
         if config.get('timing', "pre") not in (
-            'interactive',
             'pre',
             'post',
             'triggered',
@@ -136,6 +145,7 @@ class Action(object):
             'expected_stderr',
             'expected_stdout',
             'expected_return_code',
+            'interactive',
             'timing',
             'unless',
         )))

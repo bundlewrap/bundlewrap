@@ -52,14 +52,23 @@ Same as ``expected_stdout``, but with stderr.
 
 |
 
+``interactive``
++++++++++++++++
+
+If set to ``True``, this action will be skipped in non-interactive mode. If set to ``False``, this action will always be executed without asking (even in interactive mode).
+
+.. warning::
+
+	Think hard before setting this to ``False``. People might assume that interactive mode won't do anything without their consent.
+
+|
+
 ``timing``
 ++++++++++
 
-Acceptable values are ``"pre"``, ``"post"``, ``"interactive"`` or ``"triggered"``.
+Acceptable values are ``"pre"``, ``"post"`` or ``"triggered"``.
 
 Choose ``pre`` or ``post`` depending on whether you want the action to be run before or after items are applied.
-
-When set to ``interactive``, the action will be skipped automatically during non-interactive operation - otherwise it will be run just before ``post`` actions.
 
 When set to ``triggered``, the action will only be executed by :ref:`action_triggers`.
 
