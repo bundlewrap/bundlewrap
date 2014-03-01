@@ -76,7 +76,8 @@ def main(*args):
         args = argv[1:]
 
     if len(args) >= 1 and (
-        args[0] in ("repo", "--version") or
+        args[0] == "--version" or
+        (args[0] == "repo" and args[1] == "create") or
         "-h" in args or
         "--help" in args
     ):
