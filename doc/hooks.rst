@@ -79,7 +79,7 @@ This is a list of all functions a hook file may implement.
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
     :param Item item: The current item.
     :param timedelta duration: How long the apply took.
-    :param ItemStatus status_before: An object with these attributes: ``aborted``, ``correct``, ``fixable``, ``info``.
+    :param ItemStatus status_before: An object with these attributes: ``correct``, ``fixable``, ``info``, ``skipped``.
     :param ItemStatus status_after: See ``status_before``.
 
 |
@@ -102,7 +102,7 @@ This is a list of all functions a hook file may implement.
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
     :param timedelta duration: How long the apply took.
-    :param ApplyResult result: An object with these attributes: ``correct``, ``fixed``, ``aborted``, ``unfixable``, ``failed``.
+    :param ApplyResult result: An object with these attributes: ``correct``, ``failed``, ``fixed``, ``skipped``, ``unfixable``.
 
 |
 |

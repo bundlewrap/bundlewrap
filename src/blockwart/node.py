@@ -283,7 +283,7 @@ def apply_items(node, workers=1, interactive=False):
                 if (
                     status_before is None or
                     status_before.correct or
-                    status_after.aborted or
+                    status_after.skipped or
                     not interactive
                 ):
                     pass
@@ -299,7 +299,7 @@ def apply_items(node, workers=1, interactive=False):
                     ))
 
                 if status_after is not None and not status_after.correct:
-                    # if an item fails or is aborted, all items that depend on
+                    # if an item fails or is skipped, all items that depend on
                     # it shall be removed from the queue
                     items_with_deps, cancelled_items = remove_item_dependents(
                         items_with_deps,
@@ -312,7 +312,7 @@ def apply_items(node, workers=1, interactive=False):
                         if isinstance(cancelled_item, DummyItem):
                             continue
                         cancelled_item_status = ItemStatus(correct=False)
-                        cancelled_item_status.aborted = True
+                        cancelled_item_status.skipped = True
                         yield (cancelled_item_status, cancelled_item_status)
                 else:
                     # if an item is applied successfully, all
@@ -398,8 +398,8 @@ def remove_item_dependents(items, dep):
 
     if removed_items:
         LOG.debug(
-            "aborted these items because they depend on {}, which was "
-            "aborted previously: {}".format(
+            "skipped these items because they depend on {}, which was "
+            "skipped previously: {}".format(
                 dep,
                 ", ".join([item.id for item in removed_items]),
             )
