@@ -107,6 +107,40 @@ class ActionRunTest(TestCase):
             action.run()
 
 
+class ActionGetResultTest(TestCase):
+    """
+    Tests blockwart.bundle.Action.get_result.
+    """
+    def test_fail_unless(self):
+        unless_result = MagicMock()
+        unless_result.return_code = 0
+
+        bundle = MagicMock()
+        bundle.node.run.return_value = unless_result
+
+        action = Action(bundle, "action", { 'command': "/bin/true", 'unless': "true" })
+        self.assertEqual(action.get_result(), None)
+
+    def test_skip_noninteractive(self):
+        action = Action(MagicMock(), "action", { 'command': "/bin/true", 'interactive': True })
+        self.assertEqual(action.get_result(interactive=False), None)
+
+    @patch('blockwart.bundle.ask_interactively', return_value=False)
+    def test_declined_interactive(self, ask_interactively):
+        action = Action(MagicMock(), "action", { 'command': "/bin/true" })
+        self.assertEqual(action.get_result(interactive=True), None)
+
+    def test_ok(self):
+        action = Action(MagicMock(), "action", { 'command': "/bin/true" })
+        action.run = MagicMock(return_value=None)
+        self.assertEqual(action.get_result(interactive=False), True)
+
+    def test_fail(self):
+        action = Action(MagicMock(), "action", { 'command': "/bin/false" })
+        action.run = MagicMock(side_effect=ActionFailure)
+        self.assertEqual(action.get_result(interactive=False), False)
+
+
 class BundleInitTest(TestCase):
     """
     Tests initialization of blockwart.bundle.Bundle.
