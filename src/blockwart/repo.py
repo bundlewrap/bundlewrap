@@ -22,7 +22,6 @@ HOOK_EVENTS = (
     'apply_end',
     'item_apply_start',
     'item_apply_end',
-    'item_apply_aborted',
     'node_apply_start',
     'node_apply_end',
     'node_run_start',
