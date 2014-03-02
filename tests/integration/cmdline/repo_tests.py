@@ -39,3 +39,18 @@ class RepoBundleCreateTest(TestCase):
         main("repo", "bundle", "create", "test")
         self.assertTrue(isfile(join(self.tmpdir, "bundles", "test", "bundle.py")))
         self.assertTrue(isdir(join(self.tmpdir, "bundles", "test", "files")))
+
+
+class RepoNotFoundTest(TestCase):
+    def setUp(self):
+        self.cwd = getcwd()
+        self.tmpdir = mkdtemp()
+
+    def tearDown(self):
+        chdir(self.cwd)
+        rmtree(self.tmpdir)
+
+    def test_exit(self):
+        chdir(self.tmpdir)
+        with self.assertRaises(SystemExit):
+            main("repo", "debug")
