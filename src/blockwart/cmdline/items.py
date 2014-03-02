@@ -8,7 +8,7 @@ from ..utils.text import mark_for_translation as _
 
 def write_preview(file_item, base_path):
     """
-
+    Writes the content of the given file item to the given path.
     """
     file_path = join(base_path, file_item.name.lstrip("/"))
     dir_path = dirname(file_path)
