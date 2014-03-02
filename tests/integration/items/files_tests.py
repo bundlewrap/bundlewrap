@@ -9,6 +9,7 @@ from mock import MagicMock
 
 from blockwart.items import files
 from blockwart.node import Node
+from blockwart.repo import Repository
 
 
 class GetRemoteFileContentsTest(TestCase):
@@ -35,6 +36,7 @@ class FileCreateTest(TestCase):
         bundle = MagicMock()
         bundle.bundle_dir = mkdtemp()
         bundle.node = Node('localhost')
+        Repository().add_node(bundle.node)
         item = files.File(
             bundle,
             target_file,
