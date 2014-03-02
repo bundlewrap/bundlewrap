@@ -16,7 +16,7 @@ class GetRemoteFileContentsTest(TestCase):
         handle, target_file = mkstemp()
         with open(target_file, 'w') as f:
             f.write("47")
-        n = Node(None, 'localhost', {})
+        n = Node('localhost', {})
         try:
             self.assertEqual(
                 files.get_remote_file_contents(n, target_file),
@@ -34,7 +34,7 @@ class FileCreateTest(TestCase):
         remove(target_file)
         bundle = MagicMock()
         bundle.bundle_dir = mkdtemp()
-        bundle.node = Node(MagicMock(), 'localhost', {})
+        bundle.node = Node('localhost', {})
         item = files.File(
             bundle,
             target_file,

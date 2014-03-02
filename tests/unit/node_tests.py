@@ -8,6 +8,7 @@ from blockwart.items import Item, ItemStatus
 from blockwart.node import ApplyResult, apply_items, DummyItem, flatten_dependencies, \
     inject_concurrency_blockers, inject_dummy_items, Node, remove_dep_from_items, \
     remove_item_dependents, split_items_without_deps
+from blockwart.repo import Repository
 from blockwart.utils import names
 
 
@@ -259,7 +260,7 @@ class InitTest(TestCase):
     @patch('blockwart.node.validate_name', return_value=False)
     def test_bad_bundle_name(self, *args):
         with self.assertRaises(RepositoryError):
-            Node(MagicMock(), "name")
+            Node("name")
 
 
 class InjectDummyItemsTest(TestCase):
@@ -486,7 +487,9 @@ class NodeTest(TestCase):
     @patch('blockwart.node.run_actions')
     @patch('blockwart.node.apply_items')
     def test_apply(self, apply_items, run_actions, NodeLock, ApplyResult):
-        n = Node(MagicMock(), "node1", {})
+        repo = Repository()
+        n = Node("node1", {})
+        repo.add_node(n)
         result = MagicMock()
         ApplyResult.return_value = result
         NodeLock.__enter__ = lambda x: x
@@ -497,11 +500,14 @@ class NodeTest(TestCase):
         ApplyResult.assert_called_once()
 
     def test_bundles(self):
-        repo = MagicMock()
+        repo = Repository()
         repo.bundle_names = ("bundle1", "bundle2", "bundle3")
-        n = Node(repo, "node1", {})
-        g1 = Group(None, "group1", {'bundles': ("bundle1", "bundle2")})
-        g2 = Group(None, "group2", {'bundles': ("bundle3",)})
+        n = Node("node1", {})
+        repo.add_node(n)
+        g1 = Group("group1", {'bundles': ("bundle1", "bundle2")})
+        repo.add_group(g1)
+        g2 = Group("group2", {'bundles': ("bundle3",)})
+        repo.add_group(g2)
         with patch('tests.unit.node_tests.Node.groups', new=(g1, g2)):
             self.assertEqual(
                 tuple(names(n.bundles)),
@@ -509,7 +515,7 @@ class NodeTest(TestCase):
             )
 
     def test_hostname_defaults(self):
-        n = Node(None, "node1", {})
+        n = Node("node1", {})
         self.assertEqual(n.hostname, "node1")
-        n = Node(None, "node2", {'hostname': "node2.example.com"})
+        n = Node("node2", {'hostname': "node2.example.com"})
         self.assertEqual(n.hostname, "node2.example.com")

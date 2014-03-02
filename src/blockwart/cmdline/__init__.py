@@ -81,11 +81,11 @@ def main(*args):
         "-h" in args or
         "--help" in args
     ):
-        # don't try to validate existing repo with 'bw repo create' etc.
-        repo = Repository(getcwd(), skip_validation=True)
+        # 'bw repo create' is a special case that only takes a path
+        repo = getcwd()
     else:
         try:
-            repo = Repository(getcwd(), skip_validation=False)
+            repo = Repository(getcwd())
         except NoSuchRepository:
             print(_("{} The current working directory "
                     "is not a Blockwart repository.".format(red("!"))))

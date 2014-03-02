@@ -1,10 +1,11 @@
 from unittest import TestCase
 
-from mock import MagicMock, patch
+from mock import patch
 
 from blockwart.exceptions import RepositoryError
 from blockwart.group import _build_error_chain, Group
 from blockwart.node import Node
+from blockwart.repo import Repository
 from blockwart.utils import names
 
 
@@ -58,37 +59,24 @@ class HierarchyTest(TestCase):
     Tests subgroup functionality of blockwart.group.Group.
     """
     def test_no_subgroups(self):
-        class FakeRepo(MagicMock):
-            def get_group(self, name):
-                return Group(self, name, {})
-
-        repo = FakeRepo()
+        repo = Repository()
+        repo.add_group(Group("group1", {'subgroups': []}))
         group = repo.get_group("group1")
         self.assertEqual(list(names(group.subgroups)), [])
 
     def test_simple_subgroups(self):
-        class FakeRepo(object):
-            def get_group(self, name):
-                subgroups = []
-                if name == "group1":
-                    subgroups = ["group2", "group3"]
-                return Group(self, name, {'subgroups': subgroups})
-
-        repo = FakeRepo()
+        repo = Repository()
+        repo.add_group(Group("group1", {'subgroups': ["group2", "group3"]}))
+        repo.add_group(Group("group2"))
+        repo.add_group(Group("group3"))
         group = repo.get_group("group1")
         self.assertEqual(list(names(group.subgroups)), ["group2", "group3"])
 
     def test_nested_subgroups(self):
-        class FakeRepo(object):
-            def get_group(self, name):
-                subgroups = []
-                if name == "group1":
-                    subgroups = ["group2"]
-                elif name == "group2":
-                    subgroups = ["group3"]
-                return Group(self, name, {'subgroups': subgroups})
-
-        repo = FakeRepo()
+        repo = Repository()
+        repo.add_group(Group("group1", {'subgroups': ["group2"]}))
+        repo.add_group(Group("group2", {'subgroups': ["group3"]}))
+        repo.add_group(Group("group3", {'subgroups': []}))
         group = repo.get_group("group1")
         self.assertEqual(
             set(names(group.subgroups)),
@@ -96,64 +84,36 @@ class HierarchyTest(TestCase):
         )
 
     def test_simple_subgroup_loop(self):
-        class FakeRepo(object):
-            def get_group(self, name):
-                return Group(self, name, {'subgroups': ["group1"]})
-
-        repo = FakeRepo()
+        repo = Repository()
+        repo.add_group(Group("group1", {'subgroups': ["group1"]}))
         group = repo.get_group("group1")
         with self.assertRaises(RepositoryError):
             list(group.subgroups)
 
     def test_nested_subgroup_loop(self):
-        class FakeRepo(object):
-            def get_group(self, name):
-                subgroups = []
-                if name == "group1":
-                    subgroups = ["group2"]
-                elif name == "group2":
-                    subgroups = ["group1"]
-                return Group(self, name, {'subgroups': subgroups})
-
-        repo = FakeRepo()
+        repo = Repository()
+        repo.add_group(Group("group1", {'subgroups': ["group2"]}))
+        repo.add_group(Group("group2", {'subgroups': ["group1"]}))
         group = repo.get_group("group1")
         with self.assertRaises(RepositoryError):
             list(group.subgroups)
 
     def test_deeply_nested_subgroup_loop_top(self):
-        class FakeRepo(object):
-            def get_group(self, name):
-                subgroups = []
-                if name == "group1":
-                    subgroups = ["group2"]
-                elif name == "group2":
-                    subgroups = ["group3"]
-                elif name == "group3":
-                    subgroups = ["group4"]
-                elif name == "group4":
-                    subgroups = ["group1"]
-                return Group(self, name, {'subgroups': subgroups})
-
-        repo = FakeRepo()
+        repo = Repository()
+        repo.add_group(Group("group1", {'subgroups': ["group2"]}))
+        repo.add_group(Group("group2", {'subgroups': ["group3"]}))
+        repo.add_group(Group("group3", {'subgroups': ["group4"]}))
+        repo.add_group(Group("group4", {'subgroups': ["group1"]}))
         group = repo.get_group("group1")
         with self.assertRaises(RepositoryError):
             list(group.subgroups)
 
     def test_deeply_nested_subgroup_loop(self):
-        class FakeRepo(object):
-            def get_group(self, name):
-                subgroups = []
-                if name == "group1":
-                    subgroups = ["group2"]
-                elif name == "group2":
-                    subgroups = ["group3"]
-                elif name == "group3":
-                    subgroups = ["group4"]
-                elif name == "group4":
-                    subgroups = ["group2"]
-                return Group(self, name, {'subgroups': subgroups})
-
-        repo = FakeRepo()
+        repo = Repository()
+        repo.add_group(Group("group1", {'subgroups': ["group2"]}))
+        repo.add_group(Group("group2", {'subgroups': ["group3"]}))
+        repo.add_group(Group("group3", {'subgroups': ["group4"]}))
+        repo.add_group(Group("group4", {'subgroups': ["group2"]}))
         group = repo.get_group("group1")
         with self.assertRaises(RepositoryError):
             list(group.subgroups)
@@ -166,14 +126,14 @@ class InitTest(TestCase):
     @patch('blockwart.group.validate_name', return_value=False)
     def test_bad_bundle_name(self, *args):
         with self.assertRaises(RepositoryError):
-            Group(MagicMock(), "name", {})
+            Group("name", {})
 
     def test_bundles(self):
         bundles = ("bundle1", "bundle2")
         infodict = {
             'bundles': bundles,
         }
-        g = Group(None, "group1", infodict)
+        g = Group("group1", infodict)
         self.assertEqual(g.bundle_names, bundles)
 
 
@@ -182,45 +142,46 @@ class MemberTest(TestCase):
     Tests node membership functionality of blockwart.group.Group.
     """
     def test_static_members(self):
-        class FakeRepo(object):
-            def get_node(self, name):
-                return name
-
-        repo = FakeRepo()
-        group = Group(repo, "group1", {'members': ("node2", "node1")})
+        repo = Repository()
+        node1 = Node("node1")
+        node2 = Node("node2")
+        repo.add_node(node1)
+        repo.add_node(node2)
+        group = Group("group1", {'members': ("node2", "node1")})
+        repo.add_group(group)
         self.assertEqual(
             set(group._nodes_from_static_members),
-            set(("node1", "node2")),
+            set((node1, node2)),
         )
 
     def test_static_subgroup_members(self, *args):
-        class FakeRepo(object):
-            def get_group(self, name):
-                return Group(self, name, {'members': ("node3", "node4")})
-
-            def get_node(self, name):
-                return name
-
-        repo = FakeRepo()
-        group = Group(repo, "group1", {'subgroups': ("group2",)})
+        repo = Repository()
+        group1 = Group("group1", {'subgroups': ("group2",)})
+        node3 = Node("node3")
+        node4 = Node("node4")
+        repo.add_group(group1)
+        repo.add_group(Group("group2", {'members': ("node3", "node4")}))
+        repo.add_node(node3)
+        repo.add_node(node4)
+        repo.add_node(Node("node5"))
         self.assertEqual(
-            set(group._nodes_from_subgroups),
-            set(("node3", "node4")),
+            set(group1._nodes_from_subgroups),
+            set((node3, node4)),
         )
 
     def test_pattern_members(self, *args):
-        repo = MagicMock()
-        repo.nodes = (
-            Node(repo, "node1", {}),
-            Node(repo, "node2", {}),
-        )
-        group = Group(repo, "all", { 'member_patterns': (r".*",) })
+        repo = Repository()
+        repo.add_node(Node("node1"))
+        repo.add_node(Node("node2"))
+        group = Group("all", { 'member_patterns': (r".*",) })
+        repo.add_group(group)
         self.assertEqual(
             list(names(group.nodes)),
             ["node1", "node2"],
         )
-        group = Group(repo, "group2", { 'member_patterns': (r".*2",)} )
+        group2 = Group("group2", { 'member_patterns': (r".*2",)} )
+        repo.add_group(group2)
         self.assertEqual(
-            list(names(group.nodes)),
+            list(names(group2.nodes)),
             ["node2"],
         )

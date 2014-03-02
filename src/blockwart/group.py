@@ -29,13 +29,14 @@ class Group(object):
     """
     A group of nodes.
     """
-    def __init__(self, repo, group_name, infodict):
+    def __init__(self, group_name, infodict=None):
+        if infodict is None:
+            infodict = {}
+
         if not validate_name(group_name):
             raise RepositoryError(_("'{}' is not a valid group name").format(group_name))
 
         self.name = group_name
-        self.repo = repo
-
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.patterns = infodict.get('member_patterns', [])

@@ -64,6 +64,20 @@ nodes = {
 RESERVED_ITEM_TYPE_NAMES = ("actions",)
 
 
+def groups_from_file(filepath):
+    """
+    Returns all groups as defined in the given groups.py.
+    """
+    try:
+        flat_group_dict = utils.getattr_from_file(filepath, 'groups')
+    except KeyError:
+        raise RepositoryError(_(
+            "{} must define a 'groups' variable"
+        ).format(filepath))
+    for groupname, infodict in flat_group_dict.iteritems():
+        yield Group(groupname, infodict)
+
+
 class HooksProxy(object):
     def __init__(self, path):
         self.__hook_cache = {}
@@ -151,6 +165,41 @@ class HooksProxy(object):
                 self.__registered_hooks[filename].append(name)
 
 
+def items_from_path(itempath):
+    """
+    Looks for Item subclasses in the items directory that ships with
+    blockwart and the local items dir of this specific repo.
+
+    An alternative method would involve metaclasses (as Django
+    does it), but then it gets very hard to have two separate repos
+    in the same process, because both of them would register config
+    item classes globally.
+    """
+    for path in items.__path__ + [itempath]:
+        if not isdir(path):
+            continue
+        for filename in listdir(path):
+            filepath = join(path, filename)
+            if not filename.endswith(".py") or \
+                    not isfile(filepath) or \
+                    filename.startswith("_"):
+                continue
+            for name, obj in \
+                    utils.get_all_attrs_from_file(filepath).iteritems():
+                if obj == items.Item or name.startswith("_"):
+                    continue
+                try:
+                    if issubclass(obj, items.Item):
+                        if obj.ITEM_TYPE_NAME in RESERVED_ITEM_TYPE_NAMES:
+                            raise RepositoryError(_(
+                                "'{}' is a reserved item type name"
+                            ).format(obj.ITEM_TYPE_NAME))
+                        else:
+                            yield obj
+                except TypeError:
+                    pass
+
+
 class LibsProxy(object):
     def __init__(self, path):
         self.__module_cache = {}
@@ -172,35 +221,46 @@ class LibsProxy(object):
         self.__path = state
 
 
+def nodes_from_file(filepath):
+    """
+    Returns a list of nodes as defined in the given nodes.py.
+    """
+    try:
+        flat_node_dict = utils.getattr_from_file(filepath, 'nodes')
+    except KeyError:
+        raise RepositoryError(
+            _("{} must define a 'nodes' variable").format(filepath)
+        )
+    for nodename, infodict in flat_node_dict.iteritems():
+        yield Node(nodename, infodict)
+
+
 class Repository(object):
-    def __init__(self, repo_path, skip_validation=False):
-        self.path = repo_path
+    def __init__(self, repo_path=None):
+        self.path = "/dev/null" if repo_path is None else repo_path
 
-        self.bundles_dir = join(self.path, DIRNAME_BUNDLES)
-        self.hooks_dir = join(self.path, DIRNAME_HOOKS)
-        self.items_dir = join(self.path, DIRNAME_ITEM_TYPES)
-        self.groups_file = join(self.path, FILENAME_GROUPS)
-        self.libs_dir = join(self.path, DIRNAME_LIBS)
-        self.nodes_file = join(self.path, FILENAME_NODES)
+        self._set_path(self.path)
 
-        self.hooks = HooksProxy(self.hooks_dir)
-        self.libs = LibsProxy(self.libs_dir)
+        self.bundle_names = []
+        self.group_dict = {}
+        self.item_classes = []
+        self.node_dict = {}
 
-        if not skip_validation and not self.is_repo(repo_path):
-            raise NoSuchRepository(
-                _("'{}' is not a blockwart repository").format(self.path)
-            )
+        if repo_path is not None:
+            self.populate_from_path(repo_path)
 
     def __getstate__(self):
         """
         Removes cached item classes prior to pickling because they are loaded
         dynamically and can't be pickled.
         """
-        try:
-            del self._cache['item_classes']
-        except:
-            pass
+        self.item_classes = []
         return self.__dict__
+
+    def __setstate__(self, dict):
+        self.__dict__ = dict
+        for item_class in items_from_path(self.items_dir):
+            self.item_classes.append(item_class)
 
     def __repr__(self):
         return "<Repository at '{}'>".format(self.path)
@@ -218,59 +278,46 @@ class Repository(object):
             return False
         return True
 
-    @utils.cached_property
-    def bundle_names(self):
+    def add_group(self, group):
         """
-        Returns the names of all bundles in this repository.
+        Adds the given group object to this repo.
         """
-        for dir_entry in listdir(self.bundles_dir):
-            if validate_name(dir_entry):
-                yield dir_entry
+        if group.name in utils.names(self.nodes):
+            raise RepositoryError(_("you cannot have a node and a group "
+                                    "both named '{}'").format(group.name))
+        if group.name in utils.names(self.groups):
+            raise RepositoryError(_("you cannot have two groups "
+                                    "both named '{}'").format(group.name))
+        group.repo = self
+        self.group_dict[group.name] = group
 
-    @utils.cached_property
-    def item_classes(self):
+    def add_node(self, node):
         """
-        Looks for Item subclasses in the items directory that ships with
-        blockwart and the local items dir of this specific repo.
+        Adds the given node object to this repo.
+        """
+        if node.name in utils.names(self.groups):
+            raise RepositoryError(_("you cannot have a node and a group "
+                                    "both named '{}'").format(node.name))
+        if node.name in utils.names(self.nodes):
+            raise RepositoryError(_("you cannot have two nodes "
+                                    "both named '{}'").format(node.name))
+        node.repo = self
+        self.node_dict[node.name] = node
 
-        An alternative method would involve metaclasses (as Django
-        does it), but then it gets very hard to have two separate repos
-        in the same process, because both of them would register config
-        item classes globally.
+    @classmethod
+    def create(cls, path):
         """
-        for path in items.__path__ + [self.items_dir]:
-            if not isdir(path):
-                continue
-            for filename in listdir(path):
-                filepath = join(path, filename)
-                if not filename.endswith(".py") or \
-                        not isfile(filepath) or \
-                        filename.startswith("_"):
-                    continue
-                for name, obj in \
-                        utils.get_all_attrs_from_file(filepath).iteritems():
-                    if obj == items.Item or name.startswith("_"):
-                        continue
-                    try:
-                        if issubclass(obj, items.Item):
-                            if obj.ITEM_TYPE_NAME in RESERVED_ITEM_TYPE_NAMES:
-                                raise RepositoryError(_(
-                                    "'{}' is a reserved item type name"
-                                ).format(obj.ITEM_TYPE_NAME))
-                            else:
-                                yield obj
-                    except TypeError:
-                        pass
-
-    def create(self):
-        """
-        Sets up initial content for a repository.
+        Creates and returns a repository at path, which must exist and
+        be empty.
         """
         for filename, content in INITIAL_CONTENT.iteritems():
-            with open(join(self.path, filename), 'w') as f:
+            with open(join(path, filename), 'w') as f:
                 f.write(content.strip() + "\n")
-        mkdir(self.bundles_dir)
-        mkdir(self.items_dir)
+
+        mkdir(join(path, DIRNAME_BUNDLES))
+        mkdir(join(path, DIRNAME_ITEM_TYPES))
+
+        return cls(path)
 
     def create_bundle(self, bundle_name):
         """
@@ -300,25 +347,6 @@ class Repository(object):
         except KeyError:
             raise NoSuchNode(node_name)
 
-    @utils.cached_property
-    def group_dict(self):
-        try:
-            flat_group_dict = utils.getattr_from_file(
-                self.groups_file,
-                'groups',
-            )
-        except KeyError:
-            raise RepositoryError(_(
-                "{} must define a 'groups' variable"
-            ).format(self.groups_file))
-        groups = {}
-        for groupname, infodict in flat_group_dict.iteritems():
-            if groupname in utils.names(self.nodes):
-                raise RepositoryError(_("you cannot have a node and a group "
-                                        "both named '{}'").format(groupname))
-            groups[groupname] = Group(self, groupname, infodict)
-        return groups
-
     @property
     def groups(self):
         result = list(self.group_dict.values())
@@ -330,30 +358,54 @@ class Repository(object):
             if node in group.nodes:
                 yield group
 
-    @utils.cached_property
-    def node_dict(self):
-        try:
-            flat_node_dict = utils.getattr_from_file(
-                self.nodes_file,
-                'nodes',
-            )
-        except KeyError:
-            raise RepositoryError(
-                _("{} must define a 'nodes' variable").format(
-                    self.nodes_file,
-                )
-            )
-        nodes = {}
-        for nodename, infodict in flat_node_dict.iteritems():
-            nodes[nodename] = Node(self, nodename, infodict)
-        return nodes
-
     @property
     def nodes(self):
         result = list(self.node_dict.values())
         result.sort()
         return result
 
+    def populate_from_path(self, path):
+        if not self.is_repo(path):
+            raise NoSuchRepository(
+                _("'{}' is not a blockwart repository").format(path)
+            )
+
+        if path != self.path:
+            self._set_path(path)
+
+        # populate bundles
+        self.bundle_names = []
+        for dir_entry in listdir(self.bundles_dir):
+            if validate_name(dir_entry):
+                self.bundle_names.append(dir_entry)
+
+        # populate groups
+        self.group_dict = {}
+        for group in groups_from_file(self.groups_file):
+            self.add_group(group)
+
+        # populate items
+        self.item_classes = []
+        for item_class in items_from_path(self.items_dir):
+            self.item_classes.append(item_class)
+
+        # populate nodes
+        self.node_dict = {}
+        for node in nodes_from_file(self.nodes_file):
+            self.add_node(node)
+
     @utils.cached_property
     def revision(self):
         return get_rev()
+
+    def _set_path(self, path):
+        self.path = path
+        self.bundles_dir = join(self.path, DIRNAME_BUNDLES)
+        self.hooks_dir = join(self.path, DIRNAME_HOOKS)
+        self.items_dir = join(self.path, DIRNAME_ITEM_TYPES)
+        self.groups_file = join(self.path, FILENAME_GROUPS)
+        self.libs_dir = join(self.path, DIRNAME_LIBS)
+        self.nodes_file = join(self.path, FILENAME_NODES)
+
+        self.hooks = HooksProxy(self.hooks_dir)
+        self.libs = LibsProxy(self.libs_dir)

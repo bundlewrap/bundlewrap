@@ -520,7 +520,7 @@ def verify_items(items, workers=1):
 
 
 class Node(object):
-    def __init__(self, repo, name, infodict=None):
+    def __init__(self, name, infodict=None):
         if infodict is None:
             infodict = {}
 
@@ -528,7 +528,6 @@ class Node(object):
             raise RepositoryError(_("'{}' is not a valid node name"))
 
         self.name = name
-        self.repo = repo
         self._bundles = infodict.get('bundles', [])
         self.hostname = infodict.get('hostname', self.name)
         self.metadata = infodict.get('metadata', {})
