@@ -525,7 +525,7 @@ class Node(object):
             infodict = {}
 
         if not validate_name(name):
-            raise RepositoryError(_("'{}' is not a valid node name"))
+            raise RepositoryError(_("'{}' is not a valid node name").format(name))
 
         self.name = name
         self._bundles = infodict.get('bundles', [])
