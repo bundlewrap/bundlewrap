@@ -104,20 +104,6 @@ class Item(object):
     def __str__(self):
         return self.id
 
-    def __reduce__(self):
-        attrs = copy(self.attributes)
-        for attribute_name in BUILTIN_ITEM_ATTRIBUTES.keys():
-            attrs[attribute_name] = getattr(self, attribute_name)
-        return (
-            unpickle_item_class,
-            (
-                self.__class__.__name__,
-                self.bundle,
-                self.name,
-                attrs,
-            ),
-        )
-
     def __repr__(self):
         return "<Item {}>".format(self.id)
 
