@@ -34,6 +34,8 @@ class MockItem(Item):
         status.correct = True
         status._name = self.name
         return (status, status)
+del Item.__reduce__  # we don't need the custom pickle-magic for our
+                     # MockItems
 
 
 def get_mock_item(itype, name, deps_static, deps):

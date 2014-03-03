@@ -35,6 +35,13 @@ ITEM_MODULES = (
 )
 
 
+def unpickle_item_class(class_name, bundle, name, attributes):
+    for item_class in bundle.node.repo.item_classes:
+        if item_class.__name__ == class_name:
+            return item_class(bundle, name, attributes, skip_validation=True)
+    raise RuntimeError(_("unable to unpickle {}").format(class_name))
+
+
 class ItemStatus(object):
     """
     Holds information on a particular Item such as whether it needs
@@ -103,6 +110,20 @@ class Item(object):
 
     def __str__(self):
         return self.id
+
+    def __reduce__(self):
+        attrs = copy(self.attributes)
+        for attribute_name in BUILTIN_ITEM_ATTRIBUTES.keys():
+            attrs[attribute_name] = getattr(self, attribute_name)
+        return (
+            unpickle_item_class,
+            (
+                self.__class__.__name__,
+                self.bundle,
+                self.name,
+                attrs,
+            ),
+        )
 
     def __repr__(self):
         return "<Item {}>".format(self.id)
