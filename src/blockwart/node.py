@@ -98,7 +98,11 @@ def _find_item(item_id, items):
     Returns the first item with the given ID within the given list of
     items.
     """
-    return filter(lambda item: item.id == item_id, items)[0]
+    try:
+        item = filter(lambda item: item.id == item_id, items)[0]
+    except IndexError:
+        raise RuntimeError(_("item not found: {}").format(item_id))
+    return item
 
 
 def _find_items_of_type(item_type, items):
