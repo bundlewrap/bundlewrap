@@ -28,6 +28,18 @@ def unpickle_item_class(class_name, bundle, name, attributes):
         if item_class.__name__ == class_name:
             return item_class(bundle, name, attributes, skip_validation=True)
     raise RuntimeError(_("unable to unpickle {}").format(class_name))
+ITEM_MODULES = (
+    'directories',
+    'files',
+    'groups',
+    'pkg_apt',
+    'pkg_pacman',
+    'svc_systemd',
+    'svc_systemv',
+    'svc_upstart',
+    'symlinks',
+    'users',
+)
 
 
 class ItemStatus(object):
@@ -61,6 +73,7 @@ class Item(object):
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
+    LOADED_FROM_FILE = False
     PARALLEL_APPLY = True
     REQUIRED_ATTRIBUTES = []
 
