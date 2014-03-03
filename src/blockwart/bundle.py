@@ -1,7 +1,7 @@
 from os.path import join
 
 from .exceptions import ActionFailure, BundleError, RepositoryError
-from .utils import cached_property, get_all_attrs_from_file, LOG
+from .utils import get_all_attrs_from_file, LOG
 from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, wrap_question
 from .utils.ui import ask_interactively
@@ -167,50 +167,70 @@ class Bundle(object):
         if not validate_name(name):
             raise RepositoryError(_("invalid bundle name: {}").format(name))
 
-        if not name in self.repo.bundle_names:
-            raise RepositoryError(_("bundle not found: {}").format(name))
-
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
 
+        self.action_dict = {}
+        self.item_dict = {}
+
+        if self.repo.path != "/dev/null":
+            self.read_from_file(self.bundle_file)
+
     def __getstate__(self):  # pragma: no cover
         """
-        Removes cached items prior to pickling because their classed are
-        loaded dynamically and can't be pickled.
+        Removes cached custom items prior to pickling because their
+        classes are loaded dynamically and can't be pickled.
         """
-        try:
-            del self._cache['items']
-        except:
-            pass
+        custom_items = []
+        for item_name, item in self.item_dict.iteritems():
+            if item.LOADED_FROM_FILE:
+                custom_items.append(item_name)
+        for item_name in custom_items:
+            del self.item_dict[item_name]
         return self.__dict__
 
-    @cached_property
-    def actions(self):
-        bundle_attrs = get_all_attrs_from_file(
-            self.bundle_file,
-            base_env={
-                'node': self.node,
-                'repo': self.repo,
-            },
-        )
-        bundle_actions = bundle_attrs.get('actions', {})
-        for name, config in bundle_actions.iteritems():
-            yield Action(self, name, config)
+    def __repr__(self):
+        return "<Bundle '{}' for node '{}'>".format(self.name, self.node.name)
 
-    @cached_property
+    def __setstate__(self, dict):
+        self.__dict__ = dict
+        if self.repo.path != "/dev/null":
+            self.read_from_file(self.bundle_file, only_custom_items=True)
+
+    @property
+    def actions(self):
+        return self.action_dict.values()
+
+    def add_action(self, name, config):
+        action = Action(self, name, config)
+        self.action_dict[name] = action
+        return action
+
+    def add_item(self, attribute_name, item_name, config):
+        item_class = self.repo.item_classes[attribute_name]
+        item = item_class(self, item_name, config)
+        self.item_dict[item_name] = item
+        return item
+
+    @property
     def items(self):
+        return self.item_dict.values()
+
+    def read_from_file(self, filepath, only_custom_items=False):
         bundle_attrs = get_all_attrs_from_file(
-            self.bundle_file,
+            filepath,
             base_env={
                 'node': self.node,
                 'repo': self.repo,
             },
         )
-        for item_class in self.repo.item_classes:
-            if item_class.BUNDLE_ATTRIBUTE_NAME not in bundle_attrs:
+
+        if not only_custom_items:
+            for action_name, config in bundle_attrs.get('actions', {}).iteritems():
+                self.add_action(action_name, config)
+
+        for attribute_name, item_class in self.repo.item_classes.iteritems():
+            if not item_class.LOADED_FROM_FILE and only_custom_items:
                 continue
-            for name, attrs in bundle_attrs.get(
-                    item_class.BUNDLE_ATTRIBUTE_NAME,
-                    {},
-            ).iteritems():
-                yield item_class(self, name, attrs)
+            for item_name, config in bundle_attrs.get(attribute_name, {}).iteritems():
+                self.add_item(attribute_name, item_name, config)
