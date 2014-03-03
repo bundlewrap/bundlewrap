@@ -31,7 +31,7 @@ def bw_repo_create(path, args):
 
 
 def bw_repo_debug(repo, args):
-    repo = Repository(repo.path, skip_validation=False)
+    repo = Repository(repo.path)
     if args.node is None:
         interact(DEBUG_BANNER, local={'repo': repo})
     else:
