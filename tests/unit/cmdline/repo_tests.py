@@ -22,10 +22,7 @@ class DebugTest(TestCase):
         ) as repo_class:
             repo.bw_repo_debug(repo_obj, args)
 
-            repo_class.assert_called_with(
-                repo_obj.path,
-                skip_validation=False,
-            )
+            repo_class.assert_called_with(repo_obj.path)
             interact.assert_called_with(
                 repo.DEBUG_BANNER,
                 local={'repo': repo_obj_validated},

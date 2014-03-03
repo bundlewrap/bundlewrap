@@ -150,12 +150,6 @@ class BundleInitTest(TestCase):
         with self.assertRaises(RepositoryError):
             Bundle(MagicMock(), "name")
 
-    def test_unknown_bundle(self, *args):
-        repo = MagicMock()
-        repo.bundle_names = []
-        with self.assertRaises(RepositoryError):
-            Bundle(repo, "name")
-
 
 class BundleActionsTest(TestCase):
     """
@@ -194,6 +188,6 @@ class BundleItemsTest(TestCase):
 
         node = MagicMock()
         node.repo.bundle_names = ("mybundle",)
-        node.repo.item_classes = (MyItem, MyOtherItem)
+        node.repo.item_classes = {'attr1': MyItem, 'attr3': MyOtherItem}
         b = Bundle(node, "mybundle")
         self.assertEqual(set(names(b.items)), set(('name1', 'name2')))

@@ -112,7 +112,7 @@ class RepoItemClasses2Test(RepoTest):
                     "class _BadTestItem(Item): bad = True\n")
         r.populate_from_path(self.tmpdir)
         self.assertGreater(len(r.item_classes), 0)
-        for cls in r.item_classes:
+        for cls in r.item_classes.values():
             if hasattr(cls, 'bad'):
                 self.assertFalse(cls.bad)
             self.assertTrue(issubclass(cls, Item))
