@@ -192,3 +192,29 @@ Reference
 	.. py:attribute:: nodes
 
 		A list of all nodes in this group (instances of :py:class:`blockwart.node.Node`, includes subgroup members)
+
+
+|
+|
+
+Dragons
+#######
+
+If you're a little more daring, you can construct "virtual" repositories entirely in memory.
+
+.. warning::
+
+	This is considered pretty experimental.
+
+.. code-block:: python
+
+	from blockwart.bundle import Bundle
+	from blockwart.node import Node
+	from blockwart.repo import Repository
+
+	repo = Repository()
+	node = Node("mynode", {'hostname': "mynode.example.com"})
+	repo.add_node(node)
+	bundle = node.add_bundle("mybundle")
+	bundle.add_item("files", "/tmp/CLOUD", {'content': "BIGDATA"})
+	result = node.apply()

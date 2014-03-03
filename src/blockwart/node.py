@@ -532,7 +532,8 @@ class Node(object):
             raise RepositoryError(_("'{}' is not a valid node name").format(name))
 
         self.name = name
-        self._bundles = infodict.get('bundles', [])
+        self._bundle_dict = {}
+        self._bundle_names = list(infodict.get('bundles', []))
         self.hostname = infodict.get('hostname', self.name)
         self.metadata = infodict.get('metadata', {})
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
@@ -549,18 +550,28 @@ class Node(object):
             for action in bundle.actions:
                 yield action
 
-    @cached_property
-    def bundles(self):
-        added_bundles = []
-        found_bundles = []
-        for group in self.groups:
-            for bundle_name in group.bundle_names:
-                found_bundles.append(bundle_name)
+    def add_bundle(self, bundle_name):
+        if not hasattr(self, 'repo'):
+            raise RuntimeError(_("Add this node to a repo before adding bundles"))
+        if bundle_name not in self._bundle_dict:
+            self._bundle_dict[bundle_name] = Bundle(self, bundle_name)
+        if bundle_name not in self._bundle_names:
+            self._bundle_names.append(bundle_name)
+        return self.get_bundle(bundle_name)
 
-        for bundle_name in found_bundles + list(self._bundles):
-            if bundle_name not in added_bundles:
-                added_bundles.append(bundle_name)
-                yield Bundle(self, bundle_name)
+    @property
+    def bundles(self):
+        if not self._bundle_dict:
+            for bundle_name in self._bundle_names:
+                self.add_bundle(bundle_name)
+
+            for group in self.groups:
+                for bundle_name in group.bundle_names:
+                    self.add_bundle(bundle_name)
+        return self._bundle_dict.values()
+
+    def get_bundle(self, bundle_name):
+        return self._bundle_dict[bundle_name]
 
     @cached_property
     def groups(self):
