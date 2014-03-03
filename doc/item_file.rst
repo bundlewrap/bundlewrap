@@ -24,10 +24,17 @@ Manages regular files.
 Attribute reference
 -------------------
 
+``content``
++++++++++++
+
+May be used instead of ``source`` to provide file content without a template file. Must be a UTF-8 string. Defaults to ``""``.
+
+|
+
 ``content_type``
 ++++++++++++++++
 
-How the file pointed to by ``source`` should be interpreted.
+How the file pointed to by ``source`` or the string given to ``content`` should be interpreted.
 
 +--------------------+----------------------------------------------------------------------------+
 | Value              | Effect                                                                     |

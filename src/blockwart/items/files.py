@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from collections import defaultdict
+from copy import copy
 from datetime import datetime
 from difflib import unified_diff
 from os import remove
@@ -24,13 +25,12 @@ DIFF_MAX_LINE_LENGTH = 128
 
 
 def content_processor_mako(item):
-    from mako.lookup import TemplateLookup
-    lookup = TemplateLookup(
-        directories=[item.item_dir],
+    from mako.template import Template
+    template = Template(
+        item._template_content,
         input_encoding='utf-8',
         output_encoding=item.attributes['encoding'],
     )
-    template = lookup.get_template(item.attributes['source'])
     LOG.debug("{}:{}: rendering with Mako...".format(item.node.name, item.id))
     start = datetime.now()
     try:
@@ -65,9 +65,7 @@ def content_processor_mako(item):
 
 
 def content_processor_text(item):
-    filename = join(item.item_dir, item.attributes['source'])
-    with open(filename) as f:
-        content = f.read()
+    content = copy(item._template_content)
     if item.attributes['encoding'].lower() != "utf-8":
         content = content.decode("utf-8")
         content = content.encode(item.attributes['encoding'])
@@ -148,6 +146,16 @@ def hash_local_file(path):
     return sha1_hash
 
 
+def validator_content(item_id, value):
+    if value is not None:
+        try:
+            value.decode('utf-8')
+        except UnicodeDecodeError:
+            raise BundleError(
+                _("'content' for {} must be a UTF-8 encoded string").format(item_id)
+            )
+
+
 def validator_content_type(item_id, value):
     if value not in CONTENT_PROCESSORS:
         raise BundleError(
@@ -157,6 +165,7 @@ def validator_content_type(item_id, value):
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
 ATTRIBUTE_VALIDATORS.update({
+    'content': validator_content,
     'content_type': validator_content_type,
     'mode': validator_mode,
 })
@@ -169,7 +178,7 @@ class File(Item):
     BUNDLE_ATTRIBUTE_NAME = "files"
     DEPENDS_STATIC = ["user:"]
     ITEM_ATTRIBUTES = {
-        'content': None,
+        'content': "",
         'content_type': "mako",
         'context': None,
         'encoding': "utf-8",
@@ -188,6 +197,16 @@ class File(Item):
             self.attributes['mode'],
             self.content_hash,
         )
+
+    @property
+    def _template_content(self):
+        if self.attributes['source'] is not None:
+            filename = join(self.item_dir, self.attributes['source'])
+            with open(filename) as f:
+                content = f.read()
+            return content
+        else:
+            return self.attributes['content']
 
     @cached_property
     def content(self):
@@ -381,6 +400,11 @@ class File(Item):
             self.content
 
     def validate_attributes(self, attributes):
+        if 'content' in attributes and 'source' in attributes:
+            raise BundleError(_(
+                "{} from bundle '{}' cannot have both 'content' and 'source'"
+            ).format(self.id, self.bundle.name))
+
         for key, value in attributes.items():
             ATTRIBUTE_VALIDATORS[key](self.id, value)
 

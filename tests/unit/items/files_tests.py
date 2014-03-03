@@ -21,17 +21,13 @@ class ContentProcessorMakoTest(TestCase):
     def test_template(self):
         item = MagicMock()
         item.node.name = "localhost"
-        item.item_dir = mkdtemp()
-        makedirs(join(item.item_dir, "a/b"))
         item.attributes = {
             'context': {
                 'number': "47",
             },
             'encoding': "utf-8",
-            'source': "a/b/c",
         }
-        with open(join(item.item_dir, "a/b/c"), 'w') as f:
-            f.write("Hi from ${number}@${node.name}!")
+        item._template_content = "Hi from ${number}@${node.name}!"
         self.assertEqual(
             files.content_processor_mako(item),
             "Hi from 47@localhost!",
@@ -43,26 +39,32 @@ class ContentProcessorTextTest(TestCase):
     Tests blockwart.items.files.content_processor_text.
     """
     def test_template(self):
-        item = MagicMock()
-        item.node.name = "localhost"
-        item.item_dir = mkdtemp()
-        makedirs(join(item.item_dir, "a/b"))
-        item.attributes = {'encoding': "utf-8", 'source': "a/b/c"}
-        with open(join(item.item_dir, "a/b/c"), 'w') as f:
-            f.write("Hi from ${node.name}!")
+        bundle = MagicMock()
+        bundle.node.name = "localhost"
+        item = files.File(
+            bundle,
+            "/foo",
+            {
+                'content': "Hi from ${node.name}!",
+                'encoding': "utf-8",
+            },
+        )
         self.assertEqual(
             files.content_processor_text(item),
             "Hi from ${node.name}!",
         )
 
     def test_encoding(self):
-        item = MagicMock()
-        item.node.name = "localhost"
-        item.item_dir = mkdtemp()
-        makedirs(join(item.item_dir, "a/b"))
-        item.attributes = {'encoding': "latin-1", 'source': "a/b/c"}
-        with open(join(item.item_dir, "a/b/c"), 'w') as f:
-            f.write("Hellö!".encode("utf-8"))
+        bundle = MagicMock()
+        bundle.node.name = "localhost"
+        item = files.File(
+            bundle,
+            "/foo",
+            {
+                'content': "Hellö!".encode("utf-8"),
+                'encoding': "latin-1",
+            },
+        )
         self.assertEqual(
             files.content_processor_text(item).decode("latin-1"),
             "Hellö!",
@@ -283,7 +285,6 @@ class FileFixContentTest(TestCase):
             mode="0664",
         )
 
-    @patch('blockwart.items.files.File.content', new="47")
     def test_regular(self):
         node = MagicMock()
         bundle = MagicMock()
@@ -292,7 +293,7 @@ class FileFixContentTest(TestCase):
         f = files.File(
             bundle,
             "/foo",
-            {'content_type': 'mako'},
+            {'content': "47", 'content_type': 'mako'},
         )
         f._fix_content(MagicMock())
         node.upload.assert_called_once()
@@ -588,8 +589,16 @@ class ValidateAttributesTest(TestCase):
             'attr2': validator,
         }
         with patch('blockwart.items.files.ATTRIBUTE_VALIDATORS', new=attr_val):
-            f = files.File(MagicMock(), "test", {}, skip_validation=True)
-            f.validate_attributes({'attr1': 1, 'attr2': 2})
+            f = files.File(
+                MagicMock(),
+                "test",
+                {},
+                skip_validation=True,
+            )
+            f.validate_attributes({
+                'attr1': 1,
+                'attr2': 2,
+            })
         validator.assert_any_call(f.id, 1)
         validator.assert_any_call(f.id, 2)
         self.assertEqual(validator.call_count, 2)
