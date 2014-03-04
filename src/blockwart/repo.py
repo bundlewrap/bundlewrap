@@ -1,8 +1,6 @@
 from imp import load_source
-from importlib import import_module
 from os import listdir, mkdir
-from os.path import dirname, isdir, isfile, join
-from pkgutil import iter_modules
+from os.path import isdir, isfile, join
 
 from . import items
 from .exceptions import NoSuchGroup, NoSuchNode, NoSuchRepository, RepositoryError
@@ -64,22 +62,6 @@ nodes = {
 }
 
 RESERVED_ITEM_TYPE_NAMES = ("actions",)
-
-
-def builtin_item_classes():
-    """
-    Returns the Item classes built into Blockwart.
-    """
-    for module_name in items.ITEM_MODULES:
-        module = import_module('blockwart.items.{}'.format(module_name))
-        for name, obj in module.__dict__.iteritems():
-            if obj == items.Item or name.startswith("_"):
-                continue
-            try:
-                if issubclass(obj, items.Item):
-                    yield obj
-            except TypeError:
-                pass
 
 
 def groups_from_file(filepath):
@@ -183,34 +165,39 @@ class HooksProxy(object):
                 self.__registered_hooks[filename].append(name)
 
 
-def item_classes_from_path(path):
+def items_from_path(itempath):
     """
-    Looks for Item subclasses in the local items dir of this specific
-    repo.
+    Looks for Item subclasses in the items directory that ships with
+    blockwart and the local items dir of this specific repo.
+
+    An alternative method would involve metaclasses (as Django
+    does it), but then it gets very hard to have two separate repos
+    in the same process, because both of them would register config
+    item classes globally.
     """
-    if not isdir(path):
-        return
-    for filename in listdir(path):
-        filepath = join(path, filename)
-        if not filename.endswith(".py") or \
-                not isfile(filepath) or \
-                filename.startswith("_"):
+    for path in items.__path__ + [itempath]:
+        if not isdir(path):
             continue
-        for name, obj in \
-                utils.get_all_attrs_from_file(filepath).iteritems():
-            if obj == items.Item or name.startswith("_"):
+        for filename in listdir(path):
+            filepath = join(path, filename)
+            if not filename.endswith(".py") or \
+                    not isfile(filepath) or \
+                    filename.startswith("_"):
                 continue
-            try:
-                if issubclass(obj, items.Item):
-                    if obj.ITEM_TYPE_NAME in RESERVED_ITEM_TYPE_NAMES:
-                        raise RepositoryError(_(
-                            "'{}' is a reserved item type name"
-                        ).format(obj.ITEM_TYPE_NAME))
-                    else:
-                        obj.LOADED_FROM_FILE = True
-                        yield obj
-            except TypeError:
-                pass
+            for name, obj in \
+                    utils.get_all_attrs_from_file(filepath).iteritems():
+                if obj == items.Item or name.startswith("_"):
+                    continue
+                try:
+                    if issubclass(obj, items.Item):
+                        if obj.ITEM_TYPE_NAME in RESERVED_ITEM_TYPE_NAMES:
+                            raise RepositoryError(_(
+                                "'{}' is a reserved item type name"
+                            ).format(obj.ITEM_TYPE_NAME))
+                        else:
+                            yield obj
+                except TypeError:
+                    pass
 
 
 class LibsProxy(object):
@@ -256,11 +243,8 @@ class Repository(object):
 
         self.bundle_names = []
         self.group_dict = {}
-        self.item_classes = {}
+        self.item_classes = []
         self.node_dict = {}
-
-        for item_class in builtin_item_classes():
-            self.item_classes[item_class.BUNDLE_ATTRIBUTE_NAME] = item_class
 
         if repo_path is not None:
             self.populate_from_path(repo_path)
@@ -270,18 +254,13 @@ class Repository(object):
         Removes cached item classes prior to pickling because they are loaded
         dynamically and can't be pickled.
         """
-        self.item_classes = {}
+        self.item_classes = []
         return self.__dict__
 
     def __setstate__(self, dict):
         self.__dict__ = dict
-
-        for item_class in builtin_item_classes():
-            self.item_classes[item_class.BUNDLE_ATTRIBUTE_NAME] = item_class
-
-        if self.path != "/dev/null":
-            for item_class in item_classes_from_path(self.items_dir):
-                self.item_classes[item_class.BUNDLE_ATTRIBUTE_NAME] = item_class
+        for item_class in items_from_path(self.items_dir):
+            self.item_classes.append(item_class)
 
     def __repr__(self):
         return "<Repository at '{}'>".format(self.path)
@@ -406,8 +385,9 @@ class Repository(object):
             self.add_group(group)
 
         # populate items
-        for item_class in item_classes_from_path(self.items_dir):
-            self.item_classes[item_class.BUNDLE_ATTRIBUTE_NAME] = item_class
+        self.item_classes = []
+        for item_class in items_from_path(self.items_dir):
+            self.item_classes.append(item_class)
 
         # populate nodes
         self.node_dict = {}

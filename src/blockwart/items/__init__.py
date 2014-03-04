@@ -14,25 +14,13 @@ from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold, wrap_question
 from blockwart.utils.ui import ask_interactively
 
-
 BUILTIN_ITEM_ATTRIBUTES = {
     "depends": [],
     "triggers": [],
     "unless": "",
 }
-
-ITEM_MODULES = (
-    'directories',
-    'files',
-    'groups',
-    'pkg_apt',
-    'pkg_pacman',
-    'svc_systemd',
-    'svc_systemv',
-    'svc_upstart',
-    'symlinks',
-    'users',
-)
+ITEM_CLASSES = {}
+ITEM_CLASSES_LOADED = False
 
 
 def unpickle_item_class(class_name, bundle, name, attributes):
@@ -73,7 +61,6 @@ class Item(object):
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
-    LOADED_FROM_FILE = False
     PARALLEL_APPLY = True
     REQUIRED_ATTRIBUTES = []
 

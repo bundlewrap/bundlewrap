@@ -510,8 +510,8 @@ class NodeTest(TestCase):
         repo.add_group(g2)
         with patch('tests.unit.node_tests.Node.groups', new=(g1, g2)):
             self.assertEqual(
-                set(names(n.bundles)),
-                set(("bundle1", "bundle2", "bundle3")),
+                tuple(names(n.bundles)),
+                ("bundle1", "bundle2", "bundle3"),
             )
 
     def test_hostname_defaults(self):
