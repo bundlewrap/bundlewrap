@@ -15,9 +15,10 @@ from blockwart.utils.text import bold, wrap_question
 from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
-    "depends": [],
-    "triggers": [],
-    "unless": "",
+    'depends': [],
+    'triggered': False,
+    'triggers': [],
+    'unless': "",
 }
 ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
@@ -42,8 +43,9 @@ class ItemStatus(object):
         description="No description available.",
         fixable=True,
         info=None,
+        skipped=False,
     ):
-        self.skipped = False
+        self.skipped = skipped
         self.correct = correct
         self.description = description
         self.fixable = fixable
@@ -67,6 +69,7 @@ class Item(object):
     def __init__(self, bundle, name, attributes, skip_validation=False):
         self.attributes = {}
         self.bundle = bundle
+        self.has_been_triggered = False
         self.item_dir = join(bundle.bundle_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
@@ -166,14 +169,17 @@ class Item(object):
         )
         start_time = datetime.now()
 
-        status_before = self.get_status()
+        if self.triggered and not self.has_been_triggered:
+            status_before = ItemStatus(skipped=True)
+        else:
+            status_before = self.get_status()
         status_after = None
 
         if self.unless and not status_before.correct:
             unless_result = self.node.run(self.unless, may_fail=True)
             if unless_result.return_code == 0:
                 LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
-                status_before.correct = True
+                status_before.skipped = True
 
         if status_before.correct or not status_before.fixable:
             status_after = copy(status_before)
