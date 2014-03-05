@@ -24,7 +24,7 @@ class Action(Item):
 
     def get_result(self, interactive=False, interactive_default=True):
         if interactive is False and self.attributes['interactive'] is True:
-            return None
+            return self.STATUS_ACTION_SKIPPED
 
         if self.unless:
             unless_result = self.bundle.node.run(
@@ -36,7 +36,7 @@ class Action(Item):
                     self.bundle.node.name,
                     self.name,
                 ))
-                return None
+                return self.STATUS_ACTION_SKIPPED
 
         if (
             interactive and
@@ -52,12 +52,12 @@ class Action(Item):
                 interactive_default,
             )
         ):
-            return None
+            return self.STATUS_ACTION_SKIPPED
         try:
             self.run(interactive=interactive)
-            return True
+            return self.STATUS_ACTION_OK
         except ActionFailure:
-            return False
+            return self.STATUS_ACTION_FAILED
 
     def run(self, interactive=False):
         result = self.bundle.node.run(

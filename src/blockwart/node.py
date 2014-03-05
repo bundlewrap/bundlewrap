@@ -12,10 +12,8 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import BundleError, ItemDependencyError, NodeAlreadyLockedException, \
-    RepositoryError
-from .items import ItemStatus
-from .items.actions import Action
+from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
+from .items import Item
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
@@ -38,29 +36,26 @@ class ApplyResult(object):
         self.fixed = 0
         self.skipped = 0
         self.failed = 0
-        for result in item_results:
-            if result is True:
+
+        for item_id, result in item_results:
+            if result == Item.STATUS_ACTION_OK:
                 self.actions_ok += 1
-            elif result is False:
+            elif result == Item.STATUS_ACTION_FAILED:
                 self.actions_failed += 1
-            elif result is None:
+            elif result == Item.STATUS_ACTION_SKIPPED:
                 self.actions_skipped += 1
+            elif result == Item.STATUS_OK:
+                self.correct += 1
+            elif result == Item.STATUS_FIXED:
+                self.fixed += 1
+            elif result == Item.STATUS_SKIPPED:
+                self.skipped += 1
+            elif result == Item.STATUS_FAILED:
+                self.skipped += 1
             else:
-                before, after = result
-                if before.correct and after.correct:
-                    self.correct += 1
-                elif after.skipped:
-                    self.skipped += 1
-                elif not before.correct and after.correct:
-                    self.fixed += 1
-                elif not before.correct and not after.correct:
-                    self.failed += 1
-                else:
-                    raise RuntimeError(_(
-                        "can't make sense of item results for node '{}'\n"
-                        "before: {}\n"
-                        "after: {}"
-                    ).format(self.node_name, before, after))
+                raise RuntimeError(_(
+                    "can't make sense of results for {} on {}: {}"
+                ).format(item_id, self.node_name, result))
 
         self.start = None
         self.end = None
@@ -237,41 +232,36 @@ def inject_trigger_dependencies(items):
 
 
 def format_item_result(result, item_id):
-    if result is False:
+    if result == Item.STATUS_ACTION_FAILED:
         return _("\n  {} {} failed").format(
             red("✘"),
             bold(item_id),
         )
-    elif result is True:
+    elif result == Item.STATUS_ACTION_OK:
         return _("\n  {} {} succeeded").format(
             green("✓"),
             bold(item_id),
         )
-    elif result is None:
+    elif result == Item.STATUS_ACTION_SKIPPED:
         return _("\n  {} {} skipped").format(
             yellow("»"),
             bold(item_id),
         )
-    else:
-        status_before, status_after = result
-        if status_before is None:
-            return
-        elif status_before.skipped or \
-                (status_after is not None and status_after.skipped):
-            return _("\n  {} {} skipped").format(
-                yellow("»"),
-                bold(item_id),
-            )
-        elif not status_before.correct and status_after.correct:
-            return _("\n  {} fixed {}").format(
-                green("✓"),
-                bold(item_id),
-            )
-        elif not status_before.correct and not status_after.correct:
-            return _("\n  {} failed to fix {}").format(
-                red("✘"),
-                bold(item_id),
-            )
+    elif result == Item.STATUS_SKIPPED:
+        return _("\n  {} {} skipped").format(
+            yellow("»"),
+            bold(item_id),
+        )
+    elif result == Item.STATUS_FIXED:
+        return _("\n  {} fixed {}").format(
+            green("✓"),
+            bold(item_id),
+        )
+    elif result == Item.STATUS_FAILED:
+        return _("\n  {} failed to fix {}").format(
+            red("✘"),
+            bold(item_id),
+        )
 
 
 def apply_items(node, workers=1, interactive=False):
@@ -339,61 +329,33 @@ def apply_items(node, workers=1, interactive=False):
                 for i in items:
                     if i.id == item_id:
                         item = i
-                return_value = msg['return_value']
-
-                # return_value has a rather complicated protocol:
-                #
-                # True: action succeeded
-                # False: action failed
-                # None: action skipped
-                # (None, None): DummyItem
-                # (before.skipped, None): item failed unless or wasn't
-                #                         triggered
-                # (!before.correct, after.skipped):
-                #                         item skipped manually
-                # (before.correct, None): item was OK
-                # (!before.correct, after.correct):
-                #                         item was fixed
-                # (!before.correct, !after.correct):
-                #                         failed to fix item
+                status_code = msg['return_value']
 
                 if interactive:
-                    formatted_result = format_item_result(return_value, item_id)
+                    formatted_result = format_item_result(status_code, item_id)
                     if formatted_result is not None:
                         print(formatted_result)
 
-                try:
-                    status_before, status_after = return_value
-                except TypeError:
-                    status_before = None
-                    status_after = None
-
-                if (
-                    return_value in (False, None) or
-                    (status_before is not None and status_before.skipped) or
-                    (status_after is not None and status_after.skipped) or
-                    (status_before is not None and not status_before.correct and
-                     status_after is not None and not status_after.correct)
+                if status_code in (
+                    Item.STATUS_FAILED,
+                    Item.STATUS_SKIPPED,
+                    Item.STATUS_ACTION_FAILED,
+                    Item.STATUS_ACTION_SKIPPED,
                 ):
                     # if an item fails or is skipped, all items that depend on
                     # it shall be removed from the queue
-                    items_with_deps, cancelled_items = remove_item_dependents(
+                    items_with_deps, skipped_items = remove_item_dependents(
                         items_with_deps,
                         item.id,
                     )
                     # since we removed them from further processing, we
                     # fake the status of the removed items so they still
                     # show up in the result statistics
-                    for cancelled_item in cancelled_items:
-                        if isinstance(cancelled_item, DummyItem):
+                    for skipped_item in skipped_items:
+                        if skipped_item.ITEM_TYPE_NAME == 'dummy':
                             continue
-                        elif isinstance(cancelled_item, Action):
-                            yield None
-                        else:
-                            cancelled_item_status = ItemStatus(correct=False)
-                            cancelled_item_status.skipped = True
-                            yield (cancelled_item_status, cancelled_item_status)
-                        print(format_item_result(None, cancelled_item))
+                        print(format_item_result(None, skipped_item))
+                        yield (skipped_item.id, skipped_item.STATUS_SKIPPED)
                 else:
                     # if an item is applied successfully, all
                     # dependencies on it can be removed from the
@@ -409,22 +371,17 @@ def apply_items(node, workers=1, interactive=False):
                 items_with_deps, items_without_deps = \
                     split_items_without_deps(items_with_deps + items_without_deps)
 
-                if (
-                    return_value is True or
-                    (status_before is not None and not status_before.correct and
-                     status_after is not None and status_after.correct)
-                ):
+                if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_OK):
                     # action succeeded or item was fixed
                     for triggered_item_id in item.triggers:
                         for item in items_with_deps + items_without_deps:
-                            if item_id == triggered_item_id:
+                            if item.id == triggered_item_id:
                                 item.has_been_triggered = True
                                 break
                         # TODO raise error when item not found
 
-                if return_value != (None, None):
-                    #   ^- ignore from dummy items
-                    yield return_value
+                if item.ITEM_TYPE_NAME != 'dummy':
+                    yield (item.id, status_code)
 
                 # Finally, we have a new job queue. Thus, tell all idle
                 # workers to ask for work again.

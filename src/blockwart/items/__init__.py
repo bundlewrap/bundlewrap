@@ -63,6 +63,13 @@ class Item(object):
     ITEM_TYPE_NAME = None
     PARALLEL_APPLY = True
     REQUIRED_ATTRIBUTES = []
+    STATUS_OK = 1
+    STATUS_FIXED = 2
+    STATUS_FAILED = 3
+    STATUS_SKIPPED = 4
+    STATUS_ACTION_OK = 5
+    STATUS_ACTION_FAILED = 6
+    STATUS_ACTION_SKIPPED = 7
 
     def __init__(self, bundle, name, attributes, skip_validation=False):
         self.attributes = {}
@@ -165,25 +172,28 @@ class Item(object):
             self.node,
             self,
         )
+        status_code = None
+        status_before = None
+        status_after = None
         start_time = datetime.now()
 
         if self.triggered and not self.has_been_triggered:
-            status_before = ItemStatus(skipped=True)
-        else:
+            LOG.debug("skipping {} because it wasn't triggered".format(self.id))
+            status_code = self.STATUS_SKIPPED
+
+        if status_code is None:
             status_before = self.get_status()
-        status_after = None
+            if self.unless and not status_before.correct:
+                unless_result = self.node.run(self.unless, may_fail=True)
+                if unless_result.return_code == 0:
+                    LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
+                    status_code = self.STATUS_SKIPPED
 
-        if self.unless and not status_before.correct:
-            unless_result = self.node.run(self.unless, may_fail=True)
-            if unless_result.return_code == 0:
-                LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
-                status_before.skipped = True
+        if status_code is None:
+            if status_before.correct:
+                status_code = self.STATUS_OK
 
-        if status_before.correct or \
-                not status_before.fixable or \
-                status_before.skipped:
-            status_after = copy(status_before)
-        else:
+        if status_code is None:
             if not interactive:
                 self.fix(status_before)
                 status_after = self.get_status()
@@ -197,20 +207,24 @@ class Item(object):
                                      interactive_default):
                     self.fix(status_before)
                     status_after = self.get_status()
+                    if status_after.correct:
+                        status_code = self.STATUS_FIXED
+                    else:
+                        status_code = self.STATUS_FAILED
                 else:
-                    status_after = copy(status_before)
-                    status_after.skipped = True
+                    status_code = self.STATUS_SKIPPED
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
             self.node,
             self,
             duration=datetime.now() - start_time,
+            status_code=status_code,
             status_before=status_before,
             status_after=status_after,
         )
 
-        return (status_before, status_after)
+        return status_code
 
     def ask(self, status):
         """
