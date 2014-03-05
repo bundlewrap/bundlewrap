@@ -529,9 +529,11 @@ def test_items(items, workers=1):
                 ))
 
 
-def verify_items(items, workers=1):
-    # make sure items is not a generator
-    items = list(items)
+def verify_items(items_with_actions, workers=1):
+    items = []
+    for item in items_with_actions:
+        if not item.ITEM_TYPE_NAME == 'action':
+            items.append(item)
 
     with WorkerPool(workers=workers) as worker_pool:
         while worker_pool.keep_running():
@@ -539,7 +541,6 @@ def verify_items(items, workers=1):
             if msg['msg'] == 'REQUEST_WORK':
                 if items:
                     item = items.pop()
-                    # TODO ignore actions
                     worker_pool.start_task(
                         msg['wid'],
                         item.get_status,
