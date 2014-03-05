@@ -39,11 +39,6 @@ def format_node_item_result(result):
     else:
         output.append(_("{} skipped").format(result.skipped))
 
-    if result.unfixable:
-        output.append(red(_("{} unfixable").format(result.unfixable)))
-    else:
-        output.append(_("{} unfixable").format(result.unfixable))
-
     if result.failed:
         output.append(red(_("{} failed").format(result.failed)))
     else:

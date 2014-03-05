@@ -41,14 +41,12 @@ class ItemStatus(object):
         self,
         correct=True,
         description="No description available.",
-        fixable=True,
         info=None,
         skipped=False,
     ):
         self.skipped = skipped
         self.correct = correct
         self.description = description
-        self.fixable = fixable
         self.info = {} if info is None else info
 
     def __repr__(self):

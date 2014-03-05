@@ -37,7 +37,6 @@ class ApplyResult(object):
         self.correct = 0
         self.fixed = 0
         self.skipped = 0
-        self.unfixable = 0
         self.failed = 0
         for result in item_results:
             if result is True:
@@ -52,8 +51,6 @@ class ApplyResult(object):
                     self.correct += 1
                 elif after.skipped:
                     self.skipped += 1
-                elif not before.fixable or not after.fixable:
-                    self.unfixable += 1
                 elif not before.correct and after.correct:
                     self.fixed += 1
                 elif not before.correct and not after.correct:
