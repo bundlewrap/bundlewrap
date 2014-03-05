@@ -81,6 +81,7 @@ class DummyItem(object):
         self.DEPENDS_STATIC = []
         self.depends = []
         self.item_type = item_type
+        self.ITEM_TYPE_NAME = 'dummy'
         self.triggers = []
         self._deps = []
 
@@ -308,7 +309,7 @@ def apply_items(node, workers=1, interactive=False):
                     item = items_without_deps.pop()
 
                     # TODO why doesnt isinstance work?
-                    if item.id.startswith("action:") and item.id != "action:":
+                    if item.ITEM_TYPE_NAME == 'action':
                         target = item.get_result
                     else:
                         target = item.apply
