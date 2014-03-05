@@ -21,7 +21,7 @@ class MockBundle(object):
 
 
 class MockItemStatus(object):
-    pass
+    skipped = False
 
 
 class MockItem(Item):
@@ -153,7 +153,7 @@ class ApplyResultTest(TestCase):
         item_results = (
             (ItemStatus(correct=True), ItemStatus(correct=True)),
         )
-        output_result = ApplyResult(MagicMock(), item_results, [])
+        output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 1)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.skipped, 0)
@@ -164,7 +164,7 @@ class ApplyResultTest(TestCase):
         item_results = (
             (ItemStatus(correct=False), ItemStatus(correct=True)),
         )
-        output_result = ApplyResult(MagicMock(), item_results, [])
+        output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 1)
         self.assertEqual(output_result.skipped, 0)
@@ -177,7 +177,7 @@ class ApplyResultTest(TestCase):
         item_results = (
             (ItemStatus(correct=False), after),
         )
-        output_result = ApplyResult(MagicMock(), item_results, [])
+        output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.skipped, 1)
@@ -189,7 +189,7 @@ class ApplyResultTest(TestCase):
             (ItemStatus(correct=False), ItemStatus(correct=False,
                                                    fixable=False)),
         )
-        output_result = ApplyResult(MagicMock(), item_results, [])
+        output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.skipped, 0)
@@ -200,7 +200,7 @@ class ApplyResultTest(TestCase):
         item_results = (
             (ItemStatus(correct=False), ItemStatus(correct=False)),
         )
-        output_result = ApplyResult(MagicMock(), item_results, [])
+        output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 0)
         self.assertEqual(output_result.fixed, 0)
         self.assertEqual(output_result.skipped, 0)
@@ -212,7 +212,7 @@ class ApplyResultTest(TestCase):
             (ItemStatus(correct=True), ItemStatus(correct=False)),
         )
         with self.assertRaises(RuntimeError):
-            ApplyResult(MagicMock(), item_results, [])
+            ApplyResult(MagicMock(), item_results)
 
 
 class FlattenDependenciesTest(TestCase):
@@ -484,9 +484,8 @@ class NodeTest(TestCase):
     """
     @patch('blockwart.node.ApplyResult')
     @patch('blockwart.node.NodeLock')
-    @patch('blockwart.node.run_actions')
     @patch('blockwart.node.apply_items')
-    def test_apply(self, apply_items, run_actions, NodeLock, ApplyResult):
+    def test_apply(self, apply_items, NodeLock, ApplyResult):
         repo = Repository()
         n = Node("node1", {})
         repo.add_node(n)
@@ -496,7 +495,6 @@ class NodeTest(TestCase):
         NodeLock.__exit__ = lambda x: x
         self.assertEqual(n.apply(), result)
         self.assertEqual(apply_items.call_count, 1)
-        self.assertEqual(run_actions.call_count, 4)
         ApplyResult.assert_called_once()
 
     def test_bundles(self):

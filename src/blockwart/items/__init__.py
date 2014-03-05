@@ -181,7 +181,9 @@ class Item(object):
                 LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
                 status_before.skipped = True
 
-        if status_before.correct or not status_before.fixable:
+        if status_before.correct or \
+                not status_before.fixable or \
+                status_before.skipped:
             status_after = copy(status_before)
         else:
             if not interactive:

@@ -13,7 +13,7 @@ class FakeNode(object):
 
     def apply(self, interactive=False, workers=4, force=False):
         assert interactive
-        result = ApplyResult(self, (), ())
+        result = ApplyResult(self, ())
         result.start = datetime(2013, 8, 10, 0, 0)
         result.end = datetime(2013, 8, 10, 0, 1)
         return result

@@ -20,6 +20,7 @@ class ApplyTest(TestCase):
         status_before = MagicMock()
         status_before.correct = False
         status_before.fixable = True
+        status_before.skipped = False
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.fix = MagicMock()
@@ -34,6 +35,7 @@ class ApplyTest(TestCase):
         status_before = MagicMock()
         status_before.correct = False
         status_before.fixable = True
+        status_before.skipped = False
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.ask = MagicMock(return_value="?")
@@ -47,6 +49,7 @@ class ApplyTest(TestCase):
         status_before = MagicMock()
         status_before.correct = False
         status_before.fixable = True
+        status_before.skipped = False
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.ask = MagicMock(return_value="?")
@@ -59,6 +62,7 @@ class ApplyTest(TestCase):
     def test_correct(self):
         status_before = MagicMock()
         status_before.correct = True
+        status_before.skipped = False
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.fix = MagicMock()
@@ -71,6 +75,7 @@ class ApplyTest(TestCase):
         status_before = MagicMock()
         status_before.correct = False
         status_before.fixable = False
+        status_before.skipped = False
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.fix = MagicMock()
@@ -84,6 +89,7 @@ class ApplyTest(TestCase):
     def test_unless(self):
         status_before = MagicMock()
         status_before.correct = False
+        status_before.skipped = False
         item = MockItem(
             MagicMock(),
             "item1",
@@ -99,12 +105,12 @@ class ApplyTest(TestCase):
 
         before, after = item.apply()
         self.assertFalse(item.fix.called)
-        self.assertTrue(after.correct)
-        self.assertEqual(before.correct, after.correct)
+        self.assertTrue(after.skipped)
 
     def test_unless_fails(self):
         status_before = MagicMock()
         status_before.correct = False
+        status_before.skipped = False
         item = MockItem(
             MagicMock(),
             "item1",
