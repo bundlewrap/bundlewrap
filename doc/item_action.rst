@@ -1,4 +1,4 @@
-.. _action:
+.. _item_action:
 
 #######
 Actions
@@ -6,7 +6,7 @@ Actions
 
 .. toctree::
 
-Actions will be run on every ``bw apply``. They differ from items in that they cannot be "correct" in the first place. They can only succeed or fail.
+Actions will be run on every ``bw apply``. They differ from regular items in that they cannot be "correct" in the first place. They can only succeed or fail.
 
 .. code-block:: python
 
@@ -15,7 +15,6 @@ Actions will be run on every ``bw apply``. They differ from items in that they c
             'command': "uname",
             'expected_return_code': 0,
             'expected_stdout': "Linux\n",
-            'timing': "pre",
         },
     }
 
@@ -55,28 +54,8 @@ Same as ``expected_stdout``, but with stderr.
 ``interactive``
 +++++++++++++++
 
-If set to ``True``, this action will be skipped in non-interactive mode. If set to ``False``, this action will always be executed without asking (even in interactive mode).
+If set to ``True``, this action will be skipped in non-interactive mode. If set to ``False``, this action will always be executed without asking (even in interactive mode). Defaults to ``None``.
 
 .. warning::
 
 	Think hard before setting this to ``False``. People might assume that interactive mode won't do anything without their consent.
-
-|
-
-``timing``
-++++++++++
-
-Acceptable values are ``"pre"``, ``"post"`` or ``"triggered"``.
-
-Choose ``pre`` or ``post`` depending on whether you want the action to be run before or after items are applied.
-
-When set to ``triggered``, the action will only be executed by :ref:`action_triggers`.
-
-Defaults to ``"pre"``.
-
-|
-
-``unless``
-++++++++++
-
-Works just like the ``unless`` attribute :ref:`on items <unless>`.
