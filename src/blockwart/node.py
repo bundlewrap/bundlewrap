@@ -51,7 +51,7 @@ class ApplyResult(object):
             elif result == Item.STATUS_SKIPPED:
                 self.skipped += 1
             elif result == Item.STATUS_FAILED:
-                self.skipped += 1
+                self.failed += 1
             else:
                 raise RuntimeError(_(
                     "can't make sense of results for {} on {}: {}"
