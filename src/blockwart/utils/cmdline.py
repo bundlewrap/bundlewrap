@@ -1,5 +1,6 @@
 from ..exceptions import NoSuchNode, NoSuchGroup, UsageException
-from ..utils.text import mark_for_translation as _
+from . import names
+from .text import mark_for_translation as _
 
 
 def get_target_nodes(repo, target_string):
@@ -17,10 +18,18 @@ def get_target_nodes(repo, target_string):
         if name.startswith("bundle:"):
             bundle_name = name.split(":", 1)[1]
             for node in repo.nodes:
-                for bundle in node.bundles:
-                    if bundle.name == bundle_name:
-                        targets.append(node)
-                        break
+                if bundle_name in names(node.bundles):
+                    targets.append(node)
+        elif name.startswith("!bundle:"):
+            bundle_name = name.split(":", 1)[1]
+            for node in repo.nodes:
+                if bundle_name not in names(node.bundles):
+                    targets.append(node)
+        elif name.startswith("!group:"):
+            group_name = name.split(":", 1)[1]
+            for node in repo.nodes:
+                if group_name not in names(node.groups):
+                    targets.append(node)
         else:
             try:
                 targets.append(repo.get_node(name))

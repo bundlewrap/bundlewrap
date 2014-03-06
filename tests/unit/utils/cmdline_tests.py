@@ -85,3 +85,41 @@ class GetTargetNodesTest(TestCase):
             cmdline.get_target_nodes(repo, "bundle:goodbundle"),
             [node1],
         )
+
+    def test_negated_bundle(self):
+        bundle1 = MagicMock()
+        bundle1.name = "goodbundle"
+        bundle2 = MagicMock()
+        bundle2.name = "badbundle"
+
+        node1 = MagicMock()
+        node1.bundles = (bundle1,)
+        node2 = MagicMock()
+        node2.bundles = (bundle2,)
+
+        repo = MagicMock()
+        repo.nodes = (node1, node2)
+
+        self.assertEqual(
+            cmdline.get_target_nodes(repo, "!bundle:badbundle"),
+            [node1],
+        )
+
+    def test_negated_group(self):
+        group1 = MagicMock()
+        group1.name = "goodgroup"
+        group2 = MagicMock()
+        group2.name = "badgroup"
+
+        node1 = MagicMock()
+        node1.groups = (group1,)
+        node2 = MagicMock()
+        node2.groups = (group2,)
+
+        repo = MagicMock()
+        repo.nodes = (node1, node2)
+
+        self.assertEqual(
+            cmdline.get_target_nodes(repo, "!group:badgroup"),
+            [node1],
+        )

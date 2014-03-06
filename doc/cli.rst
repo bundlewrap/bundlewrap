@@ -34,6 +34,10 @@ Unsurprisingly, the ``run`` subcommand is used to run commands on nodes. As with
 
 |
 
+Negation is also possible for bundles and groups. ``!bundle:foo`` will add all nodes without the foo bundle, while ``!group:foo`` will add all nodes that aren't in the foo group.
+
+|
+
 ``bw nodes`` and ``bw groups``
 ------------------------------
 
