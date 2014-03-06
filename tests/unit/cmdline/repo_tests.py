@@ -81,10 +81,14 @@ class PlotTest(TestCase):
         bundle1 = MagicMock()
         bundle1.name = "bundle1"
         bundle1.items = [item1, item2, item3]
+        for item in bundle1.items:
+            item.bundle = bundle1
 
         bundle2 = MagicMock()
         bundle2.name = "bundle2"
         bundle2.items = [item4]
+        for item in bundle2.items:
+            item.bundle = bundle2
 
         node = MagicMock()
         node.bundles = [bundle1, bundle2]
@@ -120,6 +124,7 @@ class PlotTest(TestCase):
             "subgraph cluster_0\n"
             "{\n"
             "label = \"bundle1\"\n"
+            "\"bundle:bundle1\"\n"
             "\"type1:item1\"\n"
             "\"type1:item2\"\n"
             "\"type2:item1\"\n"
@@ -127,8 +132,13 @@ class PlotTest(TestCase):
             "subgraph cluster_1\n"
             "{\n"
             "label = \"bundle2\"\n"
+            "\"bundle:bundle2\"\n"
             "\"type3:item1\"\n"
             "}\n"
+            "\"bundle:bundle2\" -> \"type3:item1\" [color=\"#6BB753\",penwidth=2]\n"
+            "\"bundle:bundle1\" -> \"type1:item1\" [color=\"#6BB753\",penwidth=2]\n"
+            "\"bundle:bundle1\" -> \"type1:item2\" [color=\"#6BB753\",penwidth=2]\n"
+            "\"bundle:bundle1\" -> \"type2:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type1:\" -> \"type1:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type1:\" -> \"type1:item2\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type3:\" -> \"type3:item1\" [color=\"#6BB753\",penwidth=2]\n"

@@ -8,7 +8,8 @@ from sys import exit
 from .. import VERSION_STRING
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
-from ..node import flatten_dependencies, inject_concurrency_blockers, inject_dummy_items
+from ..node import flatten_dependencies, inject_bundle_items, inject_concurrency_blockers, \
+    inject_dummy_items, inject_trigger_dependencies
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _, red
@@ -69,6 +70,7 @@ def bw_repo_plot(repo, args):
         bundle_number += 1
         yield "{"
         yield "label = \"{}\"".format(bundle.name)
+        yield "\"bundle:{}\"".format(bundle.name)
         for item in bundle.items:
             yield "\"{}\"".format(item.id)
         yield "}"
@@ -83,6 +85,8 @@ def bw_repo_plot(repo, args):
         item._deps += list(item.get_auto_deps(items))
 
     items = inject_dummy_items(items)
+    items = inject_bundle_items(items)
+    items = inject_trigger_dependencies(items)
     items = flatten_dependencies(items)
     items = inject_concurrency_blockers(items)
 
