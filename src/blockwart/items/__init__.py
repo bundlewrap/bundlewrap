@@ -24,10 +24,16 @@ ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
 
 
-def unpickle_item_class(class_name, bundle, name, attributes):
+def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered):
     for item_class in bundle.node.repo.item_classes:
         if item_class.__name__ == class_name:
-            return item_class(bundle, name, attributes, skip_validation=True)
+            return item_class(
+                bundle,
+                name,
+                attributes,
+                has_been_triggered=has_been_triggered,
+                skip_validation=True,
+            )
     raise RuntimeError(_("unable to unpickle {}").format(class_name))
 
 
@@ -71,10 +77,10 @@ class Item(object):
     STATUS_ACTION_FAILED = 6
     STATUS_ACTION_SKIPPED = 7
 
-    def __init__(self, bundle, name, attributes, skip_validation=False):
+    def __init__(self, bundle, name, attributes, has_been_triggered=False, skip_validation=False):
         self.attributes = {}
         self.bundle = bundle
-        self.has_been_triggered = False
+        self.has_been_triggered = has_been_triggered
         self.item_dir = join(bundle.bundle_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
@@ -117,6 +123,7 @@ class Item(object):
                 self.bundle,
                 self.name,
                 attrs,
+                self.has_been_triggered,
             ),
         )
 
