@@ -12,9 +12,8 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import BundleError, ItemDependencyError, NodeAlreadyLockedException, \
-    RepositoryError
-from .items import ItemStatus
+from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
+from .items import Item
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
@@ -28,41 +27,35 @@ class ApplyResult(object):
     """
     Holds information about an apply run for a node.
     """
-    def __init__(self, node, item_results, action_results):
+    def __init__(self, node, item_results):
         self.node_name = node.name
-        self.correct = 0
-        self.fixed = 0
-        self.skipped = 0
-        self.unfixable = 0
-        self.failed = 0
-        for before, after in item_results:
-            if before.correct and after.correct:
-                self.correct += 1
-            elif after.skipped:
-                self.skipped += 1
-            elif not before.fixable or not after.fixable:
-                self.unfixable += 1
-            elif not before.correct and after.correct:
-                self.fixed += 1
-            elif not before.correct and not after.correct:
-                self.failed += 1
-            else:
-                raise RuntimeError(_(
-                    "can't make sense of item results for node '{}'\n"
-                    "before: {}\n"
-                    "after: {}"
-                ).format(self.node_name, before, after))
-
         self.actions_ok = 0
         self.actions_failed = 0
         self.actions_skipped = 0
-        for result in action_results:
-            if result is True:
+        self.correct = 0
+        self.fixed = 0
+        self.skipped = 0
+        self.failed = 0
+
+        for item_id, result in item_results:
+            if result == Item.STATUS_ACTION_OK:
                 self.actions_ok += 1
-            elif result is False:
+            elif result == Item.STATUS_ACTION_FAILED:
                 self.actions_failed += 1
-            else:
+            elif result == Item.STATUS_ACTION_SKIPPED:
                 self.actions_skipped += 1
+            elif result == Item.STATUS_OK:
+                self.correct += 1
+            elif result == Item.STATUS_FIXED:
+                self.fixed += 1
+            elif result == Item.STATUS_SKIPPED:
+                self.skipped += 1
+            elif result == Item.STATUS_FAILED:
+                self.failed += 1
+            else:
+                raise RuntimeError(_(
+                    "can't make sense of results for {} on {}: {}"
+                ).format(item_id, self.node_name, result))
 
         self.start = None
         self.end = None
@@ -80,6 +73,8 @@ class DummyItem(object):
         self.DEPENDS_STATIC = []
         self.depends = []
         self.item_type = item_type
+        self.ITEM_TYPE_NAME = 'dummy'
+        self.triggers = []
         self._deps = []
 
     def __repr__(self):
@@ -222,8 +217,54 @@ def inject_concurrency_blockers(items):
     return items
 
 
+def inject_trigger_dependencies(items):
+    """
+    Injects dependencies from all triggered items to their triggering
+    items.
+    """
+    for item in items:
+        for triggered_item_id in item.triggers:
+            for triggered_item in items:
+                if triggered_item.id == triggered_item_id:
+                    triggered_item._deps.append(item.id)
+                    break
+    return items
+
+
+def format_item_result(result, item_id):
+    if result == Item.STATUS_ACTION_FAILED:
+        return _("\n  {} {} failed").format(
+            red("✘"),
+            bold(item_id),
+        )
+    elif result == Item.STATUS_ACTION_OK:
+        return _("\n  {} {} succeeded").format(
+            green("✓"),
+            bold(item_id),
+        )
+    elif result == Item.STATUS_ACTION_SKIPPED:
+        return _("\n  {} {} skipped").format(
+            yellow("»"),
+            bold(item_id),
+        )
+    elif result == Item.STATUS_SKIPPED:
+        return _("\n  {} {} skipped").format(
+            yellow("»"),
+            bold(item_id),
+        )
+    elif result == Item.STATUS_FIXED:
+        return _("\n  {} fixed {}").format(
+            green("✓"),
+            bold(item_id),
+        )
+    elif result == Item.STATUS_FAILED:
+        return _("\n  {} failed to fix {}").format(
+            red("✘"),
+            bold(item_id),
+        )
+
+
 def apply_items(node, workers=1, interactive=False):
-    # make sure items is not a generator
     items = list(node.items)
 
     for item in items:
@@ -234,6 +275,7 @@ def apply_items(node, workers=1, interactive=False):
         item._deps += list(item.get_auto_deps(items))
 
     items = inject_dummy_items(items)
+    items = inject_trigger_dependencies(items)
     items = flatten_dependencies(items)
     items = inject_concurrency_blockers(items)
 
@@ -247,15 +289,22 @@ def apply_items(node, workers=1, interactive=False):
         # worker_pool -- it will tell us whether we must keep going:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
+
             if msg['msg'] == 'REQUEST_WORK':
                 if items_without_deps:
                     # There's work! Do it.
                     item = items_without_deps.pop()
 
+                    # TODO why doesnt isinstance work?
+                    if item.ITEM_TYPE_NAME == 'action':
+                        target = item.get_result
+                    else:
+                        target = item.apply
+
                     # start_task() increases jobs_open.
                     worker_pool.start_task(
                         msg['wid'],
-                        item.apply,
+                        target,
                         task_id=item.id,
                         kwargs={'interactive': interactive},
                     )
@@ -269,6 +318,7 @@ def apply_items(node, workers=1, interactive=False):
                         # No work, no outstanding jobs. We're done.
                         # quit() decreases workers_alive.
                         worker_pool.quit(msg['wid'])
+
             elif msg['msg'] == 'FINISHED_WORK':
                 # worker_pool automatically decreases jobs_open when it
                 # sees a 'FINISHED_WORK' message.
@@ -279,45 +329,33 @@ def apply_items(node, workers=1, interactive=False):
                 for i in items:
                     if i.id == item_id:
                         item = i
-                status_before, status_after = msg['return_value']
+                status_code = msg['return_value']
 
-                # This worker is now free again. He will ask for new
-                # work on his own.
+                if interactive:
+                    formatted_result = format_item_result(status_code, item_id)
+                    if formatted_result is not None:
+                        print(formatted_result)
 
-                if (
-                    status_before is None or
-                    status_before.correct or
-                    status_after.skipped or
-                    not interactive
+                if status_code in (
+                    Item.STATUS_FAILED,
+                    Item.STATUS_SKIPPED,
+                    Item.STATUS_ACTION_FAILED,
+                    Item.STATUS_ACTION_SKIPPED,
                 ):
-                    pass
-                elif status_after.correct:
-                    print(_("\n  {} fixed {}").format(
-                        green("✓"),
-                        bold(item.id),
-                    ))
-                else:
-                    print(_("\n  {} failed to fix {}").format(
-                        red("✘"),
-                        bold(item.id),
-                    ))
-
-                if status_after is not None and not status_after.correct:
                     # if an item fails or is skipped, all items that depend on
                     # it shall be removed from the queue
-                    items_with_deps, cancelled_items = remove_item_dependents(
+                    items_with_deps, skipped_items = remove_item_dependents(
                         items_with_deps,
                         item.id,
                     )
                     # since we removed them from further processing, we
                     # fake the status of the removed items so they still
                     # show up in the result statistics
-                    for cancelled_item in cancelled_items:
-                        if isinstance(cancelled_item, DummyItem):
+                    for skipped_item in skipped_items:
+                        if skipped_item.ITEM_TYPE_NAME == 'dummy':
                             continue
-                        cancelled_item_status = ItemStatus(correct=False)
-                        cancelled_item_status.skipped = True
-                        yield (cancelled_item_status, cancelled_item_status)
+                        print(format_item_result(None, skipped_item))
+                        yield (skipped_item.id, skipped_item.STATUS_SKIPPED)
                 else:
                     # if an item is applied successfully, all
                     # dependencies on it can be removed from the
@@ -333,14 +371,17 @@ def apply_items(node, workers=1, interactive=False):
                 items_with_deps, items_without_deps = \
                     split_items_without_deps(items_with_deps + items_without_deps)
 
-                if not (status_before is None and status_after is None):
-                    #   ^- ignore from dummy items
+                if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_OK):
+                    # action succeeded or item was fixed
+                    for triggered_item_id in item.triggers:
+                        for item in items_with_deps + items_without_deps:
+                            if item.id == triggered_item_id:
+                                item.has_been_triggered = True
+                                break
+                        # TODO raise error when item not found
 
-                    if not status_before.correct and status_after.correct:
-                        for triggered_action in item.triggers:
-                            node.trigger_action(triggered_action)
-
-                    yield (status_before, status_after)
+                if item.ITEM_TYPE_NAME != 'dummy':
+                    yield (item.id, status_code)
 
                 # Finally, we have a new job queue. Thus, tell all idle
                 # workers to ask for work again.
@@ -418,54 +459,6 @@ def remove_item_dependents(items, dep):
     return (items, removed_items + all_recursively_removed_items)
 
 
-def run_actions(actions, timing, workers=1, interactive=False):
-    # filter actions with wrong timing
-    actions = [action for action in actions if action.timing == timing]
-
-    if timing == "triggered":
-        actions = [action for action in actions if action.triggered]
-
-    # Unlike Node.apply_items, "actions" is a simple list of jobs that
-    # have to be done. No fancy stuff such as dependencies. Thus, the
-    # code's a lot shorter.
-    with WorkerPool(workers=workers) as worker_pool:
-        while worker_pool.keep_running():
-            msg = worker_pool.get_event()
-            if msg['msg'] == 'REQUEST_WORK':
-                if actions:
-                    action = actions.pop()
-                    worker_pool.start_task(
-                        msg['wid'],
-                        action.get_result,
-                        task_id=action.name,
-                        kwargs={'interactive': interactive},
-                    )
-                else:
-                    # Just as in real life: If there's no job left, this
-                    # worker must die.
-                    worker_pool.quit(msg['wid'])
-            elif msg['msg'] == 'FINISHED_WORK':
-                action_name = msg['task_id']
-                result = msg['return_value']
-                if interactive:
-                    if result is False:
-                        print(_("\n  {} action:{} failed").format(
-                            red("✘"),
-                            bold(action_name),
-                        ))
-                    elif result is True:
-                        print(_("\n  {} action:{} succeeded").format(
-                            green("✓"),
-                            bold(action_name),
-                        ))
-                    elif result is None:
-                        print(_("\n  {} action:{} skipped").format(
-                            yellow("»"),
-                            bold(action_name),
-                        ))
-                yield result
-
-
 def test_items(items, workers=1):
     # make sure items is not a generator
     items = list(items)
@@ -491,9 +484,11 @@ def test_items(items, workers=1):
                 ))
 
 
-def verify_items(items, workers=1):
-    # make sure items is not a generator
-    items = list(items)
+def verify_items(items_with_actions, workers=1):
+    items = []
+    for item in items_with_actions:
+        if not item.ITEM_TYPE_NAME == 'action':
+            items.append(item)
 
     with WorkerPool(workers=workers) as worker_pool:
         while worker_pool.keep_running():
@@ -542,12 +537,6 @@ class Node(object):
 
     def __repr__(self):
         return "<Node '{}'>".format(self.name)
-
-    @property
-    def actions(self):
-        for bundle in self.bundles:
-            for action in bundle.actions:
-                yield action
 
     @cached_property
     def bundles(self):
@@ -603,31 +592,14 @@ class Node(object):
         )
 
         start = datetime.now()
-        action_results = []
         worker_count = 1 if interactive else workers
         try:
             with NodeLock(self, interactive, ignore=force):
-                action_results += list(run_actions(
-                    self.actions,
-                    'pre',
-                    workers=worker_count,
-                    interactive=interactive,
-                ))
-
                 item_results = list(apply_items(
                     self,
                     workers=worker_count,
                     interactive=interactive,
                 ))
-
-                for action_type in ('triggered', 'interactive', 'post'):
-                    action_results += list(run_actions(
-                        self.actions,
-                        action_type,
-                        workers=worker_count,
-                        interactive=interactive,
-                    ))
-
         except NodeAlreadyLockedException as e:
             if not interactive:
                 LOG.error(_("Node '{node}' already locked: {info}").format(
@@ -635,7 +607,7 @@ class Node(object):
                     info=e.args,
                 ))
             item_results = []
-        result = ApplyResult(self, item_results, action_results)
+        result = ApplyResult(self, item_results)
         result.start = start
         result.end = datetime.now()
 
@@ -673,13 +645,6 @@ class Node(object):
             self.items,
             workers=workers,
         )
-
-    def trigger_action(self, action_name):
-        for action in self.actions:
-            if action.name == action_name:
-                action.triggered = True
-                return
-        raise BundleError(_("triggered action '{}' was not found").format(action_name))
 
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
         return operations.upload(

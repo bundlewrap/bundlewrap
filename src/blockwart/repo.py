@@ -61,8 +61,6 @@ nodes = {
     """),
 }
 
-RESERVED_ITEM_TYPE_NAMES = ("actions",)
-
 
 def groups_from_file(filepath):
     """
@@ -190,12 +188,7 @@ def items_from_path(itempath):
                     continue
                 try:
                     if issubclass(obj, items.Item):
-                        if obj.ITEM_TYPE_NAME in RESERVED_ITEM_TYPE_NAMES:
-                            raise RepositoryError(_(
-                                "'{}' is a reserved item type name"
-                            ).format(obj.ITEM_TYPE_NAME))
-                        else:
-                            yield obj
+                        yield obj
                 except TypeError:
                     pass
 

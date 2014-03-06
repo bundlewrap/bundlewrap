@@ -7,7 +7,7 @@ Bundles
 .. toctree::
 	:hidden:
 
-	actions
+	item_action
 	item_directory
 	item_file
 	item_group
@@ -63,7 +63,7 @@ This table lists all item types included in Blockwart along with the bundle attr
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | Type name                             | Bundle attribute | Purpose                                                                                |
 +=======================================+==================+========================================================================================+
-| :doc:`action <actions>`               | ``actions``      | While not technically an item, actions allow you to run commands on every ``bw apply`` |
+| :doc:`action <item_action>`           | ``actions``      | Actions allow you to run commands on every ``bw apply``                                |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`directory <item_directory>`     | ``directories``  | Manages permissions and ownership for directories                                      |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
@@ -119,12 +119,12 @@ The first item (``item1``, specific attributes have been omitted) depends on a f
 
 |
 
-.. _action_triggers:
+.. _triggers:
 
-Action triggers
-###############
+Triggers
+########
 
-In some scenarios, you may want to execute an :ref:`action <action>` only when an item is fixed (e.g. restart a daemon after a config file has changed or run ``postmap`` after updating an alias file). To do this, Blockwart has the builtin atttribute ``triggers``. You can use it to point to any action that has its ``timing`` attribute set to ``triggered``.
+In some scenarios, you may want to execute an :ref:`action <item_action>` only when an item is fixed (e.g. restart a daemon after a config file has changed or run ``postmap`` after updating an alias file). To do this, Blockwart has the builtin atttribute ``triggers``. You can use it to point to any item that has its ``triggered`` attribute set to ``True``. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).
 
 .. code-block:: python
 
@@ -138,9 +138,9 @@ In some scenarios, you may want to execute an :ref:`action <action>` only when a
 	}
 
 	actions = {
-	    "restart_daemon": {
-	    	"command": "service daemon restart",
-	    	"timing": "triggered",
+	    'restart_daemon': {
+	    	'command': "service daemon restart",
+	    	'triggered': True,
 	    },
 	}
 

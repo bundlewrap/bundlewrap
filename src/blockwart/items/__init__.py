@@ -15,18 +15,25 @@ from blockwart.utils.text import bold, wrap_question
 from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
-    "depends": [],
-    "triggers": [],
-    "unless": "",
+    'depends': [],
+    'triggered': False,
+    'triggers': [],
+    'unless': "",
 }
 ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
 
 
-def unpickle_item_class(class_name, bundle, name, attributes):
+def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered):
     for item_class in bundle.node.repo.item_classes:
         if item_class.__name__ == class_name:
-            return item_class(bundle, name, attributes, skip_validation=True)
+            return item_class(
+                bundle,
+                name,
+                attributes,
+                has_been_triggered=has_been_triggered,
+                skip_validation=True,
+            )
     raise RuntimeError(_("unable to unpickle {}").format(class_name))
 
 
@@ -40,13 +47,12 @@ class ItemStatus(object):
         self,
         correct=True,
         description="No description available.",
-        fixable=True,
         info=None,
+        skipped=False,
     ):
-        self.skipped = False
+        self.skipped = skipped
         self.correct = correct
         self.description = description
-        self.fixable = fixable
         self.info = {} if info is None else info
 
     def __repr__(self):
@@ -63,10 +69,18 @@ class Item(object):
     ITEM_TYPE_NAME = None
     PARALLEL_APPLY = True
     REQUIRED_ATTRIBUTES = []
+    STATUS_OK = 1
+    STATUS_FIXED = 2
+    STATUS_FAILED = 3
+    STATUS_SKIPPED = 4
+    STATUS_ACTION_OK = 5
+    STATUS_ACTION_FAILED = 6
+    STATUS_ACTION_SKIPPED = 7
 
-    def __init__(self, bundle, name, attributes, skip_validation=False):
+    def __init__(self, bundle, name, attributes, has_been_triggered=False, skip_validation=False):
         self.attributes = {}
         self.bundle = bundle
+        self.has_been_triggered = has_been_triggered
         self.item_dir = join(bundle.bundle_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
@@ -109,6 +123,7 @@ class Item(object):
                 self.bundle,
                 self.name,
                 attrs,
+                self.has_been_triggered,
             ),
         )
 
@@ -164,20 +179,28 @@ class Item(object):
             self.node,
             self,
         )
+        status_code = None
+        status_before = None
+        status_after = None
         start_time = datetime.now()
 
-        status_before = self.get_status()
-        status_after = None
+        if self.triggered and not self.has_been_triggered:
+            LOG.debug("skipping {} because it wasn't triggered".format(self.id))
+            status_code = self.STATUS_SKIPPED
 
-        if self.unless and not status_before.correct:
-            unless_result = self.node.run(self.unless, may_fail=True)
-            if unless_result.return_code == 0:
-                LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
-                status_before.correct = True
+        if status_code is None:
+            status_before = self.get_status()
+            if self.unless and not status_before.correct:
+                unless_result = self.node.run(self.unless, may_fail=True)
+                if unless_result.return_code == 0:
+                    LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
+                    status_code = self.STATUS_SKIPPED
 
-        if status_before.correct or not status_before.fixable:
-            status_after = copy(status_before)
-        else:
+        if status_code is None:
+            if status_before.correct:
+                status_code = self.STATUS_OK
+
+        if status_code is None:
             if not interactive:
                 self.fix(status_before)
                 status_after = self.get_status()
@@ -191,20 +214,24 @@ class Item(object):
                                      interactive_default):
                     self.fix(status_before)
                     status_after = self.get_status()
+                    if status_after.correct:
+                        status_code = self.STATUS_FIXED
+                    else:
+                        status_code = self.STATUS_FAILED
                 else:
-                    status_after = copy(status_before)
-                    status_after.skipped = True
+                    status_code = self.STATUS_SKIPPED
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
             self.node,
             self,
             duration=datetime.now() - start_time,
+            status_code=status_code,
             status_before=status_before,
             status_after=status_after,
         )
 
-        return (status_before, status_after)
+        return status_code
 
     def ask(self, status):
         """
