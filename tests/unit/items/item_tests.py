@@ -19,14 +19,11 @@ class ApplyTest(TestCase):
     def test_noninteractive(self):
         status_before = MagicMock()
         status_before.correct = False
-        status_before.fixable = True
         status_before.skipped = False
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.fix = MagicMock()
-        before, after = item.apply(interactive=False)
-        self.assertEqual(before, status_before)
-        self.assertEqual(after, status_before)
+        item.apply(interactive=False)
         self.assertEqual(item.fix.call_count, 1)
         self.assertEqual(item.get_status.call_count, 2)
 
@@ -54,10 +51,10 @@ class ApplyTest(TestCase):
         item.get_status = MagicMock(return_value=status_before)
         item.ask = MagicMock(return_value="?")
         item.fix = MagicMock()
-        before, after = item.apply(interactive=True)
+        result = item.apply(interactive=True)
         self.assertFalse(item.fix.called)
         ask_interactively.assert_called_once()
-        self.assertTrue(after.aborted_interactively)
+        self.assertEqual(result, Item.STATUS_SKIPPED)
 
     def test_correct(self):
         status_before = MagicMock()
@@ -66,25 +63,9 @@ class ApplyTest(TestCase):
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.get_status = MagicMock(return_value=status_before)
         item.fix = MagicMock()
-        before, after = item.apply()
+        result = item.apply()
         self.assertFalse(item.fix.called)
-        self.assertTrue(after.correct)
-        self.assertEqual(before.correct, after.correct)
-
-    def test_not_fixable(self):
-        status_before = MagicMock()
-        status_before.correct = False
-        status_before.fixable = False
-        status_before.skipped = False
-        item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
-        item.get_status = MagicMock(return_value=status_before)
-        item.fix = MagicMock()
-        before, after = item.apply()
-        self.assertFalse(item.fix.called)
-        self.assertFalse(after.correct)
-        self.assertEqual(before.correct, after.correct)
-        self.assertFalse(after.fixable)
-        self.assertEqual(before.fixable, after.fixable)
+        self.assertEqual(result, Item.STATUS_OK)
 
     def test_unless(self):
         status_before = MagicMock()
@@ -103,9 +84,9 @@ class ApplyTest(TestCase):
         run_result.return_code = 0
         item.node.run.return_value = run_result
 
-        before, after = item.apply()
+        result = item.apply()
         self.assertFalse(item.fix.called)
-        self.assertTrue(after.skipped)
+        self.assertEqual(result, Item.STATUS_SKIPPED)
 
     def test_unless_fails(self):
         status_before = MagicMock()
@@ -124,7 +105,7 @@ class ApplyTest(TestCase):
         run_result.return_code = 1
         item.node.run.return_value = run_result
 
-        before, after = item.apply()
+        item.apply()
         self.assertTrue(item.fix.called)
 
 class InitTest(TestCase):

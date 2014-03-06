@@ -117,23 +117,38 @@ class ActionGetResultTest(TestCase):
         bundle.node.run.return_value = unless_result
 
         action = Action(bundle, "action", { 'command': "/bin/true", 'unless': "true" })
-        self.assertEqual(action.get_result(), None)
+        self.assertEqual(
+            action.get_result(),
+            Action.STATUS_ACTION_SKIPPED,
+        )
 
     def test_skip_noninteractive(self):
         action = Action(MagicMock(), "action", { 'command': "/bin/true", 'interactive': True })
-        self.assertEqual(action.get_result(interactive=False), None)
+        self.assertEqual(
+            action.get_result(interactive=False),
+            Action.STATUS_ACTION_SKIPPED,
+        )
 
     @patch('blockwart.items.actions.ask_interactively', return_value=False)
     def test_declined_interactive(self, ask_interactively):
         action = Action(MagicMock(), "action", { 'command': "/bin/true" })
-        self.assertEqual(action.get_result(interactive=True), None)
+        self.assertEqual(
+            action.get_result(interactive=True),
+            Action.STATUS_ACTION_SKIPPED,
+        )
 
     def test_ok(self):
         action = Action(MagicMock(), "action", { 'command': "/bin/true" })
         action.run = MagicMock(return_value=None)
-        self.assertEqual(action.get_result(interactive=False), True)
+        self.assertEqual(
+            action.get_result(interactive=False),
+            Action.STATUS_ACTION_OK,
+        )
 
     def test_fail(self):
         action = Action(MagicMock(), "action", { 'command': "/bin/false" })
         action.run = MagicMock(side_effect=ActionFailure)
-        self.assertEqual(action.get_result(interactive=False), False)
+        self.assertEqual(
+            action.get_result(interactive=False),
+            Action.STATUS_ACTION_FAILED,
+        )

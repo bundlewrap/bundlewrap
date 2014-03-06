@@ -37,7 +37,7 @@ class ApplyTest(TestCase):
         self.assertTrue(output[1].startswith("\n  nodename: run completed after "))
         self.assertEqual(
             output[2],
-            "  items: 0 correct, 0 fixed, 0 skipped, 0 unfixable, 0 failed",
+            "  items: 0 correct, 0 fixed, 0 skipped, 0 failed",
         )
         self.assertEqual(
             output[3],
@@ -80,11 +80,10 @@ class FormatNodeItemResultTest(TestCase):
         result.correct = 0
         result.fixed = 1
         result.skipped = 2
-        result.unfixable = 3
-        result.failed = 4
+        result.failed = 3
         self.assertEqual(
             format_node_item_result(result),
-            "0 correct, 1 fixed, 2 skipped, 3 unfixable, 4 failed",
+            "0 correct, 1 fixed, 2 skipped, 3 failed",
         )
 
     def test_zero(self):
@@ -92,9 +91,8 @@ class FormatNodeItemResultTest(TestCase):
         result.correct = 0
         result.fixed = 0
         result.skipped = 0
-        result.unfixable = 0
         result.failed = 0
         self.assertEqual(
             format_node_item_result(result),
-            "0 correct, 0 fixed, 0 skipped, 0 unfixable, 0 failed",
+            "0 correct, 0 fixed, 0 skipped, 0 failed",
         )
