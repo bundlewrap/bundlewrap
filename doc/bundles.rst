@@ -111,11 +111,12 @@ One such attribute is ``depends``. It allows for setting up dependencies between
 	        ...
 	        'depends': [
 	            'pkg_apt:',
+	            'bundle:foo',
 	        ],
 	    }
 	}
 
-The first item (``item1``, specific attributes have been omitted) depends on a file called ``/etc/foo.conf``, while ``item2`` depends on all APT packages being installed.
+The first item (``item1``, specific attributes have been omitted) depends on a file called ``/etc/foo.conf``, while ``item2`` depends on all APT packages being installed and every item in the foo bundle.
 
 |
 

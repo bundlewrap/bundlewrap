@@ -69,6 +69,8 @@ class DummyItem(object):
     """
     Represents a dependency on all items of a certain type.
     """
+    bundle = None
+
     def __init__(self, item_type):
         self.DEPENDS_STATIC = []
         self.depends = []
@@ -85,7 +87,33 @@ class DummyItem(object):
         return "{}:".format(self.item_type)
 
     def apply(self, *args, **kwargs):
-        return (None, None)
+        return Item.STATUS_OK
+
+
+class BundleItem(object):
+    """
+    Represents a dependency on all items in a certain bundle.
+    """
+    PARALLEL_APPLY = True
+
+    def __init__(self, bundle):
+        self.DEPENDS_STATIC = []
+        self.depends = []
+        self.bundle_name = bundle.name
+        self.ITEM_TYPE_NAME = 'dummy'
+        self.triggers = []
+        self._deps = []
+
+    def __repr__(self):
+        return "<BundleItem: {}>".format(self.bundle_name)
+
+    @property
+    def id(self):
+        return "bundle:{}".format(self.bundle_name)
+
+    def apply(self, *args, **kwargs):
+        return Item.STATUS_OK
+
 
 
 def _find_item(item_id, items):
@@ -142,6 +170,20 @@ def flatten_dependencies(items):
             item._deps + _get_deps_for_item(item, items)
         ))
     return items
+
+
+def inject_bundle_items(items):
+    """
+    Adds virtual items that depend on every item in a bundle.
+    """
+    bundle_items = {}
+    for item in items:
+        if item.bundle is None:
+            continue
+        if item.bundle.name not in bundle_items:
+            bundle_items[item.bundle.name] = BundleItem(item.bundle)
+        bundle_items[item.bundle.name]._deps.append(item.id)
+    return list(bundle_items.values()) + items
 
 
 def inject_dummy_items(items):
@@ -275,6 +317,7 @@ def apply_items(node, workers=1, interactive=False):
         item._deps += list(item.get_auto_deps(items))
 
     items = inject_dummy_items(items)
+    items = inject_bundle_items(items)
     items = inject_trigger_dependencies(items)
     items = flatten_dependencies(items)
     items = inject_concurrency_blockers(items)
