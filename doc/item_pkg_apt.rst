@@ -20,6 +20,9 @@ Handles packages installed by ``apt-get`` on Debian-based systems.
 Attribute reference
 -------------------
 
+.. seealso::
+
+   :ref:`The list of generic builtin item attributes <builtin_item_attributes>`
 
 Optional attributes
 ===================

@@ -17,6 +17,10 @@ Directory items
 Attribute reference
 -------------------
 
+.. seealso::
+
+   :ref:`The list of generic builtin item attributes <builtin_item_attributes>`
+
 ``group``
 +++++++++
 

@@ -19,6 +19,10 @@ Manages system groups. Group members are managed through the :doc:`user <item_us
 Attribute reference
 -------------------
 
+.. seealso::
+
+   :ref:`The list of generic builtin item attributes <builtin_item_attributes>`
+
 Required attributes
 ===================
 

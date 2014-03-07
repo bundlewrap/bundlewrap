@@ -88,6 +88,8 @@ This table lists all item types included in Blockwart along with the bundle attr
 
 |
 
+.. _builtin_item_attributes:
+
 Builtin attributes
 ------------------
 

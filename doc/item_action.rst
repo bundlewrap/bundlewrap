@@ -23,6 +23,10 @@ Actions will be run on every ``bw apply``. They differ from regular items in tha
 Attribute reference
 -------------------
 
+.. seealso::
+
+   :ref:`The list of generic builtin item attributes <builtin_item_attributes>`
+
 ``command``
 +++++++++++
 

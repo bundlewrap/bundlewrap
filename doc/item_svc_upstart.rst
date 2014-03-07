@@ -22,6 +22,9 @@ Handles services managed by Upstart.
 Attribute reference
 -------------------
 
+.. seealso::
+
+   :ref:`The list of generic builtin item attributes <builtin_item_attributes>`
 
 Optional attributes
 ===================
