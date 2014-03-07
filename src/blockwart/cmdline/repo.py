@@ -8,8 +8,7 @@ from sys import exit
 from .. import VERSION_STRING
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
-from ..node import flatten_dependencies, inject_bundle_items, inject_concurrency_blockers, \
-    inject_dummy_items, inject_trigger_dependencies
+from ..node import prepare_dependencies
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _, red
@@ -84,11 +83,7 @@ def bw_repo_plot(repo, args):
         item._deps += item.depends
         item._deps += list(item.get_auto_deps(items))
 
-    items = inject_dummy_items(items)
-    items = inject_bundle_items(items)
-    items = inject_trigger_dependencies(items)
-    items = flatten_dependencies(items)
-    items = inject_concurrency_blockers(items)
+    items = prepare_dependencies(items)
 
     # Define dependencies between items
     for item in items:

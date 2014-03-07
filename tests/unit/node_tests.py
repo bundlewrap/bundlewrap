@@ -5,8 +5,8 @@ from mock import MagicMock, patch
 from blockwart.exceptions import ItemDependencyError, RepositoryError
 from blockwart.group import Group
 from blockwart.items import Item
-from blockwart.node import ApplyResult, apply_items, DummyItem, flatten_dependencies, \
-    inject_concurrency_blockers, inject_dummy_items, Node, remove_dep_from_items, \
+from blockwart.node import ApplyResult, apply_items, DummyItem, _flatten_dependencies, \
+    _inject_concurrency_blockers, _inject_dummy_items, Node, remove_dep_from_items, \
     remove_item_dependents, split_items_without_deps
 from blockwart.repo import Repository
 from blockwart.utils import names
@@ -194,7 +194,7 @@ class ApplyResultTest(TestCase):
 
 class FlattenDependenciesTest(TestCase):
     """
-    Tests blockwart.node.flatten_dependencies.
+    Tests blockwart.node._flatten_dependencies.
     """
     def test_flatten(self):
         class FakeItem(object):
@@ -216,7 +216,7 @@ class FlattenDependenciesTest(TestCase):
         item5._deps = ["type1:name1", "type1:name2"]
         items = [item1, item2, item3, item4, item5]
 
-        items = flatten_dependencies(items)
+        items = _flatten_dependencies(items)
 
         deps_should = {
             item1: [],
@@ -242,7 +242,7 @@ class InitTest(TestCase):
 
 class InjectDummyItemsTest(TestCase):
     """
-    Tests blockwart.node.inject_dummy_items.
+    Tests blockwart.node._inject_dummy_items.
     """
     def test_item_injection(self):
         class FakeItem(object):
@@ -262,7 +262,7 @@ class InjectDummyItemsTest(TestCase):
         item4 = make_item("type3:name1")
         items = [item1, item2, item3, item4]
 
-        injected = inject_dummy_items(items)
+        injected = _inject_dummy_items(items)
 
         dummy_counter = 0
         for item in injected:
@@ -277,7 +277,7 @@ class InjectDummyItemsTest(TestCase):
 
 class InjectConcurrencyBlockersTest(TestCase):
     """
-    Tests blockwart.node.inject_concurrency_blockers.
+    Tests blockwart.node._inject_concurrency_blockers.
     """
     def test_blockers(self):
         class FakeItem(object):
@@ -301,7 +301,7 @@ class InjectConcurrencyBlockersTest(TestCase):
         item32 = make_item("type3:name2", False)
 
         items = [item11, item32, item22, item12, item21, item23, item31]
-        injected = inject_concurrency_blockers(items)
+        injected = _inject_concurrency_blockers(items)
 
         deps_should = {
             item11: [],
@@ -339,7 +339,7 @@ class InjectConcurrencyBlockersTest(TestCase):
         item32 = make_item("type3:name2")
 
         items = [item11, item32, item22, item12, item21, item23, item31]
-        injected = inject_concurrency_blockers(items)
+        injected = _inject_concurrency_blockers(items)
 
         deps_should = {
             item11: [],
