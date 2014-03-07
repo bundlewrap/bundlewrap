@@ -19,7 +19,7 @@ The :command:`bw` utility is Blockwart's command line interface.
 
 	$ bw apply -i mynode
 
-The most important and most used part of Blockwart, :command:`bw apply` will apply your configuration to a set of nodes. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the ``-i`` switch to have Blockwart interactively ask before each change is made.
+The most important and most used part of Blockwart, :command:`bw apply` will apply your configuration to a set of nodes. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the :option:`-i` switch to have Blockwart interactively ask before each change is made.
 
 |
 
