@@ -22,6 +22,8 @@ def bw_verify(repo, args):
                 )
                 if args.debug:
                     yield e.traceback
+                if not args.interactive:
+                    msg = "{}: {}".format(e.task_id, msg)
                 yield msg
                 errors.append(msg)
                 continue

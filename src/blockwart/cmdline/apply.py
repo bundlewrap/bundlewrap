@@ -70,6 +70,8 @@ def bw_apply(repo, args):
                 msg = "{} {}".format(red("!"), e.wrapped_exception)
                 if args.debug:
                     yield e.traceback
+                if not args.interactive:
+                    msg = "{}: {}".format(e.task_id, msg)
                 yield msg
                 errors.append(msg)
                 continue
