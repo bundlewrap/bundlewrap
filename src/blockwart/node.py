@@ -12,7 +12,8 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
+from .exceptions import BundleError, ItemDependencyError, NodeAlreadyLockedException, \
+    RepositoryError
 from .items import Item
 from .utils import cached_property, LOG
 from .utils.text import mark_for_translation as _
@@ -124,7 +125,7 @@ def _find_item(item_id, items):
     try:
         item = filter(lambda item: item.id == item_id, items)[0]
     except IndexError:
-        raise RuntimeError(_("item not found: {}").format(item_id))
+        raise ValueError(_("item not found: {}").format(item_id))
     return item
 
 
@@ -266,10 +267,23 @@ def inject_trigger_dependencies(items):
     """
     for item in items:
         for triggered_item_id in item.triggers:
-            for triggered_item in items:
-                if triggered_item.id == triggered_item_id:
-                    triggered_item._deps.append(item.id)
-                    break
+            try:
+                triggered_item = _find_item(triggered_item_id, items)
+            except ValueError:
+                raise BundleError(_(
+                    "unable to find definition of '{}' triggered by '{}' in bundle '{}'"
+                ).format(triggered_item_id, item.id, item.bundle.name))
+            if not triggered_item.triggered:
+                raise BundleError(_(
+                    "'{}' in bundle '{}' triggered by '{}' in bundle '{}', "
+                    "but missing 'triggered' attribute"
+                ).format(
+                    triggered_item.id,
+                    triggered_item.bundle.name,
+                    item.id,
+                    item.bundle.name,
+                ))
+            triggered_item._deps.append(item.id)
     return items
 
 
@@ -417,11 +431,11 @@ def apply_items(node, workers=1, interactive=False):
                 if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_OK):
                     # action succeeded or item was fixed
                     for triggered_item_id in item.triggers:
-                        for item in items_with_deps + items_without_deps:
-                            if item.id == triggered_item_id:
-                                item.has_been_triggered = True
-                                break
-                        # TODO raise error when item not found
+                        triggered_item = _find_item(
+                            triggered_item_id,
+                            items_with_deps + items_without_deps,
+                        )
+                        triggered_item.has_been_triggered = True
 
                 if item.ITEM_TYPE_NAME != 'dummy':
                     yield (item.id, status_code)
