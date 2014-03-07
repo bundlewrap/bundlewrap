@@ -214,12 +214,14 @@ class Item(object):
                                      interactive_default):
                     self.fix(status_before)
                     status_after = self.get_status()
-                    if status_after.correct:
-                        status_code = self.STATUS_FIXED
-                    else:
-                        status_code = self.STATUS_FAILED
                 else:
                     status_code = self.STATUS_SKIPPED
+
+        if status_code is None:
+            if status_after.correct:
+                status_code = self.STATUS_FIXED
+            else:
+                status_code = self.STATUS_FAILED
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
