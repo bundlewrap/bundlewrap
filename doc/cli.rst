@@ -4,11 +4,11 @@
 Command Line Interface
 ######################
 
-The ``bw`` utility is Blockwart's command line interface.
+The :command:`bw` utility is Blockwart's command line interface.
 
 .. note::
 
-	This page is not meant as a complete reference. It provides a starting point to explore the various subcommands. If you're looking for details, ``--help`` is your friend.
+	This page is not meant as a complete reference. It provides a starting point to explore the various subcommands. If you're looking for details, :option:`--help` is your friend.
 
 |
 
@@ -19,7 +19,7 @@ The ``bw`` utility is Blockwart's command line interface.
 
 	$ bw apply -i mynode
 
-The most important and most used part of Blockwart, ``bw apply`` will apply your configuration to a set of nodes. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the ``-i`` switch to have Blockwart interactively ask before each change is made.
+The most important and most used part of Blockwart, :command:`bw apply` will apply your configuration to a set of nodes. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the ``-i`` switch to have Blockwart interactively ask before each change is made.
 
 |
 
@@ -49,7 +49,7 @@ Negation is also possible for bundles and groups. ``!bundle:foo`` will add all n
 
 	$ bw nodes --hostnames | xargs -n 1 ping -c 1
 
-With these commands you can quickly get a list of all nodes and groups in your repository. The example above uses ``--hostnames`` to get a list of all DNS names for your nodes and send a ping to each one.
+With these commands you can quickly get a list of all nodes and groups in your repository. The example above uses :option:`--hostnames` to get a list of all DNS names for your nodes and send a ping to each one.
 
 |
 
@@ -77,7 +77,7 @@ This command will drop you into a Python shell with direct access to Blockwart's
 
 	$ bw repo plot mynode | dot -Tsvg -omynode.svg
 
-You won't be using this every day, but it's pretty cool. The above command will create an SVG file (you can open these in your browser) that shows the item dependency graph for the given node. You will see bundles as dashed rectangles, static dependencies (defined in Blockwart itself) in green, auto-generated dependencies (calculated dynamically each time you run ``bw apply``) in blue and dependencies you defined yourself in red.
+You won't be using this every day, but it's pretty cool. The above command will create an SVG file (you can open these in your browser) that shows the item dependency graph for the given node. You will see bundles as dashed rectangles, static dependencies (defined in Blockwart itself) in green, auto-generated dependencies (calculated dynamically each time you run :command:`bw apply`) in blue and dependencies you defined yourself in red.
 
 It offers an interesting view into the internal complexities Blockwart has to deal with when figuring out the order in which your items can be applied to your node.
 

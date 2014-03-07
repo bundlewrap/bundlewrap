@@ -6,7 +6,7 @@ API
 
 .. toctree::
 
-While most users will interact with Blockwart through the ``bw`` command line utility, you can also use it from your own code to extract data or further automate config management tasks.
+While most users will interact with Blockwart through the :command:`bw` command line utility, you can also use it from your own code to extract data or further automate config management tasks.
 
 Even within Blockwart itself (e.g. templates, libs, and hooks) your are often given repo and/or node objects to work with. Their methods and attributes are documented below.
 

@@ -76,7 +76,7 @@ Name of the group this file belongs to. Defaults to ``root``.
 ``mode``
 ++++++++
 
-File mode as returned by ``stat -c %a <file>``.
+File mode as returned by :command:`stat -c %a <file>`.
 
 |
 
@@ -90,4 +90,4 @@ Username of the file's owner. Defaults to ``root``.
 ``source``
 ++++++++++
 
-File name of the file template relative to the ``files`` subdirectory of the current bundle. If this says ``my_template``, Blockwart will look in ``bundles/my_bundle/files/my_template``.
+File name of the file template relative to the :file:`files` subdirectory of the current bundle. If this says ``my_template``, Blockwart will look in :file:`bundles/my_bundle/files/my_template`.

@@ -85,7 +85,7 @@ The user's password in plaintext.
 ``password_hash``
 +++++++++++++++++
 
-Hashed password as it would be returned by ``crypt()`` and written to ``/etc/shadow``.
+Hashed password as it would be returned by ``crypt()`` and written to :file:`/etc/shadow`.
 
 ``salt``
 ++++++++

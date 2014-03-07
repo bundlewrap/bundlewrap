@@ -54,7 +54,7 @@ You can now try running the ``bw`` command line utility::
 
 That's it.
 
-To update your install, just pull the git repository and have ``setup.py`` check for new dependencies::
+To update your install, just pull the git repository and have :file:`setup.py` check for new dependencies::
 
     cd /opt/blockwart
     git pull

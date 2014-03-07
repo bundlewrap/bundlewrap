@@ -6,13 +6,13 @@ Hooks
 
 Hooks enable you to execute custom code at certain points during a Blockwart run. This is useful for integrating with other systems e.g. for team notifications, logging or statistics.
 
-To use hooks, you need to create a subdirectory in your repo called ``hooks``. In that directory you can place an arbitrary number of Python source files. If those source files define certain functions, these functions will be called at the appropriate time.
+To use hooks, you need to create a subdirectory in your repo called :file:`hooks`. In that directory you can place an arbitrary number of Python source files. If those source files define certain functions, these functions will be called at the appropriate time.
 
 
 Example
 -------
 
-``hooks/my_awesome_notification.py``:
+:file:`hooks/my_awesome_notification.py`:
 
 .. code-block:: python
 
@@ -38,7 +38,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: apply_start(repo, target, nodes, interactive=False, **kwargs)
 
-    Called when you start a ``bw apply`` command.
+    Called when you start a :command:`bw apply` command.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
@@ -50,7 +50,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: apply_end(repo, target, nodes, duration=None, **kwargs)
 
-    Called when a ``bw apply`` command completes.
+    Called when a :command:`bw apply` command completes.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
@@ -62,7 +62,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: item_apply_start(repo, node, item, **kwargs)
 
-    Called each time a ``bw apply`` command reaches a new item.
+    Called each time a :command:`bw apply` command reaches a new item.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
@@ -73,7 +73,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: item_apply_end(repo, node, item, duration=None, status_before=None, status_after=None, **kwargs)
 
-    Called each time a ``bw apply`` command completes processing an item.
+    Called each time a :command:`bw apply` command completes processing an item.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
@@ -87,7 +87,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: node_apply_start(repo, node, **kwargs)
 
-    Called each time a ``bw apply`` command reaches a new node.
+    Called each time a :command:`bw apply` command reaches a new node.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
@@ -97,19 +97,19 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: node_apply_end(repo, node, duration=None, result=None, **kwargs)
 
-    Called each time a ``bw apply`` command finishes processing a node.
+    Called each time a :command:`bw apply` command finishes processing a node.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
     :param timedelta duration: How long the apply took.
-    :param ApplyResult result: An object with these attributes: ``correct``, ``failed``, ``fixed``, ``skipped``, ``unfixable``.
+    :param ApplyResult result: An object with these attributes: ``correct``, ``failed``, ``fixed``, ``skipped``.
 
 |
 |
 
 .. py:function:: node_run_start(repo, node, command, **kwargs)
 
-    Called each time a ``bw run`` command reaches a new node.
+    Called each time a :command:`bw run` command reaches a new node.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
@@ -120,7 +120,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: node_run_start(repo, node, command, duration=None, return_code=None, stdout="", stderr="", **kwargs)
 
-    Called each time a ``bw run`` command finishes on a node.
+    Called each time a :command:`bw run` command finishes on a node.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
@@ -135,7 +135,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: run_start(repo, target, nodes, command, **kwargs)
 
-    Called each time a ``bw run`` command starts.
+    Called each time a :command:`bw run` command starts.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
@@ -147,7 +147,7 @@ This is a list of all functions a hook file may implement.
 
 .. py:function:: run_start(repo, target, nodes, command, duration=None, **kwargs)
 
-    Called each time a ``bw run`` command finishes.
+    Called each time a :command:`bw run` command finishes.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param str target: The group or node name you gave on the command line.

@@ -4,7 +4,7 @@
 Pacman package items
 ####################
 
-Handles packages installed by ``pacman`` (e.g., Arch Linux).
+Handles packages installed by :command:`pacman` (e.g., Arch Linux).
 
 .. code-block:: python
 
@@ -42,4 +42,4 @@ Optional attributes
 ``tarball``
 +++++++++++++
 
-Upload a local file to the node and install it using ``pacman -U``. The value of ``tarball`` must point to a file relative to the ``pkg_pacman`` subdirectory of the current bundle.
+Upload a local file to the node and install it using :command:`pacman -U`. The value of ``tarball`` must point to a file relative to the ``pkg_pacman`` subdirectory of the current bundle.

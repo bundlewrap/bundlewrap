@@ -36,9 +36,9 @@ The contents should be fairly self-explanatory, but you can always check the :do
 
 .. hint::
 
-	It is highly recommended to use git or another SCM tool to keep track of your repository. You may want to start doing that right away.
+	It is highly recommended to use git or another :abbr:`SCM (Source Code Management)` tool to keep track of your repository. You may want to start doing that right away.
 
-At this point you will want to edit ``nodes.py`` and maybe change "localhost" to the hostname of a system you have passwordless (including sudo) SSH access to.
+At this point you will want to edit :file:`nodes.py` and maybe change "localhost" to the hostname of a system you have passwordless (including sudo) SSH access to.
 
 .. note::
 
@@ -70,7 +70,7 @@ Blockwart stores node configuration in bundles. A bundle is a collection of item
 
 	bw repo bundle create mybundle
 
-Now that you have created your bundle, it's important to tell Blockwart which nodes will have this bundle. You can assign bundles to nodes using either ``groups.py`` or ``nodes.py``, here we'll use the latter:
+Now that you have created your bundle, it's important to tell Blockwart which nodes will have this bundle. You can assign bundles to nodes using either :file:`groups.py` or :file:`nodes.py`, here we'll use the latter:
 
 .. code-block:: python
 
@@ -93,7 +93,7 @@ To manage a file, you need two things:
 	1. a file item in your bundle
 	2. a template for the file contents
 
-Add this to your ``bundles/mybundle/bundle.py``:
+Add this to your :file:`bundles/mybundle/bundle.py`:
 
 .. code-block:: python
 
@@ -112,18 +112,18 @@ You can use this for example content::
 
 	Welcome to ${node.name}!
 
-Note that the "source" attribute in ``bundle.py`` contains a path relative to the ``files`` directory of your bundle. It's up to you how to organize the contents of this directory.
+Note that the "source" attribute in :file:`bundle.py` contains a path relative to the :file:`files` directory of your bundle. It's up to you how to organize the contents of this directory.
 
 |
 
 Apply configuration
 -------------------
 
-Now all that's left is to run ``bw apply``::
+Now all that's left is to run :command:`bw apply`::
 
 	bw apply -i node1
 
-Blockwart will ask to replace your previous MOTD::
+Blockwart will ask to replace your previous :abbr:`MOTD (message of the day)`::
 
 	node1: run started at 2013-11-16 18:26:29
 

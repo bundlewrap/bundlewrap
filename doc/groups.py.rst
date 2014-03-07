@@ -12,7 +12,7 @@ This file lets you specify or dynamically build a list of groups in your environ
 Introduction
 ============
 
-As with ``nodes.py``, you define your groups as a dictionary:
+As with :file:`nodes.py`, you define your groups as a dictionary:
 
 .. code-block:: python
 

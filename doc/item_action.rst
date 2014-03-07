@@ -6,7 +6,7 @@ Actions
 
 .. toctree::
 
-Actions will be run on every ``bw apply``. They differ from regular items in that they cannot be "correct" in the first place. They can only succeed or fail.
+Actions will be run on every :command:`bw apply`. They differ from regular items in that they cannot be "correct" in the first place. They can only succeed or fail.
 
 .. code-block:: python
 

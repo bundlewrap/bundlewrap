@@ -19,7 +19,7 @@ Bundles
 	item_symlink
 	item_user
 
-Bundles are subdirectories of the ``bundles/`` directory of your Blockwart repository. Within each bundle, there must be a file called ``bundle.py``. They define any number of magic attributes that are automatically processed by Blockwart. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
+Bundles are subdirectories of the :file:`bundles/` directory of your Blockwart repository. Within each bundle, there must be a file called :file:`bundle.py`. They define any number of magic attributes that are automatically processed by Blockwart. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
 
 A typical bundle might look like this:
 
@@ -118,7 +118,7 @@ One such attribute is ``depends``. It allows for setting up dependencies between
 	    }
 	}
 
-The first item (``item1``, specific attributes have been omitted) depends on a file called ``/etc/foo.conf``, while ``item2`` depends on all APT packages being installed and every item in the foo bundle.
+The first item (``item1``, specific attributes have been omitted) depends on a file called :file:`/etc/foo.conf`, while ``item2`` depends on all APT packages being installed and every item in the foo bundle.
 
 |
 
@@ -147,7 +147,7 @@ In some scenarios, you may want to execute an :ref:`action <item_action>` only w
 	    },
 	}
 
-The above example will run ``service daemon restart`` every time Blockwart successfully applies a change to ``/etc/daemon.conf``. If an action is triggered multiple times, it will only be run once.
+The above example will run :command:`service daemon restart` every time Blockwart successfully applies a change to :file:`/etc/daemon.conf`. If an action is triggered multiple times, it will only be run once.
 
 |
 
@@ -167,4 +167,4 @@ Another builtin item attribute is ``unless``. For example, it can be used to con
 		},
 	}
 
-This will run `test -x /path/to/file` before doing anything with the item. If the command returns 0, no action will be taken to "correct" the item.
+This will run :command:`test -x /path/to/file` before doing anything with the item. If the command returns 0, no action will be taken to "correct" the item.

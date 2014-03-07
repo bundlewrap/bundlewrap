@@ -14,31 +14,37 @@ This file lets you specify or dynamically build a list of nodes in your environm
 Introduction
 ============
 
-All you have to do here is define a Python dictionary called ``nodes``. It should look something like this::
+All you have to do here is define a Python dictionary called ``nodes``. It should look something like this:
+
+.. code-block:: python
 
 	nodes = {
-		'node1': {
-			'hostname': "node1.example.com",
-		},
+	    'node1': {
+	        'hostname': "node1.example.com",
+	    },
 	}
 
 
 
 .. note::
-	With Blockwart, the DNS name and the internal identifier for a node are two separate things. This allows for clean and sortable hierarchies::
+	With Blockwart, the DNS name and the internal identifier for a node are two separate things. This allows for clean and sortable hierarchies:
+
+	.. code-block:: python
 
 		nodes = {
-			'cluster1.node1': {
-				'hostname': "node1.cluster1.example.com",
-			},
+		    'cluster1.node1': {
+		        'hostname': "node1.cluster1.example.com",
+		    },
 		}
 
 
 
-All fields for a node (including ``hostname``) are optional. If you don't give one, Blockwart will attempt to use the internal identifier to connect to a node::
+All fields for a node (including ``hostname``) are optional. If you don't give one, Blockwart will attempt to use the internal identifier to connect to a node:
+
+.. code-block:: python
 
 	nodes = {
-		'node1.example.com': {},
+	    'node1.example.com': {},
 	}
 
 |
@@ -46,7 +52,9 @@ All fields for a node (including ``hostname``) are optional. If you don't give o
 Dynamic node list
 =================
 
-You are not confined to the static way of defining a node list as shown above. You can also assemble the ``nodes`` dictionary dynamically::
+You are not confined to the static way of defining a node list as shown above. You can also assemble the ``nodes`` dictionary dynamically:
+
+.. code-block:: python
 
 	def get_my_nodes_from_ldap():
 	    [...]
@@ -59,12 +67,14 @@ You are not confined to the static way of defining a node list as shown above. Y
 Node attribute reference
 ========================
 
-This section is a reference for all possible attributes you can define for a node::
+This section is a reference for all possible attributes you can define for a node:
+
+.. code-block:: python
 
 	nodes = {
-		'node1': {
-			# THIS PART IS EXPLAINED HERE
-		},
+	    'node1': {
+	        # THIS PART IS EXPLAINED HERE
+	    },
 	}
 
 ``bundles``

@@ -29,7 +29,7 @@ Name of the group this directory belongs to.
 ``mode``
 ++++++++
 
-Directory mode as returned by ``stat -c %a <directory>``.
+Directory mode as returned by :command:`stat -c %a <directory>`.
 
 ``owner``
 +++++++++
