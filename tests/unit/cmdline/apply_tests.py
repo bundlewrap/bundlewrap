@@ -33,8 +33,8 @@ class ApplyTest(TestCase):
         args.item_workers = 4
         args.target = "node1"
         output = list(bw_apply(repo, args))
-        self.assertTrue(output[0].startswith("\nnodename: run started at "))
-        self.assertTrue(output[1].startswith("\n  nodename: run completed after "))
+        self.assertTrue(output[0].startswith("nodename: run started at "))
+        self.assertTrue(output[1].startswith("  nodename: run completed after "))
         self.assertEqual(
             output[2],
             "  items: 0 correct, 0 fixed, 0 skipped, 0 failed",

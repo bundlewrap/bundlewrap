@@ -289,32 +289,32 @@ def inject_trigger_dependencies(items):
 
 def format_item_result(result, item_id):
     if result == Item.STATUS_ACTION_FAILED:
-        return _("\n  {} {} failed").format(
+        return _("  {} {} failed\n").format(
             red("✘"),
             bold(item_id),
         )
     elif result == Item.STATUS_ACTION_OK:
-        return _("\n  {} {} succeeded").format(
+        return _("  {} {} succeeded\n").format(
             green("✓"),
             bold(item_id),
         )
     elif result == Item.STATUS_ACTION_SKIPPED:
-        return _("\n  {} {} skipped").format(
+        return _("  {} {} skipped\n").format(
             yellow("»"),
             bold(item_id),
         )
     elif result == Item.STATUS_SKIPPED:
-        return _("\n  {} {} skipped").format(
+        return _("  {} {} skipped\n").format(
             yellow("»"),
             bold(item_id),
         )
     elif result == Item.STATUS_FIXED:
-        return _("\n  {} fixed {}").format(
+        return _("  {} fixed {}\n").format(
             green("✓"),
             bold(item_id),
         )
     elif result == Item.STATUS_FAILED:
-        return _("\n  {} failed to fix {}").format(
+        return _("  {} failed to fix {}\n").format(
             red("✘"),
             bold(item_id),
         )
