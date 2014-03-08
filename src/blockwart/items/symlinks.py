@@ -150,6 +150,8 @@ class Symlink(Item):
 
     @classmethod
     def validate_name(cls, bundle, name):
+        if normpath(name) == "/":
+            raise BundleError(_("'/' cannot be a file"))
         if normpath(name) != name:
             raise BundleError(_(
                 "'{}' is an invalid symlink path, should be '{}' (bundle '{}')"
