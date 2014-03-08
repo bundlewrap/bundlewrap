@@ -38,12 +38,17 @@ def release():
         sys.exit(1)
 
     if confirm(
-        "Do you want to release blockwart {}?".format(VERSION_STRING),
+        "Do you want to release Blockwart {}?".format(VERSION_STRING),
         default=False,
     ):
         with lcd(PROJECT_PATH):
             local("python setup.py sdist upload")
             local("python setup.py bdist_wheel upload")
+
+    print("")
+    print("Two more steps remain:")
+    print("1. Create the release on GitHub, copying the CHANGELOG entries")
+    print("2. Active building docs for the new version on ReadTheDocs")
 
 
 def run_pylint(ignore_warnings=True):
