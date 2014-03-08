@@ -61,6 +61,13 @@ Only used with Mako templates. The values of this dictionary will be available f
 
 |
 
+``delete``
+++++++++++
+
+When set to ``True``, the path of this file will be removed. It doesn't matter if there is not a file but a directory or something else at this path. When using ``delete``, no other attributes are allowed.
+
+|
+
 ``encoding``
 ++++++++++++
 

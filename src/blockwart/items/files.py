@@ -182,6 +182,7 @@ class File(Item):
         'content': "",
         'content_type': "mako",
         'context': None,
+        'delete': False,
         'encoding': "utf-8",
         'group': "root",
         'mode': "0664",
@@ -228,6 +229,11 @@ class File(Item):
         if 'type' in status.info['needs_fixing']:
             if not status.info['path_info'].exists:
                 return _("Doesn't exist.")
+            elif self.attributes['delete']:
+                if status.info['path_info'].is_directory:
+                    return _("Directory and its contents will be deleted.")
+                else:
+                    return _("File will be deleted.")
             else:
                 return "{} {} → {}\n".format(
                     bold(_("type")),
@@ -301,7 +307,12 @@ class File(Item):
                     # fixing content implies settings mode and owner/group
                     continue
                 if status.info['path_info'].exists:
-                    LOG.info(_("{}:{}: fixing {}...").format(self.node.name, self.id, fix_type))
+                    if self.attributes['delete']:
+                        LOG.info(_("{}:{}: deleting {}...").format(
+                            self.node.name, self.id, fix_type))
+                    else:
+                        LOG.info(_("{}:{}: fixing {}...").format(
+                            self.node.name, self.id, fix_type))
                 else:
                     LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
                 getattr(self, "_fix_" + fix_type)(status)
@@ -341,8 +352,9 @@ class File(Item):
 
     def _fix_type(self, status):
         self.node.run("rm -rf -- {}".format(quote(self.name)))
-        self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
-        self._fix_content(status)
+        if not self.attributes['delete']:
+            self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
+            self._fix_content(status)
 
     def get_auto_deps(self, items):
         deps = []
@@ -368,17 +380,23 @@ class File(Item):
         status_info = {'needs_fixing': [], 'path_info': path_info}
 
         if not path_info.is_file:
-            status_info['needs_fixing'].append('type')
+            if not self.attributes['delete'] or \
+                    path_info.is_directory or \
+                    path_info.is_symlink:
+                status_info['needs_fixing'].append('type')
         else:
-            if self.attributes['content_type'] != 'any' and \
-                    path_info.sha1 != self.content_hash:
-                status_info['needs_fixing'].append('content')
-            if path_info.mode != self.attributes['mode']:
-                status_info['needs_fixing'].append('mode')
-            if path_info.owner != self.attributes['owner']:
-                status_info['needs_fixing'].append('owner')
-            if path_info.group != self.attributes['group']:
-                status_info['needs_fixing'].append('group')
+            if self.attributes['delete']:
+                status_info['needs_fixing'].append('type')
+            else:
+                if self.attributes['content_type'] != 'any' and \
+                        path_info.sha1 != self.content_hash:
+                    status_info['needs_fixing'].append('content')
+                if path_info.mode != self.attributes['mode']:
+                    status_info['needs_fixing'].append('mode')
+                if path_info.owner != self.attributes['owner']:
+                    status_info['needs_fixing'].append('owner')
+                if path_info.group != self.attributes['group']:
+                    status_info['needs_fixing'].append('group')
 
         if status_info['needs_fixing']:
             correct = False
@@ -402,6 +420,10 @@ class File(Item):
             self.content
 
     def validate_attributes(self, attributes):
+        if attributes.get('delete', False) and len(attributes.keys()) > 1:
+            raise BundleError(_(
+                "{} from bundle '{}' cannot have other attributes besides 'delete'"
+            ).format(self.id, self.bundle.name))
         if 'content' in attributes and 'source' in attributes:
             raise BundleError(_(
                 "{} from bundle '{}' cannot have both 'content' and 'source'"
