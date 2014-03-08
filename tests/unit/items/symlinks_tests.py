@@ -13,7 +13,7 @@ class SymlinkFixTest(TestCase):
     @patch('blockwart.items.symlinks.Symlink._fix_owner')
     @patch('blockwart.items.symlinks.Symlink._fix_type')
     def test_type(self, fix_type, fix_owner):
-        f = symlinks.Symlink(MagicMock(), "/", {'target': "/bar"})
+        f = symlinks.Symlink(MagicMock(), "/foo", {'target': "/bar"})
         pinfo = MagicMock()
         pinfo.exists = False
         status = ItemStatus(correct=False, info={
@@ -26,7 +26,7 @@ class SymlinkFixTest(TestCase):
     @patch('blockwart.items.symlinks.Symlink._fix_owner')
     @patch('blockwart.items.symlinks.Symlink._fix_type')
     def test_owner(self, fix_type, fix_owner):
-        f = symlinks.Symlink(MagicMock(), "/", {'target': "/bar"})
+        f = symlinks.Symlink(MagicMock(), "/foo", {'target': "/bar"})
         status = ItemStatus(correct=False, info={
             'needs_fixing': ['owner'],
         })
@@ -156,7 +156,7 @@ class SymlinkGetStatusTest(TestCase):
         path_info.is_symlink = True
         PathInfo.return_value = path_info
 
-        f = symlinks.Symlink(MagicMock(), "/", {
+        f = symlinks.Symlink(MagicMock(), "/foo", {
             'owner': "root",
             'group': "root",
             'target': "/bar",
@@ -174,7 +174,7 @@ class SymlinkGetStatusTest(TestCase):
         path_info.is_symlink = True
         PathInfo.return_value = path_info
 
-        f = symlinks.Symlink(MagicMock(), "/", {
+        f = symlinks.Symlink(MagicMock(), "/foo", {
             'owner': "root",
             'group': "root",
             'target': "/bar",
@@ -192,7 +192,7 @@ class SymlinkGetStatusTest(TestCase):
         path_info.is_symlink = False
         PathInfo.return_value = path_info
 
-        f = symlinks.Symlink(MagicMock(), "/", {
+        f = symlinks.Symlink(MagicMock(), "/foo", {
             'owner': "root",
             'group': "root",
             'target': "/bar",
@@ -213,7 +213,7 @@ class SymlinkGetStatusTest(TestCase):
         path_info.is_symlink = True
         PathInfo.return_value = path_info
 
-        f = symlinks.Symlink(MagicMock(), "/", {
+        f = symlinks.Symlink(MagicMock(), "/foo", {
             'owner': "root",
             'group': "root",
             'target': "/bar",

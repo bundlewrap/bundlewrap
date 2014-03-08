@@ -178,7 +178,7 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_owner')
     @patch('blockwart.items.files.File._fix_type')
     def test_type(self, fix_type, fix_owner, fix_mode, fix_content):
-        f = files.File(MagicMock(), "/", {})
+        f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
         pinfo.exists = False
         status = ItemStatus(correct=False, info={
@@ -194,7 +194,7 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_owner')
     @patch('blockwart.items.files.File._fix_type')
     def test_content(self, fix_type, fix_owner, fix_mode, fix_content):
-        f = files.File(MagicMock(), "/", {})
+        f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
         pinfo.exists = False
         status = ItemStatus(correct=False, info={
@@ -212,7 +212,7 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_owner')
     @patch('blockwart.items.files.File._fix_type')
     def test_mode(self, fix_type, fix_owner, fix_mode, fix_content):
-        f = files.File(MagicMock(), "/", {})
+        f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
         pinfo.exists = False
         status = ItemStatus(correct=False, info={
@@ -230,7 +230,7 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_owner')
     @patch('blockwart.items.files.File._fix_type')
     def test_owner(self, fix_type, fix_owner, fix_mode, fix_content):
-        f = files.File(MagicMock(), "/", {})
+        f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
         pinfo.exists = False
         status = ItemStatus(correct=False, info={
@@ -248,7 +248,7 @@ class FileFixTest(TestCase):
     @patch('blockwart.items.files.File._fix_owner')
     @patch('blockwart.items.files.File._fix_type')
     def test_combined(self, fix_type, fix_owner, fix_mode, fix_content):
-        f = files.File(MagicMock(), "/", {})
+        f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
         pinfo.exists = False
         status = ItemStatus(correct=False, info={
@@ -413,7 +413,7 @@ class FileGetStatusTest(TestCase):
         path_info.is_file = True
         PathInfo.return_value = path_info
 
-        f = files.File(MagicMock(), "/", {
+        f = files.File(MagicMock(), "/foo", {
             'mode': "0664",
             'owner': "root",
             'group': "root",
@@ -433,7 +433,7 @@ class FileGetStatusTest(TestCase):
         path_info.is_file = True
         PathInfo.return_value = path_info
 
-        f = files.File(MagicMock(), "/", {
+        f = files.File(MagicMock(), "/foo", {
             'mode': "0664",
             'owner': "root",
             'group': "root",
@@ -453,7 +453,7 @@ class FileGetStatusTest(TestCase):
         path_info.is_file = True
         PathInfo.return_value = path_info
 
-        f = files.File(MagicMock(), "/", {
+        f = files.File(MagicMock(), "/foo", {
             'mode': "0664",
             'owner': "root",
             'group': "root",
@@ -473,7 +473,7 @@ class FileGetStatusTest(TestCase):
         path_info.is_file = True
         PathInfo.return_value = path_info
 
-        f = files.File(MagicMock(), "/", {
+        f = files.File(MagicMock(), "/foo", {
             'mode': "0664",
             'owner': "root",
             'group': "root",
@@ -496,7 +496,7 @@ class FileGetStatusTest(TestCase):
         path_info.is_file = False
         PathInfo.return_value = path_info
 
-        f = files.File(MagicMock(), "/", {
+        f = files.File(MagicMock(), "/foo", {
             'mode': "0664",
             'owner': "root",
             'group': "root",
@@ -519,7 +519,7 @@ class FileGetStatusTest(TestCase):
         path_info.is_file = True
         PathInfo.return_value = path_info
 
-        f = files.File(MagicMock(), "/", {
+        f = files.File(MagicMock(), "/foo", {
             'mode': "0664",
             'owner': "root",
             'group': "root",
