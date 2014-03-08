@@ -1,3 +1,20 @@
+0.10.0
+======
+
+2014-03-08
+
+* removed the 'timing' attribute on actions (BACKWARDS INCOMPATIBLE)
+* actions are now first-class items
+* items can now trigger each other (most useful with actions)
+* added System V service item
+* added `bw repo test`
+* added negated bundle and group selectors to CLI
+* can now manage files while ignoring their content
+* more control over how actions are run in interactive mode
+* bundles can now be assigned to nodes directly
+* fixed creating symlinks in nonexistent unmanaged directories
+
+
 0.9.0
 =====
 
