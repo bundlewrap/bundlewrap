@@ -92,7 +92,7 @@ class PathInfo(object):
     def is_text_file(self):
         return self.is_file and (
             "text" in self.desc or
-            self.desc == "OpenSSH RSA public key"
+            self.desc in ("empty", "OpenSSH RSA public key")
         )
 
     @property
