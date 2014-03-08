@@ -14,7 +14,7 @@ from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _, red
 
 
-DEBUG_BANNER = _("blockwart {} interactive repository inspector\n"
+DEBUG_BANNER = _("Blockwart {} interactive repository inspector\n"
                  "> You can access the current repository as 'repo'."
                  "").format(VERSION_STRING)
 
