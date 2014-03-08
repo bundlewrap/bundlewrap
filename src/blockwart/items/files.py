@@ -408,7 +408,7 @@ class File(Item):
         return attributes
 
     def test(self):
-        if not exists(self.template):
+        if self.attributes['source'] and not exists(self.template):
             raise BundleError(_(
                 "{} from bundle '{}' refers to missing file '{}' in its 'source' attribute"
             ).format(
