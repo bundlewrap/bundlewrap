@@ -43,6 +43,8 @@ How the file pointed to by ``source`` or the string given to ``content`` should 
 +--------------------+----------------------------------------------------------------------------+
 | Value              | Effect                                                                     |
 +====================+============================================================================+
+| ``any``            | only cares about file owner, group, and mode                               |
++--------------------+----------------------------------------------------------------------------+
 | ``binary``         | file is uploaded verbatim, no content processing occurs                    |
 +--------------------+----------------------------------------------------------------------------+
 | ``mako`` (default) | content is interpreted by the Mako template engine                         |

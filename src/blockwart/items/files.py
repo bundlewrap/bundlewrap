@@ -73,6 +73,7 @@ def content_processor_text(item):
 
 
 CONTENT_PROCESSORS = {
+    'any': lambda item: "",
     'binary': None,
     'mako': content_processor_mako,
     'text': content_processor_text,
@@ -369,7 +370,8 @@ class File(Item):
         if not path_info.is_file:
             status_info['needs_fixing'].append('type')
         else:
-            if path_info.sha1 != self.content_hash:
+            if self.attributes['content_type'] != 'any' and \
+                    path_info.sha1 != self.content_hash:
                 status_info['needs_fixing'].append('content')
             if path_info.mode != self.attributes['mode']:
                 status_info['needs_fixing'].append('mode')
@@ -403,6 +405,18 @@ class File(Item):
         if 'content' in attributes and 'source' in attributes:
             raise BundleError(_(
                 "{} from bundle '{}' cannot have both 'content' and 'source'"
+            ).format(self.id, self.bundle.name))
+
+        if (
+            attributes.get('content_type', None) == "any" and (
+                'content' in attributes or
+                'encoding' in attributes or
+                'source' in attributes
+            )
+        ):
+            raise BundleError(_(
+                "{} from bundle '{}' with content_type 'any' "
+                "must not define 'content', 'encoding' and/or 'source'"
             ).format(self.id, self.bundle.name))
 
         for key, value in attributes.items():
