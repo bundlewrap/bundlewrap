@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from os import makedirs
-from os.path import join
 from shutil import rmtree
-from tempfile import mkdtemp, mkstemp
+from tempfile import mkstemp
 from unittest import TestCase
 
 from mako.exceptions import CompileException
