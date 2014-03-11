@@ -55,6 +55,13 @@ Numerical user ID. It's your job to make sure it's unique.
 Optional attributes
 ===================
 
+``delete``
+++++++++++
+
+When set to ``True``, this user will be removed from the system. Note that because of how :command:`userdel` works, the primary group of the user will be removed if it contains no other users. When using ``delete``, no other attributes are allowed.
+
+|
+
 ``full_name``
 +++++++++++++
 
