@@ -75,6 +75,15 @@ class AskTest(TestCase):
             "'blockwart' not found in /etc/passwd"
         )
 
+    def test_user_will_be_deleted(self):
+        bundle = MagicMock()
+        user = users.User(bundle, "blockwart", {'delete': True})
+        status = ItemStatus(correct=False, info={'exists': True})
+        self.assertEqual(
+            user.ask(status),
+            "'blockwart' found in /etc/passwd. Will be deleted."
+        )
+
     def test_passwd(self):
         bundle = MagicMock()
         user = users.User(
@@ -292,6 +301,22 @@ class FixTest(TestCase):
             ],
         )
 
+    def test_fix_delete(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {'delete': True},
+        )
+        status = ItemStatus(correct=False, info={'exists': True})
+        user.fix(status)
+        self.assertEqual(
+            bundle.node.run.call_args_list,
+            [
+                call("userdel blockwart"),
+            ],
+        )
+
 
 class GetStatusTest(TestCase):
     """
@@ -458,6 +483,24 @@ class GetStatusTest(TestCase):
         status = user.get_status()
         self.assertFalse(status.correct)
         self.assertEqual(status.info['shadow_hash'], None)
+
+    def test_delete(self):
+        bundle = MagicMock()
+        user = users.User(
+            bundle,
+            "blockwart",
+            {'delete': True},
+        )
+
+        passwd_grep_result = RunResult()
+        passwd_grep_result.return_code = 0
+        passwd_grep_result.stdout = "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash\n"
+
+        bundle.node.run.return_value = passwd_grep_result
+
+        status = user.get_status()
+        self.assertFalse(status.correct)
+        self.assertTrue(status.info['exists'])
 
     @patch('blockwart.items.users._groups_for_user')
     def test_groups(self, _groups_for_user):
@@ -650,6 +693,25 @@ class ValidateAttributesTest(TestCase):
         with self.assertRaises(BundleError):
             user.validate_attributes({
                 'hash_method': "3des",
+                'password_hash': "secret_hash",
+            })
+
+    def test_delete_with_other(self):
+        user = users.User(
+            MagicMock(),
+            "blockwart",
+            {
+                'full_name': "Blöck Wart",
+                'gid': 2345,
+                'groups': ["group1", "group2"],
+                'password_hash': "secret_hash",
+                'uid': 1123,
+            },
+            skip_validation=True,
+        )
+        with self.assertRaises(BundleError):
+            user.validate_attributes({
+                'delete': True,
                 'password_hash': "secret_hash",
             })
 

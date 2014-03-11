@@ -66,6 +66,7 @@ class User(Item):
     BUNDLE_ATTRIBUTE_NAME = "users"
     DEPENDS_STATIC = ["group:"]
     ITEM_ATTRIBUTES = {
+        'delete': False,
         'full_name': "",
         'gid': None,
         'groups': [],
@@ -79,7 +80,6 @@ class User(Item):
         'use_shadow': None,
     }
     ITEM_TYPE_NAME = "user"
-    REQUIRED_ATTRIBUTES = ['gid', 'groups', 'uid']
 
     def __repr__(self):
         return "<User name:{} uid:{} gid:{} home:{} shell:{} groups:{}>".format(
@@ -94,10 +94,12 @@ class User(Item):
     def ask(self, status):
         if not status.info['exists']:
             return _("'{}' not found in /etc/passwd").format(self.name)
+        elif self.attributes['delete']:
+            return _("'{}' found in /etc/passwd. Will be deleted.").format(self.name)
 
         output = ""
         for key, should_value in self.attributes.iteritems():
-            if key in ('groups', 'hash_method', 'password', 'password_hash',
+            if key in ('delete', 'groups', 'hash_method', 'password', 'password_hash',
                        'salt', 'use_shadow'):
                 continue
             is_value = status.info[key]
@@ -143,29 +145,35 @@ class User(Item):
 
     def fix(self, status):
         if status.info['exists']:
-            msg = _("{}:{}: updating...")
+            if self.attributes['delete']:
+                msg = _("{}:{}: deleting...")
+            else:
+                msg = _("{}:{}: updating...")
         else:
             msg = _("{}:{}: creating...")
         LOG.info(msg.format(self.node.name, self.id))
 
-        self.node.run("{command} "
-            "-d {home} "
-            "-g {gid} "
-            "-G {groups} "
-            "-p {password_hash} "
-            "-s {shell} "
-            "-u {uid} "
-            "{username}".format(
-                command="useradd" if not status.info['exists'] else "usermod",
-                home=quote(self.attributes['home']),
-                gid=self.attributes['gid'],
-                groups=quote(",".join(self.attributes['groups'])),
-                password_hash=quote(self.attributes['password_hash']),
-                shell=quote(self.attributes['shell']),
-                uid=self.attributes['uid'],
-                username=self.name,
+        if self.attributes['delete']:
+            self.node.run("userdel {}".format(self.name))
+        else:
+            self.node.run("{command} "
+                "-d {home} "
+                "-g {gid} "
+                "-G {groups} "
+                "-p {password_hash} "
+                "-s {shell} "
+                "-u {uid} "
+                "{username}".format(
+                    command="useradd" if not status.info['exists'] else "usermod",
+                    home=quote(self.attributes['home']),
+                    gid=self.attributes['gid'],
+                    groups=quote(",".join(self.attributes['groups'])),
+                    password_hash=quote(self.attributes['password_hash']),
+                    shell=quote(self.attributes['shell']),
+                    uid=self.attributes['uid'],
+                    username=self.name,
+                )
             )
-        )
 
     def get_status(self):
         # verify content of /etc/passwd
@@ -174,7 +182,12 @@ class User(Item):
             may_fail=True,
         )
         if passwd_grep_result.return_code != 0:
-            return ItemStatus(correct=False, info={'exists': False})
+            return ItemStatus(
+                correct=self.attributes['delete'],
+                info={'exists': False},
+            )
+        elif self.attributes['delete']:
+            return ItemStatus(correct=False, info={'exists': True})
 
         status = ItemStatus(correct=True, info={'exists': True})
         status.info.update(_parse_passwd_line(passwd_grep_result.stdout))
@@ -222,7 +235,8 @@ class User(Item):
         if 'home' not in attributes:
             attributes['home'] = "/home/{}".format(self.name)
 
-        if 'password_hash' not in attributes:
+        if attributes.get('password', None) is not None and \
+                not 'password_hash' in attributes:
             # defaults aren't set yet
             hash_method = HASH_METHODS[attributes.get(
                 'hash_method',
@@ -240,6 +254,19 @@ class User(Item):
         return attributes
 
     def validate_attributes(self, attributes):
+        if attributes.get('delete', False) and len(attributes.keys()) > 1:
+            raise BundleError(_(
+                "{} from bundle '{}' cannot have other attributes besides 'delete'"
+            ).format(self.id, self.bundle.name))
+        elif not attributes.get('delete', False) and not (
+            'gid' in attributes or
+            'groups' in attributes or
+            'uid' in attributes
+        ):
+            raise BundleError(_(
+                "{} from bundle '{}' must define gid, groups and uid"
+            ).format(self.id, self.bundle.name))
+
         if 'hash_method' in attributes and \
                 attributes['hash_method'] not in HASH_METHODS:
             raise BundleError(
@@ -263,7 +290,9 @@ class User(Item):
                 _("{}: salt given without a password").format(self.id)
             )
 
-        if 'password' not in attributes and 'password_hash' not in attributes:
+        if not attributes.get('delete', False) and \
+                'password' not in attributes and \
+                'password_hash' not in attributes:
             raise BundleError(_("{} needs to specify either "
                                 "a password or a password hash").format(self.id))
 
