@@ -36,16 +36,21 @@ Required attributes
 
 Primary group of the user. Must be numerical ID.
 
+|
+
 ``groups``
 ++++++++++
 
 List of groups (names, not GIDs) the user should belong to. MUST include the group referenced by ``gid``.
+
+|
 
 ``uid``
 +++++++
 
 Numerical user ID. It's your job to make sure it's unique.
 
+|
 
 Optional attributes
 ===================
@@ -54,6 +59,8 @@ Optional attributes
 +++++++++++++
 
 Full name of the user.
+
+|
 
 ``hash_method``
 +++++++++++++++
@@ -66,10 +73,14 @@ One of:
 
 Defaults to ``sha512``.
 
+|
+
 ``home``
 ++++++++
 
 Path to home directory. Defaults to ``/home/USERNAME``.
+
+|
 
 ``password``
 ++++++++++++
@@ -82,15 +93,21 @@ The user's password in plaintext.
 .. note::
    If you don't specify a ``salt`` along with the password, Blockwart will use a static salt. Be aware that this is basically the same as using no salt at all.
 
+|
+
 ``password_hash``
 +++++++++++++++++
 
 Hashed password as it would be returned by ``crypt()`` and written to :file:`/etc/shadow`.
 
+|
+
 ``salt``
 ++++++++
 
 Recommended for use with the ``password`` attribute. Blockwart will use 5000 rounds of SHA-512 on this salt and the provided password.
+
+|
 
 ``shell``
 +++++++++
