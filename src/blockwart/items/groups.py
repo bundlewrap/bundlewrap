@@ -30,10 +30,11 @@ class Group(Item):
     BUNDLE_ATTRIBUTE_NAME = "groups"
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
+        'delete': False,
         'gid': None,
     }
     ITEM_TYPE_NAME = "group"
-    REQUIRED_ATTRIBUTES = ['gid']
+    REQUIRED_ATTRIBUTES = []
 
     def __repr__(self):
         return "<Group name:{} gid:{}>".format(
@@ -44,23 +45,31 @@ class Group(Item):
     def ask(self, status):
         if not status.info['exists']:
             return _("'{}' not found in /etc/group").format(self.name)
-
-        return "{} {} → {}\n".format(
-            bold(_("GID")),
-            status.info['gid'],
-            self.attributes['gid'],
-        )
+        elif self.attributes['delete']:
+            return _("'{}' found in /etc/group. Will be deleted.").format(self.name)
+        else:
+            return "{} {} → {}\n".format(
+                bold(_("GID")),
+                status.info['gid'],
+                self.attributes['gid'],
+            )
 
     def fix(self, status):
         if not status.info['exists']:
             LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
-            self.node.run("groupadd {}".format(self.name))
-
-        LOG.info(_("{}:{}: updating...").format(self.node.name, self.id))
-        self.node.run("groupmod -g {gid} {groupname}".format(
-            gid=self.attributes['gid'],
-            groupname=self.name,
-        ))
+            self.node.run("groupadd -g {gid} {groupname}".format(
+                gid=self.attributes['gid'],
+                groupname=self.name,
+            ))
+        elif self.attributes['delete']:
+            LOG.info(_("{}:{}: deleting...").format(self.node.name, self.id))
+            self.node.run("groupdel {}".format(self.name))
+        else:
+            LOG.info(_("{}:{}: updating...").format(self.node.name, self.id))
+            self.node.run("groupmod -g {gid} {groupname}".format(
+                gid=self.attributes['gid'],
+                groupname=self.name,
+            ))
 
     def get_status(self):
         # verify content of /etc/group
@@ -69,9 +78,9 @@ class Group(Item):
             may_fail=True,
         )
         if grep_result.return_code != 0:
-            return ItemStatus(correct=False, info={'exists': False})
+            return ItemStatus(correct=self.attributes['delete'], info={'exists': False})
 
-        status = ItemStatus(correct=True, info={'exists': True})
+        status = ItemStatus(correct=not self.attributes['delete'], info={'exists': True})
         status.info.update(_parse_group_line(grep_result.stdout))
 
         if status.info['gid'] != self.attributes['gid']:
@@ -97,3 +106,13 @@ class Group(Item):
                 "Group name '{}' is longer than 30 characters (bundle '{}')"
             ).format(name, bundle.name))
 
+    def validate_attributes(self, attributes):
+        if attributes.get('delete', False) and len(attributes.keys()) > 1:
+            raise BundleError(_(
+                "{} from bundle '{}' cannot have other attributes besides 'delete'"
+            ).format(self.id, self.bundle.name))
+
+        if not attributes.get('delete', False) and 'gid' not in attributes.keys():
+            raise BundleError(_(
+                "{} from bundle '{}' must define 'gid'"
+            ).format(self.id, self.bundle.name))

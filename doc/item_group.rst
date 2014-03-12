@@ -23,8 +23,14 @@ Attribute reference
 
    :ref:`The list of generic builtin item attributes <builtin_item_attributes>`
 
-Required attributes
-===================
+|
+
+``delete``
+++++++++++
+
+When set to ``True``, this group will be removed from the system. When using ``delete``, no other attributes are allowed.
+
+|
 
 ``gid``
 +++++++

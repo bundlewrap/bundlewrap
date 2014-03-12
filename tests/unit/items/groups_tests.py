@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from unittest import TestCase
 
-from mock import MagicMock, patch, call
+from mock import MagicMock, call
 
 from blockwart.exceptions import BundleError
 from blockwart.items import ItemStatus, groups
@@ -42,6 +42,19 @@ class AskTest(TestCase):
             "'blockwart' not found in /etc/group"
         )
 
+    def test_group_shouldnt_exist(self):
+        bundle = MagicMock()
+        group = groups.Group(
+            bundle,
+            "blockwart",
+            {'delete': True},
+        )
+        status = ItemStatus(correct=False, info={'exists': True})
+        self.assertEqual(
+            group.ask(status),
+            "'blockwart' found in /etc/group. Will be deleted."
+        )
+
     def test_group(self):
         bundle = MagicMock()
         group = groups.Group(
@@ -76,8 +89,23 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("groupadd blockwart"),
-                call("groupmod -g 2345 blockwart"),
+                call("groupadd -g 2345 blockwart"),
+            ],
+        )
+
+    def test_fix_delete(self):
+        bundle = MagicMock()
+        group = groups.Group(
+            bundle,
+            "blockwart",
+            {'delete': True},
+        )
+        status = ItemStatus(correct=False, info={'exists': True})
+        group.fix(status)
+        self.assertEqual(
+            bundle.node.run.call_args_list,
+            [
+                call("groupdel blockwart"),
             ],
         )
 
@@ -150,6 +178,34 @@ class GetStatusTest(TestCase):
         status = group.get_status()
         self.assertFalse(status.correct)
         self.assertFalse(status.info['exists'])
+
+
+class ValidateAttributesTest(TestCase):
+    """
+    Tests blockwart.items.groups.Group.validate_attributes.
+    """
+    def test_no_gid(self):
+        user = groups.Group(
+            MagicMock(),
+            "blockwart",
+            {'gid': 2345},
+            skip_validation=True,
+        )
+        with self.assertRaises(BundleError):
+            user.validate_attributes({})
+
+    def test_delete_with_other(self):
+        user = groups.Group(
+            MagicMock(),
+            "blockwart",
+            {'gid': 2345},
+            skip_validation=True,
+        )
+        with self.assertRaises(BundleError):
+            user.validate_attributes({
+                'delete': True,
+                'gid': 2345,
+            })
 
 
 class ValidateNameTest(TestCase):
