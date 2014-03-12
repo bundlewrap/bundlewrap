@@ -357,17 +357,6 @@ class InjectConcurrencyBlockersTest(TestCase):
             self.assertEqual(item._deps, deps_should[item])
 
 
-class ItemOrderTest(TestCase):
-    """
-    Tests blockwart.node.order_items.
-    """
-    class FakeItem1(Item):
-        DEPENDS_STATIC = []
-        ITEM_TYPE_NAME = "type1"
-
-        def apply(self, *args, **kwargs):
-            return self.name
-
 
 class ItemSplitWithoutDepTest(TestCase):
     """
