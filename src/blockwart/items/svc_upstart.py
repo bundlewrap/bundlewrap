@@ -67,6 +67,18 @@ class SvcUpstart(Item):
             ))
             svc_start(self.node, self.name)
 
+    def get_canned_actions(self):
+        return {
+            'reload': {
+                'command': "reload {}".format(self.name),
+                'depends': [self.id],
+            },
+            'restart': {
+                'command': "restart {}".format(self.name),
+                'depends': [self.id],
+            },
+        }
+
     def get_status(self):
         service_running = svc_running(self.node, self.name)
         item_status = (service_running == self.attributes['running'])
