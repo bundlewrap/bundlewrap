@@ -95,7 +95,6 @@ def apply_items(node, workers=1, interactive=False):
                     # There's work! Do it.
                     item = items_without_deps.pop()
 
-                    # TODO why doesnt isinstance work?
                     if item.ITEM_TYPE_NAME == 'action':
                         target = item.get_result
                     else:
