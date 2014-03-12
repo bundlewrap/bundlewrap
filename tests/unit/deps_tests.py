@@ -3,6 +3,21 @@ from unittest import TestCase
 from mock import MagicMock
 
 from blockwart import deps
+from blockwart.exceptions import BundleError
+from blockwart.items import Item
+
+
+class MockItem(Item):
+    BUNDLE_ATTRIBUTE_NAME = "mock"
+    ITEM_TYPE_NAME = "mock"
+    DEPENDS_STATIC = []
+
+    def get_canned_actions(self):
+        return {
+            'action1': {
+                'command': "true",
+            },
+        }
 
 
 class FlattenDependenciesTest(TestCase):
@@ -41,6 +56,55 @@ class FlattenDependenciesTest(TestCase):
 
         for item in items:
             self.assertEqual(set(item._flattened_deps), set(deps_should[item]))
+
+
+class InjectCannedActionsTest(TestCase):
+    """
+    Tests blockwart.deps._inject_canned_actions.
+    """
+    def test_injection_ok(self):
+        bundle = MagicMock()
+        triggering_item1 = MockItem(
+            bundle,
+            "triggering1",
+            {'triggers': ["mock:triggered:action1"]},
+        )
+        triggering_item2 = MockItem(
+            bundle,
+            "triggering2",
+            {'triggers': ["mock:triggered", "mock:triggered:action1"]},
+        )
+        triggered_item = MockItem(bundle, "triggered", {})
+        items = deps._inject_canned_actions([
+            triggering_item1,
+            triggering_item2,
+            triggered_item,
+        ])
+        action = items[3]
+        self.assertEqual(action.ITEM_TYPE_NAME, 'action')
+        self.assertEqual(len(items), 4)
+
+    def test_unknown_target(self):
+        bundle = MagicMock()
+        triggering_item = MockItem(
+            bundle,
+            "triggering",
+            {'triggers': ["mock:triggered:action1"]},
+        )
+        not_triggered_item = MockItem(bundle, "not_triggered", {})
+        with self.assertRaises(BundleError):
+            deps._inject_canned_actions([triggering_item, not_triggered_item])
+
+    def test_unknown_action(self):
+        bundle = MagicMock()
+        triggering_item = MockItem(
+            bundle,
+            "triggering",
+            {'triggers': ["mock:triggered:action2"]},
+        )
+        triggered_item = MockItem(bundle, "triggered", {})
+        with self.assertRaises(BundleError):
+            deps._inject_canned_actions([triggering_item, triggered_item])
 
 
 class InjectDummyItemsTest(TestCase):
