@@ -86,6 +86,7 @@ class Item(object):
         self.node = bundle.node
 
         if not skip_validation:
+            self._validate_name(bundle, name)
             self.validate_name(bundle, name)
             self._validate_attribute_names(bundle, self.id, attributes)
             self._validate_required_attributes(bundle, self.id, attributes)
@@ -158,6 +159,17 @@ class Item(object):
                     attrs=", ".join(invalid_attributes),
                 )
             )
+
+    @classmethod
+    def _validate_name(cls, bundle, name):
+        if ":" in name:
+            raise BundleError(_(
+                "invalid name for {type} in bundle '{bundle}': {name} (must not contain colon)"
+            ).format(
+                bundle=bundle.name,
+                name=name,
+                type=cls.ITEM_TYPE_NAME,
+            ))
 
     def _validate_required_attributes(cls, bundle, item_id, attributes):
         missing = []

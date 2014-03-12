@@ -153,6 +153,13 @@ class InitTest(TestCase):
                 },
             )
 
+    def test_name_validation_fail(self):
+        with self.assertRaises(BundleError):
+            MockItem._validate_name(
+                MagicMock(),
+                "my:bad_name",
+            )
+
     def test_required_attributes(self):
         class ReqMockItem(MockItem):
             REQUIRED_ATTRIBUTES = ['foo', 'bar', 'baz']
