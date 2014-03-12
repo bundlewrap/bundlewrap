@@ -26,6 +26,10 @@ class Action(Item):
         if interactive is False and self.attributes['interactive'] is True:
             return self.STATUS_ACTION_SKIPPED
 
+        if self.triggered and not self.has_been_triggered:
+            LOG.debug("skipping {} because it wasn't triggered".format(self.id))
+            return self.STATUS_ACTION_SKIPPED
+
         if self.unless:
             unless_result = self.bundle.node.run(
                 self.unless,
