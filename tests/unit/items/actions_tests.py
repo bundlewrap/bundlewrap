@@ -31,13 +31,6 @@ class ActionInitTest(TestCase):
                 'interactive': "maybe",
             })
 
-    def test_invalid_timing(self):
-        with self.assertRaises(BundleError):
-            Action(MagicMock(), "action", {
-                'command': "/bin/true",
-                'timing': "tomorrow",
-            })
-
 
 class ActionRunTest(TestCase):
     """
