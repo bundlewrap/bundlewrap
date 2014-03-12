@@ -419,15 +419,16 @@ class File(Item):
         if self.attributes['content_type'] in ('mako', 'text'):
             self.content
 
-    def validate_attributes(self, attributes):
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
         if attributes.get('delete', False) and len(attributes.keys()) > 1:
             raise BundleError(_(
-                "{} from bundle '{}' cannot have other attributes besides 'delete'"
-            ).format(self.id, self.bundle.name))
+                "{item} from bundle '{bundle}' cannot have other attributes besides 'delete'"
+            ).format(item=item_id, bundle=bundle.name))
         if 'content' in attributes and 'source' in attributes:
             raise BundleError(_(
-                "{} from bundle '{}' cannot have both 'content' and 'source'"
-            ).format(self.id, self.bundle.name))
+                "{item} from bundle '{bundle}' cannot have both 'content' and 'source'"
+            ).format(item=item_id, bundle=bundle.name))
 
         if (
             attributes.get('content_type', None) == "any" and (
@@ -437,12 +438,12 @@ class File(Item):
             )
         ):
             raise BundleError(_(
-                "{} from bundle '{}' with content_type 'any' "
+                "{item} from bundle '{bundle}' with content_type 'any' "
                 "must not define 'content', 'encoding' and/or 'source'"
-            ).format(self.id, self.bundle.name))
+            ).format(item=item_id, bundle=bundle.name))
 
         for key, value in attributes.items():
-            ATTRIBUTE_VALIDATORS[key](self.id, value)
+            ATTRIBUTE_VALIDATORS[key](item_id, value)
 
     @classmethod
     def validate_name(cls, bundle, name):

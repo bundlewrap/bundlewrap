@@ -185,27 +185,23 @@ class ValidateAttributesTest(TestCase):
     Tests blockwart.items.groups.Group.validate_attributes.
     """
     def test_no_gid(self):
-        user = groups.Group(
-            MagicMock(),
-            "blockwart",
-            {'gid': 2345},
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({})
+            groups.Group.validate_attributes(
+                MagicMock(),
+                "group:blockwart",
+                {},
+            )
 
     def test_delete_with_other(self):
-        user = groups.Group(
-            MagicMock(),
-            "blockwart",
-            {'gid': 2345},
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({
-                'delete': True,
-                'gid': 2345,
-            })
+            groups.Group.validate_attributes(
+                MagicMock(),
+                "group:blockwart",
+                {
+                    'delete': True,
+                    'gid': 2345,
+                },
+            )
 
 
 class ValidateNameTest(TestCase):

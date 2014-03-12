@@ -89,30 +89,41 @@ class Group(Item):
         return status
 
     @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
+        if attributes.get('delete', False) and len(attributes.keys()) > 1:
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' cannot have other attributes besides 'delete'"
+            ).format(item=item_id, bundle=bundle.name))
+
+        if not attributes.get('delete', False) and 'gid' not in attributes.keys():
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' must define 'gid'"
+            ).format(item=item_id, bundle=bundle.name))
+
+    @classmethod
     def validate_name(cls, bundle, name):
         for char in name:
             if char not in _USERNAME_VALID_CHARACTERS:
                 raise BundleError(_(
-                    "Invalid character in group name '{}': {} (bundle '{}')"
-                ).format(name, char, bundle.name))
+                    "Invalid character in group name '{name}': {char} (bundle '{bundle}')"
+                ).format(
+                    char=char,
+                    bundle=bundle.name,
+                    name=name,
+                ))
 
         if name.endswith("_") or name.endswith("-"):
             raise BundleError(_(
-                "Group name '{}' must not end in dash or underscore (bundle '{}')"
-            ).format(name, bundle.name))
+                "Group name '{name}' must not end in dash or underscore (bundle '{bundle}')"
+            ).format(
+                bundle=bundle.name,
+                name=name,
+            ))
 
         if len(name) > 30:
             raise BundleError(_(
-                "Group name '{}' is longer than 30 characters (bundle '{}')"
-            ).format(name, bundle.name))
-
-    def validate_attributes(self, attributes):
-        if attributes.get('delete', False) and len(attributes.keys()) > 1:
-            raise BundleError(_(
-                "{} from bundle '{}' cannot have other attributes besides 'delete'"
-            ).format(self.id, self.bundle.name))
-
-        if not attributes.get('delete', False) and 'gid' not in attributes.keys():
-            raise BundleError(_(
-                "{} from bundle '{}' must define 'gid'"
-            ).format(self.id, self.bundle.name))
+                "Group name '{name}' is longer than 30 characters (bundle '{bundle}')"
+            ).format(
+                bundle=bundle.name,
+                name=name,
+            ))

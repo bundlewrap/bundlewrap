@@ -87,9 +87,9 @@ class Item(object):
 
         if not skip_validation:
             self.validate_name(bundle, name)
-            self._validate_attribute_names(attributes)
-            self._validate_required_attributes(attributes)
-            self.validate_attributes(attributes)
+            self._validate_attribute_names(bundle, self.id, attributes)
+            self._validate_required_attributes(bundle, self.id, attributes)
+            self.validate_attributes(bundle, self.id, attributes)
 
         attributes = self.patch_attributes(attributes)
 
@@ -136,37 +136,41 @@ class Item(object):
                 continue
             if item.id == self.id:
                 raise BundleError(_(
-                    "duplicate definition of {} in bundles '{}' and '{}'"
+                    "duplicate definition of {item} in bundles '{bundle1}' and '{bundle2}'"
                 ).format(
-                    item.id,
-                    item.bundle.name,
-                    self.bundle.name,
+                    item=item.id,
+                    bundle1=item.bundle.name,
+                    bundle2=self.bundle.name,
                 ))
 
-    def _validate_attribute_names(self, attributes):
+    @classmethod
+    def _validate_attribute_names(cls, bundle, item_id, attributes):
         invalid_attributes = set(attributes.keys()).difference(
-            set(self.ITEM_ATTRIBUTES.keys()).union(
+            set(cls.ITEM_ATTRIBUTES.keys()).union(
                 set(BUILTIN_ITEM_ATTRIBUTES.keys())
             ),
         )
         if invalid_attributes:
             raise BundleError(
-                _("invalid attribute(s) for '{}' in bundle '{}': {}").format(
-                    self.id,
-                    self.bundle.name,
-                    ", ".join(invalid_attributes),
+                _("invalid attribute(s) for '{item}' in bundle '{bundle}': {attrs}").format(
+                    item=item_id,
+                    bundle=bundle.name,
+                    attrs=", ".join(invalid_attributes),
                 )
             )
 
-    def _validate_required_attributes(self, attributes):
+    def _validate_required_attributes(cls, bundle, item_id, attributes):
         missing = []
-        for attrname in self.REQUIRED_ATTRIBUTES:
+        for attrname in cls.REQUIRED_ATTRIBUTES:
             if attrname not in attributes:
                 missing.append(attrname)
         if missing:
-            raise BundleError(_("{} missing required attribute(s): {}").format(
-                self.id,
-                ", ".join(missing),
+            raise BundleError(_(
+                "{item} in bundle '{bundle}' missing required attribute(s): {attrs}"
+            ).format(
+                item=item_id,
+                bundle=bundle.name,
+                attrs=", ".join(missing),
             ))
 
     @property
@@ -293,7 +297,8 @@ class Item(object):
         """
         pass
 
-    def validate_attributes(self, attributes):
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
         """
         Raises BundleError if something is amiss with the user-specified
         attributes.

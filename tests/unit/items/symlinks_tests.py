@@ -234,9 +234,11 @@ class ValidateAttributesTest(TestCase):
             'attr2': validator,
         }
         with patch('blockwart.items.symlinks.ATTRIBUTE_VALIDATORS', new=attr_val):
-            f = symlinks.Symlink(MagicMock(), "test", {'target': "/bar"},
-                                 skip_validation=True)
-            f.validate_attributes({'attr1': 1, 'attr2': 2})
-        validator.assert_any_call(f.id, 1)
-        validator.assert_any_call(f.id, 2)
+            symlinks.Symlink.validate_attributes(
+                MagicMock(),
+                "symlink:/foo",
+                {'attr1': 1, 'attr2': 2},
+            )
+        validator.assert_any_call("symlink:/foo", 1)
+        validator.assert_any_call("symlink:/foo", 2)
         self.assertEqual(validator.call_count, 2)

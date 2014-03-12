@@ -253,26 +253,28 @@ class User(Item):
 
         return attributes
 
-    def validate_attributes(self, attributes):
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
         if attributes.get('delete', False) and len(attributes.keys()) > 1:
             raise BundleError(_(
-                "{} from bundle '{}' cannot have other attributes besides 'delete'"
-            ).format(self.id, self.bundle.name))
+                "{item} from bundle '{bundle}' cannot have other attributes besides 'delete'"
+            ).format(bundle=bundle.name, item=item_id))
         elif not attributes.get('delete', False) and not (
             'gid' in attributes or
             'groups' in attributes or
             'uid' in attributes
         ):
             raise BundleError(_(
-                "{} from bundle '{}' must define gid, groups and uid"
-            ).format(self.id, self.bundle.name))
+                "{item} from bundle '{bundle}' must define gid, groups and uid"
+            ).format(bundle=bundle.name, item=item_id))
 
         if 'hash_method' in attributes and \
                 attributes['hash_method'] not in HASH_METHODS:
             raise BundleError(
-                _("Invalid hash method for {}: '{}'").format(
-                    self.id,
-                    attributes['hash_method'],
+                _("Invalid hash method for {item} in bundle '{bundle}': '{method}'").format(
+                    bundle=bundle.name,
+                    item=item_id,
+                    method=attributes['hash_method'],
                 )
             )
 
@@ -280,21 +282,23 @@ class User(Item):
             'password' in attributes or
             'salt' in attributes
         ):
-            raise BundleError(
-                _("{}: 'password_hash' cannot be used "
-                  "with 'password' or 'salt'").format(self.id)
-            )
+            raise BundleError(_(
+                "{item} in bundle '{bundle'}: 'password_hash' "
+                "cannot be used with 'password' or 'salt'"
+            ).format(bundle=bundle.name, item=item_id))
 
         if 'salt' in attributes and 'password' not in attributes:
             raise BundleError(
-                _("{}: salt given without a password").format(self.id)
+                _("{}: salt given without a password").format(item_id)
             )
 
         if not attributes.get('delete', False) and \
                 'password' not in attributes and \
                 'password_hash' not in attributes:
-            raise BundleError(_("{} needs to specify either "
-                                "a password or a password hash").format(self.id))
+            raise BundleError(_(
+                "{item} in bundle '{bundle}' needs to specify either "
+                "a password or a password hash"
+            ).format(bundle=bundle.name, item=item_id))
 
     @classmethod
     def validate_name(cls, bundle, name):

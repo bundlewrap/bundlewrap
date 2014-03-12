@@ -588,16 +588,14 @@ class ValidateAttributesTest(TestCase):
             'attr2': validator,
         }
         with patch('blockwart.items.files.ATTRIBUTE_VALIDATORS', new=attr_val):
-            f = files.File(
+            files.File.validate_attributes(
                 MagicMock(),
-                "test",
-                {},
-                skip_validation=True,
+                "item:id",
+                {
+                    'attr1': 1,
+                    'attr2': 2,
+                },
             )
-            f.validate_attributes({
-                'attr1': 1,
-                'attr2': 2,
-            })
-        validator.assert_any_call(f.id, 1)
-        validator.assert_any_call(f.id, 2)
+        validator.assert_any_call("item:id", 1)
+        validator.assert_any_call("item:id", 2)
         self.assertEqual(validator.call_count, 2)

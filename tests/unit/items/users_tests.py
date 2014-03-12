@@ -606,114 +606,66 @@ class ValidateAttributesTest(TestCase):
     Tests blockwart.items.users.User.validate_attributes.
     """
     def test_password_hash_with_password(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'groups': ["group1", "group2"],
-                'password_hash': "secret_hash",
-                'uid': 1123,
-            },
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({
-                'password': "secret",
-                'password_hash': "secret_hash",
-            })
+            users.User.validate_attributes(
+                MagicMock(),
+                "blockwart",
+                {
+                    'password': "secret",
+                    'password_hash': "secret_hash",
+                },
+            )
 
     def test_password_hash_with_salt(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'groups': ["group1", "group2"],
-                'password_hash': "secret_hash",
-                'uid': 1123,
-            },
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({
-                'password_hash': "secret_hash",
-                'salt': "salt",
-            })
+            users.User.validate_attributes(
+                MagicMock(),
+                "blockwart",
+                {
+                    'password_hash': "secret_hash",
+                    'salt': "salt",
+                },
+            )
 
     def test_lonely_salt(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'groups': ["group1", "group2"],
-                'password_hash': "secret_hash",
-                'uid': 1123,
-            },
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({
-                'salt': "salt",
-            })
+            users.User.validate_attributes(
+                MagicMock(),
+                "blockwart",
+                {
+                    'salt': "salt",
+                },
+            )
 
     def test_no_password(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'groups': ["group1", "group2"],
-                'password_hash': "secret_hash",
-                'uid': 1123,
-            },
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({})
+            users.User.validate_attributes(
+                MagicMock(),
+                "blockwart",
+                {},
+            )
 
     def test_invalid_hash_method(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'groups': ["group1", "group2"],
-                'password_hash': "secret_hash",
-                'uid': 1123,
-            },
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({
-                'hash_method': "3des",
-                'password_hash': "secret_hash",
-            })
+            users.User.validate_attributes(
+                MagicMock(),
+                "blockwart",
+                {
+                    'hash_method': "3des",
+                    'password_hash': "secret_hash",
+                },
+            )
 
     def test_delete_with_other(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'groups': ["group1", "group2"],
-                'password_hash': "secret_hash",
-                'uid': 1123,
-            },
-            skip_validation=True,
-        )
         with self.assertRaises(BundleError):
-            user.validate_attributes({
-                'delete': True,
-                'password_hash': "secret_hash",
-            })
+            users.User.validate_attributes(
+                MagicMock(),
+                "blockwart",
+                {
+                    'delete': True,
+                    'password_hash': "secret_hash",
+                },
+            )
 
 
 class ValidateNameTest(TestCase):

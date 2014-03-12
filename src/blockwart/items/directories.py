@@ -186,9 +186,10 @@ class Directory(Item):
             correct = False
         return ItemStatus(correct=correct, info=status_info)
 
-    def validate_attributes(self, attributes):
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
         for key, value in attributes.items():
-            ATTRIBUTE_VALIDATORS[key](self.id, value)
+            ATTRIBUTE_VALIDATORS[key](item_id, value)
 
     @classmethod
     def validate_name(cls, bundle, name):

@@ -75,8 +75,12 @@ class SvcUpstart(Item):
             info={'running': service_running},
         )
 
-    def validate_attributes(self, attributes):
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
         if not isinstance(attributes.get('running', True), bool):
-            raise BundleError("expected boolean for 'running' on {}".format(
-                self.id,
+            raise BundleError(_(
+                "expected boolean for 'running' on {item} in bundle '{bundle}'"
+            ).format(
+                bundle=bundle.name,
+                item=item_id,
             ))

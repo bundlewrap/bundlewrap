@@ -144,9 +144,10 @@ class Symlink(Item):
             correct = False
         return ItemStatus(correct=correct, info=status_info)
 
-    def validate_attributes(self, attributes):
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
         for key, value in attributes.items():
-            ATTRIBUTE_VALIDATORS[key](self.id, value)
+            ATTRIBUTE_VALIDATORS[key](item_id, value)
 
     @classmethod
     def validate_name(cls, bundle, name):
@@ -154,9 +155,9 @@ class Symlink(Item):
             raise BundleError(_("'/' cannot be a file"))
         if normpath(name) != name:
             raise BundleError(_(
-                "'{}' is an invalid symlink path, should be '{}' (bundle '{}')"
+                "'{path}' is an invalid symlink path, should be '{normpath}' (bundle '{bundle}')"
             ).format(
-                name,
-                normpath(name),
-                bundle.name,
+                path=name,
+                normpath=normpath(name),
+                bundle=bundle.name,
             ))

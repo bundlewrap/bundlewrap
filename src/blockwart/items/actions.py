@@ -119,8 +119,9 @@ class Action(Item):
 
         return result
 
-    def validate_attributes(self, attributes):
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
         if attributes.get('interactive', None) not in (True, False, None):
             raise BundleError(_(
-                "invalid interactive setting for action '{}' in bundle '{}'"
-            ).format(self.name, self.bundle.name))
+                "invalid interactive setting for action '{item}' in bundle '{bundle}'"
+            ).format(item=item_id, bundle=bundle.name))

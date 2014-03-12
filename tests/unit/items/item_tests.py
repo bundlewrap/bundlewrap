@@ -136,19 +136,22 @@ class InitTest(TestCase):
         self.assertTrue(validate_values.called)
 
     def test_attribute_name_validation_ok(self):
-        item = MockItem(MagicMock(), MagicMock(), {}, skip_validation=True)
-        item.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
-        item._validate_attribute_names({'foo': 49, 'depends': []})
+        MockItem.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
+        MockItem._validate_attribute_names(MagicMock(), "item:id", {'foo': 49, 'depends': []})
 
     def test_attribute_name_validation_fail(self):
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
         with self.assertRaises(BundleError):
-            item._validate_attribute_names({
-                'foobar': 49,
-                'bar': 50,
-                'depends': [],
-            })
+            item._validate_attribute_names(
+                MagicMock(),
+                "item:id",
+                {
+                    'foobar': 49,
+                    'bar': 50,
+                    'depends': [],
+                },
+            )
 
     def test_required_attributes(self):
         class ReqMockItem(MockItem):
@@ -157,11 +160,15 @@ class InitTest(TestCase):
         item = ReqMockItem(MagicMock(), "item1", {}, skip_validation=True)
         item.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
         with self.assertRaises(BundleError):
-            item._validate_required_attributes({
-                'foobar': 49,
-                'bar': 50,
-                'depends': [],
-            })
+            item._validate_required_attributes(
+                MagicMock(),
+                "item:id",
+                {
+                    'foobar': 49,
+                    'bar': 50,
+                    'depends': [],
+                },
+            )
 
     def test_subclass_attributes(self):
         class MyItem(MockItem):
