@@ -87,6 +87,7 @@ def _flatten_dependencies(items):
         ))
     return items
 
+
 def _get_deps_for_item(item, items, deps_found=None):
     """
     Recursively retrieves and returns a list of all inherited
