@@ -144,6 +144,12 @@ class Item(object):
                     bundle2=self.bundle.name,
                 ))
 
+    def _prepare_deps(self, items):
+        # merge static and user-defined deps
+        self._deps = list(self.DEPENDS_STATIC)
+        self._deps += self.depends
+        self._deps += list(self.get_auto_deps(items))
+
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
         invalid_attributes = set(attributes.keys()).difference(
