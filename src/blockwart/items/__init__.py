@@ -77,7 +77,8 @@ class Item(object):
     STATUS_ACTION_FAILED = 6
     STATUS_ACTION_SKIPPED = 7
 
-    def __init__(self, bundle, name, attributes, has_been_triggered=False, skip_validation=False):
+    def __init__(self, bundle, name, attributes, has_been_triggered=False, skip_validation=False,
+            skip_name_validation=False):
         self.attributes = {}
         self.bundle = bundle
         self.has_been_triggered = has_been_triggered
@@ -86,8 +87,9 @@ class Item(object):
         self.node = bundle.node
 
         if not skip_validation:
-            self._validate_name(bundle, name)
-            self.validate_name(bundle, name)
+            if not skip_name_validation:
+                self._validate_name(bundle, name)
+                self.validate_name(bundle, name)
             self._validate_attribute_names(bundle, self.id, attributes)
             self._validate_required_attributes(bundle, self.id, attributes)
             self.validate_attributes(bundle, self.id, attributes)
@@ -193,6 +195,9 @@ class Item(object):
 
     @property
     def id(self):
+        if self.ITEM_TYPE_NAME == 'action' and ":" in self.name:
+            # canned actions don't have an "action:" prefix
+            return self.name
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
     def apply(self, interactive=False, interactive_default=True):
@@ -286,6 +291,15 @@ class Item(object):
         MAY be overridden by subclasses.
         """
         return []
+
+    def get_canned_actions(self):
+        """
+        Return a dictionary of action definitions (mapping action names
+        to dicts of action attributes, as in bundles).
+
+        MAY be overridden by subclasses.
+        """
+        return {}
 
     def get_status(self):
         """

@@ -1,5 +1,6 @@
 from .exceptions import BundleError
 from .items import Item
+from .items.actions import Action
 from .utils import LOG
 from .utils.text import mark_for_translation as _
 
@@ -124,6 +125,61 @@ def _inject_bundle_items(items):
     return list(bundle_items.values()) + items
 
 
+def _inject_canned_actions(items):
+    """
+    Looks for canned actions like "svc_upstart:mysql:reload" in item
+    triggers and adds them to the list of items.
+    """
+    added_actions = {}
+    for item in items:
+        for triggered_item_id in item.triggers:
+            if triggered_item_id in added_actions:
+                continue
+
+            try:
+                type_name, item_name, action_name = triggered_item_id.split(":")
+            except ValueError:
+                continue
+
+            target_item_id = "{}:{}".format(type_name, item_name)
+
+            try:
+                target_item = find_item(target_item_id, items)
+            except ValueError:
+                raise BundleError(_(
+                    "{item} in bundle '{bundle}' triggers unknown item '{target_item}'"
+                ).format(
+                    bundle=item.bundle.name,
+                    item=item.id,
+                    target_item=target_item_id,
+                ))
+
+            try:
+                action_attrs = target_item.get_canned_actions()[action_name]
+            except KeyError:
+                raise BundleError(_(
+                    "{item} in bundle '{bundle}' triggers unknown "
+                    "canned action '{action}' on {target_item}"
+                ).format(
+                    action=action_name,
+                    bundle=item.bundle.name,
+                    item=item.id,
+                    target_item=target_item_id,
+                ))
+
+            action_attrs.update({'triggered': True})
+            action = Action(
+                item.bundle,
+                triggered_item_id,
+                action_attrs,
+                skip_name_validation=True,
+            )
+            action._prepare_deps(items)
+            added_actions[triggered_item_id] = action
+
+    return items + list(added_actions.values())
+
+
 def _inject_concurrency_blockers(items):
     """
     Looks for items with PARALLEL_APPLY set to False and inserts
@@ -236,6 +292,7 @@ def prepare_dependencies(items):
 
     items = _inject_dummy_items(items)
     items = _inject_bundle_items(items)
+    items = _inject_canned_actions(items)
     items = _inject_trigger_dependencies(items)
     items = _flatten_dependencies(items)
     items = _inject_concurrency_blockers(items)
