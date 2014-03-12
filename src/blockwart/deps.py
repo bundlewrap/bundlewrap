@@ -228,6 +228,12 @@ def prepare_dependencies(items):
     """
     Performs all dependency preprocessing on a list of items.
     """
+    items = list(items)
+
+    for item in items:
+        item._check_bundle_collisions(items)
+        item._prepare_deps(items)
+
     items = _inject_dummy_items(items)
     items = _inject_bundle_items(items)
     items = _inject_trigger_dependencies(items)

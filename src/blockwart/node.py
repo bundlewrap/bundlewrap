@@ -68,16 +68,7 @@ class ApplyResult(object):
 
 
 def apply_items(node, workers=1, interactive=False):
-    items = list(node.items)
-
-    for item in items:
-        item._check_bundle_collisions(items)
-        # merge static and user-defined deps
-        item._deps = list(item.DEPENDS_STATIC)
-        item._deps += item.depends
-        item._deps += list(item.get_auto_deps(items))
-
-    items = prepare_dependencies(items)
+    items = prepare_dependencies(node.items)
 
     with WorkerPool(workers=workers) as worker_pool:
         items_with_deps, items_without_deps = \

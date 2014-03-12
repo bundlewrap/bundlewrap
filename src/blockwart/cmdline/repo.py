@@ -74,16 +74,7 @@ def bw_repo_plot(repo, args):
             yield "\"{}\"".format(item.id)
         yield "}"
 
-    items = list(node.items)
-
-    for item in items:
-        item._check_bundle_collisions(items)
-        # merge static and user-defined deps
-        item._deps = list(item.DEPENDS_STATIC)
-        item._deps += item.depends
-        item._deps += list(item.get_auto_deps(items))
-
-    items = prepare_dependencies(items)
+    items = prepare_dependencies(node.items)
 
     # Define dependencies between items
     for item in items:
