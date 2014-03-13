@@ -33,3 +33,24 @@ Optional attributes
 +++++++++++
 
 ``True`` if the service is expected to be running on the system; ``False`` if it should be stopped.
+
+|
+
+Canned actions
+--------------
+
+.. seealso::
+
+   :ref:`Explanation of how canned actions work <canned_actions>`
+
+``reload``
+==========
+
+Reloads the service.
+
+|
+
+``restart``
+===========
+
+Restarts the service.

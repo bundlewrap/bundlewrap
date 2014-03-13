@@ -168,3 +168,27 @@ Another builtin item attribute is ``unless``. For example, it can be used to con
 	}
 
 This will run :command:`test -x /path/to/file` before doing anything with the item. If the command returns 0, no action will be taken to "correct" the item.
+
+|
+
+.. _canned_actions:
+
+Canned actions
+--------------
+
+Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:
+
+.. code-block:: python
+
+	svc_upstart = {'mysql': {'running': True}}
+
+	files = {
+	    "/etc/mysql/my.cnf": {
+	        'source': "my.cnf",
+	        'triggers': [
+	            "svc_upstart:mysql:reload",  # this triggers the canned action
+	        ],
+	    },
+	}
+
+Canned actions always have to be triggered in order to run. In the example above, a change in the file :file:`/etc/mysql/my.cnf` will trigger the ``reload`` action defined by the :doc:`svc_upstart item type <item_svc_upstart>` for the mysql service.
