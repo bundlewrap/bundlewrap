@@ -31,9 +31,6 @@ class ApplyResult(object):
     """
     def __init__(self, node, item_results):
         self.node_name = node.name
-        self.actions_ok = 0
-        self.actions_failed = 0
-        self.actions_skipped = 0
         self.correct = 0
         self.fixed = 0
         self.skipped = 0
@@ -41,11 +38,11 @@ class ApplyResult(object):
 
         for item_id, result in item_results:
             if result == Item.STATUS_ACTION_OK:
-                self.actions_ok += 1
+                self.correct += 1
             elif result == Item.STATUS_ACTION_FAILED:
-                self.actions_failed += 1
+                self.failed += 1
             elif result == Item.STATUS_ACTION_SKIPPED:
-                self.actions_skipped += 1
+                self.skipped += 1
             elif result == Item.STATUS_OK:
                 self.correct += 1
             elif result == Item.STATUS_FIXED:
@@ -188,7 +185,7 @@ def apply_items(node, workers=1, interactive=False):
 
 
 def format_item_result(result, item_id):
-    if result == Item.STATUS_ACTION_FAILED:
+    if result in (Item.STATUS_ACTION_FAILED, Item.STATUS_FAILED):
         return _("  {} {} failed\n").format(
             red("✘"),
             bold(item_id),
@@ -198,12 +195,7 @@ def format_item_result(result, item_id):
             green("✓"),
             bold(item_id),
         )
-    elif result == Item.STATUS_ACTION_SKIPPED:
-        return _("  {} {} skipped\n").format(
-            yellow("»"),
-            bold(item_id),
-        )
-    elif result == Item.STATUS_SKIPPED:
+    elif result in (Item.STATUS_ACTION_SKIPPED, Item.STATUS_SKIPPED):
         return _("  {} {} skipped\n").format(
             yellow("»"),
             bold(item_id),
@@ -211,11 +203,6 @@ def format_item_result(result, item_id):
     elif result == Item.STATUS_FIXED:
         return _("  {} fixed {}\n").format(
             green("✓"),
-            bold(item_id),
-        )
-    elif result == Item.STATUS_FAILED:
-        return _("  {} failed to fix {}\n").format(
-            red("✘"),
             bold(item_id),
         )
 

@@ -8,26 +8,9 @@ from ..utils.text import bold, green, red, yellow
 from ..utils.text import error_summary, mark_for_translation as _
 
 
-def format_node_action_result(result):
+def format_node_result(result):
     output = []
-    output.append(_("{} ok").format(result.actions_ok))
-
-    if result.actions_skipped:
-        output.append(yellow(_("{} skipped").format(result.actions_skipped)))
-    else:
-        output.append(_("{} skipped").format(result.actions_skipped))
-
-    if result.actions_failed:
-        output.append(red(_("{} failed").format(result.actions_failed)))
-    else:
-        output.append(_("{} failed").format(result.actions_failed))
-
-    return ", ".join(output)
-
-
-def format_node_item_result(result):
-    output = []
-    output.append(("{} correct").format(result.correct))
+    output.append(("{} OK").format(result.correct))
 
     if result.fixed:
         output.append(green(_("{} fixed").format(result.fixed)))
@@ -108,26 +91,19 @@ def bw_apply(repo, args):
                 results[node_name] = msg['return_value']
 
                 if args.interactive:
-                    yield _("  {}: run completed after {}s\n").format(
-                        bold(node_name),
-                        results[node_name].duration.total_seconds(),
+                    yield _("{node}: run completed after {time}s ({stats})\n").format(
+                        node=bold(node_name),
+                        time=results[node_name].duration.total_seconds(),
+                        stats=format_node_result(results[node_name]),
                     )
-                    yield _("  items: ") + \
-                        format_node_item_result(results[node_name])
-                    yield _("  actions: ") + \
-                        format_node_action_result(results[node_name]) + "\n"
                 else:
-                    LOG.info(_("{}: run completed after {}s").format(
-                        node_name,
-                        results[node_name].duration.total_seconds(),
+                    LOG.info(_("{node}: run completed after {time}s").format(
+                        node=node_name,
+                        time=results[node_name].duration.total_seconds(),
                     ))
-                    LOG.info(_("{}: item stats: {}").format(
-                        node_name,
-                        format_node_item_result(results[node_name]),
-                    ))
-                    LOG.info(_("{}: action stats: {}").format(
-                        node_name,
-                        format_node_action_result(results[node_name]),
+                    LOG.info(_("{node}: stats: {stats}").format(
+                        node=node_name,
+                        stats=format_node_result(results[node_name]),
                     ))
 
     error_summary(errors)
