@@ -112,10 +112,8 @@ def apply_items(node, workers=1, interactive=False):
 
                 # The task's id is the item we just processed.
                 item_id = msg['task_id']
-                item = None
-                for i in items:
-                    if i.id == item_id:
-                        item = i
+                item = find_item(item_id, items)
+
                 status_code = msg['return_value']
 
                 if interactive:
