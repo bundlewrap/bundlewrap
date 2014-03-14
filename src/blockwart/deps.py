@@ -29,6 +29,9 @@ class BundleItem(object):
     def apply(self, *args, **kwargs):
         return Item.STATUS_OK
 
+    def test(self):
+        pass
+
 
 class DummyItem(object):
     """
@@ -53,6 +56,9 @@ class DummyItem(object):
 
     def apply(self, *args, **kwargs):
         return Item.STATUS_OK
+
+    def test(self):
+        pass
 
 
 def find_item(item_id, items):

@@ -431,22 +431,26 @@ class NodeLock(object):
 
 
 def test_items(items, workers=1):
-    # make sure items is not a generator
-    items = list(items)
+    items = prepare_dependencies(items)
 
     with WorkerPool(workers=workers) as worker_pool:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
             if msg['msg'] == 'REQUEST_WORK':
-                if items:
-                    item = items.pop()
-                    worker_pool.start_task(
-                        msg['wid'],
-                        item.test,
-                        task_id=item.node.name + ":" + item.id,
-                    )
-                else:
-                    worker_pool.quit(msg['wid'])
+                while True:
+                    if items:
+                        item = items.pop()
+                        if item.ITEM_TYPE_NAME == 'dummy':
+                            continue
+                        worker_pool.start_task(
+                            msg['wid'],
+                            item.test,
+                            task_id=item.node.name + ":" + item.id,
+                        )
+                        break
+                    else:
+                        worker_pool.quit(msg['wid'])
+                        break
             elif msg['msg'] == 'FINISHED_WORK':
                 item_id = msg['task_id']
                 LOG.info("{} {}".format(
