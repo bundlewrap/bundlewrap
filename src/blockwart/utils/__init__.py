@@ -87,6 +87,73 @@ def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
         return env.get(attrname, default)
 
 
+def graph_for_items(title, items, static=True, regular=True, auto=True):
+    yield "digraph blockwart"
+    yield "{"
+
+    # Print subgraphs *below* each other
+    yield "rankdir = LR"
+
+    # Global attributes
+    yield ("graph [color=\"#303030\"; "
+                  "fontname=Helvetica; "
+                  "penwidth=2; "
+                  "shape=box; "
+                  "style=\"rounded,dashed\"]")
+    yield ("node [color=\"#303030\"; "
+                 "fillcolor=\"#303030\"; "
+                 "fontcolor=white; "
+                 "fontname=Helvetica; "
+                 "shape=box; "
+                 "style=\"rounded,filled\"]")
+    yield "edge [arrowhead=vee]"
+
+    item_ids = []
+    for item in items:
+        item_ids.append(item.id)
+
+    # Define which items belong to which bundle
+    bundle_number = 0
+    bundles_seen = []
+    for item in items:
+        if item.bundle is None or item.bundle.name in bundles_seen:
+            continue
+        yield "subgraph cluster_{}".format(bundle_number)
+        bundle_number += 1
+        yield "{"
+        yield "label = \"{}\"".format(item.bundle.name)
+        yield "\"bundle:{}\"".format(item.bundle.name)
+        for bitem in item.bundle.items:
+            if bitem.id in item_ids:
+                yield "\"{}\"".format(bitem.id)
+        yield "}"
+        bundles_seen.append(item.bundle.name)
+
+    # Define dependencies between items
+    for item in items:
+        if static:
+            for dep in item.DEPENDS_STATIC:
+                if dep in item_ids:
+                    yield "\"{}\" -> \"{}\" [color=\"#3991CC\",penwidth=2]".format(item.id, dep)
+
+        if regular:
+            for dep in item.depends:
+                if dep in item_ids:
+                    yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep)
+
+        if auto:
+            for dep in item._deps:
+                if dep not in item.DEPENDS_STATIC and dep not in item.depends:
+                    if dep in item_ids:
+                        yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
+
+    # Global graph title
+    yield "fontsize = 28"
+    yield "label = \"{}\"".format(title)
+    yield "labelloc = \"t\""
+    yield "}"
+
+
 def names(obj_list):
     """
     Iterator over the name properties of a given list of objects.
