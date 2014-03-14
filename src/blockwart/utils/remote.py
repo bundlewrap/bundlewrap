@@ -43,10 +43,10 @@ def stat(node, path):
         'mode': mode,
         'size': int(size),
     }
-    LOG.debug(_("stat for '{}' on {}: {}".format(
-        path,
-        node.name,
-        repr(file_stat),
+    LOG.debug(_("stat for '{path}' on {node}: {result}".format(
+        node=node.name,
+        path=path,
+        result=repr(file_stat),
     )))
     return file_stat
 

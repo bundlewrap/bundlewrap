@@ -54,17 +54,17 @@ def run_on_node(node, command, may_fail, sudo, interactive):
         yield "[{}] {} {}".format(
             node.name,
             green("✓"),
-            _("completed successfully after {}s").format(
-                duration.total_seconds(),
+            _("completed successfully after {time}s").format(
+                time=duration.total_seconds(),
             ),
         )
     else:
         yield "[{}] {} {}".format(
             node.name,
             red("✘"),
-            _("failed after {}s (return code {})").format(
-                duration.total_seconds(),
-                result.return_code,
+            _("failed after {time}s (return code {rcode})").format(
+                rcode=result.return_code,
+                time=duration.total_seconds(),
             ),
         )
 

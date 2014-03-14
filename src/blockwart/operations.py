@@ -42,8 +42,8 @@ def download(hostname, remote_path, local_path, ignore_failure=False):
     # See issue #39.
     # XXX: Revise this once we're using Fabric 2.0.
 
-    LOG.debug(_("downloading {}:{} -> {}").format(
-        hostname, remote_path, local_path))
+    LOG.debug(_("downloading {host}:{path} -> {target}").format(
+        host=hostname, path=remote_path, target=local_path))
     env.host_string = hostname
     fabric_result = _fabric_sudo(
         "base64 {}".format(quote(remote_path)),
@@ -56,10 +56,10 @@ def download(hostname, remote_path, local_path, ignore_failure=False):
             f.write(b64decode(fabric_result.stdout))
     elif not ignore_failure:
             raise RemoteException(_(
-                "reading file '{}' on {} failed: {}").format(
-                    remote_path,
-                    hostname,
-                    fabric_result.stderr,
+                "reading file '{path}' on {host} failed: {error}").format(
+                    error=fabric_result.stderr,
+                    host=hostname,
+                    path=remote_path,
                 )
             )
 
@@ -95,10 +95,7 @@ def run(hostname, command, ignore_failure=False, stderr=None,
     if stdout is None:
         stdout = LineBuffer(lambda s: None)
 
-    LOG.debug("running on {}: {}".format(
-        hostname,
-        command
-    ))
+    LOG.debug("running on {host}: {command}".format(command=command, host=hostname))
 
     runner = _fabric_sudo if sudo else _fabric_run
 
@@ -117,10 +114,10 @@ def run(hostname, command, ignore_failure=False, stderr=None,
 
     if not fabric_result.succeeded and not ignore_failure:
         raise RemoteException(_(
-            "Non-zero return code running '{}' on '{}': {}").format(
-                command,
-                hostname,
-                fabric_result
+            "Non-zero return code running '{command}' on '{host}': {result}").format(
+                command=command,
+                host=hostname,
+                result=fabric_result,
             )
         )
 
@@ -136,8 +133,8 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
     """
     Upload a file.
     """
-    LOG.debug(_("uploading {} -> {}:{}").format(
-        local_path, hostname, remote_path))
+    LOG.debug(_("uploading {path} -> {host}:{target}").format(
+        host=hostname, path=local_path, target=remote_path))
     env.host_string = hostname
     temp_filename = ".blockwart_tmp_" + randstr()
 
@@ -149,9 +146,9 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
     )
     if not ignore_failure and fabric_result.failed:
         raise RemoteException(_(
-            "upload to {} failed for: {}").format(
-                hostname,
-                ", ".join(fabric_result.failed),
+            "upload to {host} failed for: {failed}").format(
+                failed=", ".join(fabric_result.failed),
+                host=hostname,
             )
         )
 

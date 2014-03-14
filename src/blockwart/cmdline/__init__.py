@@ -87,8 +87,8 @@ def main(*args):
         try:
             repo = Repository(getcwd())
         except NoSuchRepository:
-            print(_("{} The current working directory "
-                    "is not a Blockwart repository.".format(red("!"))))
+            print(_("{x} The current working directory "
+                    "is not a Blockwart repository.".format(x=red("!"))))
             exit(1)
 
     parser_bw = build_parser_bw()

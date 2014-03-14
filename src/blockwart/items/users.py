@@ -146,12 +146,12 @@ class User(Item):
     def fix(self, status):
         if status.info['exists']:
             if self.attributes['delete']:
-                msg = _("{}:{}: deleting...")
+                msg = _("{node}:{item}: deleting...")
             else:
-                msg = _("{}:{}: updating...")
+                msg = _("{node}:{item}: updating...")
         else:
-            msg = _("{}:{}: creating...")
-        LOG.info(msg.format(self.node.name, self.id))
+            msg = _("{node}:{item}: creating...")
+        LOG.info(msg.format(item=self.id, node=self.node.name))
 
         if self.attributes['delete']:
             self.node.run("userdel {}".format(self.name))
@@ -305,15 +305,15 @@ class User(Item):
         for char in name:
             if char not in _USERNAME_VALID_CHARACTERS:
                 raise BundleError(_(
-                    "Invalid character in username '{}': {} (bundle '{}')"
-                ).format(name, char, bundle.name))
+                    "Invalid character in username '{user}': {char} (bundle '{bundle}')"
+                ).format(bundle=bundle.name, char=char, user=name))
 
         if name.endswith("_") or name.endswith("-"):
             raise BundleError(_(
-                "Username '{}' must not end in dash or underscore (bundle '{}')"
-            ).format(name, bundle.name))
+                "Username '{user}' must not end in dash or underscore (bundle '{bundle}')"
+            ).format(bundle=bundle.name, user=name))
 
         if len(name) > 30:
             raise BundleError(_(
-                "Username '{}' is longer than 30 characters (bundle '{}')"
-            ).format(name, bundle.name))
+                "Username '{user}' is longer than 30 characters (bundle '{bundle}')"
+            ).format(bundle=bundle.name, user=name))

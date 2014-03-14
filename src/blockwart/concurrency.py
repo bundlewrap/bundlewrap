@@ -229,10 +229,10 @@ class WorkerPool(object):
         process.join(JOIN_TIMEOUT)
         if process.is_alive():
             LOG.warn(_(
-                "worker process with PID {} didn't join "
-                "within {} seconds, terminating...").format(
-                    process.pid,
-                    JOIN_TIMEOUT,
+                "worker process with PID {pid} didn't join "
+                "within {time} seconds, terminating...").format(
+                    pid=process.pid,
+                    time=JOIN_TIMEOUT,
                 )
             )
             process.terminate()

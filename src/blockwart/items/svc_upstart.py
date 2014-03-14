@@ -55,15 +55,15 @@ class SvcUpstart(Item):
 
     def fix(self, status):
         if self.attributes['running'] is False:
-            LOG.info(_("{}:{}: stopping...").format(
-                self.node.name,
-                self.id,
+            LOG.info(_("{node}:{item}: stopping...").format(
+                item=self.id,
+                node=self.node.name,
             ))
             svc_stop(self.node, self.name)
         else:
-            LOG.info(_("{}:{}: starting...").format(
-                self.node.name,
-                self.id,
+            LOG.info(_("{node}:{item}: starting...").format(
+                item=self.id,
+                node=self.node.name,
             ))
             svc_start(self.node, self.name)
 

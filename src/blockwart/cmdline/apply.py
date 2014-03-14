@@ -10,22 +10,22 @@ from ..utils.text import error_summary, mark_for_translation as _
 
 def format_node_result(result):
     output = []
-    output.append(("{} OK").format(result.correct))
+    output.append(("{count} OK").format(count=result.correct))
 
     if result.fixed:
-        output.append(green(_("{} fixed").format(result.fixed)))
+        output.append(green(_("{count} fixed").format(count=result.fixed)))
     else:
-        output.append(_("{} fixed").format(result.fixed))
+        output.append(_("{count} fixed").format(count=result.fixed))
 
     if result.skipped:
-        output.append(yellow(_("{} skipped").format(result.skipped)))
+        output.append(yellow(_("{count} skipped").format(count=result.skipped)))
     else:
-        output.append(_("{} skipped").format(result.skipped))
+        output.append(_("{count} skipped").format(count=result.skipped))
 
     if result.failed:
-        output.append(red(_("{} failed").format(result.failed)))
+        output.append(red(_("{count} failed").format(count=result.failed)))
     else:
-        output.append(_("{} failed").format(result.failed))
+        output.append(_("{count} failed").format(count=result.failed))
 
     return ", ".join(output)
 

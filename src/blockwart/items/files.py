@@ -49,17 +49,17 @@ def content_processor_mako(item):
             # location of the error. :/
             e = _("Undefined variable (look for '${...}')")
         raise TemplateError(_(
-            "Error while rendering template for {}:{}: {}"
+            "Error while rendering template for {node}:{item}: {error}"
         ).format(
-            item.node.name,
-            item.id,
-            e,
+            error=e,
+            item=item.id,
+            node=item.node.name,
         ))
     duration = datetime.now() - start
-    LOG.debug("{}:{}: rendered in {}s".format(
-        item.node.name,
-        item.id,
-        duration.total_seconds(),
+    LOG.debug("{node}:{item}: rendered in {time}s".format(
+        item=item.id,
+        node=item.node.name,
+        time=duration.total_seconds(),
     ))
     return content
 
@@ -82,10 +82,10 @@ CONTENT_PROCESSORS = {
 
 def diff(content_old, content_new, filename, encoding_hint=None):
     output = ""
-    LOG.debug("diffing {}: {} B before, {} B after".format(
-        filename,
-        len(content_old),
-        len(content_new),
+    LOG.debug("diffing {filename}: {len_before} B before, {len_after} B after".format(
+        filename=filename,
+        len_before=len(content_old),
+        len_after=len(content_new),
     ))
     start = datetime.now()
     for line in unified_diff(
@@ -119,9 +119,9 @@ def diff(content_old, content_new, filename, encoding_hint=None):
             line = red(line)
         output += line + suffix + "\n"
     duration = datetime.now() - start
-    LOG.debug("diffing {}: complete after {}s".format(
-        filename,
-        duration.total_seconds(),
+    LOG.debug("diffing {file}: complete after {time}s".format(
+        file=filename,
+        time=duration.total_seconds(),
     ))
     return output
 
@@ -159,9 +159,9 @@ def validator_content(item_id, value):
 
 def validator_content_type(item_id, value):
     if value not in CONTENT_PROCESSORS:
-        raise BundleError(
-            _("invalid content_type for {}: '{}'").format(item_id, value)
-        )
+        raise BundleError(_(
+            "invalid content_type for {item}: '{value}'"
+        ).format(item=item_id, value=value))
 
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
@@ -308,13 +308,14 @@ class File(Item):
                     continue
                 if status.info['path_info'].exists:
                     if self.attributes['delete']:
-                        LOG.info(_("{}:{}: deleting {}...").format(
-                            self.node.name, self.id, fix_type))
+                        LOG.info(_("{node}:{item}: deleting...").format(
+                            node=self.node.name, item=self.id))
                     else:
-                        LOG.info(_("{}:{}: fixing {}...").format(
-                            self.node.name, self.id, fix_type))
+                        LOG.info(_("{node}:{item}: fixing {type}...").format(
+                            node=self.node.name, item=self.id, type=fix_type))
                 else:
-                    LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
+                    LOG.info(_("{node}:{item}: creating...").format(
+                        node=self.node.name, item=self.id))
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content(self, status):
@@ -361,13 +362,13 @@ class File(Item):
         for item in items:
             if item.ITEM_TYPE_NAME == "file" and is_subdirectory(item.name, self.name):
                 raise BundleError(_(
-                    "{} (from bundle '{}') blocking path to "
-                    "{} (from bundle '{}')"
+                    "{item1} (from bundle '{bundle1}') blocking path to "
+                    "{item2} (from bundle '{bundle2}')"
                 ).format(
-                    item.id,
-                    item.bundle.name,
-                    self.id,
-                    self.bundle.name,
+                    item1=item.id,
+                    bundle1=item.bundle.name,
+                    item2=self.id,
+                    bundle2=self.bundle.name,
                 ))
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
@@ -410,11 +411,12 @@ class File(Item):
     def test(self):
         if self.attributes['source'] and not exists(self.template):
             raise BundleError(_(
-                "{} from bundle '{}' refers to missing file '{}' in its 'source' attribute"
+                "{item} from bundle '{bundle}' refers to missing "
+                "file '{path}' in its 'source' attribute"
             ).format(
-                self.id,
-                self.bundle.name,
-                self.template,
+                bundle=self.bundle.name,
+                item=self.id,
+                path=self.template,
             ))
         if self.attributes['content_type'] in ('mako', 'text'):
             self.content
@@ -451,9 +453,9 @@ class File(Item):
             raise BundleError(_("'/' cannot be a file"))
         if normpath(name) != name:
             raise BundleError(_(
-                "'{}' is an invalid file path, should be '{}' (bundle '{}')"
+                "'{path}' is an invalid file path, should be '{normpath}' (bundle '{bundle}')"
             ).format(
-                name,
-                normpath(name),
-                bundle.name,
+                bundle=bundle.name,
+                normpath=normpath(name),
+                path=name,
             ))

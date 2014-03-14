@@ -34,7 +34,7 @@ def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered
                 has_been_triggered=has_been_triggered,
                 skip_validation=True,
             )
-    raise RuntimeError(_("unable to unpickle {}").format(class_name))
+    raise RuntimeError(_("unable to unpickle {cls}").format(cls=class_name))
 
 
 class ItemStatus(object):
@@ -212,7 +212,7 @@ class Item(object):
         start_time = datetime.now()
 
         if self.triggered and not self.has_been_triggered:
-            LOG.debug("skipping {} because it wasn't triggered".format(self.id))
+            LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
             status_code = self.STATUS_SKIPPED
 
         if status_code is None:
@@ -220,7 +220,7 @@ class Item(object):
             if self.unless and not status_before.correct:
                 unless_result = self.node.run(self.unless, may_fail=True)
                 if unless_result.return_code == 0:
-                    LOG.debug("'unless' for {} succeeded, not fixing".format(self.id))
+                    LOG.debug(_("'unless' for {} succeeded, not fixing").format(self.id))
                     status_code = self.STATUS_SKIPPED
 
         if status_code is None:

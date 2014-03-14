@@ -270,17 +270,23 @@ def _inject_trigger_dependencies(items):
                 triggered_item = find_item(triggered_item_id, items)
             except ValueError:
                 raise BundleError(_(
-                    "unable to find definition of '{}' triggered by '{}' in bundle '{}'"
-                ).format(triggered_item_id, item.id, item.bundle.name))
+                    "unable to find definition of '{item1}' triggered "
+                    "by '{item2}' in bundle '{bundle}'"
+                ).format(
+                    bundle=item.bundle.name,
+                    item1=triggered_item_id,
+                    item2=item.id,
+                ))
             if not triggered_item.triggered:
                 raise BundleError(_(
-                    "'{}' in bundle '{}' triggered by '{}' in bundle '{}', "
+                    "'{item1}' in bundle '{bundle1}' triggered "
+                    "by '{item2}' in bundle '{bundle2}', "
                     "but missing 'triggered' attribute"
                 ).format(
-                    triggered_item.id,
-                    triggered_item.bundle.name,
-                    item.id,
-                    item.bundle.name,
+                    item1=triggered_item.id,
+                    bundle1=triggered_item.bundle.name,
+                    item2=item.id,
+                    bundle2=item.bundle.name,
                 ))
             triggered_item._deps.append(item.id)
     return items
@@ -336,10 +342,10 @@ def remove_item_dependents(items, dep):
 
     if removed_items:
         LOG.debug(
-            "skipped these items because they depend on {}, which was "
-            "skipped previously: {}".format(
-                dep,
-                ", ".join([item.id for item in removed_items]),
+            "skipped these items because they depend on {item}, which was "
+            "skipped previously: {skipped}".format(
+                item=dep,
+                skipped=", ".join([item.id for item in removed_items]),
             )
         )
 

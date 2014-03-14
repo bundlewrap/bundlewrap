@@ -70,9 +70,15 @@ class Symlink(Item):
         if 'type' in status.info['needs_fixing']:
             # fixing the type fixes everything
             if status.info['path_info'].exists:
-                LOG.info(_("{}:{}: fixing type...").format(self.node.name, self.id))
+                LOG.info(_("{node}:{item}: fixing type...").format(
+                    item=self.id,
+                    node=self.node.name,
+                ))
             else:
-                LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
+                LOG.info(_("{node}:{item}: creating...").format(
+                    item=self.id,
+                    node=self.node.name,
+                ))
             self._fix_type(status)
             return
 
@@ -82,10 +88,10 @@ class Symlink(Item):
                         'owner' in status.info['needs_fixing']:
                     # owner and group are fixed with a single chown
                     continue
-                LOG.info(_("{}:{}: fixing {}...").format(
-                    self.node.name,
-                    self.id,
-                    fix_type,
+                LOG.info(_("{node}:{item}: fixing {type}...").format(
+                    item=self.id,
+                    node=self.node.name,
+                    type=fix_type,
                 ))
                 getattr(self, "_fix_" + fix_type)(status)
 
@@ -114,13 +120,13 @@ class Symlink(Item):
                 item.name == self.name
             ):
                 raise BundleError(_(
-                    "{} (from bundle '{}') blocking path to "
-                    "{} (from bundle '{}')"
+                    "{item1} (from bundle '{bundle1}') blocking path to "
+                    "{item2} (from bundle '{bundle2}')"
                 ).format(
-                    item.id,
-                    item.bundle.name,
-                    self.id,
-                    self.bundle.name,
+                    item1=item.id,
+                    bundle1=item.bundle.name,
+                    item2=self.id,
+                    bundle2=self.bundle.name,
                 ))
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):

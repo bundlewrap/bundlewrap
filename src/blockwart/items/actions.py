@@ -27,7 +27,7 @@ class Action(Item):
             return self.STATUS_ACTION_SKIPPED
 
         if self.triggered and not self.has_been_triggered:
-            LOG.debug("skipping {} because it wasn't triggered".format(self.id))
+            LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
             return self.STATUS_ACTION_SKIPPED
 
         if self.unless:
@@ -36,9 +36,9 @@ class Action(Item):
                 may_fail=True,
             )
             if unless_result.return_code == 0:
-                LOG.debug("{}:action:{}: failed 'unless', not running".format(
-                    self.bundle.node.name,
-                    self.name,
+                LOG.debug(_("{node}:action:{name}: failed 'unless', not running").format(
+                    name=self.name,
+                    node=self.bundle.node.name,
                 ))
                 return self.STATUS_ACTION_SKIPPED
 
@@ -78,13 +78,13 @@ class Action(Item):
                     red(_("FAILED")),
                 ))
             raise ActionFailure(_(
-                "wrong return code for action '{}' in bundle '{}': "
-                "expected {}, but was {}"
+                "wrong return code for action '{action}' in bundle '{bundle}': "
+                "expected {ecode}, but was {rcode}"
             ).format(
-                self.name,
-                self.bundle.name,
-                self.attributes['expected_return_code'],
-                result.return_code,
+                action=self.name,
+                bundle=self.bundle.name,
+                ecode=self.attributes['expected_return_code'],
+                rcode=result.return_code,
             ))
 
         if self.attributes['expected_stderr'] is not None and \
@@ -95,10 +95,10 @@ class Action(Item):
                 red(_("FAILED")),
             ))
             raise ActionFailure(_(
-                "wrong stderr for action '{}' in bundle '{}'"
+                "wrong stderr for action '{action}' in bundle '{bundle}'"
             ).format(
-                self.name,
-                self.bundle.name,
+                action=self.name,
+                bundle=self.bundle.name,
             ))
 
         if self.attributes['expected_stdout'] is not None and \
@@ -109,10 +109,10 @@ class Action(Item):
                 red(_("FAILED")),
             ))
             raise ActionFailure(_(
-                "wrong stdout for action '{}' in bundle '{}'"
+                "wrong stdout for action '{action}' in bundle '{bundle}'"
             ).format(
-                self.name,
-                self.bundle.name,
+                action=self.name,
+                bundle=self.bundle.name,
             ))
 
         LOG.info("{}:{}: {}".format(

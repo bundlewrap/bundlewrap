@@ -15,19 +15,18 @@ from blockwart.utils.text import bold, is_subdirectory
 def validator_mode(item_id, value):
     if not value.isdigit():
         raise BundleError(
-            _("mode for {} should be written as digits, got: '{}'"
-              "").format(item_id, value)
+            _("mode for {item} should be written as digits, got: '{value}'"
+              "").format(item=item_id, value=value)
         )
     for digit in value:
         if int(digit) > 7 or int(digit) < 0:
-            raise BundleError(
-                _("invalid mode for {}: '{}'").format(item_id, value),
-            )
+            raise BundleError(_(
+                "invalid mode for {item}: '{value}'"
+            ).format(item=item_id, value=value))
     if not len(value) == 3 and not len(value) == 4:
-        raise BundleError(
-            _("mode for {} should be three or four digits long, was: '{}'"
-              "").format(item_id, value)
-        )
+        raise BundleError(_(
+            "mode for {item} should be three or four digits long, was: '{value}'"
+        ).format(item=item_id, value=value))
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
 ATTRIBUTE_VALIDATORS.update({
@@ -154,13 +153,13 @@ class Directory(Item):
                 )
             ):
                 raise BundleError(_(
-                    "{} (from bundle '{}') blocking path to "
-                    "{} (from bundle '{}')"
+                    "{item1} (from bundle '{bundle1}') blocking path to "
+                    "{item2} (from bundle '{bundle2}')"
                 ).format(
-                    item.id,
-                    item.bundle.name,
-                    self.id,
-                    self.bundle.name,
+                    item1=item.id,
+                    bundle1=item.bundle.name,
+                    item2=self.id,
+                    bundle2=self.bundle.name,
                 ))
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
@@ -195,9 +194,10 @@ class Directory(Item):
     def validate_name(cls, bundle, name):
         if normpath(name) != name:
             raise BundleError(_(
-                "'{}' is an invalid directory path, should be '{}' (bundle '{}')"
+                "'{path}' is an invalid directory path, "
+                "should be '{normpath}' (bundle '{bundle}')"
             ).format(
-                name,
-                normpath(name),
-                bundle.name,
+                bundle=bundle.name,
+                normpath=normpath(name),
+                path=name,
             ))

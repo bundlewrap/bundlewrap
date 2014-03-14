@@ -23,20 +23,20 @@ def bw_items(repo, args):
     if args.file_preview_path:
         if exists(args.file_preview_path):
             LOG.error(_(
-                "not writing to existing path: {}"
-            ).format(args.file_preview_path))
+                "not writing to existing path: {path}"
+            ).format(path=args.file_preview_path))
             exit(1)
         for item in node.items:
             if not item.id.startswith("file:"):
                 continue
             if item.attributes['content_type'] == 'binary':
                 LOG.warning(_(
-                    "skipping binary file {}..."
-                ).format(item.name))
+                    "skipping binary file {filename}..."
+                ).format(filename=item.name))
                 continue
             LOG.info(_(
-                "writing {}..."
-            ).format(join(
+                "writing {path}..."
+            ).format(path=join(
                 args.file_preview_path,
                 item.name.lstrip("/"),
             )))

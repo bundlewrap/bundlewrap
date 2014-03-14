@@ -56,16 +56,16 @@ class Group(Item):
 
     def fix(self, status):
         if not status.info['exists']:
-            LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
+            LOG.info(_("{node}:{item}: creating...").format(node=self.node.name, item=self.id))
             self.node.run("groupadd -g {gid} {groupname}".format(
                 gid=self.attributes['gid'],
                 groupname=self.name,
             ))
         elif self.attributes['delete']:
-            LOG.info(_("{}:{}: deleting...").format(self.node.name, self.id))
+            LOG.info(_("{node}:{item}: deleting...").format(node=self.node.name, item=self.id))
             self.node.run("groupdel {}".format(self.name))
         else:
-            LOG.info(_("{}:{}: updating...").format(self.node.name, self.id))
+            LOG.info(_("{node}:{item}: updating...").format(node=self.node.name, item=self.id))
             self.node.run("groupmod -g {gid} {groupname}".format(
                 gid=self.attributes['gid'],
                 groupname=self.name,

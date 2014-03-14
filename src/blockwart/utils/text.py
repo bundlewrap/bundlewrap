@@ -33,13 +33,13 @@ def error_summary(errors):
         return
 
     if len(errors) == 1:
-        print(_("\n{} There was an error, repeated below.\n").format(
-            red("!!!"),
+        print(_("\n{x} There was an error, repeated below.\n").format(
+            x=red("!!!"),
         ))
     else:
-        print(_("\n{} There were {} errors, repeated below.\n").format(
-            red("!!!"),
-            len(errors),
+        print(_("\n{x} There were {count} errors, repeated below.\n").format(
+            count=len(errors),
+            x=red("!!!"),
         ))
 
     for e in errors:
