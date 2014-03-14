@@ -14,17 +14,17 @@ class BundleItem(object):
     def __init__(self, bundle):
         self.DEPENDS_STATIC = []
         self.depends = []
-        self.bundle_name = bundle.name
+        self.bundle = bundle
         self.ITEM_TYPE_NAME = 'dummy'
         self.triggers = []
         self._deps = []
 
     def __repr__(self):
-        return "<BundleItem: {}>".format(self.bundle_name)
+        return "<BundleItem: {}>".format(self.bundle.name)
 
     @property
     def id(self):
-        return "bundle:{}".format(self.bundle_name)
+        return "bundle:{}".format(self.bundle.name)
 
     def apply(self, *args, **kwargs):
         return Item.STATUS_OK

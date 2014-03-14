@@ -16,7 +16,7 @@ from .deps import find_item, prepare_dependencies, remove_item_dependents, remov
     split_items_without_deps
 from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from .items import Item
-from .utils import cached_property, LOG
+from .utils import cached_property, LOG, graph_for_items
 from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
@@ -176,9 +176,15 @@ def apply_items(node, workers=1, interactive=False):
     # we have no items without deps left and none are processing
     # there must be a loop
     if items_with_deps:
+        LOG.debug(_(
+            "There was a dependency problem. Look at the debug.svg generated "
+            "by the following command and try to find a loop:\n"
+            "echo '{}' | dot -Tsvg -odebug.svg"
+        ).format("\\n".join(graph_for_items(node.name, items_with_deps))))
+
         raise ItemDependencyError(
             _("bad dependencies between these items: {}").format(
-                ", ".join([repr(i) for i in items_with_deps]),
+                ", ".join([i.id for i in items_with_deps]),
             )
         )
 
