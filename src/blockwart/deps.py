@@ -218,10 +218,16 @@ def _inject_concurrency_blockers(items):
         while len(processed_items) < len(type_items):
             # find the first item without same-type deps we haven't
             # processed yet
-            item = filter(
-                lambda item: not item.__deps and item not in processed_items,
-                type_items,
-            )[0]
+            try:
+                item = filter(
+                    lambda item: not item.__deps and item not in processed_items,
+                    type_items,
+                )[0]
+            except IndexError:
+                # this can happen if the flattened deps of all items of
+                # this type already contain a dependency on annother
+                # item of this type
+                break
             if previous_item is not None:  # unless we're at the first item
                 # add dep to previous item -- unless it's already in there
                 if not previous_item.id in item._deps:
