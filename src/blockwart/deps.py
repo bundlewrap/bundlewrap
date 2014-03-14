@@ -195,7 +195,7 @@ def _inject_concurrency_blockers(items):
     item_types = []
     for item in items:
         if (
-            isinstance(item, DummyItem) or
+            item.ITEM_TYPE_NAME == 'dummy' or
             item.PARALLEL_APPLY or
             item.ITEM_TYPE_NAME in item_types
         ):
