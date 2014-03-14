@@ -295,13 +295,13 @@ class RemoveItemDependentsTest(TestCase):
     def test_recursive_removal(self):
         item1 = MagicMock()
         item1.id = "item1"
-        item1.depends = ["item2"]
+        item1._deps = ["item2"]
         item2 = MagicMock()
         item2.id = "item2"
-        item2.depends = ["item3"]
+        item2._deps = ["item3"]
         item3 = MagicMock()
         item3.id = "item3"
-        item3.depends = []
+        item3._deps = []
         items = [item1, item2, item3]
 
         self.assertEqual(
