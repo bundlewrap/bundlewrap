@@ -141,7 +141,8 @@ def apply_items(node, workers=1, interactive=False):
                     for skipped_item in skipped_items:
                         if skipped_item.ITEM_TYPE_NAME == 'dummy':
                             continue
-                        print(format_item_result(None, skipped_item))
+                        if interactive:
+                            print(format_item_result(skipped_item.STATUS_SKIPPED, skipped_item))
                         yield (skipped_item.id, skipped_item.STATUS_SKIPPED)
                 else:
                     # if an item is applied successfully, all
