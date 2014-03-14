@@ -352,7 +352,8 @@ class File(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        self.node.run("rm -rf -- {}".format(quote(self.name)))
+        if status.info['path_info'].exists:
+            self.node.run("rm -rf -- {}".format(quote(self.name)))
         if not self.attributes['delete']:
             self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
             self._fix_content(status)
