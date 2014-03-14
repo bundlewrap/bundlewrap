@@ -330,9 +330,11 @@ def remove_item_dependents(items, dep):
     """
     removed_items = []
     for item in items:
-            items.remove(item)
         if dep in item._deps:
             removed_items.append(item)
+
+    for item in removed_items:
+        items.remove(item)
 
     if removed_items:
         LOG.debug(
