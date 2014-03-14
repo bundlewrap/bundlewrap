@@ -330,14 +330,8 @@ def remove_item_dependents(items, dep):
     """
     removed_items = []
     for item in items:
-        # remove failed item from static and concurrency blocker deps
-        try:
-            item._deps.remove(dep)
-        except ValueError:
-            pass
-        # only cascade item abort if it was an explicit dep
-        if dep in item.depends:
             items.remove(item)
+        if dep in item._deps:
             removed_items.append(item)
 
     if removed_items:
