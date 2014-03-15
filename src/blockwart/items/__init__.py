@@ -63,11 +63,11 @@ class Item(object):
     """
     A single piece of configuration (e.g. a file, a package, a service).
     """
+    BLOCK_CONCURRENT = []
     BUNDLE_ATTRIBUTE_NAME = None
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
-    PARALLEL_APPLY = True
     REQUIRED_ATTRIBUTES = []
     STATUS_OK = 1
     STATUS_FIXED = 2

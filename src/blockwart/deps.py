@@ -73,12 +73,12 @@ def find_item(item_id, items):
     return item
 
 
-def _find_items_of_type(item_type, items):
+def _find_items_of_types(item_types, items):
     """
-    Returns a subset of items with the given type.
+    Returns a subset of items with any of the given types.
     """
     return filter(
-        lambda item: item.id.startswith(item_type + ":"),
+        lambda item: item.id.split(":", 1)[0] in item_types,
         items,
     )
 
@@ -196,22 +196,22 @@ def _inject_concurrency_blockers(items):
     for item in items:
         if (
             item.ITEM_TYPE_NAME == 'dummy' or
-            item.PARALLEL_APPLY or
-            item.ITEM_TYPE_NAME in item_types
+            item.__class__ in item_types or
+            not item.BLOCK_CONCURRENT
         ):
             continue
         else:
-            item_types.append(item.ITEM_TYPE_NAME)
+            item_types.append(item.__class__)
 
     # daisy-chain all other items of the same type (linked list style)
     # while respecting existing inter-item dependencies
     for item_type in item_types:
-        type_items = _find_items_of_type(item_type, items)
+        type_items = _find_items_of_types(item_type.BLOCK_CONCURRENT, items)
         processed_items = []
         for item in type_items:
             # disregard deps to items of other types
             item.__deps = filter(
-                lambda dep: dep.startswith(item_type + ":"),
+                lambda dep: dep.split(":", 1)[0] in item_type.BLOCK_CONCURRENT,
                 item._flattened_deps,
             )
         previous_item = None
@@ -232,6 +232,7 @@ def _inject_concurrency_blockers(items):
                 # add dep to previous item -- unless it's already in there
                 if not previous_item.id in item._deps:
                     item._deps.append(previous_item.id)
+                    item._flattened_deps.append(previous_item.id)
             previous_item = item
             processed_items.append(item)
             for other_item in type_items:

@@ -41,6 +41,7 @@ class PacmanPkg(Item):
     """
     A package installed by pacman.
     """
+    BLOCK_CONCURRENT = ["pkg_pacman"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_pacman"
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
@@ -48,7 +49,6 @@ class PacmanPkg(Item):
         'tarball': None,
     }
     ITEM_TYPE_NAME = "pkg_pacman"
-    PARALLEL_APPLY = False
 
     def __repr__(self):
         return "<PacmanPkg name:{} installed:{} tarball:{}>".format(

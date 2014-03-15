@@ -35,13 +35,13 @@ class AptPkg(Item):
     """
     A package installed by apt.
     """
+    BLOCK_CONCURRENT = ["pkg_apt"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_apt"
     DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'installed': True,
     }
     ITEM_TYPE_NAME = "pkg_apt"
-    PARALLEL_APPLY = False
 
     def __repr__(self):
         return "<AptPkg name:{} installed:{}>".format(
