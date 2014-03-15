@@ -45,6 +45,7 @@ def bw_repo_plot(repo, args):
     for line in graph_for_items(
         node.name,
         prepare_dependencies(node.items),
+        cluster=args.cluster,
         static=args.depends_static,
         regular=args.depends_regular,
         auto=args.depends_auto,

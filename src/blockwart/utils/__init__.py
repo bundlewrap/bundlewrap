@@ -87,7 +87,7 @@ def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
         return env.get(attrname, default)
 
 
-def graph_for_items(title, items, static=True, regular=True, auto=True):
+def graph_for_items(title, items, cluster=True, static=True, regular=True, auto=True):
     yield "digraph blockwart"
     yield "{"
 
@@ -112,22 +112,23 @@ def graph_for_items(title, items, static=True, regular=True, auto=True):
     for item in items:
         item_ids.append(item.id)
 
-    # Define which items belong to which bundle
-    bundle_number = 0
-    bundles_seen = []
-    for item in items:
-        if item.bundle is None or item.bundle.name in bundles_seen:
-            continue
-        yield "subgraph cluster_{}".format(bundle_number)
-        bundle_number += 1
-        yield "{"
-        yield "label = \"{}\"".format(item.bundle.name)
-        yield "\"bundle:{}\"".format(item.bundle.name)
-        for bitem in item.bundle.items:
-            if bitem.id in item_ids:
-                yield "\"{}\"".format(bitem.id)
-        yield "}"
-        bundles_seen.append(item.bundle.name)
+    if cluster:
+        # Define which items belong to which bundle
+        bundle_number = 0
+        bundles_seen = []
+        for item in items:
+            if item.bundle is None or item.bundle.name in bundles_seen:
+                continue
+            yield "subgraph cluster_{}".format(bundle_number)
+            bundle_number += 1
+            yield "{"
+            yield "label = \"{}\"".format(item.bundle.name)
+            yield "\"bundle:{}\"".format(item.bundle.name)
+            for bitem in item.bundle.items:
+                if bitem.id in item_ids:
+                    yield "\"{}\"".format(bitem.id)
+            yield "}"
+            bundles_seen.append(item.bundle.name)
 
     # Define dependencies between items
     for item in items:

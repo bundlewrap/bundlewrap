@@ -191,6 +191,12 @@ def build_parser_bw():
         help=_("node to plot"),
     )
     parser_repo_subparsers_plot.add_argument(
+        "--no-cluster",
+        action='store_false',
+        dest='cluster',
+        help=_("do not cluster items by bundle"),
+    )
+    parser_repo_subparsers_plot.add_argument(
         "--no-depends-auto",
         action='store_false',
         dest='depends_auto',
