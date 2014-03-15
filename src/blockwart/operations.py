@@ -114,12 +114,13 @@ def run(hostname, command, ignore_failure=False, stderr=None,
 
     if not fabric_result.succeeded and not ignore_failure:
         raise RemoteException(_(
-            "Non-zero return code running '{command}' on '{host}': {result}").format(
-                command=command,
-                host=hostname,
-                result=fabric_result,
-            )
-        )
+            "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}"
+        ).format(
+            command=command,
+            host=hostname,
+            rcode=fabric_result.return_code,
+            result=str(fabric_result) + fabric_result.stderr,
+        ))
 
     result = RunResult()
     result.stdout = str(fabric_result)
