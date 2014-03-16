@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from blockwart.exceptions import BundleError
-from blockwart.items import Item, ItemStatus
+from blockwart.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
 from blockwart.items.users import _USERNAME_VALID_CHARACTERS
 from blockwart.utils import LOG
 from blockwart.utils.text import mark_for_translation as _
@@ -89,10 +89,13 @@ class Group(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if attributes.get('delete', False) and len(attributes.keys()) > 1:
-            raise BundleError(_(
-                "{item} from bundle '{bundle}' cannot have other attributes besides 'delete'"
-            ).format(item=item_id, bundle=bundle.name))
+        if attributes.get('delete', False):
+            for attr in attributes.keys():
+                if attr not in ['delete'] + BUILTIN_ITEM_ATTRIBUTES.keys():
+                    raise BundleError(_(
+                        "{item} from bundle '{bundle}' cannot have other "
+                        "attributes besides 'delete'"
+                    ).format(item=item_id, bundle=bundle.name))
 
         if not attributes.get('delete', False) and 'gid' not in attributes.keys():
             raise BundleError(_(

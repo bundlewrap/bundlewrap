@@ -7,7 +7,7 @@ from string import ascii_lowercase, digits
 from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from blockwart.exceptions import BundleError
-from blockwart.items import Item, ItemStatus
+from blockwart.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
 from blockwart.utils import LOG
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold
@@ -255,10 +255,13 @@ class User(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if attributes.get('delete', False) and len(attributes.keys()) > 1:
-            raise BundleError(_(
-                "{item} from bundle '{bundle}' cannot have other attributes besides 'delete'"
-            ).format(bundle=bundle.name, item=item_id))
+        if attributes.get('delete', False):
+            for attr in attributes.keys():
+                if attr not in ['delete'] + BUILTIN_ITEM_ATTRIBUTES.keys():
+                    raise BundleError(_(
+                        "{item} from bundle '{bundle}' cannot have other "
+                        "attributes besides 'delete'"
+                    ).format(item=item_id, bundle=bundle.name))
         elif not attributes.get('delete', False) and not (
             'gid' in attributes or
             'groups' in attributes or
