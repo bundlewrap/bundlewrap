@@ -161,10 +161,10 @@ Another builtin item attribute is ``unless``. For example, it can be used to con
 .. code-block:: python
 
 	file = {
-		"/path/to/file": {
-			[...]
-			"unless": "test -x /path/to/file",
-		},
+	    "/path/to/file": {
+	        [...]
+	        "unless": "test -x /path/to/file",
+	    },
 	}
 
 This will run :command:`test -x /path/to/file` before doing anything with the item. If the command returns 0, no action will be taken to "correct" the item.
