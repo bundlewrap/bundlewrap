@@ -33,11 +33,11 @@ class SvcSystemV(Item):
     A service managed by traditional System V init scripts.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_systemv"
-    DEPENDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
     ITEM_ATTRIBUTES = {
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_systemv"
+    REQUIRES_STATIC = ["pkg_apt:", "pkg_pacman:"]
 
     def __repr__(self):
         return "<SvcSystemV name:{} running:{}>".format(

@@ -142,7 +142,7 @@ def graph_for_items(
     # Define dependencies between items
     for item in items:
         if static:
-            for dep in item.DEPENDS_STATIC:
+            for dep in item.REQUIRES_STATIC:
                 if dep in item_ids:
                     yield "\"{}\" -> \"{}\" [color=\"#3991CC\",penwidth=2]".format(item.id, dep)
 
@@ -159,7 +159,7 @@ def graph_for_items(
                 elif dep in item._reverse_deps:
                     if reverse:
                         yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep)
-                elif dep not in item.DEPENDS_STATIC and dep not in item.requires:
+                elif dep not in item.REQUIRES_STATIC and dep not in item.requires:
                     if dep in item_ids:
                         yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
 

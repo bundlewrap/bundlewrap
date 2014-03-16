@@ -39,13 +39,13 @@ class Directory(Item):
     A directory.
     """
     BUNDLE_ATTRIBUTE_NAME = "directories"
-    DEPENDS_STATIC = ["user:"]
     ITEM_ATTRIBUTES = {
         'group': "root",
         'mode': "0775",
         'owner': "root",
     }
     ITEM_TYPE_NAME = "directory"
+    REQUIRES_STATIC = ["user:"]
 
     def __repr__(self):
         return "<Directory path:{} owner:{} group:{} mode:{}>".format(

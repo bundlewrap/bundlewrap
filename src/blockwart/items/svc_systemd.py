@@ -33,11 +33,11 @@ class SvcSystemd(Item):
     A service managed by systemd.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_systemd"
-    DEPENDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
     ITEM_ATTRIBUTES = {
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_systemd"
+    REQUIRES_STATIC = ["pkg_apt:", "pkg_pacman:"]
 
     def __repr__(self):
         return "<SvcSystemd name:{} running:{}>".format(

@@ -20,7 +20,6 @@ class Symlink(Item):
     A symbolic link.
     """
     BUNDLE_ATTRIBUTE_NAME = "symlinks"
-    DEPENDS_STATIC = ["user:"]
     ITEM_ATTRIBUTES = {
         'group': "root",
         'owner': "root",
@@ -28,6 +27,7 @@ class Symlink(Item):
     }
     ITEM_TYPE_NAME = "symlink"
     REQUIRED_ATTRIBUTES = ['target']
+    REQUIRES_STATIC = ["user:"]
 
     def __repr__(self):
         return "<Symlink path:{} target:{} owner:{} group:{}>".format(

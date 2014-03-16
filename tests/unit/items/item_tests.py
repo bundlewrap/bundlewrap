@@ -9,7 +9,7 @@ from blockwart.exceptions import BundleError
 class MockItem(Item):
     BUNDLE_ATTRIBUTE_NAME = "mock"
     ITEM_TYPE_NAME = "type1"
-    DEPENDS_STATIC = []
+    REQUIRES_STATIC = []
 
 
 class ApplyTest(TestCase):

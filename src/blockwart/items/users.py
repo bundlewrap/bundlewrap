@@ -64,7 +64,6 @@ class User(Item):
     A user account.
     """
     BUNDLE_ATTRIBUTE_NAME = "users"
-    DEPENDS_STATIC = ["group:"]
     ITEM_ATTRIBUTES = {
         'delete': False,
         'full_name': "",
@@ -80,6 +79,7 @@ class User(Item):
         'use_shadow': None,
     }
     ITEM_TYPE_NAME = "user"
+    REQUIRES_STATIC = ["group:"]
 
     def __repr__(self):
         return "<User name:{} uid:{} gid:{} home:{} shell:{} groups:{}>".format(

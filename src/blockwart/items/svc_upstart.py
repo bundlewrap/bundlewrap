@@ -30,11 +30,11 @@ class SvcUpstart(Item):
     A service managed by Upstart.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_upstart"
-    DEPENDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
     ITEM_ATTRIBUTES = {
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_upstart"
+    REQUIRES_STATIC = ["pkg_apt:", "pkg_pacman:"]
 
     def __repr__(self):
         return "<SvcUpstart name:{} running:{}>".format(

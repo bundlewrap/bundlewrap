@@ -67,10 +67,10 @@ class Item(object):
     """
     BLOCK_CONCURRENT = []
     BUNDLE_ATTRIBUTE_NAME = None
-    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
     REQUIRED_ATTRIBUTES = []
+    REQUIRES_STATIC = []
     STATUS_OK = 1
     STATUS_FIXED = 2
     STATUS_FAILED = 3
@@ -150,7 +150,7 @@ class Item(object):
 
     def _prepare_deps(self, items):
         # merge static and user-defined deps
-        self._deps = list(self.DEPENDS_STATIC)
+        self._deps = list(self.REQUIRES_STATIC)
         self._deps += self.requires
         self._deps += list(self.get_auto_deps(items))
 
