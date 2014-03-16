@@ -226,7 +226,7 @@ def _inject_concurrency_blockers(items):
                 )[0]
             except IndexError:
                 # this can happen if the flattened deps of all items of
-                # this type already contain a dependency on annother
+                # this type already contain a dependency on another
                 # item of this type
                 break
             if previous_item is not None:  # unless we're at the first item
