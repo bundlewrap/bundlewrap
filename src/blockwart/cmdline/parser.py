@@ -215,6 +215,12 @@ def build_parser_bw():
         help=_("do not show regular user-defined dependencies"),
     )
     parser_repo_subparsers_plot.add_argument(
+        "--no-depends-reverse",
+        action='store_false',
+        dest='depends_reverse',
+        help=_("do not show reverse dependencies ('required_by')"),
+    )
+    parser_repo_subparsers_plot.add_argument(
         "--no-depends-static",
         action='store_false',
         dest='depends_static',

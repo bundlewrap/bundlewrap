@@ -49,6 +49,7 @@ def bw_repo_plot(repo, args):
         concurrency=args.depends_concurrency,
         static=args.depends_static,
         regular=args.depends_regular,
+        reverse=args.depends_reverse,
         auto=args.depends_auto,
     ):
         yield line
