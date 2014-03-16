@@ -16,6 +16,7 @@ class BundleItem(object):
         self.depends = []
         self.bundle = bundle
         self.ITEM_TYPE_NAME = 'dummy'
+        self.required_by = []
         self.triggers = []
         self._deps = []
 
@@ -44,6 +45,7 @@ class DummyItem(object):
         self.depends = []
         self.item_type = item_type
         self.ITEM_TYPE_NAME = 'dummy'
+        self.required_by = []
         self.triggers = []
         self._deps = []
 
@@ -275,6 +277,41 @@ def _inject_dummy_items(items):
     return list(dummy_items.values()) + items
 
 
+def _inject_reverse_dependencies(items):
+    """
+    Looks for 'required_by' deps and creates standard dependencies
+    accordingly.
+    """
+    def add_dep(item, dep):
+        if dep not in item._deps:
+            item._deps.append(dep)
+            item._reverse_deps.append(dep)
+
+    for item in items:
+        item._reverse_deps = []
+
+    for item in items:
+        for depending_item_id in item.required_by:
+            # bundle items
+            if depending_item_id.startswith("bundle:"):
+                depending_bundle_name = depending_item_id.split(":")[1]
+                for depending_item in items:
+                    if depending_item.bundle.name == depending_bundle_name:
+                        add_dep(depending_item, item.id)
+
+            # dummy items
+            if depending_item_id.endswith(":"):
+                target_type = depending_item_id[:-1]
+                for depending_item in _find_items_of_types([target_type], items):
+                    add_dep(depending_item, item.id)
+
+            # single items
+            else:
+                depending_item = find_item(depending_item_id, items)
+                add_dep(depending_item, item.id)
+    return items
+
+
 def _inject_trigger_dependencies(items):
     """
     Injects dependencies from all triggered items to their triggering
@@ -321,6 +358,7 @@ def prepare_dependencies(items):
     items = _inject_dummy_items(items)
     items = _inject_bundle_items(items)
     items = _inject_canned_actions(items)
+    items = _inject_reverse_dependencies(items)
     items = _inject_trigger_dependencies(items)
     items = _flatten_dependencies(items)
     items = _inject_concurrency_blockers(items)

@@ -122,6 +122,17 @@ The first item (``item1``, specific attributes have been omitted) depends on a f
 
 |
 
+``required_by``
+###############
+
+This attribute is an alternative way of defining dependencies. It works just like ``depends``, but in the other direction. There are only three scenarios where you should use ``required_by``:
+
+* if you need all items a certain type to depend on something or
+* if you need all items in a bundle to depend on something or
+* if you need an item in a bundle you can't edit (e.g. because it's community-maintained) to depend on something in your bundles
+
+|
+
 .. _triggers:
 
 ``triggers`` and ``triggered``
