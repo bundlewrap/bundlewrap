@@ -194,6 +194,7 @@ def _inject_concurrency_blockers(items):
     # find every item type that cannot be applied in parallel
     item_types = []
     for item in items:
+        item._concurrency_deps = []
         if (
             item.ITEM_TYPE_NAME == 'dummy' or
             item.__class__ in item_types or
@@ -232,6 +233,7 @@ def _inject_concurrency_blockers(items):
                 # add dep to previous item -- unless it's already in there
                 if not previous_item.id in item._deps:
                     item._deps.append(previous_item.id)
+                    item._concurrency_deps.append(previous_item.id)
                     item._flattened_deps.append(previous_item.id)
             previous_item = item
             processed_items.append(item)

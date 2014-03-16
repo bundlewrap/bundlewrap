@@ -203,6 +203,12 @@ def build_parser_bw():
         help=_("do not show auto-generated dependencies and items"),
     )
     parser_repo_subparsers_plot.add_argument(
+        "--no-depends-conc",
+        action='store_false',
+        dest='depends_concurrency',
+        help=_("do not show concurrency blocker dependencies"),
+    )
+    parser_repo_subparsers_plot.add_argument(
         "--no-depends-regular",
         action='store_false',
         dest='depends_regular',

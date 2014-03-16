@@ -87,7 +87,7 @@ def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
         return env.get(attrname, default)
 
 
-def graph_for_items(title, items, cluster=True, static=True, regular=True, auto=True):
+def graph_for_items(title, items, cluster=True, concurrency=True, static=True, regular=True, auto=True):
     yield "digraph blockwart"
     yield "{"
 
@@ -144,7 +144,10 @@ def graph_for_items(title, items, cluster=True, static=True, regular=True, auto=
 
         if auto:
             for dep in item._deps:
-                if dep not in item.DEPENDS_STATIC and dep not in item.depends:
+                if dep in item._concurrency_deps:
+                    if concurrency:
+                        yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)
+                elif dep not in item.DEPENDS_STATIC and dep not in item.depends:
                     if dep in item_ids:
                         yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
 

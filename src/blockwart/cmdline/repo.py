@@ -46,6 +46,7 @@ def bw_repo_plot(repo, args):
         node.name,
         prepare_dependencies(node.items),
         cluster=args.cluster,
+        concurrency=args.depends_concurrency,
         static=args.depends_static,
         regular=args.depends_regular,
         auto=args.depends_auto,
