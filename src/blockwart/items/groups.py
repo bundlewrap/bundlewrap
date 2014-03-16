@@ -28,7 +28,6 @@ class Group(Item):
     A group.
     """
     BUNDLE_ATTRIBUTE_NAME = "groups"
-    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'delete': False,
         'gid': None,

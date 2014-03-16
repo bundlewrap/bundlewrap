@@ -37,7 +37,6 @@ class AptPkg(Item):
     """
     BLOCK_CONCURRENT = ["pkg_apt"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_apt"
-    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'installed': True,
     }

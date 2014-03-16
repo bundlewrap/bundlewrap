@@ -43,7 +43,6 @@ class PacmanPkg(Item):
     """
     BLOCK_CONCURRENT = ["pkg_pacman"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_pacman"
-    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'installed': True,
         'tarball': None,

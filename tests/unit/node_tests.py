@@ -38,7 +38,6 @@ def get_mock_item(itype, name, deps_static, deps):
     item = MockItem(bundle, name, {'requires': deps}, skip_validation=True)
     item.ITEM_TYPE_NAME = itype
     item.REQUIRES_STATIC = deps_static
-    item.PARALLEL_APPLY = True
     return item
 
 

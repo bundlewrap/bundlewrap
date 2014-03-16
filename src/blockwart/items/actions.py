@@ -11,7 +11,6 @@ class Action(Item):
     A command that is run on a node before or after items are applied.
     """
     BUNDLE_ATTRIBUTE_NAME = 'actions'
-    DEPENDS_STATIC = []
     ITEM_ATTRIBUTES = {
         'command': None,
         'expected_stderr': None,
