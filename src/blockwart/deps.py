@@ -207,15 +207,19 @@ def _inject_concurrency_blockers(items):
         else:
             item_types.append(item.__class__)
 
-    # daisy-chain all other items of the same type (linked list style)
-    # while respecting existing inter-item dependencies
+    # daisy-chain all items of the blocking type and all items of the
+    # blocked types while respecting existing dependencies between them
     for item_type in item_types:
-        type_items = _find_items_of_types(item_type.BLOCK_CONCURRENT, items)
+        blocked_types = item_type.BLOCK_CONCURRENT + [item_type.ITEM_TYPE_NAME]
+        type_items = _find_items_of_types(
+            blocked_types,
+            items,
+        )
         processed_items = []
         for item in type_items:
             # disregard deps to items of other types
             item.__deps = filter(
-                lambda dep: dep.split(":", 1)[0] in item_type.BLOCK_CONCURRENT,
+                lambda dep: dep.split(":", 1)[0] in blocked_types,
                 item._flattened_deps,
             )
         previous_item = None
