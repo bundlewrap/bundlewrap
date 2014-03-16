@@ -71,11 +71,11 @@ class SvcUpstart(Item):
         return {
             'reload': {
                 'command': "reload {}".format(self.name),
-                'depends': [self.id],
+                'requires': [self.id],
             },
             'restart': {
                 'command': "restart {}".format(self.name),
-                'depends': [self.id],
+                'requires': [self.id],
             },
         }
 

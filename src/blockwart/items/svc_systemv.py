@@ -74,11 +74,11 @@ class SvcSystemV(Item):
         return {
             'reload': {
                 'command': "/etc/init.d/{} reload".format(self.name),
-                'depends': [self.id],
+                'requires': [self.id],
             },
             'restart': {
                 'command': "/etc/init.d/{} restart".format(self.name),
-                'depends': [self.id],
+                'requires': [self.id],
             },
         }
 

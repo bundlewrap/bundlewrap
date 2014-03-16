@@ -95,23 +95,23 @@ Builtin attributes
 
 There are also attributes that can be applied to any kind of item.
 
-``depends``
-###########
+``requires``
+############
 
-One such attribute is ``depends``. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on all users). Here are two examples:
+One such attribute is ``requires``. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on all users). Here are two examples:
 
 .. code-block:: python
 
 	my_items = {
 	    'item1': {
 	        [...]
-	        'depends': [
+	        'requires': [
 	            'file:/etc/foo.conf',
 	        ],
 	    },
 	    'item2': {
 	        ...
-	        'depends': [
+	        'requires': [
 	            'pkg_apt:',
 	            'bundle:foo',
 	        ],
@@ -125,7 +125,7 @@ The first item (``item1``, specific attributes have been omitted) depends on a f
 ``required_by``
 ###############
 
-This attribute is an alternative way of defining dependencies. It works just like ``depends``, but in the other direction. There are only three scenarios where you should use ``required_by``:
+This attribute is an alternative way of defining dependencies. It works just like ``requires``, but in the other direction. There are only three scenarios where you should use ``required_by``:
 
 * if you need all items a certain type to depend on something or
 * if you need all items in a bundle to depend on something or
@@ -206,7 +206,7 @@ The following example will offer to run an ``apt-get update`` before installing 
 
 	pkg_apt = {
 	    'somepkg': {
-	        'depends': ["action:apt_update"],
+	        'requires': ["action:apt_update"],
 	    },
 	}
 

@@ -16,7 +16,7 @@ from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': True,
-    'depends': [],
+    'requires': [],
     'required_by': [],
     'triggered': False,
     'triggers': [],
@@ -151,7 +151,7 @@ class Item(object):
     def _prepare_deps(self, items):
         # merge static and user-defined deps
         self._deps = list(self.DEPENDS_STATIC)
-        self._deps += self.depends
+        self._deps += self.requires
         self._deps += list(self.get_auto_deps(items))
 
     @classmethod

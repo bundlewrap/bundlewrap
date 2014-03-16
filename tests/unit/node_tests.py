@@ -35,7 +35,7 @@ del Item.__reduce__  # we don't need the custom pickle-magic for our
 def get_mock_item(itype, name, deps_static, deps):
     bundle = MockBundle()
     bundle.node = MockNode()
-    item = MockItem(bundle, name, {'depends': deps}, skip_validation=True)
+    item = MockItem(bundle, name, {'requires': deps}, skip_validation=True)
     item.ITEM_TYPE_NAME = itype
     item.DEPENDS_STATIC = deps_static
     item.PARALLEL_APPLY = True

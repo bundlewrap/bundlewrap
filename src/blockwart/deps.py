@@ -13,9 +13,9 @@ class BundleItem(object):
 
     def __init__(self, bundle):
         self.DEPENDS_STATIC = []
-        self.depends = []
         self.bundle = bundle
         self.ITEM_TYPE_NAME = 'dummy'
+        self.requires = []
         self.required_by = []
         self.triggers = []
         self._deps = []
@@ -42,9 +42,9 @@ class DummyItem(object):
 
     def __init__(self, item_type):
         self.DEPENDS_STATIC = []
-        self.depends = []
         self.item_type = item_type
         self.ITEM_TYPE_NAME = 'dummy'
+        self.requires = []
         self.required_by = []
         self.triggers = []
         self._deps = []
