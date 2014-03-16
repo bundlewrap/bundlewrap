@@ -95,8 +95,8 @@ Builtin attributes
 
 There are also attributes that can be applied to any kind of item.
 
-Item dependencies
-#################
+``depends``
+###########
 
 One such attribute is ``depends``. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on all users). Here are two examples:
 
@@ -124,8 +124,8 @@ The first item (``item1``, specific attributes have been omitted) depends on a f
 
 .. _triggers:
 
-Triggers
-########
+``triggers`` and ``triggered``
+##############################
 
 In some scenarios, you may want to execute an :ref:`action <item_action>` only when an item is fixed (e.g. restart a daemon after a config file has changed or run ``postmap`` after updating an alias file). To do this, Blockwart has the builtin atttribute ``triggers``. You can use it to point to any item that has its ``triggered`` attribute set to ``True``. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).
 
@@ -153,8 +153,8 @@ The above example will run :command:`service daemon restart` every time Blockwar
 
 .. _unless:
 
-Preconditions
-#############
+``unless``
+##########
 
 Another builtin item attribute is ``unless``. For example, it can be used to construct a one-off file item where Blockwart will only create the file once, but won't check or modify its contents once it exists.
 
