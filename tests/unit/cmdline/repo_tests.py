@@ -3,6 +3,7 @@ from unittest import TestCase
 from mock import MagicMock, patch
 
 from blockwart.cmdline import repo
+from blockwart.items import Item
 
 
 class DebugTest(TestCase):
@@ -58,25 +59,29 @@ class PlotTest(TestCase):
     Tests blockwart.cmdline.repo.bw_repo_plot.
     """
     def test_output(self):
-        item1 = MagicMock()
-        item1.DEPENDS_STATIC = []
-        item1.depends = []
-        item1.id = "type1:item1"
+        class FakeItem1(Item):
+            BUNDLE_ATTRIBUTE_NAME = "fakes1"
+            ITEM_TYPE_NAME = "type1"
 
-        item2 = MagicMock()
-        item2.DEPENDS_STATIC = []
-        item2.depends = []
-        item2.id = "type1:item2"
+        class FakeItem2(Item):
+            BUNDLE_ATTRIBUTE_NAME = "fakes1"
+            ITEM_TYPE_NAME = "type2"
 
-        item3 = MagicMock()
-        item3.DEPENDS_STATIC = []
+        class FakeItem3(Item):
+            BUNDLE_ATTRIBUTE_NAME = "fakes1"
+            ITEM_TYPE_NAME = "type3"
+
+        class FakeBundle(object):
+            bundle_dir = "/dev/null"
+            node = None
+
+        item1 = FakeItem1(FakeBundle(), "item1", {})
+        item2 = FakeItem1(FakeBundle(), "item2", {})
+        item3 = FakeItem2(FakeBundle(), "item1", {})
         item3.depends = ["type1:item1"]
-        item3.id = "type2:item1"
 
-        item4 = MagicMock()
+        item4 = FakeItem3(FakeBundle(), "item1", {})
         item4.DEPENDS_STATIC = ["type2:"]
-        item4.depends = []
-        item4.id = "type3:item1"
 
         bundle1 = MagicMock()
         bundle1.name = "bundle1"
