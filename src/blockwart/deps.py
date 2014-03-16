@@ -73,12 +73,15 @@ def find_item(item_id, items):
     return item
 
 
-def _find_items_of_types(item_types, items):
+def _find_items_of_types(item_types, items, include_dummy=False):
     """
     Returns a subset of items with any of the given types.
     """
     return filter(
-        lambda item: item.id.split(":", 1)[0] in item_types,
+        lambda item:
+            item.id.split(":", 1)[0] in item_types and (
+                include_dummy or not item.id.endswith(":")
+            ),
         items,
     )
 
