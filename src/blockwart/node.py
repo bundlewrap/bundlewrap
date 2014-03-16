@@ -126,7 +126,7 @@ def apply_items(node, workers=1, interactive=False):
                     Item.STATUS_SKIPPED,
                     Item.STATUS_ACTION_FAILED,
                     Item.STATUS_ACTION_SKIPPED,
-                ):
+                ) and item.cascade_skip:
                     # if an item fails or is skipped, all items that depend on
                     # it shall be removed from the queue
                     items_with_deps, skipped_items = remove_item_dependents(
@@ -157,7 +157,10 @@ def apply_items(node, workers=1, interactive=False):
                 items_with_deps, items_without_deps = \
                     split_items_without_deps(items_with_deps + items_without_deps)
 
-                if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_OK):
+                if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_OK) or (
+                    status_code in (Item.STATUS_SKIPPED, Item.STATUS_ACTION_SKIPPED) and
+                    not item.cascade_skip
+                ):
                     # action succeeded or item was fixed
                     for triggered_item_id in item.triggers:
                         triggered_item = find_item(

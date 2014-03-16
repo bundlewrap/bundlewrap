@@ -171,6 +171,36 @@ This will run :command:`test -x /path/to/file` before doing anything with the it
 
 |
 
+``cascade_skip``
+################
+
+There are some situations where you don't want to default behavior of skipping everything that depends on a skipped item. That's where ``cascade_skip`` comes in. Set it to ``False`` and skipping an item won't skip those that depend on it. Note that items can be skipped
+
+* interactively or
+* because they haven't been :ref:`triggered <triggers>` or
+* because one of their dependencies failed or
+* they failed their :ref:`'unless' condition<unless>` or
+* because an :doc:`action <item_action>` had its ``interactive`` attribute set to ``True`` during a non-interactive run
+
+The following example will offer to run an ``apt-get update`` before installing a package, but continue to install the package even if the update is declined interactively.
+
+.. code-block:: python
+
+	actions = {
+	    'apt_update': {
+	        'cascade_skip': False,
+	        'command': "apt-get update",
+	    },
+	}
+
+	pkg_apt = {
+	    'somepkg': {
+	        'depends': ["action:apt_update"],
+	    },
+	}
+
+|
+
 .. _canned_actions:
 
 Canned actions

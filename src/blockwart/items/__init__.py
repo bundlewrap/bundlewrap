@@ -15,6 +15,7 @@ from blockwart.utils.text import bold, wrap_question
 from blockwart.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
+    'cascade_skip': True,
     'depends': [],
     'triggered': False,
     'triggers': [],
