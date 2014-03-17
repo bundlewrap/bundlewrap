@@ -122,10 +122,10 @@ The first item (``item1``, specific attributes have been omitted) depends on a f
 
 |
 
-``required_by``
-###############
+``needed_by``
+#############
 
-This attribute is an alternative way of defining dependencies. It works just like ``needs``, but in the other direction. There are only three scenarios where you should use ``required_by``:
+This attribute is an alternative way of defining dependencies. It works just like ``needs``, but in the other direction. There are only three scenarios where you should use ``needed_by``:
 
 * if you need all items a certain type to depend on something or
 * if you need all items in a bundle to depend on something or

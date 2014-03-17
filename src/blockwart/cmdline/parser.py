@@ -218,7 +218,7 @@ def build_parser_bw():
         "--no-depends-reverse",
         action='store_false',
         dest='depends_reverse',
-        help=_("do not show reverse dependencies ('required_by')"),
+        help=_("do not show reverse dependencies ('needed_by')"),
     )
     parser_repo_subparsers_plot.add_argument(
         "--no-depends-static",

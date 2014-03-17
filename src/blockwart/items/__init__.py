@@ -17,7 +17,7 @@ from blockwart.utils.ui import ask_interactively
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': True,
     'needs': [],
-    'required_by': [],
+    'needed_by': [],
     'triggered': False,
     'triggers': [],
     'unless': "",
