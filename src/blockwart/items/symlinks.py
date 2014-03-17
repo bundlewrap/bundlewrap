@@ -27,7 +27,7 @@ class Symlink(Item):
     }
     ITEM_TYPE_NAME = "symlink"
     REQUIRED_ATTRIBUTES = ['target']
-    REQUIRES_STATIC = ["user:"]
+    NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
         return "<Symlink path:{} target:{} owner:{} group:{}>".format(

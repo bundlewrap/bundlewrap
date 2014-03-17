@@ -45,7 +45,7 @@ class Directory(Item):
         'owner': "root",
     }
     ITEM_TYPE_NAME = "directory"
-    REQUIRES_STATIC = ["user:"]
+    NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
         return "<Directory path:{} owner:{} group:{} mode:{}>".format(

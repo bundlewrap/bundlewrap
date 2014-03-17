@@ -70,7 +70,7 @@ class Item(object):
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
     REQUIRED_ATTRIBUTES = []
-    REQUIRES_STATIC = []
+    NEEDS_STATIC = []
     STATUS_OK = 1
     STATUS_FIXED = 2
     STATUS_FAILED = 3
@@ -150,7 +150,7 @@ class Item(object):
 
     def _prepare_deps(self, items):
         # merge static and user-defined deps
-        self._deps = list(self.REQUIRES_STATIC)
+        self._deps = list(self.NEEDS_STATIC)
         self._deps += self.needs
         self._deps += list(self.get_auto_deps(items))
 

@@ -37,7 +37,7 @@ class SvcSystemV(Item):
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_systemv"
-    REQUIRES_STATIC = ["pkg_apt:", "pkg_pacman:"]
+    NEEDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
 
     def __repr__(self):
         return "<SvcSystemV name:{} running:{}>".format(

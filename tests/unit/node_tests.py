@@ -23,7 +23,7 @@ class MockBundle(object):
 class MockItem(Item):
     BUNDLE_ATTRIBUTE_NAME = "mock"
     ITEM_TYPE_NAME = "type1"
-    REQUIRES_STATIC = []
+    NEEDS_STATIC = []
     _APPLY_RESULT = Item.STATUS_OK
 
     def apply(self, *args, **kwargs):
@@ -37,7 +37,7 @@ def get_mock_item(itype, name, deps_static, deps):
     bundle.node = MockNode()
     item = MockItem(bundle, name, {'needs': deps}, skip_validation=True)
     item.ITEM_TYPE_NAME = itype
-    item.REQUIRES_STATIC = deps_static
+    item.NEEDS_STATIC = deps_static
     return item
 
 

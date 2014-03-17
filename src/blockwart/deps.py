@@ -12,7 +12,7 @@ class BundleItem(object):
     PARALLEL_APPLY = True
 
     def __init__(self, bundle):
-        self.REQUIRES_STATIC = []
+        self.NEEDS_STATIC = []
         self.bundle = bundle
         self.ITEM_TYPE_NAME = 'dummy'
         self.needs = []
@@ -41,7 +41,7 @@ class DummyItem(object):
     bundle = None
 
     def __init__(self, item_type):
-        self.REQUIRES_STATIC = []
+        self.NEEDS_STATIC = []
         self.item_type = item_type
         self.ITEM_TYPE_NAME = 'dummy'
         self.needs = []

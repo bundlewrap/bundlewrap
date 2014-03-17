@@ -189,7 +189,7 @@ class File(Item):
         'source': None,
     }
     ITEM_TYPE_NAME = "file"
-    REQUIRES_STATIC = ["user:"]
+    NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
         return "<File path:{} owner:{} group:{} mode:{} content_hash:{}>".format(

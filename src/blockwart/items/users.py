@@ -79,7 +79,7 @@ class User(Item):
         'use_shadow': None,
     }
     ITEM_TYPE_NAME = "user"
-    REQUIRES_STATIC = ["group:"]
+    NEEDS_STATIC = ["group:"]
 
     def __repr__(self):
         return "<User name:{} uid:{} gid:{} home:{} shell:{} groups:{}>".format(

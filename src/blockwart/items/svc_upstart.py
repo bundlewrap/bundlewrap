@@ -34,7 +34,7 @@ class SvcUpstart(Item):
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_upstart"
-    REQUIRES_STATIC = ["pkg_apt:", "pkg_pacman:"]
+    NEEDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
 
     def __repr__(self):
         return "<SvcUpstart name:{} running:{}>".format(

@@ -10,7 +10,7 @@ from blockwart.items import Item
 class MockItem(Item):
     BUNDLE_ATTRIBUTE_NAME = "mock"
     ITEM_TYPE_NAME = "mock"
-    REQUIRES_STATIC = []
+    NEEDS_STATIC = []
 
     def get_canned_actions(self):
         return {
@@ -118,7 +118,7 @@ class InjectDummyItemsTest(TestCase):
         def make_item(item_id):
             item = FakeItem()
             item._deps = []
-            item.REQUIRES_STATIC = []
+            item.NEEDS_STATIC = []
             item.needs = []
             item.id = item_id
             return item

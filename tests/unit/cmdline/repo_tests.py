@@ -81,7 +81,7 @@ class PlotTest(TestCase):
         item3.needs = ["type1:item1"]
 
         item4 = FakeItem3(FakeBundle(), "item1", {})
-        item4.REQUIRES_STATIC = ["type2:"]
+        item4.NEEDS_STATIC = ["type2:"]
 
         bundle1 = MagicMock()
         bundle1.name = "bundle1"
