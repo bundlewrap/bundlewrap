@@ -15,7 +15,7 @@ class BundleItem(object):
         self.REQUIRES_STATIC = []
         self.bundle = bundle
         self.ITEM_TYPE_NAME = 'dummy'
-        self.requires = []
+        self.needs = []
         self.required_by = []
         self.triggers = []
         self._deps = []
@@ -44,7 +44,7 @@ class DummyItem(object):
         self.REQUIRES_STATIC = []
         self.item_type = item_type
         self.ITEM_TYPE_NAME = 'dummy'
-        self.requires = []
+        self.needs = []
         self.required_by = []
         self.triggers = []
         self._deps = []

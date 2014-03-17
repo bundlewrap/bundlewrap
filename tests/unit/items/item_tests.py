@@ -137,7 +137,7 @@ class InitTest(TestCase):
 
     def test_attribute_name_validation_ok(self):
         MockItem.ITEM_ATTRIBUTES = {'foo': 47, 'bar': 48}
-        MockItem._validate_attribute_names(MagicMock(), "item:id", {'foo': 49, 'requires': []})
+        MockItem._validate_attribute_names(MagicMock(), "item:id", {'foo': 49, 'needs': []})
 
     def test_attribute_name_validation_fail(self):
         item = MockItem(MagicMock(), "item1", {}, skip_validation=True)
@@ -149,7 +149,7 @@ class InitTest(TestCase):
                 {
                     'foobar': 49,
                     'bar': 50,
-                    'requires': [],
+                    'needs': [],
                 },
             )
 
@@ -173,7 +173,7 @@ class InitTest(TestCase):
                 {
                     'foobar': 49,
                     'bar': 50,
-                    'requires': [],
+                    'needs': [],
                 },
             )
 

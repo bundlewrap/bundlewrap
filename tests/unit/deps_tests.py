@@ -119,7 +119,7 @@ class InjectDummyItemsTest(TestCase):
             item = FakeItem()
             item._deps = []
             item.REQUIRES_STATIC = []
-            item.requires = []
+            item.needs = []
             item.id = item_id
             return item
 

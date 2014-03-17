@@ -74,11 +74,11 @@ class SvcSystemd(Item):
         return {
             'reload': {
                 'command': "systemctl reload -- {}".format(self.name),
-                'requires': [self.id],
+                'needs': [self.id],
             },
             'restart': {
                 'command': "systemctl restart -- {}".format(self.name),
-                'requires': [self.id],
+                'needs': [self.id],
             },
         }
 

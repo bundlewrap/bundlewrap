@@ -78,7 +78,7 @@ class PlotTest(TestCase):
         item1 = FakeItem1(FakeBundle(), "item1", {})
         item2 = FakeItem1(FakeBundle(), "item2", {})
         item3 = FakeItem2(FakeBundle(), "item1", {})
-        item3.requires = ["type1:item1"]
+        item3.needs = ["type1:item1"]
 
         item4 = FakeItem3(FakeBundle(), "item1", {})
         item4.REQUIRES_STATIC = ["type2:"]
