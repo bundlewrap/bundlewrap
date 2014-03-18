@@ -36,4 +36,4 @@ Here are the steps:
 Help
 ####
 
-If at any point you need help or are not sure what to do, just drop by in `#blockwart on Freenode <irc://chat.freenode.net/blockwart>`_ or poke `@trehn on Twitter <https://twitter.com/trehn>`_.
+If at any point you need help or are not sure what to do, just drop by in `#blockwart on Freenode <irc://chat.freenode.net/blockwart>`_ or poke `@bwapply on Twitter <https://twitter.com/bwapply>`_.
