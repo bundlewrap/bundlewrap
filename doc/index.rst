@@ -55,6 +55,7 @@ You might be better served with a different config management system if you:
    cli
    api
    dev_contrib
+   faq
    about
 
 .. raw:: html
