@@ -2,10 +2,11 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.exceptions import ItemDependencyError, RepositoryError
+from blockwart.exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from blockwart.group import Group
 from blockwart.items import Item
-from blockwart.node import ApplyResult, apply_items, Node
+from blockwart.node import ApplyResult, apply_items, Node, NodeLock
+from blockwart.operations import RunResult
 from blockwart.repo import Repository
 from blockwart.utils import names
 
@@ -239,3 +240,18 @@ class NodeTest(TestCase):
         self.assertEqual(n.hostname, "node1")
         n = Node("node2", {'hostname': "node2.example.com"})
         self.assertEqual(n.hostname, "node2.example.com")
+
+
+class NodeLockTest(TestCase):
+    """
+    Tests blockwart.node.NodeLock.
+    """
+    @patch('blockwart.node.ask_interactively')
+    def test_locked(self, ask_interactively):
+        node = MagicMock()
+        runres = RunResult()
+        runres.return_code = 1
+        node.run.return_value = runres
+        with self.assertRaises(NodeAlreadyLockedException):
+            with NodeLock(node, False, ignore=False):
+                pass
