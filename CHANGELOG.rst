@@ -1,3 +1,20 @@
+0.11.0
+======
+
+2014-03-23
+
+* renamed builtin item attribute 'depends' to 'needs' (BACKWARDS INCOMPATIBLE)
+* removed PARALLEL_APPLY on custom items in favor of BLOCK_CONCURRENT (BACKWARDS INCOMPATIBLE)
+* added builtin item attribute 'needed_by'
+* added canned items for services
+* added deletion of files, groups and users
+* simplified output of `bw apply`
+* `bw repo test` now also verifies dependencies
+* fixed `bw repo test` for files without a template
+* fixed triggered actions being run every time
+* various fixes and improvements around dependency handling
+
+
 0.10.0
 ======
 
