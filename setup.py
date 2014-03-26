@@ -9,7 +9,7 @@ setup(
         "While practically all other config management systems rely on a client-server architecture, Blockwart works off a repository cloned to your local machine. It then automates the process of SSHing into your servers and making sure everything is configured the way it's supposed to be. You won't have to install anything on managed servers."
     ),
     author="Torsten Rehn",
-    author_email="torsten@rehn.tel",
+    author_email="torsten@rehn.email",
     license="GPLv3",
     url="http://blockwart.org",
     package_dir={'': "src"},
