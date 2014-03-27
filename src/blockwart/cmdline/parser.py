@@ -9,6 +9,7 @@ from .nodes import bw_nodes
 from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_plot, bw_repo_test
 from .run import bw_run
 from .verify import bw_verify
+from .zen import bw_zen
 
 
 def build_parser_bw():
@@ -318,4 +319,7 @@ def build_parser_bw():
         type=int,
     )
 
+    # bw zen
+    parser_zen = subparsers.add_parser("zen")
+    parser_zen.set_defaults(func=bw_zen)
     return parser
