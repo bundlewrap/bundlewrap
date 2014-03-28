@@ -85,23 +85,25 @@ This is a list of all functions a hook file may implement.
 |
 |
 
-.. py:function:: node_apply_start(repo, node, **kwargs)
+.. py:function:: node_apply_start(repo, node, interactive=False, **kwargs)
 
     Called each time a :command:`bw apply` command reaches a new node.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param bool interactive: ``True`` if this is an interactive apply run.
 
 |
 |
 
-.. py:function:: node_apply_end(repo, node, duration=None, result=None, **kwargs)
+.. py:function:: node_apply_end(repo, node, duration=None, interactive=False, result=None, **kwargs)
 
     Called each time a :command:`bw apply` command finishes processing a node.
 
     :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
     :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
     :param timedelta duration: How long the apply took.
+    :param bool interactive: ``True`` if this was an interactive apply run.
     :param ApplyResult result: An object with these attributes: ``correct``, ``failed``, ``fixed``, ``skipped``.
 
 |

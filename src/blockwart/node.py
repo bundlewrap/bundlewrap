@@ -286,6 +286,7 @@ class Node(object):
         self.repo.hooks.node_apply_start(
             self.repo,
             self,
+            interactive=interactive,
         )
 
         start = datetime.now()
@@ -312,6 +313,7 @@ class Node(object):
             self.repo,
             self,
             duration=result.duration,
+            interactive=interactive,
             result=result,
         )
 
