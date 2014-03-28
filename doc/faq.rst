@@ -26,6 +26,13 @@ No. Blockwart will only care about whether a package is installed or not. Update
 
 |
 
+Is there a probing mechanism like Ohai?
+---------------------------------------
+
+No. Blockwart is meant to be very push-focused. The node should not have any say in that configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a :ref:`hook <hooks>` to gather the data and populate ``node.metadata``.
+
+|
+
 Is there a way to remove any unmanaged files/directories in a directory?
 ------------------------------------------------------------------------
 
