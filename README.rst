@@ -10,11 +10,11 @@ For more information, have a look at `blockwart.org <http://blockwart.org/>`_.
 .. image:: https://pypip.in/d/blockwart/badge.png
         :target: https://crate.io/packages/blockwart/
 
-.. image:: https://travis-ci.org/trehn/blockwart.svg?branch=master
-        :target: https://travis-ci.org/trehn/blockwart
+.. image:: https://travis-ci.org/blockwart/blockwart.svg?branch=master
+        :target: https://travis-ci.org/blockwart/blockwart
 
-.. image:: https://coveralls.io/repos/trehn/blockwart/badge.png?branch=master
-        :target: https://coveralls.io/r/trehn/blockwart?branch=master
+.. image:: https://coveralls.io/repos/blockwart/blockwart/badge.png
+        :target: https://coveralls.io/r/blockwart/blockwart
 
 Blockwart is Copyright (c) 2014 `Torsten Rehn <mailto:torsten@rehn.email>`_
 
