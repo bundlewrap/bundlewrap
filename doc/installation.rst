@@ -41,7 +41,7 @@ Install basic requirements::
 Clone the GitHub repository::
 
     cd /opt
-    git clone https://github.com/trehn/blockwart.git
+    git clone https://github.com/blockwart/blockwart.git
 
 Use ``setup.py`` to install in "development mode"::
 

@@ -36,7 +36,7 @@ No. Blockwart is meant to be very push-focused. The node should not have any say
 Is there a way to remove any unmanaged files/directories in a directory?
 ------------------------------------------------------------------------
 
-Not at the moment. We're tracking this topic in issue `#56 <https://github.com/trehn/blockwart/issues/56>`_.
+Not at the moment. We're tracking this topic in issue `#56 <https://github.com/blockwart/blockwart/issues/56>`_.
 
 |
 

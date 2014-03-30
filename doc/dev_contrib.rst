@@ -11,7 +11,7 @@ We welcome all input and contributions to Blockwart. If you've never done this s
 Submitting bug reports
 ######################
 
-Please use the `GitHub issue tracker <https://github.com/trehn/blockwart/issues>`_ and take a few minutes to look for existing reports of the same problem (open or closed!).
+Please use the `GitHub issue tracker <https://github.com/blockwart/blockwart/issues>`_ and take a few minutes to look for existing reports of the same problem (open or closed!).
 
 .. hint::
 
@@ -28,7 +28,7 @@ Here are the steps:
 2. If you haven't already done so, please consider writing tests. Otherwise, someone else will have to do it for you.
 3. Same goes for documentation.
 4. Review and sign the :abbr:`CAA (Copyright Assignment Agreement)` by adding your name and email to the :file:`AUTHORS` file. (This step can be skipped if your contribution is too small to be considered intellectual property, e.g. spelling fixes)
-5. Open a pull request on `GitHub <https://github.com/trehn/blockwart>`_.
+5. Open a pull request on `GitHub <https://github.com/blockwart/blockwart>`_.
 6. Feel great. Thank you.
 
 |
