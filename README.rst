@@ -10,7 +10,7 @@ For more information, have a look at `blockwart.org <http://blockwart.org/>`_.
 .. image:: https://pypip.in/d/blockwart/badge.png
         :target: https://crate.io/packages/blockwart/
 
-.. image:: https://travis-ci.org/trehn/blockwart.png
+.. image:: https://travis-ci.org/trehn/blockwart.svg?branch=master
         :target: https://travis-ci.org/trehn/blockwart
 
 .. image:: https://coveralls.io/repos/trehn/blockwart/badge.png?branch=master
