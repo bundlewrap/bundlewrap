@@ -170,6 +170,13 @@ def graph_for_items(
     yield "}"
 
 
+def hash_local_file(path):
+    """
+    Retuns the sha1 hash of a file on the local machine.
+    """
+    return sha1(get_file_contents(path))
+
+
 def names(obj_list):
     """
     Iterator over the name properties of a given list of objects.

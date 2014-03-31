@@ -14,7 +14,7 @@ from traceback import format_exception
 from blockwart.exceptions import BundleError, TemplateError
 from blockwart.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
 from blockwart.items.directories import validator_mode
-from blockwart.utils import cached_property, LOG, sha1
+from blockwart.utils import cached_property, hash_local_file, LOG, sha1
 from blockwart.utils.remote import PathInfo
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold, green, is_subdirectory, red
@@ -136,15 +136,6 @@ def get_remote_file_contents(node, path):
         content = f.read()
     remove(tmp_file)
     return content
-
-
-def hash_local_file(path):
-    """
-    Retuns the sha1 hash of a file on the local machine.
-    """
-    with open(path, 'rb') as f:
-        sha1_hash = sha1(f.read())
-    return sha1_hash
 
 
 def validator_content(item_id, value):
