@@ -146,7 +146,7 @@ In some scenarios, you may want to execute an :ref:`action <item_action>` only w
 	    '/etc/daemon.conf': {
 	        [...]
 	        'triggers': [
-	            'restart_daemon',
+	            'action:restart_daemon',
 	        ],
 	    },
 	}
