@@ -142,7 +142,7 @@ In some scenarios, you may want to execute an :ref:`action <item_action>` only w
 
 .. code-block:: python
 
-	file = {
+	files = {
 	    '/etc/daemon.conf': {
 	        [...]
 	        'triggers': [
@@ -171,7 +171,7 @@ Another builtin item attribute is ``unless``. For example, it can be used to con
 
 .. code-block:: python
 
-	file = {
+	files = {
 	    "/path/to/file": {
 	        [...]
 	        "unless": "test -x /path/to/file",
