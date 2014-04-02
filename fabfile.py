@@ -44,6 +44,7 @@ def release():
         with lcd(PROJECT_PATH):
             local("python setup.py sdist upload")
             local("python setup.py bdist_wheel upload")
+            local("rm -r build")
 
     print("")
     print("Two more steps remain:")
