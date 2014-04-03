@@ -7,3 +7,4 @@ mock
 nose
 nose-cov
 passlib
+requests>=1.0.0

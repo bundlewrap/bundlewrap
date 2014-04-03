@@ -37,6 +37,7 @@ setup(
         "Fabric >= 0.9.4",
         "Mako",
         "passlib",
+        "requests >= 1.0.0",
     ],
     zip_safe=False,
 )

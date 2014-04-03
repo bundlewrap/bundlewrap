@@ -7,5 +7,6 @@ mock
 nose
 nose-cov
 passlib
+requests
 Sphinx
 wheel
