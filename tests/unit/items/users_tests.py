@@ -90,6 +90,7 @@ class AskTest(TestCase):
             bundle,
             "blockwart",
             {
+                'home': "/home/blockwart",
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
@@ -109,13 +110,14 @@ class AskTest(TestCase):
             'passwd_hash': "secret",
             'shell': "/bin/bsh",
             'uid': 1113,
+            'needs_fixing': ['home', 'full_name', 'gid', 'password', 'shell', 'uid'],
         }
         self.assertEqual(
             user.ask(status),
-            "shell /bin/bsh → /bin/bash\n"
+            "home dir /home/blkwrt → /home/blockwart\n"
             "full name Blockwart → Blöck Wart\n"
             "GID 2357 → 2345\n"
-            "home dir /home/blkwrt → /home/blockwart\n"
+            "shell /bin/bsh → /bin/bash\n"
             "UID 1113 → 1123\n"
             "password hash secret\n"
             "            → topsecret\n"
@@ -146,6 +148,7 @@ class AskTest(TestCase):
             'shadow_hash': "topsecret",
             'shell': "/bin/bash",
             'uid': 1123,
+            'needs_fixing': ['password'],
         }
         self.assertEqual(
             user.ask(status),
@@ -179,6 +182,7 @@ class AskTest(TestCase):
             'passwd_hash': None,
             'shell': "/bin/bash",
             'uid': 1123,
+            'needs_fixing': ['password'],
         }
         self.assertEqual(
             user.ask(status),
@@ -210,6 +214,7 @@ class AskTest(TestCase):
             'shadow_hash': None,
             'shell': "/bin/bash",
             'uid': 1123,
+            'needs_fixing': ['password'],
         }
         self.assertEqual(
             user.ask(status),
@@ -241,6 +246,7 @@ class AskTest(TestCase):
             'shadow_hash': "secret",
             'shell': "/bin/bash",
             'uid': 1123,
+            'needs_fixing': ['groups'],
         }
         self.assertEqual(
             user.ask(status),
@@ -268,7 +274,10 @@ class FixTest(TestCase):
                 'uid': 1123,
             },
         )
-        status = ItemStatus(correct=False, info={'exists': False})
+        status = ItemStatus(correct=False, info={
+            'exists': False,
+            'needs_fixing': ['home', 'gid', 'groups', 'password', 'shell', 'uid'],
+        })
         user.fix(status)
         self.assertEqual(
             bundle.node.run.call_args_list,
@@ -292,7 +301,10 @@ class FixTest(TestCase):
                 'uid': 1123,
             },
         )
-        status = ItemStatus(correct=False, info={'exists': True})
+        status = ItemStatus(correct=False, info={
+            'exists': True,
+            'needs_fixing': ['home', 'gid', 'groups', 'password', 'shell', 'uid'],
+        })
         user.fix(status)
         self.assertEqual(
             bundle.node.run.call_args_list,
@@ -537,30 +549,6 @@ class GetStatusTest(TestCase):
         self.assertFalse(status.correct)
 
 
-class LinePasswdTest(TestCase):
-    """
-    Tests blockwart.items.users.User.line_passwd.
-    """
-    def test_line(self):
-        user = users.User(
-            MagicMock(),
-            "blockwart",
-            {
-                'full_name': "Blöck Wart",
-                'gid': 2345,
-                'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
-                'password_hash': "secret",
-                'shell': "/bin/bash",
-                'uid': 1123,
-            },
-        )
-        self.assertEqual(
-            user.line_passwd,
-            "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash",
-        )
-
-
 class PatchAttributesTest(TestCase):
     """
     Tests blockwart.items.users.User.patch_attributes.
@@ -637,13 +625,12 @@ class ValidateAttributesTest(TestCase):
                 },
             )
 
-    def test_no_password(self):
-        with self.assertRaises(BundleError):
-            users.User.validate_attributes(
-                MagicMock(),
-                "blockwart",
-                {},
-            )
+    def test_nothing(self):
+        users.User.validate_attributes(
+            MagicMock(),
+            "blockwart",
+            {},
+        )
 
     def test_invalid_hash_method(self):
         with self.assertRaises(BundleError):

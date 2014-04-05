@@ -35,6 +35,17 @@ HASH_METHODS = {
 _USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
 
 
+def _group_name_for_gid(node, gid):
+    """
+    Returns the group name that matches the gid.
+    """
+    group_output = node.run("grep -e ':{}:$' /etc/group".format(gid), may_fail=True)
+    if group_output.return_code != 0:
+        return None
+    else:
+        return group_output.stdout.split(":")[0]
+
+
 def _groups_for_user(node, username):
     """
     Returns the list of group names for the given username on the given
@@ -66,15 +77,15 @@ class User(Item):
     BUNDLE_ATTRIBUTE_NAME = "users"
     ITEM_ATTRIBUTES = {
         'delete': False,
-        'full_name': "",
+        'full_name': None,
         'gid': None,
-        'groups': [],
+        'groups': None,
         'hash_method': 'sha512',
         'home': None,
         'password': None,
-        'password_hash': "!",
+        'password_hash': None,
         'salt': None,
-        'shell': "/bin/bash",
+        'shell': None,
         'uid': None,
         'use_shadow': None,
     }
@@ -98,48 +109,47 @@ class User(Item):
             return _("'{}' found in /etc/passwd. Will be deleted.").format(self.name)
 
         output = ""
-        for key, should_value in self.attributes.iteritems():
-            if key in ('delete', 'groups', 'hash_method', 'password', 'password_hash',
-                       'salt', 'use_shadow'):
+        for key in status.info['needs_fixing']:
+            if key in ('groups', 'password'):
                 continue
-            is_value = status.info[key]
-            if should_value != is_value:
-                output += "{} {} → {}\n".format(
-                    bold(_ATTRIBUTE_NAMES[key]),
-                    is_value,
-                    should_value,
-                )
+            output += "{} {} → {}\n".format(
+                bold(_ATTRIBUTE_NAMES[key]),
+                status.info[key],
+                self.attributes[key],
+            )
 
-        if self.attributes['use_shadow']:
-            filename = "/etc/shadow"
-            found_hash = status.info['shadow_hash']
-        else:
-            filename = "/etc/passwd"
-            found_hash = status.info['passwd_hash']
+        if self.attributes['password_hash'] is not None:
+            if self.attributes['use_shadow']:
+                filename = "/etc/shadow"
+                found_hash = status.info['shadow_hash']
+            else:
+                filename = "/etc/passwd"
+                found_hash = status.info['passwd_hash']
 
-        if found_hash is None:
-            output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
-                      _("not found in {}").format(filename) + "\n"
-        elif found_hash != self.attributes['password_hash']:
-            output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
-                      found_hash + "\n"
-            output += " " * (len(_ATTRIBUTE_NAMES['password_hash']) - 1) + "→ " + \
-                      self.attributes['password_hash'] + "\n"
+            if found_hash is None:
+                output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
+                          _("not found in {}").format(filename) + "\n"
+            elif found_hash != self.attributes['password_hash']:
+                output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
+                          found_hash + "\n"
+                output += " " * (len(_ATTRIBUTE_NAMES['password_hash']) - 1) + "→ " + \
+                          self.attributes['password_hash'] + "\n"
 
-        groups_should = set(self.attributes['groups'])
-        groups_is = set(status.info['groups'])
-        missing_groups = list(groups_should.difference(groups_is))
-        missing_groups.sort()
-        extra_groups = list(groups_is.difference(groups_should))
-        extra_groups.sort()
+        if self.attributes['groups'] is not None:
+            groups_should = set(self.attributes['groups'])
+            groups_is = set(status.info['groups'])
+            missing_groups = list(groups_should.difference(groups_is))
+            missing_groups.sort()
+            extra_groups = list(groups_is.difference(groups_should))
+            extra_groups.sort()
 
-        if missing_groups:
-            output += bold(_("missing groups")) + " " + \
-                      ", ".join(missing_groups) + "\n"
+            if missing_groups:
+                output += bold(_("missing groups")) + " " + \
+                          ", ".join(missing_groups) + "\n"
 
-        if extra_groups:
-            output += bold(_("extra groups")) + " " + \
-                      ", ".join(extra_groups) + "\n"
+            if extra_groups:
+                output += bold(_("extra groups")) + " " + \
+                          ", ".join(extra_groups) + "\n"
 
         return output
 
@@ -156,24 +166,21 @@ class User(Item):
         if self.attributes['delete']:
             self.node.run("userdel {}".format(self.name), may_fail=True)
         else:
-            self.node.run("{command} "
-                "-d {home} "
-                "-g {gid} "
-                "-G {groups} "
-                "-p {password_hash} "
-                "-s {shell} "
-                "-u {uid} "
-                "{username}".format(
-                    command="useradd" if not status.info['exists'] else "usermod",
-                    home=quote(self.attributes['home']),
-                    gid=self.attributes['gid'],
-                    groups=quote(",".join(self.attributes['groups'])),
-                    password_hash=quote(self.attributes['password_hash']),
-                    shell=quote(self.attributes['shell']),
-                    uid=self.attributes['uid'],
-                    username=self.name,
-                )
-            )
+            command = "useradd " if not status.info['exists'] else "usermod "
+            if 'home' in status.info['needs_fixing']:
+                command += "-d {} ".format(quote(self.attributes['home']))
+            if 'gid' in status.info['needs_fixing']:
+                command += "-g {} ".format(self.attributes['gid'])
+            if 'groups' in status.info['needs_fixing']:
+                command += "-G {} ".format(quote(",".join(self.attributes['groups'])))
+            if 'password' in status.info['needs_fixing']:
+                command += "-p {} ".format(quote(self.attributes['password_hash']))
+            if 'shell' in status.info['needs_fixing']:
+                command += "-s {} ".format(quote(self.attributes['shell']))
+            if 'uid' in status.info['needs_fixing']:
+                command += "-u {} ".format(self.attributes['uid'])
+            command += self.name
+            self.node.run(command, may_fail=True)
 
     def get_status(self):
         # verify content of /etc/passwd
@@ -184,59 +191,61 @@ class User(Item):
         if passwd_grep_result.return_code != 0:
             return ItemStatus(
                 correct=self.attributes['delete'],
-                info={'exists': False},
+                info={'exists': False, 'needs_fixing': ['existence']},
             )
         elif self.attributes['delete']:
-            return ItemStatus(correct=False, info={'exists': True})
+            return ItemStatus(correct=False, info={'exists': True, 'needs_fixing': ['existence']})
 
         status = ItemStatus(correct=True, info={'exists': True})
+        status.info['needs_fixing'] = []
+
         status.info.update(_parse_passwd_line(passwd_grep_result.stdout))
 
-        if passwd_grep_result.stdout.strip() != self.line_passwd:
-            status.correct = False
+        if self.attributes['gid'] is not None:
+            if self.attributes['gid'].isdigit():
+                if int(self.attributes['gid']) != status.info['gid']:
+                    status.info['needs_fixing'].append('gid')
+            elif _group_name_for_gid(self.node, status.info['gid']) != self.attributes['gid']:
+                status.info['needs_fixing'].append('gid')
 
-        if self.attributes['use_shadow']:
-            # verify content of /etc/shadow
-            shadow_grep_result = self.node.run(
-                "grep -e '^{}:' /etc/shadow".format(self.name),
-                may_fail=True,
-            )
-            if shadow_grep_result.return_code != 0:
-                status.correct = False
-                status.info['shadow_hash'] = None
+        for fieldname in ('uid', 'full_name', 'home', 'shell'):
+            if self.attributes[fieldname] is None:
+                continue
+            if status.info[fieldname] != self.attributes[fieldname]:
+                status.info['needs_fixing'].append(fieldname)
+
+        if self.attributes['password_hash'] is not None:
+            if self.attributes['use_shadow']:
+                # verify content of /etc/shadow
+                shadow_grep_result = self.node.run(
+                    "grep -e '^{}:' /etc/shadow".format(self.name),
+                    may_fail=True,
+                )
+                if shadow_grep_result.return_code != 0:
+                    status.info['shadow_hash'] = None
+                    status.info['needs_fixing'].append('password')
+                else:
+                    status.info['shadow_hash'] = shadow_grep_result.stdout.split(":")[1]
+                    if status.info['shadow_hash'] != self.attributes['password_hash']:
+                        status.info['needs_fixing'].append('password')
             else:
-                status.info['shadow_hash'] = shadow_grep_result.stdout.split(":")[1]
-                if status.info['shadow_hash'] != self.attributes['password_hash']:
-                    status.correct = False
-        else:
-            if status.info['passwd_hash'] != self.attributes['password_hash']:
-                status.correct = False
+                if status.info['passwd_hash'] != self.attributes['password_hash']:
+                    status.info['needs_fixing'].append('password')
 
         # verify content of /etc/group
         status.info['groups'] = _groups_for_user(self.node, self.name)
-        if set(self.attributes['groups']) != set(status.info['groups']):
+
+        if self.attributes['groups'] is not None and \
+                set(self.attributes['groups']) != set(status.info['groups']):
+            status.info['needs_fixing'].append('groups')
+
+        if status.info['needs_fixing']:
             status.correct = False
 
         return status
 
-    @property
-    def line_passwd(self):
-        return ':'.join([
-            self.name,
-            'x' if self.attributes['use_shadow'] else self.attributes['password_hash'],
-            str(self.attributes['uid']),
-            str(self.attributes['gid']),
-            self.attributes['full_name'],
-            self.attributes['home'],
-            self.attributes['shell'],
-        ])
-
     def patch_attributes(self, attributes):
-        if 'home' not in attributes:
-            attributes['home'] = "/home/{}".format(self.name)
-
-        if attributes.get('password', None) is not None and \
-                not 'password_hash' in attributes:
+        if attributes.get('password', None) is not None:
             # defaults aren't set yet
             hash_method = HASH_METHODS[attributes.get(
                 'hash_method',
@@ -251,6 +260,9 @@ class User(Item):
         if 'use_shadow' not in attributes:
             attributes['use_shadow'] = self.node.use_shadow_passwords
 
+        if attributes.get('gid', None) is not None:
+            attributes['gid'] = str(attributes['gid'])
+
         return attributes
 
     @classmethod
@@ -262,14 +274,6 @@ class User(Item):
                         "{item} from bundle '{bundle}' cannot have other "
                         "attributes besides 'delete'"
                     ).format(item=item_id, bundle=bundle.name))
-        elif not attributes.get('delete', False) and not (
-            'gid' in attributes or
-            'groups' in attributes or
-            'uid' in attributes
-        ):
-            raise BundleError(_(
-                "{item} from bundle '{bundle}' must define gid, groups and uid"
-            ).format(bundle=bundle.name, item=item_id))
 
         if 'hash_method' in attributes and \
                 attributes['hash_method'] not in HASH_METHODS:
@@ -286,7 +290,7 @@ class User(Item):
             'salt' in attributes
         ):
             raise BundleError(_(
-                "{item} in bundle '{bundle'}: 'password_hash' "
+                "{item} in bundle '{bundle}': 'password_hash' "
                 "cannot be used with 'password' or 'salt'"
             ).format(bundle=bundle.name, item=item_id))
 
@@ -294,14 +298,6 @@ class User(Item):
             raise BundleError(
                 _("{}: salt given without a password").format(item_id)
             )
-
-        if not attributes.get('delete', False) and \
-                'password' not in attributes and \
-                'password_hash' not in attributes:
-            raise BundleError(_(
-                "{item} in bundle '{bundle}' needs to specify either "
-                "a password or a password hash"
-            ).format(bundle=bundle.name, item=item_id))
 
     @classmethod
     def validate_name(cls, bundle, name):

@@ -28,32 +28,9 @@ Attribute reference
 
    :ref:`The list of generic builtin item attributes <builtin_item_attributes>`
 
-Required attributes
-===================
-
-``gid``
-+++++++
-
-Primary group of the user. Must be numerical ID.
+All attributes are optional.
 
 |
-
-``groups``
-++++++++++
-
-List of groups (names, not GIDs) the user should belong to. MUST include the group referenced by ``gid``.
-
-|
-
-``uid``
-+++++++
-
-Numerical user ID. It's your job to make sure it's unique.
-
-|
-
-Optional attributes
-===================
 
 ``delete``
 ++++++++++
@@ -66,6 +43,20 @@ When set to ``True``, this user will be removed from the system. Note that becau
 +++++++++++++
 
 Full name of the user.
+
+|
+
+``gid``
++++++++
+
+Primary group of the user as numerical ID or group name.
+
+|
+
+``groups``
+++++++++++
+
+List of groups (names, not GIDs) the user should belong to. MUST include the group referenced by ``gid``.
 
 |
 
@@ -120,3 +111,12 @@ Recommended for use with the ``password`` attribute. Blockwart will use 5000 rou
 +++++++++
 
 Path to login shell executable.
+
+|
+
+``uid``
++++++++
+
+Numerical user ID. It's your job to make sure it's unique.
+
+|
