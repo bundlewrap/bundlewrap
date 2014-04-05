@@ -36,10 +36,7 @@ class Group(Item):
     REQUIRED_ATTRIBUTES = []
 
     def __repr__(self):
-        return "<Group name:{} gid:{}>".format(
-            self.name,
-            self.attributes['gid'],
-        )
+        return "<Group name:{}>".format(self.name)
 
     def ask(self, status):
         if not status.info['exists']:
@@ -56,13 +53,14 @@ class Group(Item):
     def fix(self, status):
         if not status.info['exists']:
             LOG.info(_("{node}:{item}: creating...").format(node=self.node.name, item=self.id))
-            self.node.run(
-                "groupadd -g {gid} {groupname}".format(
+            if self.attributes['gid'] is None:
+                command = "groupadd {}".format(self.name)
+            else:
+                command = "groupadd -g {gid} {groupname}".format(
                     gid=self.attributes['gid'],
                     groupname=self.name,
-                ),
-                may_fail=True,
-            )
+                )
+            self.node.run(command, may_fail=True)
         elif self.attributes['delete']:
             LOG.info(_("{node}:{item}: deleting...").format(node=self.node.name, item=self.id))
             self.node.run("groupdel {}".format(self.name), may_fail=True)
@@ -88,7 +86,8 @@ class Group(Item):
         status = ItemStatus(correct=not self.attributes['delete'], info={'exists': True})
         status.info.update(_parse_group_line(grep_result.stdout))
 
-        if status.info['gid'] != self.attributes['gid']:
+        if self.attributes['gid'] is not None and \
+                status.info['gid'] != self.attributes['gid']:
             status.correct = False
 
         return status
@@ -102,11 +101,6 @@ class Group(Item):
                         "{item} from bundle '{bundle}' cannot have other "
                         "attributes besides 'delete'"
                     ).format(item=item_id, bundle=bundle.name))
-
-        if not attributes.get('delete', False) and 'gid' not in attributes.keys():
-            raise BundleError(_(
-                "{item} from bundle '{bundle}' must define 'gid'"
-            ).format(item=item_id, bundle=bundle.name))
 
     @classmethod
     def validate_name(cls, bundle, name):

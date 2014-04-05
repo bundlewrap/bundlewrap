@@ -184,14 +184,6 @@ class ValidateAttributesTest(TestCase):
     """
     Tests blockwart.items.groups.Group.validate_attributes.
     """
-    def test_no_gid(self):
-        with self.assertRaises(BundleError):
-            groups.Group.validate_attributes(
-                MagicMock(),
-                "group:blockwart",
-                {},
-            )
-
     def test_delete_with_other(self):
         with self.assertRaises(BundleError):
             groups.Group.validate_attributes(
