@@ -34,7 +34,7 @@ setup(
     ],
     install_requires=[
         "distribute",
-        "Fabric >= 0.9.4",
+        "Fabric >= 1.5.0",
         "Mako",
         "passlib",
     ],
