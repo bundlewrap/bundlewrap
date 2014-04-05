@@ -56,19 +56,25 @@ class Group(Item):
     def fix(self, status):
         if not status.info['exists']:
             LOG.info(_("{node}:{item}: creating...").format(node=self.node.name, item=self.id))
-            self.node.run("groupadd -g {gid} {groupname}".format(
-                gid=self.attributes['gid'],
-                groupname=self.name,
-            ))
+            self.node.run(
+                "groupadd -g {gid} {groupname}".format(
+                    gid=self.attributes['gid'],
+                    groupname=self.name,
+                ),
+                may_fail=True,
+            )
         elif self.attributes['delete']:
             LOG.info(_("{node}:{item}: deleting...").format(node=self.node.name, item=self.id))
-            self.node.run("groupdel {}".format(self.name))
+            self.node.run("groupdel {}".format(self.name), may_fail=True)
         else:
             LOG.info(_("{node}:{item}: updating...").format(node=self.node.name, item=self.id))
-            self.node.run("groupmod -g {gid} {groupname}".format(
-                gid=self.attributes['gid'],
-                groupname=self.name,
-            ))
+            self.node.run(
+                "groupmod -g {gid} {groupname}".format(
+                    gid=self.attributes['gid'],
+                    groupname=self.name,
+                ),
+                may_fail=True,
+            )
 
     def get_status(self):
         # verify content of /etc/group

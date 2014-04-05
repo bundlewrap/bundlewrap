@@ -89,7 +89,7 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("groupadd -g 2345 blockwart"),
+                call("groupadd -g 2345 blockwart", may_fail=True),
             ],
         )
 
@@ -105,7 +105,7 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("groupdel blockwart"),
+                call("groupdel blockwart", may_fail=True),
             ],
         )
 
@@ -120,7 +120,7 @@ class FixTest(TestCase):
         group.fix(status)
         self.assertEqual(
             bundle.node.run.call_args_list,
-            [call("groupmod -g 2345 blockwart")],
+            [call("groupmod -g 2345 blockwart", may_fail=True)],
         )
 
 

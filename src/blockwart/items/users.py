@@ -154,7 +154,7 @@ class User(Item):
         LOG.info(msg.format(item=self.id, node=self.node.name))
 
         if self.attributes['delete']:
-            self.node.run("userdel {}".format(self.name))
+            self.node.run("userdel {}".format(self.name), may_fail=True)
         else:
             self.node.run("{command} "
                 "-d {home} "
