@@ -251,10 +251,11 @@ class User(Item):
                 'hash_method',
                 self.ITEM_ATTRIBUTES['hash_method'],
             )]
+            salt = attributes.get('salt', None)
             attributes['password_hash'] = hash_method.encrypt(
                 attributes['password'],
                 rounds=5000,  # default from glibc
-                salt=attributes.get('salt', _DEFAULT_SALT),
+                salt=_DEFAULT_SALT if salt is None else salt,
             )
 
         if 'use_shadow' not in attributes:
