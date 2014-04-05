@@ -93,14 +93,7 @@ class User(Item):
     NEEDS_STATIC = ["group:"]
 
     def __repr__(self):
-        return "<User name:{} uid:{} gid:{} home:{} shell:{} groups:{}>".format(
-            self.name,
-            self.attributes['uid'],
-            self.attributes['gid'],
-            self.attributes['home'],
-            self.attributes['shell'],
-            ",".join(self.attributes['groups']),
-        )
+        return "<User name:{}>".format(self.name)
 
     def ask(self, status):
         if not status.info['exists']:
