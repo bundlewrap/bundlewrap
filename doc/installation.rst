@@ -19,6 +19,8 @@ It's as simple as::
 
     pip install blockwart
 
+Note that you need Python 2.7 to run Blockwart.
+
 |
 
 From git
