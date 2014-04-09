@@ -1,0 +1,55 @@
+from ..exceptions import NoSuchPlugin
+from ..plugins import PluginManager
+from ..utils.text import mark_for_translation as _
+
+
+def bw_repo_plugin_install(repo, args):
+    pm = PluginManager(repo.path)
+    try:
+        pm.install(args.plugin, force=args.force)
+    except NoSuchPlugin:
+        yield _("unknown plugin '{plugin}'").format(args.plugin)
+
+
+def bw_repo_plugin_list(repo, args):
+    pm = PluginManager(repo.path)
+    for plugin, version in pm.list():
+        yield _("{plugin} (v{version})").format(plugin=plugin, version=version)
+
+
+def bw_repo_plugin_remove(repo, args):
+    pm = PluginManager(repo.path)
+    pm.remove(args.plugin, force=args.force)
+
+
+def bw_repo_plugin_search(repo, args):
+    pm = PluginManager(repo.path)
+    for plugin, desc in pm.search(args.term):
+        yield _("{plugin}: {desc}").format(desc=desc, plugin=plugin)
+
+
+def bw_repo_plugin_update(repo, args):
+    pm = PluginManager(repo.path)
+    if args.plugin:
+        old_version, new_version = pm.update(
+            args.plugin,
+            check_only=args.check_only,
+            force=args.force,
+        )
+        yield _("{plugin}: {old_version} -> {new_version}").format(
+            new_version=new_version,
+            old_version=old_version,
+            plugin=args.plugin,
+        )
+    else:
+        for plugin, version in pm.list():
+            old_version, new_version = pm.update(
+                plugin,
+                check_only=args.check_only,
+                force=args.force,
+            )
+            yield _("{plugin}: {old_version} -> {new_version}").format(
+                new_version=new_version,
+                old_version=old_version,
+                plugin=plugin,
+            )
