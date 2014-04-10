@@ -8,7 +8,8 @@ def bw_repo_plugin_install(repo, args):
     try:
         pm.install(args.plugin, force=args.force)
     except NoSuchPlugin:
-        yield _("unknown plugin '{plugin}'").format(args.plugin)
+        yield _("unknown plugin '{plugin}'").format(plugin=args.plugin)
+        yield 1
 
 
 def bw_repo_plugin_list(repo, args):
