@@ -13,6 +13,7 @@ from blockwart.utils.text import bold, is_subdirectory
 
 
 def validator_mode(item_id, value):
+    value = str(value)
     if not value.isdigit():
         raise BundleError(
             _("mode for {item} should be written as digits, got: '{value}'"
@@ -184,6 +185,11 @@ class Directory(Item):
         if status_info['needs_fixing']:
             correct = False
         return ItemStatus(correct=correct, info=status_info)
+
+    def patch_attributes(self, attributes):
+        if 'mode' in attributes:
+            attributes['mode'] = str(attributes['mode']).zfill(4)
+        return attributes
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):

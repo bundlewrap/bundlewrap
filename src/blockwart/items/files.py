@@ -407,6 +407,8 @@ class File(Item):
     def patch_attributes(self, attributes):
         if 'context' not in attributes:
             attributes['context'] = {}
+        if 'mode' in attributes:
+            attributes['mode'] = str(attributes['mode']).zfill(4)
         return attributes
 
     def test(self):
