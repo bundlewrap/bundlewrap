@@ -22,14 +22,14 @@ See :ref:`canned actions <canned_actions>` and :ref:`triggers <triggers>`.
 Will Blockwart keep track of package updates?
 ---------------------------------------------
 
-No. Blockwart will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an action with the ``interactive`` attribute set to ``True``). Selecting specific version should be done through your package manager.
+No. Blockwart will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an action with the ``interactive`` attribute set to ``True``). Selecting specific versions should be done through your package manager.
 
 |
 
 Is there a probing mechanism like Ohai?
 ---------------------------------------
 
-No. Blockwart is meant to be very push-focused. The node should not have any say in that configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a :ref:`hook <hooks>` to gather the data and populate ``node.metadata``.
+No. Blockwart is meant to be very push-focused. The node should not have any say in what configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a :ref:`hook <hooks>` to gather the data and populate ``node.metadata``.
 
 |
 
