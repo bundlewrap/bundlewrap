@@ -276,13 +276,14 @@ class FixTest(TestCase):
         )
         status = ItemStatus(correct=False, info={
             'exists': False,
-            'needs_fixing': ['home', 'gid', 'groups', 'password', 'shell', 'uid'],
+            'needs_fixing': ['home', 'gid', 'groups', 'password_hash', 'shell', 'uid'],
         })
         user.fix(status)
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("useradd -d /home/blockwart -g 2345 -G group1,group2 -p secret -s /bin/bash -u 1123 blockwart", may_fail=True),
+                call("useradd -s /bin/bash -g 2345 -G group1,group2 -u 1123 "
+                     "-d /home/blockwart -p secret blockwart", may_fail=True),
             ],
         )
 
@@ -303,13 +304,14 @@ class FixTest(TestCase):
         )
         status = ItemStatus(correct=False, info={
             'exists': True,
-            'needs_fixing': ['home', 'gid', 'groups', 'password', 'shell', 'uid'],
+            'needs_fixing': ['home', 'gid', 'groups', 'password_hash', 'shell', 'uid'],
         })
         user.fix(status)
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("usermod -d /home/blockwart -g 2345 -G group1,group2 -p secret -s /bin/bash -u 1123 blockwart", may_fail=True),
+                call("usermod -s /bin/bash -g 2345 -G group1,group2 -u 1123 "
+                     "-d /home/blockwart -p secret blockwart", may_fail=True),
             ],
         )
 

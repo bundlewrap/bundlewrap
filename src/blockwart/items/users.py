@@ -23,6 +23,16 @@ _ATTRIBUTE_NAMES = {
     'uid': _("UID"),
 }
 
+_ATTRIBUTE_OPTIONS = {
+    'full_name': "-c",
+    'gid': "-g",
+    'groups': "-G",
+    'home': "-d",
+    'password_hash': "-p",
+    'shell': "-s",
+    'uid': "-u",
+}
+
 # a random static salt if users don't provide one
 _DEFAULT_SALT = "uJzJlYdG"
 
@@ -160,18 +170,13 @@ class User(Item):
             self.node.run("userdel {}".format(self.name), may_fail=True)
         else:
             command = "useradd " if not status.info['exists'] else "usermod "
-            if 'home' in status.info['needs_fixing']:
-                command += "-d {} ".format(quote(self.attributes['home']))
-            if 'gid' in status.info['needs_fixing']:
-                command += "-g {} ".format(self.attributes['gid'])
-            if 'groups' in status.info['needs_fixing']:
-                command += "-G {} ".format(quote(",".join(self.attributes['groups'])))
-            if 'password' in status.info['needs_fixing']:
-                command += "-p {} ".format(quote(self.attributes['password_hash']))
-            if 'shell' in status.info['needs_fixing']:
-                command += "-s {} ".format(quote(self.attributes['shell']))
-            if 'uid' in status.info['needs_fixing']:
-                command += "-u {} ".format(self.attributes['uid'])
+            for attr, option in _ATTRIBUTE_OPTIONS.iteritems():
+                if attr in status.info['needs_fixing'] and self.attributes[attr] is not None:
+                    if attr == 'groups':
+                        value = ",".join(self.attributes[attr])
+                    else:
+                        value = str(self.attributes[attr])
+                    command += "{} {} ".format(option, quote(value))
             command += self.name
             self.node.run(command, may_fail=True)
 
@@ -184,10 +189,13 @@ class User(Item):
         if passwd_grep_result.return_code != 0:
             return ItemStatus(
                 correct=self.attributes['delete'],
-                info={'exists': False, 'needs_fixing': ['existence']},
+                info={'exists': False, 'needs_fixing': _ATTRIBUTE_OPTIONS.keys()},
             )
         elif self.attributes['delete']:
-            return ItemStatus(correct=False, info={'exists': True, 'needs_fixing': ['existence']})
+            return ItemStatus(correct=False, info={
+                'exists': True,
+                'needs_fixing': _ATTRIBUTE_OPTIONS.keys(),
+            })
 
         status = ItemStatus(correct=True, info={'exists': True})
         status.info['needs_fixing'] = []
@@ -220,10 +228,10 @@ class User(Item):
                 else:
                     status.info['shadow_hash'] = shadow_grep_result.stdout.split(":")[1]
                     if status.info['shadow_hash'] != self.attributes['password_hash']:
-                        status.info['needs_fixing'].append('password')
+                        status.info['needs_fixing'].append('password_hash')
             else:
                 if status.info['passwd_hash'] != self.attributes['password_hash']:
-                    status.info['needs_fixing'].append('password')
+                    status.info['needs_fixing'].append('password_hash')
 
         # verify content of /etc/group
         status.info['groups'] = _groups_for_user(self.node, self.name)
