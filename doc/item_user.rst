@@ -56,7 +56,7 @@ Primary group of the user as numerical ID or group name.
 ``groups``
 ++++++++++
 
-List of groups (names, not GIDs) the user should belong to. MUST include the group referenced by ``gid``.
+List of groups (names, not GIDs) the user should belong to. Must NOT include the group referenced by ``gid``.
 
 |
 

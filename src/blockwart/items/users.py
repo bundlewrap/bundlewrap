@@ -61,8 +61,10 @@ def _groups_for_user(node, username):
     Returns the list of group names for the given username on the given
     node.
     """
-    idcmd = node.run("id -Gn {}".format(username))
-    return idcmd.stdout.strip().split(" ")
+    groups = node.run("id -Gn {}".format(username)).stdout.strip().split(" ")
+    primary_group = node.run("id -gn {}".format(username)).stdout.strip()
+    groups.remove(primary_group)
+    return groups
 
 
 def _parse_passwd_line(line):

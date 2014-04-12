@@ -16,14 +16,20 @@ class GroupsForUserTest(TestCase):
     """
     def test_groups(self):
         node = MagicMock()
-        result = RunResult()
-        result.stdout = "group1 group2\n"
-        node.run.return_value = result
+        result1 = RunResult()
+        result1.stdout = "group1 group2\n"
+        result2 = RunResult()
+        result2.stdout = "group1\n"
+        results = [result2, result1]
+
+        def get_result(*args, **kwargs):
+            return results.pop()
+
+        node.run.side_effect = get_result
 
         groups = users._groups_for_user(node, "jdoe")
 
-        node.run.assert_called_once_with("id -Gn jdoe")
-        self.assertEqual(groups, ["group1", "group2"])
+        self.assertEqual(groups, ["group2"])
 
 
 class ParsePasswdLineTest(TestCase):
