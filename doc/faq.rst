@@ -5,6 +5,13 @@ FAQ
 Technical
 #########
 
+Blockwart says an item failed to apply, what do I do now?
+---------------------------------------------------------
+
+Try running :command:`bw apply -i nodename` to see which attribute of the item could not be fixed. If that doesn't tell you enough, try ``bw --debug apply -i nodename`` and look for the command Blockwart is using to fix the item in question. Then try running that command yourself and check for any errors.
+
+|
+
 What happens when two people start applying configuration to the same node?
 ---------------------------------------------------------------------------
 
