@@ -8,7 +8,7 @@ from blockwart.utils.text import bold, green, red, wrap_question
 
 class Action(Item):
     """
-    A command that is run on a node before or after items are applied.
+    A command that is run on a node.
     """
     BUNDLE_ATTRIBUTE_NAME = 'actions'
     ITEM_ATTRIBUTES = {
