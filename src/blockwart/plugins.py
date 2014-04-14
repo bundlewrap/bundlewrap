@@ -1,26 +1,15 @@
 from json import dumps, loads
-from os import chmod, remove, makedirs
-from os.path import dirname, exists, join
+from os import chmod, remove
+from os.path import exists, join
 from stat import S_IREAD, S_IRGRP, S_IROTH
 
 from requests import get
 
 from .exceptions import NoSuchPlugin, PluginError, PluginLocalConflict
-from .utils import hash_local_file, LOG
+from .utils import download, hash_local_file, LOG
 from .utils.text import mark_for_translation as _
 
 BASE_URL = "https://raw.githubusercontent.com/blockwart/plugins/master"
-
-
-def download(url, path):
-    makedirs(dirname(path))
-    with open(path, 'wb') as f:
-        r = get(url, stream=True)
-        for block in r.iter_content(1024):
-            if not block:
-                break
-            else:
-                f.write(block)
 
 
 class PluginManager(object):

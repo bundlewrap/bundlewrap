@@ -2,7 +2,11 @@ import cProfile
 import hashlib
 from inspect import isgenerator
 import logging
+from os import makedirs
+from os.path import dirname, exists
 import pstats
+
+from requests import get
 
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
@@ -45,6 +49,18 @@ def cached_property(prop):
             self._cache[prop.func_name] = return_value
         return self._cache[prop.func_name]
     return property(cache_wrapper)
+
+
+def download(url, path):
+    if not exists(dirname(path)):
+        makedirs(dirname(path))
+    with open(path, 'wb') as f:
+        r = get(url, stream=True)
+        for block in r.iter_content(1024):
+            if not block:
+                break
+            else:
+                f.write(block)
 
 
 def get_file_contents(path):
