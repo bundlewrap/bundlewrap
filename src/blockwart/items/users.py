@@ -191,12 +191,12 @@ class User(Item):
         if passwd_grep_result.return_code != 0:
             return ItemStatus(
                 correct=self.attributes['delete'],
-                info={'exists': False, 'needs_fixing': _ATTRIBUTE_OPTIONS.keys()},
+                info={'exists': False, 'needs_fixing': list(_ATTRIBUTE_OPTIONS.keys())},
             )
         elif self.attributes['delete']:
             return ItemStatus(correct=False, info={
                 'exists': True,
-                'needs_fixing': _ATTRIBUTE_OPTIONS.keys(),
+                'needs_fixing': list(_ATTRIBUTE_OPTIONS.keys()),
             })
 
         status = ItemStatus(correct=True, info={'exists': True})
@@ -273,7 +273,7 @@ class User(Item):
     def validate_attributes(cls, bundle, item_id, attributes):
         if attributes.get('delete', False):
             for attr in attributes.keys():
-                if attr not in ['delete'] + BUILTIN_ITEM_ATTRIBUTES.keys():
+                if attr not in ['delete'] + list(BUILTIN_ITEM_ATTRIBUTES.keys()):
                     raise BundleError(_(
                         "{item} from bundle '{bundle}' cannot have other "
                         "attributes besides 'delete'"

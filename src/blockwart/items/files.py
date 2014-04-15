@@ -428,7 +428,7 @@ class File(Item):
     def validate_attributes(cls, bundle, item_id, attributes):
         if attributes.get('delete', False):
             for attr in attributes.keys():
-                if attr not in ['delete'] + BUILTIN_ITEM_ATTRIBUTES.keys():
+                if attr not in ['delete'] + list(BUILTIN_ITEM_ATTRIBUTES.keys()):
                     raise BundleError(_(
                         "{item} from bundle '{bundle}' cannot have other "
                         "attributes besides 'delete'"
