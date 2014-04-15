@@ -64,7 +64,7 @@ def bw_apply(repo, args):
                     node_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                     if args.interactive:
-                        yield _("{}: run started at {}").format(
+                        yield _("\n{}: run started at {}").format(
                             bold(node.name),
                             node_start_time,
                         )
@@ -91,7 +91,7 @@ def bw_apply(repo, args):
                 results[node_name] = msg['return_value']
 
                 if args.interactive:
-                    yield _("{node}: run completed after {time}s ({stats})\n").format(
+                    yield _("\n{node}: run completed after {time}s ({stats})\n").format(
                         node=bold(node_name),
                         time=results[node_name].duration.total_seconds(),
                         stats=format_node_result(results[node_name]),

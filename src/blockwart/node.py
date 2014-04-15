@@ -194,22 +194,22 @@ def apply_items(node, workers=1, interactive=False):
 
 def format_item_result(result, item_id):
     if result in (Item.STATUS_ACTION_FAILED, Item.STATUS_FAILED):
-        return _("  {} {} failed\n").format(
+        return _("\n  {} {} failed").format(
             red("✘"),
             bold(item_id),
         )
     elif result == Item.STATUS_ACTION_OK:
-        return _("  {} {} succeeded\n").format(
+        return _("\n  {} {} succeeded").format(
             green("✓"),
             bold(item_id),
         )
     elif result in (Item.STATUS_ACTION_SKIPPED, Item.STATUS_SKIPPED):
-        return _("  {} {} skipped\n").format(
+        return _("\n  {} {} skipped").format(
             yellow("»"),
             bold(item_id),
         )
     elif result == Item.STATUS_FIXED:
-        return _("  {} fixed {}\n").format(
+        return _("\n  {} fixed {}").format(
             green("✓"),
             bold(item_id),
         )
