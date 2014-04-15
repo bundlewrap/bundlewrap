@@ -70,12 +70,6 @@ class Action(Item):
 
         if self.attributes['expected_return_code'] is not None and \
                 not result.return_code == self.attributes['expected_return_code']:
-            if not interactive:
-                LOG.error("{}:{}: {}".format(
-                    self.bundle.node.name,
-                    self.id,
-                    red(_("FAILED")),
-                ))
             raise ActionFailure(_(
                 "wrong return code for action '{action}' in bundle '{bundle}': "
                 "expected {ecode}, but was {rcode}"
@@ -88,11 +82,6 @@ class Action(Item):
 
         if self.attributes['expected_stderr'] is not None and \
                 result.stderr != self.attributes['expected_stderr']:
-            LOG.error("{}:{}: {}".format(
-                self.bundle.node.name,
-                self.id,
-                red(_("FAILED")),
-            ))
             raise ActionFailure(_(
                 "wrong stderr for action '{action}' in bundle '{bundle}'"
             ).format(
@@ -102,23 +91,12 @@ class Action(Item):
 
         if self.attributes['expected_stdout'] is not None and \
                 result.stdout != self.attributes['expected_stdout']:
-            LOG.error("{}:{}: {}".format(
-                self.bundle.node.name,
-                self.id,
-                red(_("FAILED")),
-            ))
             raise ActionFailure(_(
                 "wrong stdout for action '{action}' in bundle '{bundle}'"
             ).format(
                 action=self.name,
                 bundle=self.bundle.name,
             ))
-
-        LOG.info("{}:{}: {}".format(
-            self.bundle.node.name,
-            self.id,
-            green(_("OK")),
-        ))
 
         return result
 

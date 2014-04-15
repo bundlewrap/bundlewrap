@@ -112,10 +112,21 @@ def apply_items(node, workers=1, interactive=False):
 
                 status_code = msg['return_value']
 
-                if interactive:
-                    formatted_result = format_item_result(status_code, item_id)
-                    if formatted_result is not None:
+                formatted_result = format_item_result(
+                    status_code,
+                    node.name,
+                    item.bundle.name if item.bundle else "",  # dummy items don't have bundles
+                    item.id,
+                    interactive=interactive,
+                )
+                if formatted_result is not None:
+                    if interactive:
                         print(formatted_result)
+                    else:
+                        if status_code == Item.STATUS_FAILED:
+                            LOG.error(formatted_result)
+                        else:
+                            LOG.info(formatted_result)
 
                 if status_code in (
                     Item.STATUS_FAILED,
@@ -133,9 +144,18 @@ def apply_items(node, workers=1, interactive=False):
                     for skipped_item in skipped_items:
                         if skipped_item.ITEM_TYPE_NAME == 'dummy':
                             continue
+                        formatted_result = format_item_result(
+                            Item.STATUS_SKIPPED,
+                            node.name,
+                            skipped_item.bundle.name,
+                            skipped_item.id,
+                            interactive=interactive,
+                        )
                         if interactive:
-                            print(format_item_result(skipped_item.STATUS_SKIPPED, skipped_item))
-                        yield (skipped_item.id, skipped_item.STATUS_SKIPPED)
+                            print(formatted_result)
+                        else:
+                            LOG.info(formatted_result)
+                        yield (skipped_item.id, Item.STATUS_SKIPPED)
                 else:
                     # if an item is applied successfully, all
                     # dependencies on it can be removed from the
@@ -186,27 +206,59 @@ def apply_items(node, workers=1, interactive=False):
         )
 
 
-def format_item_result(result, item_id):
+def format_item_result(result, node, bundle, item, interactive=False):
     if result == Item.STATUS_FAILED:
-        return _("\n  {} {} failed").format(
-            red("✘"),
-            bold(item_id),
-        )
+        if interactive:
+            return _("\n  {} {} failed").format(
+                red("✘"),
+                bold(item),
+            )
+        else:
+            return "{node}:{bundle}:{item}: {status}".format(
+                bundle=bundle,
+                item=item,
+                node=node,
+                status=red(_("FAILED")),
+            )
     elif result == Item.STATUS_ACTION_SUCCEEDED:
-        return _("\n  {} {} succeeded").format(
-            green("✓"),
-            bold(item_id),
-        )
+        if interactive:
+            return _("\n  {} {} succeeded").format(
+                green("✓"),
+                bold(item),
+            )
+        else:
+            return "{node}:{bundle}:{item}: {status}".format(
+                bundle=bundle,
+                item=item,
+                node=node,
+                status=green(_("SUCCEEDED")),
+            )
     elif result == Item.STATUS_SKIPPED:
-        return _("\n  {} {} skipped").format(
-            yellow("»"),
-            bold(item_id),
-        )
+        if interactive:
+            return _("\n  {} {} skipped").format(
+                yellow("»"),
+                bold(item),
+            )
+        else:
+            return "{node}:{bundle}:{item}: {status}".format(
+                bundle=bundle,
+                item=item,
+                node=node,
+                status=yellow(_("SKIPPED")),
+            )
     elif result == Item.STATUS_FIXED:
-        return _("\n  {} fixed {}").format(
-            green("✓"),
-            bold(item_id),
-        )
+        if interactive:
+            return _("\n  {} fixed {}").format(
+                green("✓"),
+                bold(item),
+            )
+        else:
+            return "{node}:{bundle}:{item}: {status}".format(
+                bundle=bundle,
+                item=item,
+                node=node,
+                status=green(_("FIXED")),
+            )
 
 
 class Node(object):
