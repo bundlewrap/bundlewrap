@@ -53,5 +53,5 @@ class Bundle(object):
             for name, attrs in bundle_attrs.get(
                     item_class.BUNDLE_ATTRIBUTE_NAME,
                     {},
-            ).iteritems():
+            ).items():
                 yield item_class(self, name, attrs)

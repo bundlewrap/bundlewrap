@@ -72,7 +72,7 @@ def groups_from_file(filepath):
         raise RepositoryError(_(
             "{} must define a 'groups' variable"
         ).format(filepath))
-    for groupname, infodict in flat_group_dict.iteritems():
+    for groupname, infodict in flat_group_dict.items():
         yield Group(groupname, infodict)
 
 
@@ -95,7 +95,7 @@ class HooksProxy(object):
         if event not in self.__hook_cache:
             # build a list of files that define a hook for the event
             files = []
-            for filename, events in self.__registered_hooks.iteritems():
+            for filename, events in self.__registered_hooks.items():
                 if event in events:
                     files.append(filename)
 
@@ -105,7 +105,7 @@ class HooksProxy(object):
                 if filename not in self.__module_cache:
                     self.__module_cache[filename] = {}
                     filepath = join(self.__path, filename)
-                    for name, obj in utils.get_all_attrs_from_file(filepath).iteritems():
+                    for name, obj in utils.get_all_attrs_from_file(filepath).items():
                         if name not in HOOK_EVENTS:
                             continue
                         self.__module_cache[filename][name] = obj
@@ -156,7 +156,7 @@ class HooksProxy(object):
                 continue
             self.__module_cache[filename] = {}
             self.__registered_hooks[filename] = []
-            for name, obj in utils.get_all_attrs_from_file(filepath).iteritems():
+            for name, obj in utils.get_all_attrs_from_file(filepath).items():
                 if name not in HOOK_EVENTS:
                     continue
                 self.__module_cache[filename][name] = obj
@@ -183,7 +183,7 @@ def items_from_path(itempath):
                     filename.startswith("_"):
                 continue
             for name, obj in \
-                    utils.get_all_attrs_from_file(filepath).iteritems():
+                    utils.get_all_attrs_from_file(filepath).items():
                 if obj == items.Item or name.startswith("_"):
                     continue
                 try:
@@ -224,7 +224,7 @@ def nodes_from_file(filepath):
         raise RepositoryError(
             _("{} must define a 'nodes' variable").format(filepath)
         )
-    for nodename, infodict in flat_node_dict.iteritems():
+    for nodename, infodict in flat_node_dict.items():
         yield Node(nodename, infodict)
 
 
@@ -303,7 +303,7 @@ class Repository(object):
         Creates and returns a repository at path, which must exist and
         be empty.
         """
-        for filename, content in INITIAL_CONTENT.iteritems():
+        for filename, content in INITIAL_CONTENT.items():
             with open(join(path, filename), 'w') as f:
                 f.write(content.strip() + "\n")
 

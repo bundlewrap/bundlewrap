@@ -97,7 +97,7 @@ class Item(object):
         attributes = self.patch_attributes(attributes)
 
         for attribute_name, attribute_default in \
-                self.ITEM_ATTRIBUTES.iteritems():
+                self.ITEM_ATTRIBUTES.items():
             if attribute_name in BUILTIN_ITEM_ATTRIBUTES:
                 continue
             self.attributes[attribute_name] = attributes.get(
@@ -106,7 +106,7 @@ class Item(object):
             )
 
         for attribute_name, attribute_default in \
-                BUILTIN_ITEM_ATTRIBUTES.iteritems():
+                BUILTIN_ITEM_ATTRIBUTES.items():
             setattr(self, attribute_name, attributes.get(
                 attribute_name,
                 copy(attribute_default),

@@ -172,7 +172,7 @@ class User(Item):
             self.node.run("userdel {}".format(self.name), may_fail=True)
         else:
             command = "useradd " if not status.info['exists'] else "usermod "
-            for attr, option in _ATTRIBUTE_OPTIONS.iteritems():
+            for attr, option in _ATTRIBUTE_OPTIONS.items():
                 if attr in status.info['needs_fixing'] and self.attributes[attr] is not None:
                     if attr == 'groups':
                         value = ",".join(self.attributes[attr])
