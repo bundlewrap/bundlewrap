@@ -120,7 +120,7 @@ class WorkerPool(object):
         # explicitly as idle (don't confuse this with workers that
         # aren't processing a job right now).
         self.idle_workers = []
-        self.workers_alive = range(workers)
+        self.workers_alive = list(range(workers))
 
         # We don't need to know *which* worker is currently processing a
         # job. We only need to know how many there are.
