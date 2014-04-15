@@ -9,8 +9,6 @@ class BundleItem(object):
     """
     Represents a dependency on all items in a certain bundle.
     """
-    PARALLEL_APPLY = True
-
     def __init__(self, bundle):
         self.NEEDS_STATIC = []
         self.bundle = bundle
@@ -193,7 +191,7 @@ def _inject_canned_actions(items):
 
 def _inject_concurrency_blockers(items):
     """
-    Looks for items with PARALLEL_APPLY set to False and inserts
+    Looks for items with BLOCK_CONCURRENT set to True and inserts
     dependencies to force a sequential apply.
     """
     # find every item type that cannot be applied in parallel
