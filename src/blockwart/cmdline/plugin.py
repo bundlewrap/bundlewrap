@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from ..exceptions import NoSuchPlugin
 from ..plugins import PluginManager
 from ..utils.text import mark_for_translation as _
@@ -37,7 +40,7 @@ def bw_repo_plugin_update(repo, args):
             check_only=args.check_only,
             force=args.force,
         )
-        yield _("{plugin}: {old_version} -> {new_version}").format(
+        yield _("{plugin}: {old_version} → {new_version}").format(
             new_version=new_version,
             old_version=old_version,
             plugin=args.plugin,
@@ -49,7 +52,7 @@ def bw_repo_plugin_update(repo, args):
                 check_only=args.check_only,
                 force=args.force,
             )
-            yield _("{plugin}: {old_version} -> {new_version}").format(
+            yield _("{plugin}: {old_version} → {new_version}").format(
                 new_version=new_version,
                 old_version=old_version,
                 plugin=plugin,
