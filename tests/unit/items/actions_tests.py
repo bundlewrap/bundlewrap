@@ -112,14 +112,14 @@ class ActionGetResultTest(TestCase):
         action = Action(bundle, "action", { 'command': "/bin/true", 'unless': "true" })
         self.assertEqual(
             action.get_result(),
-            Action.STATUS_ACTION_SKIPPED,
+            Action.STATUS_SKIPPED,
         )
 
     def test_skip_noninteractive(self):
         action = Action(MagicMock(), "action", { 'command': "/bin/true", 'interactive': True })
         self.assertEqual(
             action.get_result(interactive=False),
-            Action.STATUS_ACTION_SKIPPED,
+            Action.STATUS_SKIPPED,
         )
 
     @patch('blockwart.items.actions.ask_interactively', return_value=False)
@@ -127,7 +127,7 @@ class ActionGetResultTest(TestCase):
         action = Action(MagicMock(), "action", { 'command': "/bin/true" })
         self.assertEqual(
             action.get_result(interactive=True),
-            Action.STATUS_ACTION_SKIPPED,
+            Action.STATUS_SKIPPED,
         )
 
     def test_ok(self):
@@ -135,7 +135,7 @@ class ActionGetResultTest(TestCase):
         action.run = MagicMock(return_value=None)
         self.assertEqual(
             action.get_result(interactive=False),
-            Action.STATUS_ACTION_OK,
+            Action.STATUS_ACTION_SUCCEEDED,
         )
 
     def test_fail(self):
@@ -143,5 +143,5 @@ class ActionGetResultTest(TestCase):
         action.run = MagicMock(side_effect=ActionFailure)
         self.assertEqual(
             action.get_result(interactive=False),
-            Action.STATUS_ACTION_FAILED,
+            Action.STATUS_FAILED,
         )

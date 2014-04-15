@@ -23,11 +23,11 @@ class Action(Item):
 
     def get_result(self, interactive=False, interactive_default=True):
         if interactive is False and self.attributes['interactive'] is True:
-            return self.STATUS_ACTION_SKIPPED
+            return self.STATUS_SKIPPED
 
         if self.triggered and not self.has_been_triggered:
             LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return self.STATUS_ACTION_SKIPPED
+            return self.STATUS_SKIPPED
 
         if self.unless:
             unless_result = self.bundle.node.run(
@@ -39,7 +39,7 @@ class Action(Item):
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
-                return self.STATUS_ACTION_SKIPPED
+                return self.STATUS_SKIPPED
 
         if (
             interactive and
@@ -55,12 +55,12 @@ class Action(Item):
                 interactive_default,
             )
         ):
-            return self.STATUS_ACTION_SKIPPED
+            return self.STATUS_SKIPPED
         try:
             self.run(interactive=interactive)
-            return self.STATUS_ACTION_OK
+            return self.STATUS_ACTION_SUCCEEDED
         except ActionFailure:
-            return self.STATUS_ACTION_FAILED
+            return self.STATUS_FAILED
 
     def run(self, interactive=False):
         result = self.bundle.node.run(

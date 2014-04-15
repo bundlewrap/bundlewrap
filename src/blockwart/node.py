@@ -37,12 +37,8 @@ class ApplyResult(object):
         self.failed = 0
 
         for item_id, result in item_results:
-            if result == Item.STATUS_ACTION_OK:
+            if result == Item.STATUS_ACTION_SUCCEEDED:
                 self.correct += 1
-            elif result == Item.STATUS_ACTION_FAILED:
-                self.failed += 1
-            elif result == Item.STATUS_ACTION_SKIPPED:
-                self.skipped += 1
             elif result == Item.STATUS_OK:
                 self.correct += 1
             elif result == Item.STATUS_FIXED:
@@ -124,8 +120,6 @@ def apply_items(node, workers=1, interactive=False):
                 if status_code in (
                     Item.STATUS_FAILED,
                     Item.STATUS_SKIPPED,
-                    Item.STATUS_ACTION_FAILED,
-                    Item.STATUS_ACTION_SKIPPED,
                 ) and item.cascade_skip:
                     # if an item fails or is skipped, all items that depend on
                     # it shall be removed from the queue
@@ -157,8 +151,8 @@ def apply_items(node, workers=1, interactive=False):
                 items_with_deps, items_without_deps = \
                     split_items_without_deps(items_with_deps + items_without_deps)
 
-                if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_OK) or (
-                    status_code in (Item.STATUS_SKIPPED, Item.STATUS_ACTION_SKIPPED) and
+                if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED) or (
+                    status_code == Item.STATUS_SKIPPED and
                     not item.cascade_skip
                 ):
                     # action succeeded or item was fixed
@@ -193,17 +187,17 @@ def apply_items(node, workers=1, interactive=False):
 
 
 def format_item_result(result, item_id):
-    if result in (Item.STATUS_ACTION_FAILED, Item.STATUS_FAILED):
+    if result == Item.STATUS_FAILED:
         return _("\n  {} {} failed").format(
             red("✘"),
             bold(item_id),
         )
-    elif result == Item.STATUS_ACTION_OK:
+    elif result == Item.STATUS_ACTION_SUCCEEDED:
         return _("\n  {} {} succeeded").format(
             green("✓"),
             bold(item_id),
         )
-    elif result in (Item.STATUS_ACTION_SKIPPED, Item.STATUS_SKIPPED):
+    elif result == Item.STATUS_SKIPPED:
         return _("\n  {} {} skipped").format(
             yellow("»"),
             bold(item_id),

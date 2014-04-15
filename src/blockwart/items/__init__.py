@@ -75,9 +75,7 @@ class Item(object):
     STATUS_FIXED = 2
     STATUS_FAILED = 3
     STATUS_SKIPPED = 4
-    STATUS_ACTION_OK = 5
-    STATUS_ACTION_FAILED = 6
-    STATUS_ACTION_SKIPPED = 7
+    STATUS_ACTION_SUCCEEDED = 5
 
     def __init__(self, bundle, name, attributes, has_been_triggered=False, skip_validation=False,
             skip_name_validation=False):
