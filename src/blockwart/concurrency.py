@@ -190,7 +190,7 @@ class WorkerPool(object):
             kwargs = {}
 
         if ismethod(target):
-            target_obj = target.im_self
+            target_obj = target.__self__
             target = target.__name__
         else:
             target_obj = None
