@@ -56,7 +56,7 @@ class PluginManager(object):
         return manifest
 
     def list(self):
-        for plugin, info in self.plugin_db.iteritems():
+        for plugin, info in self.plugin_db.items():
             yield (plugin, info['version'])
 
     def manifest_for_plugin(self, plugin):
@@ -85,7 +85,7 @@ class PluginManager(object):
         if plugin not in self.plugin_db:
             raise NoSuchPlugin(_("plugin '{plugin}' is not installed").format(plugin=plugin))
 
-        for file, db_checksum in self.plugin_db[plugin]['files'].iteritems():
+        for file, db_checksum in self.plugin_db[plugin]['files'].items():
             file_path = join(self.path, file)
             if not exists(file_path):
                 continue
@@ -104,7 +104,7 @@ class PluginManager(object):
 
     def search(self, term):
         term = term.lower()
-        for plugin_name, plugin_data in self.index.iteritems():
+        for plugin_name, plugin_data in self.index.items():
             if term in plugin_name.lower() or term in plugin_data['desc'].lower():
                 yield (plugin_name, plugin_data['desc'])
 
@@ -143,7 +143,7 @@ class PluginManager(object):
                 chmod(target_path, S_IREAD | S_IRGRP | S_IROTH)
 
             # check for files that have been removed in the new version
-            for file, db_checksum in self.plugin_db[plugin]['files'].iteritems():
+            for file, db_checksum in self.plugin_db[plugin]['files'].items():
                 if file not in manifest['provides']:
                     file_path = join(self.path, file)
                     current_checksum = hash_local_file(file_path)
