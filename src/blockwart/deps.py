@@ -69,7 +69,7 @@ def find_item(item_id, items):
     items.
     """
     try:
-        item = filter(lambda item: item.id == item_id, items)[0]
+        item = list(filter(lambda item: item.id == item_id, items))[0]
     except IndexError:
         raise ValueError(_("item not found: {}").format(item_id))
     return item
@@ -79,13 +79,13 @@ def _find_items_of_types(item_types, items, include_dummy=False):
     """
     Returns a subset of items with any of the given types.
     """
-    return filter(
+    return list(filter(
         lambda item:
             item.id.split(":", 1)[0] in item_types and (
                 include_dummy or not item.id.endswith(":")
             ),
         items,
-    )
+    ))
 
 
 def _flatten_dependencies(items):
@@ -220,19 +220,19 @@ def _inject_concurrency_blockers(items):
         processed_items = []
         for item in type_items:
             # disregard deps to items of other types
-            item.__deps = filter(
+            item.__deps = list(filter(
                 lambda dep: dep.split(":", 1)[0] in blocked_types,
                 item._flattened_deps,
-            )
+            ))
         previous_item = None
         while len(processed_items) < len(type_items):
             # find the first item without same-type deps we haven't
             # processed yet
             try:
-                item = filter(
+                item = list(filter(
                     lambda item: not item.__deps and item not in processed_items,
                     type_items,
-                )[0]
+                ))[0]
             except IndexError:
                 # this can happen if the flattened deps of all items of
                 # this type already contain a dependency on another
