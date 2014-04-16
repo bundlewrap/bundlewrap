@@ -11,7 +11,7 @@ from blockwart.utils.text import mark_for_translation as _
 
 def pkg_install(node, pkgname):
     return node.run("DEBIAN_FRONTEND=noninteractive "
-                    "apt-get -qy --no-install-recommends "
+                    "apt-get -qy -o Dpkg::Options::=--force-confold --no-install-recommends "
                     "install {}".format(quote(pkgname)))
 
 
