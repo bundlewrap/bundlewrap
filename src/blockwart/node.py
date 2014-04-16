@@ -272,7 +272,7 @@ class Node(object):
         self.name = name
         self._bundles = infodict.get('bundles', [])
         self.hostname = infodict.get('hostname', self.name)
-        self.metadata = infodict.get('metadata', {})
+        self._node_metadata = infodict.get('metadata', {})
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
     def __cmp__(self, other):
@@ -372,6 +372,14 @@ class Node(object):
             local_path,
             ignore_failure=ignore_failure,
         )
+
+    @cached_property
+    def metadata(self):
+        m = {}
+        for group in self.groups:
+            m.update(group.metadata)
+        m.update(self._node_metadata)
+        return m
 
     def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
             sudo=True):
