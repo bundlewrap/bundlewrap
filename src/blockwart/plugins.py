@@ -42,10 +42,8 @@ class PluginManager(object):
                     "'{path}' which already exists"
                 ).format(path=target_path, plugin=plugin))
 
-            download(
-                "{}/{}".format(self.base_url, file),
-                target_path,
-            )
+            url = "{}/{}/{}".format(self.base_url, plugin, file)
+            download(url, target_path)
 
             # make file read-only to discourage users from editing them
             # which will block future updates of the plugin
@@ -136,7 +134,8 @@ class PluginManager(object):
             # actually install files
             for file in manifest['provides']:
                 target_path = join(self.path, file)
-                download("{}/{}".format(BASE_URL, file), target_path)
+                url = "{}/{}/{}".format(self.base_url, plugin, file)
+                download(url, target_path)
 
                 # make file read-only to discourage users from editing them
                 # which will block future updates of the plugin
