@@ -56,6 +56,7 @@ def download(url, path):
         makedirs(dirname(path))
     with open(path, 'wb') as f:
         r = get(url, stream=True)
+        r.raise_for_status()
         for block in r.iter_content(1024):
             if not block:
                 break
