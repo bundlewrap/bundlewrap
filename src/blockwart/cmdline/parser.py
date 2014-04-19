@@ -264,6 +264,13 @@ def build_parser_bw():
         type=str,
         help=_("name of plugin to remove"),
     )
+    parser_repo_subparsers_plugin_remove.add_argument(
+        "-f",
+        "--force",
+        action='store_true',
+        dest='force',
+        help=_("remove files even if locally modified"),
+    )
 
     # bw repo plugin search
     parser_repo_subparsers_plugin_search = parser_repo_subparsers_plugin_subparsers.add_parser("search")
