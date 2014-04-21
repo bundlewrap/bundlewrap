@@ -186,7 +186,7 @@ class InstallTest(TmpDirTest):
         pm.install("plugin")
 
         download.assert_called_once_with(
-            plugins.BASE_URL + '/file1',
+            plugins.BASE_URL + '/plugin/file1',
             join(self.tmpdir, "file1"),
         )
 
@@ -249,7 +249,7 @@ class InstallForceConflictTest(TmpDirTest):
         pm.install("plugin", force=True)
 
         download.assert_called_once_with(
-            plugins.BASE_URL + '/file1',
+            plugins.BASE_URL + '/plugin/file1',
             join(self.tmpdir, "file1"),
         )
 
@@ -306,7 +306,7 @@ class UpdateTest(TmpDirTest):
         pm.update("plugin")
 
         download.assert_called_once_with(
-            plugins.BASE_URL + '/file1',
+            plugins.BASE_URL + '/plugin/file1',
             join(self.tmpdir, "file1"),
         )
 

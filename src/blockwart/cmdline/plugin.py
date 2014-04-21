@@ -10,13 +10,13 @@ def bw_repo_plugin_install(repo, args):
     pm = PluginManager(repo.path)
     try:
         manifest = pm.install(args.plugin, force=args.force)
+        yield _("installed '{plugin}' (v{version})").format(
+            plugin=args.plugin,
+            version=manifest['version'],
+        )
     except NoSuchPlugin:
         yield _("unknown plugin '{plugin}'").format(plugin=args.plugin)
         yield 1
-    yield _("installed '{plugin}' (v{version})").format(
-        plugin=args.plugin,
-        version=manifest['version'],
-    )
 
 
 def bw_repo_plugin_list(repo, args):
