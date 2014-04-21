@@ -69,6 +69,17 @@ A tuple or list of node names that belong to this group.
 
 |
 
+``metadata``
+------------
+
+A dictionary of arbitrary data that will be accessible from each node's ``node.metadata``. For each node, Blockwart will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.
+
+.. warning::
+
+	Be careful when defining conflicting metadata (i.e. dictionaries that have some common keys) in multiple groups. Blockwart will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order.
+
+|
+
 ``subgroups``
 -------------
 

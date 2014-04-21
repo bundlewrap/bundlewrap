@@ -97,7 +97,7 @@ A string used as a DNS name when connecting to this node. May also be an IP addr
 ``metadata``
 ------------
 
-This can be a dictionary of arbitrary data. You can access it from your templates as ``node.metadata``. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node.
+This can be a dictionary of arbitrary data. You can access it from your templates as ``node.metadata``. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the :ref:`group level <item_group>`, but node metadata has higher priority.
 
 |
 

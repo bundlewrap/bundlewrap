@@ -16,7 +16,7 @@ from .deps import find_item, prepare_dependencies, remove_item_dependents, remov
     split_items_without_deps
 from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from .items import Item
-from .utils import cached_property, LOG, graph_for_items
+from .utils import cached_property, LOG, graph_for_items, names
 from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
@@ -206,6 +206,50 @@ def apply_items(node, workers=1, interactive=False):
         )
 
 
+def _flatten_group_hierarchy(groups):
+    """
+    Takes a list of groups and returns a list of group names ordered so
+    that parent groups will appear before any of their subgroups.
+    """
+    # dict mapping groups to subgroups
+    child_groups = {}
+    for group in groups:
+        child_groups[group.name] = list(names(group.subgroups))
+
+    # dict mapping groups to parent groups
+    parent_groups = {}
+    for child_group in child_groups.keys():
+        parent_groups[child_group] = []
+        for parent_group, subgroups in child_groups.items():
+            if child_group in subgroups:
+                parent_groups[child_group].append(parent_group)
+
+    order = []
+
+    while True:
+        top_level_group = None
+        for group, parents in parent_groups.items():
+            if parents:
+                continue
+            else:
+                top_level_group = group
+                break
+        if not top_level_group:
+            if parent_groups:
+                raise RuntimeError(
+                    _("encountered subgroup loop that should have been detected")
+                )
+            else:
+                break
+        order.append(top_level_group)
+        del parent_groups[top_level_group]
+        for group in parent_groups.keys():
+            if top_level_group in parent_groups[group]:
+                parent_groups[group].remove(top_level_group)
+
+    return order
+
+
 def format_item_result(result, node, bundle, item, interactive=False):
     if result == Item.STATUS_FAILED:
         if interactive:
@@ -272,7 +316,7 @@ class Node(object):
         self.name = name
         self._bundles = infodict.get('bundles', [])
         self.hostname = infodict.get('hostname', self.name)
-        self.metadata = infodict.get('metadata', {})
+        self._node_metadata = infodict.get('metadata', {})
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
     def __cmp__(self, other):
@@ -372,6 +416,15 @@ class Node(object):
             local_path,
             ignore_failure=ignore_failure,
         )
+
+    @cached_property
+    def metadata(self):
+        m = {}
+        group_order = _flatten_group_hierarchy(self.groups)
+        for group in group_order:
+            m.update(self.repo.get_group(group).metadata)
+        m.update(self._node_metadata)
+        return m
 
     def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
             sudo=True):
