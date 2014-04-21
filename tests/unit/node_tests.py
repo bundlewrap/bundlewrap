@@ -5,7 +5,7 @@ from mock import MagicMock, patch
 from blockwart.exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from blockwart.group import Group
 from blockwart.items import Item
-from blockwart.node import ApplyResult, apply_items, Node, NodeLock
+from blockwart.node import ApplyResult, apply_items, _flatten_group_hierarchy, Node, NodeLock
 from blockwart.operations import RunResult
 from blockwart.repo import Repository
 from blockwart.utils import names
@@ -189,6 +189,60 @@ class ApplyResultTest(TestCase):
         )
         with self.assertRaises(RuntimeError):
             ApplyResult(MagicMock(), item_results)
+
+
+class FlattenGroupHierarchyTest(TestCase):
+    """
+    Tests blockwart.node._flatten_group_hierarchy.
+    """
+    def test_reorder_chain(self):
+        group1 = MagicMock()
+        group1.name = "group1"
+        group2 = MagicMock()
+        group2.name = "group2"
+        group3 = MagicMock()
+        group3.name = "group3"
+
+        group3.subgroups = [group2]
+        group2.subgroups = [group1]
+        group1.subgroups = []
+
+        self.assertEqual(
+            _flatten_group_hierarchy([group1, group2, group3]),
+            ["group3", "group2", "group1"],
+        )
+
+    def test_reorder_short_chain(self):
+        group1 = MagicMock()
+        group1.name = "group1"
+        group2 = MagicMock()
+        group2.name = "group2"
+        group3 = MagicMock()
+        group3.name = "group3"
+
+        group3.subgroups = [group2]
+        group2.subgroups = []
+        group1.subgroups = []
+
+        self.assertEqual(
+            _flatten_group_hierarchy([group1, group2, group3]),
+            ["group1", "group3", "group2"],
+        )
+
+    def test_loop(self):
+        group1 = MagicMock()
+        group1.name = "group1"
+        group2 = MagicMock()
+        group2.name = "group2"
+        group3 = MagicMock()
+        group3.name = "group3"
+
+        group3.subgroups = [group2]
+        group2.subgroups = [group1]
+        group1.subgroups = [group3]
+
+        with self.assertRaises(RuntimeError):
+            _flatten_group_hierarchy([group1, group2, group3])
 
 
 class InitTest(TestCase):
