@@ -22,6 +22,10 @@ Please use the `GitHub issue tracker <https://github.com/blockwart/blockwart/iss
 Contributing code
 #################
 
+.. note::
+
+	Before working on new features, try reaching out to one of the core authors first. We are very concerned with keeping Blockwart lean and not introducing bloat. If your idea is not a good fit for all or most Blockwart users, it can still be included :doc:`as a plugin <dev_plugins>`.
+
 Here are the steps:
 
 1. Write your code. Awesome!
@@ -37,3 +41,17 @@ Help
 ####
 
 If at any point you need help or are not sure what to do, just drop by in `#blockwart on Freenode <irc://chat.freenode.net/blockwart>`_ or poke `@bwapply on Twitter <https://twitter.com/bwapply>`_.
+
+
+.. raw:: html
+
+   <div style="display: none;">
+
+.. toctree::
+   :maxdepth: 1
+
+   dev_plugins
+
+.. raw:: html
+
+   </div>
