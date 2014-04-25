@@ -14,6 +14,10 @@ def bw_repo_plugin_install(repo, args):
             plugin=args.plugin,
             version=manifest['version'],
         )
+        if 'help' in manifest:
+            yield ""
+            for line in manifest['help'].split("\n"):
+                yield line
     except NoSuchPlugin:
         yield _("unknown plugin '{plugin}'").format(plugin=args.plugin)
         yield 1
