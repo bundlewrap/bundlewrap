@@ -31,7 +31,7 @@ In your plugin subfolder, create a file called :file:`manifest.json` from this t
 
 	{
 		"desc": "Concise description (keep it somewhere around 80 characters)",
-		"help": "Verbose help text to be displayed after installing. May\ninclude\nnewlines.",
+		"help": "Optional verbose help text to be displayed after installing. May\ninclude\nnewlines.",
 		"provides": [
 			"bundles/example/bundle.py",
 			"hooks/example.py"
