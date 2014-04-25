@@ -31,7 +31,11 @@ def bw_repo_plugin_list(repo, args):
 
 def bw_repo_plugin_remove(repo, args):
     pm = PluginManager(repo.path)
-    pm.remove(args.plugin, force=args.force)
+    try:
+        pm.remove(args.plugin, force=args.force)
+    except NoSuchPlugin:
+        yield _("plugin '{plugin}' is not installed").format(plugin=args.plugin)
+        yield 1
 
 
 def bw_repo_plugin_search(repo, args):
