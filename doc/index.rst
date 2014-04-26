@@ -16,7 +16,7 @@ We think you will enjoy Blockwart a lot if you:
 * are trying to get a lot of existing systems under management
 * are NOT trying to handle a massive amount of nodes (let's say more than 300)
 * like to start small
-* don't want yet more stuff to run on your nodes
+* don't want yet more stuff to run on your nodes (or mess with appliances as little as possible)
 * prefer a simple tool to a fancy one
 * want as much as possible in git/hg/bzr
 * have strongly segmented internal networks
@@ -45,6 +45,7 @@ You might be better served with a different config management system if you:
    api
    dev_contrib
    faq
+   glossary
    about
 
 .. raw:: html
