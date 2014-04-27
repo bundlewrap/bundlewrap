@@ -10,6 +10,11 @@ While most users will interact with Blockwart through the :command:`bw` command 
 
 Even within Blockwart itself (e.g. templates, libs, and hooks) you are often given repo and/or node objects to work with. Their methods and attributes are documented below.
 
+Some general notes on using Blockwart's API:
+
+* There can be an arbitrary amount of :py:class:`blockwart.repo.Repository` objects per process.
+* Repositories are read as needed and not re-read when something changes. Modifying files in a repo during the lifetime of the matching Repository object may result in undefined behavior.
+
 
 Example
 #######
