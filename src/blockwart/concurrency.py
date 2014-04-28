@@ -11,7 +11,7 @@ from .exceptions import WorkerException
 from .utils import LOG
 from .utils.text import mark_for_translation as _
 
-JOIN_TIMEOUT = 5
+JOIN_TIMEOUT = 5  # seconds
 
 
 class ChildLogHandler(Handler):
