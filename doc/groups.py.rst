@@ -7,7 +7,7 @@ groups.py
 .. toctree::
     :hidden:
 
-This file lets you specify or dynamically build a list of groups in your environment.
+This file lets you specify or dynamically build a list of :term:`groups <group>` in your environment.
 
 Introduction
 ============

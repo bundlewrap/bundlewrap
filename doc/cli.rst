@@ -19,7 +19,7 @@ The :command:`bw` utility is Blockwart's command line interface.
 
 	$ bw apply -i mynode
 
-The most important and most used part of Blockwart, :command:`bw apply` will apply your configuration to a set of nodes. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the :option:`-i` switch to have Blockwart interactively ask before each change is made.
+The most important and most used part of Blockwart, :command:`bw apply` will apply your configuration to a set of :term:`nodes <node>`. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the :option:`-i` switch to have Blockwart interactively ask before each change is made.
 
 |
 
@@ -34,7 +34,7 @@ Unsurprisingly, the ``run`` subcommand is used to run commands on nodes.
 
 |
 
-As with most commands that accept node names, you can also give a group name or any combination of node and group names, separated by commas (without spaces, e.g. ``node1,group2,node3``). A third option is to use a bundle selector like ``bundle:my_bundle``. It will select all nodes with the named bundle. You can freely mix and match node names, group names, and bundle selectors.
+As with most commands that accept node names, you can also give a :term:`group` name or any combination of node and group names, separated by commas (without spaces, e.g. ``node1,group2,node3``). A third option is to use a bundle selector like ``bundle:my_bundle``. It will select all nodes with the named :term:`bundle`. You can freely mix and match node names, group names, and bundle selectors.
 
 |
 
@@ -49,7 +49,7 @@ Negation is also possible for bundles and groups. ``!bundle:foo`` will add all n
 
 	$ bw nodes --hostnames | xargs -n 1 ping -c 1
 
-With these commands you can quickly get a list of all nodes and groups in your repository. The example above uses :option:`--hostnames` to get a list of all DNS names for your nodes and send a ping to each one.
+With these commands you can quickly get a list of all nodes and groups in your :term:`repository`. The example above uses :option:`--hostnames` to get a list of all DNS names for your nodes and send a ping to each one.
 
 |
 
