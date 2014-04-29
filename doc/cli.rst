@@ -49,7 +49,7 @@ Negation is also possible for bundles and groups. ``!bundle:foo`` will add all n
 
 	$ bw nodes --hostnames | xargs -n 1 ping -c 1
 
-With these commands you can quickly get a list of all nodes and groups in your :term:`repository`. The example above uses :option:`--hostnames` to get a list of all DNS names for your nodes and send a ping to each one.
+With these commands you can quickly get a list of all nodes and groups in your :term:`repository <repo>`. The example above uses :option:`--hostnames` to get a list of all DNS names for your nodes and send a ping to each one.
 
 |
 

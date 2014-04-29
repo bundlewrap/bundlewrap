@@ -21,7 +21,7 @@ First, open a terminal and install Blockwart::
 Create a repository
 -------------------
 
-Now you'll need to create your repository::
+Now you'll need to create your :term:`repository <repo>`::
 
 	mkdir my_blockwart_repo
 	cd my_blockwart_repo
@@ -49,7 +49,7 @@ At this point you will want to edit :file:`nodes.py` and maybe change "localhost
 Run a command
 -------------
 
-The first thing you can do is run a command on your army of one node::
+The first thing you can do is run a command on your army of one :term:`node`::
 
 	bw run node1 "uptime"
 
@@ -59,14 +59,14 @@ You should see something like this::
 	[node1] out:
 	[node1] ✓ completed successfully after 1.18188s
 
-Instead of a node name ("node1" in this case) you can also use a group name (such as "all") from your ``groups.py``.
+Instead of a node name ("node1" in this case) you can also use a :term:`group` name (such as "all") from your ``groups.py``.
 
 |
 
 Create a bundle
 ---------------
 
-Blockwart stores node configuration in bundles. A bundle is a collection of items such as files, system packages or users. To create your first bundle, type::
+Blockwart stores node configuration in :term:`bundles <bundle>`. A bundle is a collection of :term:`items <item>` such as files, system packages or users. To create your first bundle, type::
 
 	bw repo bundle create mybundle
 
