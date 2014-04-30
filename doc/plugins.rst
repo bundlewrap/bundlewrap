@@ -22,7 +22,7 @@ Installing plugins
 
 You probably guessed it: :command:`bw repo plugin install <plugin>`
 
-Installing the first plugin in your repo will create a file called ``plugins.json``. You should commit this file (and any files installed by the plugin of course) to version control.
+Installing the first plugin in your repo will create a file called :file:`plugins.json`. You should commit this file (and any files installed by the plugin of course) to version control.
 
 .. hint::
 	Avoid editing files provided by plugins at all costs. Local modifications will prevent future updates to the plugin.
