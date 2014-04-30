@@ -46,7 +46,6 @@ class Bundle(object):
                 'node': self.node,
                 'repo': self.repo,
             },
-            cache_read=False,
         )
         for item_class in self.repo.item_classes:
             if item_class.BUNDLE_ATTRIBUTE_NAME not in bundle_attrs:
