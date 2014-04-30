@@ -53,34 +53,34 @@ def get_file_contents(path):
     return content
 
 
-def get_all_attrs_from_file(path, cache_read=True, cache_write=True,
-                            base_env=None):
+def get_all_attrs_from_file(path, cache=True, base_env=None):
     """
-    Reads all 'attributes' (if it were a module) from a source
-    file.
+    Reads all 'attributes' (if it were a module) from a source file.
     """
     if base_env is None:
         base_env = {}
-    if path not in __GETATTR_CACHE or not cache_read:
+    if base_env:
+        # do not allow caching when passing in a base env because that
+        # breaks repeated calls with different base envs for the same
+        # file
+        cache = False
+    if path not in __GETATTR_CACHE or not cache:
         source = get_file_contents(path)
         env = base_env.copy()
         exec(source, env)
-        if cache_write:
+        if cache:
             __GETATTR_CACHE[path] = env
     else:
         env = __GETATTR_CACHE[path]
     return env
 
 
-def getattr_from_file(path, attrname, cache_read=True, cache_write=True,
-                      default=__GETATTR_NODEFAULT,
-                      ):
+def getattr_from_file(path, attrname, cache=True, default=__GETATTR_NODEFAULT):
     """
     Reads a specific 'attribute' (if it were a module) from a source
     file.
     """
-    env = get_all_attrs_from_file(path, cache_read=cache_read,
-                                  cache_write=cache_write)
+    env = get_all_attrs_from_file(path, cache=cache)
     if default == __GETATTR_NODEFAULT:
         return env[attrname]
     else:

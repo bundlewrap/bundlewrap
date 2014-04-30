@@ -48,7 +48,7 @@ class GetAttrFromFileTest(TestCase):
 
     @patch('blockwart.utils.get_file_contents', return_value="c = 47")
     def test_cache_disabled(self, *args):
-        utils.getattr_from_file(self.fname, 'c', cache_write=False)
+        utils.getattr_from_file(self.fname, 'c', cache=False)
         utils.getattr_from_file(self.fname, 'c')
         self.assertEqual(utils.get_file_contents.call_count, 2)
 
@@ -60,7 +60,7 @@ class GetAttrFromFileTest(TestCase):
         )
         utils.get_file_contents.return_value = "c = 48"
         self.assertEqual(
-            utils.getattr_from_file(self.fname, 'c', cache_read=False),
+            utils.getattr_from_file(self.fname, 'c', cache=False),
             48,
         )
         self.assertEqual(utils.get_file_contents.call_count, 2)
@@ -83,7 +83,7 @@ class GetAttrFromFileTest(TestCase):
         with open(join(self.tmpdir, self.fname), 'w') as f:
             f.write("c = 47")
         self.assertEqual(
-            utils.getattr_from_file(self.fname, 'c', cache_read=False),
+            utils.getattr_from_file(self.fname, 'c', cache=False),
             47,
         )
         return
