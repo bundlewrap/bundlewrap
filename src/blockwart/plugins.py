@@ -130,6 +130,8 @@ class PluginManager(object):
                     "cannot update '{plugin}' because it would overwrite '{path}'"
                 ).format(path=file, plugin=plugin))
 
+        old_version = self.plugin_db[plugin]['version']
+
         if not check_only:
             # actually install files
             for file in manifest['provides']:
@@ -155,7 +157,6 @@ class PluginManager(object):
 
             self.record_as_installed(plugin, manifest)
 
-        old_version = self.plugin_db[plugin]['version']
         new_version = manifest['version']
 
         return (old_version, new_version)
