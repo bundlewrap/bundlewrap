@@ -2,9 +2,10 @@ import cProfile
 import hashlib
 from inspect import isgenerator
 import logging
-from os import makedirs
+from os import chmod, makedirs
 from os.path import dirname, exists
 import pstats
+import stat
 
 from requests import get
 
@@ -13,6 +14,8 @@ __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
 
 LOG = logging.getLogger('blockwart')
+
+MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
 
 class PrintProfiler(object):
@@ -54,6 +57,8 @@ def cached_property(prop):
 def download(url, path):
     if not exists(dirname(path)):
         makedirs(dirname(path))
+    if exists(path):
+        chmod(path, MODE644)
     with open(path, 'wb') as f:
         r = get(url, stream=True)
         r.raise_for_status()
