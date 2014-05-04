@@ -6,6 +6,10 @@ Writing your own plugins
 
 Notable exceptions are :file:`nodes.py` and :file:`groups.py`. If your plugin wants to extend those, use a :doc:`lib <libs>` instead and ask users to add the result of a function call in your lib to their nodes or groups dicts.
 
+.. warning::
+
+	If your plugin depends on other libraries, make sure that it catches ImportErrors in a way that makes it obvious for the user what's missing. Keep in mind that people will often just :command:`git pull` their repo and not install your plugin themselves.
+
 |
 
 Starting a new plugin
