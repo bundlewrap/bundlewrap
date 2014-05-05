@@ -42,7 +42,7 @@ At this point you will want to edit :file:`nodes.py` and maybe change "localhost
 
 .. note::
 
-	Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com`` works in your terminal, so will Blockwart.
+	Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com sudo id`` works without any password prompts in your terminal, you're good to go.
 
 |
 
