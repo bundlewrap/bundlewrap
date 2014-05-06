@@ -42,6 +42,7 @@ This page describes the various subdirectories and files than can exist inside a
    hooks
    dev_item
    libs
+   plugins
 
 .. raw:: html
 

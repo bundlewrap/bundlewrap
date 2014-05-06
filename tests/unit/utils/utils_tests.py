@@ -3,7 +3,7 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from mock import patch
+from mock import MagicMock, patch
 
 from blockwart import utils
 
@@ -27,6 +27,23 @@ class CachedPropertyTest(TestCase):
         self.assertEqual(obj.testprop, 1)
         # a standard property would now return 2
         self.assertEqual(obj.testprop, 1)
+
+
+class DownloadTest(TestCase):
+    def setUp(self):
+        self.tmpdir = mkdtemp()
+        self.fname = join(self.tmpdir, "foodir/testfile")
+
+    def tearDown(self):
+        rmtree(self.tmpdir)
+
+    @patch('blockwart.utils.get')
+    def test_download(self, get):
+        getresult = MagicMock()
+        getresult.iter_content.return_value = ("content", "")
+        get.return_value = getresult
+        utils.download("url", self.fname)
+        self.assertEqual(utils.get_file_contents(self.fname), "content")
 
 
 class GetAttrFromFileTest(TestCase):

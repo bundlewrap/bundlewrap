@@ -2,13 +2,20 @@ import cProfile
 import hashlib
 from inspect import isgenerator
 import logging
+from os import chmod, makedirs
+from os.path import dirname, exists
 import pstats
+import stat
+
+from requests import get
 
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
 
 LOG = logging.getLogger('blockwart')
+
+MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
 
 class PrintProfiler(object):
@@ -45,6 +52,21 @@ def cached_property(prop):
             self._cache[prop.__name__] = return_value
         return self._cache[prop.__name__]
     return property(cache_wrapper)
+
+
+def download(url, path):
+    if not exists(dirname(path)):
+        makedirs(dirname(path))
+    if exists(path):
+        chmod(path, MODE644)
+    with open(path, 'wb') as f:
+        r = get(url, stream=True)
+        r.raise_for_status()
+        for block in r.iter_content(1024):
+            if not block:
+                break
+            else:
+                f.write(block)
 
 
 def get_file_contents(path):
@@ -168,6 +190,13 @@ def graph_for_items(
     yield "label = \"{}\"".format(title)
     yield "labelloc = \"t\""
     yield "}"
+
+
+def hash_local_file(path):
+    """
+    Retuns the sha1 hash of a file on the local machine.
+    """
+    return sha1(get_file_contents(path))
 
 
 def names(obj_list):

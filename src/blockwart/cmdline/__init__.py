@@ -109,8 +109,15 @@ def main(*args):
     if output is None:
         output = ()
 
+    return_code = 0
+
     for line in output:
-        print(line.encode('utf-8'))
+        if isinstance(line, int):
+            return_code = line
+        else:
+            print(line.encode('utf-8'))
 
     # clean up Fabric connections
     disconnect_all()
+
+    exit(return_code)

@@ -4,6 +4,8 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
+from mock import patch
+
 from blockwart.cmdline import main
 
 
@@ -16,7 +18,8 @@ class RepoCreateTest(TestCase):
         chdir(self.cwd)
         rmtree(self.tmpdir)
 
-    def test_simple_create(self):
+    @patch('blockwart.cmdline.exit')
+    def test_simple_create(self, exit):
         chdir(self.tmpdir)
         main("repo", "create")
         self.assertTrue(getsize(join(self.tmpdir, "nodes.py")) > 1)
@@ -31,7 +34,8 @@ class RepoBundleCreateTest(TestCase):
         chdir(self.cwd)
         rmtree(self.tmpdir)
 
-    def test_simple_create(self):
+    @patch('blockwart.cmdline.exit')
+    def test_simple_create(self, exit):
         chdir(self.tmpdir)
         main("repo", "create")
         self.assertFalse(isfile(join(self.tmpdir, "bundles", "test", "bundle.py")))
