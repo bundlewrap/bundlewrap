@@ -47,9 +47,10 @@ def release():
             local("rm -r build")
 
     print("")
-    print("Two more steps remain:")
+    print("Three more steps remain:")
     print("1. Create the release on GitHub, copying the CHANGELOG entries")
-    print("2. Active building docs for the new version on ReadTheDocs")
+    print("2. Activate building docs for the new version on ReadTheDocs")
+    print("3. Announce the release on Twitter")
 
 
 def run_pylint(ignore_warnings=True):
