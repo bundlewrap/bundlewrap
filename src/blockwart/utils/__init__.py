@@ -1,10 +1,8 @@
-import cProfile
 import hashlib
 from inspect import isgenerator
 import logging
 from os import chmod, makedirs
 from os.path import dirname, exists
-import pstats
 import stat
 
 from requests import get
@@ -16,24 +14,6 @@ __GETATTR_NODEFAULT = "very_unlikely_default_value"
 LOG = logging.getLogger('blockwart')
 
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
-
-
-class PrintProfiler(object):
-    """
-    Will print profiling information.
-
-    Usage:
-
-        with PrintProfiler():
-            [code goes here]
-    """
-    def __enter__(self):
-        self.pr = cProfile.Profile()
-        self.pr.enable()
-
-    def __exit__(self, type, value, traceback):
-        self.pr.disable()
-        pstats.Stats(self.pr).sort_stats('cumulative').print_stats()
 
 
 def cached_property(prop):
