@@ -342,9 +342,7 @@ class Repository(object):
 
     @property
     def groups(self):
-        result = list(self.group_dict.values())
-        result.sort()
-        return result
+        return sorted(self.group_dict.values())
 
     def groups_for_node(self, node):
         for group in self.groups:
@@ -353,9 +351,7 @@ class Repository(object):
 
     @property
     def nodes(self):
-        result = list(self.node_dict.values())
-        result.sort()
-        return result
+        return sorted(self.node_dict.values())
 
     def populate_from_path(self, path):
         if not self.is_repo(path):

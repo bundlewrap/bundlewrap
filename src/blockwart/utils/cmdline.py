@@ -40,6 +40,4 @@ def get_target_nodes(repo, target_string):
                     raise UsageException(_(
                         "unable to find group or node named '{}'"
                     ).format(name))
-    targets = list(set(targets))
-    targets.sort()
-    return targets
+    return sorted(set(targets))

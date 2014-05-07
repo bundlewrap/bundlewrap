@@ -143,10 +143,8 @@ class User(Item):
         if self.attributes['groups'] is not None:
             groups_should = set(self.attributes['groups'])
             groups_is = set(status.info['groups'])
-            missing_groups = list(groups_should.difference(groups_is))
-            missing_groups.sort()
-            extra_groups = list(groups_is.difference(groups_should))
-            extra_groups.sort()
+            missing_groups = sorted(groups_should.difference(groups_is))
+            extra_groups = sorted(groups_is.difference(groups_should))
 
             if missing_groups:
                 output += bold(_("missing groups")) + " " + \

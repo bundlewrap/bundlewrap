@@ -61,9 +61,7 @@ class Group(object):
         result += list(self._nodes_from_static_members)
         result += list(self._nodes_from_subgroups)
         result += list(self._nodes_from_patterns)
-        result = list(set(result))
-        result.sort()
-        return result
+        return sorted(set(result))
 
     @property
     def _nodes_from_static_members(self):
