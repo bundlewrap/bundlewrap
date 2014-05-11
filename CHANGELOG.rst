@@ -1,3 +1,18 @@
+0.12.0
+======
+
+2014-05-11
+
+* added plugins
+* added group metadata
+* user and group attributes are now optional
+* user groups may no longer contain primary group (BACKWARDS INCOMPATIBLE)
+* improvements to logging and output
+* fixed a critical bug preventing per-node customization of bundles
+* fixed pkg_apt choking on interactive dpkg prompts
+* fixed hashing of plaintext user passwords without salt
+
+
 0.11.2
 ======
 
