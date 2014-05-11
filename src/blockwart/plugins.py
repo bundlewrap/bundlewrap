@@ -131,8 +131,9 @@ class PluginManager(object):
                 ).format(path=file, plugin=plugin))
 
         old_version = self.plugin_db[plugin]['version']
+        new_version = manifest['version']
 
-        if not check_only:
+        if not check_only and old_version != new_version:
             # actually install files
             for file in manifest['provides']:
                 target_path = join(self.path, file)
@@ -156,8 +157,6 @@ class PluginManager(object):
                     remove(file_path)
 
             self.record_as_installed(plugin, manifest)
-
-        new_version = manifest['version']
 
         return (old_version, new_version)
 

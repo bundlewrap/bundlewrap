@@ -52,11 +52,12 @@ def bw_repo_plugin_update(repo, args):
             check_only=args.check_only,
             force=args.force,
         )
-        yield _("{plugin}: {old_version} → {new_version}").format(
-            new_version=new_version,
-            old_version=old_version,
-            plugin=args.plugin,
-        )
+        if old_version != new_version:
+            yield _("{plugin}: {old_version} → {new_version}").format(
+                new_version=new_version,
+                old_version=old_version,
+                plugin=args.plugin,
+            )
     else:
         for plugin, version in pm.list():
             old_version, new_version = pm.update(
@@ -64,8 +65,9 @@ def bw_repo_plugin_update(repo, args):
                 check_only=args.check_only,
                 force=args.force,
             )
-            yield _("{plugin}: {old_version} → {new_version}").format(
-                new_version=new_version,
-                old_version=old_version,
-                plugin=plugin,
-            )
+            if old_version != new_version:
+                yield _("{plugin}: {old_version} → {new_version}").format(
+                    new_version=new_version,
+                    old_version=old_version,
+                    plugin=plugin,
+                )
