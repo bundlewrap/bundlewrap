@@ -4,6 +4,11 @@
 File items
 ##########
 
+.. toctree::
+	:hidden:
+
+	item_file_templates
+
 Manages regular files.
 
 .. code-block:: python
@@ -100,3 +105,7 @@ Username of the file's owner. Defaults to ``root``.
 ++++++++++
 
 File name of the file template relative to the :file:`files` subdirectory of the current bundle. If this says ``my_template``, Blockwart will look in :file:`bundles/my_bundle/files/my_template`.
+
+.. seealso::
+
+	:doc:`Writing file templates <item_file_templates>`
