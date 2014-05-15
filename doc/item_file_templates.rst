@@ -2,7 +2,7 @@
 Writing file templates
 ######################
 
-Blockwart uses `Mako <http://mako-templates.org>`_ for file templating. This enabled you to dynamically contruct your config files.
+Blockwart uses `Mako <http://www.makotemplates.org>`_ for file templating. This enabled you to dynamically contruct your config files.
 
 The most basic example would be::
 
