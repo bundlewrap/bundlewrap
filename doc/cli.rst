@@ -75,7 +75,7 @@ This command will drop you into a Python shell with direct access to Blockwart's
 
 .. code-block:: console
 
-	$ bw repo plot mynode | dot -Tsvg -omynode.svg
+	$ bw plot node mynode | dot -Tsvg -omynode.svg
 
 You won't be using this every day, but it's pretty cool. The above command will create an SVG file (you can open these in your browser) that shows the item dependency graph for the given node. You will see bundles as dashed rectangles, static dependencies (defined in Blockwart itself) in green, auto-generated dependencies (calculated dynamically each time you run :command:`bw apply`) in blue and dependencies you defined yourself in red.
 

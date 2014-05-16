@@ -6,9 +6,10 @@ from .apply import bw_apply
 from .groups import bw_groups
 from .items import bw_items
 from .nodes import bw_nodes
+from .plot import bw_plot_node
 from .plugin import bw_repo_plugin_install, bw_repo_plugin_list, bw_repo_plugin_search, \
     bw_repo_plugin_remove, bw_repo_plugin_update
-from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_plot, bw_repo_test
+from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_test
 from .run import bw_run
 from .verify import bw_verify
 from .zen import bw_zen
@@ -147,6 +148,56 @@ def build_parser_bw():
         help=_("show group membership for each node"),
     )
 
+    # bw plot
+    parser_plot = subparsers.add_parser("plot")
+    parser_plot_subparsers = parser_plot.add_subparsers()
+
+    # bw plot node
+    parser_plot_subparsers_node = parser_plot_subparsers.add_parser("node")
+    parser_plot_subparsers_node.set_defaults(func=bw_plot_node)
+    parser_plot_subparsers_node.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("node to plot"),
+    )
+    parser_plot_subparsers_node.add_argument(
+        "--no-cluster",
+        action='store_false',
+        dest='cluster',
+        help=_("do not cluster items by bundle"),
+    )
+    parser_plot_subparsers_node.add_argument(
+        "--no-depends-auto",
+        action='store_false',
+        dest='depends_auto',
+        help=_("do not show auto-generated dependencies and items"),
+    )
+    parser_plot_subparsers_node.add_argument(
+        "--no-depends-conc",
+        action='store_false',
+        dest='depends_concurrency',
+        help=_("do not show concurrency blocker dependencies"),
+    )
+    parser_plot_subparsers_node.add_argument(
+        "--no-depends-regular",
+        action='store_false',
+        dest='depends_regular',
+        help=_("do not show regular user-defined dependencies"),
+    )
+    parser_plot_subparsers_node.add_argument(
+        "--no-depends-reverse",
+        action='store_false',
+        dest='depends_reverse',
+        help=_("do not show reverse dependencies ('needed_by')"),
+    )
+    parser_plot_subparsers_node.add_argument(
+        "--no-depends-static",
+        action='store_false',
+        dest='depends_static',
+        help=_("do not show static dependencies"),
+    )
+
     # bw repo
     parser_repo = subparsers.add_parser("repo")
     parser_repo_subparsers = parser_repo.add_subparsers()
@@ -182,52 +233,6 @@ def build_parser_bw():
         required=False,
         type=str,
         help=_("name of node to inspect"),
-    )
-
-    # bw repo plot
-    parser_repo_subparsers_plot = parser_repo_subparsers.add_parser("plot")
-    parser_repo_subparsers_plot.set_defaults(func=bw_repo_plot)
-    parser_repo_subparsers_plot.add_argument(
-        'node',
-        metavar=_("NODE"),
-        type=str,
-        help=_("node to plot"),
-    )
-    parser_repo_subparsers_plot.add_argument(
-        "--no-cluster",
-        action='store_false',
-        dest='cluster',
-        help=_("do not cluster items by bundle"),
-    )
-    parser_repo_subparsers_plot.add_argument(
-        "--no-depends-auto",
-        action='store_false',
-        dest='depends_auto',
-        help=_("do not show auto-generated dependencies and items"),
-    )
-    parser_repo_subparsers_plot.add_argument(
-        "--no-depends-conc",
-        action='store_false',
-        dest='depends_concurrency',
-        help=_("do not show concurrency blocker dependencies"),
-    )
-    parser_repo_subparsers_plot.add_argument(
-        "--no-depends-regular",
-        action='store_false',
-        dest='depends_regular',
-        help=_("do not show regular user-defined dependencies"),
-    )
-    parser_repo_subparsers_plot.add_argument(
-        "--no-depends-reverse",
-        action='store_false',
-        dest='depends_reverse',
-        help=_("do not show reverse dependencies ('needed_by')"),
-    )
-    parser_repo_subparsers_plot.add_argument(
-        "--no-depends-static",
-        action='store_false',
-        dest='depends_static',
-        help=_("do not show static dependencies"),
     )
 
     # bw repo plugin

@@ -8,9 +8,7 @@ from sys import exit
 from .. import VERSION_STRING
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
-from ..node import prepare_dependencies
 from ..repo import Repository
-from ..utils import graph_for_items
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _, red
 
@@ -38,21 +36,6 @@ def bw_repo_debug(repo, args):
     else:
         node = repo.get_node(args.node)
         interact(DEBUG_BANNER_NODE, local={'node': node, 'repo': repo})
-
-
-def bw_repo_plot(repo, args):
-    node = repo.get_node(args.node)
-    for line in graph_for_items(
-        node.name,
-        prepare_dependencies(node.items),
-        cluster=args.cluster,
-        concurrency=args.depends_concurrency,
-        static=args.depends_static,
-        regular=args.depends_regular,
-        reverse=args.depends_reverse,
-        auto=args.depends_auto,
-    ):
-        yield line
 
 
 def bw_repo_test(repo, args):
