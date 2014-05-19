@@ -98,9 +98,17 @@ class Directory(Item):
         if 'type' in status.info['needs_fixing']:
             # fixing the type fixes everything
             if status.info['path_info'].exists:
-                LOG.info(_("{}:{}: fixing type...").format(self.node.name, self.id))
+                LOG.info(_("{node}:{bundle}:{item}: fixing type...").format(
+                    bundle=self.bundle.name,
+                    item=self.id,
+                    node=self.node.name,
+                ))
             else:
-                LOG.info(_("{}:{}: creating...").format(self.node.name, self.id))
+                LOG.info(_("{node}:{bundle}:{item}: creating...").format(
+                    bundle=self.bundle.name,
+                    item=self.id,
+                    node=self.node.name,
+                ))
             self._fix_type(status)
             return
 
@@ -110,10 +118,11 @@ class Directory(Item):
                         'owner' in status.info['needs_fixing']:
                     # owner and group are fixed with a single chown
                     continue
-                LOG.info(_("{}:{}: fixing {}...").format(
-                    self.node.name,
-                    self.id,
-                    fix_type,
+                LOG.info(_("{node}:{bundle}:{item}: fixing {fix_type}...").format(
+                    bundle=self.bundle.name,
+                    item=self.id,
+                    fix_type=fix_type,
+                    node=self.node.name,
                 ))
                 getattr(self, "_fix_" + fix_type)(status)
 

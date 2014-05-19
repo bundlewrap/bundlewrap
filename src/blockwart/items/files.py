@@ -31,7 +31,11 @@ def content_processor_mako(item):
         input_encoding='utf-8',
         output_encoding=item.attributes['encoding'],
     )
-    LOG.debug("{}:{}: rendering with Mako...".format(item.node.name, item.id))
+    LOG.debug("{node}:{bundle}:{item}: rendering with Mako...".format(
+        bundle=item.bundle.name,
+        item=item.id,
+        node=item.node.name,
+    ))
     start = datetime.now()
     try:
         content = template.render(
@@ -49,14 +53,16 @@ def content_processor_mako(item):
             # location of the error. :/
             e = _("Undefined variable (look for '${...}')")
         raise TemplateError(_(
-            "Error while rendering template for {node}:{item}: {error}"
+            "Error while rendering template for {node}:{bundle}:{item}: {error}"
         ).format(
+            bundle=item.bundle.name,
             error=e,
             item=item.id,
             node=item.node.name,
         ))
     duration = datetime.now() - start
-    LOG.debug("{node}:{item}: rendered in {time}s".format(
+    LOG.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
+        bundle=item.bundle.name,
         item=item.id,
         node=item.node.name,
         time=duration.total_seconds(),
@@ -299,14 +305,18 @@ class File(Item):
                     continue
                 if status.info['path_info'].exists:
                     if self.attributes['delete']:
-                        LOG.info(_("{node}:{item}: deleting...").format(
-                            node=self.node.name, item=self.id))
+                        LOG.info(_("{node}:{bundle}:{item}: deleting...").format(
+                            bundle=self.bundle.name, node=self.node.name, item=self.id))
                     else:
-                        LOG.info(_("{node}:{item}: fixing {type}...").format(
-                            node=self.node.name, item=self.id, type=fix_type))
+                        LOG.info(_("{node}:{bundle}:{item}: fixing {type}...").format(
+                            bundle=self.bundle.name,
+                            item=self.id,
+                            node=self.node.name,
+                            type=fix_type,
+                        ))
                 else:
-                    LOG.info(_("{node}:{item}: creating...").format(
-                        node=self.node.name, item=self.id))
+                    LOG.info(_("{node}:{bundle}:{item}: creating...").format(
+                        bundle=self.bundle.name, item=self.id, node=self.node.name))
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content(self, status):

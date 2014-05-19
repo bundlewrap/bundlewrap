@@ -61,13 +61,15 @@ class AptPkg(Item):
 
     def fix(self, status):
         if self.attributes['installed'] is False:
-            LOG.info(_("{node}:{item}: removing...").format(
+            LOG.info(_("{node}:{bundle}:{item}: removing...").format(
+                bundle=self.bundle.name,
                 item=self.id,
                 node=self.node.name,
             ))
             pkg_remove(self.node, self.name)
         else:
-            LOG.info(_("{node}:{item}: installing...").format(
+            LOG.info(_("{node}:{bundle}:{item}: installing...").format(
+                bundle=self.bundle.name,
                 item=self.id,
                 node=self.node.name,
             ))

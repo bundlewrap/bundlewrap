@@ -159,12 +159,12 @@ class User(Item):
     def fix(self, status):
         if status.info['exists']:
             if self.attributes['delete']:
-                msg = _("{node}:{item}: deleting...")
+                msg = _("{node}:{bundle}:{item}: deleting...")
             else:
-                msg = _("{node}:{item}: updating...")
+                msg = _("{node}:{bundle}:{item}: updating...")
         else:
-            msg = _("{node}:{item}: creating...")
-        LOG.info(msg.format(item=self.id, node=self.node.name))
+            msg = _("{node}:{bundle}:{item}: creating...")
+        LOG.info(msg.format(bundle=self.bundle.name, item=self.id, node=self.node.name))
 
         if self.attributes['delete']:
             self.node.run("userdel {}".format(self.name), may_fail=True)

@@ -35,7 +35,8 @@ class Action(Item):
                 may_fail=True,
             )
             if unless_result.return_code == 0:
-                LOG.debug(_("{node}:action:{name}: failed 'unless', not running").format(
+                LOG.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
+                    bundle=self.bundle.name,
                     name=self.name,
                     node=self.bundle.node.name,
                 ))

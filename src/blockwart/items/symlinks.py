@@ -70,12 +70,14 @@ class Symlink(Item):
         if 'type' in status.info['needs_fixing']:
             # fixing the type fixes everything
             if status.info['path_info'].exists:
-                LOG.info(_("{node}:{item}: fixing type...").format(
+                LOG.info(_("{node}:{bundle}:{item}: fixing type...").format(
+                    bundle=self.bundle.name,
                     item=self.id,
                     node=self.node.name,
                 ))
             else:
-                LOG.info(_("{node}:{item}: creating...").format(
+                LOG.info(_("{node}:{bundle}:{item}: creating...").format(
+                    bundle=self.bundle.name,
                     item=self.id,
                     node=self.node.name,
                 ))
