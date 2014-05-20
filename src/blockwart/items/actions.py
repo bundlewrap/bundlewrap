@@ -3,7 +3,7 @@ from blockwart.items import Item
 from blockwart.utils import LOG
 from blockwart.utils.ui import ask_interactively
 from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold, green, red, wrap_question
+from blockwart.utils.text import bold, wrap_question
 
 
 class Action(Item):
