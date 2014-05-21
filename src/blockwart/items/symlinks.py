@@ -64,6 +64,17 @@ class Symlink(Item):
                 self.attributes['group'],
             )
 
+        if 'target' in status.info['needs_fixing']:
+            question += "{} {}\n".format(
+                bold(_("target")),
+                status.info['path_info'].symlink_target,
+            )
+            question += "{}{} {}\n".format(
+                " " * (len(_("target")) - 1),
+                bold("→"),
+                self.attributes['target'],
+            )
+
         return question.rstrip("\n")
 
     def fix(self, status):
@@ -84,7 +95,7 @@ class Symlink(Item):
             self._fix_type(status)
             return
 
-        for fix_type in ('owner', 'group'):
+        for fix_type in ('owner', 'group', 'target'):
             if fix_type in status.info['needs_fixing']:
                 if fix_type == 'group' and \
                         'owner' in status.info['needs_fixing']:
@@ -105,11 +116,20 @@ class Symlink(Item):
         ))
     _fix_group = _fix_owner
 
+    def _fix_target(self, status):
+        self.node.run("ln -sf -- {} {}".format(
+            quote(self.attributes['target']),
+            quote(self.name),
+        ))
+        self._fix_owner(status)
+
     def _fix_type(self, status):
         self.node.run("rm -rf -- {}".format(quote(self.name)))
         self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
-        self.node.run("ln -s -- {} {}".format(quote(self.attributes['target']),
-                                           quote(self.name)))
+        self.node.run("ln -s -- {} {}".format(
+            quote(self.attributes['target']),
+            quote(self.name),
+        ))
         self._fix_owner(status)
 
     def get_auto_deps(self, items):
@@ -142,6 +162,8 @@ class Symlink(Item):
 
         if not path_info.is_symlink:
             status_info['needs_fixing'].append('type')
+        elif path_info.symlink_target != self.attributes['target']:
+            status_info['needs_fixing'].append('target')
         else:
             if path_info.owner != self.attributes['owner']:
                 status_info['needs_fixing'].append('owner')

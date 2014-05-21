@@ -154,6 +154,7 @@ class SymlinkGetStatusTest(TestCase):
         path_info.owner = "jdoe"
         path_info.group = "root"
         path_info.is_symlink = True
+        path_info.symlink_target = "/bar"
         PathInfo.return_value = path_info
 
         f = symlinks.Symlink(MagicMock(), "/foo", {
@@ -172,6 +173,7 @@ class SymlinkGetStatusTest(TestCase):
         path_info.owner = "root"
         path_info.group = "yolocrowd"
         path_info.is_symlink = True
+        path_info.symlink_target = "/bar"
         PathInfo.return_value = path_info
 
         f = symlinks.Symlink(MagicMock(), "/foo", {
@@ -182,6 +184,25 @@ class SymlinkGetStatusTest(TestCase):
         status = f.get_status()
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['group'])
+
+    @patch('blockwart.items.symlinks.PathInfo')
+    def test_target(self, PathInfo):
+        path_info = MagicMock()
+        path_info.mode = "0777"
+        path_info.owner = "root"
+        path_info.group = "root"
+        path_info.is_symlink = True
+        path_info.symlink_target = "/baz"
+        PathInfo.return_value = path_info
+
+        f = symlinks.Symlink(MagicMock(), "/foo", {
+            'owner': "root",
+            'group': "root",
+            'target': "/bar",
+        })
+        status = f.get_status()
+        self.assertFalse(status.correct)
+        self.assertEqual(status.info['needs_fixing'], ['target'])
 
     @patch('blockwart.items.symlinks.PathInfo')
     def test_type(self, PathInfo):
@@ -211,6 +232,7 @@ class SymlinkGetStatusTest(TestCase):
         path_info.owner = "root"
         path_info.group = "root"
         path_info.is_symlink = True
+        path_info.symlink_target = "/bar"
         PathInfo.return_value = path_info
 
         f = symlinks.Symlink(MagicMock(), "/foo", {
