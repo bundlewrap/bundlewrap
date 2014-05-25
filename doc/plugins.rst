@@ -13,7 +13,7 @@ The plugin system in Blockwart is an easy way of integrating third-party code in
 Finding plugins
 ###############
 
-It's as easy as :command:`bw repo plugin search <term>`.
+It's as easy as :command:`bw repo plugin search <term>`. Or you can browse `plugins.blockwart.org <http://plugins.blockwart.org>`_.
 
 |
 
