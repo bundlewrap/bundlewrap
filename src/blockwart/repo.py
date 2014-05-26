@@ -242,6 +242,12 @@ class Repository(object):
         if repo_path is not None:
             self.populate_from_path(repo_path)
 
+    def __eq__(self, other):
+        if self.path == "/dev/null":
+            # in-memory repos are never equal
+            return False
+        return self.path == other.path
+
     def __getstate__(self):
         """
         Removes cached item classes prior to pickling because they are loaded
