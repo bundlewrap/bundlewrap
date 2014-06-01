@@ -51,6 +51,10 @@ Full name of the user.
 
 Primary group of the user as numerical ID or group name.
 
+.. note::
+
+	Due to how ``useradd`` works, this attribute is required whenever you *don't* want the default behavior of ``useradd`` (usually that means automatically creating a group with the same name as the user). If you want to use an unmanaged group already on the node, you need this attribute. If you want to use a group managed by Blockwart, you need this attribute. This is true even if the groups mentioned are in fact named like the user.
+
 |
 
 ``groups``
