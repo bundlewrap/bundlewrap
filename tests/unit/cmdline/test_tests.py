@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.cmdline import repo
+from blockwart.cmdline import test
 
 
 class FakeNode(object):
@@ -21,7 +21,7 @@ class FailNode(object):
 
 class TestTest(TestCase):
     """
-    Tests blockwart.cmdline.repo.bw_repo_test.
+    Tests blockwart.cmdline.test.bw_test.
     """
     def test_ok(self):
         node1 = FakeNode()
@@ -31,9 +31,9 @@ class TestTest(TestCase):
         args.item_workers = 4
         args.node_workers = 1
         args.target = None
-        list(repo.bw_repo_test(repo_obj, args))
+        list(test.bw_test(repo_obj, args))
 
-    @patch('blockwart.cmdline.repo.exit')
+    @patch('blockwart.cmdline.test.exit')
     def test_fail(self, exit):
         node1 = FailNode()
         repo_obj = MagicMock()
@@ -42,5 +42,5 @@ class TestTest(TestCase):
         args.item_workers = 4
         args.node_workers = 1
         args.target = "node1"
-        list(repo.bw_repo_test(repo_obj, args))
+        list(test.bw_test(repo_obj, args))
         exit.assert_called_once_with(1)

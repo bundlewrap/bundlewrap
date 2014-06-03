@@ -10,8 +10,9 @@ from .nodes import bw_nodes
 from .plot import bw_plot_node
 from .plugin import bw_repo_plugin_install, bw_repo_plugin_list, bw_repo_plugin_search, \
     bw_repo_plugin_remove, bw_repo_plugin_update
-from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_test
+from .repo import bw_repo_bundle_create, bw_repo_create
 from .run import bw_run
+from .test import bw_test
 from .verify import bw_verify
 from .zen import bw_zen
 
@@ -315,34 +316,6 @@ def build_parser_bw():
         help=_("overwrite local modifications when updating"),
     )
 
-    # bw repo test
-    parser_repo_subparsers_test = parser_repo_subparsers.add_parser("test")
-    parser_repo_subparsers_test.set_defaults(func=bw_repo_test)
-    parser_repo_subparsers_test.add_argument(
-        'target',
-        default=None,
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
-        nargs='?',
-        type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
-    )
-    parser_repo_subparsers_test.add_argument(
-        "-p",
-        "--parallel-nodes",
-        default=1,
-        dest='node_workers',
-        help=_("number of nodes to test simultaneously"),
-        type=int,
-    )
-    parser_repo_subparsers_test.add_argument(
-        "-P",
-        "--parallel-items",
-        default=4,
-        dest='item_workers',
-        help=_("number of items to test simultaneously for each node"),
-        type=int,
-    )
-
     # bw run
     parser_run = subparsers.add_parser("run")
     parser_run.set_defaults(func=bw_run)
@@ -377,6 +350,34 @@ def build_parser_bw():
         default=1,
         dest='node_workers',
         help=_("number of nodes to run command on simultaneously"),
+        type=int,
+    )
+
+    # bw repo test
+    parser_test = subparsers.add_parser("test")
+    parser_test.set_defaults(func=bw_test)
+    parser_test.add_argument(
+        'target',
+        default=None,
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        nargs='?',
+        type=str,
+        help=_("target nodes, groups and/or bundle selectors"),
+    )
+    parser_test.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=1,
+        dest='node_workers',
+        help=_("number of nodes to test simultaneously"),
+        type=int,
+    )
+    parser_test.add_argument(
+        "-P",
+        "--parallel-items",
+        default=4,
+        dest='item_workers',
+        help=_("number of items to test simultaneously for each node"),
         type=int,
     )
 
