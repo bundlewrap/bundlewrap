@@ -5,11 +5,12 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.cmdline.plugin import bw_repo_plugin_install, bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_update
+from blockwart.cmdline.repo import bw_repo_plugin_install, bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_update
 from blockwart.exceptions import NoSuchPlugin
 
+
 class InstallTest(TestCase):
-    @patch('blockwart.cmdline.plugin.PluginManager.install')
+    @patch('blockwart.cmdline.repo.PluginManager.install')
     def test_unknown_plugin(self, install):
         install.side_effect = NoSuchPlugin
         repo = MagicMock()
@@ -24,7 +25,7 @@ class InstallTest(TestCase):
 
 
 class ListTest(TestCase):
-    @patch('blockwart.cmdline.plugin.PluginManager.list')
+    @patch('blockwart.cmdline.repo.PluginManager.list')
     def test_list(self, listmethod):
         listmethod.return_value = (("foo", 1),)
         repo = MagicMock()
@@ -36,7 +37,7 @@ class ListTest(TestCase):
 
 
 class SearchTest(TestCase):
-    @patch('blockwart.cmdline.plugin.PluginManager.search')
+    @patch('blockwart.cmdline.repo.PluginManager.search')
     def test_search(self, search):
         search.return_value = (("foo", "foodesc"),)
         repo = MagicMock()
@@ -48,7 +49,7 @@ class SearchTest(TestCase):
 
 
 class UpdateTest(TestCase):
-    @patch('blockwart.cmdline.plugin.PluginManager.update')
+    @patch('blockwart.cmdline.repo.PluginManager.update')
     def test_single_update(self, update):
         update.return_value = (1, 2)
         repo = MagicMock()
@@ -60,8 +61,8 @@ class UpdateTest(TestCase):
             ["foo: 1 → 2"],
         )
 
-    @patch('blockwart.cmdline.plugin.PluginManager.list')
-    @patch('blockwart.cmdline.plugin.PluginManager.update')
+    @patch('blockwart.cmdline.repo.PluginManager.list')
+    @patch('blockwart.cmdline.repo.PluginManager.update')
     def test_all_update(self, update, listmethod):
         update.return_value = (1, 2)
         listmethod.return_value = (("foo", 1),)

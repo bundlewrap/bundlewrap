@@ -8,9 +8,8 @@ from .groups import bw_groups
 from .items import bw_items
 from .nodes import bw_nodes
 from .plot import bw_plot_node
-from .plugin import bw_repo_plugin_install, bw_repo_plugin_list, bw_repo_plugin_search, \
-    bw_repo_plugin_remove, bw_repo_plugin_update
-from .repo import bw_repo_bundle_create, bw_repo_create
+from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_plugin_install, \
+    bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_remove, bw_repo_plugin_update
 from .run import bw_run
 from .test import bw_test
 from .verify import bw_verify
