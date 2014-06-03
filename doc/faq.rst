@@ -60,7 +60,7 @@ The Blockwart Project
 Why do contributors have to sign a Copyright Assignment Agreement?
 ------------------------------------------------------------------
 
-While it sounds scary, Copyright assignment is used to improve the enforcability of the GPL. Even the FSF does it, `read their explanation why <http://www.gnu.org/licenses/why-assign.html>`_. The agreement used by Blockwart is from `harmonyagreements.org <http://harmonyagreements.org>`_.
+While it sounds scary, Copyright assignment is used to improve the enforceability of the GPL. Even the FSF does it, `read their explanation why <http://www.gnu.org/licenses/why-assign.html>`_. The agreement used by Blockwart is from `harmonyagreements.org <http://harmonyagreements.org>`_.
 
 If you're still concerned, please do not hesitate to contact `@trehn <https://twitter.com/trehn>`_.
 
