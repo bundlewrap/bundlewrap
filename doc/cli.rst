@@ -53,12 +53,12 @@ With these commands you can quickly get a list of all nodes and groups in your :
 
 |
 
-``bw repo debug``
------------------
+``bw debug``
+------------
 
 .. code-block:: pycon
 
-	$ bw repo debug
+	$ bw debug
 	blockwart X.Y.Z interactive repository inspector
 	> You can access the current repository as 'repo'.
 	>>> len(repo.nodes)
@@ -68,8 +68,8 @@ This command will drop you into a Python shell with direct access to Blockwart's
 
 |
 
-``bw repo plot``
-----------------
+``bw plot``
+-----------
 
 .. hint:: You'll need `Graphviz <http://www.graphviz.org/>`_ installed on your machine for this to be useful.
 
@@ -83,12 +83,12 @@ It offers an interesting view into the internal complexities Blockwart has to de
 
 |
 
-``bw repo test``
-----------------
+``bw test``
+-----------
 
 .. code-block:: console
 
-	$ bw repo test
+	$ bw test
 	✓ node1:pkg_apt:samba
 	✘ node1:file:/etc/samba/smb.conf
 
