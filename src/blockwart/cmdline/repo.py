@@ -1,24 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from code import interact
 from copy import copy
 from sys import exit
 
-from .. import VERSION_STRING
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import mark_for_translation as _, red
-
-
-DEBUG_BANNER = _("Blockwart {version} interactive repository inspector\n"
-                 "> You can access the current repository as 'repo'."
-                 "").format(version=VERSION_STRING)
-
-DEBUG_BANNER_NODE = DEBUG_BANNER + "\n" + \
-    _("> You can access the selected node as 'node'.")
+from ..utils.text import red
 
 
 def bw_repo_bundle_create(repo, args):
@@ -27,15 +17,6 @@ def bw_repo_bundle_create(repo, args):
 
 def bw_repo_create(path, args):
     Repository.create(path)
-
-
-def bw_repo_debug(repo, args):
-    repo = Repository(repo.path)
-    if args.node is None:
-        interact(DEBUG_BANNER, local={'repo': repo})
-    else:
-        node = repo.get_node(args.node)
-        interact(DEBUG_BANNER_NODE, local={'node': node, 'repo': repo})
 
 
 def bw_repo_test(repo, args):

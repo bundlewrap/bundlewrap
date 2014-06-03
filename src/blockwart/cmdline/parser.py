@@ -3,13 +3,14 @@ from argparse import ArgumentParser
 from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
+from .debug import bw_debug
 from .groups import bw_groups
 from .items import bw_items
 from .nodes import bw_nodes
 from .plot import bw_plot_node
 from .plugin import bw_repo_plugin_install, bw_repo_plugin_list, bw_repo_plugin_search, \
     bw_repo_plugin_remove, bw_repo_plugin_update
-from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_debug, bw_repo_test
+from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_test
 from .run import bw_run
 from .verify import bw_verify
 from .zen import bw_zen
@@ -77,6 +78,20 @@ def build_parser_bw():
         dest='item_workers',
         help=_("number of items to apply to simultaneously on each node"),
         type=int,
+    )
+
+    # bw debug
+    parser_debug = subparsers.add_parser("debug")
+    parser_debug.set_defaults(func=bw_debug)
+    parser_debug.add_argument(
+        "-n",
+        "--node",
+        default=None,
+        dest='node',
+        metavar=_("NODE"),
+        required=False,
+        type=str,
+        help=_("name of node to inspect"),
     )
 
     # bw groups
@@ -220,20 +235,6 @@ def build_parser_bw():
     # bw repo create
     parser_repo_subparsers_create = parser_repo_subparsers.add_parser("create")
     parser_repo_subparsers_create.set_defaults(func=bw_repo_create)
-
-    # bw repo debug
-    parser_repo_subparsers_debug = parser_repo_subparsers.add_parser("debug")
-    parser_repo_subparsers_debug.set_defaults(func=bw_repo_debug)
-    parser_repo_subparsers_debug.add_argument(
-        "-n",
-        "--node",
-        default=None,
-        dest='node',
-        metavar=_("NODE"),
-        required=False,
-        type=str,
-        help=_("name of node to inspect"),
-    )
 
     # bw repo plugin
     parser_repo_subparsers_plugin = parser_repo_subparsers.add_parser("plugin")
