@@ -23,6 +23,8 @@ Glossary
 	item
 		A single piece of configuration on a node, e.g. a file or an installed package.
 
+		You might be interested in :ref:`this overview of item types <item_types>`.
+
 	lib
 		:doc:`Libs <libs>` are a way to store Python modules in your repository and make them accessible to your bundles and templates.
 

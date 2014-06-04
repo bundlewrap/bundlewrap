@@ -51,6 +51,8 @@ This bundle defines the attributes ``files`` and ``users``. Within the ``users``
 
 |
 
+.. _item_types:
+
 Item types
 ----------
 
@@ -125,11 +127,11 @@ The first item (``item1``, specific attributes have been omitted) depends on a f
 ``needed_by``
 #############
 
-This attribute is an alternative way of defining dependencies. It works just like ``needs``, but in the other direction. There are only three scenarios where you should use ``needed_by``:
+This attribute is an alternative way of defining dependencies. It works just like ``needs``, but in the other direction. There are only three scenarios where you should use ``needed_by`` over ``needs``:
 
 * if you need all items a certain type to depend on something or
 * if you need all items in a bundle to depend on something or
-* if you need an item in a bundle you can't edit (e.g. because it's community-maintained) to depend on something in your bundles
+* if you need an item in a bundle you can't edit (e.g. because it's provided by a community-maintained :doc:`plugin <plugins>`) to depend on something in your bundles
 
 |
 

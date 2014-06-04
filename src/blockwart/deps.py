@@ -143,11 +143,13 @@ def _inject_canned_actions(items):
     for item in items:
         for triggered_item_id in item.triggers:
             if triggered_item_id in added_actions:
+                # action has already been triggered
                 continue
 
             try:
                 type_name, item_name, action_name = triggered_item_id.split(":")
             except ValueError:
+                # not a canned action
                 continue
 
             target_item_id = "{}:{}".format(type_name, item_name)
