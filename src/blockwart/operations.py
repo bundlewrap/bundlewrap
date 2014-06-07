@@ -55,13 +55,13 @@ def download(hostname, remote_path, local_path, ignore_failure=False):
         with open(local_path, "w") as f:
             f.write(b64decode(fabric_result.stdout))
     elif not ignore_failure:
-            raise RemoteException(_(
-                "reading file '{path}' on {host} failed: {error}").format(
-                    error=fabric_result.stderr,
-                    host=hostname,
-                    path=remote_path,
-                )
+        raise RemoteException(_(
+            "reading file '{path}' on {host} failed: {error}").format(
+                error=fabric_result.stderr,
+                host=hostname,
+                path=remote_path,
             )
+        )
 
 
 class RunResult(object):
