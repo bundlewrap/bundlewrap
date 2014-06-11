@@ -432,12 +432,23 @@ class Node(object):
     def password(self):
         if self._password:
             return self._password
+        elif self._password_from_groups:
+            return self._password_from_groups
         else:
             return self.repo.password
 
     @password.setter
     def password(self, value):
         self._password = value
+
+    @property
+    def _password_from_groups(self):
+        pwd = None
+        group_order = _flatten_group_hierarchy(self.groups)
+        for group in group_order:
+            if group.password:
+                pwd = group.password
+        return pwd
 
     def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
             sudo=True):

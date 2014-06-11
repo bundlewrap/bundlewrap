@@ -40,6 +40,7 @@ class Group(object):
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.metadata = infodict.get('metadata', {})
+        self.password = infodict.get('password', None)
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
 
