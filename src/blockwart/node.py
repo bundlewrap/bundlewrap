@@ -317,6 +317,7 @@ class Node(object):
         self._bundles = infodict.get('bundles', [])
         self.hostname = infodict.get('hostname', self.name)
         self._node_metadata = infodict.get('metadata', {})
+        self.password = infodict.get('password', None)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
     def __cmp__(self, other):
@@ -415,6 +416,7 @@ class Node(object):
             remote_path,
             local_path,
             ignore_failure=ignore_failure,
+            password=self.password,
         )
 
     @cached_property
@@ -435,6 +437,7 @@ class Node(object):
             stderr=stderr,
             stdout=stdout,
             sudo=sudo,
+            password=self.password,
             pty=pty,
         )
 
@@ -452,6 +455,7 @@ class Node(object):
             mode=mode,
             owner=owner,
             group=group,
+            password=self.password,
         )
 
     def verify(self, workers=4):
