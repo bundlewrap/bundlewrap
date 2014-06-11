@@ -317,7 +317,7 @@ class Node(object):
         self._bundles = infodict.get('bundles', [])
         self.hostname = infodict.get('hostname', self.name)
         self._node_metadata = infodict.get('metadata', {})
-        self.password = infodict.get('password', None)
+        self._password = infodict.get('password', None)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
     def __cmp__(self, other):
@@ -427,6 +427,17 @@ class Node(object):
             m.update(self.repo.get_group(group).metadata)
         m.update(self._node_metadata)
         return m
+
+    @property
+    def password(self):
+        if self._password:
+            return self._password
+        else:
+            return self.repo.password
+
+    @password.setter
+    def password(self, value):
+        self._password = value
 
     def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
             sudo=True):
