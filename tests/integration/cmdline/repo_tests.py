@@ -57,4 +57,4 @@ class RepoNotFoundTest(TestCase):
     def test_exit(self):
         chdir(self.tmpdir)
         with self.assertRaises(SystemExit):
-            main("repo", "debug")
+            main("debug")
