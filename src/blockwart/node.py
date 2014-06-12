@@ -432,6 +432,9 @@ class Node(object):
     def password(self):
         if self._password:
             return self._password
+        elif not hasattr(self, "repo"):
+            # in-memory nodes might not be attached to a repo
+            return None
         elif self._password_from_groups:
             return self._password_from_groups
         else:
