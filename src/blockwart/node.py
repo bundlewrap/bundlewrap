@@ -448,7 +448,8 @@ class Node(object):
     def _password_from_groups(self):
         pwd = None
         group_order = _flatten_group_hierarchy(self.groups)
-        for group in group_order:
+        for group_name in group_order:
+            group = self.repo.get_group(group_name)
             if group.password:
                 pwd = group.password
         return pwd
