@@ -14,11 +14,14 @@ For more information, have a look at `blockwart.org <http://blockwart.org/>`_.
 
 .. image:: http://img.shields.io/travis/blockwart/blockwart.svg
     :target: https://travis-ci.org/blockwart/blockwart
+    :alt: Build status
 
 .. image:: http://img.shields.io/coveralls/blockwart/blockwart.svg
     :target: https://coveralls.io/r/blockwart/blockwart
+    :alt: Code coverage
 
 .. image:: http://img.shields.io/badge/Python-2.7-green.svg
+    :target: https://pypi.python.org/pypi/blockwart/
     :alt: Python 2.7
 
 .. image:: http://img.shields.io/badge/License-GPLv3-red.svg
