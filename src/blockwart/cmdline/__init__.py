@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from getpass import getpass
 import logging
 from os import getcwd
 import re
@@ -75,6 +76,9 @@ def main(*args):
     if not args:
         args = argv[1:]
 
+    parser_bw = build_parser_bw()
+    pargs = parser_bw.parse_args(args)
+
     if len(args) >= 1 and (
         args[0] == "--version" or
         (len(args) >= 2 and args[0] == "repo" and args[1] == "create") or
@@ -92,20 +96,22 @@ def main(*args):
                     "is not a Blockwart repository.".format(x=red("!"))))
             exit(1)
 
-    parser_bw = build_parser_bw()
-    args = parser_bw.parse_args(args)
+        if pargs.password:
+            repo.password = pargs.password
+        elif pargs.ask_password:
+            repo.password = getpass(_("Enter global default SSH/sudo password: "))
 
     try:
-        interactive = args.interactive
+        interactive = pargs.interactive
     except AttributeError:
         interactive = False
 
     set_up_logging(
-        debug=args.debug,
+        debug=pargs.debug,
         interactive=interactive,
     )
 
-    output = args.func(repo, args)
+    output = pargs.func(repo, pargs)
     if output is None:
         output = ()
 

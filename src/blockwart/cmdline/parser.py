@@ -29,6 +29,21 @@ def build_parser_bw():
         help=_("print debugging info (implies -v)"),
     )
     parser.add_argument(
+        "-p",
+        "--ask-password",
+        action='store_true',
+        default=False,
+        dest='ask_password',
+        help=_("prompt for global default SSH/sudo password"),
+    )
+    parser.add_argument(
+        "--password",
+        dest='password',
+        metavar="PASS",
+        type=str,
+        help=_("set global default SSH/sudo password (not recommended)"),
+    )
+    parser.add_argument(
         "--version",
         action='version',
         version=VERSION_STRING,

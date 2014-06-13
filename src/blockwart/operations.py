@@ -34,7 +34,7 @@ class FabricOutput(object):
         output['stdout'] = False
 
 
-def download(hostname, remote_path, local_path, ignore_failure=False):
+def download(hostname, remote_path, local_path, ignore_failure=False, password=None):
     """
     Download a file.
     """
@@ -45,6 +45,7 @@ def download(hostname, remote_path, local_path, ignore_failure=False):
     LOG.debug(_("downloading {host}:{path} -> {target}").format(
         host=hostname, path=remote_path, target=local_path))
     env.host_string = hostname
+    env.password = password
     fabric_result = _fabric_sudo(
         "base64 {}".format(quote(remote_path)),
         shell=True,
@@ -82,11 +83,12 @@ def disconnect_all():
 
 
 def run(hostname, command, ignore_failure=False, stderr=None,
-        stdout=None, pty=False, sudo=True):
+        stdout=None, password=None, pty=False, sudo=True):
     """
     Runs a command on a remote system.
     """
     env.host_string = hostname
+    env.password = password
 
     silent_fabric = stderr is None and stdout is None
 
@@ -130,13 +132,14 @@ def run(hostname, command, ignore_failure=False, stderr=None,
 
 
 def upload(hostname, local_path, remote_path, mode=None, owner="",
-           group="", ignore_failure=False):
+           group="", ignore_failure=False, password=None):
     """
     Upload a file.
     """
     LOG.debug(_("uploading {path} -> {host}:{target}").format(
         host=hostname, path=local_path, target=remote_path))
     env.host_string = hostname
+    env.password = password
     temp_filename = ".blockwart_tmp_" + randstr()
 
     fabric_result = _fabric_put(
@@ -161,6 +164,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
                 quote(group),
                 quote(temp_filename),
             ),
+            password=password,
         )
 
     if mode:
@@ -170,6 +174,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
                 mode,
                 quote(temp_filename),
             ),
+            password=password,
         )
 
     run(
@@ -178,4 +183,5 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
             quote(temp_filename),
             quote(remote_path),
         ),
+        password=password,
     )

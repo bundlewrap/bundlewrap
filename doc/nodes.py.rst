@@ -101,6 +101,16 @@ This can be a dictionary of arbitrary data. You can access it from your template
 
 |
 
+``password``
+------------
+
+SSH and sudo password to use for this node. Overrides passwords set at the group level and on the command line.
+
+.. warning::
+   Please do not write any passwords into your :file:`nodes.py`. This attribute is intended to be used with an external source of passwords and filled dynamically.
+
+|
+
 ``use_shadow_passwords``
 ------------------------
 
