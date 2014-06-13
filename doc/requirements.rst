@@ -26,7 +26,7 @@ While the following list might appear long, even very minimal systems should pro
 * :command:`rm`
 * :command:`sed`
 * sftp-enabled SSH server (your home directory must be writable)
-* :command:`sudo` (without password)
+* :command:`sudo`
 * :command:`sha1sum`
 * :command:`systemctl` (only used with :doc:`svc_systemd <item_svc_systemd>` items)
 * :command:`test`

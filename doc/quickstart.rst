@@ -44,6 +44,8 @@ At this point you will want to edit :file:`nodes.py` and maybe change "localhost
 
 	Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com sudo id`` works without any password prompts in your terminal, you're good to go.
 
+	If you need a password for SSH and/or sudo, please add :option:`-p` directly after :command:`bw` when calling :command:`bw run` or :command:`bw apply`.
+
 |
 
 Run a command

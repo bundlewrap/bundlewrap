@@ -26,7 +26,6 @@ You might be better served with a different config management system if you:
 * hate Python and/or JSON
 * like to use community-maintained configuration templates
 * need unattended bootstrapping of nodes
-* don't want to use SSH with key-based authentication and passwordless sudo to manage your nodes
 * need to manage non-Linux systems
 
 
