@@ -66,6 +66,8 @@ If you're still concerned, please do not hesitate to contact `@trehn <https://tw
 
 |
 
+.. _name:
+
 Isn't the name evil?
 --------------------
 
