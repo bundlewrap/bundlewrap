@@ -23,6 +23,7 @@ We think you will enjoy Blockwart a lot if you:
 
 You might be better served with a different config management system if you:
 
+* are already using a config management system and don't have any major issues
 * hate Python and/or JSON
 * like to use community-maintained configuration templates
 * need unattended bootstrapping of nodes
