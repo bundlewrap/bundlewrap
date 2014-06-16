@@ -19,8 +19,8 @@ MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 def cached_property(prop):
     """
     A replacement for the property decorator that will only compute the
-    attribute's value on the first call and serve cached copy from then
-    on.
+    attribute's value on the first call and serve a cached copy from
+    then on.
     """
     def cache_wrapper(self):
         if not hasattr(self, "_cache"):
