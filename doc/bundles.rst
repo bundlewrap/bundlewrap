@@ -182,6 +182,10 @@ Another builtin item attribute is ``unless``. For example, it can be used to con
 
 This will run :command:`test -x /path/to/file` before doing anything with the item. If the command returns 0, no action will be taken to "correct" the item.
 
+.. note::
+
+	Another common use for ``unless`` is with actions that perform some sort of install operation. In this case, the ``unless`` condition makes sure the install operation is only performed when it is needed instead of every time you run :command:`bw apply`. In scenarios like this you will probably want to set ``cascade_skip`` to ``False`` so that skipping the installation (because the thing is already installed) will not cause every item that depends on the installed thing to be skipped.
+
 |
 
 ``cascade_skip``
