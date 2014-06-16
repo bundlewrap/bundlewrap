@@ -184,7 +184,22 @@ This will run :command:`test -x /path/to/file` before doing anything with the it
 
 .. note::
 
-	Another common use for ``unless`` is with actions that perform some sort of install operation. In this case, the ``unless`` condition makes sure the install operation is only performed when it is needed instead of every time you run :command:`bw apply`. In scenarios like this you will probably want to set ``cascade_skip`` to ``False`` so that skipping the installation (because the thing is already installed) will not cause every item that depends on the installed thing to be skipped.
+	Another common use for ``unless`` is with actions that perform some sort of install operation. In this case, the ``unless`` condition makes sure the install operation is only performed when it is needed instead of every time you run :command:`bw apply`. In scenarios like this you will probably want to set ``cascade_skip`` to ``False`` so that skipping the installation (because the thing is already installed) will not cause every item that depends on the installed thing to be skipped. Example::
+
+		actions = {
+		    'download_thing': {
+		    	'command': "wget http://example.com/thing.bin -O /opt/thing.bin && chmod +x /opt/thing.bin",
+		    	'unless': "test -x /opt/thing.bin",
+		    	'cascade_skip': False,
+		    },
+		    'run_thing': {
+		        'command': "/opt/thing.bin",
+		        'needs': ["action:download_thing"],
+		    },
+		}
+
+	If ``action:download_thing`` would not set ``cascade_skip`` to ``False``, ``action:run_thing`` would only be executed once: directly after the thing has been downloaded. On subsequent runs, ``action:download_thing`` will fail the ``unless`` condition and be skipped. This would also cause all items that depend on it to be skipped, including ``action:run_thing``.
+
 
 |
 
