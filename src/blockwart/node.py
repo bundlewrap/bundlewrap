@@ -177,11 +177,20 @@ def apply_items(node, workers=1, interactive=False):
                 ):
                     # action succeeded or item was fixed
                     for triggered_item_id in item.triggers:
-                        triggered_item = find_item(
-                            triggered_item_id,
-                            items_with_deps + items_without_deps,
-                        )
-                        triggered_item.has_been_triggered = True
+                        try:
+                            triggered_item = find_item(
+                                triggered_item_id,
+                                items_with_deps + items_without_deps,
+                            )
+                            triggered_item.has_been_triggered = True
+                        except ValueError:
+                            LOG.debug(_(
+                                "{item} tried to trigger {triggered_item}, "
+                                "but it wasn't available. It must have been skipped previously."
+                            ).format(
+                                item=item.id,
+                                triggered_item=triggered_item_id,
+                            ))
 
                 if item.ITEM_TYPE_NAME != 'dummy':
                     yield (item.id, status_code)
