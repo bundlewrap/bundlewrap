@@ -1,4 +1,4 @@
-from .exceptions import BundleError
+from .exceptions import BundleError, NoSuchItem
 from .items import Item
 from .items.actions import Action
 from .utils import LOG
@@ -69,7 +69,7 @@ def find_item(item_id, items):
     try:
         item = list(filter(lambda item: item.id == item_id, items))[0]
     except IndexError:
-        raise ValueError(_("item not found: {}").format(item_id))
+        raise NoSuchItem(_("item not found: {}").format(item_id))
     return item
 
 
@@ -156,7 +156,7 @@ def _inject_canned_actions(items):
 
             try:
                 target_item = find_item(target_item_id, items)
-            except ValueError:
+            except NoSuchItem:
                 raise BundleError(_(
                     "{item} in bundle '{bundle}' triggers unknown item '{target_item}'"
                 ).format(
@@ -321,7 +321,7 @@ def _inject_trigger_dependencies(items):
         for triggered_item_id in item.triggers:
             try:
                 triggered_item = find_item(triggered_item_id, items)
-            except ValueError:
+            except NoSuchItem:
                 raise BundleError(_(
                     "unable to find definition of '{item1}' triggered "
                     "by '{item2}' in bundle '{bundle}'"

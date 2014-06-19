@@ -12,6 +12,13 @@ class NoSuchGroup(Exception):
     pass
 
 
+class NoSuchItem(Exception):
+    """
+    Raised when an item of unknown name is requested.
+    """
+    pass
+
+
 class NoSuchNode(Exception):
     """
     Raised when a node of unknown name is requested.

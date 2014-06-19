@@ -14,7 +14,8 @@ from .bundle import Bundle
 from .concurrency import WorkerPool
 from .deps import find_item, prepare_dependencies, remove_item_dependents, remove_dep_from_items, \
     split_items_without_deps
-from .exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
+from .exceptions import ItemDependencyError, NodeAlreadyLockedException, NoSuchItem,\
+    RepositoryError
 from .items import Item
 from .utils import cached_property, LOG, graph_for_items, names
 from .utils.text import mark_for_translation as _
@@ -183,7 +184,7 @@ def apply_items(node, workers=1, interactive=False):
                                 items_with_deps + items_without_deps,
                             )
                             triggered_item.has_been_triggered = True
-                        except ValueError:
+                        except NoSuchItem:
                             LOG.debug(_(
                                 "{item} tried to trigger {triggered_item}, "
                                 "but it wasn't available. It must have been skipped previously."
