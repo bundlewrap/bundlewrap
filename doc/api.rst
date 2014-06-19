@@ -107,7 +107,7 @@ Reference
 
 	.. py:attribute:: metadata
 
-		A dictionary of custom metadata as defined in :doc:`nodes.py <nodes.py>`
+		A dictionary of custom metadata, merged from information in :doc:`nodes.py <nodes.py>` and :doc:`groups.py <groups.py>`
 
 	.. py:attribute:: name
 
