@@ -1,3 +1,17 @@
+0.13.0
+======
+
+2014-06-19
+
+* added password-based SSH/sudo authentication
+* fixed symlink items not checking existing link targets
+* fixed exception when triggering skipped items
+* output is now prefixed with `node:bundle:item_type:item_name`
+* `bw repo debug` is now a top-level command (BACKWARDS INCOMPATIBLE)
+* `bw repo plot` is now a top-level command (BACKWARDS INCOMPATIBLE)
+* `bw repo test` is now a top-level command (BACKWARDS INCOMPATIBLE)
+
+
 0.12.0
 ======
 
