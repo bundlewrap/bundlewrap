@@ -429,6 +429,9 @@ class Node(object):
             password=self.password,
         )
 
+    def get_item(self, item_id):
+        return find_item(item_id, self.items)
+
     @cached_property
     def metadata(self):
         m = {}

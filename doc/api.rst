@@ -124,6 +124,16 @@ Reference
 
 	|
 
+	.. py:method:: get_item(item_id)
+
+		Get the item object with the given ID (e.g. "file:/etc/motd").
+
+		:param str item_id: ID of the desired item
+		:return: The item object for the given ID
+		:rtype: instances of subclasses of :py:class:`blockwart.items.Item`
+
+	|
+
 	.. py:method:: has_bundle(bundle_name)
 
 		``True`` if the node has a bundle with the given name.
