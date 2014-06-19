@@ -105,6 +105,10 @@ Reference
 
 		The DNS name Blockwart uses to connect to this node
 
+	.. py:attribute:: items
+
+		A list of items on this node (instances of subclasses of :py:class:`blockwart.items.Item`)
+
 	.. py:attribute:: metadata
 
 		A dictionary of custom metadata, merged from information in :doc:`nodes.py <nodes.py>` and :doc:`groups.py <groups.py>`
