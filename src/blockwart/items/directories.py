@@ -41,19 +41,16 @@ class Directory(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "directories"
     ITEM_ATTRIBUTES = {
-        'group': "root",
-        'mode': "0775",
-        'owner': "root",
+        'group': None,
+        'mode': None,
+        'owner': None,
     }
     ITEM_TYPE_NAME = "directory"
     NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
-        return "<Directory path:{} owner:{} group:{} mode:{}>".format(
+        return "<Directory path:{}>".format(
             quote(self.name),
-            self.attributes['owner'],
-            self.attributes['group'],
-            self.attributes['mode'],
         )
 
     def ask(self, status):
@@ -133,9 +130,12 @@ class Directory(Item):
         ))
 
     def _fix_owner(self, status):
-        self.node.run("chown {}:{} -- {}".format(
-            quote(self.attributes['owner']),
-            quote(self.attributes['group']),
+        group = self.attributes['group'] or ""
+        if group:
+            group = ":" + quote(group)
+        self.node.run("chown {}{} -- {}".format(
+            quote(self.attributes['owner'] or ""),
+            group,
             quote(self.name),
         ))
     _fix_group = _fix_owner
@@ -143,8 +143,10 @@ class Directory(Item):
     def _fix_type(self, status):
         self.node.run("rm -rf -- {}".format(quote(self.name)))
         self.node.run("mkdir -p -- {}".format(quote(self.name)))
-        self._fix_mode(status)
-        self._fix_owner(status)
+        if self.attributes['mode']:
+            self._fix_mode(status)
+        if self.attributes['owner'] or self.attributes['group']:
+            self._fix_owner(status)
 
     def get_auto_deps(self, items):
         deps = []
@@ -184,11 +186,14 @@ class Directory(Item):
         if not path_info.is_directory:
             status_info['needs_fixing'].append('type')
         else:
-            if path_info.mode != self.attributes['mode']:
+            if self.attributes['mode'] is not None and \
+                    path_info.mode != self.attributes['mode']:
                 status_info['needs_fixing'].append('mode')
-            if path_info.owner != self.attributes['owner']:
+            if self.attributes['owner'] is not None and \
+                    path_info.owner != self.attributes['owner']:
                 status_info['needs_fixing'].append('owner')
-            if path_info.group != self.attributes['group']:
+            if self.attributes['group'] is not None and \
+                    path_info.group != self.attributes['group']:
                 status_info['needs_fixing'].append('group')
 
         if status_info['needs_fixing']:
@@ -196,7 +201,7 @@ class Directory(Item):
         return ItemStatus(correct=correct, info=status_info)
 
     def patch_attributes(self, attributes):
-        if 'mode' in attributes:
+        if 'mode' in attributes and attributes['mode'] is not None:
             attributes['mode'] = str(attributes['mode']).zfill(4)
         return attributes
 

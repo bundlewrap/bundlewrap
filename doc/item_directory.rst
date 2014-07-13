@@ -24,14 +24,14 @@ Attribute reference
 ``group``
 +++++++++
 
-Name of the group this directory belongs to.
+Name of the group this directory belongs to. Defaults to ``None`` (don't care about group).
 
 ``mode``
 ++++++++
 
-Directory mode as returned by :command:`stat -c %a <directory>`.
+Directory mode as returned by :command:`stat -c %a <directory>`. Defaults to ``None`` (don't care about mode).
 
 ``owner``
 +++++++++
 
-Username of the directory's owner.
+Username of the directory's owner. Defaults to ``None`` (don't care about owner).
