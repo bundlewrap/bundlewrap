@@ -83,21 +83,21 @@ Encoding of the target file. Note that this applies to the remote file only, you
 ``group``
 +++++++++
 
-Name of the group this file belongs to. Defaults to ``root``.
+Name of the group this file belongs to. Defaults to ``None`` (don't care about group).
 
 |
 
 ``mode``
 ++++++++
 
-File mode as returned by :command:`stat -c %a <file>`.
+File mode as returned by :command:`stat -c %a <file>`. Defaults to ``None`` (don't care about mode).
 
 |
 
 ``owner``
 +++++++++
 
-Username of the file's owner. Defaults to ``root``.
+Username of the file's owner. Defaults to ``None`` (don't care about owner).
 
 |
 

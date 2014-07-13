@@ -182,20 +182,17 @@ class File(Item):
         'context': None,
         'delete': False,
         'encoding': "utf-8",
-        'group': "root",
-        'mode': "0664",
-        'owner': "root",
+        'group': None,
+        'mode': None,
+        'owner': None,
         'source': None,
     }
     ITEM_TYPE_NAME = "file"
     NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
-        return "<File path:{} owner:{} group:{} mode:{} content_hash:{}>".format(
+        return "<File path:{} content_hash:{}>".format(
             quote(self.name),
-            self.attributes['owner'],
-            self.attributes['group'],
-            self.attributes['mode'],
             self.content_hash,
         )
 
@@ -333,8 +330,8 @@ class File(Item):
                 local_path,
                 self.name,
                 mode=self.attributes['mode'],
-                owner=self.attributes['owner'],
-                group=self.attributes['group'],
+                owner=self.attributes['owner'] or "",
+                group=self.attributes['group'] or "",
             )
         finally:
             if self.attributes['content_type'] != 'binary':
@@ -347,9 +344,12 @@ class File(Item):
         ))
 
     def _fix_owner(self, status):
-        self.node.run("chown {}:{} -- {}".format(
-            quote(self.attributes['owner']),
-            quote(self.attributes['group']),
+        group = self.attributes['group'] or ""
+        if group:
+            group = ":" + quote(group)
+        self.node.run("chown {}{} -- {}".format(
+            quote(self.attributes['owner'] or ""),
+            group,
             quote(self.name),
         ))
     _fix_group = _fix_owner
@@ -396,11 +396,14 @@ class File(Item):
                 if self.attributes['content_type'] != 'any' and \
                         path_info.sha1 != self.content_hash:
                     status_info['needs_fixing'].append('content')
-                if path_info.mode != self.attributes['mode']:
+                if self.attributes['mode'] is not None and \
+                        path_info.mode != self.attributes['mode']:
                     status_info['needs_fixing'].append('mode')
-                if path_info.owner != self.attributes['owner']:
+                if self.attributes['owner'] is not None and \
+                        path_info.owner != self.attributes['owner']:
                     status_info['needs_fixing'].append('owner')
-                if path_info.group != self.attributes['group']:
+                if self.attributes['group'] is not None and \
+                        path_info.group != self.attributes['group']:
                     status_info['needs_fixing'].append('group')
 
         if status_info['needs_fixing']:
@@ -410,7 +413,7 @@ class File(Item):
     def patch_attributes(self, attributes):
         if 'context' not in attributes:
             attributes['context'] = {}
-        if 'mode' in attributes:
+        if 'mode' in attributes and attributes['mode'] is not None:
             attributes['mode'] = str(attributes['mode']).zfill(4)
         return attributes
 

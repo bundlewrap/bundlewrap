@@ -157,11 +157,13 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
         )
 
     if owner or group:
+        if group:
+            group = ":" + quote(group)
         run(
             hostname,
-            "chown {}:{} {}".format(
+            "chown {}{} {}".format(
                 quote(owner),
-                quote(group),
+                group,
                 quote(temp_filename),
             ),
             password=password,
