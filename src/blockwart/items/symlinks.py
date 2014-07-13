@@ -21,8 +21,8 @@ class Symlink(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "symlinks"
     ITEM_ATTRIBUTES = {
-        'group': "root",
-        'owner': "root",
+        'group': None,
+        'owner': None,
         'target': None,
     }
     ITEM_TYPE_NAME = "symlink"
@@ -30,11 +30,9 @@ class Symlink(Item):
     NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
-        return "<Symlink path:{} target:{} owner:{} group:{}>".format(
+        return "<Symlink path:{} target:{}>".format(
             quote(self.name),
             self.attributes['target'],
-            self.attributes['owner'],
-            self.attributes['group'],
         )
 
     def ask(self, status):
@@ -109,9 +107,12 @@ class Symlink(Item):
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_owner(self, status):
-        self.node.run("chown -h {}:{} -- {}".format(
-            quote(self.attributes['owner']),
-            quote(self.attributes['group']),
+        group = self.attributes['group'] or ""
+        if group:
+            group = ":" + quote(group)
+        self.node.run("chown -h {}{} -- {}".format(
+            quote(self.attributes['owner'] or ""),
+            group,
             quote(self.name),
         ))
     _fix_group = _fix_owner
@@ -121,7 +122,6 @@ class Symlink(Item):
             quote(self.attributes['target']),
             quote(self.name),
         ))
-        self._fix_owner(status)
 
     def _fix_type(self, status):
         self.node.run("rm -rf -- {}".format(quote(self.name)))
@@ -130,7 +130,8 @@ class Symlink(Item):
             quote(self.attributes['target']),
             quote(self.name),
         ))
-        self._fix_owner(status)
+        if self.attributes['owner'] or self.attributes['group']:
+            self._fix_owner(status)
 
     def get_auto_deps(self, items):
         deps = []
@@ -162,12 +163,14 @@ class Symlink(Item):
 
         if not path_info.is_symlink:
             status_info['needs_fixing'].append('type')
-        elif path_info.symlink_target != self.attributes['target']:
-            status_info['needs_fixing'].append('target')
         else:
-            if path_info.owner != self.attributes['owner']:
+            if path_info.symlink_target != self.attributes['target']:
+                status_info['needs_fixing'].append('target')
+            if self.attributes['owner'] is not None and \
+                    path_info.owner != self.attributes['owner']:
                 status_info['needs_fixing'].append('owner')
-            if path_info.group != self.attributes['group']:
+            if self.attributes['group'] is not None and \
+                    path_info.group != self.attributes['group']:
                 status_info['needs_fixing'].append('group')
 
         if status_info['needs_fixing']:

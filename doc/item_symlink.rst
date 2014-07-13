@@ -38,9 +38,9 @@ Optional attributes
 ``group``
 +++++++++
 
-Name of the group this symlink belongs to. Defaults to ``root``.
+Name of the group this symlink belongs to. Defaults to ``root``. Defaults to ``None`` (don't care about group).
 
 ``owner``
 +++++++++
 
-Username of the symlink's owner. Defaults to ``root``.
+Username of the symlink's owner. Defaults to ``root``. Defaults to ``None`` (don't care about owner).
