@@ -25,10 +25,12 @@ DIFF_MAX_LINE_LENGTH = 128
 
 
 def content_processor_mako(item):
+    from mako.lookup import TemplateLookup
     from mako.template import Template
     template = Template(
         item._template_content,
         input_encoding='utf-8',
+        lookup=TemplateLookup(directories=[item.item_dir]),
         output_encoding=item.attributes['encoding'],
     )
     LOG.debug("{node}:{bundle}:{item}: rendering with Mako...".format(
