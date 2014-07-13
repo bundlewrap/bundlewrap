@@ -1,3 +1,13 @@
+0.14.0
+======
+
+2014-07-13
+
+* files, directories and symlinks don't care about ownership and mode by
+  default (BACKWARDS INCOMPATIBLE)
+* Mako file templates can now use include
+
+
 0.13.0
 ======
 
