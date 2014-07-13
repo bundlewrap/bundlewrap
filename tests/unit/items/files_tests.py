@@ -279,9 +279,9 @@ class FileFixContentTest(TestCase):
         node.upload.assert_called_once_with(
             "/b/dir/files/foobar",
             "/foo",
-            owner="root",
-            group="root",
-            mode="0664",
+            owner="",
+            group="",
+            mode=None,
         )
 
     def test_regular(self):
