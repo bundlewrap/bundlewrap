@@ -36,6 +36,30 @@ This is a list of all functions a hook file may implement.
 
 |
 
+.. py:function:: action_run_start(repo, node, action, **kwargs)
+
+    Called each time a :command:`bw apply` command reaches a new action.
+
+    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Item item: The current action.
+
+|
+|
+
+.. py:function:: action_run_end(repo, node, action, duration=None, status=None, **kwargs)
+
+    Called each time a :command:`bw apply` command completes processing an action.
+
+    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Item item: The current action.
+    :param timedelta duration: How long the action was running.
+    :param ItemStatus status: An object with these attributes: ``correct``, ``skipped``.
+
+|
+|
+
 .. py:function:: apply_start(repo, target, nodes, interactive=False, **kwargs)
 
     Called when you start a :command:`bw apply` command.

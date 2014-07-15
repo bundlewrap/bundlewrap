@@ -1,9 +1,10 @@
 from blockwart.exceptions import ActionFailure, BundleError
-from blockwart.items import Item
+from blockwart.items import Item, ItemStatus
 from blockwart.utils import LOG
 from blockwart.utils.ui import ask_interactively
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold, wrap_question
+from datetime import datetime
 
 
 class Action(Item):
@@ -21,7 +22,7 @@ class Action(Item):
     ITEM_TYPE_NAME = 'action'
     REQUIRED_ATTRIBUTES = ['command']
 
-    def get_result(self, interactive=False, interactive_default=True):
+    def _get_result(self, interactive=False, interactive_default=True):
         if interactive is False and self.attributes['interactive'] is True:
             return self.STATUS_SKIPPED
 
@@ -62,6 +63,32 @@ class Action(Item):
             return self.STATUS_ACTION_SUCCEEDED
         except ActionFailure:
             return self.STATUS_FAILED
+
+    def get_result(self, interactive=False, interactive_default=True):
+        self.node.repo.hooks.action_run_start(
+            self.node.repo,
+            self.node,
+            self,
+        )
+        start_time = datetime.now()
+
+        status_code = self._get_result(interactive, interactive_default)
+        if status_code == Item.STATUS_SKIPPED:
+            status = ItemStatus(correct=False, skipped=True)
+        elif status_code == Item.STATUS_ACTION_SUCCEEDED:
+            status = ItemStatus()
+        else:
+            status = ItemStatus(correct=False)
+
+        self.node.repo.hooks.action_run_end(
+            self.node.repo,
+            self.node,
+            self,
+            duration=datetime.now() - start_time,
+            status=status,
+        )
+
+        return status_code
 
     def run(self, interactive=False):
         result = self.bundle.node.run(

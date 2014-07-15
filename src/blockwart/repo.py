@@ -18,6 +18,8 @@ FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 
 HOOK_EVENTS = (
+    'action_run_start',
+    'action_run_end',
     'apply_start',
     'apply_end',
     'item_apply_start',
