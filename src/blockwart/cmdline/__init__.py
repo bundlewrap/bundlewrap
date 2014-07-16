@@ -120,6 +120,7 @@ def main(*args):
     for line in output:
         if isinstance(line, int):
             return_code = line
+            break
         else:
             print(line.encode('utf-8'))
 
