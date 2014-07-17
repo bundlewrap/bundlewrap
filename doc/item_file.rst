@@ -52,10 +52,18 @@ How the file pointed to by ``source`` or the string given to ``content`` should 
 +--------------------+----------------------------------------------------------------------------+
 | ``binary``         | file is uploaded verbatim, no content processing occurs                    |
 +--------------------+----------------------------------------------------------------------------+
+| ``jinja2``         | content is interpreted by the Jinja2 template engine                       |
++--------------------+----------------------------------------------------------------------------+
 | ``mako`` (default) | content is interpreted by the Mako template engine                         |
 +--------------------+----------------------------------------------------------------------------+
 | ``text``           | like ``binary``, but will be diffed in interactive mode                    |
 +--------------------+----------------------------------------------------------------------------+
+
+.. note::
+
+	In order to use Jinja2, you'll also need to install it manually, since Blockwart doesn't explicitly depend on it::
+
+		pip install Jinja2
 
 |
 
@@ -100,6 +108,8 @@ File mode as returned by :command:`stat -c %a <file>`. Defaults to ``None`` (don
 Username of the file's owner. Defaults to ``None`` (don't care about owner).
 
 |
+
+.. _file_item_source:
 
 ``source``
 ++++++++++

@@ -24,6 +24,54 @@ DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
 DIFF_MAX_LINE_LENGTH = 128
 
 
+def content_processor_jinja2(item):
+    try:
+        from jinja2 import Environment, FileSystemLoader
+    except ImportError:
+        raise TemplateError(_(
+            "Unable to load Jinja2 (required to render {item}). "
+            "You probably have to install it using `pip install Jinja2`."
+        ).format(item.id))
+
+    loader = FileSystemLoader(searchpath=item.item_dir)
+    env = Environment(loader=loader)
+
+    template = env.from_string(item._template_content.decode('utf-8'))
+
+    LOG.debug("{node}:{bundle}:{item}: rendering with Jinja2...".format(
+        bundle=item.bundle.name,
+        item=item.id,
+        node=item.node.name,
+    ))
+    start = datetime.now()
+    try:
+        content = template.render(
+            item=item,
+            bundle=item.bundle,
+            node=item.node,
+            repo=item.node.repo,
+            **item.attributes['context']
+        )
+    except Exception as e:
+        LOG.debug("".join(format_exception(*exc_info())))
+        raise TemplateError(_(
+            "Error while rendering template for {node}:{bundle}:{item}: {error}"
+        ).format(
+            bundle=item.bundle.name,
+            error=e,
+            item=item.id,
+            node=item.node.name,
+        ))
+    duration = datetime.now() - start
+    LOG.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
+        bundle=item.bundle.name,
+        item=item.id,
+        node=item.node.name,
+        time=duration.total_seconds(),
+    ))
+    return content.encode(item.attributes['encoding'])
+
+
 def content_processor_mako(item):
     from mako.lookup import TemplateLookup
     from mako.template import Template
@@ -83,6 +131,7 @@ def content_processor_text(item):
 CONTENT_PROCESSORS = {
     'any': lambda item: "",
     'binary': None,
+    'jinja2': content_processor_jinja2,
     'mako': content_processor_mako,
     'text': content_processor_text,
 }

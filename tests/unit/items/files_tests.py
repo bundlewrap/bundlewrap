@@ -13,6 +13,26 @@ from blockwart.items import files, ItemStatus
 from blockwart.utils.text import green, red
 
 
+class ContentProcessorJinja2Test(TestCase):
+    """
+    Tests blockwart.items.files.content_processor_jinja2.
+    """
+    def test_template(self):
+        item = MagicMock()
+        item.node.name = "localhost"
+        item.attributes = {
+            'context': {
+                'number': "47",
+            },
+            'encoding': "latin-1",
+        }
+        item._template_content = b"Hi fröm {{number}}@{{ node.name }}!"
+        self.assertEqual(
+            files.content_processor_jinja2(item),
+            "Hi fröm 47@localhost!".encode("latin-1"),
+        )
+
+
 class ContentProcessorMakoTest(TestCase):
     """
     Tests blockwart.items.files.content_processor_mako.
