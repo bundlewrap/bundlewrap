@@ -31,7 +31,7 @@ def content_processor_jinja2(item):
         raise TemplateError(_(
             "Unable to load Jinja2 (required to render {item}). "
             "You probably have to install it using `pip install Jinja2`."
-        ).format(item.id))
+        ).format(item=item.id))
 
     loader = FileSystemLoader(searchpath=item.item_dir)
     env = Environment(loader=loader)
