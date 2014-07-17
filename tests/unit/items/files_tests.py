@@ -24,12 +24,12 @@ class ContentProcessorMakoTest(TestCase):
             'context': {
                 'number': "47",
             },
-            'encoding': "utf-8",
+            'encoding': "latin-1",
         }
-        item._template_content = "Hi from ${number}@${node.name}!"
+        item._template_content = b"Hi fröm ${number}@${node.name}!"
         self.assertEqual(
             files.content_processor_mako(item),
-            "Hi from 47@localhost!",
+            "Hi fröm 47@localhost!".encode("latin-1"),
         )
 
 
