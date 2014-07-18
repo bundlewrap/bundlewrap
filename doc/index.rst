@@ -28,6 +28,7 @@ You might be better served with a different config management system if you:
 * like to use community-maintained configuration templates
 * need unattended bootstrapping of nodes
 * need to manage non-Linux systems
+* don't trust your coworkers
 
 
 .. raw:: html

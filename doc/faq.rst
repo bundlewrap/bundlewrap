@@ -54,6 +54,13 @@ Not right now. A separate project (called "cloudwart") is in planning, but no co
 
 |
 
+Is Blockwart secure?
+--------------------
+
+Blockwart is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a Blockwart repository that could compromise your machine. You should only use trusted repositories and plugins. We also recommend following commit logs to your repos.
+
+|
+
 The Blockwart Project
 #####################
 
