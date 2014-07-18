@@ -78,10 +78,10 @@ If you're still concerned, please do not hesitate to contact `@trehn <https://tw
 Isn't the name evil?
 --------------------
 
-The origins of the name "Blockwart" are described on the :doc:`about` page. We have heard concerns from several people about using a Nazi term to describe our project.
+The origins of the name "Blockwart" are described on the :ref:`About <about_name>` page. We have heard concerns from several people about using a Nazi term to describe our project.
 
 	I do not believe I chose the wrong name for this project. The theme fits perfectly and there is nothing discriminatory and inherently evil about using the word "Blockwart", especially considering its use in modern German (which could very well exist without the Nazi origins). So far, the name has sparked many interesting discussions and debate. I like that. I also believe it is highly preferable to keep on having this debate and walking this line, so people don't forget there is a line.
 
 	-- Torsten Rehn
 
-Nonetheless, let it be clear that the Blockwart project does not support or condone fascism (except for when it comes to grammar and coding style). We welcome anyone to be part of our community.
+Nonetheless, let it be clear that the Blockwart project does not support or condone fascism. We welcome anyone to be part of our community.
