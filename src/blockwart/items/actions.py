@@ -1,10 +1,11 @@
+from datetime import datetime
+
 from blockwart.exceptions import ActionFailure, BundleError
 from blockwart.items import Item, ItemStatus
 from blockwart.utils import LOG
 from blockwart.utils.ui import ask_interactively
 from blockwart.utils.text import mark_for_translation as _
 from blockwart.utils.text import bold, wrap_question
-from datetime import datetime
 
 
 class Action(Item):
