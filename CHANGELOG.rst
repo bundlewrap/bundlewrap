@@ -1,3 +1,13 @@
+1.0.0
+=====
+
+2014-07-19
+
+* added hooks for actions
+* added support for Jinja2 templates
+* fixed some CLI commands not terminating correctly
+
+
 0.14.0
 ======
 
