@@ -3,6 +3,7 @@
 
 2014-07-19
 
+* API will now remain stable until 2.0.0
 * added hooks for actions
 * added support for Jinja2 templates
 * fixed some CLI commands not terminating correctly
