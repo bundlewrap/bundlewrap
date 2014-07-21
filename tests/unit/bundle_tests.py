@@ -2,17 +2,17 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.bundle import Bundle
-from blockwart.items import Item
-from blockwart.exceptions import RepositoryError
-from blockwart.utils import names
+from bundlewrap.bundle import Bundle
+from bundlewrap.items import Item
+from bundlewrap.exceptions import RepositoryError
+from bundlewrap.utils import names
 
 
 class BundleInitTest(TestCase):
     """
-    Tests initialization of blockwart.bundle.Bundle.
+    Tests initialization of bundlewrap.bundle.Bundle.
     """
-    @patch('blockwart.bundle.validate_name', return_value=False)
+    @patch('bundlewrap.bundle.validate_name', return_value=False)
     def test_bad_bundle_name(self, *args):
         with self.assertRaises(RepositoryError):
             Bundle(MagicMock(), "name")
@@ -26,9 +26,9 @@ class BundleInitTest(TestCase):
 
 class BundleItemsTest(TestCase):
     """
-    Tests blockwart.bundle.Bundle.items.
+    Tests bundlewrap.bundle.Bundle.items.
     """
-    @patch('blockwart.bundle.get_all_attrs_from_file', return_value={
+    @patch('bundlewrap.bundle.get_all_attrs_from_file', return_value={
         'attr1': {'name1': {}, 'name2': {}},
         'attr2': {'name3': {}},
     })

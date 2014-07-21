@@ -59,7 +59,7 @@ def set_up_logging(debug=False, interactive=False):
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
-    logger = logging.getLogger('blockwart')
+    logger = logging.getLogger('bundlewrap')
     logger.addHandler(handler)
     logger.setLevel(level)
 
@@ -93,7 +93,7 @@ def main(*args):
             repo = Repository(getcwd())
         except NoSuchRepository:
             print(_("{x} The current working directory "
-                    "is not a Blockwart repository.".format(x=red("!"))))
+                    "is not a BundleWrap repository.".format(x=red("!"))))
             exit(1)
 
         if pargs.password:

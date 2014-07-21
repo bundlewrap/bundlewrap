@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline import items
+from bundlewrap.cmdline import items
 
 
 class MockItem(object):
@@ -20,7 +20,7 @@ class MockItem(object):
 
 class ItemsTest(TestCase):
     """
-    Tests blockwart.cmdline.items.bw_items.
+    Tests bundlewrap.cmdline.items.bw_items.
     """
     def setUp(self):
         item1 = MockItem("type1:item1")

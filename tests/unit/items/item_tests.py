@@ -2,8 +2,8 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.items import Item
-from blockwart.exceptions import BundleError
+from bundlewrap.items import Item
+from bundlewrap.exceptions import BundleError
 
 
 class MockItem(Item):
@@ -14,7 +14,7 @@ class MockItem(Item):
 
 class ApplyTest(TestCase):
     """
-    Tests blockwart.items.Item.apply.
+    Tests bundlewrap.items.Item.apply.
     """
     def test_noninteractive(self):
         status_before = MagicMock()
@@ -27,7 +27,7 @@ class ApplyTest(TestCase):
         self.assertEqual(item.fix.call_count, 1)
         self.assertEqual(item.get_status.call_count, 2)
 
-    @patch('blockwart.items.ask_interactively', return_value=True)
+    @patch('bundlewrap.items.ask_interactively', return_value=True)
     def test_interactive(self, ask_interactively):
         status_before = MagicMock()
         status_before.correct = False
@@ -41,7 +41,7 @@ class ApplyTest(TestCase):
         self.assertEqual(item.fix.call_count, 1)
         ask_interactively.assert_called_once()
 
-    @patch('blockwart.items.ask_interactively', return_value=False)
+    @patch('bundlewrap.items.ask_interactively', return_value=False)
     def test_interactive_abort(self, ask_interactively):
         status_before = MagicMock()
         status_before.correct = False
@@ -110,11 +110,11 @@ class ApplyTest(TestCase):
 
 class InitTest(TestCase):
     """
-    Tests initialization of blockwart.items.Item.
+    Tests initialization of bundlewrap.items.Item.
     """
-    @patch('blockwart.items.Item._validate_attribute_names')
-    @patch('blockwart.items.Item._validate_required_attributes')
-    @patch('blockwart.items.Item.validate_attributes')
+    @patch('bundlewrap.items.Item._validate_attribute_names')
+    @patch('bundlewrap.items.Item._validate_required_attributes')
+    @patch('bundlewrap.items.Item.validate_attributes')
     def test_init_no_validation(self, validate_names, validate_required,
             validate_values):
         bundle = MagicMock()
@@ -125,9 +125,9 @@ class InitTest(TestCase):
         self.assertFalse(validate_required.called)
         self.assertFalse(validate_values.called)
 
-    @patch('blockwart.items.Item._validate_attribute_names')
-    @patch('blockwart.items.Item._validate_required_attributes')
-    @patch('blockwart.items.Item.validate_attributes')
+    @patch('bundlewrap.items.Item._validate_attribute_names')
+    @patch('bundlewrap.items.Item._validate_required_attributes')
+    @patch('bundlewrap.items.Item.validate_attributes')
     def test_init_with_validation(self, validate_names, validate_required,
             validate_values):
         MockItem(MagicMock(), MagicMock(), {}, skip_validation=False)
@@ -187,7 +187,7 @@ class InitTest(TestCase):
 
 class BundleCollisionTest(TestCase):
     """
-    Tests blockwart.items.__init__.Item._check_bundle_collisions.
+    Tests bundlewrap.items.__init__.Item._check_bundle_collisions.
     """
     def test_collision(self):
         item1 = MockItem(MagicMock(), "item1", {}, skip_validation=True)

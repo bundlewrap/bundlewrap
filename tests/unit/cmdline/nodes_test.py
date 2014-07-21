@@ -2,12 +2,12 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline import nodes
+from bundlewrap.cmdline import nodes
 
 
 class NodesTest(TestCase):
     """
-    Tests blockwart.cmdline.nodes.bw_nodes.
+    Tests bundlewrap.cmdline.nodes.bw_nodes.
     """
     def setUp(self):
         self.repo = MagicMock()

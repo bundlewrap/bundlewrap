@@ -5,9 +5,9 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.cmdline import run
-from blockwart.operations import RunResult
-from blockwart.repo import HooksProxy
+from bundlewrap.cmdline import run
+from bundlewrap.operations import RunResult
+from bundlewrap.repo import HooksProxy
 
 
 class FakeRepo(object):
@@ -30,9 +30,9 @@ class FakeNode(object):
 
 class RunTest(TestCase):
     """
-    Tests blockwart.cmdline.run.bw_run.
+    Tests bundlewrap.cmdline.run.bw_run.
     """
-    @patch('blockwart.cmdline.run.get_target_nodes')
+    @patch('bundlewrap.cmdline.run.get_target_nodes')
     def test_single_node_fail(self, get_target_nodes):
         args = MagicMock()
         args.command = "foo"
@@ -48,7 +48,7 @@ class RunTest(TestCase):
         self.assertTrue(output[0].startswith("[node1] ✘ failed after "))
         self.assertTrue(output[0].endswith("s (return code 47)"))
 
-    @patch('blockwart.cmdline.run.get_target_nodes')
+    @patch('bundlewrap.cmdline.run.get_target_nodes')
     def test_group_success(self, get_target_nodes):
         args = MagicMock()
         args.command = "foo"

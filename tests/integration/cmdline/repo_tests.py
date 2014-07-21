@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from blockwart.cmdline import main
+from bundlewrap.cmdline import main
 
 
 class RepoCreateTest(TestCase):
@@ -18,7 +18,7 @@ class RepoCreateTest(TestCase):
         chdir(self.cwd)
         rmtree(self.tmpdir)
 
-    @patch('blockwart.cmdline.exit')
+    @patch('bundlewrap.cmdline.exit')
     def test_simple_create(self, exit):
         chdir(self.tmpdir)
         main("repo", "create")
@@ -34,7 +34,7 @@ class RepoBundleCreateTest(TestCase):
         chdir(self.cwd)
         rmtree(self.tmpdir)
 
-    @patch('blockwart.cmdline.exit')
+    @patch('bundlewrap.cmdline.exit')
     def test_simple_create(self, exit):
         chdir(self.tmpdir)
         main("repo", "create")

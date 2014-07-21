@@ -4,12 +4,12 @@ from collections import defaultdict
 from os.path import dirname, normpath
 from pipes import quote
 
-from blockwart.exceptions import BundleError
-from blockwart.items import Item, ItemStatus
-from blockwart.utils import LOG
-from blockwart.utils.remote import PathInfo
-from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold, is_subdirectory
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import Item, ItemStatus
+from bundlewrap.utils import LOG
+from bundlewrap.utils.remote import PathInfo
+from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import bold, is_subdirectory
 
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)

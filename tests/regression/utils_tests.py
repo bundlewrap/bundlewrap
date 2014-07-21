@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart import utils
+from bundlewrap import utils
 
 
 class CachedPropExampleClass(object):
@@ -21,7 +21,7 @@ class CachedPropExampleClass(object):
 
 class CachedPropertyTest(TestCase):
     """
-    Tests blockwart.utils.utils.cached_property.
+    Tests bundlewrap.utils.utils.cached_property.
     """
     def test_generator(self):
         """

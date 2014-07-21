@@ -168,7 +168,7 @@ class HooksProxy(object):
 def items_from_path(itempath):
     """
     Looks for Item subclasses in the items directory that ships with
-    blockwart and the local items dir of this specific repo.
+    bundlewrap and the local items dir of this specific repo.
 
     An alternative method would involve metaclasses (as Django
     does it), but then it gets very hard to have two separate repos
@@ -204,7 +204,7 @@ class LibsProxy(object):
         if attrname not in self.__module_cache:
             filename = attrname + ".py"
             filepath = join(self.__path, filename)
-            m = load_source('blockwart.repo.libs_{}'.format(attrname), filepath)
+            m = load_source('bundlewrap.repo.libs_{}'.format(attrname), filepath)
             self.__module_cache[attrname] = m
         return self.__module_cache[attrname]
 
@@ -270,7 +270,7 @@ class Repository(object):
     @staticmethod
     def is_repo(path):
         """
-        Validates whether the given path is a blockwart repository.
+        Validates whether the given path is a bundlewrap repository.
         """
         try:
             assert isdir(path)
@@ -365,7 +365,7 @@ class Repository(object):
     def populate_from_path(self, path):
         if not self.is_repo(path):
             raise NoSuchRepository(
-                _("'{}' is not a blockwart repository").format(path)
+                _("'{}' is not a bundlewrap repository").format(path)
             )
 
         if path != self.path:

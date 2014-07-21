@@ -2,7 +2,7 @@
 Writing file templates
 ######################
 
-Blockwart uses `Mako <http://www.makotemplates.org>`_ for file templating by default (Jinja2 is also available). This enables you to dynamically contruct your config files. Templates reside in the :file:`files` subdirectory of a bundle and are bound to a file item using the ``source`` :ref:`attribute <file_item_source>`. This page explains how to get started with Mako.
+BundleWrap uses `Mako <http://www.makotemplates.org>`_ for file templating by default (Jinja2 is also available). This enables you to dynamically contruct your config files. Templates reside in the :file:`files` subdirectory of a bundle and are bound to a file item using the ``source`` :ref:`attribute <file_item_source>`. This page explains how to get started with Mako.
 
 The most basic example would be::
 
@@ -12,7 +12,7 @@ After template rendering, it would look like this::
 
 	Hello, this is myexamplenodename!
 
-As you can see, `${...}` can be used to insert the value of a context variable into the rendered file. By default, you have access to two variables in every template: `node` and `repo`. They are :class:`blockwart.node.Node` and :class:`blockwart.repo.Repository` objects, respectively. You can learn more about the attributes and methods of these objects :doc:`in the API docs <api>`, but here are a few examples:
+As you can see, `${...}` can be used to insert the value of a context variable into the rendered file. By default, you have access to two variables in every template: `node` and `repo`. They are :class:`bundlewrap.node.Node` and :class:`bundlewrap.repo.Repository` objects, respectively. You can learn more about the attributes and methods of these objects :doc:`in the API docs <api>`, but here are a few examples:
 
 |
 

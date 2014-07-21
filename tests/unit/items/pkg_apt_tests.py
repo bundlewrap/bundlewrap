@@ -4,14 +4,14 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.exceptions import BundleError
-from blockwart.items import pkg_apt
-from blockwart.operations import RunResult
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import pkg_apt
+from bundlewrap.operations import RunResult
 
 
 class AskTest(TestCase):
     """
-    Tests blockwart.items.pkg_apt.AptPkg.ask.
+    Tests bundlewrap.items.pkg_apt.AptPkg.ask.
     """
     def test_install(self):
         pkg = pkg_apt.AptPkg(MagicMock(), "foo", {'installed': True})
@@ -34,7 +34,7 @@ class AskTest(TestCase):
 
 class FixTest(TestCase):
     """
-    Tests blockwart.items.pkg_apt.AptPkg.fix.
+    Tests bundlewrap.items.pkg_apt.AptPkg.fix.
     """
     def test_install(self):
         node = MagicMock()
@@ -49,30 +49,30 @@ class FixTest(TestCase):
 
 class GetStatusTest(TestCase):
     """
-    Tests blockwart.items.pkg_apt.AptPkg.get_status.
+    Tests bundlewrap.items.pkg_apt.AptPkg.get_status.
     """
-    @patch('blockwart.items.pkg_apt.pkg_installed')
+    @patch('bundlewrap.items.pkg_apt.pkg_installed')
     def test_installed_ok(self, pkg_installed):
         pkg = pkg_apt.AptPkg(MagicMock(), "foo", {'installed': True})
         pkg_installed.return_value = True
         status = pkg.get_status()
         self.assertTrue(status.correct)
 
-    @patch('blockwart.items.pkg_apt.pkg_installed')
+    @patch('bundlewrap.items.pkg_apt.pkg_installed')
     def test_not_installed_ok(self, pkg_installed):
         pkg = pkg_apt.AptPkg(MagicMock(), "foo", {'installed': False})
         pkg_installed.return_value = False
         status = pkg.get_status()
         self.assertTrue(status.correct)
 
-    @patch('blockwart.items.pkg_apt.pkg_installed')
+    @patch('bundlewrap.items.pkg_apt.pkg_installed')
     def test_installed_not_ok(self, pkg_installed):
         pkg = pkg_apt.AptPkg(MagicMock(), "foo", {'installed': False})
         pkg_installed.return_value = True
         status = pkg.get_status()
         self.assertFalse(status.correct)
 
-    @patch('blockwart.items.pkg_apt.pkg_installed')
+    @patch('bundlewrap.items.pkg_apt.pkg_installed')
     def test_not_installed_not_ok(self, pkg_installed):
         pkg = pkg_apt.AptPkg(MagicMock(), "foo", {'installed': False})
         pkg_installed.return_value = True
@@ -82,7 +82,7 @@ class GetStatusTest(TestCase):
 
 class PkgInstalledTest(TestCase):
     """
-    Tests blockwart.items.pkg_apt.pkg_installed.
+    Tests bundlewrap.items.pkg_apt.pkg_installed.
     """
     def test_installed(self):
         runresult = RunResult()
@@ -107,7 +107,7 @@ class PkgInstalledTest(TestCase):
 
 class ValidateAttributesTest(TestCase):
     """
-    Tests blockwart.items.pkg_apt.AptPkg.validate_attributes.
+    Tests bundlewrap.items.pkg_apt.AptPkg.validate_attributes.
     """
     def test_installed_ok(self):
         pkg_apt.AptPkg(MagicMock(), "foo", {'installed': True})

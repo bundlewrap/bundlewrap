@@ -18,7 +18,7 @@ Glossary
 		Used for organizing your :term:`nodes <node>`.
 
 	hook
-		:doc:`Hooks <hooks>` can be used to run your own code automatically during various stages of Blockwart operations.
+		:doc:`Hooks <hooks>` can be used to run your own code automatically during various stages of BundleWrap operations.
 
 	item
 		A single piece of configuration on a node, e.g. a file or an installed package.
@@ -32,4 +32,4 @@ Glossary
 		A managed system, no matter if physical or virtual.
 
 	repo
-		A repository is a directory with :doc:`some stuff <repository>` in it that tells Blockwart everything it needs to know about your infrastructure.
+		A repository is a directory with :doc:`some stuff <repository>` in it that tells BundleWrap everything it needs to know about your infrastructure.

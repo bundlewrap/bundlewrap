@@ -5,16 +5,16 @@ Quickstart
 
 .. toctree::
 
-This is the 10 minute intro into Blockwart. Fasten your seatbelt.
+This is the 10 minute intro into BundleWrap. Fasten your seatbelt.
 
 |
 
 Installation
 ------------
 
-First, open a terminal and install Blockwart::
+First, open a terminal and install BundleWrap::
 
-	pip install blockwart
+	pip install bundlewrap
 
 |
 
@@ -23,8 +23,8 @@ Create a repository
 
 Now you'll need to create your :term:`repository <repo>`::
 
-	mkdir my_blockwart_repo
-	cd my_blockwart_repo
+	mkdir my_bundlewrap_repo
+	cd my_bundlewrap_repo
 	bw repo create
 
 You will note that some files have been created. Let's check them out::
@@ -42,7 +42,7 @@ At this point you will want to edit :file:`nodes.py` and maybe change "localhost
 
 .. note::
 
-	Blockwart will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com sudo id`` works without any password prompts in your terminal, you're good to go.
+	BundleWrap will honor your ``~/.ssh/config``, so if ``ssh mynode.example.com sudo id`` works without any password prompts in your terminal, you're good to go.
 
 	If you need a password for SSH and/or sudo, please add :option:`-p` directly after :command:`bw` when calling :command:`bw run` or :command:`bw apply`.
 
@@ -68,11 +68,11 @@ Instead of a node name ("node1" in this case) you can also use a :term:`group` n
 Create a bundle
 ---------------
 
-Blockwart stores node configuration in :term:`bundles <bundle>`. A bundle is a collection of :term:`items <item>` such as files, system packages or users. To create your first bundle, type::
+BundleWrap stores node configuration in :term:`bundles <bundle>`. A bundle is a collection of :term:`items <item>` such as files, system packages or users. To create your first bundle, type::
 
 	bw repo bundle create mybundle
 
-Now that you have created your bundle, it's important to tell Blockwart which nodes will have this bundle. You can assign bundles to nodes using either :file:`groups.py` or :file:`nodes.py`, here we'll use the latter:
+Now that you have created your bundle, it's important to tell BundleWrap which nodes will have this bundle. You can assign bundles to nodes using either :file:`groups.py` or :file:`nodes.py`, here we'll use the latter:
 
 .. code-block:: python
 
@@ -125,7 +125,7 @@ Now all that's left is to run :command:`bw apply`::
 
 	bw apply -i node1
 
-Blockwart will ask to replace your previous :abbr:`MOTD (message of the day)`::
+BundleWrap will ask to replace your previous :abbr:`MOTD (message of the day)`::
 
 	node1: run started at 2013-11-16 18:26:29
 
@@ -133,7 +133,7 @@ Blockwart will ask to replace your previous :abbr:`MOTD (message of the day)`::
 	 ┃
 	 ┃   content
 	 ┃   --- /etc/motd
-	 ┃   +++ <blockwart content>
+	 ┃   +++ <bundlewrap content>
 	 ┃   @@ -1 +1 @@
 	 ┃   -your old motd
 	 ┃   +Welcome to node1!
@@ -150,10 +150,10 @@ Further reading
 Here are some suggestions on what to do next:
 
 * take a moment to think about what groups and bundles you will create
-* read up on how a :doc:`Blockwart repository <repository>` is laid out
+* read up on how a :doc:`BundleWrap repository <repository>` is laid out
 * ...especially what types of items you can add to your :doc:`bundles <bundles>`
 * familiarize yourself with `the Mako template language <http://www.makotemplates.org/>`_
 * explore the :doc:`command line interface <cli>`
 * follow `@bwapply <https://twitter.com/bwapply>`_ on Twitter
 
-Have fun! If you have any questions, feel free to drop by `on IRC <irc://chat.freenode.net/blockwart>`_.
+Have fun! If you have any questions, feel free to drop by `on IRC <irc://chat.freenode.net/bundlewrap>`_.

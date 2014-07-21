@@ -22,7 +22,7 @@ from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
 
-LOCK_PATH = "/tmp/blockwart.lock"
+LOCK_PATH = "/tmp/bundlewrap.lock"
 LOCK_FILE = LOCK_PATH + "/info"
 
 
@@ -567,7 +567,7 @@ class NodeLock(object):
             duration = _("<unknown>")
         return _(
             "  {warning}\n\n"
-            "  Looks like somebody is currently using Blockwart on this node.\n"
+            "  Looks like somebody is currently using BundleWrap on this node.\n"
             "  You should let them finish or override the lock if it has gone stale.\n\n"
             "  locked by: {user}@{host}\n"
             "  lock acquired: {duration} ago ({date})\n\n"

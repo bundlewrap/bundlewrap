@@ -11,13 +11,13 @@ from sys import exc_info
 from tempfile import mkstemp
 from traceback import format_exception
 
-from blockwart.exceptions import BundleError, TemplateError
-from blockwart.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
-from blockwart.items.directories import validator_mode
-from blockwart.utils import cached_property, hash_local_file, LOG, sha1
-from blockwart.utils.remote import PathInfo
-from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold, green, is_subdirectory, red
+from bundlewrap.exceptions import BundleError, TemplateError
+from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
+from bundlewrap.items.directories import validator_mode
+from bundlewrap.utils import cached_property, hash_local_file, LOG, sha1
+from bundlewrap.utils.remote import PathInfo
+from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import bold, green, is_subdirectory, red
 
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
@@ -149,7 +149,7 @@ def diff(content_old, content_new, filename, encoding_hint=None):
         content_old.splitlines(True),
         content_new.splitlines(True),
         fromfile=filename,
-        tofile=_("<blockwart content>"),
+        tofile=_("<bundlewrap content>"),
     ):
         suffix = ""
         try:
@@ -314,7 +314,7 @@ class File(Item):
             else:
                 question += "'{}' → {}\n".format(
                     status.info['path_info'].desc,
-                    _("<blockwart content>"),
+                    _("<bundlewrap content>"),
                 )
 
         if 'mode' in status.info['needs_fixing']:

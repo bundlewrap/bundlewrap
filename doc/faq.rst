@@ -5,45 +5,45 @@ FAQ
 Technical
 #########
 
-Blockwart says an item failed to apply, what do I do now?
+BundleWrap says an item failed to apply, what do I do now?
 ---------------------------------------------------------
 
-Try running :command:`bw apply -i nodename` to see which attribute of the item could not be fixed. If that doesn't tell you enough, try ``bw --debug apply -i nodename`` and look for the command Blockwart is using to fix the :term:`item` in question. Then try running that command yourself and check for any errors.
+Try running :command:`bw apply -i nodename` to see which attribute of the item could not be fixed. If that doesn't tell you enough, try ``bw --debug apply -i nodename`` and look for the command BundleWrap is using to fix the :term:`item` in question. Then try running that command yourself and check for any errors.
 
 |
 
 What happens when two people start applying configuration to the same node?
 ---------------------------------------------------------------------------
 
-Blockwart uses a locking mechanism to prevent collisions like this. When Blockwart finds a lock on a :term:`node` in interactive mode, it will display information about who acquired the lock (and when) and will ask whether to ignore the lock or abort the process. In noninteractive mode, the operation is always cancelled for the node in question unless :option:`--force` is used.
+BundleWrap uses a locking mechanism to prevent collisions like this. When BundleWrap finds a lock on a :term:`node` in interactive mode, it will display information about who acquired the lock (and when) and will ask whether to ignore the lock or abort the process. In noninteractive mode, the operation is always cancelled for the node in question unless :option:`--force` is used.
 
 |
 
-How can I have Blockwart reload my services after config changes?
+How can I have BundleWrap reload my services after config changes?
 -----------------------------------------------------------------
 
 See :ref:`canned actions <canned_actions>` and :ref:`triggers <triggers>`.
 
 |
 
-Will Blockwart keep track of package updates?
+Will BundleWrap keep track of package updates?
 ---------------------------------------------
 
-No. Blockwart will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an :doc:`action <item_action>` with the ``interactive`` attribute set to ``True``). Selecting specific versions should be done through your package manager.
+No. BundleWrap will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an :doc:`action <item_action>` with the ``interactive`` attribute set to ``True``). Selecting specific versions should be done through your package manager.
 
 |
 
 Is there a probing mechanism like Ohai?
 ---------------------------------------
 
-No. Blockwart is meant to be very push-focused. The node should not have any say in what configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a :ref:`hook <hooks>` to gather the data and populate ``node.metadata``.
+No. BundleWrap is meant to be very push-focused. The node should not have any say in what configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a :ref:`hook <hooks>` to gather the data and populate ``node.metadata``.
 
 |
 
 Is there a way to remove any unmanaged files/directories in a directory?
 ------------------------------------------------------------------------
 
-Not at the moment. We're tracking this topic in issue `#56 <https://github.com/blockwart/blockwart/issues/56>`_.
+Not at the moment. We're tracking this topic in issue `#56 <https://github.com/bundlewrap/bundlewrap/issues/56>`_.
 
 |
 
@@ -54,34 +54,21 @@ Not right now. A separate project (called "cloudwart") is in planning, but no co
 
 |
 
-Is Blockwart secure?
+Is BundleWrap secure?
 --------------------
 
-Blockwart is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a Blockwart repository that could compromise your machine. You should only use trusted repositories and plugins. We also recommend following commit logs to your repos.
+BundleWrap is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a BundleWrap repository that could compromise your machine. You should only use trusted repositories and plugins. We also recommend following commit logs to your repos.
 
 |
 
-The Blockwart Project
+The BundleWrap Project
 #####################
 
 Why do contributors have to sign a Copyright Assignment Agreement?
 ------------------------------------------------------------------
 
-While it sounds scary, Copyright assignment is used to improve the enforceability of the GPL. Even the FSF does it, `read their explanation why <http://www.gnu.org/licenses/why-assign.html>`_. The agreement used by Blockwart is from `harmonyagreements.org <http://harmonyagreements.org>`_.
+While it sounds scary, Copyright assignment is used to improve the enforceability of the GPL. Even the FSF does it, `read their explanation why <http://www.gnu.org/licenses/why-assign.html>`_. The agreement used by BundleWrap is from `harmonyagreements.org <http://harmonyagreements.org>`_.
 
 If you're still concerned, please do not hesitate to contact `@trehn <https://twitter.com/trehn>`_.
 
 |
-
-.. _name:
-
-Isn't the name evil?
---------------------
-
-The origins of the name "Blockwart" are described on the :ref:`About <about_name>` page. We have heard concerns from several people about using a Nazi term to describe our project.
-
-	I do not believe I chose the wrong name for this project. The theme fits perfectly and there is nothing discriminatory and inherently evil about using the word "Blockwart", especially considering its use in modern German (which could very well exist without the Nazi origins). So far, the name has sparked many interesting discussions and debate. I like that. I also believe it is highly preferable to keep on having this debate and walking this line, so people don't forget there is a line.
-
-	-- Torsten Rehn
-
-Nonetheless, let it be clear that the Blockwart project does not support or condone fascism. We welcome anyone to be part of our community.

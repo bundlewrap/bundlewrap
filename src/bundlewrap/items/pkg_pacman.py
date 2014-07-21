@@ -3,11 +3,11 @@ from __future__ import unicode_literals
 from os.path import basename, join
 from pipes import quote
 
-from blockwart.exceptions import BundleError
-from blockwart.items import Item, ItemStatus
-from blockwart.utils import LOG
-from blockwart.utils.text import bold, green, red
-from blockwart.utils.text import mark_for_translation as _
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import Item, ItemStatus
+from bundlewrap.utils import LOG
+from bundlewrap.utils.text import bold, green, red
+from bundlewrap.utils.text import mark_for_translation as _
 
 
 def pkg_install(node, pkgname, operation='S'):

@@ -5,12 +5,12 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart import utils
+from bundlewrap import utils
 
 
 class CachedPropertyTest(TestCase):
     """
-    Tests blockwart.utils.cached_property.
+    Tests bundlewrap.utils.cached_property.
     """
     def test_called_once(self):
         class ExampleClass(object):
@@ -37,7 +37,7 @@ class DownloadTest(TestCase):
     def tearDown(self):
         rmtree(self.tmpdir)
 
-    @patch('blockwart.utils.get')
+    @patch('bundlewrap.utils.get')
     def test_download(self, get):
         getresult = MagicMock()
         getresult.iter_content.return_value = ("content", "")
@@ -48,7 +48,7 @@ class DownloadTest(TestCase):
 
 class GetAttrFromFileTest(TestCase):
     """
-    Tests blockwart.utils.getattr_from_file and .get_all_attrs_from_file.
+    Tests bundlewrap.utils.getattr_from_file and .get_all_attrs_from_file.
     """
     def setUp(self):
         self.tmpdir = mkdtemp()
@@ -57,19 +57,19 @@ class GetAttrFromFileTest(TestCase):
     def tearDown(self):
         rmtree(self.tmpdir)
 
-    @patch('blockwart.utils.get_file_contents', return_value="c = 47")
+    @patch('bundlewrap.utils.get_file_contents', return_value="c = 47")
     def test_cache_enabled(self, *args):
         utils.getattr_from_file(self.fname, 'c')
         utils.getattr_from_file(self.fname, 'c')
         utils.get_file_contents.assert_called_once_with(self.fname)
 
-    @patch('blockwart.utils.get_file_contents', return_value="c = 47")
+    @patch('bundlewrap.utils.get_file_contents', return_value="c = 47")
     def test_cache_disabled(self, *args):
         utils.getattr_from_file(self.fname, 'c', cache=False)
         utils.getattr_from_file(self.fname, 'c')
         self.assertEqual(utils.get_file_contents.call_count, 2)
 
-    @patch('blockwart.utils.get_file_contents', return_value="c = 47")
+    @patch('bundlewrap.utils.get_file_contents', return_value="c = 47")
     def test_cache_ignore(self, *args):
         self.assertEqual(
             utils.getattr_from_file(self.fname, 'c'),
@@ -112,7 +112,7 @@ class GetAttrFromFileTest(TestCase):
 
 class NamesTest(TestCase):
     """
-    Tests blockwart.utils.names.
+    Tests bundlewrap.utils.names.
     """
     def test_names(self):
         class TestObj(object):

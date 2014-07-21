@@ -6,8 +6,8 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart import plugins
-from blockwart.exceptions import NoSuchPlugin, PluginLocalConflict
+from bundlewrap import plugins
+from bundlewrap.exceptions import NoSuchPlugin, PluginLocalConflict
 
 
 
@@ -99,7 +99,7 @@ class RemoveTest(TmpDirTest):
 
 
 class SearchTest(TmpDirTest):
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.get')
     def test_search_empty(self, get):
         getresult = MagicMock()
         getresult.json.return_value = {}
@@ -112,7 +112,7 @@ class SearchTest(TmpDirTest):
             [],
         )
 
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.get')
     def test_search_404(self, get):
         getresult = MagicMock()
         getresult.json.return_value = {
@@ -129,7 +129,7 @@ class SearchTest(TmpDirTest):
             [],
         )
 
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.get')
     def test_search_name(self, get):
         getresult = MagicMock()
         getresult.json.return_value = {
@@ -146,7 +146,7 @@ class SearchTest(TmpDirTest):
             [("barplugin", "Description")],
         )
 
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.get')
     def test_search_desc(self, get):
         getresult = MagicMock()
         getresult.json.return_value = {
@@ -165,8 +165,8 @@ class SearchTest(TmpDirTest):
 
 
 class InstallTest(TmpDirTest):
-    @patch('blockwart.plugins.download')
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.download')
+    @patch('bundlewrap.plugins.get')
     def test_install(self, get, download):
         getresult = MagicMock()
         getresult.json.return_value = {
@@ -205,7 +205,7 @@ class InstallTest(TmpDirTest):
         )
 
 class InstallNoForceConflictTest(TmpDirTest):
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.get')
     def test_no_force_conflict(self, get):
         getresult = MagicMock()
         getresult.json.return_value = {
@@ -225,8 +225,8 @@ class InstallNoForceConflictTest(TmpDirTest):
 
 
 class InstallForceConflictTest(TmpDirTest):
-    @patch('blockwart.plugins.download')
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.download')
+    @patch('bundlewrap.plugins.get')
     def test_force_conflict(self, get, download):
         getresult = MagicMock()
         getresult.json.return_value = {
@@ -269,8 +269,8 @@ class InstallForceConflictTest(TmpDirTest):
 
 
 class UpdateTest(TmpDirTest):
-    @patch('blockwart.plugins.download')
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.download')
+    @patch('bundlewrap.plugins.get')
     def test_update(self, get, download):
         with open(join(self.tmpdir, "plugins.json"), 'w') as f:
             f.write(dumps({
@@ -327,8 +327,8 @@ class UpdateTest(TmpDirTest):
 
 
 class UpdateConflictTest(TmpDirTest):
-    @patch('blockwart.plugins.download')
-    @patch('blockwart.plugins.get')
+    @patch('bundlewrap.plugins.download')
+    @patch('bundlewrap.plugins.get')
     def test_update_conflict(self, get, download):
         with open(join(self.tmpdir, "plugins.json"), 'w') as f:
             f.write(dumps({

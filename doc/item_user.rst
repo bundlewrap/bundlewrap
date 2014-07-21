@@ -53,7 +53,7 @@ Primary group of the user as numerical ID or group name.
 
 .. note::
 
-	Due to how ``useradd`` works, this attribute is required whenever you *don't* want the default behavior of ``useradd`` (usually that means automatically creating a group with the same name as the user). If you want to use an unmanaged group already on the node, you need this attribute. If you want to use a group managed by Blockwart, you need this attribute. This is true even if the groups mentioned are in fact named like the user.
+	Due to how ``useradd`` works, this attribute is required whenever you *don't* want the default behavior of ``useradd`` (usually that means automatically creating a group with the same name as the user). If you want to use an unmanaged group already on the node, you need this attribute. If you want to use a group managed by BundleWrap, you need this attribute. This is true even if the groups mentioned are in fact named like the user.
 
 |
 
@@ -93,7 +93,7 @@ The user's password in plaintext.
    Please do not write any passwords into your bundles. This attribute is intended to be used with an external source of passwords and filled dynamically. If you don't have or want such an elaborate setup, specify passwords using the ``password_hash`` attribute instead.
 
 .. note::
-   If you don't specify a ``salt`` along with the password, Blockwart will use a static salt. Be aware that this is basically the same as using no salt at all.
+   If you don't specify a ``salt`` along with the password, BundleWrap will use a static salt. Be aware that this is basically the same as using no salt at all.
 
 |
 
@@ -107,7 +107,7 @@ Hashed password as it would be returned by ``crypt()`` and written to :file:`/et
 ``salt``
 ++++++++
 
-Recommended for use with the ``password`` attribute. Blockwart will use 5000 rounds of SHA-512 on this salt and the provided password.
+Recommended for use with the ``password`` attribute. BundleWrap will use 5000 rounds of SHA-512 on this salt and the provided password.
 
 |
 

@@ -1,14 +1,14 @@
-Blockwart documentation
-=======================
+BundleWrap documentation
+========================
 
 Check out the :doc:`quickstart tutorial <quickstart>` to get started.
 
 |
 
-Is Blockwart the right tool for you?
+Is BundleWrap the right tool for you?
 ------------------------------------
 
-We think you will enjoy Blockwart a lot if you:
+We think you will enjoy BundleWrap a lot if you:
 
 * know some Python
 * like to write your configuration from scratch and control every bit of it

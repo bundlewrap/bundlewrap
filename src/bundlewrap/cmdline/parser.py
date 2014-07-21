@@ -18,7 +18,7 @@ from .zen import bw_zen
 
 def build_parser_bw():
     parser = ArgumentParser(prog="bw", description=_(
-        "Blockwart - config management for Python addicts"
+        "BundleWrap - config management for Python addicts"
     ))
     parser.add_argument(
         "-d",

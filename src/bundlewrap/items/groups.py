@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from blockwart.exceptions import BundleError
-from blockwart.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
-from blockwart.items.users import _USERNAME_VALID_CHARACTERS
-from blockwart.utils import LOG
-from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
+from bundlewrap.items.users import _USERNAME_VALID_CHARACTERS
+from bundlewrap.utils import LOG
+from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import bold
 
 
 def _parse_group_line(line):

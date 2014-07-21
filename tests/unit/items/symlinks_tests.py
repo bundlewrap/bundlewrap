@@ -2,16 +2,16 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
-from blockwart.exceptions import BundleError
-from blockwart.items import symlinks, ItemStatus
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import symlinks, ItemStatus
 
 
 class SymlinkFixTest(TestCase):
     """
-    Tests blockwart.items.symlinks.Symlink.fix.
+    Tests bundlewrap.items.symlinks.Symlink.fix.
     """
-    @patch('blockwart.items.symlinks.Symlink._fix_owner')
-    @patch('blockwart.items.symlinks.Symlink._fix_type')
+    @patch('bundlewrap.items.symlinks.Symlink._fix_owner')
+    @patch('bundlewrap.items.symlinks.Symlink._fix_type')
     def test_type(self, fix_type, fix_owner):
         f = symlinks.Symlink(MagicMock(), "/foo", {'target': "/bar"})
         pinfo = MagicMock()
@@ -23,8 +23,8 @@ class SymlinkFixTest(TestCase):
         f.fix(status)
         fix_type.assert_called_once_with(status)
 
-    @patch('blockwart.items.symlinks.Symlink._fix_owner')
-    @patch('blockwart.items.symlinks.Symlink._fix_type')
+    @patch('bundlewrap.items.symlinks.Symlink._fix_owner')
+    @patch('bundlewrap.items.symlinks.Symlink._fix_type')
     def test_owner(self, fix_type, fix_owner):
         f = symlinks.Symlink(MagicMock(), "/foo", {'target': "/bar"})
         status = ItemStatus(correct=False, info={
@@ -37,7 +37,7 @@ class SymlinkFixTest(TestCase):
 
 class SymlinkFixOwnerTest(TestCase):
     """
-    Tests blockwart.items.symlinks.Symlink._fix_owner.
+    Tests bundlewrap.items.symlinks.Symlink._fix_owner.
     """
     def test_chmod(self):
         node = MagicMock()
@@ -54,9 +54,9 @@ class SymlinkFixOwnerTest(TestCase):
 
 class SymlinkFixTypeTest(TestCase):
     """
-    Tests blockwart.items.symlinks.Symlink._fix_type.
+    Tests bundlewrap.items.symlinks.Symlink._fix_type.
     """
-    @patch('blockwart.items.symlinks.Symlink._fix_owner')
+    @patch('bundlewrap.items.symlinks.Symlink._fix_owner')
     def test_rm(self, fix_owner):
         node = MagicMock()
         bundle = MagicMock()
@@ -74,7 +74,7 @@ class SymlinkFixTypeTest(TestCase):
 
 class SymlinkGetAutoDepsTest(TestCase):
     """
-    Tests blockwart.items.symlinks.Symlink.get_auto_deps.
+    Tests bundlewrap.items.symlinks.Symlink.get_auto_deps.
     """
     def test_file_collision(self):
         item1 = MagicMock()
@@ -145,9 +145,9 @@ class SymlinkGetAutoDepsTest(TestCase):
 
 class SymlinkGetStatusTest(TestCase):
     """
-    Tests blockwart.items.symlinks.Symlink.get_status.
+    Tests bundlewrap.items.symlinks.Symlink.get_status.
     """
-    @patch('blockwart.items.symlinks.PathInfo')
+    @patch('bundlewrap.items.symlinks.PathInfo')
     def test_owner(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0777"
@@ -166,7 +166,7 @@ class SymlinkGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['owner'])
 
-    @patch('blockwart.items.symlinks.PathInfo')
+    @patch('bundlewrap.items.symlinks.PathInfo')
     def test_group(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0777"
@@ -185,7 +185,7 @@ class SymlinkGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['group'])
 
-    @patch('blockwart.items.symlinks.PathInfo')
+    @patch('bundlewrap.items.symlinks.PathInfo')
     def test_target(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0777"
@@ -204,7 +204,7 @@ class SymlinkGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['target'])
 
-    @patch('blockwart.items.symlinks.PathInfo')
+    @patch('bundlewrap.items.symlinks.PathInfo')
     def test_type(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0777"
@@ -225,7 +225,7 @@ class SymlinkGetStatusTest(TestCase):
             set(['type']),
         )
 
-    @patch('blockwart.items.symlinks.PathInfo')
+    @patch('bundlewrap.items.symlinks.PathInfo')
     def test_ok(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0777"
@@ -247,7 +247,7 @@ class SymlinkGetStatusTest(TestCase):
 
 class ValidateAttributesTest(TestCase):
     """
-    Tests blockwart.items.symlinks.Symlink.validate_attributes.
+    Tests bundlewrap.items.symlinks.Symlink.validate_attributes.
     """
     def test_validator_call(self):
         validator = MagicMock()
@@ -255,7 +255,7 @@ class ValidateAttributesTest(TestCase):
             'attr1': validator,
             'attr2': validator,
         }
-        with patch('blockwart.items.symlinks.ATTRIBUTE_VALIDATORS', new=attr_val):
+        with patch('bundlewrap.items.symlinks.ATTRIBUTE_VALIDATORS', new=attr_val):
             symlinks.Symlink.validate_attributes(
                 MagicMock(),
                 "symlink:/foo",

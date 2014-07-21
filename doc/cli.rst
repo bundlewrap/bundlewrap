@@ -4,7 +4,7 @@
 Command Line Interface
 ######################
 
-The :command:`bw` utility is Blockwart's command line interface.
+The :command:`bw` utility is BundleWrap's command line interface.
 
 .. note::
 
@@ -19,7 +19,7 @@ The :command:`bw` utility is Blockwart's command line interface.
 
 	$ bw apply -i mynode
 
-The most important and most used part of Blockwart, :command:`bw apply` will apply your configuration to a set of :term:`nodes <node>`. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the :option:`-i` switch to have Blockwart interactively ask before each change is made.
+The most important and most used part of BundleWrap, :command:`bw apply` will apply your configuration to a set of :term:`nodes <node>`. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the :option:`-i` switch to have BundleWrap interactively ask before each change is made.
 
 |
 
@@ -59,12 +59,12 @@ With these commands you can quickly get a list of all nodes and groups in your :
 .. code-block:: pycon
 
 	$ bw debug
-	blockwart X.Y.Z interactive repository inspector
+	bundlewrap X.Y.Z interactive repository inspector
 	> You can access the current repository as 'repo'.
 	>>> len(repo.nodes)
 	121
 
-This command will drop you into a Python shell with direct access to Blockwart's :doc:`API <api>`. Once you're familiar with it, it can be a very powerful tool.
+This command will drop you into a Python shell with direct access to BundleWrap's :doc:`API <api>`. Once you're familiar with it, it can be a very powerful tool.
 
 |
 
@@ -77,9 +77,9 @@ This command will drop you into a Python shell with direct access to Blockwart's
 
 	$ bw plot node mynode | dot -Tsvg -omynode.svg
 
-You won't be using this every day, but it's pretty cool. The above command will create an SVG file (you can open these in your browser) that shows the item dependency graph for the given node. You will see bundles as dashed rectangles, static dependencies (defined in Blockwart itself) in green, auto-generated dependencies (calculated dynamically each time you run :command:`bw apply`) in blue and dependencies you defined yourself in red.
+You won't be using this every day, but it's pretty cool. The above command will create an SVG file (you can open these in your browser) that shows the item dependency graph for the given node. You will see bundles as dashed rectangles, static dependencies (defined in BundleWrap itself) in green, auto-generated dependencies (calculated dynamically each time you run :command:`bw apply`) in blue and dependencies you defined yourself in red.
 
-It offers an interesting view into the internal complexities Blockwart has to deal with when figuring out the order in which your items can be applied to your node.
+It offers an interesting view into the internal complexities BundleWrap has to deal with when figuring out the order in which your items can be applied to your node.
 
 |
 
@@ -97,10 +97,10 @@ It offers an interesting view into the internal complexities Blockwart has to de
 	+----- traceback from worker ------
 	|
 	|  Traceback (most recent call last):
-	|    File "/Users/trehn/Projects/software/blockwart/src/blockwart/concurrency.py", line 78, in _worker_process
+	|    File "/Users/trehn/Projects/software/bundlewrap/src/bundlewrap/concurrency.py", line 78, in _worker_process
 	|      return_value = target(*msg['args'], **msg['kwargs'])
 	|    File "<string>", line 378, in test
-	|  BundleError: file:/etc/samba/smb.conf from bundle 'samba' refers to missing file '/path/to/blockwart/repo/bundles/samba/files/smb.conf'
+	|  BundleError: file:/etc/samba/smb.conf from bundle 'samba' refers to missing file '/path/to/bundlewrap/repo/bundles/samba/files/smb.conf'
 	|
 	+----------------------------------
 
