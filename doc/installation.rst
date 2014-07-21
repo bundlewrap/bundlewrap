@@ -17,9 +17,9 @@ Using `pip`
 
 It's as simple as::
 
-    pip install blockwart
+    pip install bundlewrap
 
-Note that you need Python 2.7 to run Blockwart.
+Note that you need Python 2.7 to run BundleWrap.
 
 |
 
@@ -27,7 +27,7 @@ From git
 --------
 
 .. warning::
-    This type of install will give you the very latest (and thus possibly broken) bleeding edge version of Blockwart.
+    This type of install will give you the very latest (and thus possibly broken) bleeding edge version of BundleWrap.
     You should only use this if you know what you're doing.
 
 .. note::
@@ -43,11 +43,11 @@ Install basic requirements::
 Clone the GitHub repository::
 
     cd /opt
-    git clone https://github.com/blockwart/blockwart.git
+    git clone https://github.com/bundlewrap/bundlewrap.git
 
 Use ``setup.py`` to install in "development mode"::
 
-    cd /opt/blockwart
+    cd /opt/bundlewrap
     python setup.py develop
 
 You can now try running the ``bw`` command line utility::
@@ -58,6 +58,6 @@ That's it.
 
 To update your install, just pull the git repository and have :file:`setup.py` check for new dependencies::
 
-    cd /opt/blockwart
+    cd /opt/bundlewrap
     git pull
     python setup.py develop

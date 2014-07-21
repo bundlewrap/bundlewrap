@@ -5,9 +5,9 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from blockwart import repo
-from blockwart.items import Item
-from blockwart.repo import Repository
+from bundlewrap import repo
+from bundlewrap.items import Item
+from bundlewrap.repo import Repository
 
 
 class RepoTest(TestCase):
@@ -20,7 +20,7 @@ class RepoTest(TestCase):
 
 class HooksProxyTest(RepoTest):
     """
-    Tests blockwart.repo.HooksProxy.
+    Tests bundlewrap.repo.HooksProxy.
     """
     def test_hook(self):
         with open(join(self.tmpdir, "hook1.py"), 'w') as f:
@@ -69,7 +69,7 @@ def apply_start(arg, kwarg=0):
 
 class LibsProxyTest(RepoTest):
     """
-    Tests blockwart.repo.LibsProxy.
+    Tests bundlewrap.repo.LibsProxy.
     """
     def test_module(self):
         with open(join(self.tmpdir, "proxytest.py"), 'w') as f:
@@ -80,7 +80,7 @@ class LibsProxyTest(RepoTest):
 
 class RepoBundlesTest(RepoTest):
     """
-    Tests blockwart.repo.Repository.bundle_names.
+    Tests bundlewrap.repo.Repository.bundle_names.
     """
     def test_repo_create(self, *args):
         bundles = ("bundle1", "bundle2")
@@ -97,18 +97,18 @@ class RepoBundlesTest(RepoTest):
 
 class RepoItemClasses2Test(RepoTest):
     """
-    Tests blockwart.repo.Repository.item_classes.
+    Tests bundlewrap.repo.Repository.item_classes.
     """
     def test_with_custom(self):
         r = Repository.create(self.tmpdir)
         with open(join(r.items_dir, "good1.py"), 'w') as f:
-            f.write("from blockwart.items import Item\n"
+            f.write("from bundlewrap.items import Item\n"
                     "class GoodTestItem(Item): bad = False\n")
         with open(join(r.items_dir, "_bad1.py"), 'w') as f:
-            f.write("from blockwart.items import Item\n"
+            f.write("from bundlewrap.items import Item\n"
                     "class BadTestItem(Item): bad = True\n")
         with open(join(r.items_dir, "bad2.py"), 'w') as f:
-            f.write("from blockwart.items import Item\n"
+            f.write("from bundlewrap.items import Item\n"
                     "class _BadTestItem(Item): bad = True\n")
         r.populate_from_path(self.tmpdir)
         self.assertGreater(len(r.item_classes), 0)

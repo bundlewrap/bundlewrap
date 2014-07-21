@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from blockwart.utils import text
+from bundlewrap.utils import text
 
 
 class IsSubdirectoryTest(TestCase):
     """
-    Tests blockwart.utils.text.is_subdirectory.
+    Tests bundlewrap.utils.text.is_subdirectory.
     """
     def test_simple_subdir(self):
         self.assertTrue(text.is_subdirectory("/foo/bar", "/foo/bar/baz"))
@@ -32,7 +32,7 @@ class IsSubdirectoryTest(TestCase):
 
 class NameValidationTest(TestCase):
     """
-    Tests blockwart.utils.text.validate_name.
+    Tests bundlewrap.utils.text.validate_name.
     """
     def test_good_names(self):
         for name in (

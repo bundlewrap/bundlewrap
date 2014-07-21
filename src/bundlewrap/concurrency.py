@@ -45,7 +45,7 @@ def _worker_process(wid, messages, pipe, stdin=None):
 
     # replace the child logger with one that will send logs back to the
     # parent process
-    from blockwart import utils
+    from bundlewrap import utils
     child_log_handler = ChildLogHandler(messages)
     _patch_logger(getLogger(), child_log_handler)
     _patch_logger(utils.LOG)

@@ -22,12 +22,12 @@ def build_docs():
 
 def release():
     sys.path.append(PROJECT_PATH + "/src")
-    from blockwart import VERSION_STRING
-    from blockwart.utils import get_file_contents
+    from bundlewrap import VERSION_STRING
+    from bundlewrap.utils import get_file_contents
 
     setup_py_content = get_file_contents(join(PROJECT_PATH, "setup.py"))
     if "version=\"{}\"".format(VERSION_STRING) not in setup_py_content:
-        print(red("Error: blockwart.VERSION_STRING does not match setup.py"))
+        print(red("Error: bundlewrap.VERSION_STRING does not match setup.py"))
         sys.exit(1)
 
     changelog_content = get_file_contents(join(PROJECT_PATH, "CHANGELOG.rst"))
@@ -38,7 +38,7 @@ def release():
         sys.exit(1)
 
     if confirm(
-        "Do you want to release Blockwart {}?".format(VERSION_STRING),
+        "Do you want to release BundleWrap {}?".format(VERSION_STRING),
         default=False,
     ):
         with lcd(PROJECT_PATH):
@@ -63,7 +63,7 @@ def run_pylint(ignore_warnings=True):
     if ignore_warnings is True:
         pylint_options += "-E "
     with lcd(PROJECT_PATH + "/src"):
-        pylint = local("pylint " + pylint_options + " blockwart")
+        pylint = local("pylint " + pylint_options + " bundlewrap")
     if pylint.succeeded:
         print(green("pylint found no problems"))
     else:
@@ -78,7 +78,7 @@ def run_tests(coverage=True):
         if coverage:
             local(
                 "nosetests "
-                "--with-cov --cov blockwart --cov-config .coveragerc 2>&1"
+                "--with-cov --cov bundlewrap --cov-config .coveragerc 2>&1"
             )
             local("coverage combine")
             local("mv .coverage ..")

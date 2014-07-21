@@ -5,14 +5,14 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.node import Node
-from blockwart.operations import RunResult
-from blockwart.utils import remote
+from bundlewrap.node import Node
+from bundlewrap.operations import RunResult
+from bundlewrap.utils import remote
 
 
 class GetPathTypeTest(TestCase):
     """
-    Tests blockwart.utils.remote.get_path_type.
+    Tests bundlewrap.utils.remote.get_path_type.
     """
     def test_directory(self):
         node = Node("localhost")
@@ -59,10 +59,10 @@ class GetPathTypeTest(TestCase):
 
 class PathInfoTest(TestCase):
     """
-    Tests blockwart.utils.remote.PathInfo.
+    Tests bundlewrap.utils.remote.PathInfo.
     """
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'nonexistent', ""))
     def test_nonexistent(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -75,8 +75,8 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'file', "data"))
     def test_binary(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -89,8 +89,8 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'directory', "directory"))
     def test_directory(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -103,8 +103,8 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'file', "ASCII English text"))
     def test_text(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -117,8 +117,8 @@ class PathInfoTest(TestCase):
         with self.assertRaises(ValueError):
             p.symlink_target
 
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'symlink', "symbolic link to `/47'"))
     def test_symlink_normal(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -130,8 +130,8 @@ class PathInfoTest(TestCase):
         self.assertFalse(p.is_text_file)
         self.assertEqual(p.symlink_target, "/47")
 
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'symlink', "broken symbolic link to `/47'"))
     def test_symlink_broken(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -143,8 +143,8 @@ class PathInfoTest(TestCase):
         self.assertFalse(p.is_text_file)
         self.assertEqual(p.symlink_target, "/47")
 
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'symlink', "symbolic link to /47"))
     def test_symlink_noquotes(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -156,8 +156,8 @@ class PathInfoTest(TestCase):
         self.assertFalse(p.is_text_file)
         self.assertEqual(p.symlink_target, "/47")
 
-    @patch('blockwart.utils.remote.stat')
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.stat')
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'symlink', "broken symbolic link to /47"))
     def test_symlink_noquotes_broken(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -183,13 +183,13 @@ class PathInfoTest(TestCase):
             "827bfc458708f0b442009c9c9836f7e4b65557fb",
         )
 
-    @patch('blockwart.utils.remote.stat', return_value={
+    @patch('bundlewrap.utils.remote.stat', return_value={
         'owner': "foo",
         'group': "bar",
         'mode': "4747",
         'size': 4848,
     })
-    @patch('blockwart.utils.remote.get_path_type', return_value=(
+    @patch('bundlewrap.utils.remote.get_path_type', return_value=(
         'file', "data"))
     def test_stat(self, stat, get_path_type):
         p = remote.PathInfo(MagicMock(), "/")
@@ -201,7 +201,7 @@ class PathInfoTest(TestCase):
 
 class StatTest(TestCase):
     """
-    Tests blockwart.utils.remote.stat.
+    Tests bundlewrap.utils.remote.stat.
     """
     def test_long_mode(self):
         node = MagicMock()

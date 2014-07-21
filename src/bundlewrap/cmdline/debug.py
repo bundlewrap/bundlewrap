@@ -8,7 +8,7 @@ from ..repo import Repository
 from ..utils.text import mark_for_translation as _
 
 
-DEBUG_BANNER = _("Blockwart {version} interactive repository inspector\n"
+DEBUG_BANNER = _("BundleWrap {version} interactive repository inspector\n"
                  "> You can access the current repository as 'repo'."
                  "").format(version=VERSION_STRING)
 

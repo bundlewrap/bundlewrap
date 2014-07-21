@@ -2,7 +2,7 @@
 Writing your own plugins
 ========================
 
-:doc:`Plugins <plugins>` can provide almost any file in a Blockwart repository: bundles, custom items, hooks, libs, etc.
+:doc:`Plugins <plugins>` can provide almost any file in a BundleWrap repository: bundles, custom items, hooks, libs, etc.
 
 Notable exceptions are :file:`nodes.py` and :file:`groups.py`. If your plugin wants to extend those, use a :doc:`lib <libs>` instead and ask users to add the result of a function call in your lib to their nodes or groups dicts.
 
@@ -17,7 +17,7 @@ Starting a new plugin
 
 **Step 1: Clone the plugins repo**
 
-Create a clone of the `official plugins repo <https://github.com/blockwart/plugins>`_ on GitHub.
+Create a clone of the `official plugins repo <https://github.com/bundlewrap/plugins>`_ on GitHub.
 
 **Step 2: Create a branch**
 

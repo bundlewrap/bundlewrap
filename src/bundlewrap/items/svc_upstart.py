@@ -2,45 +2,42 @@
 from __future__ import unicode_literals
 from pipes import quote
 
-from blockwart.exceptions import BundleError
-from blockwart.items import Item, ItemStatus
-from blockwart.utils import LOG
-from blockwart.utils.text import bold, green, red
-from blockwart.utils.text import mark_for_translation as _
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import Item, ItemStatus
+from bundlewrap.utils import LOG
+from bundlewrap.utils.text import bold, green, red
+from bundlewrap.utils.text import mark_for_translation as _
 
 
 def svc_start(node, svcname):
-    return node.run("/etc/init.d/{} start".format(quote(svcname)))
+    return node.run("initctl start --no-wait -- {}".format(quote(svcname)))
 
 
 def svc_running(node, svcname):
-    result = node.run(
-        "/etc/init.d/{} status".format(quote(svcname)),
-        may_fail=True,
-    )
-    if result.return_code != 0:
+    result = node.run("initctl status -- {}".format(quote(svcname)))
+    if " start/" not in result.stdout:
         return False
     else:
         return True
 
 
 def svc_stop(node, svcname):
-    return node.run("/etc/init.d/{} stop".format(quote(svcname)))
+    return node.run("initctl stop --no-wait -- {}".format(quote(svcname)))
 
 
-class SvcSystemV(Item):
+class SvcUpstart(Item):
     """
-    A service managed by traditional System V init scripts.
+    A service managed by Upstart.
     """
-    BUNDLE_ATTRIBUTE_NAME = "svc_systemv"
+    BUNDLE_ATTRIBUTE_NAME = "svc_upstart"
     ITEM_ATTRIBUTES = {
         'running': True,
     }
-    ITEM_TYPE_NAME = "svc_systemv"
+    ITEM_TYPE_NAME = "svc_upstart"
     NEEDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
 
     def __repr__(self):
-        return "<SvcSystemV name:{} running:{}>".format(
+        return "<SvcUpstart name:{} running:{}>".format(
             self.name,
             self.attributes['running'],
         )
@@ -75,11 +72,11 @@ class SvcSystemV(Item):
     def get_canned_actions(self):
         return {
             'reload': {
-                'command': "/etc/init.d/{} reload".format(self.name),
+                'command': "reload {}".format(self.name),
                 'needs': [self.id],
             },
             'restart': {
-                'command': "/etc/init.d/{} restart".format(self.name),
+                'command': "restart {}".format(self.name),
                 'needs': [self.id],
             },
         }

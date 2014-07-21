@@ -8,14 +8,14 @@ from unittest import TestCase
 from mako.exceptions import CompileException
 from mock import call, MagicMock, patch
 
-from blockwart.exceptions import BundleError
-from blockwart.items import files, ItemStatus
-from blockwart.utils.text import green, red
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import files, ItemStatus
+from bundlewrap.utils.text import green, red
 
 
 class ContentProcessorJinja2Test(TestCase):
     """
-    Tests blockwart.items.files.content_processor_jinja2.
+    Tests bundlewrap.items.files.content_processor_jinja2.
     """
     def test_template(self):
         item = MagicMock()
@@ -35,7 +35,7 @@ class ContentProcessorJinja2Test(TestCase):
 
 class ContentProcessorMakoTest(TestCase):
     """
-    Tests blockwart.items.files.content_processor_mako.
+    Tests bundlewrap.items.files.content_processor_mako.
     """
     def test_template(self):
         item = MagicMock()
@@ -55,7 +55,7 @@ class ContentProcessorMakoTest(TestCase):
 
 class ContentProcessorTextTest(TestCase):
     """
-    Tests blockwart.items.files.content_processor_text.
+    Tests bundlewrap.items.files.content_processor_text.
     """
     def test_template(self):
         bundle = MagicMock()
@@ -92,7 +92,7 @@ class ContentProcessorTextTest(TestCase):
 
 class DiffTest(TestCase):
     """
-    Tests blockwart.items.files.diff.
+    Tests bundlewrap.items.files.diff.
     """
     def test_diff(self):
         content_old = (
@@ -107,7 +107,7 @@ class DiffTest(TestCase):
             files.diff(content_old, content_new, "/foo"),
             (
                 red("--- /foo") + "\n" +
-                green("+++ <blockwart content>") + "\n" +
+                green("+++ <bundlewrap content>") + "\n" +
                 "@@ -1,2 +1,2 @@\n"
                 " line1\n" +
                 red("-line2") + "\n" +
@@ -126,7 +126,7 @@ class DiffTest(TestCase):
             files.diff(content_old, content_new, "/foo", encoding_hint="latin-1"),
             (
                 red("--- /foo") + "\n" +
-                green("+++ <blockwart content>") + "\n" +
+                green("+++ <bundlewrap content>") + "\n" +
                 "@@ -1 +1 @@\n" +
                 red("-lineö1") + "\n" +
                 green("+lineö1") + " (line encoded in latin-1)\n"
@@ -144,7 +144,7 @@ class DiffTest(TestCase):
             files.diff(content_old, content_new, "/foo", encoding_hint="ascii"),
             (
                 red("--- /foo") + "\n" +
-                green("+++ <blockwart content>") + "\n" +
+                green("+++ <bundlewrap content>") + "\n" +
                 "@@ -1 +1 @@\n" +
                 red("-lineö1") + "\n" +
                 green("+") + " (line not encoded in UTF-8 or ascii)\n"
@@ -162,7 +162,7 @@ class DiffTest(TestCase):
             files.diff(content_old, content_new, "/foo"),
             (
                 red("--- /foo") + "\n" +
-                green("+++ <blockwart content>") + "\n" +
+                green("+++ <bundlewrap content>") + "\n" +
                 "@@ -1 +1 @@\n" +
                 red("-line1") + "\n" +
                 green("+line111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111") +
@@ -173,9 +173,9 @@ class DiffTest(TestCase):
 
 class FileContentHashTest(TestCase):
     """
-    Tests blockwart.items.files.File.content_hash.
+    Tests bundlewrap.items.files.File.content_hash.
     """
-    @patch('blockwart.items.files.hash_local_file', return_value="47")
+    @patch('bundlewrap.items.files.hash_local_file', return_value="47")
     def test_binary(self, hash_local_file):
         bundle = MagicMock()
         bundle.bundle_dir = "/b/dir"
@@ -190,12 +190,12 @@ class FileContentHashTest(TestCase):
 
 class FileFixTest(TestCase):
     """
-    Tests blockwart.items.files.File.fix.
+    Tests bundlewrap.items.files.File.fix.
     """
-    @patch('blockwart.items.files.File._fix_content')
-    @patch('blockwart.items.files.File._fix_mode')
-    @patch('blockwart.items.files.File._fix_owner')
-    @patch('blockwart.items.files.File._fix_type')
+    @patch('bundlewrap.items.files.File._fix_content')
+    @patch('bundlewrap.items.files.File._fix_mode')
+    @patch('bundlewrap.items.files.File._fix_owner')
+    @patch('bundlewrap.items.files.File._fix_type')
     def test_type(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
@@ -208,10 +208,10 @@ class FileFixTest(TestCase):
         fix_type.assert_called_once_with(status)
         fix_content.assert_called_once_with(status)
 
-    @patch('blockwart.items.files.File._fix_content')
-    @patch('blockwart.items.files.File._fix_mode')
-    @patch('blockwart.items.files.File._fix_owner')
-    @patch('blockwart.items.files.File._fix_type')
+    @patch('bundlewrap.items.files.File._fix_content')
+    @patch('bundlewrap.items.files.File._fix_mode')
+    @patch('bundlewrap.items.files.File._fix_owner')
+    @patch('bundlewrap.items.files.File._fix_type')
     def test_content(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
@@ -226,10 +226,10 @@ class FileFixTest(TestCase):
         self.assertFalse(fix_mode.called)
         self.assertFalse(fix_owner.called)
 
-    @patch('blockwart.items.files.File._fix_content')
-    @patch('blockwart.items.files.File._fix_mode')
-    @patch('blockwart.items.files.File._fix_owner')
-    @patch('blockwart.items.files.File._fix_type')
+    @patch('bundlewrap.items.files.File._fix_content')
+    @patch('bundlewrap.items.files.File._fix_mode')
+    @patch('bundlewrap.items.files.File._fix_owner')
+    @patch('bundlewrap.items.files.File._fix_type')
     def test_mode(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
@@ -244,10 +244,10 @@ class FileFixTest(TestCase):
         self.assertFalse(fix_content.called)
         self.assertFalse(fix_owner.called)
 
-    @patch('blockwart.items.files.File._fix_content')
-    @patch('blockwart.items.files.File._fix_mode')
-    @patch('blockwart.items.files.File._fix_owner')
-    @patch('blockwart.items.files.File._fix_type')
+    @patch('bundlewrap.items.files.File._fix_content')
+    @patch('bundlewrap.items.files.File._fix_mode')
+    @patch('bundlewrap.items.files.File._fix_owner')
+    @patch('bundlewrap.items.files.File._fix_type')
     def test_owner(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
@@ -262,10 +262,10 @@ class FileFixTest(TestCase):
         self.assertFalse(fix_content.called)
         self.assertFalse(fix_mode.called)
 
-    @patch('blockwart.items.files.File._fix_content')
-    @patch('blockwart.items.files.File._fix_mode')
-    @patch('blockwart.items.files.File._fix_owner')
-    @patch('blockwart.items.files.File._fix_type')
+    @patch('bundlewrap.items.files.File._fix_content')
+    @patch('bundlewrap.items.files.File._fix_mode')
+    @patch('bundlewrap.items.files.File._fix_owner')
+    @patch('bundlewrap.items.files.File._fix_type')
     def test_combined(self, fix_type, fix_owner, fix_mode, fix_content):
         f = files.File(MagicMock(), "/foo", {})
         pinfo = MagicMock()
@@ -283,7 +283,7 @@ class FileFixTest(TestCase):
 
 class FileFixContentTest(TestCase):
     """
-    Tests blockwart.items.files.File._fix_content.
+    Tests bundlewrap.items.files.File._fix_content.
     """
     def test_binary(self):
         node = MagicMock()
@@ -320,7 +320,7 @@ class FileFixContentTest(TestCase):
 
 class FileFixModeTest(TestCase):
     """
-    Tests blockwart.items.files.File._fix_mode.
+    Tests bundlewrap.items.files.File._fix_mode.
     """
     def test_chmod(self):
         node = MagicMock()
@@ -337,7 +337,7 @@ class FileFixModeTest(TestCase):
 
 class FileFixOwnerTest(TestCase):
     """
-    Tests blockwart.items.files.File._fix_owner.
+    Tests bundlewrap.items.files.File._fix_owner.
     """
     def test_chmod(self):
         node = MagicMock()
@@ -354,9 +354,9 @@ class FileFixOwnerTest(TestCase):
 
 class FileFixTypeTest(TestCase):
     """
-    Tests blockwart.items.files.File._fix_type.
+    Tests bundlewrap.items.files.File._fix_type.
     """
-    @patch('blockwart.items.files.File._fix_content')
+    @patch('bundlewrap.items.files.File._fix_content')
     def test_rm(self, fix_content):
         node = MagicMock()
         bundle = MagicMock()
@@ -374,7 +374,7 @@ class FileFixTypeTest(TestCase):
 
 class FileGetAutoDepsTest(TestCase):
     """
-    Tests blockwart.items.files.File.get_auto_deps.
+    Tests bundlewrap.items.files.File.get_auto_deps.
     """
     def test_subdir(self):
         item1 = MagicMock()
@@ -419,10 +419,10 @@ class FileGetAutoDepsTest(TestCase):
 
 class FileGetStatusTest(TestCase):
     """
-    Tests blockwart.items.files.File.get_status.
+    Tests bundlewrap.items.files.File.get_status.
     """
-    @patch('blockwart.items.files.File.content_hash', new="47")
-    @patch('blockwart.items.files.PathInfo')
+    @patch('bundlewrap.items.files.File.content_hash', new="47")
+    @patch('bundlewrap.items.files.PathInfo')
     def test_mode(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0777"
@@ -441,8 +441,8 @@ class FileGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['mode'])
 
-    @patch('blockwart.items.files.File.content_hash', new="47")
-    @patch('blockwart.items.files.PathInfo')
+    @patch('bundlewrap.items.files.File.content_hash', new="47")
+    @patch('bundlewrap.items.files.PathInfo')
     def test_owner(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -461,8 +461,8 @@ class FileGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['owner'])
 
-    @patch('blockwart.items.files.File.content_hash', new="47")
-    @patch('blockwart.items.files.PathInfo')
+    @patch('bundlewrap.items.files.File.content_hash', new="47")
+    @patch('bundlewrap.items.files.PathInfo')
     def test_group(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -481,8 +481,8 @@ class FileGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['group'])
 
-    @patch('blockwart.items.files.File.content_hash', new="47")
-    @patch('blockwart.items.files.PathInfo')
+    @patch('bundlewrap.items.files.File.content_hash', new="47")
+    @patch('bundlewrap.items.files.PathInfo')
     def test_content(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -504,8 +504,8 @@ class FileGetStatusTest(TestCase):
             set(['content']),
         )
 
-    @patch('blockwart.items.files.File.content_hash', new="47")
-    @patch('blockwart.items.files.PathInfo')
+    @patch('bundlewrap.items.files.File.content_hash', new="47")
+    @patch('bundlewrap.items.files.PathInfo')
     def test_type(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -527,8 +527,8 @@ class FileGetStatusTest(TestCase):
             set(['type']),
         )
 
-    @patch('blockwart.items.files.File.content_hash', new="47")
-    @patch('blockwart.items.files.PathInfo')
+    @patch('bundlewrap.items.files.File.content_hash', new="47")
+    @patch('bundlewrap.items.files.PathInfo')
     def test_ok(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -550,7 +550,7 @@ class FileGetStatusTest(TestCase):
 
 class FileTestTest(TestCase):
     """
-    Tests blockwart.items.files.File.test.
+    Tests bundlewrap.items.files.File.test.
     """
     def setUp(self):
         makedirs("/tmp/bw_file_test/files")
@@ -585,7 +585,7 @@ class FileTestTest(TestCase):
 
 class HashLocalTest(TestCase):
     """
-    Tests blockwart.items.files.hash_local_file.
+    Tests bundlewrap.items.files.hash_local_file.
     """
     def test_known_hash(self):
         _, filename = mkstemp()
@@ -599,7 +599,7 @@ class HashLocalTest(TestCase):
 
 class ValidateAttributesTest(TestCase):
     """
-    Tests blockwart.items.files.File.validate_attributes.
+    Tests bundlewrap.items.files.File.validate_attributes.
     """
     def test_validator_call(self):
         validator = MagicMock()
@@ -607,7 +607,7 @@ class ValidateAttributesTest(TestCase):
             'attr1': validator,
             'attr2': validator,
         }
-        with patch('blockwart.items.files.ATTRIBUTE_VALIDATORS', new=attr_val):
+        with patch('bundlewrap.items.files.ATTRIBUTE_VALIDATORS', new=attr_val):
             files.File.validate_attributes(
                 MagicMock(),
                 "item:id",

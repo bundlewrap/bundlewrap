@@ -72,11 +72,11 @@ A tuple or list of node names that belong to this group.
 ``metadata``
 ------------
 
-A dictionary of arbitrary data that will be accessible from each node's ``node.metadata``. For each node, Blockwart will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.
+A dictionary of arbitrary data that will be accessible from each node's ``node.metadata``. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.
 
 .. warning::
 
-	Be careful when defining conflicting metadata (i.e. dictionaries that have some common keys) in multiple groups. Blockwart will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order.
+	Be careful when defining conflicting metadata (i.e. dictionaries that have some common keys) in multiple groups. BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order.
 
 |
 
@@ -89,7 +89,7 @@ SSH and sudo password to use for nodes in this group. Overrides password set on 
    Please do not write any passwords into your :file:`groups.py`. This attribute is intended to be used with an external source of passwords and filled dynamically.
 
 .. warning::
-	Be careful when defining passwords in groups that share one or more nodes. Blockwart will consider group hierarchy when determining the password to use. For example, it is possible to define a default password for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Passwords in independent groups will be chosen in an undefined way.
+	Be careful when defining passwords in groups that share one or more nodes. BundleWrap will consider group hierarchy when determining the password to use. For example, it is possible to define a default password for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Passwords in independent groups will be chosen in an undefined way.
 
 |
 

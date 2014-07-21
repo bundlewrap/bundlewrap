@@ -140,7 +140,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
         host=hostname, path=local_path, target=remote_path))
     env.host_string = hostname
     env.password = password
-    temp_filename = ".blockwart_tmp_" + randstr()
+    temp_filename = ".bundlewrap_tmp_" + randstr()
 
     fabric_result = _fabric_put(
         local_path=local_path,

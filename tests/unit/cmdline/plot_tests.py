@@ -2,13 +2,13 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline import plot
-from blockwart.items import Item
+from bundlewrap.cmdline import plot
+from bundlewrap.items import Item
 
 
 class PlotTest(TestCase):
     """
-    Tests blockwart.cmdline.repo.bw_repo_plot.
+    Tests bundlewrap.cmdline.repo.bw_repo_plot.
     """
     def test_output(self):
         class FakeItem1(Item):
@@ -63,7 +63,7 @@ class PlotTest(TestCase):
 
         self.assertEqual(
             "\n".join(list(plot.bw_plot_node(rep, args))),
-            "digraph blockwart\n"
+            "digraph bundlewrap\n"
             "{\n"
             "rankdir = LR\n"
             "graph [color=\"#303030\"; "

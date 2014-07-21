@@ -61,7 +61,7 @@ How the file pointed to by ``source`` or the string given to ``content`` should 
 
 .. note::
 
-	In order to use Jinja2, you'll also need to install it manually, since Blockwart doesn't explicitly depend on it::
+	In order to use Jinja2, you'll also need to install it manually, since BundleWrap doesn't explicitly depend on it::
 
 		pip install Jinja2
 
@@ -84,7 +84,7 @@ When set to ``True``, the path of this file will be removed. It doesn't matter i
 ``encoding``
 ++++++++++++
 
-Encoding of the target file. Note that this applies to the remote file only, your template is still conveniently written in UTF-8 and will be converted by Blockwart. Defaults to "utf-8". Other possible values (e.g. "latin-1") can be found `here <http://docs.python.org/2/library/codecs.html#standard-encodings>`_.
+Encoding of the target file. Note that this applies to the remote file only, your template is still conveniently written in UTF-8 and will be converted by BundleWrap. Defaults to "utf-8". Other possible values (e.g. "latin-1") can be found `here <http://docs.python.org/2/library/codecs.html#standard-encodings>`_.
 
 |
 
@@ -114,7 +114,7 @@ Username of the file's owner. Defaults to ``None`` (don't care about owner).
 ``source``
 ++++++++++
 
-File name of the file template relative to the :file:`files` subdirectory of the current bundle. If this says ``my_template``, Blockwart will look in :file:`bundles/my_bundle/files/my_template`.
+File name of the file template relative to the :file:`files` subdirectory of the current bundle. If this says ``my_template``, BundleWrap will look in :file:`bundles/my_bundle/files/my_template`.
 
 .. seealso::
 

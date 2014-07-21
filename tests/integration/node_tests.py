@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from blockwart.node import Node
+from bundlewrap.node import Node
 
 
 class NodeTest(TestCase):

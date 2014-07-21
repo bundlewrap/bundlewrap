@@ -19,7 +19,7 @@ Bundles
 	item_symlink
 	item_user
 
-Bundles are subdirectories of the :file:`bundles/` directory of your Blockwart repository. Within each bundle, there must be a file called :file:`bundle.py`. They define any number of magic attributes that are automatically processed by Blockwart. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
+Bundles are subdirectories of the :file:`bundles/` directory of your BundleWrap repository. Within each bundle, there must be a file called :file:`bundle.py`. They define any number of magic attributes that are automatically processed by BundleWrap. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
 
 A typical bundle might look like this:
 
@@ -56,7 +56,7 @@ This bundle defines the attributes ``files`` and ``users``. Within the ``users``
 Item types
 ----------
 
-This table lists all item types included in Blockwart along with the bundle attributes they understand.
+This table lists all item types included in BundleWrap along with the bundle attributes they understand.
 
 .. raw:: html
 
@@ -140,7 +140,7 @@ This attribute is an alternative way of defining dependencies. It works just lik
 ``triggers`` and ``triggered``
 ##############################
 
-In some scenarios, you may want to execute an :ref:`action <item_action>` only when an item is fixed (e.g. restart a daemon after a config file has changed or run ``postmap`` after updating an alias file). To do this, Blockwart has the builtin atttribute ``triggers``. You can use it to point to any item that has its ``triggered`` attribute set to ``True``. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).
+In some scenarios, you may want to execute an :ref:`action <item_action>` only when an item is fixed (e.g. restart a daemon after a config file has changed or run ``postmap`` after updating an alias file). To do this, BundleWrap has the builtin atttribute ``triggers``. You can use it to point to any item that has its ``triggered`` attribute set to ``True``. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).
 
 .. code-block:: python
 
@@ -160,7 +160,7 @@ In some scenarios, you may want to execute an :ref:`action <item_action>` only w
 	    },
 	}
 
-The above example will run :command:`service daemon restart` every time Blockwart successfully applies a change to :file:`/etc/daemon.conf`. If an action is triggered multiple times, it will only be run once.
+The above example will run :command:`service daemon restart` every time BundleWrap successfully applies a change to :file:`/etc/daemon.conf`. If an action is triggered multiple times, it will only be run once.
 
 |
 
@@ -169,7 +169,7 @@ The above example will run :command:`service daemon restart` every time Blockwar
 ``unless``
 ##########
 
-Another builtin item attribute is ``unless``. For example, it can be used to construct a one-off file item where Blockwart will only create the file once, but won't check or modify its contents once it exists.
+Another builtin item attribute is ``unless``. For example, it can be used to construct a one-off file item where BundleWrap will only create the file once, but won't check or modify its contents once it exists.
 
 .. code-block:: python
 

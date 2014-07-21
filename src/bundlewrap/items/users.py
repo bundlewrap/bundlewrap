@@ -6,11 +6,11 @@ from string import ascii_lowercase, digits
 
 from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
-from blockwart.exceptions import BundleError
-from blockwart.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
-from blockwart.utils import LOG
-from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
+from bundlewrap.utils import LOG
+from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import bold
 
 
 _ATTRIBUTE_NAMES = {

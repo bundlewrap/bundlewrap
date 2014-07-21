@@ -2,16 +2,16 @@ from unittest import TestCase
 
 from mock import patch
 
-from blockwart.exceptions import RepositoryError
-from blockwart.group import _build_error_chain, Group
-from blockwart.node import Node
-from blockwart.repo import Repository
-from blockwart.utils import names
+from bundlewrap.exceptions import RepositoryError
+from bundlewrap.group import _build_error_chain, Group
+from bundlewrap.node import Node
+from bundlewrap.repo import Repository
+from bundlewrap.utils import names
 
 
 class ErrorChainTest(TestCase):
     """
-    Tests blockwart.group._build_error_chain.
+    Tests bundlewrap.group._build_error_chain.
     """
     def test_direct_loop(self):
         self.assertEqual(
@@ -56,7 +56,7 @@ class ErrorChainTest(TestCase):
 
 class HierarchyTest(TestCase):
     """
-    Tests subgroup functionality of blockwart.group.Group.
+    Tests subgroup functionality of bundlewrap.group.Group.
     """
     def test_no_subgroups(self):
         repo = Repository()
@@ -121,9 +121,9 @@ class HierarchyTest(TestCase):
 
 class InitTest(TestCase):
     """
-    Tests initalization of blockwart.group.Group.
+    Tests initalization of bundlewrap.group.Group.
     """
-    @patch('blockwart.group.validate_name', return_value=False)
+    @patch('bundlewrap.group.validate_name', return_value=False)
     def test_bad_bundle_name(self, *args):
         with self.assertRaises(RepositoryError):
             Group("name", {})
@@ -139,7 +139,7 @@ class InitTest(TestCase):
 
 class MemberTest(TestCase):
     """
-    Tests node membership functionality of blockwart.group.Group.
+    Tests node membership functionality of bundlewrap.group.Group.
     """
     def test_static_members(self):
         repo = Repository()

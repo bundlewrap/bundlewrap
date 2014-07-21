@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline import verify
+from bundlewrap.cmdline import verify
 
 
 class FakeNode(object):
@@ -14,7 +14,7 @@ class FakeNode(object):
 
 class ApplyTest(TestCase):
     """
-    Tests blockwart.cmdline.verify.bw_verify.
+    Tests bundlewrap.cmdline.verify.bw_verify.
     """
     def test_interactive(self):
         node1 = FakeNode()

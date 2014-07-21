@@ -2,13 +2,13 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
-from blockwart.group import Group
-from blockwart.items import Item
-from blockwart.node import ApplyResult, apply_items, _flatten_group_hierarchy, Node, NodeLock
-from blockwart.operations import RunResult
-from blockwart.repo import Repository
-from blockwart.utils import names
+from bundlewrap.exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
+from bundlewrap.group import Group
+from bundlewrap.items import Item
+from bundlewrap.node import ApplyResult, apply_items, _flatten_group_hierarchy, Node, NodeLock
+from bundlewrap.operations import RunResult
+from bundlewrap.repo import Repository
+from bundlewrap.utils import names
 
 
 class MockNode(object):
@@ -44,7 +44,7 @@ def get_mock_item(itype, name, deps_static, deps):
 
 class ApplyItemsTest(TestCase):
     """
-    Tests blockwart.node.apply_items.
+    Tests bundlewrap.node.apply_items.
     """
     def test_self_loop(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name1"])
@@ -141,7 +141,7 @@ class ApplyItemsTest(TestCase):
 
 class ApplyResultTest(TestCase):
     """
-    Tests blockwart.node.ApplyResult.
+    Tests bundlewrap.node.ApplyResult.
     """
     def test_correct(self):
         item_results = (
@@ -193,7 +193,7 @@ class ApplyResultTest(TestCase):
 
 class FlattenGroupHierarchyTest(TestCase):
     """
-    Tests blockwart.node._flatten_group_hierarchy.
+    Tests bundlewrap.node._flatten_group_hierarchy.
     """
     def test_reorder_chain(self):
         group1 = MagicMock()
@@ -247,9 +247,9 @@ class FlattenGroupHierarchyTest(TestCase):
 
 class InitTest(TestCase):
     """
-    Tests initialization of blockwart.node.Node.
+    Tests initialization of bundlewrap.node.Node.
     """
-    @patch('blockwart.node.validate_name', return_value=False)
+    @patch('bundlewrap.node.validate_name', return_value=False)
     def test_bad_bundle_name(self, *args):
         with self.assertRaises(RepositoryError):
             Node("name")
@@ -257,11 +257,11 @@ class InitTest(TestCase):
 
 class NodeTest(TestCase):
     """
-    Tests blockwart.node.Node.
+    Tests bundlewrap.node.Node.
     """
-    @patch('blockwart.node.ApplyResult')
-    @patch('blockwart.node.NodeLock')
-    @patch('blockwart.node.apply_items')
+    @patch('bundlewrap.node.ApplyResult')
+    @patch('bundlewrap.node.NodeLock')
+    @patch('bundlewrap.node.apply_items')
     def test_apply(self, apply_items, NodeLock, ApplyResult):
         repo = Repository()
         n = Node("node1", {})
@@ -321,9 +321,9 @@ class NodeTest(TestCase):
 
 class NodeLockTest(TestCase):
     """
-    Tests blockwart.node.NodeLock.
+    Tests bundlewrap.node.NodeLock.
     """
-    @patch('blockwart.node.ask_interactively')
+    @patch('bundlewrap.node.ask_interactively')
     def test_locked(self, ask_interactively):
         node = MagicMock()
         runres = RunResult()

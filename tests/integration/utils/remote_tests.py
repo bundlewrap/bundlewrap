@@ -3,13 +3,13 @@ from platform import system
 from tempfile import mkstemp
 from unittest import TestCase
 
-from blockwart.node import Node
-from blockwart.utils import remote
+from bundlewrap.node import Node
+from bundlewrap.utils import remote
 
 
 class StatTest(TestCase):
     """
-    Tests blockwart.utils.remote.stat.
+    Tests bundlewrap.utils.remote.stat.
     """
     def test_stat(self):
         if system() == "Darwin":

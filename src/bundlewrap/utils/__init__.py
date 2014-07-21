@@ -11,7 +11,7 @@ __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
 
-LOG = logging.getLogger('blockwart')
+LOG = logging.getLogger('bundlewrap')
 
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
@@ -99,7 +99,7 @@ def graph_for_items(
     reverse=True,
     auto=True,
 ):
-    yield "digraph blockwart"
+    yield "digraph bundlewrap"
     yield "{"
 
     # Print subgraphs *below* each other

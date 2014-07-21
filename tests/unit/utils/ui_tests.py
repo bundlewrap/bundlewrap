@@ -2,12 +2,12 @@ from unittest import TestCase
 
 from mock import call, MagicMock
 
-from blockwart.utils import ui
+from bundlewrap.utils import ui
 
 
 class LineBufferTest(TestCase):
     """
-    Tests blockwart.utils.ui.LineBuffer.
+    Tests bundlewrap.utils.ui.LineBuffer.
     """
     def test_buffer(self):
         target = MagicMock()
@@ -32,7 +32,7 @@ class LineBufferTest(TestCase):
 
 class AskInteractivelyTest(TestCase):
     """
-    Tests blockwart.utils.ui.ask_interactively.
+    Tests bundlewrap.utils.ui.ask_interactively.
     """
     def test_yes(self):
         get_input = MagicMock(return_value="y")

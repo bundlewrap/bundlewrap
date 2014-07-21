@@ -2,13 +2,13 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.exceptions import NoSuchNode, NoSuchGroup, UsageException
-from blockwart.utils import cmdline
+from bundlewrap.exceptions import NoSuchNode, NoSuchGroup, UsageException
+from bundlewrap.utils import cmdline
 
 
 class GetTargetNodesTest(TestCase):
     """
-    Tests blockwart.utils.cmdline.get_target_nodes.
+    Tests bundlewrap.utils.cmdline.get_target_nodes.
     """
     def test_mixed(self):
         def get_node(name):

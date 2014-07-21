@@ -9,7 +9,7 @@ from .exceptions import NoSuchPlugin, PluginError, PluginLocalConflict
 from .utils import download, hash_local_file, LOG
 from .utils.text import mark_for_translation as _
 
-BASE_URL = "https://raw.githubusercontent.com/blockwart/plugins/master"
+BASE_URL = "https://raw.githubusercontent.com/bundlewrap/plugins/master"
 
 
 class PluginManager(object):

@@ -5,14 +5,14 @@ from unittest import TestCase
 
 from mock import MagicMock, patch, call
 
-from blockwart.exceptions import BundleError
-from blockwart.items import ItemStatus, users
-from blockwart.operations import RunResult
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import ItemStatus, users
+from bundlewrap.operations import RunResult
 
 
 class GroupsForUserTest(TestCase):
     """
-    Tests blockwart.items.users._groups_for_user.
+    Tests bundlewrap.items.users._groups_for_user.
     """
     def test_groups(self):
         node = MagicMock()
@@ -34,42 +34,42 @@ class GroupsForUserTest(TestCase):
 
 class ParsePasswdLineTest(TestCase):
     """
-    Tests blockwart.items.users._parse_passwd_line.
+    Tests bundlewrap.items.users._parse_passwd_line.
     """
     def test_full(self):
         self.assertEqual(
             users._parse_passwd_line(
-                "blockwart:x:1123:2345:"
+                "bundlewrap:x:1123:2345:"
                 "Blöck Wart,Building No,01234,56789:"
-                "/home/blockwart:/bin/bash"
+                "/home/bundlewrap:/bin/bash"
             ),
             {
                 'full_name': "Blöck Wart",
                 'gecos': "Blöck Wart,Building No,01234,56789",
                 'gid': 2345,
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'passwd_hash': "x",
                 'shell': "/bin/bash",
                 'uid': 1123,
-                'username': 'blockwart',
+                'username': 'bundlewrap',
             },
         )
 
 
 class AskTest(TestCase):
     """
-    Tests blockwart.items.users.User.ask.
+    Tests bundlewrap.items.users.User.ask.
     """
     def test_user_doesnt_exist(self):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -78,25 +78,25 @@ class AskTest(TestCase):
         status = ItemStatus(correct=False, info={'exists': False})
         self.assertEqual(
             user.ask(status),
-            "'blockwart' not found in /etc/passwd"
+            "'bundlewrap' not found in /etc/passwd"
         )
 
     def test_user_will_be_deleted(self):
         bundle = MagicMock()
-        user = users.User(bundle, "blockwart", {'delete': True})
+        user = users.User(bundle, "bundlewrap", {'delete': True})
         status = ItemStatus(correct=False, info={'exists': True})
         self.assertEqual(
             user.ask(status),
-            "'blockwart' found in /etc/passwd. Will be deleted."
+            "'bundlewrap' found in /etc/passwd. Will be deleted."
         )
 
     def test_passwd(self):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
@@ -109,7 +109,7 @@ class AskTest(TestCase):
         status = ItemStatus(correct=False)
         status.info = {
             'exists': True,
-            'full_name': "Blockwart",
+            'full_name': "BundleWrap",
             'gid': 2357,
             'groups': ["group1", "group2"],
             'home': "/home/blkwrt",
@@ -120,8 +120,8 @@ class AskTest(TestCase):
         }
         self.assertEqual(
             user.ask(status),
-            "home dir /home/blkwrt → /home/blockwart\n"
-            "full name Blockwart → Blöck Wart\n"
+            "home dir /home/blkwrt → /home/bundlewrap\n"
+            "full name BundleWrap → Blöck Wart\n"
             "GID 2357 → 2345\n"
             "shell /bin/bsh → /bin/bash\n"
             "UID 1113 → 1123\n"
@@ -133,12 +133,12 @@ class AskTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -150,7 +150,7 @@ class AskTest(TestCase):
             'full_name': "Blöck Wart",
             'gid': 2345,
             'groups': ["group1", "group2"],
-            'home': "/home/blockwart",
+            'home': "/home/bundlewrap",
             'shadow_hash': "topsecret",
             'shell': "/bin/bash",
             'uid': 1123,
@@ -166,12 +166,12 @@ class AskTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -184,7 +184,7 @@ class AskTest(TestCase):
             'full_name': "Blöck Wart",
             'gid': 2345,
             'groups': ["group1", "group2"],
-            'home': "/home/blockwart",
+            'home': "/home/bundlewrap",
             'passwd_hash': None,
             'shell': "/bin/bash",
             'uid': 1123,
@@ -199,12 +199,12 @@ class AskTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -216,7 +216,7 @@ class AskTest(TestCase):
             'full_name': "Blöck Wart",
             'gid': 2345,
             'groups': ["group1", "group2"],
-            'home': "/home/blockwart",
+            'home': "/home/bundlewrap",
             'shadow_hash': None,
             'shell': "/bin/bash",
             'uid': 1123,
@@ -231,12 +231,12 @@ class AskTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2", "group3"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -248,7 +248,7 @@ class AskTest(TestCase):
             'full_name': "Blöck Wart",
             'gid': 2345,
             'groups': ["group3", "group2", "group4", "group5"],
-            'home': "/home/blockwart",
+            'home': "/home/bundlewrap",
             'shadow_hash': "secret",
             'shell': "/bin/bash",
             'uid': 1123,
@@ -263,18 +263,18 @@ class AskTest(TestCase):
 
 class FixTest(TestCase):
     """
-    Tests blockwart.items.users.User.fix.
+    Tests bundlewrap.items.users.User.fix.
     """
     def test_fix_new(self):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -289,7 +289,7 @@ class FixTest(TestCase):
             bundle.node.run.call_args_list,
             [
                 call("useradd -s /bin/bash -g 2345 -G group1,group2 -u 1123 "
-                     "-d /home/blockwart -p secret blockwart", may_fail=True),
+                     "-d /home/bundlewrap -p secret bundlewrap", may_fail=True),
             ],
         )
 
@@ -297,12 +297,12 @@ class FixTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -317,7 +317,7 @@ class FixTest(TestCase):
             bundle.node.run.call_args_list,
             [
                 call("usermod -s /bin/bash -g 2345 -G group1,group2 -u 1123 "
-                     "-d /home/blockwart -p secret blockwart", may_fail=True),
+                     "-d /home/bundlewrap -p secret bundlewrap", may_fail=True),
             ],
         )
 
@@ -325,7 +325,7 @@ class FixTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {'delete': True},
         )
         status = ItemStatus(correct=False, info={'exists': True})
@@ -333,27 +333,27 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("userdel blockwart", may_fail=True),
+                call("userdel bundlewrap", may_fail=True),
             ],
         )
 
 
 class GetStatusTest(TestCase):
     """
-    Tests blockwart.items.users.User.get_status.
+    Tests bundlewrap.items.users.User.get_status.
     """
-    @patch('blockwart.items.users._groups_for_user')
+    @patch('bundlewrap.items.users._groups_for_user')
     def test_ok(self, _groups_for_user):
         _groups_for_user.return_value = ["group1", "group2"]
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -362,10 +362,10 @@ class GetStatusTest(TestCase):
 
         passwd_grep_result = RunResult()
         passwd_grep_result.return_code = 0
-        passwd_grep_result.stdout = "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash\n"
+        passwd_grep_result.stdout = "bundlewrap:x:1123:2345:Blöck Wart:/home/bundlewrap:/bin/bash\n"
         shadow_grep_result = RunResult()
         shadow_grep_result.return_code = 0
-        shadow_grep_result.stdout = "blockwart:secret:::::::"
+        shadow_grep_result.stdout = "bundlewrap:secret:::::::"
         results = [shadow_grep_result, passwd_grep_result]
 
         def pop_result(*args, **kwargs):
@@ -376,18 +376,18 @@ class GetStatusTest(TestCase):
         status = user.get_status()
         self.assertTrue(status.correct)
 
-    @patch('blockwart.items.users._groups_for_user')
+    @patch('bundlewrap.items.users._groups_for_user')
     def test_passwd(self, _groups_for_user):
         _groups_for_user.return_value = ["group1", "group2"]
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "topsecret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -397,10 +397,10 @@ class GetStatusTest(TestCase):
 
         passwd_grep_result = RunResult()
         passwd_grep_result.return_code = 0
-        passwd_grep_result.stdout = "blockwart:x:666:666:Blöck Wart:/home/blockwart:/bin/bash\n"
+        passwd_grep_result.stdout = "bundlewrap:x:666:666:Blöck Wart:/home/bundlewrap:/bin/bash\n"
         shadow_grep_result = RunResult()
         shadow_grep_result.return_code = 0
-        shadow_grep_result.stdout = "blockwart:secret:::::::"
+        shadow_grep_result.stdout = "bundlewrap:secret:::::::"
         results = [shadow_grep_result, passwd_grep_result]
 
         def pop_result(*args, **kwargs):
@@ -415,12 +415,12 @@ class GetStatusTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -436,18 +436,18 @@ class GetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertFalse(status.info['exists'])
 
-    @patch('blockwart.items.users._groups_for_user')
+    @patch('bundlewrap.items.users._groups_for_user')
     def test_shadow(self, _groups_for_user):
         _groups_for_user.return_value = ["group1", "group2"]
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -456,10 +456,10 @@ class GetStatusTest(TestCase):
 
         passwd_grep_result = RunResult()
         passwd_grep_result.return_code = 0
-        passwd_grep_result.stdout = "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash\n"
+        passwd_grep_result.stdout = "bundlewrap:x:1123:2345:Blöck Wart:/home/bundlewrap:/bin/bash\n"
         shadow_grep_result = RunResult()
         shadow_grep_result.return_code = 0
-        shadow_grep_result.stdout = "blockwart:topsecret:::::::"
+        shadow_grep_result.stdout = "bundlewrap:topsecret:::::::"
         results = [shadow_grep_result, passwd_grep_result]
 
         def pop_result(*args, **kwargs):
@@ -470,18 +470,18 @@ class GetStatusTest(TestCase):
         status = user.get_status()
         self.assertFalse(status.correct)
 
-    @patch('blockwart.items.users._groups_for_user')
+    @patch('bundlewrap.items.users._groups_for_user')
     def test_shadow_fail(self, _groups_for_user):
         _groups_for_user.return_value = ["group1", "group2"]
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -490,7 +490,7 @@ class GetStatusTest(TestCase):
 
         passwd_grep_result = RunResult()
         passwd_grep_result.return_code = 0
-        passwd_grep_result.stdout = "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash\n"
+        passwd_grep_result.stdout = "bundlewrap:x:1123:2345:Blöck Wart:/home/bundlewrap:/bin/bash\n"
         shadow_grep_result = RunResult()
         shadow_grep_result.return_code = 1
         results = [shadow_grep_result, passwd_grep_result]
@@ -508,13 +508,13 @@ class GetStatusTest(TestCase):
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {'delete': True},
         )
 
         passwd_grep_result = RunResult()
         passwd_grep_result.return_code = 0
-        passwd_grep_result.stdout = "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash\n"
+        passwd_grep_result.stdout = "bundlewrap:x:1123:2345:Blöck Wart:/home/bundlewrap:/bin/bash\n"
 
         bundle.node.run.return_value = passwd_grep_result
 
@@ -522,18 +522,18 @@ class GetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertTrue(status.info['exists'])
 
-    @patch('blockwart.items.users._groups_for_user')
+    @patch('bundlewrap.items.users._groups_for_user')
     def test_groups(self, _groups_for_user):
         _groups_for_user.return_value = ["group1", "group3"]
         bundle = MagicMock()
         user = users.User(
             bundle,
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
                 'groups': ["group1", "group2"],
-                'home': "/home/blockwart",
+                'home': "/home/bundlewrap",
                 'password_hash': "secret",
                 'shell': "/bin/bash",
                 'uid': 1123,
@@ -542,10 +542,10 @@ class GetStatusTest(TestCase):
 
         passwd_grep_result = RunResult()
         passwd_grep_result.return_code = 0
-        passwd_grep_result.stdout = "blockwart:x:1123:2345:Blöck Wart:/home/blockwart:/bin/bash\n"
+        passwd_grep_result.stdout = "bundlewrap:x:1123:2345:Blöck Wart:/home/bundlewrap:/bin/bash\n"
         shadow_grep_result = RunResult()
         shadow_grep_result.return_code = 0
-        shadow_grep_result.stdout = "blockwart:secret:::::::"
+        shadow_grep_result.stdout = "bundlewrap:secret:::::::"
         results = [shadow_grep_result, passwd_grep_result]
 
         def pop_result(*args, **kwargs):
@@ -559,12 +559,12 @@ class GetStatusTest(TestCase):
 
 class PatchAttributesTest(TestCase):
     """
-    Tests blockwart.items.users.User.patch_attributes.
+    Tests bundlewrap.items.users.User.patch_attributes.
     """
     def test_without_salt(self):
         user = users.User(
             MagicMock(),
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
@@ -581,7 +581,7 @@ class PatchAttributesTest(TestCase):
     def test_with_salt(self):
         user = users.User(
             MagicMock(),
-            "blockwart",
+            "bundlewrap",
             {
                 'full_name': "Blöck Wart",
                 'gid': 2345,
@@ -599,13 +599,13 @@ class PatchAttributesTest(TestCase):
 
 class ValidateAttributesTest(TestCase):
     """
-    Tests blockwart.items.users.User.validate_attributes.
+    Tests bundlewrap.items.users.User.validate_attributes.
     """
     def test_password_hash_with_password(self):
         with self.assertRaises(BundleError):
             users.User.validate_attributes(
                 MagicMock(),
-                "blockwart",
+                "bundlewrap",
                 {
                     'password': "secret",
                     'password_hash': "secret_hash",
@@ -616,7 +616,7 @@ class ValidateAttributesTest(TestCase):
         with self.assertRaises(BundleError):
             users.User.validate_attributes(
                 MagicMock(),
-                "blockwart",
+                "bundlewrap",
                 {
                     'password_hash': "secret_hash",
                     'salt': "salt",
@@ -627,7 +627,7 @@ class ValidateAttributesTest(TestCase):
         with self.assertRaises(BundleError):
             users.User.validate_attributes(
                 MagicMock(),
-                "blockwart",
+                "bundlewrap",
                 {
                     'salt': "salt",
                 },
@@ -636,7 +636,7 @@ class ValidateAttributesTest(TestCase):
     def test_nothing(self):
         users.User.validate_attributes(
             MagicMock(),
-            "blockwart",
+            "bundlewrap",
             {},
         )
 
@@ -644,7 +644,7 @@ class ValidateAttributesTest(TestCase):
         with self.assertRaises(BundleError):
             users.User.validate_attributes(
                 MagicMock(),
-                "blockwart",
+                "bundlewrap",
                 {
                     'hash_method': "3des",
                     'password_hash': "secret_hash",
@@ -655,7 +655,7 @@ class ValidateAttributesTest(TestCase):
         with self.assertRaises(BundleError):
             users.User.validate_attributes(
                 MagicMock(),
-                "blockwart",
+                "bundlewrap",
                 {
                     'delete': True,
                     'password_hash': "secret_hash",
@@ -665,19 +665,19 @@ class ValidateAttributesTest(TestCase):
 
 class ValidateNameTest(TestCase):
     """
-    Tests blockwart.items.users.User.validate_name.
+    Tests bundlewrap.items.users.User.validate_name.
     """
     def test_invalid_char(self):
         with self.assertRaises(BundleError):
-            users.User.validate_name(MagicMock(), "block wart")
+            users.User.validate_name(MagicMock(), "bundle wrap")
 
     def test_ends_in_dash(self):
         with self.assertRaises(BundleError):
-            users.User.validate_name(MagicMock(), "blockwart-")
+            users.User.validate_name(MagicMock(), "bundlewrap-")
 
     def test_too_long(self):
         with self.assertRaises(BundleError):
-            users.User.validate_name(MagicMock(), "blockwartblockwartblockwartblockwart")
+            users.User.validate_name(MagicMock(), "bundlewrapbundlewrapbundlewrapbundlewrap")
 
     def test_valid(self):
-        users.User.validate_name(MagicMock(), "blockwart")
+        users.User.validate_name(MagicMock(), "bundlewrap")

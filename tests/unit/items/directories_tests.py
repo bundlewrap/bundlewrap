@@ -2,17 +2,17 @@ from unittest import TestCase
 
 from mock import call, MagicMock, patch
 
-from blockwart.exceptions import BundleError
-from blockwart.items import directories, ItemStatus
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import directories, ItemStatus
 
 
 class DirectoryFixTest(TestCase):
     """
-    Tests blockwart.items.directories.Directory.fix.
+    Tests bundlewrap.items.directories.Directory.fix.
     """
-    @patch('blockwart.items.directories.Directory._fix_mode')
-    @patch('blockwart.items.directories.Directory._fix_owner')
-    @patch('blockwart.items.directories.Directory._fix_type')
+    @patch('bundlewrap.items.directories.Directory._fix_mode')
+    @patch('bundlewrap.items.directories.Directory._fix_owner')
+    @patch('bundlewrap.items.directories.Directory._fix_type')
     def test_type(self, fix_type, fix_owner, fix_mode):
         f = directories.Directory(MagicMock(), "/", {})
         pinfo = MagicMock()
@@ -24,9 +24,9 @@ class DirectoryFixTest(TestCase):
         f.fix(status)
         fix_type.assert_called_once_with(status)
 
-    @patch('blockwart.items.directories.Directory._fix_mode')
-    @patch('blockwart.items.directories.Directory._fix_owner')
-    @patch('blockwart.items.directories.Directory._fix_type')
+    @patch('bundlewrap.items.directories.Directory._fix_mode')
+    @patch('bundlewrap.items.directories.Directory._fix_owner')
+    @patch('bundlewrap.items.directories.Directory._fix_type')
     def test_mode(self, fix_type, fix_owner, fix_mode):
         f = directories.Directory(MagicMock(), "/", {})
         status = ItemStatus(correct=False, info={
@@ -37,9 +37,9 @@ class DirectoryFixTest(TestCase):
         fix_mode.assert_called_once_with(status)
         self.assertFalse(fix_owner.called)
 
-    @patch('blockwart.items.directories.Directory._fix_mode')
-    @patch('blockwart.items.directories.Directory._fix_owner')
-    @patch('blockwart.items.directories.Directory._fix_type')
+    @patch('bundlewrap.items.directories.Directory._fix_mode')
+    @patch('bundlewrap.items.directories.Directory._fix_owner')
+    @patch('bundlewrap.items.directories.Directory._fix_type')
     def test_owner(self, fix_type, fix_owner, fix_mode):
         f = directories.Directory(MagicMock(), "/", {})
         status = ItemStatus(correct=False, info={
@@ -50,9 +50,9 @@ class DirectoryFixTest(TestCase):
         fix_owner.assert_called_once_with(status)
         self.assertFalse(fix_mode.called)
 
-    @patch('blockwart.items.directories.Directory._fix_mode')
-    @patch('blockwart.items.directories.Directory._fix_owner')
-    @patch('blockwart.items.directories.Directory._fix_type')
+    @patch('bundlewrap.items.directories.Directory._fix_mode')
+    @patch('bundlewrap.items.directories.Directory._fix_owner')
+    @patch('bundlewrap.items.directories.Directory._fix_type')
     def test_combined(self, fix_type, fix_owner, fix_mode):
         f = directories.Directory(MagicMock(), "/", {})
         status = ItemStatus(correct=False, info={
@@ -66,7 +66,7 @@ class DirectoryFixTest(TestCase):
 
 class DirectoryFixModeTest(TestCase):
     """
-    Tests blockwart.items.directories.Directory._fix_mode.
+    Tests bundlewrap.items.directories.Directory._fix_mode.
     """
     def test_chmod(self):
         node = MagicMock()
@@ -83,7 +83,7 @@ class DirectoryFixModeTest(TestCase):
 
 class DirectoryFixOwnerTest(TestCase):
     """
-    Tests blockwart.items.directories.Directory._fix_owner.
+    Tests bundlewrap.items.directories.Directory._fix_owner.
     """
     def test_chmod(self):
         node = MagicMock()
@@ -100,10 +100,10 @@ class DirectoryFixOwnerTest(TestCase):
 
 class DirectoryFixTypeTest(TestCase):
     """
-    Tests blockwart.items.directories.Directory._fix_type.
+    Tests bundlewrap.items.directories.Directory._fix_type.
     """
-    @patch('blockwart.items.directories.Directory._fix_mode')
-    @patch('blockwart.items.directories.Directory._fix_owner')
+    @patch('bundlewrap.items.directories.Directory._fix_mode')
+    @patch('bundlewrap.items.directories.Directory._fix_owner')
     def test_rm(self, fix_mode, fix_owner):
         node = MagicMock()
         bundle = MagicMock()
@@ -122,7 +122,7 @@ class DirectoryFixTypeTest(TestCase):
 
 class DirectoryGetAutoDepsTest(TestCase):
     """
-    Tests blockwart.items.directories.Directory.get_auto_deps.
+    Tests bundlewrap.items.directories.Directory.get_auto_deps.
     """
     def test_file_collision(self):
         item1 = MagicMock()
@@ -206,9 +206,9 @@ class DirectoryGetAutoDepsTest(TestCase):
 
 class DirectoryGetStatusTest(TestCase):
     """
-    Tests blockwart.items.directories.Directory.get_status.
+    Tests bundlewrap.items.directories.Directory.get_status.
     """
-    @patch('blockwart.items.directories.PathInfo')
+    @patch('bundlewrap.items.directories.PathInfo')
     def test_mode(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0777"
@@ -226,7 +226,7 @@ class DirectoryGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['mode'])
 
-    @patch('blockwart.items.directories.PathInfo')
+    @patch('bundlewrap.items.directories.PathInfo')
     def test_owner(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -244,7 +244,7 @@ class DirectoryGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['owner'])
 
-    @patch('blockwart.items.directories.PathInfo')
+    @patch('bundlewrap.items.directories.PathInfo')
     def test_group(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -262,7 +262,7 @@ class DirectoryGetStatusTest(TestCase):
         self.assertFalse(status.correct)
         self.assertEqual(status.info['needs_fixing'], ['group'])
 
-    @patch('blockwart.items.directories.PathInfo')
+    @patch('bundlewrap.items.directories.PathInfo')
     def test_type(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -283,7 +283,7 @@ class DirectoryGetStatusTest(TestCase):
             set(['type']),
         )
 
-    @patch('blockwart.items.directories.PathInfo')
+    @patch('bundlewrap.items.directories.PathInfo')
     def test_ok(self, PathInfo):
         path_info = MagicMock()
         path_info.mode = "0664"
@@ -304,7 +304,7 @@ class DirectoryGetStatusTest(TestCase):
 
 class ValidatorModeTest(TestCase):
     """
-    Tests blockwart.items.directories.validator_mode.
+    Tests bundlewrap.items.directories.validator_mode.
     """
     def test_nondigit(self):
         with self.assertRaises(BundleError):

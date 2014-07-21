@@ -9,11 +9,11 @@ Custom item types
 Step 1: Create an item module
 -----------------------------
 
-Create a new file called :file:`/your/blockwart/repo/items/foo.py`. You can use this as a template:
+Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use this as a template:
 
 .. code-block:: python
 
-    from blockwart.items import Item, ItemStatus
+    from bundlewrap.items import Item, ItemStatus
 
 
     class Foo(Item):
@@ -98,7 +98,7 @@ Step 2: Define attributes
     PARALLEL_APPLY = False
 
 
-``REQUIRED_ATTRIBUTES`` is a list of attribute names that must be set on each item of this type. If Blockwart encounters an item without all these attributes during bundle inspection, an exception will be raised. Example:
+``REQUIRED_ATTRIBUTES`` is a list of attribute names that must be set on each item of this type. If BundleWrap encounters an item without all these attributes during bundle inspection, an exception will be raised. Example:
 
 .. code-block:: python
 

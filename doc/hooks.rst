@@ -4,7 +4,7 @@
 Hooks
 =====
 
-Hooks enable you to execute custom code at certain points during a Blockwart run. This is useful for integrating with other systems e.g. for team notifications, logging or statistics.
+Hooks enable you to execute custom code at certain points during a BundleWrap run. This is useful for integrating with other systems e.g. for team notifications, logging or statistics.
 
 To use hooks, you need to create a subdirectory in your repo called :file:`hooks`. In that directory you can place an arbitrary number of Python source files. If those source files define certain functions, these functions will be called at the appropriate time.
 
@@ -40,8 +40,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw apply` command reaches a new action.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param Item item: The current action.
 
 |
@@ -51,8 +51,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw apply` command completes processing an action.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param Item item: The current action.
     :param timedelta duration: How long the action was running.
     :param ItemStatus status: An object with these attributes: ``correct``, ``skipped``.
@@ -64,9 +64,9 @@ This is a list of all functions a hook file may implement.
 
     Called when you start a :command:`bw apply` command.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
-    :param list nodes: A list of node objects affected (list of :py:class:`blockwart.node.Node` instances).
+    :param list nodes: A list of node objects affected (list of :py:class:`bundlewrap.node.Node` instances).
     :param bool interactive: Indicates whether the apply is interactive or not.
 
 |
@@ -76,9 +76,9 @@ This is a list of all functions a hook file may implement.
 
     Called when a :command:`bw apply` command completes.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
-    :param list nodes: A list of node objects affected (list of :py:class:`blockwart.node.Node` instances).
+    :param list nodes: A list of node objects affected (list of :py:class:`bundlewrap.node.Node` instances).
     :param timedelta duration: How long the apply took.
 
 |
@@ -88,8 +88,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw apply` command reaches a new item.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param Item item: The current item.
 
 |
@@ -99,8 +99,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw apply` command completes processing an item.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param Item item: The current item.
     :param timedelta duration: How long the apply took.
     :param ItemStatus status_before: An object with these attributes: ``correct``, ``info``, ``skipped``.
@@ -113,8 +113,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw apply` command reaches a new node.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param bool interactive: ``True`` if this is an interactive apply run.
 
 |
@@ -124,8 +124,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw apply` command finishes processing a node.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param timedelta duration: How long the apply took.
     :param bool interactive: ``True`` if this was an interactive apply run.
     :param ApplyResult result: An object with these attributes: ``correct``, ``failed``, ``fixed``, ``skipped``.
@@ -137,8 +137,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw run` command reaches a new node.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param str command: The command that will be run on the node.
 
 |
@@ -148,8 +148,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw run` command finishes on a node.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
-    :param Node node: The current node (instance of :py:class:`blockwart.node.Node`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
+    :param Node node: The current node (instance of :py:class:`bundlewrap.node.Node`).
     :param str command: The command that was run on the node.
     :param timedelta duration: How long it took to run the command.
     :param int return_code: Return code of the remote command.
@@ -163,9 +163,9 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw run` command starts.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
-    :param list nodes: A list of node objects affected (list of :py:class:`blockwart.node.Node` instances).
+    :param list nodes: A list of node objects affected (list of :py:class:`bundlewrap.node.Node` instances).
     :param str command: The command that will be run on the node.
 
 |
@@ -175,8 +175,8 @@ This is a list of all functions a hook file may implement.
 
     Called each time a :command:`bw run` command finishes.
 
-    :param Repository repo: The current repository (instance of :py:class:`blockwart.repo.Repository`).
+    :param Repository repo: The current repository (instance of :py:class:`bundlewrap.repo.Repository`).
     :param str target: The group or node name you gave on the command line.
-    :param list nodes: A list of node objects affected (list of :py:class:`blockwart.node.Node` instances).
+    :param list nodes: A list of node objects affected (list of :py:class:`bundlewrap.node.Node` instances).
     :param str command: The command that was run.
     :param timedelta duration: How long it took to run the command on all nodes.

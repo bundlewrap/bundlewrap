@@ -2,12 +2,12 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline import groups
+from bundlewrap.cmdline import groups
 
 
 class GroupsTest(TestCase):
     """
-    Tests blockwart.cmdline.groups.bw_groups.
+    Tests bundlewrap.cmdline.groups.bw_groups.
     """
     def setUp(self):
         self.repo = MagicMock()

@@ -2,18 +2,18 @@
 Plugins
 =======
 
-The plugin system in Blockwart is an easy way of integrating third-party code into your repository.
+The plugin system in BundleWrap is an easy way of integrating third-party code into your repository.
 
 .. warning::
 
-	While plugins are subject to some superficial code review by Blockwart developers before being accepted, we cannot make any guarantees as to the quality and trustworthiness of plugins. Always do your due diligence before running third-party code.
+	While plugins are subject to some superficial code review by BundleWrap developers before being accepted, we cannot make any guarantees as to the quality and trustworthiness of plugins. Always do your due diligence before running third-party code.
 
 |
 
 Finding plugins
 ###############
 
-It's as easy as :command:`bw repo plugin search <term>`. Or you can browse `plugins.blockwart.org <http://plugins.blockwart.org>`_.
+It's as easy as :command:`bw repo plugin search <term>`. Or you can browse `plugins.bundlewrap.org <http://plugins.bundlewrap.org>`_.
 
 |
 

@@ -3,8 +3,8 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.cmdline.apply import bw_apply, format_node_result
-from blockwart.node import ApplyResult
+from bundlewrap.cmdline.apply import bw_apply, format_node_result
+from bundlewrap.node import ApplyResult
 
 
 class FakeNode(object):
@@ -20,7 +20,7 @@ class FakeNode(object):
 
 class ApplyTest(TestCase):
     """
-    Tests blockwart.cmdline.apply.bw_apply.
+    Tests bundlewrap.cmdline.apply.bw_apply.
     """
     def test_interactive(self):
         node1 = FakeNode()
@@ -40,7 +40,7 @@ class ApplyTest(TestCase):
 
 class FormatNodeItemResultTest(TestCase):
     """
-    Tests blockwart.cmdline.apply.format_node_item_result.
+    Tests bundlewrap.cmdline.apply.format_node_item_result.
     """
     def test_values(self):
         result = MagicMock()

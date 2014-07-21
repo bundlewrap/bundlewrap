@@ -8,11 +8,11 @@ from copy import copy
 from datetime import datetime
 from os.path import join
 
-from blockwart.exceptions import BundleError
-from blockwart.utils import LOG
-from blockwart.utils.text import mark_for_translation as _
-from blockwart.utils.text import bold, wrap_question
-from blockwart.utils.ui import ask_interactively
+from bundlewrap.exceptions import BundleError
+from bundlewrap.utils import LOG
+from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import bold, wrap_question
+from bundlewrap.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': True,

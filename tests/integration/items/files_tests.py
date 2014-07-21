@@ -7,9 +7,9 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart.items import files
-from blockwart.node import Node
-from blockwart.repo import Repository
+from bundlewrap.items import files
+from bundlewrap.node import Node
+from bundlewrap.repo import Repository
 
 
 class GetRemoteFileContentsTest(TestCase):

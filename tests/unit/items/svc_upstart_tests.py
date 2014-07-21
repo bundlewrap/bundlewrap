@@ -4,14 +4,14 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.exceptions import BundleError
-from blockwart.items import svc_upstart
-from blockwart.operations import RunResult
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import svc_upstart
+from bundlewrap.operations import RunResult
 
 
 class AskTest(TestCase):
     """
-    Tests blockwart.items.svc_upstart.SvcUpstart.ask.
+    Tests bundlewrap.items.svc_upstart.SvcUpstart.ask.
     """
     def test_start(self):
         svc = svc_upstart.SvcUpstart(MagicMock(), "foo", {'running': True})
@@ -34,7 +34,7 @@ class AskTest(TestCase):
 
 class FixTest(TestCase):
     """
-    Tests blockwart.items.svc_upstart.SvcUpstart.fix.
+    Tests bundlewrap.items.svc_upstart.SvcUpstart.fix.
     """
     def test_start(self):
         node = MagicMock()
@@ -49,30 +49,30 @@ class FixTest(TestCase):
 
 class GetStatusTest(TestCase):
     """
-    Tests blockwart.items.svc_upstart.SvcUpstart.get_status.
+    Tests bundlewrap.items.svc_upstart.SvcUpstart.get_status.
     """
-    @patch('blockwart.items.svc_upstart.svc_running')
+    @patch('bundlewrap.items.svc_upstart.svc_running')
     def test_running_ok(self, svc_running):
         svc = svc_upstart.SvcUpstart(MagicMock(), "foo", {'running': True})
         svc_running.return_value = True
         status = svc.get_status()
         self.assertTrue(status.correct)
 
-    @patch('blockwart.items.svc_upstart.svc_running')
+    @patch('bundlewrap.items.svc_upstart.svc_running')
     def test_not_running_ok(self, svc_running):
         svc = svc_upstart.SvcUpstart(MagicMock(), "foo", {'running': False})
         svc_running.return_value = False
         status = svc.get_status()
         self.assertTrue(status.correct)
 
-    @patch('blockwart.items.svc_upstart.svc_running')
+    @patch('bundlewrap.items.svc_upstart.svc_running')
     def test_running_not_ok(self, svc_running):
         svc = svc_upstart.SvcUpstart(MagicMock(), "foo", {'running': False})
         svc_running.return_value = True
         status = svc.get_status()
         self.assertFalse(status.correct)
 
-    @patch('blockwart.items.svc_upstart.svc_running')
+    @patch('bundlewrap.items.svc_upstart.svc_running')
     def test_not_running_not_ok(self, svc_running):
         svc = svc_upstart.SvcUpstart(MagicMock(), "foo", {'running': False})
         svc_running.return_value = True
@@ -82,7 +82,7 @@ class GetStatusTest(TestCase):
 
 class svcrunningTest(TestCase):
     """
-    Tests blockwart.items.svc_upstart.svc_running.
+    Tests bundlewrap.items.svc_upstart.svc_running.
     """
     def test_running(self):
         runresult = RunResult()
@@ -102,7 +102,7 @@ class svcrunningTest(TestCase):
 
 class ValidateAttributesTest(TestCase):
     """
-    Tests blockwart.items.svc_upstart.SvcUpstart.validate_attributes.
+    Tests bundlewrap.items.svc_upstart.SvcUpstart.validate_attributes.
     """
     def test_running_ok(self):
         svc_upstart.SvcUpstart(MagicMock(), "foo", {'running': True})

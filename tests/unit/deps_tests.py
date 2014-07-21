@@ -2,9 +2,9 @@ from unittest import TestCase
 
 from mock import MagicMock
 
-from blockwart import deps
-from blockwart.exceptions import BundleError
-from blockwart.items import Item
+from bundlewrap import deps
+from bundlewrap.exceptions import BundleError
+from bundlewrap.items import Item
 
 
 class MockItem(Item):
@@ -22,7 +22,7 @@ class MockItem(Item):
 
 class FlattenDependenciesTest(TestCase):
     """
-    Tests blockwart.deps._flatten_dependencies.
+    Tests bundlewrap.deps._flatten_dependencies.
     """
     def test_flatten(self):
         class FakeItem(object):
@@ -60,7 +60,7 @@ class FlattenDependenciesTest(TestCase):
 
 class InjectCannedActionsTest(TestCase):
     """
-    Tests blockwart.deps._inject_canned_actions.
+    Tests bundlewrap.deps._inject_canned_actions.
     """
     def test_injection_ok(self):
         bundle = MagicMock()
@@ -109,7 +109,7 @@ class InjectCannedActionsTest(TestCase):
 
 class InjectDummyItemsTest(TestCase):
     """
-    Tests blockwart.deps._inject_dummy_items.
+    Tests bundlewrap.deps._inject_dummy_items.
     """
     def test_item_injection(self):
         class FakeItem(object):
@@ -144,7 +144,7 @@ class InjectDummyItemsTest(TestCase):
 
 class InjectConcurrencyBlockersTest(TestCase):
     """
-    Tests blockwart.deps._inject_concurrency_blockers.
+    Tests bundlewrap.deps._inject_concurrency_blockers.
     """
     def test_blockers(self):
         class FakeItem1(object):
@@ -234,7 +234,7 @@ class InjectConcurrencyBlockersTest(TestCase):
 
 class ItemSplitWithoutDepTest(TestCase):
     """
-    Tests blockwart.deps.split_items_without_deps.
+    Tests bundlewrap.deps.split_items_without_deps.
     """
     def test_all_deps(self):
         class FakeItem(object):
@@ -281,7 +281,7 @@ class ItemSplitWithoutDepTest(TestCase):
 
 class ItemsRemoveDepTest(TestCase):
     """
-    Tests blockwart.deps.remove_dep_from_items.
+    Tests bundlewrap.deps.remove_dep_from_items.
     """
     def test_remove(self):
         item1 = MagicMock()
@@ -295,7 +295,7 @@ class ItemsRemoveDepTest(TestCase):
 
 class RemoveItemDependentsTest(TestCase):
     """
-    Tests blockwart.deps.remove_item_dependents.
+    Tests bundlewrap.deps.remove_item_dependents.
     """
     def test_remove_empty(self):
         self.assertEqual(deps.remove_item_dependents([], "foo"), ([], []))

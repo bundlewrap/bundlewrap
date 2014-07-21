@@ -2,13 +2,13 @@ from unittest import TestCase
 
 from mock import MagicMock, patch
 
-from blockwart.items.actions import Action
-from blockwart.exceptions import ActionFailure, BundleError
+from bundlewrap.items.actions import Action
+from bundlewrap.exceptions import ActionFailure, BundleError
 
 
 class ActionInitTest(TestCase):
     """
-    Tests initialization of blockwart.items.actions.Action.
+    Tests initialization of bundlewrap.items.actions.Action.
     """
     def test_ok(self):
         Action(MagicMock(), "action", { 'command': "/bin/true" })
@@ -34,7 +34,7 @@ class ActionInitTest(TestCase):
 
 class ActionRunTest(TestCase):
     """
-    Tests blockwart.items.actions.Action.run.
+    Tests bundlewrap.items.actions.Action.run.
     """
     def test_ok(self):
         run_result = MagicMock()
@@ -100,7 +100,7 @@ class ActionRunTest(TestCase):
 
 class ActionGetResultTest(TestCase):
     """
-    Tests blockwart.items.actions.Action.get_result.
+    Tests bundlewrap.items.actions.Action.get_result.
     """
     def test_fail_unless(self):
         unless_result = MagicMock()
@@ -122,7 +122,7 @@ class ActionGetResultTest(TestCase):
             Action.STATUS_SKIPPED,
         )
 
-    @patch('blockwart.items.actions.ask_interactively', return_value=False)
+    @patch('bundlewrap.items.actions.ask_interactively', return_value=False)
     def test_declined_interactive(self, ask_interactively):
         action = Action(MagicMock(), "action", { 'command': "/bin/true" })
         self.assertEqual(

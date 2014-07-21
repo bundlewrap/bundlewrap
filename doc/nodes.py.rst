@@ -27,7 +27,7 @@ All you have to do here is define a Python dictionary called ``nodes``. It shoul
 
 
 .. note::
-	With Blockwart, the DNS name and the internal identifier for a node are two separate things. This allows for clean and sortable hierarchies:
+	With BundleWrap, the DNS name and the internal identifier for a node are two separate things. This allows for clean and sortable hierarchies:
 
 	.. code-block:: python
 
@@ -39,7 +39,7 @@ All you have to do here is define a Python dictionary called ``nodes``. It shoul
 
 
 
-All fields for a node (including ``hostname``) are optional. If you don't give one, Blockwart will attempt to use the internal identifier to connect to a node:
+All fields for a node (including ``hostname``) are optional. If you don't give one, BundleWrap will attempt to use the internal identifier to connect to a node:
 
 .. code-block:: python
 
@@ -90,7 +90,7 @@ A list of :doc:`bundles <bundles>` to be assigned to this node.
 A string used as a DNS name when connecting to this node. May also be an IP address.
 
 .. note::
-   The username and SSH private key for connecting to the node cannot be configured in Blockwart. If you need to customize those, Blockwart will honor your ``~/.ssh/config``.
+   The username and SSH private key for connecting to the node cannot be configured in BundleWrap. If you need to customize those, BundleWrap will honor your ``~/.ssh/config``.
 
 |
 
