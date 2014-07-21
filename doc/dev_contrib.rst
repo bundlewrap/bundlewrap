@@ -40,7 +40,7 @@ Here are the steps:
 Help
 ####
 
-If at any point you need help or are not sure what to do, just drop by in `#bundlewrap on Freenode <irc://chat.freenode.net/bundlewrap>`_ or poke `@bwapply on Twitter <https://twitter.com/bwapply>`_.
+If at any point you need help or are not sure what to do, just drop by in `#bundlewrap on Freenode <irc://chat.freenode.net/bundlewrap>`_ or poke `@bundlewrap on Twitter <https://twitter.com/bundlewrap>`_.
 
 
 .. raw:: html

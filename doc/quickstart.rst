@@ -154,6 +154,6 @@ Here are some suggestions on what to do next:
 * ...especially what types of items you can add to your :doc:`bundles <bundles>`
 * familiarize yourself with `the Mako template language <http://www.makotemplates.org/>`_
 * explore the :doc:`command line interface <cli>`
-* follow `@bwapply <https://twitter.com/bwapply>`_ on Twitter
+* follow `@bundlewrap <https://twitter.com/bundlewrap>`_ on Twitter
 
 Have fun! If you have any questions, feel free to drop by `on IRC <irc://chat.freenode.net/bundlewrap>`_.
