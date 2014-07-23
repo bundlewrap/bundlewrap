@@ -68,6 +68,8 @@ This command will drop you into a Python shell with direct access to BundleWrap'
 
 |
 
+.. _bw_plot:
+
 ``bw plot``
 -----------
 

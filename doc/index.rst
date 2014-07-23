@@ -48,6 +48,7 @@ You might be better served with a different config management system if you:
    faq
    glossary
    about
+   alternatives
 
 .. raw:: html
 

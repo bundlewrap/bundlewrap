@@ -72,3 +72,10 @@ While it sounds scary, Copyright assignment is used to improve the enforceabilit
 If you're still concerned, please do not hesitate to contact `@trehn <https://twitter.com/trehn>`_.
 
 |
+
+Isn't this all very similar to Ansible?
+---------------------------------------
+
+Some parts are, but there are significant differences as well. Check out the :ref:`Alternatives page <ansible>` for a writeup of the details.
+
+|
