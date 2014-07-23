@@ -24,7 +24,7 @@ BundleWrap has the following properties that are unique to it or at least not co
 Ansible
 -------
 
-Ansible is very similar to BundleWrap in how it communicates with nodes. Both systems do not use server or agent processes, but SSH. Ansible can optionally use OpenSSH instead of a Python SSH implementation to speed up performance. On the other hand, BundleWrap will always use the Python implementation, but with multiple connections to each node. This should give BundleWrap a performance advantage on very complex systems with many items, since each connection can work on a different item simultaneously.
+`Ansible <http://ansible.com>`_ is very similar to BundleWrap in how it communicates with nodes. Both systems do not use server or agent processes, but SSH. Ansible can optionally use OpenSSH instead of a Python SSH implementation to speed up performance. On the other hand, BundleWrap will always use the Python implementation, but with multiple connections to each node. This should give BundleWrap a performance advantage on very complex systems with many items, since each connection can work on a different item simultaneously.
 
 To apply configuration, Ansible uploads pieces of code called modules to each node and runs them there. Many Ansible modules depend on the node having a Python 2.x interpreter installed. BundleWrap runs commands on the target node just as you would in an interactive SSH session. Most of the :doc:`commands needed <requirements>` by BundleWrap are provided by coreutils and should be present on all standard Linux systems.
 
@@ -41,7 +41,7 @@ Ansible, Inc. offers paid support for Ansible and an optional web-based addon ca
 Chef
 ----
 
-Chef has basically two modes of operation: The most widely used one involves a server component and the :command:`chef-client` agent. The second option is :command:`chef-solo`, which will apply configuration from a local repository to the node the repository is located on. BundleWrap supports neither of these modes and always applies configuration over SSH.
+`Chef <http://www.getchef.com/>`_ has basically two modes of operation: The most widely used one involves a server component and the :command:`chef-client` agent. The second option is :command:`chef-solo`, which will apply configuration from a local repository to the node the repository is located on. BundleWrap supports neither of these modes and always applies configuration over SSH.
 
 Overall, Chef is harder to get into, but will scale to thousands of nodes.
 
