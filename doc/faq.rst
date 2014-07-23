@@ -6,7 +6,7 @@ Technical
 #########
 
 BundleWrap says an item failed to apply, what do I do now?
----------------------------------------------------------
+----------------------------------------------------------
 
 Try running :command:`bw apply -i nodename` to see which attribute of the item could not be fixed. If that doesn't tell you enough, try ``bw --debug apply -i nodename`` and look for the command BundleWrap is using to fix the :term:`item` in question. Then try running that command yourself and check for any errors.
 
@@ -20,14 +20,14 @@ BundleWrap uses a locking mechanism to prevent collisions like this. When Bundle
 |
 
 How can I have BundleWrap reload my services after config changes?
------------------------------------------------------------------
+------------------------------------------------------------------
 
 See :ref:`canned actions <canned_actions>` and :ref:`triggers <triggers>`.
 
 |
 
 Will BundleWrap keep track of package updates?
----------------------------------------------
+----------------------------------------------
 
 No. BundleWrap will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an :doc:`action <item_action>` with the ``interactive`` attribute set to ``True``). Selecting specific versions should be done through your package manager.
 
@@ -55,14 +55,14 @@ Not right now. A separate project (called "cloudwart") is in planning, but no co
 |
 
 Is BundleWrap secure?
---------------------
+---------------------
 
 BundleWrap is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a BundleWrap repository that could compromise your machine. You should only use trusted repositories and plugins. We also recommend following commit logs to your repos.
 
 |
 
 The BundleWrap Project
-#####################
+######################
 
 Why do contributors have to sign a Copyright Assignment Agreement?
 ------------------------------------------------------------------
