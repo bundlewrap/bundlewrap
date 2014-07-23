@@ -30,6 +30,8 @@ You might be better served with a different config management system if you:
 * need to manage non-Linux systems
 * don't trust your coworkers
 
+We have also prepared a :doc:`comparison <alternatives>` with other popular config management systems.
+
 
 .. raw:: html
 
