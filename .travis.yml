@@ -15,6 +15,6 @@ after_success: fab submit_coverage
 notifications:
   irc:
     channels:
-      - "irc.freenode.org#blockwart"
+      - "irc.freenode.org#bundlewrap"
     use_notice: true
     skip_join: true
