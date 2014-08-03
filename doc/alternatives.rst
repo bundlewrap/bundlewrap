@@ -16,6 +16,7 @@ BundleWrap has the following properties that are unique to it or at least not co
 * nice :doc:`Python API <api>`
 * designed to be mastered quickly and easily remembered
 * for better or worse: no commercial agenda/support
+* no support for non-Linux target nodes (BundleWrap itself can be run from Mac OS as well)
 
 |
 
@@ -35,6 +36,17 @@ Ansible's playbooks roughly correspond to BundleWrap's bundles, but are written 
 File templates in Ansible are `Jinja2 <http://jinja2.pocoo.org>`_, while BundleWrap uses `Mako <http://makotemplates.org>`_ by default and offers Jinja2 as an option.
 
 Ansible, Inc. offers paid support for Ansible and an optional web-based addon called `Ansible Tower <http://ansible.com/tower>`_.
+
+|
+
+BCFG2
+-----
+
+BCFG2's bundles obviously were an inspiration for BundleWrap. One important difference is that BundleWrap's bundles are usually completely isolated and self-contained within their directory while BCFG2 bundles may need resources (e.g. file templates) from elsewhere in the repository.
+
+On a practical level BundleWrap prefers pure Python and Mako over the XML- and text-variants of Genshi used for bundle and file templating in BCFG2.
+
+And of course BCFG2 has a very traditional client/server model while BundleWrap runs only on the operators computer.
 
 |
 
