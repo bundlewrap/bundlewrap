@@ -36,8 +36,10 @@ class ApplyResult(object):
         self.fixed = 0
         self.skipped = 0
         self.failed = 0
+        self.profiling_info = []
 
-        for item_id, result in item_results:
+        for item_id, result, time_elapsed in item_results:
+            self.profiling_info.append((time_elapsed, item_id))
             if result == Item.STATUS_ACTION_SUCCEEDED:
                 self.correct += 1
             elif result == Item.STATUS_OK:
@@ -53,6 +55,9 @@ class ApplyResult(object):
                     "can't make sense of results for {} on {}: {}"
                 ).format(item_id, self.node_name, result))
 
+        self.profiling_info.sort()
+        self.profiling_info.reverse()
+
         self.start = None
         self.end = None
 
@@ -61,7 +66,7 @@ class ApplyResult(object):
         return self.end - self.start
 
 
-def apply_items(node, workers=1, interactive=False):
+def apply_items(node, workers=1, interactive=False, profiling=False):
     items = prepare_dependencies(node.items)
 
     with WorkerPool(workers=workers) as worker_pool:
@@ -156,7 +161,7 @@ def apply_items(node, workers=1, interactive=False):
                             print(formatted_result)
                         else:
                             LOG.info(formatted_result)
-                        yield (skipped_item.id, Item.STATUS_SKIPPED)
+                        yield (skipped_item.id, Item.STATUS_SKIPPED, msg['duration'])
                 else:
                     # if an item is applied successfully, all
                     # dependencies on it can be removed from the
@@ -194,7 +199,7 @@ def apply_items(node, workers=1, interactive=False):
                             ))
 
                 if item.ITEM_TYPE_NAME != 'dummy':
-                    yield (item.id, status_code)
+                    yield (item.id, status_code, msg['duration'])
 
                 # Finally, we have a new job queue. Thus, tell all idle
                 # workers to ask for work again.
@@ -383,7 +388,7 @@ class Node(object):
             for item in bundle.items:
                 yield item
 
-    def apply(self, interactive=False, force=False, workers=4):
+    def apply(self, interactive=False, force=False, workers=4, profiling=False):
         self.repo.hooks.node_apply_start(
             self.repo,
             self,
@@ -398,6 +403,7 @@ class Node(object):
                     self,
                     workers=worker_count,
                     interactive=interactive,
+                    profiling=profiling,
                 ))
         except NodeAlreadyLockedException as e:
             if not interactive:

@@ -1,3 +1,4 @@
+from datetime import datetime
 from inspect import ismethod, isgenerator
 from logging import getLogger, Handler
 from multiprocessing import Manager, Pipe, Process
@@ -67,6 +68,7 @@ def _worker_process(wid, messages, pipe, stdin=None):
             exception = None
             exception_task_id = None
             return_value = None
+            start = datetime.now()
             traceback = None
 
             try:
@@ -92,6 +94,7 @@ def _worker_process(wid, messages, pipe, stdin=None):
 
             finally:
                 messages.put({
+                    'duration': datetime.now() - start,
                     'exception': exception,
                     'exception_task_id': exception_task_id,
                     'msg': 'FINISHED_WORK',

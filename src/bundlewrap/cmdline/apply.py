@@ -82,6 +82,7 @@ def bw_apply(repo, args):
                             'force': args.force,
                             'interactive': args.interactive,
                             'workers': args.item_workers,
+                            'profiling': args.profiling,
                         },
                     )
                 else:
@@ -89,6 +90,16 @@ def bw_apply(repo, args):
             elif msg['msg'] == 'FINISHED_WORK':
                 node_name = msg['task_id']
                 results[node_name] = msg['return_value']
+
+                if args.profiling:
+                    total_time = 0.0
+                    yield _("{}: BEGIN PROFILING DATA (most expensive items first)").format(node_name)
+                    yield _("{}:    seconds   item").format(node_name)
+                    for time_elapsed, item_id in results[node_name].profiling_info:
+                        yield "{}: {:10.3f}   {}".format(node_name, time_elapsed.total_seconds(), item_id)
+                        total_time += time_elapsed.total_seconds()
+                    yield _("{}: {:10.3f}   (total)").format(node_name, total_time)
+                    yield _("{}: END PROFILING DATA").format(node_name)
 
                 if args.interactive:
                     yield _("\n{node}: run completed after {time}s ({stats})\n").format(
