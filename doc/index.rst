@@ -6,7 +6,7 @@ Check out the :doc:`quickstart tutorial <quickstart>` to get started.
 |
 
 Is BundleWrap the right tool for you?
-------------------------------------
+-------------------------------------
 
 We think you will enjoy BundleWrap a lot if you:
 
