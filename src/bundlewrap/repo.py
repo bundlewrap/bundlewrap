@@ -64,12 +64,16 @@ nodes = {
 }
 
 
-def groups_from_file(filepath):
+def groups_from_file(filepath, libs):
     """
     Returns all groups as defined in the given groups.py.
     """
     try:
-        flat_group_dict = utils.getattr_from_file(filepath, 'groups')
+        flat_group_dict = utils.getattr_from_file(
+            filepath,
+            'groups',
+            base_env={'libs': libs},
+        )
     except KeyError:
         raise RepositoryError(_(
             "{} must define a 'groups' variable"
@@ -216,12 +220,16 @@ class LibsProxy(object):
         self.__path = state
 
 
-def nodes_from_file(filepath):
+def nodes_from_file(filepath, libs):
     """
     Returns a list of nodes as defined in the given nodes.py.
     """
     try:
-        flat_node_dict = utils.getattr_from_file(filepath, 'nodes')
+        flat_node_dict = utils.getattr_from_file(
+            filepath,
+            'nodes',
+            base_env={'libs': libs},
+        )
     except KeyError:
         raise RepositoryError(
             _("{} must define a 'nodes' variable").format(filepath)
@@ -379,7 +387,7 @@ class Repository(object):
 
         # populate groups
         self.group_dict = {}
-        for group in groups_from_file(self.groups_file):
+        for group in groups_from_file(self.groups_file, self.libs):
             self.add_group(group)
 
         # populate items
@@ -389,7 +397,7 @@ class Repository(object):
 
         # populate nodes
         self.node_dict = {}
-        for node in nodes_from_file(self.nodes_file):
+        for node in nodes_from_file(self.nodes_file, self.libs):
             self.add_node(node)
 
     @utils.cached_property

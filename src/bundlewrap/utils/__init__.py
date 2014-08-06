@@ -77,12 +77,12 @@ def get_all_attrs_from_file(path, cache=True, base_env=None):
     return env
 
 
-def getattr_from_file(path, attrname, cache=True, default=__GETATTR_NODEFAULT):
+def getattr_from_file(path, attrname, base_env=None, cache=True, default=__GETATTR_NODEFAULT):
     """
     Reads a specific 'attribute' (if it were a module) from a source
     file.
     """
-    env = get_all_attrs_from_file(path, cache=cache)
+    env = get_all_attrs_from_file(path, base_env=base_env, cache=cache)
     if default == __GETATTR_NODEFAULT:
         return env[attrname]
     else:
