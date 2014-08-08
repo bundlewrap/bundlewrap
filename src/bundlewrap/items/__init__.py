@@ -83,6 +83,9 @@ class Item(object):
         self.bundle = bundle
         self.has_been_triggered = has_been_triggered
         self.item_dir = join(bundle.bundle_dir, self.BUNDLE_ATTRIBUTE_NAME)
+        self.item_data_dir = join(
+            bundle.repo.path, "data", bundle.name, self.BUNDLE_ATTRIBUTE_NAME
+        )
         self.name = name
         self.node = bundle.node
 

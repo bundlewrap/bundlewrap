@@ -33,7 +33,7 @@ def content_processor_jinja2(item):
             "You probably have to install it using `pip install Jinja2`."
         ).format(item=item.id))
 
-    loader = FileSystemLoader(searchpath=item.item_dir)
+    loader = FileSystemLoader(searchpath=[item.item_data_dir, item.item_dir])
     env = Environment(loader=loader)
 
     template = env.from_string(item._template_content.decode('utf-8'))
@@ -78,7 +78,7 @@ def content_processor_mako(item):
     template = Template(
         item._template_content,
         input_encoding='utf-8',
-        lookup=TemplateLookup(directories=[item.item_dir]),
+        lookup=TemplateLookup(directories=[item.item_data_dir, item.item_dir]),
         output_encoding=item.attributes['encoding'],
     )
     LOG.debug("{node}:{bundle}:{item}: rendering with Mako...".format(
