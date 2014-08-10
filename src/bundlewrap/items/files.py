@@ -249,9 +249,14 @@ class File(Item):
     @property
     def _template_content(self):
         if self.attributes['source'] is not None:
-            filename = join(self.item_dir, self.attributes['source'])
-            with open(filename) as f:
-                content = f.read()
+            filename = join(self.item_data_dir, self.attributes['source'])
+            if exists(filename):
+                with open(filename) as f:
+                    content = f.read()
+            else:
+                filename = join(self.item_dir, self.attributes['source'])
+                with open(filename) as f:
+                    content = f.read()
             return content
         else:
             return self.attributes['content']
@@ -269,6 +274,9 @@ class File(Item):
 
     @cached_property
     def template(self):
+        data_template = join(self.item_data_dir, self.attributes['source'])
+        if exists(data_template):
+            return data_template
         return join(self.item_dir, self.attributes['source'])
 
     def ask(self, status):
