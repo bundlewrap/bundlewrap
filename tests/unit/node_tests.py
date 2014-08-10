@@ -132,7 +132,7 @@ class ApplyItemsTest(TestCase):
         node = MagicMock()
         node.items = [i1, i2, i3]
 
-        results = list(apply_items(node, interactive=True))
+        results = list(apply_items(node, interactive=True, profiling=True))
 
         self.assertEqual(results[0][0], "type1:name3")
         self.assertEqual(results[1][0], "type1:name2")
@@ -145,7 +145,7 @@ class ApplyResultTest(TestCase):
     """
     def test_correct(self):
         item_results = (
-            ("item_id", Item.STATUS_OK),
+            ("item_id", Item.STATUS_OK, None),
         )
         output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 1)
@@ -155,7 +155,7 @@ class ApplyResultTest(TestCase):
 
     def test_fixed(self):
         item_results = (
-            ("item_id", Item.STATUS_FIXED),
+            ("item_id", Item.STATUS_FIXED, None),
         )
         output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 0)
@@ -165,7 +165,7 @@ class ApplyResultTest(TestCase):
 
     def test_skipped(self):
         item_results = (
-            ("item_id", Item.STATUS_SKIPPED),
+            ("item_id", Item.STATUS_SKIPPED, None),
         )
         output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 0)
@@ -175,7 +175,7 @@ class ApplyResultTest(TestCase):
 
     def test_failed(self):
         item_results = (
-            ("item_id", Item.STATUS_FAILED),
+            ("item_id", Item.STATUS_FAILED, None),
         )
         output_result = ApplyResult(MagicMock(), item_results)
         self.assertEqual(output_result.correct, 0)
@@ -185,7 +185,7 @@ class ApplyResultTest(TestCase):
 
     def test_bs(self):
         item_results = (
-            ("item_id", 777),
+            ("item_id", 777, None),
         )
         with self.assertRaises(RuntimeError):
             ApplyResult(MagicMock(), item_results)
