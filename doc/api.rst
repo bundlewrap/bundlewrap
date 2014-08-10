@@ -83,6 +83,15 @@ Reference
 		:return: The node object for the given name
 		:rtype: :py:class:`bundlewrap.node.Node`
 
+	|
+
+	.. py:method:: nodes_in_all_groups(group_name1, group_name2, ...)
+
+		Returns a list of nodes where every node is a member of every group given.
+
+		:param str group_nameN: Groups to search for common nodes.
+		:return: All nodes common to all given groups.
+		:rtype: list
 
 |
 |

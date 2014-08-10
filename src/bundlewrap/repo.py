@@ -371,6 +371,21 @@ class Repository(object):
     def nodes(self):
         return sorted(self.node_dict.values())
 
+    def nodes_in_all_groups(self, *group_names):
+        """
+        Returns a list of nodes where every node is a member of every
+        group given.
+        """
+        base_group = set(self.get_group(group_names[0]).nodes)
+        for group_name in group_names[1:]:
+            if not base_group:
+                # quit early if we have already eliminated every node
+                break
+            base_group.intersection_update(set(self.get_group(group_name).nodes))
+        result = list(base_group)
+        result.sort()
+        return result
+
     def populate_from_path(self, path):
         if not self.is_repo(path):
             raise NoSuchRepository(

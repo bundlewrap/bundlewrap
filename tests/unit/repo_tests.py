@@ -5,6 +5,8 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
+from mock import MagicMock
+
 from bundlewrap import repo
 from bundlewrap.items import Item
 from bundlewrap.repo import Repository
@@ -94,7 +96,6 @@ class RepoBundlesTest(RepoTest):
         )
 
 
-
 class RepoItemClasses2Test(RepoTest):
     """
     Tests bundlewrap.repo.Repository.item_classes.
@@ -116,3 +117,41 @@ class RepoItemClasses2Test(RepoTest):
             if hasattr(cls, 'bad'):
                 self.assertFalse(cls.bad)
             self.assertTrue(issubclass(cls, Item))
+
+
+class RepoNodesWithAllGroupsTest(TestCase):
+    def test_some_members(self):
+        def _get_group(group_name):
+            group = MagicMock()
+            if group_name == "group1":
+                group.nodes = ["node1", "node2", "node3"]
+            if group_name == "group2":
+                group.nodes = ["node2", "node3"]
+            if group_name == "group3":
+                group.nodes = ["node2", "node3", "node4"]
+            return group
+        r = Repository()
+        r.get_group = _get_group
+
+        self.assertEqual(
+            r.nodes_in_all_groups("group1", "group2", "group3"),
+            ["node2", "node3"],
+        )
+
+    def test_no_members(self):
+        def _get_group(group_name):
+            group = MagicMock()
+            if group_name == "group1":
+                group.nodes = ["node1", "node2", "node3"]
+            if group_name == "group2":
+                group.nodes = ["node4"]
+            if group_name == "group3":
+                group.nodes = ["node2", "node3"]
+            return group
+        r = Repository()
+        r.get_group = _get_group
+
+        self.assertEqual(
+            r.nodes_in_all_groups("group1", "group2", "group3"),
+            [],
+        )
