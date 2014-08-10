@@ -25,6 +25,7 @@ class Bundle(object):
             raise RepositoryError(_("bundle not found: {}").format(name))
 
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
+        self.bundle_data_dir = join(self.repo.data_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
 
     def __getstate__(self):

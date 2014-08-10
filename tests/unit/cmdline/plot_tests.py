@@ -25,6 +25,7 @@ class PlotTest(TestCase):
 
         class FakeBundle(object):
             bundle_dir = "/dev/null"
+            bundle_data_dir = "/dev/null"
             node = None
 
         item1 = FakeItem1(FakeBundle(), "item1", {})

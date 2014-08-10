@@ -11,6 +11,7 @@ from .utils.scm import get_rev
 from .utils.text import mark_for_translation as _, validate_name
 
 DIRNAME_BUNDLES = "bundles"
+DIRNAME_DATA = "data"
 DIRNAME_HOOKS = "hooks"
 DIRNAME_ITEM_TYPES = "items"
 DIRNAME_LIBS = "libs"
@@ -407,6 +408,7 @@ class Repository(object):
     def _set_path(self, path):
         self.path = path
         self.bundles_dir = join(self.path, DIRNAME_BUNDLES)
+        self.data_dir = join(self.path, DIRNAME_DATA)
         self.hooks_dir = join(self.path, DIRNAME_HOOKS)
         self.items_dir = join(self.path, DIRNAME_ITEM_TYPES)
         self.groups_file = join(self.path, FILENAME_GROUPS)

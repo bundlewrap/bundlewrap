@@ -18,6 +18,7 @@ class MockNode(object):
 class MockBundle(object):
     name = "mock"
     bundle_dir = ""
+    bundle_data_dir = ""
     items = []
 
 
