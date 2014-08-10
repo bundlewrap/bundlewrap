@@ -371,7 +371,7 @@ class Repository(object):
     def nodes(self):
         return sorted(self.node_dict.values())
 
-    def nodes_in_all_groups(self, *group_names):
+    def nodes_in_all_groups(self, group_names):
         """
         Returns a list of nodes where every node is a member of every
         group given.
@@ -385,6 +385,15 @@ class Repository(object):
         result = list(base_group)
         result.sort()
         return result
+
+    def nodes_in_any_group(self, group_names):
+        """
+        Returns all nodes that are a member of at least one of the given
+        groups.
+        """
+        for node in self.nodes:
+            if node.in_any_group(group_names):
+                yield node
 
     def populate_from_path(self, path):
         if not self.is_repo(path):

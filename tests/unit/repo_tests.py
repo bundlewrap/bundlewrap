@@ -134,7 +134,7 @@ class RepoNodesWithAllGroupsTest(TestCase):
         r.get_group = _get_group
 
         self.assertEqual(
-            r.nodes_in_all_groups("group1", "group2", "group3"),
+            r.nodes_in_all_groups(["group1", "group2", "group3"]),
             ["node2", "node3"],
         )
 
@@ -152,6 +152,6 @@ class RepoNodesWithAllGroupsTest(TestCase):
         r.get_group = _get_group
 
         self.assertEqual(
-            r.nodes_in_all_groups("group1", "group2", "group3"),
+            r.nodes_in_all_groups(["group1", "group2", "group3"]),
             [],
         )

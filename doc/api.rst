@@ -85,13 +85,23 @@ Reference
 
 	|
 
-	.. py:method:: nodes_in_all_groups(group_name1, group_name2, ...)
+	.. py:method:: nodes_in_all_groups(group_names)
 
 		Returns a list of nodes where every node is a member of every group given.
 
-		:param str group_nameN: Groups to search for common nodes.
+		:param list group_names: Names of groups to search for common nodes.
 		:return: All nodes common to all given groups.
 		:rtype: list
+
+	|
+
+	.. py:method:: nodes_in_any_group(group_names)
+
+		Returns all nodes that are a member of at least one of the given groups.
+
+		:param str group_names: Names of groups to search for nodes.
+		:return: All nodes present in at least one group.
+		:rtype: generator
 
 |
 |
