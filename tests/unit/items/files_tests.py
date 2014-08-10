@@ -179,6 +179,7 @@ class FileContentHashTest(TestCase):
     def test_binary(self, hash_local_file):
         bundle = MagicMock()
         bundle.bundle_dir = "/b/dir"
+        bundle.bundle_data_dir = "/d/dir"
         f = files.File(
             bundle,
             "/foo",
@@ -289,6 +290,7 @@ class FileFixContentTest(TestCase):
         node = MagicMock()
         bundle = MagicMock()
         bundle.bundle_dir = "/b/dir"
+        bundle.bundle_data_dir = "/d/dir"
         bundle.node = node
         f = files.File(
             bundle,
@@ -308,6 +310,7 @@ class FileFixContentTest(TestCase):
         node = MagicMock()
         bundle = MagicMock()
         bundle.bundle_dir = "/b/dir"
+        bundle.bundle_data_dir = "/d/dir"
         bundle.node = node
         f = files.File(
             bundle,
@@ -565,6 +568,7 @@ class FileTestTest(TestCase):
     def test_missing_template(self):
         bundle = MagicMock()
         bundle.bundle_dir = "/bogus"
+        bundle.bundle_data_dir = "/notthere"
         f = files.File(bundle, "foo", { 'source': "bogus" })
         with self.assertRaises(BundleError):
             f.test()
@@ -572,6 +576,7 @@ class FileTestTest(TestCase):
     def test_content_fails(self):
         bundle = MagicMock()
         bundle.bundle_dir = "/tmp/bw_file_test"
+        bundle.bundle_data_dir = "/d/dir"
         f = files.File(bundle, "foo", { 'content_type': 'mako', 'source': "fail" })
         with self.assertRaises(CompileException):
             f.test()
@@ -579,6 +584,7 @@ class FileTestTest(TestCase):
     def test_content_ok(self):
         bundle = MagicMock()
         bundle.bundle_dir = "/tmp/bw_file_test"
+        bundle.bundle_data_dir = "/d/dir"
         f = files.File(bundle, "foo", { 'content_type': 'mako', 'source': "success" })
         f.test()
 
