@@ -6,6 +6,7 @@ from .apply import bw_apply
 from .debug import bw_debug
 from .groups import bw_groups
 from .items import bw_items
+from .metadata import bw_metadata
 from .nodes import bw_nodes
 from .plot import bw_plot_node
 from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_plugin_install, \
@@ -151,6 +152,16 @@ def build_parser_bw():
         action='store_true',
         dest='show_repr',
         help=_("show more verbose representation of each item"),
+    )
+
+    # bw metadata
+    parser_metadata = subparsers.add_parser("metadata")
+    parser_metadata.set_defaults(func=bw_metadata)
+    parser_metadata.add_argument(
+        'target',
+        metavar=_("NODE|GROUP"),
+        type=str,
+        help=_("node or group to print JSON-formatted metadata for"),
     )
 
     # bw nodes
