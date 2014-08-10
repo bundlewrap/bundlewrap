@@ -442,9 +442,13 @@ class Node(object):
     def metadata(self):
         m = {}
         group_order = _flatten_group_hierarchy(self.groups)
-        for group in group_order:
-            m.update(self.repo.get_group(group).metadata)
+        for group_name in group_order:
+            m.update(self.repo.get_group(group_name).metadata)
         m.update(self._node_metadata)
+        for group_name in group_order:
+            group = self.repo.get_group(group_name)
+            for metadata_processor in group.metadata_processors:
+                m = metadata_processor(self.name, group_order, m)
         return m
 
     @property

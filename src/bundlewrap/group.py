@@ -40,6 +40,7 @@ class Group(object):
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.metadata = infodict.get('metadata', {})
+        self.metadata_processor_names = infodict.get('metadata_processors', [])
         self.password = infodict.get('password', None)
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
@@ -47,11 +48,30 @@ class Group(object):
     def __cmp__(self, other):
         return cmp(self.name, other.name)
 
+    def __getstate__(self):
+        """
+        Removes cached metadata processors prior to pickling because
+        they can't be pickled.
+        """
+        try:
+            del self._cache['metadata_processors']
+        except:
+            pass
+        return self.__dict__
+
     def __repr__(self):
         return "<Group: {}>".format(self.name)
 
     def __str__(self):
         return self.name
+
+    @cached_property
+    def metadata_processors(self):
+        for metadata_processor_name in self.metadata_processor_names:
+            module_name, function_name = metadata_processor_name.split(".")
+            module = getattr(self.repo.libs, module_name)
+            metadata_processor = getattr(module, function_name)
+            yield metadata_processor
 
     @cached_property
     def nodes(self):
