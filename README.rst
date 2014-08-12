@@ -28,4 +28,6 @@ For more information, have a look at `bundlewrap.org <http://bundlewrap.org/>`_.
     :target: https://pypi.python.org/pypi/bundlewrap/
     :alt: License
 
+------------------------------------------------------------------------
+
 BundleWrap is Copyright © 2014 `Torsten Rehn <mailto:torsten@rehn.email>`_
