@@ -86,10 +86,5 @@ def run_tests(coverage=True):
             local("nosetests")
 
 
-def shell():
-    os.environ['PYTHONPATH'] = PROJECT_PATH + "/src"
-    local("python")
-
-
 def submit_coverage():
     local("coveralls")
