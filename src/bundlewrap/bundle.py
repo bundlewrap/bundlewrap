@@ -1,6 +1,6 @@
 from os.path import join
 
-from .exceptions import RepositoryError
+from .exceptions import NoSuchBundle, RepositoryError
 from .utils import cached_property, get_all_attrs_from_file
 from .utils.text import mark_for_translation as _
 from .utils.text import validate_name
@@ -22,7 +22,7 @@ class Bundle(object):
             raise RepositoryError(_("invalid bundle name: {}").format(name))
 
         if not name in self.repo.bundle_names:
-            raise RepositoryError(_("bundle not found: {}").format(name))
+            raise NoSuchBundle(_("bundle not found: {}").format(name))
 
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
         self.bundle_data_dir = join(self.repo.data_dir, self.name)

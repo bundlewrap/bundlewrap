@@ -5,6 +5,13 @@ class ActionFailure(Exception):
     pass
 
 
+class NoSuchBundle(Exception):
+    """
+    Raised when a bundle of unknown name is requested.
+    """
+    pass
+
+
 class NoSuchGroup(Exception):
     """
     Raised when a group of unknown name is requested.

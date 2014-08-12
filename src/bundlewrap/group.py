@@ -1,6 +1,6 @@
 import re
 
-from .exceptions import RepositoryError
+from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .utils import cached_property
 from .utils.text import mark_for_translation as _, validate_name
 
@@ -34,7 +34,7 @@ class Group(object):
             infodict = {}
 
         if not validate_name(group_name):
-            raise RepositoryError(_("'{}' is not a valid group name").format(group_name))
+            raise RepositoryError(_("'{}' is not a valid group name.").format(group_name))
 
         self.name = group_name
         self.bundle_names = infodict.get('bundles', [])
@@ -87,7 +87,16 @@ class Group(object):
     @property
     def _nodes_from_static_members(self):
         for node_name in self.static_member_names:
-            yield self.repo.get_node(node_name)
+            try:
+                yield self.repo.get_node(node_name)
+            except NoSuchNode:
+                raise NoSuchNode(_(
+                    "Group '{group}' has '{node}' listed as a member in groups.py, "
+                    "but no such node could be found."
+                ).format(
+                    group=self.name,
+                    node=node_name,
+                ))
 
     @property
     def _nodes_from_subgroups(self):
@@ -109,7 +118,16 @@ class Group(object):
         """
         for name in self.immediate_subgroup_names:
             if name not in visited_names:
-                group = self.repo.get_group(name)
+                try:
+                    group = self.repo.get_group(name)
+                except NoSuchGroup:
+                    raise NoSuchGroup(_(
+                        "Group '{group}' has '{subgroup}' listed as a subgroup in groups.py, "
+                        "but no such group could be found."
+                    ).format(
+                        group=self.name,
+                        subgroup=name,
+                    ))
                 for group_name in group._check_subgroup_names(
                     visited_names + [self.name],
                 ):
@@ -121,7 +139,7 @@ class Group(object):
                     visited_names,
                 )
                 raise RepositoryError(_(
-                    "{group} can't be a subgroup of itself "
+                    "Group '{group}' can't be a subgroup of itself. "
                     "({chain})").format(
                         group=name,
                         chain=" -> ".join(error_chain),

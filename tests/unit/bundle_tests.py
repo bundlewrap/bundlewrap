@@ -4,7 +4,7 @@ from mock import MagicMock, patch
 
 from bundlewrap.bundle import Bundle
 from bundlewrap.items import Item
-from bundlewrap.exceptions import RepositoryError
+from bundlewrap.exceptions import NoSuchBundle, RepositoryError
 from bundlewrap.utils import names
 
 
@@ -12,15 +12,14 @@ class BundleInitTest(TestCase):
     """
     Tests initialization of bundlewrap.bundle.Bundle.
     """
-    @patch('bundlewrap.bundle.validate_name', return_value=False)
     def test_bad_bundle_name(self, *args):
         with self.assertRaises(RepositoryError):
-            Bundle(MagicMock(), "name")
+            Bundle(MagicMock(), "invalid name")
 
     def test_unknown_bundle(self, *args):
         repo = MagicMock()
         repo.bundle_names = []
-        with self.assertRaises(RepositoryError):
+        with self.assertRaises(NoSuchBundle):
             Bundle(repo, "name")
 
 

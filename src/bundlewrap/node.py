@@ -12,10 +12,20 @@ from time import time
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .deps import find_item, prepare_dependencies, remove_item_dependents, remove_dep_from_items, \
-    split_items_without_deps
-from .exceptions import ItemDependencyError, NodeAlreadyLockedException, NoSuchItem,\
-    RepositoryError
+from .deps import (
+    find_item,
+    prepare_dependencies,
+    remove_item_dependents,
+    remove_dep_from_items,
+    split_items_without_deps,
+)
+from .exceptions import (
+    ItemDependencyError,
+    NodeAlreadyLockedException,
+    NoSuchBundle,
+    NoSuchItem,
+    RepositoryError,
+)
 from .items import Item
 from .utils import cached_property, LOG, graph_for_items, names
 from .utils.text import mark_for_translation as _
@@ -352,7 +362,16 @@ class Node(object):
         for bundle_name in found_bundles + list(self._bundles):
             if bundle_name not in added_bundles:
                 added_bundles.append(bundle_name)
-                yield Bundle(self, bundle_name)
+                try:
+                    yield Bundle(self, bundle_name)
+                except NoSuchBundle:
+                    raise NoSuchBundle(_(
+                        "Node '{node}' wants bundle '{bundle}', but it doesn't exist."
+                    ).format(
+                        bundle=bundle_name,
+                        node=self.name,
+                    ))
+
 
     @cached_property
     def groups(self):
