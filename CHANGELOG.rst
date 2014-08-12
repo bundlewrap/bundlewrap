@@ -1,3 +1,17 @@
+1.1.0
+=====
+
+2014-08-11
+
+* added metadata processors
+* added `bw metadata`
+* added `bw apply --profiling`
+* added Repository.nodes_in_all_groups()
+* added Repository.nodes_in_any_group()
+* added the data subdirectory
+* improved various error messages
+
+
 1.0.0
 =====
 
