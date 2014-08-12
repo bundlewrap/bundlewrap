@@ -9,7 +9,7 @@ if version_info < (2, 7):
 
 setup(
     name="bundlewrap",
-    version="1.1.0",
+    version="1.2.0-dev",
     description="Config management with Python",
     long_description=(
         "By allowing for easy and low-overhead config management, BundleWrap fills the gap between complex deployments using Chef or Puppet and old school system administration over SSH.\n"
