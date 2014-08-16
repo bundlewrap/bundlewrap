@@ -99,7 +99,7 @@ Reference
 
 		Returns all nodes that are a member of at least one of the given groups.
 
-		:param str group_names: Names of groups to search for nodes.
+		:param list group_names: Names of groups to search for nodes.
 		:return: All nodes present in at least one group.
 		:rtype: generator
 
