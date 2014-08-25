@@ -144,7 +144,7 @@ This is a list of all functions a hook file may implement.
 |
 |
 
-.. py:function:: node_run_start(repo, node, command, duration=None, return_code=None, stdout="", stderr="", **kwargs)
+.. py:function:: node_run_end(repo, node, command, duration=None, return_code=None, stdout="", stderr="", **kwargs)
 
     Called each time a :command:`bw run` command finishes on a node.
 
@@ -171,7 +171,7 @@ This is a list of all functions a hook file may implement.
 |
 |
 
-.. py:function:: run_start(repo, target, nodes, command, duration=None, **kwargs)
+.. py:function:: run_end(repo, target, nodes, command, duration=None, **kwargs)
 
     Called each time a :command:`bw run` command finishes.
 
