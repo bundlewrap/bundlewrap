@@ -79,6 +79,16 @@ def main(*args):
     parser_bw = build_parser_bw()
     pargs = parser_bw.parse_args(args)
 
+    try:
+        interactive = pargs.interactive
+    except AttributeError:
+        interactive = False
+
+    set_up_logging(
+        debug=pargs.debug,
+        interactive=interactive,
+    )
+
     if len(args) >= 1 and (
         args[0] == "--version" or
         (len(args) >= 2 and args[0] == "repo" and args[1] == "create") or
@@ -101,15 +111,6 @@ def main(*args):
         elif pargs.ask_password:
             repo.password = getpass(_("Enter global default SSH/sudo password: "))
 
-    try:
-        interactive = pargs.interactive
-    except AttributeError:
-        interactive = False
-
-    set_up_logging(
-        debug=pargs.debug,
-        interactive=interactive,
-    )
 
     output = pargs.func(repo, pargs)
     if output is None:
