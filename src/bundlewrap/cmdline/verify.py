@@ -9,7 +9,7 @@ from ..utils.text import error_summary, red
 
 def bw_verify(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args.target)
+    pending_nodes = get_target_nodes(repo, args.target)
     with WorkerPool(workers=args.node_workers) as worker_pool:
         while worker_pool.keep_running():
             try:
@@ -26,8 +26,8 @@ def bw_verify(repo, args):
                 errors.append(msg)
                 continue
             if msg['msg'] == 'REQUEST_WORK':
-                if target_nodes:
-                    node = target_nodes.pop()
+                if pending_nodes:
+                    node = pending_nodes.pop()
                     worker_pool.start_task(
                         msg['wid'],
                         node.verify,

@@ -12,9 +12,9 @@ from ..utils.text import red
 
 def bw_test(repo, args):
     if args.target:
-        target_nodes = get_target_nodes(repo, args.target)
+        pending_nodes = get_target_nodes(repo, args.target)
     else:
-        target_nodes = copy(list(repo.nodes))
+        pending_nodes = copy(list(repo.nodes))
     with WorkerPool(workers=args.node_workers) as worker_pool:
         while worker_pool.keep_running():
             try:
@@ -29,8 +29,8 @@ def bw_test(repo, args):
                 exit(1)
                 break  # for testing, when exit() is patched
             if msg['msg'] == 'REQUEST_WORK':
-                if target_nodes:
-                    node = target_nodes.pop()
+                if pending_nodes:
+                    node = pending_nodes.pop()
                     worker_pool.start_task(
                         msg['wid'],
                         node.test,

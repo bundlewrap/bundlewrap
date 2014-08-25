@@ -72,6 +72,7 @@ def run_on_node(node, command, may_fail, sudo, interactive):
 def bw_run(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args.target)
+    pending_nodes = target_nodes[:]
 
     repo.hooks.run_start(
         repo,
@@ -97,8 +98,8 @@ def bw_run(repo, args):
                 errors.append(msg)
                 continue
             if msg['msg'] == 'REQUEST_WORK':
-                if target_nodes:
-                    node = target_nodes.pop()
+                if pending_nodes:
+                    node = pending_nodes.pop()
                     worker_pool.start_task(
                         msg['wid'],
                         run_on_node,

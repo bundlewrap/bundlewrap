@@ -33,6 +33,7 @@ def format_node_result(result):
 def bw_apply(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args.target)
+    pending_nodes = target_nodes[:]
 
     repo.hooks.apply_start(
         repo,
@@ -59,8 +60,8 @@ def bw_apply(repo, args):
                 errors.append(msg)
                 continue
             if msg['msg'] == 'REQUEST_WORK':
-                if target_nodes:
-                    node = target_nodes.pop()
+                if pending_nodes:
+                    node = pending_nodes.pop()
                     node_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                     if args.interactive:
