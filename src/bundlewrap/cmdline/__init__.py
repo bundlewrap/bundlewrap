@@ -53,6 +53,8 @@ def set_up_logging(debug=False, interactive=False):
         format = "%(message)s"
         level = logging.INFO
 
+    logging.basicConfig(format=format, level=logging.ERROR)
+
     formatter = logging.Formatter(format)
 
     handler = FilteringHandler()
