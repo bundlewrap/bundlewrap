@@ -63,7 +63,6 @@ def set_up_logging(debug=False, interactive=False):
     root.addHandler(handler)
 
     logger = logging.getLogger('bundlewrap')
-    logger.addHandler(handler)
     logger.setLevel(level)
 
     logging.getLogger('paramiko').setLevel(logging.ERROR)
