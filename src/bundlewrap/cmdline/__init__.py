@@ -8,6 +8,7 @@ import re
 from sys import argv, exit, stderr, stdout
 
 from fabric.network import disconnect_all
+from fabric.state import env, output
 
 from ..exceptions import NoSuchRepository
 from ..repo import Repository
@@ -69,6 +70,14 @@ def set_up_logging(debug=False, interactive=False):
     logging.getLogger('passlib').setLevel(logging.ERROR)
 
 
+def set_up_fabric():
+    env.use_ssh_config = True
+    env.warn_only = True
+    # silence fabric
+    for key in output:
+        output[key] = False
+
+
 def main(*args):
     """
     Entry point for the 'bw' command line utility.
@@ -101,6 +110,7 @@ def main(*args):
         # 'bw repo create' is a special case that only takes a path
         repo = getcwd()
     else:
+        set_up_fabric()
         try:
             repo = Repository(getcwd())
         except NoSuchRepository:
