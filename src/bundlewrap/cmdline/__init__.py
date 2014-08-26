@@ -8,9 +8,9 @@ import re
 from sys import argv, exit, stderr, stdout
 
 from fabric.network import disconnect_all
-from fabric.state import env, output
 
 from ..exceptions import NoSuchRepository
+from ..operations import set_up_fabric
 from ..repo import Repository
 from ..utils.text import mark_for_translation as _, red
 from .parser import build_parser_bw
@@ -68,14 +68,6 @@ def set_up_logging(debug=False, interactive=False):
 
     logging.getLogger('paramiko').setLevel(logging.ERROR)
     logging.getLogger('passlib').setLevel(logging.ERROR)
-
-
-def set_up_fabric():
-    env.use_ssh_config = True
-    env.warn_only = True
-    # silence fabric
-    for key in output:
-        output[key] = False
 
 
 def main(*args):
