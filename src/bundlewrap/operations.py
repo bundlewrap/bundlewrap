@@ -14,11 +14,16 @@ from .utils import LOG
 from .utils.text import mark_for_translation as _, randstr
 from .utils.ui import LineBuffer
 
-env.use_ssh_config = True
-env.warn_only = True
-# silence fabric
-for key in output:
-    output[key] = False
+
+def set_up_fabric():
+    """
+    Setup fabric.
+    """
+    env.use_ssh_config = True
+    env.warn_only = True
+    # silence fabric
+    for key in output:
+        output[key] = False
 
 
 class FabricOutput(object):
