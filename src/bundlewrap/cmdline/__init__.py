@@ -54,16 +54,16 @@ def set_up_logging(debug=False, interactive=False):
         format = "%(message)s"
         level = logging.INFO
 
-    logging.basicConfig(format=format, level=logging.ERROR)
-
     formatter = logging.Formatter(format)
 
     handler = FilteringHandler()
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
+    root = logging.getLogger()
+    root.addHandler(handler)
+
     logger = logging.getLogger('bundlewrap')
-    logger.addHandler(handler)
     logger.setLevel(level)
 
     logging.getLogger('paramiko').setLevel(logging.ERROR)
