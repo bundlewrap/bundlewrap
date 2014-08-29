@@ -1,3 +1,4 @@
+from copy import deepcopy
 from os.path import join
 
 from .exceptions import NoSuchBundle, RepositoryError
@@ -33,11 +34,12 @@ class Bundle(object):
         Removes cached items prior to pickling because their classed are
         loaded dynamically and can't be pickled.
         """
+        state = deepcopy(self.__dict__)
         try:
-            del self._cache['items']
-        except:
+            del state['_cache']['items']
+        except KeyError:
             pass
-        return self.__dict__
+        return state
 
     @cached_property
     def items(self):
