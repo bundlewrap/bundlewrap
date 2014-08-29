@@ -31,7 +31,7 @@ class FilteringHandler(logging.Handler):
             if stream.isatty():
                 stream.write(msg)
             else:
-                stream.write(ANSI_ESCAPE.sub("", msg).encode('UTF-8'))
+                stream.write(ANSI_ESCAPE.sub("", msg).encode('utf-8'))
             stream.write("\n")
 
             self.acquire()

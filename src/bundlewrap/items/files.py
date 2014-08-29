@@ -154,7 +154,7 @@ def diff(content_old, content_new, filename, encoding_hint=None):
     ):
         suffix = ""
         try:
-            line = line.decode('UTF-8')
+            line = line.decode('utf-8')
         except UnicodeDecodeError:
             if encoding_hint and encoding_hint.lower() != "utf-8":
                 try:
