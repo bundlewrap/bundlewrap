@@ -1,3 +1,4 @@
+from copy import copy
 from imp import load_source
 from os import listdir, mkdir
 from os.path import isdir, isfile, join
@@ -265,8 +266,9 @@ class Repository(object):
         Removes cached item classes prior to pickling because they are loaded
         dynamically and can't be pickled.
         """
-        self.item_classes = []
-        return self.__dict__
+        state = copy(self.__dict__)
+        state['item_classes'] = []
+        return state
 
     def __setstate__(self, dict):
         self.__dict__ = dict
