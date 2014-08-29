@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 from copy import copy
-from sys import exit
 
 from ..concurrency import WorkerPool
-from ..exceptions import WorkerException
+from ..exceptions import PluginLocalConflict, WorkerException
+from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import red
+from ..utils.text import green, mark_for_translation as _, red
 
 
 def bw_test(repo, args):
@@ -26,8 +26,8 @@ def bw_test(repo, args):
                 )
                 yield msg
                 yield e.traceback
-                exit(1)
-                break  # for testing, when exit() is patched
+                yield 1
+                raise StopIteration()
             if msg['msg'] == 'REQUEST_WORK':
                 if pending_nodes:
                     node = pending_nodes.pop()
@@ -41,3 +41,22 @@ def bw_test(repo, args):
                     )
                 else:
                     worker_pool.quit(msg['wid'])
+
+    if args.plugin_conflict_error:
+        pm = PluginManager(repo.path)
+        for plugin, version in pm.list():
+            try:
+                pm.update(plugin, check_only=True)
+                yield _("{x} Plugin '{plugin}' has no local modifications.").format(
+                    plugin=plugin,
+                    x=green("✓"),
+                )
+            except PluginLocalConflict as e:
+                yield _("{x} Plugin '{plugin}' has local modifications.\n").format(
+                    plugin=plugin,
+                    x=red("✘"),
+                )
+                yield e.message
+                yield 1
+                raise StopIteration()
+
