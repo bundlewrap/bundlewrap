@@ -1,3 +1,4 @@
+from copy import deepcopy
 import re
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
@@ -53,11 +54,12 @@ class Group(object):
         Removes cached metadata processors prior to pickling because
         they can't be pickled.
         """
+        state = deepcopy(self.__dict__)
         try:
-            del self._cache['metadata_processors']
-        except:
+            del state['_cache']['metadata_processors']
+        except KeyError:
             pass
-        return self.__dict__
+        return state
 
     def __repr__(self):
         return "<Group: {}>".format(self.name)
