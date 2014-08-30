@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from copy import copy
 
 from ..concurrency import WorkerPool
-from ..exceptions import PluginLocalConflict, WorkerException
+from ..exceptions import WorkerException
 from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import green, mark_for_translation as _, red
@@ -45,18 +45,22 @@ def bw_test(repo, args):
     if args.plugin_conflict_error:
         pm = PluginManager(repo.path)
         for plugin, version in pm.list():
-            try:
-                pm.update(plugin, check_only=True)
+            local_changes = pm.local_modifications(plugin)
+            if local_changes:
+                yield _("{x} Plugin '{plugin}' has local modifications:").format(
+                    plugin=plugin,
+                    x=red("✘"),
+                )
+                for path, actual_checksum, should_checksum in local_changes:
+                    yield _("\t{path} ({actual_checksum}) should be {should_checksum}").format(
+                        actual_checksum=actual_checksum,
+                        path=path,
+                        should_checksum=should_checksum,
+                    )
+                yield 1
+                raise StopIteration()
+            else:
                 yield _("{x} Plugin '{plugin}' has no local modifications.").format(
                     plugin=plugin,
                     x=green("✓"),
                 )
-            except PluginLocalConflict as e:
-                yield _("{x} Plugin '{plugin}' has local modifications.\n").format(
-                    plugin=plugin,
-                    x=red("✘"),
-                )
-                yield e.message
-                yield 1
-                raise StopIteration()
-

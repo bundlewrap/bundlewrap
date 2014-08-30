@@ -57,6 +57,25 @@ class PluginManager(object):
         for plugin, info in self.plugin_db.items():
             yield (plugin, info['version'])
 
+    def local_modifications(self, plugin):
+        try:
+            plugin_data = self.plugin_db[plugin]
+        except KeyError:
+            raise NoSuchPlugin(_(
+                "The plugin '{plugin}' is not installed."
+            ).format(plugin=plugin))
+        local_changes = []
+        for filename, checksum in plugin_data['files'].items():
+            target_path = join(self.path, filename)
+            actual_checksum = hash_local_file(target_path)
+            if actual_checksum != checksum:
+                local_changes.append((
+                    target_path,
+                    actual_checksum,
+                    checksum,
+                ))
+        return local_changes
+
     def manifest_for_plugin(self, plugin):
         r = get(
             "{}/{}/manifest.json".format(self.base_url, plugin)
