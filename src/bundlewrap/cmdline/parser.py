@@ -107,6 +107,16 @@ def build_parser_bw():
     parser_debug = subparsers.add_parser("debug")
     parser_debug.set_defaults(func=bw_debug)
     parser_debug.add_argument(
+        "-c",
+        "--command",
+        default=None,
+        dest='command',
+        metavar=_("COMMAND"),
+        required=False,
+        type=str,
+        help=_("command to execute in lieu of REPL"),
+    )
+    parser_debug.add_argument(
         "-n",
         "--node",
         default=None,
