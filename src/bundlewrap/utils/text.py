@@ -5,6 +5,7 @@ from os import environ
 from os.path import normpath
 from random import choice
 from string import digits, letters
+from sys import version_info
 
 from fabric import colors as _fabric_colors
 
@@ -51,15 +52,12 @@ def force_text(data):
     Try to return a text aka unicode object from the given data.
     Also has Python 2/3 compatibility baked in. Oh the humanity.
     """
-    try:
-        return data.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            return data.decode('latin-1')
-        except:
-            pass
-    except:
-        pass
+    if version_info < (3, 0):
+        if isinstance(data, str):
+            return data.decode('utf-8', 'replace')
+    else:
+        if isinstance(data, bytes):
+            return data.decode('utf-8', 'replace')
     return data
 
 
