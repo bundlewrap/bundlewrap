@@ -32,7 +32,7 @@ Here are the steps:
 2. If you haven't already done so, please consider writing tests. Otherwise, someone else will have to do it for you.
 3. Same goes for documentation.
 4. Set up a `virtualenv <http://virtualenv.readthedocs.org/en/latest/>`_ and run :command:`pip install -r requirements-tests.txt`.
-5. Make sure, you may connect via :command:`ssh` to your localhost without using a password and that you are able to run :command:`sudo`.
+5. Make sure you can connect to your localhost via :command:`ssh` without using a password and that you are able to run :command:`sudo`.
 6. Run :command:`fab run_tests`
 7. Review and sign the :abbr:`CAA (Copyright Assignment Agreement)` by adding your name and email to the :file:`AUTHORS` file. (This step can be skipped if your contribution is too small to be considered intellectual property, e.g. spelling fixes)
 8. Open a pull request on `GitHub <https://github.com/bundlewrap/bundlewrap>`_.
