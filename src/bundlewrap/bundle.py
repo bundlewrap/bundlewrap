@@ -50,7 +50,7 @@ class Bundle(object):
         )
 
     @property
-    def item_generators(self):
+    def item_generator_names(self):
         return self.bundle_attrs.get('item_generators', [])
 
     @cached_property
