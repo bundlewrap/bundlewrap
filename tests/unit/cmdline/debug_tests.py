@@ -12,6 +12,7 @@ class DebugTest(TestCase):
     @patch('bundlewrap.cmdline.debug.interact')
     def test_interactive(self, interact):
         args = MagicMock()
+        args.command = None
         args.node = None
         repo_obj = MagicMock()
         repo_obj.path = "/dev/null"
@@ -32,6 +33,7 @@ class DebugTest(TestCase):
     def test_interactive_node(self, interact):
         args = MagicMock()
         args.node = "node1"
+        args.command = None
         args.itemid = None
         node = MagicMock()
         node.name = args.node

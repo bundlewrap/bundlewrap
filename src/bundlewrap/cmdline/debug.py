@@ -22,7 +22,7 @@ def bw_debug(repo, args):
         env = {'repo': repo}
         banner = DEBUG_BANNER
     else:
-        env = {'node': args.node, 'repo': repo}
+        env = {'node': repo.get_node(args.node), 'repo': repo}
         banner = DEBUG_BANNER_NODE
 
     if args.command:
