@@ -27,14 +27,14 @@ class TestTest(TestCase):
         node1 = FakeNode()
         repo_obj = MagicMock()
         repo_obj.nodes = (node1,)
+        repo_obj.path = "/dev/null"
         args = MagicMock()
         args.item_workers = 4
         args.node_workers = 1
         args.target = None
         list(test.bw_test(repo_obj, args))
 
-    @patch('bundlewrap.cmdline.test.exit')
-    def test_fail(self, exit):
+    def test_fail(self):
         node1 = FailNode()
         repo_obj = MagicMock()
         repo_obj.get_node.return_value = node1
@@ -42,5 +42,4 @@ class TestTest(TestCase):
         args.item_workers = 4
         args.node_workers = 1
         args.target = "node1"
-        list(test.bw_test(repo_obj, args))
-        exit.assert_called_once_with(1)
+        self.assertEqual(list(test.bw_test(repo_obj, args))[-1], 1)
