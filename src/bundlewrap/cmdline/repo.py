@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from ..exceptions import NoSuchPlugin
+from ..exceptions import NoSuchPlugin, PluginLocalConflict
 from ..plugins import PluginManager
 from ..repo import Repository
-from ..utils.text import mark_for_translation as _
+from ..utils.text import mark_for_translation as _, red
 
 
 def bw_repo_bundle_create(repo, args):
@@ -29,6 +29,12 @@ def bw_repo_plugin_install(repo, args):
                 yield line
     except NoSuchPlugin:
         yield _("unknown plugin '{plugin}'").format(plugin=args.plugin)
+        yield 1
+    except PluginLocalConflict as e:
+        yield _("{x} plugin installation failed: {reason}").format(
+            reason=e.message,
+            x=red("!!!"),
+        )
         yield 1
 
 
