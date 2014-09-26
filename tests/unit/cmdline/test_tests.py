@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mock import MagicMock, patch
+from mock import MagicMock
 
 from bundlewrap.cmdline import test
 
