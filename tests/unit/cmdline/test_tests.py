@@ -31,6 +31,7 @@ class TestTest(TestCase):
         args = MagicMock()
         args.item_workers = 4
         args.node_workers = 1
+        args.plugin_conflict_error = True
         args.target = None
         list(test.bw_test(repo_obj, args))
 
@@ -41,5 +42,6 @@ class TestTest(TestCase):
         args = MagicMock()
         args.item_workers = 4
         args.node_workers = 1
+        args.plugin_conflict_error = False
         args.target = "node1"
         self.assertEqual(list(test.bw_test(repo_obj, args))[-1], 1)
