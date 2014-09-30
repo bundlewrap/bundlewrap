@@ -55,7 +55,7 @@ class Bundle(object):
 
     @cached_property
     def _generated_items(self):
-        return self.node._generated_items_for_bundle(self)
+        return self.node._generated_items_for_bundle(self.name)
 
     @cached_property
     def _static_items(self):
