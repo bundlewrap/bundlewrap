@@ -170,34 +170,32 @@ class HooksProxy(object):
                 self.__registered_hooks[filename].append(name)
 
 
-def items_from_path(itempath):
+def items_from_path(path):
     """
-    Looks for Item subclasses in the items directory that ships with
-    bundlewrap and the local items dir of this specific repo.
+    Looks for Item subclasses in the given path.
 
     An alternative method would involve metaclasses (as Django
     does it), but then it gets very hard to have two separate repos
     in the same process, because both of them would register config
     item classes globally.
     """
-    for path in items.__path__ + [itempath]:
-        if not isdir(path):
+    if not isdir(path):
+        raise StopIteration()
+    for filename in listdir(path):
+        filepath = join(path, filename)
+        if not filename.endswith(".py") or \
+                not isfile(filepath) or \
+                filename.startswith("_"):
             continue
-        for filename in listdir(path):
-            filepath = join(path, filename)
-            if not filename.endswith(".py") or \
-                    not isfile(filepath) or \
-                    filename.startswith("_"):
+        for name, obj in \
+                utils.get_all_attrs_from_file(filepath).items():
+            if obj == items.Item or name.startswith("_"):
                 continue
-            for name, obj in \
-                    utils.get_all_attrs_from_file(filepath).items():
-                if obj == items.Item or name.startswith("_"):
-                    continue
-                try:
-                    if issubclass(obj, items.Item):
-                        yield obj
-                except TypeError:
-                    pass
+            try:
+                if issubclass(obj, items.Item):
+                    yield obj
+            except TypeError:
+                pass
 
 
 class LibsProxy(object):
@@ -247,12 +245,13 @@ class Repository(object):
 
         self.bundle_names = []
         self.group_dict = {}
-        self.item_classes = []
         self.node_dict = {}
         self.password = password
 
         if repo_path is not None:
             self.populate_from_path(repo_path)
+        else:
+            self.item_classes = list(items_from_path(items.__path__[0]))
 
     def __eq__(self, other):
         if self.path == "/dev/null":
@@ -416,7 +415,7 @@ class Repository(object):
             self.add_group(group)
 
         # populate items
-        self.item_classes = []
+        self.item_classes = list(items_from_path(items.__path__[0]))
         for item_class in items_from_path(self.items_dir):
             self.item_classes.append(item_class)
 
