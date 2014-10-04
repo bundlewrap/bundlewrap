@@ -5,6 +5,8 @@ from mock import MagicMock, patch
 from bundlewrap.bundle import Bundle
 from bundlewrap.items import Item
 from bundlewrap.exceptions import NoSuchBundle, RepositoryError
+from bundlewrap.node import Node
+from bundlewrap.repo import Repository
 from bundlewrap.utils import names
 
 
@@ -45,3 +47,37 @@ class BundleItemsTest(TestCase):
         node.repo.item_classes = (MyItem, MyOtherItem)
         b = Bundle(node, "mybundle")
         self.assertEqual(set(names(b.items)), set(('name1', 'name2')))
+
+
+class BundleGeneratedItemsTest(TestCase):
+    """
+    Tests bundlewrap.bundle.Bundle._generated_items.
+    """
+    @patch('bundlewrap.bundle.get_all_attrs_from_file')
+    def test_generated_items(self, get_all_attrs_from_file):
+        def my_item_generator(node, bundle, item):
+            generated_items = {'files': {}}
+            if item.ITEM_TYPE_NAME == 'user':
+                file_path = "/home/{}/.screenrc".format(item.name)
+                generated_items['files'][file_path] = {
+                    'content': "foo",
+                }
+            return generated_items
+
+        get_all_attrs_from_file.return_value = {
+            'item_generators': [
+                'test.generator',
+            ],
+            'users': {
+                'jdoe': {},
+            },
+        }
+        repo = Repository()
+        repo.bundle_names = ["generatingbundle"]
+        repo.libs = MagicMock()
+        repo.libs.test.generator = my_item_generator
+        node = Node("node1", {'bundles': ["generatingbundle"]})
+        repo.add_node(node)
+        self.assertEqual(len(node.bundles[0]._generated_items), 1)
+        generated_item = node.bundles[0]._generated_items[0]
+        self.assertEqual(generated_item.id, "file:/home/jdoe/.screenrc")
