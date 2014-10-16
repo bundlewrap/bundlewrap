@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+
 class ActionFailure(Exception):
     """
     Raised when an action failes to meet the expected rcode/output.

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from base64 import b64decode
 from pipes import quote
 from stat import S_IRUSR, S_IWUSR

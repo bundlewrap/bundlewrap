@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from ..exceptions import NoSuchNode, NoSuchGroup, UsageException
 from . import names
 from .text import mark_for_translation as _
