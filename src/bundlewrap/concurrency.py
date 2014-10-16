@@ -95,17 +95,16 @@ def _worker_process(wid, messages, pipe, stdin=None):
                 traceback = "".join(format_exception(*sys.exc_info()))
                 return_value = None
 
-            finally:
-                messages.put({
-                    'duration': datetime.now() - start,
-                    'exception': exception,
-                    'exception_task_id': exception_task_id,
-                    'msg': 'FINISHED_WORK',
-                    'return_value': return_value,
-                    'task_id': msg['task_id'],
-                    'traceback': traceback,
-                    'wid': wid,
-                })
+            messages.put({
+                'duration': datetime.now() - start,
+                'exception': exception,
+                'exception_task_id': exception_task_id,
+                'msg': 'FINISHED_WORK',
+                'return_value': return_value,
+                'task_id': msg['task_id'],
+                'traceback': traceback,
+                'wid': wid,
+            })
 
 
 class WorkerPool(object):
