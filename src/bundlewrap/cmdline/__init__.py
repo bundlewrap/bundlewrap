@@ -93,11 +93,11 @@ def main(*args):
     )
 
     if len(args) >= 1 and (
-        args[0] == "--version" or
-        (len(args) >= 2 and args[0] == "repo" and args[1] == "create") or
-        args[0] == "zen" or
-        "-h" in args or
-        "--help" in args
+        args[0] == b"--version" or
+        (len(args) >= 2 and args[0] == b"repo" and args[1] == b"create") or
+        args[0] == b"zen" or
+        b"-h" in args or
+        b"--help" in args
     ):
         # 'bw repo create' is a special case that only takes a path
         repo = getcwd()
