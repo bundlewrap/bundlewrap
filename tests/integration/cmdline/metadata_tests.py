@@ -63,31 +63,27 @@ groups = {
 
     def test_group_metadata(self):
         r = Repository(self.tmpdir)
-        args = MagicMock()
-        args.target = "group1"
+        args = {'target': "group1"}
         result = "\n".join(list(bw_metadata(r, args)))
         self.assertFalse('"node": 47' in result)
         self.assertTrue('"group": 42' in result)
 
     def test_metadata_processor(self):
         r = Repository(self.tmpdir)
-        args = MagicMock()
-        args.target = "node1"
+        args = {'target': "node1"}
         result = "\n".join(list(bw_metadata(r, args)))
         self.assertTrue('"node": 48' in result)
         self.assertTrue('"group": 43' in result)
 
     def test_no_metadata_processor(self):
         r = Repository(self.tmpdir)
-        args = MagicMock()
-        args.target = "node2"
+        args = {'target': "node2"}
         result = "\n".join(list(bw_metadata(r, args)))
         self.assertTrue('"node": 47' in result)
         self.assertTrue('"group": 42' in result)
 
     def test_unknown_target(self):
         r = Repository(self.tmpdir)
-        args = MagicMock()
-        args.target = "node5000"
+        args = {'target': "node5000"}
         result = list(bw_metadata(r, args))
         self.assertEqual(result[-1], 1)

@@ -35,19 +35,19 @@ def format_node_result(result):
 
 def bw_apply(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args.target)
+    target_nodes = get_target_nodes(repo, args['target'])
     pending_nodes = target_nodes[:]
 
     repo.hooks.apply_start(
         repo,
-        args.target,
+        args['target'],
         target_nodes,
-        interactive=args.interactive,
+        interactive=args['interactive'],
     )
 
     start_time = datetime.now()
 
-    worker_count = 1 if args.interactive else args.node_workers
+    worker_count = 1 if args['interactive'] else args['node_workers']
     with WorkerPool(workers=worker_count) as worker_pool:
         results = {}
         while worker_pool.keep_running():
@@ -55,9 +55,9 @@ def bw_apply(repo, args):
                 msg = worker_pool.get_event()
             except WorkerException as e:
                 msg = "{} {}".format(red("!"), e.wrapped_exception)
-                if args.debug:
+                if args['debug']:
                     yield e.traceback
-                if not args.interactive:
+                if not args['interactive']:
                     msg = "{}: {}".format(e.task_id, msg)
                 yield msg
                 errors.append(msg)
@@ -67,7 +67,7 @@ def bw_apply(repo, args):
                     node = pending_nodes.pop()
                     node_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    if args.interactive:
+                    if args['interactive']:
                         yield _("\n{}: run started at {}").format(
                             bold(node.name),
                             node_start_time,
@@ -83,10 +83,10 @@ def bw_apply(repo, args):
                         node.apply,
                         task_id=node.name,
                         kwargs={
-                            'force': args.force,
-                            'interactive': args.interactive,
-                            'workers': args.item_workers,
-                            'profiling': args.profiling,
+                            'force': args['force'],
+                            'interactive': args['interactive'],
+                            'workers': args['item_workers'],
+                            'profiling': args['profiling'],
                         },
                     )
                 else:
@@ -95,7 +95,7 @@ def bw_apply(repo, args):
                 node_name = msg['task_id']
                 results[node_name] = msg['return_value']
 
-                if args.profiling:
+                if args['profiling']:
                     total_time = 0.0
                     yield _("{}: BEGIN PROFILING DATA (most expensive items first)").format(node_name)
                     yield _("{}:    seconds   item").format(node_name)
@@ -105,7 +105,7 @@ def bw_apply(repo, args):
                     yield _("{}: {:10.3f}   (total)").format(node_name, total_time)
                     yield _("{}: END PROFILING DATA").format(node_name)
 
-                if args.interactive:
+                if args['interactive']:
                     yield _("\n{node}: run completed after {time}s ({stats})\n").format(
                         node=bold(node_name),
                         time=results[node_name].duration.total_seconds(),
@@ -125,7 +125,7 @@ def bw_apply(repo, args):
 
     repo.hooks.apply_end(
         repo,
-        args.target,
+        args['target'],
         target_nodes,
         duration=datetime.now() - start_time,
     )

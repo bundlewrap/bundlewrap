@@ -4,18 +4,18 @@ from __future__ import unicode_literals
 from json import dumps
 
 from ..exceptions import NoSuchGroup, NoSuchNode
-from ..utils.text import red, mark_for_translation as _
+from ..utils.text import force_text, mark_for_translation as _, red
 
 
 def bw_metadata(repo, args):
     try:
-        target = repo.get_node(args.target)
+        target = repo.get_node(args['target'])
     except NoSuchNode:
         try:
-            target = repo.get_group(args.target)
+            target = repo.get_group(args['target'])
         except NoSuchGroup:
             yield _("{x} Node or group matching '{target}' not found").format(
-                target=args.target,
+                target=args['target'],
                 x=red("!!!"),
             )
             yield 1

@@ -47,10 +47,10 @@ class ItemsTest(TestCase):
             pass
 
     def test_simple_item_list(self):
-        args = MagicMock()
-        args.file_preview_path = None
-        args.node = "node1"
-        args.show_repr = False
+        args = {}
+        args['file_preview_path'] = None
+        args['node'] = "node1"
+        args['show_repr'] = False
 
         output = list(items.bw_items(self.repo, args))
 
@@ -66,10 +66,10 @@ class ItemsTest(TestCase):
         )
 
     def test_file_previews(self):
-        args = MagicMock()
-        args.file_preview_path = self.tmpdir
-        args.node = "node1"
-        args.show_repr = False
+        args = {}
+        args['file_preview_path'] = self.tmpdir
+        args['node'] = "node1"
+        args['show_repr'] = False
 
         list(items.bw_items(self.repo, args))
 

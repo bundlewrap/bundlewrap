@@ -9,8 +9,8 @@ from ..utils.text import error_summary, red
 
 def bw_verify(repo, args):
     errors = []
-    pending_nodes = get_target_nodes(repo, args.target)
-    with WorkerPool(workers=args.node_workers) as worker_pool:
+    pending_nodes = get_target_nodes(repo, args['target'])
+    with WorkerPool(workers=args['node_workers']) as worker_pool:
         while worker_pool.keep_running():
             try:
                 msg = worker_pool.get_event()
@@ -20,7 +20,7 @@ def bw_verify(repo, args):
                     e.task_id,
                     e.wrapped_exception,
                 )
-                if args.debug:
+                if args['debug']:
                     yield e.traceback
                 yield msg
                 errors.append(msg)
@@ -33,7 +33,7 @@ def bw_verify(repo, args):
                         node.verify,
                         task_id=node.name,
                         kwargs={
-                            'workers': args.item_workers,
+                            'workers': args['item_workers'],
                         },
                     )
                 else:

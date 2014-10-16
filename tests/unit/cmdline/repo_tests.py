@@ -15,9 +15,9 @@ class InstallTest(TestCase):
         install.side_effect = NoSuchPlugin
         repo = MagicMock()
         repo.path = "/dev/null"
-        args = MagicMock()
-        args.force = False
-        args.plugin = "foo"
+        args = {}
+        args['force'] = False
+        args['plugin'] = "foo"
         self.assertEqual(
             list(bw_repo_plugin_install(repo, args)),
             ["unknown plugin 'foo'", 1],
@@ -54,8 +54,11 @@ class UpdateTest(TestCase):
         update.return_value = (1, 2)
         repo = MagicMock()
         repo.path = "/dev/null"
-        args = MagicMock()
-        args.plugin = "foo"
+        args = {
+            'check_only': False,
+            'force': False,
+            'plugin': "foo",
+        }
         self.assertEqual(
             list(bw_repo_plugin_update(repo, args)),
             ["foo: 1 → 2"],
@@ -68,8 +71,11 @@ class UpdateTest(TestCase):
         listmethod.return_value = (("foo", 1),)
         repo = MagicMock()
         repo.path = "/dev/null"
-        args = MagicMock()
-        args.plugin = None
+        args = {
+            'check_only': False,
+            'force': False,
+            'plugin': None,
+        }
         self.assertEqual(
             list(bw_repo_plugin_update(repo, args)),
             ["foo: 1 → 2"],

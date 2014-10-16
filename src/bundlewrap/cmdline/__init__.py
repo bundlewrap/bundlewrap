@@ -12,7 +12,7 @@ from fabric.network import disconnect_all
 from ..exceptions import NoSuchRepository
 from ..operations import set_up_fabric
 from ..repo import Repository
-from ..utils.text import mark_for_translation as _, red
+from ..utils.text import force_text, mark_for_translation as _, red
 from .parser import build_parser_bw
 
 ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
@@ -115,8 +115,10 @@ def main(*args):
         elif pargs.ask_password:
             repo.password = getpass(_("Enter global default SSH/sudo password: "))
 
+    # convert all string args into text
+    text_args = {key: force_text(value) for key, value in vars(pargs).items()}
 
-    output = pargs.func(repo, pargs)
+    output = pargs.func(repo, text_args)
     if output is None:
         output = ()
 
