@@ -136,7 +136,7 @@ class WorkerException(Exception):
         return output
 
 
-class NodeAlreadyLockedException(UnicodeException):
+class NodeAlreadyLockedException(Exception):
     """
     Raised when a node is already locked during an 'apply' run.
     """
