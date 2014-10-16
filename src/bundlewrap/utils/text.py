@@ -46,6 +46,23 @@ def error_summary(errors):
         print(e)
 
 
+def force_text(data):
+    """
+    Try to return a text aka unicode object from the given data.
+    Also has Python 2/3 compatibility baked in. Oh the humanity.
+    """
+    try:
+        return data.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            return data.decode('latin-1')
+        except:
+            pass
+    except:
+        pass
+    return data
+
+
 def is_subdirectory(parent, child):
     """
     Returns True if the given child is a subdirectory of the parent.
