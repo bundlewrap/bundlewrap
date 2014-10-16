@@ -22,4 +22,4 @@ def bw_metadata(repo, args):
             raise StopIteration()
 
     for line in dumps(target.metadata, indent=4).splitlines():
-        yield line
+        yield force_text(line)

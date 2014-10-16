@@ -46,6 +46,6 @@ def bw_items(repo, args):
             if args['file_preview_path']:
                 pass
             if args['show_repr']:
-                yield repr(item)
+                yield force_text(repr(item))
             else:
-                yield str(item)
+                yield force_text(str(item))
