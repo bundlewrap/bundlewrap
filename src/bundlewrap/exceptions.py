@@ -5,7 +5,7 @@ from sys import version_info
 
 
 class UnicodeException(Exception):
-    def __init__(self, msg):
+    def __init__(self, msg=""):
         if version_info >= (3, 0):
             super(UnicodeException, self).__init__(msg)
         else:
