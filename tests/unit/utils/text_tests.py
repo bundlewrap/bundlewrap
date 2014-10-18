@@ -1,6 +1,31 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from unittest import TestCase
 
 from bundlewrap.utils import text
+
+
+class ForceTextTest(TestCase):
+    """
+    Tests bundlewrap.utils.text.force_text.
+    """
+    def test_nontext(self):
+        self.assertEqual(text.force_text(None), None)
+        self.assertEqual(text.force_text(True), True)
+        self.assertEqual(text.force_text(False), False)
+        e = Exception()
+        self.assertEqual(text.force_text(e), e)
+        self.assertEqual(text.force_text({}), {})
+
+    def test_unsupported_encoding(self):
+        self.assertEqual(text.force_text(u"ö".encode('latin-1')), u"�")
+
+    def test_unicode(self):
+        self.assertEqual(text.force_text(u"ö"), u"ö")
+
+    def test_utf8(self):
+        self.assertEqual(text.force_text(b"ö"), u"ö")
 
 
 class IsSubdirectoryTest(TestCase):
