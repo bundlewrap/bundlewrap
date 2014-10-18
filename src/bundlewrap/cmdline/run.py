@@ -71,18 +71,18 @@ def run_on_node(node, command, may_fail, sudo, interactive):
 
 def bw_run(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args.target)
+    target_nodes = get_target_nodes(repo, args['target'])
     pending_nodes = target_nodes[:]
 
     repo.hooks.run_start(
         repo,
-        args.target,
+        args['target'],
         target_nodes,
-        args.command,
+        args['command'],
     )
     start_time = datetime.now()
 
-    with WorkerPool(workers=args.node_workers) as worker_pool:
+    with WorkerPool(workers=args['node_workers']) as worker_pool:
         while worker_pool.keep_running():
             try:
                 msg = worker_pool.get_event()
@@ -92,7 +92,7 @@ def bw_run(repo, args):
                     red("!"),
                     e.wrapped_exception,
                 )
-                if args.debug:
+                if args['debug']:
                     yield e.traceback
                 yield msg
                 errors.append(msg)
@@ -106,10 +106,10 @@ def bw_run(repo, args):
                         task_id=node.name,
                         args=(
                             node,
-                            args.command,
-                            args.may_fail,
-                            args.sudo,
-                            args.node_workers == 1,
+                            args['command'],
+                            args['may_fail'],
+                            args['sudo'],
+                            args['node_workers'] == 1,
                         ),
                     )
                 else:
@@ -122,8 +122,8 @@ def bw_run(repo, args):
 
     repo.hooks.run_end(
         repo,
-        args.target,
+        args['target'],
         target_nodes,
-        args.command,
+        args['command'],
         duration=datetime.now() - start_time,
     )

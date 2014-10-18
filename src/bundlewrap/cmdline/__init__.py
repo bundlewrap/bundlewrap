@@ -12,7 +12,7 @@ from fabric.network import disconnect_all
 from ..exceptions import NoSuchRepository
 from ..operations import set_up_fabric
 from ..repo import Repository
-from ..utils.text import mark_for_translation as _, red
+from ..utils.text import force_text, mark_for_translation as _, red
 from .parser import build_parser_bw
 
 ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
@@ -93,11 +93,11 @@ def main(*args):
     )
 
     if len(args) >= 1 and (
-        args[0] == "--version" or
-        (len(args) >= 2 and args[0] == "repo" and args[1] == "create") or
-        args[0] == "zen" or
-        "-h" in args or
-        "--help" in args
+        args[0] == b"--version" or
+        (len(args) >= 2 and args[0] == b"repo" and args[1] == b"create") or
+        args[0] == b"zen" or
+        b"-h" in args or
+        b"--help" in args
     ):
         # 'bw repo create' is a special case that only takes a path
         repo = getcwd()
@@ -115,8 +115,10 @@ def main(*args):
         elif pargs.ask_password:
             repo.password = getpass(_("Enter global default SSH/sudo password: "))
 
+    # convert all string args into text
+    text_args = {key: force_text(value) for key, value in vars(pargs).items()}
 
-    output = pargs.func(repo, pargs)
+    output = pargs.func(repo, text_args)
     if output is None:
         output = ()
 

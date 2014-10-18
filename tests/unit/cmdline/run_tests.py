@@ -34,11 +34,12 @@ class RunTest(TestCase):
     """
     @patch('bundlewrap.cmdline.run.get_target_nodes')
     def test_single_node_fail(self, get_target_nodes):
-        args = MagicMock()
-        args.command = "foo"
-        args.may_fail = False
-        args.node_workers = 2
-        args.sudo = True
+        args = {}
+        args['command'] = "foo"
+        args['may_fail'] = False
+        args['node_workers'] = 2
+        args['sudo'] = True
+        args['target'] = "node1"
 
         node = FakeNode("node1")
         get_target_nodes.return_value = [node]
@@ -50,11 +51,12 @@ class RunTest(TestCase):
 
     @patch('bundlewrap.cmdline.run.get_target_nodes')
     def test_group_success(self, get_target_nodes):
-        args = MagicMock()
-        args.command = "foo"
-        args.may_fail = False
-        args.node_workers = 2
-        args.sudo = True
+        args = {}
+        args['command'] = "foo"
+        args['may_fail'] = False
+        args['node_workers'] = 2
+        args['sudo'] = True
+        args['target'] = "node1,node2"
 
         node1 = FakeNode("node1")
         node1.result.return_code = 0

@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from os import makedirs
 from os.path import dirname, exists, join
 
 from ..utils import LOG
-from ..utils.text import mark_for_translation as _
+from ..utils.text import force_text, mark_for_translation as _
 
 
 def write_preview(file_item, base_path):
@@ -18,12 +21,12 @@ def write_preview(file_item, base_path):
 
 
 def bw_items(repo, args):
-    node = repo.get_node(args.node)
-    if args.file_preview_path:
-        if exists(args.file_preview_path):
+    node = repo.get_node(args['node'])
+    if args['file_preview_path']:
+        if exists(args['file_preview_path']):
             LOG.error(_(
                 "not writing to existing path: {path}"
-            ).format(path=args.file_preview_path))
+            ).format(path=args['file_preview_path']))
             yield 1
         for item in node.items:
             if not item.id.startswith("file:"):
@@ -34,15 +37,15 @@ def bw_items(repo, args):
                 ).format(filename=item.name))
                 continue
             yield _("writing {path}...").format(path=join(
-                args.file_preview_path,
+                args['file_preview_path'],
                 item.name.lstrip("/"),
             ))
-            write_preview(item, args.file_preview_path)
+            write_preview(item, args['file_preview_path'])
     else:
         for item in node.items:
-            if args.file_preview_path:
+            if args['file_preview_path']:
                 pass
-            if args.show_repr:
-                yield repr(item)
+            if args['show_repr']:
+                yield force_text(repr(item))
             else:
-                yield str(item)
+                yield force_text(str(item))

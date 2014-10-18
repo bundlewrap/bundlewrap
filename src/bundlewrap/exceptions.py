@@ -1,53 +1,67 @@
-class ActionFailure(Exception):
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from sys import version_info
+
+
+class UnicodeException(Exception):
+    def __init__(self, msg=""):
+        if version_info >= (3, 0):
+            super(UnicodeException, self).__init__(msg)
+        else:
+            super(UnicodeException, self).__init__(msg.encode('utf-8'))
+
+
+class ActionFailure(UnicodeException):
     """
     Raised when an action failes to meet the expected rcode/output.
     """
     pass
 
 
-class NoSuchBundle(Exception):
+class NoSuchBundle(UnicodeException):
     """
     Raised when a bundle of unknown name is requested.
     """
     pass
 
 
-class NoSuchGroup(Exception):
+class NoSuchGroup(UnicodeException):
     """
     Raised when a group of unknown name is requested.
     """
     pass
 
 
-class NoSuchItem(Exception):
+class NoSuchItem(UnicodeException):
     """
     Raised when an item of unknown name is requested.
     """
     pass
 
 
-class NoSuchNode(Exception):
+class NoSuchNode(UnicodeException):
     """
     Raised when a node of unknown name is requested.
     """
     pass
 
 
-class NoSuchPlugin(Exception):
+class NoSuchPlugin(UnicodeException):
     """
     Raised when a plugin of unknown name is requested.
     """
     pass
 
 
-class RemoteException(Exception):
+class RemoteException(UnicodeException):
     """
     Raised when a shell command on a node fails.
     """
     pass
 
 
-class RepositoryError(Exception):
+class RepositoryError(UnicodeException):
     """
     Indicates that somethings is wrong with the current repository.
     """
@@ -97,7 +111,7 @@ class TemplateError(RepositoryError):
     pass
 
 
-class UsageException(Exception):
+class UsageException(UnicodeException):
     """
     Raised when command line options don't make sense.
     """

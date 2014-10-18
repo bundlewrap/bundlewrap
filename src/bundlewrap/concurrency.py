@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from datetime import datetime
 from inspect import ismethod, isgenerator
 from logging import getLogger, Handler
@@ -10,7 +13,7 @@ from fabric.network import disconnect_all
 
 from .exceptions import WorkerException
 from .utils import LOG
-from .utils.text import mark_for_translation as _
+from .utils.text import force_text, mark_for_translation as _
 
 JOIN_TIMEOUT = 5  # seconds
 
@@ -87,22 +90,21 @@ def _worker_process(wid, messages, pipe, stdin=None):
                     exception = e.wrapped_exception
                     exception_task_id = e.task_id
                 else:
-                    exception = str(e)
+                    exception = force_text(str(e))
                     exception_task_id = msg['task_id']
-                traceback = "".join(format_exception(*sys.exc_info()))
+                traceback = "".join([force_text(line) for line in format_exception(*sys.exc_info())])
                 return_value = None
 
-            finally:
-                messages.put({
-                    'duration': datetime.now() - start,
-                    'exception': exception,
-                    'exception_task_id': exception_task_id,
-                    'msg': 'FINISHED_WORK',
-                    'return_value': return_value,
-                    'task_id': msg['task_id'],
-                    'traceback': traceback,
-                    'wid': wid,
-                })
+            messages.put({
+                'duration': datetime.now() - start,
+                'exception': exception,
+                'exception_task_id': exception_task_id,
+                'msg': 'FINISHED_WORK',
+                'return_value': return_value,
+                'task_id': msg['task_id'],
+                'traceback': traceback,
+                'wid': wid,
+            })
 
 
 class WorkerPool(object):

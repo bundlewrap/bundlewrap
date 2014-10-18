@@ -18,14 +18,14 @@ DEBUG_BANNER_NODE = DEBUG_BANNER + "\n" + \
 
 def bw_debug(repo, args):
     repo = Repository(repo.path)
-    if args.node is None:
+    if args['node'] is None:
         env = {'repo': repo}
         banner = DEBUG_BANNER
     else:
-        env = {'node': repo.get_node(args.node), 'repo': repo}
+        env = {'node': repo.get_node(args['node']), 'repo': repo}
         banner = DEBUG_BANNER_NODE
 
-    if args.command:
-        exec(args.command, env)
+    if args['command']:
+        exec(args['command'], env)
     else:
         interact(banner, local=env)

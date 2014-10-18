@@ -27,8 +27,7 @@ class GroupsTest(TestCase):
         self.repo.groups = [group1, group2, group3]
 
     def test_simple_group_list(self):
-        args = MagicMock()
-        args.show_nodes = False
+        args = {'show_nodes': False}
         output = list(groups.bw_groups(self.repo, args))
         self.assertEqual(
             output,
@@ -36,8 +35,7 @@ class GroupsTest(TestCase):
         )
 
     def test_nodes_list(self):
-        args = MagicMock()
-        args.show_nodes = True
+        args = {'show_nodes': True}
         output = list(groups.bw_groups(self.repo, args))
         self.assertEqual(
             output,

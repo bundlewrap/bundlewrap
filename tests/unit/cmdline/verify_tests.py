@@ -20,7 +20,7 @@ class ApplyTest(TestCase):
         node1 = FakeNode()
         repo = MagicMock()
         repo.get_node.return_value = node1
-        args = MagicMock()
-        args.item_workers = 4
-        args.target = "node1"
+        args = {}
+        args['item_workers'] = 4
+        args['target'] = "node1"
         verify.bw_verify(repo, args)

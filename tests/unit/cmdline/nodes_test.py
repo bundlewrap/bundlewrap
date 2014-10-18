@@ -45,11 +45,11 @@ class NodesTest(TestCase):
         self.repo.get_group.return_value = group2
 
     def test_simple_node_list(self):
-        args = MagicMock()
-        args.filter_group = None
-        args.show_bundles = False
-        args.show_hostnames = False
-        args.show_groups = False
+        args = {}
+        args['filter_group'] = None
+        args['show_bundles'] = False
+        args['show_hostnames'] = False
+        args['show_groups'] = False
         output = list(nodes.bw_nodes(self.repo, args))
         self.assertEqual(
             output,
@@ -57,11 +57,11 @@ class NodesTest(TestCase):
         )
 
     def test_hostname_list(self):
-        args = MagicMock()
-        args.filter_group = None
-        args.show_bundles = False
-        args.show_hostnames = True
-        args.show_groups = False
+        args = {}
+        args['filter_group'] = None
+        args['show_bundles'] = False
+        args['show_hostnames'] = True
+        args['show_groups'] = False
         output = list(nodes.bw_nodes(self.repo, args))
         self.assertEqual(
             output,
@@ -69,11 +69,11 @@ class NodesTest(TestCase):
         )
 
     def test_bundles_list(self):
-        args = MagicMock()
-        args.filter_group = None
-        args.show_bundles = True
-        args.show_hostnames = False
-        args.show_groups = False
+        args = {}
+        args['filter_group'] = None
+        args['show_bundles'] = True
+        args['show_hostnames'] = False
+        args['show_groups'] = False
         output = list(nodes.bw_nodes(self.repo, args))
         self.assertEqual(
             output,
@@ -85,11 +85,11 @@ class NodesTest(TestCase):
         )
 
     def test_groups_list(self):
-        args = MagicMock()
-        args.filter_group = None
-        args.show_bundles = False
-        args.show_hostnames = False
-        args.show_groups = True
+        args = {}
+        args['filter_group'] = None
+        args['show_bundles'] = False
+        args['show_hostnames'] = False
+        args['show_groups'] = True
         output = list(nodes.bw_nodes(self.repo, args))
         self.assertEqual(
             output,
@@ -101,11 +101,11 @@ class NodesTest(TestCase):
         )
 
     def test_group_filter(self):
-        args = MagicMock()
-        args.filter_group = "group2"
-        args.show_bundles = False
-        args.show_hostnames = False
-        args.show_groups = False
+        args = {}
+        args['filter_group'] = "group2"
+        args['show_bundles'] = False
+        args['show_hostnames'] = False
+        args['show_groups'] = False
         output = list(nodes.bw_nodes(self.repo, args))
         self.assertEqual(
             output,

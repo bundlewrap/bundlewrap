@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from imp import load_source
 from os import listdir, mkdir
 from os.path import isdir, isfile, join

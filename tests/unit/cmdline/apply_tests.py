@@ -26,12 +26,12 @@ class ApplyTest(TestCase):
         node1 = FakeNode()
         repo = MagicMock()
         repo.get_node.return_value = node1
-        args = MagicMock()
-        args.force = False
-        args.interactive = True
-        args.item_workers = 4
-        args.profiling = True
-        args.target = "node1"
+        args = {}
+        args['force'] = False
+        args['interactive'] = True
+        args['item_workers'] = 4
+        args['profiling'] = True
+        args['target'] = "node1"
         output = list(bw_apply(repo, args))
         self.assertTrue(output[0].startswith("\nnodename: run started at "))
         self.assertTrue(output[-1].startswith("\nnodename: run completed after "))

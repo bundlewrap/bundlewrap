@@ -53,11 +53,14 @@ class PlotTest(TestCase):
         node.items = [item1, item2, item3, item4]
         node.name = "node"
 
-        args = MagicMock()
-        args.node = "node"
-        args.depends_static = True
-        args.depends_regular = True
-        args.depends_auto = True
+        args = {}
+        args['node'] = "node"
+        args['cluster'] = True
+        args['depends_concurrency'] = True
+        args['depends_static'] = True
+        args['depends_regular'] = True
+        args['depends_reverse'] = True
+        args['depends_auto'] = True
 
         rep = MagicMock()
         rep.get_node.return_value = node
