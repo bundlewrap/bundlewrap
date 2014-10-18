@@ -60,6 +60,25 @@ class PluginManager(object):
         for plugin, info in self.plugin_db.items():
             yield (plugin, info['version'])
 
+    def local_modifications(self, plugin):
+        try:
+            plugin_data = self.plugin_db[plugin]
+        except KeyError:
+            raise NoSuchPlugin(_(
+                "The plugin '{plugin}' is not installed."
+            ).format(plugin=plugin))
+        local_changes = []
+        for filename, checksum in plugin_data['files'].items():
+            target_path = join(self.path, filename)
+            actual_checksum = hash_local_file(target_path)
+            if actual_checksum != checksum:
+                local_changes.append((
+                    target_path,
+                    actual_checksum,
+                    checksum,
+                ))
+        return local_changes
+
     def manifest_for_plugin(self, plugin):
         r = get(
             "{}/{}/manifest.json".format(self.base_url, plugin)
@@ -113,21 +132,22 @@ class PluginManager(object):
         if plugin not in self.plugin_db:
             raise PluginError(_("plugin '{plugin}' is not installed").format(plugin=plugin))
 
-        manifest = self.manifest_for_plugin(plugin)
 
         # before updating anything, we need to check for local modifications
+        local_changes = self.local_modifications(plugin)
+        if local_changes:
+            files = [path for path, c1, c2 in local_changes]
+            raise PluginLocalConflict(_(
+                "cannot update '{plugin}' because the following files have been modified locally:"
+                "\n{files}"
+            ).format(files="\n".join(files), plugin=plugin))
+
+
+        manifest = self.manifest_for_plugin(plugin)
+
         for file in manifest['provides']:
             file_path = join(self.path, file)
-            if not exists(file_path):
-                continue
-            if file in self.plugin_db[plugin]['files']:
-                # new version would replace a previously installed file
-                current_checksum = hash_local_file(file_path)
-                if current_checksum != self.plugin_db[plugin]['files'][file] and not force:
-                    raise PluginLocalConflict(_(
-                        "cannot update '{plugin}' because '{path}' has been modified locally"
-                    ).format(path=file, plugin=plugin))
-            else:
+            if exists(file_path) and file not in self.plugin_db[plugin]['files']:
                 # new version added a file that already existed locally
                 raise PluginLocalConflict(_(
                     "cannot update '{plugin}' because it would overwrite '{path}'"

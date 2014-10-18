@@ -23,24 +23,52 @@ class TestTest(TestCase):
     """
     Tests bundlewrap.cmdline.test.bw_test.
     """
-    def test_ok(self):
+    @patch('bundlewrap.cmdline.test.PluginManager')
+    def test_ok(self, PluginManager):
         node1 = FakeNode()
         repo_obj = MagicMock()
         repo_obj.nodes = (node1,)
+        repo_obj.path = "/dev/null"
         args = {}
         args['item_workers'] = 4
         args['node_workers'] = 1
+        args['plugin_conflict_error'] = True
         args['target'] = None
+        pm = MagicMock()
+        pm.list.return_value = (
+            ("foo", 1),
+        )
+        pm.local_modifications.return_value = ()
+        PluginManager.return_value = pm
         list(test.bw_test(repo_obj, args))
 
-    @patch('bundlewrap.cmdline.test.exit')
-    def test_fail(self, exit):
+    def test_fail(self):
         node1 = FailNode()
         repo_obj = MagicMock()
         repo_obj.get_node.return_value = node1
         args = {}
         args['item_workers'] = 4
         args['node_workers'] = 1
+        args['plugin_conflict_error'] = False
         args['target'] = "node1"
-        list(test.bw_test(repo_obj, args))
-        exit.assert_called_once_with(1)
+        self.assertEqual(list(test.bw_test(repo_obj, args))[-1], 1)
+
+    @patch('bundlewrap.cmdline.test.PluginManager')
+    def test_plugin_conflict(self, PluginManager):
+        node1 = FakeNode()
+        repo_obj = MagicMock()
+        repo_obj.get_node.return_value = node1
+        args = {}
+        args['item_workers'] = 4
+        args['node_workers'] = 1
+        args['plugin_conflict_error'] = True
+        args['target'] = "node1"
+        pm = MagicMock()
+        pm.list.return_value = (
+            ("foo", 1),
+        )
+        pm.local_modifications.return_value = (
+            ("/foo.py", "23", "47"),
+        )
+        PluginManager.return_value = pm
+        self.assertEqual(list(test.bw_test(repo_obj, args))[-1], 1)

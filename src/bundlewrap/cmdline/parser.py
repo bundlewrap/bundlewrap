@@ -398,7 +398,7 @@ def build_parser_bw():
         type=int,
     )
 
-    # bw repo test
+    # bw test
     parser_test = subparsers.add_parser("test")
     parser_test.set_defaults(func=bw_test)
     parser_test.add_argument(
@@ -408,6 +408,13 @@ def build_parser_bw():
         nargs='?',
         type=str,
         help=_("target nodes, groups and/or bundle selectors"),
+    )
+    parser_test.add_argument(
+        "-c",
+        "--plugin-conflict-error",
+        action='store_true',
+        dest='plugin_conflict_error',
+        help=_("check for local modifications to files installed by plugins"),
     )
     parser_test.add_argument(
         "-p",

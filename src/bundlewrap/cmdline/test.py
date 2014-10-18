@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 from copy import copy
-from sys import exit
 
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
+from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import red
+from ..utils.text import green, mark_for_translation as _, red
 
 
 def bw_test(repo, args):
@@ -26,8 +26,8 @@ def bw_test(repo, args):
                 )
                 yield msg
                 yield e.traceback
-                exit(1)
-                break  # for testing, when exit() is patched
+                yield 1
+                raise StopIteration()
             if msg['msg'] == 'REQUEST_WORK':
                 if pending_nodes:
                     node = pending_nodes.pop()
@@ -41,3 +41,26 @@ def bw_test(repo, args):
                     )
                 else:
                     worker_pool.quit(msg['wid'])
+
+    if args['plugin_conflict_error']:
+        pm = PluginManager(repo.path)
+        for plugin, version in pm.list():
+            local_changes = pm.local_modifications(plugin)
+            if local_changes:
+                yield _("{x} Plugin '{plugin}' has local modifications:").format(
+                    plugin=plugin,
+                    x=red("✘"),
+                )
+                for path, actual_checksum, should_checksum in local_changes:
+                    yield _("\t{path} ({actual_checksum}) should be {should_checksum}").format(
+                        actual_checksum=actual_checksum,
+                        path=path,
+                        should_checksum=should_checksum,
+                    )
+                yield 1
+                raise StopIteration()
+            else:
+                yield _("{x} Plugin '{plugin}' has no local modifications.").format(
+                    plugin=plugin,
+                    x=green("✓"),
+                )
