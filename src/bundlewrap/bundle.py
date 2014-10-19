@@ -43,19 +43,52 @@ class Bundle(object):
         return self.__dict__
 
     @cached_property
-    def items(self):
-        bundle_attrs = get_all_attrs_from_file(
+    def bundle_attrs(self):
+        return get_all_attrs_from_file(
             self.bundle_file,
             base_env={
                 'node': self.node,
                 'repo': self.repo,
             },
         )
+
+    @property
+    def item_generator_names(self):
+        return self.bundle_attrs.get('item_generators', [])
+
+    @cached_property
+    def _generated_items(self):
+        return self.node._generated_items_for_bundle(self.name)
+
+    @cached_property
+    def _static_items(self):
         for item_class in self.repo.item_classes:
-            if item_class.BUNDLE_ATTRIBUTE_NAME not in bundle_attrs:
-                continue
-            for name, attrs in bundle_attrs.get(
+            for item_name, item_attrs in self.bundle_attrs.get(
                     item_class.BUNDLE_ATTRIBUTE_NAME,
                     {},
             ).items():
-                yield item_class(self, name, attrs)
+                yield self.make_item(
+                    item_class.BUNDLE_ATTRIBUTE_NAME,
+                    item_name,
+                    item_attrs,
+                )
+
+    @property
+    def items(self):
+        for item in self._static_items:
+            yield item
+        for item in self._generated_items:
+            yield item
+
+    def make_item(self, attribute_name, item_name, item_attrs):
+        for item_class in self.repo.item_classes:
+            if item_class.BUNDLE_ATTRIBUTE_NAME == attribute_name:
+                return item_class(self, item_name, item_attrs)
+        raise RuntimeError(
+            _("bundle '{bundle}' tried to generate item '{item}' from "
+              "unknown attribute '{attr}'").format(
+                attr=attribute_name,
+                bundle=self.name,
+                item=item_name,
+            )
+        )
