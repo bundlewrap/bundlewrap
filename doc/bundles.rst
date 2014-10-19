@@ -286,7 +286,7 @@ As you can see, the item generator function is passed the current node, the call
 .. warning::
 	This means that you need to make sure your item generators don't generate items that will cause an endless loop of generated items (in the example above, it would be inadvisable to write another item generator that creates a user for every file).
 
-Item generators must return a dictionary that looks like the directories in a bundle, using a top-level dictionary to group item types instead of attributes. In the above example, we create a dictionary like this:
+Item generators must return a dictionary that looks like the dictionaries in a bundle, using a top-level dictionary to group item types instead of attributes. In the above example, we create a dictionary like this:
 
 .. code-block:: python
 
