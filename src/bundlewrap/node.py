@@ -394,7 +394,7 @@ class Node(object):
         return generated_items_by_bundle
 
     def _generated_items_for_bundle(self, bundle):
-        return self._generated_items_by_bundle[bundle]
+        return self._generated_items_by_bundle.get(bundle, [])
 
     @cached_property
     def groups(self):
