@@ -1,3 +1,15 @@
+1.2.0
+=====
+
+2014-10-19
+
+* added item generators
+* added `bw test --plugin-conflict-error`
+* added `bw debug -c`
+* improved unicode handling
+* fixed logging issues
+
+
 1.1.0
 =====
 
