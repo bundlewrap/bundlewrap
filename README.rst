@@ -1,6 +1,6 @@
 BundleWrap is a decentralized configuration management system that is designed to be powerful, easy to extend and extremely versatile.
 
-For more information, have a look at `bundlewrap.org <http://bundlewrap.org/>`_.
+For more information, have a look at `bundlewrap.org <http://bundlewrap.org/>`_ and `docs.bundlewrap.org <http://docs.bundlewrap.org/>`_.
 
 ------------------------------------------------------------------------
 
