@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from copy import copy
 from os.path import join
 
 from .exceptions import NoSuchBundle, RepositoryError
@@ -36,11 +37,12 @@ class Bundle(object):
         Removes cached items prior to pickling because their classed are
         loaded dynamically and can't be pickled.
         """
+        state = copy(self.__dict__)
         try:
-            del self._cache['items']
-        except:
+            del state['_cache']
+        except KeyError:
             pass
-        return self.__dict__
+        return state
 
     @cached_property
     def bundle_attrs(self):
