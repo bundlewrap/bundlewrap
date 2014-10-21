@@ -272,10 +272,11 @@ class Repository(object):
         state['item_classes'] = []
         return state
 
-    def __setstate__(self, dict):
-        self.__dict__ = dict
-        for item_class in items_from_path(self.items_dir):
-            self.item_classes.append(item_class)
+    def __setstate__(self, state):
+        self.__dict__ = state
+        self.item_classes = list(items_from_path(items.__path__[0]))
+        if self.path != "/dev/null":
+            self.item_classes += list(items_from_path(self.items_dir))
 
     def __repr__(self):
         return "<Repository at '{}'>".format(self.path)
