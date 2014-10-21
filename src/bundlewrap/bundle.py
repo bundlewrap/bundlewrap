@@ -64,8 +64,8 @@ class Bundle(object):
     def _static_items(self):
         for item_class in self.repo.item_classes:
             for item_name, item_attrs in self.bundle_attrs.get(
-                    item_class.BUNDLE_ATTRIBUTE_NAME,
-                    {},
+                item_class.BUNDLE_ATTRIBUTE_NAME,
+                {},
             ).items():
                 yield self.make_item(
                     item_class.BUNDLE_ATTRIBUTE_NAME,
