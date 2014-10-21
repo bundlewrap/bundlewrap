@@ -1,3 +1,11 @@
+1.2.1
+=====
+
+2014-10-21
+
+* fixed a critical bug in bundle serialization
+
+
 1.2.0
 =====
 
