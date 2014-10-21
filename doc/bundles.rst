@@ -77,6 +77,8 @@ This table lists all item types included in BundleWrap along with the bundle att
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`pkg_pacman <item_pkg_pacman>`   | ``pkg_pacman``   | Installs and removes packages with pacman                                              |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`pkg_yum <item_pkg_yum>`         | ``pkg_yum``      | Installs and removes packages with yum                                                 |
++---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`svc_upstart <item_svc_upstart>` | ``svc_upstart``  | Starts and stops services with Upstart                                                 |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`svc_systemd <item_svc_systemd>` | ``svc_systemd``  | Starts and stops services with systemd                                                 |
