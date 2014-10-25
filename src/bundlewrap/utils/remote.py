@@ -30,7 +30,11 @@ def get_path_type(node, path):
     and DESC is the output of the 'file' command line utility.
     """
     result = node.run("file -bh -- {}".format(quote(path)), may_fail=True)
-    if result.return_code != 0:
+    if (
+        result.return_code != 0 or
+        # next line is for file 5.11 on CentOS 7.0 (and probably lower)
+        result.stdout.strip() == "cannot open (No such file or directory)"
+    ):
         return ('nonexistent', "")
     file_output = result.stdout.strip()
     return _parse_file_output(file_output)
