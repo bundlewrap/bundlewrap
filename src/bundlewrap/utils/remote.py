@@ -13,7 +13,8 @@ def _parse_file_output(file_output):
         return ('nonexistent', "")
     elif file_output in ("directory", "sticky directory"):
         return ('directory', file_output)
-    elif file_output in ("block special", "character special"):
+    elif file_output.startswith("block special") or \
+            file_output.startswith("character special"):
         return ('other', file_output)
     elif file_output.startswith("symbolic link to ") or \
             file_output.startswith("broken symbolic link to "):
