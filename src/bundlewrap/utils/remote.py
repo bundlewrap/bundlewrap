@@ -8,7 +8,8 @@ from .text import mark_for_translation as _
 
 
 def _parse_file_output(file_output):
-    if file_output.startswith("cannot open `"):
+    if file_output.startswith("cannot open "):
+        # required for Mac OS X and CentOS/RHEL
         return ('nonexistent', "")
     elif file_output in ("directory", "sticky directory"):
         return ('directory', file_output)
