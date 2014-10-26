@@ -14,6 +14,7 @@ Bundles
 	item_pkg_apt
 	item_pkg_pacman
 	item_pkg_yum
+	item_pkg_zypper
 	item_svc_upstart
 	item_svc_systemd
 	item_svc_systemv
@@ -79,6 +80,8 @@ This table lists all item types included in BundleWrap along with the bundle att
 | :doc:`pkg_pacman <item_pkg_pacman>`   | ``pkg_pacman``   | Installs and removes packages with pacman                                              |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`pkg_yum <item_pkg_yum>`         | ``pkg_yum``      | Installs and removes packages with yum                                                 |
++---------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`pkg_zypper <item_pkg_zypper>`   | ``pkg_zypper``   | Installs and removes packages with zypper                                              |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`svc_upstart <item_svc_upstart>` | ``svc_upstart``  | Starts and stops services with Upstart                                                 |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
