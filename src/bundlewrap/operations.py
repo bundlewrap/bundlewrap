@@ -14,7 +14,7 @@ from fabric.state import env, output
 
 from .exceptions import RemoteException
 from .utils import LOG
-from .utils.text import mark_for_translation as _, randstr
+from .utils.text import force_text, mark_for_translation as _, randstr
 from .utils.ui import LineBuffer
 
 
@@ -129,12 +129,12 @@ def run(hostname, command, ignore_failure=False, stderr=None,
             command=command,
             host=hostname,
             rcode=fabric_result.return_code,
-            result=str(fabric_result) + fabric_result.stderr,
+            result=force_text(fabric_result) + force_text(fabric_result.stderr),
         ))
 
     result = RunResult()
-    result.stdout = str(fabric_result)
-    result.stderr = fabric_result.stderr
+    result.stdout = force_text(fabric_result)
+    result.stderr = force_text(fabric_result.stderr)
     result.return_code = fabric_result.return_code
     return result
 
