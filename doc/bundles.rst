@@ -13,6 +13,7 @@ Bundles
 	item_group
 	item_pkg_apt
 	item_pkg_pacman
+	item_pkg_yum
 	item_svc_upstart
 	item_svc_systemd
 	item_svc_systemv
