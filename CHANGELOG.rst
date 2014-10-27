@@ -1,3 +1,11 @@
+1.2.2
+=====
+
+2014-10-27
+
+* fixed item classes not being restored after repo serialization
+
+
 1.2.1
 =====
 
