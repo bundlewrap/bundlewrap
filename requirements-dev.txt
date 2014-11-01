@@ -1,7 +1,6 @@
 coverage
 coveralls
 distribute
-Fabric
 Mako
 mock
 passlib

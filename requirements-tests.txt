@@ -1,7 +1,6 @@
 coverage
 coveralls
 distribute
-Fabric>=1.5.0
 Jinja2
 Mako
 mock

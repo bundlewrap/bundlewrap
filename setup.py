@@ -42,7 +42,6 @@ setup(
     ],
     install_requires=[
         "distribute",
-        "Fabric >= 1.5.0",
         "Mako",
         "passlib",
         "requests >= 1.0.0",
