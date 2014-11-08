@@ -12,7 +12,7 @@ For more information, have a look at `bundlewrap.org <http://bundlewrap.org/>`_ 
     :target: https://pypi.python.org/pypi/bundlewrap/
     :alt: Latest Version
 
-.. image:: http://img.shields.io/travis/bundlewrap/bundlewrap.svg
+.. image:: http://img.shields.io/travis/bundlewrap/bundlewrap/master.svg
     :target: https://travis-ci.org/bundlewrap/bundlewrap
     :alt: Build status
 
