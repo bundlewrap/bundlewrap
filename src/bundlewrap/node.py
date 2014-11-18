@@ -624,6 +624,7 @@ class NodeLock(object):
             date = _("<unknown>")
             duration = _("<unknown>")
         return _(
+            "\n"
             "  {warning}\n\n"
             "  Looks like somebody is currently using BundleWrap on this node.\n"
             "  You should let them finish or override the lock if it has gone stale.\n\n"
