@@ -70,7 +70,7 @@ How the file pointed to by ``source`` or the string given to ``content`` should 
 ``context``
 +++++++++++
 
-Only used with Mako templates. The values of this dictionary will be available from within the template as variables named after the respective keys.
+Only used with Mako and Jinja2 templates. The values of this dictionary will be available from within the template as variables named after the respective keys.
 
 |
 
