@@ -16,7 +16,7 @@ class AskTest(TestCase):
     def test_install(self):
         pkg = pkg_pip.PipPkg(MagicMock(), "foo", {'installed': True})
         status = MagicMock()
-        status.info = {'installed': False}
+        status.info = {'installed': False, 'version': None}
         self.assertEqual(
             pkg.ask(status),
             "status not installed → installed\n",
@@ -25,10 +25,10 @@ class AskTest(TestCase):
     def test_remove(self):
         pkg = pkg_pip.PipPkg(MagicMock(), "foo", {'installed': False})
         status = MagicMock()
-        status.info = {'installed': True}
+        status.info = {'installed': True, 'version': "1.0"}
         self.assertEqual(
             pkg.ask(status),
-            "status installed → not installed\n",
+            "status 1.0 → not installed\n",
         )
 
 
@@ -39,6 +39,11 @@ class FixTest(TestCase):
     def test_install(self):
         node = MagicMock()
         pkg = pkg_pip.PipPkg(node, "foo", {'installed': True})
+        pkg.fix(MagicMock())
+
+    def test_install_version(self):
+        node = MagicMock()
+        pkg = pkg_pip.PipPkg(node, "foo", {'installed': True, 'version': "1.0"})
         pkg.fix(MagicMock())
 
     def test_remove(self):
@@ -54,9 +59,10 @@ class GetStatusTest(TestCase):
     @patch('bundlewrap.items.pkg_pip.pkg_installed')
     def test_installed_ok(self, pkg_installed):
         pkg = pkg_pip.PipPkg(MagicMock(), "foo", {'installed': True})
-        pkg_installed.return_value = True
+        pkg_installed.return_value = "1.0"
         status = pkg.get_status()
         self.assertTrue(status.correct)
+        self.assertEqual(status.info['version'], "1.0")
 
     @patch('bundlewrap.items.pkg_pip.pkg_installed')
     def test_not_installed_ok(self, pkg_installed):
@@ -68,7 +74,7 @@ class GetStatusTest(TestCase):
     @patch('bundlewrap.items.pkg_pip.pkg_installed')
     def test_installed_not_ok(self, pkg_installed):
         pkg = pkg_pip.PipPkg(MagicMock(), "foo", {'installed': False})
-        pkg_installed.return_value = True
+        pkg_installed.return_value = "1.0"
         status = pkg.get_status()
         self.assertFalse(status.correct)
 
@@ -76,6 +82,16 @@ class GetStatusTest(TestCase):
     def test_not_installed_not_ok(self, pkg_installed):
         pkg = pkg_pip.PipPkg(MagicMock(), "foo", {'installed': False})
         pkg_installed.return_value = True
+        status = pkg.get_status()
+        self.assertFalse(status.correct)
+
+    @patch('bundlewrap.items.pkg_pip.pkg_installed')
+    def test_version_not_ok(self, pkg_installed):
+        pkg = pkg_pip.PipPkg(MagicMock(), "foo", {
+            'installed': True,
+            'version': "2.0",
+        })
+        pkg_installed.return_value = "1.0"
         status = pkg.get_status()
         self.assertFalse(status.correct)
 
@@ -107,6 +123,7 @@ class ValidateAttributesTest(TestCase):
     """
     def test_installed_ok(self):
         pkg_pip.PipPkg(MagicMock(), "foo", {'installed': True})
+        pkg_pip.PipPkg(MagicMock(), "foo", {'installed': True, 'version': "1.0"})
         pkg_pip.PipPkg(MagicMock(), "foo", {'installed': False})
 
     def test_installed_not_ok(self):
@@ -114,3 +131,5 @@ class ValidateAttributesTest(TestCase):
             pkg_pip.PipPkg(MagicMock(), "foo", {'installed': 0})
         with self.assertRaises(BundleError):
             pkg_pip.PipPkg(MagicMock(), "foo", {'installed': 1})
+        with self.assertRaises(BundleError):
+            pkg_pip.PipPkg(MagicMock(), "foo", {'installed': False, 'version': "1.0"})

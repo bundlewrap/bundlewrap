@@ -10,8 +10,12 @@ from bundlewrap.utils.text import bold, green, red
 from bundlewrap.utils.text import mark_for_translation as _
 
 
-def pkg_install(node, pkgname):
-    return node.run("pip install {}".format(quote(pkgname)))
+def pkg_install(node, pkgname, version=None):
+    if version:
+        pkg = "{}=={}".format(pkgname, version)
+    else:
+        pkg = pkgname
+    return node.run("pip install -U {}".format(quote(pkg)))
 
 
 def pkg_installed(node, pkgname):
@@ -22,7 +26,7 @@ def pkg_installed(node, pkgname):
     if result.return_code != 0:
         return False
     else:
-        return True
+        return result.stdout.split("=")[-1].strip()
 
 
 def pkg_remove(node, pkgname):
@@ -37,6 +41,7 @@ class PipPkg(Item):
     BUNDLE_ATTRIBUTE_NAME = "pkg_pip"
     ITEM_ATTRIBUTES = {
         'installed': True,
+        'version': None,
     }
     ITEM_TYPE_NAME = "pkg_pip"
 
@@ -47,9 +52,11 @@ class PipPkg(Item):
         )
 
     def ask(self, status):
-        before = _("installed") if status.info['installed'] \
+        before = status.info['version'] if status.info['version'] \
             else _("not installed")
-        after = green(_("installed")) if self.attributes['installed'] \
+        target = green(self.attributes['version']) if self.attributes['version'] else \
+                 green(_("installed"))
+        after = target if self.attributes['installed'] \
             else red(_("not installed"))
         return "{} {} → {}\n".format(
             bold(_("status")),
@@ -71,14 +78,19 @@ class PipPkg(Item):
                 item=self.id,
                 node=self.node.name,
             ))
-            pkg_install(self.node, self.name)
+            pkg_install(self.node, self.name, version=self.attributes['version'])
 
     def get_status(self):
         install_status = pkg_installed(self.node, self.name)
-        item_status = (install_status == self.attributes['installed'])
+        item_status = (bool(install_status) == self.attributes['installed'])
+        if self.attributes['version']:
+            item_status = (item_status and install_status == self.attributes['version'])
         return ItemStatus(
             correct=item_status,
-            info={'installed': install_status},
+            info={
+                'installed': bool(install_status),
+                'version': None if install_status is False else install_status,
+            },
         )
 
     @classmethod
@@ -86,6 +98,14 @@ class PipPkg(Item):
         if not isinstance(attributes.get('installed', True), bool):
             raise BundleError(_(
                 "expected boolean for 'installed' on {item} in bundle '{bundle}'"
+            ).format(
+                bundle=bundle.name,
+                item=item_id,
+            ))
+
+        if 'version' in attributes and attributes.get('installed', True) is False:
+            raise BundleError(_(
+                "cannot set version for uninstalled package on {item} in bundle '{bundle}'"
             ).format(
                 bundle=bundle.name,
                 item=item_id,
