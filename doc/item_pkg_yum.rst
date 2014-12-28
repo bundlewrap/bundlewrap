@@ -1,4 +1,4 @@
-.. _item_pkg_apt:
+.. _item_pkg_yum:
 
 #################
 yum package items

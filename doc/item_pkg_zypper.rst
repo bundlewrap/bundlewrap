@@ -1,8 +1,8 @@
-.. _item_pkg_apt:
+.. _item_pkg_zypper:
 
-#################
+####################
 zypper package items
-#################
+####################
 
 Handles packages installed by ``zypper`` on SUSE-based systems.
 
