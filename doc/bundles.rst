@@ -79,6 +79,8 @@ This table lists all item types included in BundleWrap along with the bundle att
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`pkg_pacman <item_pkg_pacman>`   | ``pkg_pacman``   | Installs and removes packages with pacman                                              |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
+| :doc:`pkg_pip <item_pkg_pip>`         | ``pkg_pip``      | Installs and removes Python packages with pip                                          |
++---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`pkg_yum <item_pkg_yum>`         | ``pkg_yum``      | Installs and removes packages with yum                                                 |
 +---------------------------------------+------------------+----------------------------------------------------------------------------------------+
 | :doc:`pkg_zypper <item_pkg_zypper>`   | ``pkg_zypper``   | Installs and removes packages with zypper                                              |
