@@ -87,6 +87,7 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
+        self._cached_status = None
         self._precedes_items = []
 
         if not skip_validation:
@@ -150,9 +151,9 @@ class Item(object):
                 ))
 
     def _get_status(self):
-        if not hasattr(self, '_status'):
-            self._status = self.get_status()
-        return self._status
+        if self._cached_status is None:
+            self._cached_status = self.get_status()
+        return self._cached_status
 
     def _precedes_incorrect_item(self):
         """
