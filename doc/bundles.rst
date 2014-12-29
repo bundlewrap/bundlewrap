@@ -172,10 +172,8 @@ The above example will run :command:`service daemon restart` every time BundleWr
 
 |
 
-.. _triggers:
-
-``triggers_before``
-###################
+``preceded_by``
+###############
 
 Operates like ``triggers``, but will apply the triggered item *before* the triggering item. Let's look at an example:
 
@@ -184,7 +182,7 @@ Operates like ``triggers``, but will apply the triggered item *before* the trigg
 	files = {
 	    '/etc/example.conf': {
 	        [...]
-	        'triggers_before': [
+	        'preceded_by': [
 	            'action:backup_example',
 	        ],
 	    },
@@ -236,7 +234,6 @@ This will run :command:`test -x /path/to/file` before doing anything with the it
 		}
 
 	If ``action:download_thing`` would not set ``cascade_skip`` to ``False``, ``action:run_thing`` would only be executed once: directly after the thing has been downloaded. On subsequent runs, ``action:download_thing`` will fail the ``unless`` condition and be skipped. This would also cause all items that depend on it to be skipped, including ``action:run_thing``.
-
 
 |
 
