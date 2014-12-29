@@ -147,6 +147,11 @@ class Item(object):
                     bundle2=self.bundle.name,
                 ))
 
+    def _get_status(self):
+        if not hasattr(self, '_status'):
+            self._status = self.get_status()
+        return self._status
+
     def _prepare_deps(self, items):
         # merge static and user-defined deps
         self._deps = list(self.NEEDS_STATIC)
@@ -217,7 +222,7 @@ class Item(object):
             status_code = self.STATUS_SKIPPED
 
         if status_code is None:
-            status_before = self.get_status()
+            status_before = self._get_status()
             if self.unless and not status_before.correct:
                 unless_result = self.node.run(self.unless, may_fail=True)
                 if unless_result.return_code == 0:
