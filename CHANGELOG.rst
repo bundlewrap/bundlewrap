@@ -3,6 +3,12 @@
 
 unreleased
 
+* added pkg_pip items
+* added pkg_yum items
+* added pkg_zypper items
+* fixed detection of non-existing files on CentOS/RHEL
+* fixed handling UTF-8 output of failed commands
+
 
 1.2.2
 =====
