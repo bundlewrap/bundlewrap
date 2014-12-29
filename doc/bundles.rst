@@ -172,6 +172,35 @@ The above example will run :command:`service daemon restart` every time BundleWr
 
 |
 
+.. _triggers:
+
+``triggers_before``
+###################
+
+Operates like ``triggers``, but will apply the triggered item *before* the triggering item. Let's look at an example:
+
+.. code-block:: python
+
+	files = {
+	    '/etc/example.conf': {
+	        [...]
+	        'triggers_before': [
+	            'action:backup_example',
+	        ],
+	    },
+	}
+
+	actions = {
+	    'backup_example': {
+	    	'command': "cp /etc/example.conf /etc/example.conf.bak",
+	    	'triggered': True,
+	    },
+	}
+
+In this configuration, ``/etc/example.conf`` will always be copied before and only if it is changed. You would probably also want to set ``cascade_skip`` to ``False`` on the action so you can skip it in interactive mode when you're sure you don't need the backup copy.
+
+|
+
 .. _unless:
 
 ``unless``
