@@ -18,8 +18,10 @@ class BundleItem(object):
         self.ITEM_TYPE_NAME = 'dummy'
         self.needs = []
         self.needed_by = []
+        self.preceded_by = []
         self.triggers = []
         self._deps = []
+        self._precedes_items = []
 
     def __repr__(self):
         return "<BundleItem: {}>".format(self.bundle.name)
@@ -47,8 +49,10 @@ class DummyItem(object):
         self.ITEM_TYPE_NAME = 'dummy'
         self.needs = []
         self.needed_by = []
+        self.preceded_by = []
         self.triggers = []
         self._deps = []
+        self._precedes_items = []
 
     def __repr__(self):
         return "<DummyItem: {}>".format(self.item_type)
