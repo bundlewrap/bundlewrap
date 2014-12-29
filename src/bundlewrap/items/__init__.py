@@ -18,6 +18,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': True,
     'needs': [],
     'needed_by': [],
+    'preceded_by': [],
     'triggered': False,
     'triggers': [],
     'unless': "",
@@ -86,6 +87,7 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
+        self._precedes_items = []
 
         if not skip_validation:
             if not skip_name_validation:
@@ -151,6 +153,16 @@ class Item(object):
         if not hasattr(self, '_status'):
             self._status = self.get_status()
         return self._status
+
+    def _precedes_incorrect_item(self):
+        """
+        Returns True if this item precedes another and the triggering
+        item is in need of fixing.
+        """
+        for item in self._precedes_items:
+            if item._precedes_incorrect_item():
+                return True
+        return not self._get_status().correct
 
     def _prepare_deps(self, items):
         # merge static and user-defined deps
