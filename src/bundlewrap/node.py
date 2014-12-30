@@ -98,7 +98,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
 
                     started_trigger_before_check = datetime.now()
                     if item._precedes_items:
-                        if item._precedes_incorrect_item():
+                        if item._precedes_incorrect_item(interactive=interactive):
                             item.has_been_triggered = True
                         else:
                             # we do not have to cascade here at all because

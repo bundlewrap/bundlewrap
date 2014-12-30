@@ -9,7 +9,7 @@ from datetime import datetime
 from os.path import join
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.utils import LOG
+from bundlewrap.utils import cached_property, LOG
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
 from bundlewrap.utils.ui import ask_interactively
@@ -87,7 +87,6 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
-        self._cached_status = None
         self._precedes_items = []
 
         if not skip_validation:
@@ -150,12 +149,19 @@ class Item(object):
                     bundle2=self.bundle.name,
                 ))
 
-    def _get_status(self):
-        if self._cached_status is None:
-            self._cached_status = self.get_status()
-        return self._cached_status
+    @cached_property
+    def cached_status(self):
+        return self.get_status()
 
-    def _precedes_incorrect_item(self):
+    @cached_property
+    def cached_unless_result(self):
+        if self.unless and not self.cached_status.correct:
+            unless_result = self.node.run(self.unless, may_fail=True)
+            return unless_result.return_code == 0
+        else:
+            return False
+
+    def _precedes_incorrect_item(self, interactive=False):
         """
         Returns True if this item precedes another and the triggering
         item is in need of fixing.
@@ -163,7 +169,16 @@ class Item(object):
         for item in self._precedes_items:
             if item._precedes_incorrect_item():
                 return True
-        return not self._get_status().correct
+        if self.cached_unless_result:
+            # triggering item failed unless, so there is nothing to do
+            return False
+        if self.ITEM_TYPE_NAME == 'action':
+            if self.attributes['interactive'] != interactive or \
+                    self.attributes['interactive'] is None:
+                return False
+            else:
+                return True
+        return not self.cached_status.correct
 
     def _prepare_deps(self, items):
         # merge static and user-defined deps
@@ -234,15 +249,12 @@ class Item(object):
             LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
             status_code = self.STATUS_SKIPPED
 
-        if status_code is None:
-            status_before = self._get_status()
-            if self.unless and not status_before.correct:
-                unless_result = self.node.run(self.unless, may_fail=True)
-                if unless_result.return_code == 0:
-                    LOG.debug(_("'unless' for {} succeeded, not fixing").format(self.id))
-                    status_code = self.STATUS_SKIPPED
+        if status_code is None and self.cached_unless_result:
+            LOG.debug(_("'unless' for {} succeeded, not fixing").format(self.id))
+            status_code = self.STATUS_SKIPPED
 
         if status_code is None:
+            status_before = self.cached_status
             if status_before.correct:
                 status_code = self.STATUS_OK
 
