@@ -18,8 +18,10 @@ class BundleItem(object):
         self.ITEM_TYPE_NAME = 'dummy'
         self.needs = []
         self.needed_by = []
+        self.preceded_by = []
         self.triggers = []
         self._deps = []
+        self._precedes_items = []
 
     def __repr__(self):
         return "<BundleItem: {}>".format(self.bundle.name)
@@ -47,8 +49,10 @@ class DummyItem(object):
         self.ITEM_TYPE_NAME = 'dummy'
         self.needs = []
         self.needed_by = []
+        self.preceded_by = []
         self.triggers = []
         self._deps = []
+        self._precedes_items = []
 
     def __repr__(self):
         return "<DummyItem: {}>".format(self.item_type)
@@ -348,6 +352,40 @@ def _inject_trigger_dependencies(items):
     return items
 
 
+def _inject_preceded_by_dependencies(items):
+    """
+    Injects dependencies from all triggering items to their
+    preceded_by items and attaches triggering items to preceding items.
+    """
+    for item in items:
+        for triggered_item_id in item.preceded_by:
+            try:
+                triggered_item = find_item(triggered_item_id, items)
+            except NoSuchItem:
+                raise BundleError(_(
+                    "unable to find definition of '{item1}' preceding "
+                    "'{item2}' in bundle '{bundle}'"
+                ).format(
+                    bundle=item.bundle.name,
+                    item1=triggered_item_id,
+                    item2=item.id,
+                ))
+            if not triggered_item.triggered:
+                raise BundleError(_(
+                    "'{item1}' in bundle '{bundle1}' precedes "
+                    "'{item2}' in bundle '{bundle2}', "
+                    "but missing 'triggered' attribute"
+                ).format(
+                    item1=triggered_item.id,
+                    bundle1=triggered_item.bundle.name,
+                    item2=item.id,
+                    bundle2=item.bundle.name,
+                ))
+            triggered_item._precedes_items.append(item)
+            item._deps.append(triggered_item.id)
+    return items
+
+
 def prepare_dependencies(items):
     """
     Performs all dependency preprocessing on a list of items.
@@ -363,6 +401,7 @@ def prepare_dependencies(items):
     items = _inject_canned_actions(items)
     items = _inject_reverse_dependencies(items)
     items = _inject_trigger_dependencies(items)
+    items = _inject_preceded_by_dependencies(items)
     items = _flatten_dependencies(items)
     items = _inject_concurrency_blockers(items)
     return items

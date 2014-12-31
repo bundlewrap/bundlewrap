@@ -91,9 +91,52 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
             msg = worker_pool.get_event()
 
             if msg['msg'] == 'REQUEST_WORK':
-                if items_without_deps:
-                    # There's work! Do it.
+                found_work = False
+                while items_without_deps:
+                    # check out the next available item
                     item = items_without_deps.pop()
+
+                    started_trigger_before_check = datetime.now()
+                    if item._precedes_items:
+                        if item._precedes_incorrect_item(interactive=interactive):
+                            item.has_been_triggered = True
+                        else:
+                            # we do not have to cascade here at all because
+                            # all chained preceding items will be skipped by
+                            # this same mechanism
+                            LOG.debug(
+                                _("skipping {node}:{bundle}:{item} because its precede trigger "
+                                  "did not fire").format(
+                                    bundle=item.bundle.name,
+                                    item=item.id,
+                                    node=node.name,
+                                ),
+                            )
+
+                            items_with_deps = remove_dep_from_items(items_with_deps, item.id)
+                            # now that we removed some deps from items_with_deps, we
+                            # again need to look for items that don't have any deps
+                            # left and can be processed next
+                            items_with_deps, items_without_deps = \
+                                split_items_without_deps(items_with_deps + items_without_deps)
+
+                            formatted_result = format_item_result(
+                                Item.STATUS_SKIPPED,
+                                node.name,
+                                item.bundle.name,
+                                item.id,
+                                interactive=interactive,
+                            )
+                            if interactive:
+                                print(formatted_result)
+                            else:
+                                LOG.info(formatted_result)
+                            yield (
+                                item.id,
+                                Item.STATUS_SKIPPED,
+                                datetime.now() - started_trigger_before_check,
+                            )
+                            continue
 
                     if item.ITEM_TYPE_NAME == 'action':
                         target = item.get_result
@@ -107,7 +150,10 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         task_id=item.id,
                         kwargs={'interactive': interactive},
                     )
-                else:
+                    found_work = True
+                    break
+
+                if not found_work:
                     if worker_pool.jobs_open > 0:
                         # No work right now, but another worker might
                         # finish and "create" a new job. Keep this

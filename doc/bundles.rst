@@ -172,6 +172,33 @@ The above example will run :command:`service daemon restart` every time BundleWr
 
 |
 
+``preceded_by``
+###############
+
+Operates like ``triggers``, but will apply the triggered item *before* the triggering item. Let's look at an example:
+
+.. code-block:: python
+
+	files = {
+	    '/etc/example.conf': {
+	        [...]
+	        'preceded_by': [
+	            'action:backup_example',
+	        ],
+	    },
+	}
+
+	actions = {
+	    'backup_example': {
+	    	'command': "cp /etc/example.conf /etc/example.conf.bak",
+	    	'triggered': True,
+	    },
+	}
+
+In this configuration, ``/etc/example.conf`` will always be copied before and only if it is changed. You would probably also want to set ``cascade_skip`` to ``False`` on the action so you can skip it in interactive mode when you're sure you don't need the backup copy.
+
+|
+
 .. _unless:
 
 ``unless``
@@ -207,7 +234,6 @@ This will run :command:`test -x /path/to/file` before doing anything with the it
 		}
 
 	If ``action:download_thing`` would not set ``cascade_skip`` to ``False``, ``action:run_thing`` would only be executed once: directly after the thing has been downloaded. On subsequent runs, ``action:download_thing`` will fail the ``unless`` condition and be skipped. This would also cause all items that depend on it to be skipped, including ``action:run_thing``.
-
 
 |
 
