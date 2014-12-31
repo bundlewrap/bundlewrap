@@ -1,12 +1,14 @@
 1.3.0
 =====
 
-unreleased
+2014-12-31
 
 * added pkg_pip items
 * added pkg_yum items
 * added pkg_zypper items
+* added preceded_by item attribute
 * fixed detection of non-existing files on CentOS/RHEL
+* fixed detection of special files on Arch Linux
 * fixed handling UTF-8 output of failed commands
 
 
