@@ -70,10 +70,38 @@ class ItemQueue(object):
                     continue
                 yield skipped_item
 
-    def pop(self):
-        item = self.items_without_deps.pop()
+    def pop(self, interactive=False):
+        skipped_items = []
+
+        if not self.items_without_deps:
+            raise IndexError
+
+        while self.items_without_deps:
+            item = self.items_without_deps.pop()
+
+            if item._precedes_items:
+                if item._precedes_incorrect_item(interactive=interactive):
+                    item.has_been_triggered = True
+                else:
+                    # we do not have to cascade here at all because
+                    # all chained preceding items will be skipped by
+                    # this same mechanism
+                    LOG.debug(
+                        _("skipping {node}:{bundle}:{item} because its precede trigger "
+                          "did not fire").format(
+                            bundle=item.bundle.name,
+                            item=item.id,
+                            node=item.node.name,
+                        ),
+                    )
+                    self.items_with_deps = remove_dep_from_items(self.items_with_deps, item.id)
+                    self._split()
+                    skipped_items.append(item)
+                    continue
+            break
+
         self.pending_items.append(item)
-        return item
+        return (item, skipped_items)
 
     def _fire_triggers_for_item(self, item):
         for triggered_item_id in item.triggers:
