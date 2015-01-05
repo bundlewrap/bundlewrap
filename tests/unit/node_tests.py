@@ -12,7 +12,7 @@ from bundlewrap.utils import names
 
 
 class MockNode(object):
-    pass
+    name = "mocknode"
 
 
 class MockBundle(object):
