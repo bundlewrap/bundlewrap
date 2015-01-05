@@ -15,15 +15,11 @@ from .concurrency import WorkerPool
 from .deps import (
     find_item,
     prepare_dependencies,
-    remove_item_dependents,
-    remove_dep_from_items,
-    split_items_without_deps,
 )
 from .exceptions import (
     ItemDependencyError,
     NodeAlreadyLockedException,
     NoSuchBundle,
-    NoSuchItem,
     RepositoryError,
 )
 from .itemqueue import ItemQueue
