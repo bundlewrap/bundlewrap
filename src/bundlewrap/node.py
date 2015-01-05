@@ -77,6 +77,24 @@ class ApplyResult(object):
         return self.end - self.start
 
 
+def handle_apply_result(item, status_code, interactive):
+    formatted_result = format_item_result(
+        status_code,
+        item.node.name,
+        item.bundle.name if item.bundle else "",  # dummy items don't have bundles
+        item.id,
+        interactive=interactive,
+    )
+    if formatted_result is not None:
+        if interactive:
+            print(formatted_result)
+        else:
+            if status_code == Item.STATUS_FAILED:
+                LOG.error(formatted_result)
+            else:
+                LOG.info(formatted_result)
+
+
 def apply_items(node, workers=1, interactive=False, profiling=False):
     item_queue = ItemQueue(node.items)
     with WorkerPool(workers=workers) as worker_pool:
@@ -91,22 +109,8 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                     item, skipped_items = item_queue.pop()
 
                     for skipped_item in skipped_items:
-                        formatted_result = format_item_result(
-                            Item.STATUS_SKIPPED,
-                            node.name,
-                            skipped_item.bundle.name,
-                            skipped_item.id,
-                            interactive=interactive,
-                        )
-                        if interactive:
-                            print(formatted_result)
-                        else:
-                            LOG.info(formatted_result)
-                        yield (
-                            skipped_item.id,
-                            Item.STATUS_SKIPPED,
-                            timedelta(0),
-                        )
+                        handle_apply_result(skipped_item, Item.STATUS_SKIPPED, interactive)
+                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
 
                     if item.ITEM_TYPE_NAME == 'action':
                         target = item.get_result
@@ -142,22 +146,6 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
 
                 status_code = msg['return_value']
 
-                formatted_result = format_item_result(
-                    status_code,
-                    node.name,
-                    item.bundle.name if item.bundle else "",  # dummy items don't have bundles
-                    item.id,
-                    interactive=interactive,
-                )
-                if formatted_result is not None:
-                    if interactive:
-                        print(formatted_result)
-                    else:
-                        if status_code == Item.STATUS_FAILED:
-                            LOG.error(formatted_result)
-                        else:
-                            LOG.info(formatted_result)
-
                 if status_code == Item.STATUS_FAILED:
                     item_queue.item_failed(item)
                 elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
@@ -174,6 +162,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         ),
                     ))
 
+                handle_apply_result(item, status_code, interactive)
                 if item.ITEM_TYPE_NAME != 'dummy':
                     yield (item.id, status_code, msg['duration'])
 
