@@ -131,6 +131,22 @@ class ItemQueueItemSkippedTest(TestCase):
         with self.assertRaises(IndexError):
             iq.pop()
 
+    def test_item_skipped_no_cascade(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item1.cascade_skip = False
+        item2 = get_mock_item("type1", "name2", [], ["type1:name1"])
+        iq = itemqueue.ItemQueue([item1, item2])
+        popped_item, skipped_items = iq.pop()
+        self.assertEqual(popped_item, item1)
+        self.assertEqual(skipped_items, [])
+        self.assertEqual(
+            list(iq.item_skipped(popped_item)),
+            [],
+        )
+        popped_item, skipped_items = iq.pop()
+        self.assertEqual(popped_item, item2)
+        self.assertEqual(skipped_items, [])
+
 
 class ItemQueuePopTest(TestCase):
     """

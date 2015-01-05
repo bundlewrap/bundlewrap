@@ -69,6 +69,12 @@ class ItemQueue(object):
                 if skipped_item.ITEM_TYPE_NAME == 'dummy':
                     continue
                 yield skipped_item
+        else:
+            self.items_with_deps = remove_dep_from_items(
+                self.items_with_deps,
+                item.id,
+            )
+            self._split()
 
     def pop(self, interactive=False):
         skipped_items = []

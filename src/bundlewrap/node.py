@@ -143,13 +143,17 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                 status_code = msg['return_value']
 
                 if status_code == Item.STATUS_FAILED:
-                    item_queue.item_failed(item)
+                    for skipped_item in item_queue.item_failed(item):
+                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
+                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
                 elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
                     item_queue.item_fixed(item)
                 elif status_code == Item.STATUS_OK:
                     item_queue.item_ok(item)
                 elif status_code == Item.STATUS_SKIPPED:
-                    item_queue.item_skipped(item)
+                    for skipped_item in item_queue.item_skipped(item):
+                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
+                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
                 else:
                     raise AssertionError(_(
                         "unknown item status return for {item}: {status}".format(
