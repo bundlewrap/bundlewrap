@@ -77,10 +77,10 @@ class ApplyResult(object):
         return self.end - self.start
 
 
-def handle_apply_result(item, status_code, interactive):
+def handle_apply_result(node, item, status_code, interactive):
     formatted_result = format_item_result(
         status_code,
-        item.node.name,
+        node.name,
         item.bundle.name if item.bundle else "",  # dummy items don't have bundles
         item.id,
         interactive=interactive,
@@ -109,7 +109,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                     item, skipped_items = item_queue.pop()
 
                     for skipped_item in skipped_items:
-                        handle_apply_result(skipped_item, Item.STATUS_SKIPPED, interactive)
+                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
                         yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
 
                     if item.ITEM_TYPE_NAME == 'action':
@@ -162,7 +162,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         ),
                     ))
 
-                handle_apply_result(item, status_code, interactive)
+                handle_apply_result(node, item, status_code, interactive)
                 if item.ITEM_TYPE_NAME != 'dummy':
                     yield (item.id, status_code, msg['duration'])
 
