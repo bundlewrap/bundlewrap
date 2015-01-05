@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from getpass import getuser
 import json
 from pipes import quote
@@ -26,6 +26,7 @@ from .exceptions import (
     NoSuchItem,
     RepositoryError,
 )
+from .itemqueue import ItemQueue
 from .items import Item
 from .utils import cached_property, LOG, graph_for_items, names
 from .utils.text import mark_for_translation as _
@@ -77,66 +78,35 @@ class ApplyResult(object):
 
 
 def apply_items(node, workers=1, interactive=False, profiling=False):
-    items = prepare_dependencies(node.items)
-
+    item_queue = ItemQueue(node.items)
     with WorkerPool(workers=workers) as worker_pool:
-        items_with_deps, items_without_deps = \
-            split_items_without_deps(items)
-
         # This whole thing is set in motion because every worker
         # initially asks for work. He also reports back when he finished
         # a job. Actually, all these conditions are internal to
         # worker_pool -- it will tell us whether we must keep going:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
-
             if msg['msg'] == 'REQUEST_WORK':
-                found_work = False
-                while items_without_deps:
-                    # check out the next available item
-                    item = items_without_deps.pop()
+                try:
+                    item, skipped_items = item_queue.pop()
 
-                    started_trigger_before_check = datetime.now()
-                    if item._precedes_items:
-                        if item._precedes_incorrect_item(interactive=interactive):
-                            item.has_been_triggered = True
+                    for skipped_item in skipped_items:
+                        formatted_result = format_item_result(
+                            Item.STATUS_SKIPPED,
+                            node.name,
+                            skipped_item.bundle.name,
+                            skipped_item.id,
+                            interactive=interactive,
+                        )
+                        if interactive:
+                            print(formatted_result)
                         else:
-                            # we do not have to cascade here at all because
-                            # all chained preceding items will be skipped by
-                            # this same mechanism
-                            LOG.debug(
-                                _("skipping {node}:{bundle}:{item} because its precede trigger "
-                                  "did not fire").format(
-                                    bundle=item.bundle.name,
-                                    item=item.id,
-                                    node=node.name,
-                                ),
-                            )
-
-                            items_with_deps = remove_dep_from_items(items_with_deps, item.id)
-                            # now that we removed some deps from items_with_deps, we
-                            # again need to look for items that don't have any deps
-                            # left and can be processed next
-                            items_with_deps, items_without_deps = \
-                                split_items_without_deps(items_with_deps + items_without_deps)
-
-                            formatted_result = format_item_result(
-                                Item.STATUS_SKIPPED,
-                                node.name,
-                                item.bundle.name,
-                                item.id,
-                                interactive=interactive,
-                            )
-                            if interactive:
-                                print(formatted_result)
-                            else:
-                                LOG.info(formatted_result)
-                            yield (
-                                item.id,
-                                Item.STATUS_SKIPPED,
-                                datetime.now() - started_trigger_before_check,
-                            )
-                            continue
+                            LOG.info(formatted_result)
+                        yield (
+                            skipped_item.id,
+                            Item.STATUS_SKIPPED,
+                            timedelta(0),
+                        )
 
                     if item.ITEM_TYPE_NAME == 'action':
                         target = item.get_result
@@ -150,10 +120,8 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         task_id=item.id,
                         kwargs={'interactive': interactive},
                     )
-                    found_work = True
-                    break
 
-                if not found_work:
+                except IndexError:
                     if worker_pool.jobs_open > 0:
                         # No work right now, but another worker might
                         # finish and "create" a new job. Keep this
@@ -170,7 +138,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
 
                 # The task's id is the item we just processed.
                 item_id = msg['task_id']
-                item = find_item(item_id, items)
+                item = find_item(item_id, item_queue.pending_items)
 
                 status_code = msg['return_value']
 
@@ -190,69 +158,21 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         else:
                             LOG.info(formatted_result)
 
-                if status_code in (
-                    Item.STATUS_FAILED,
-                    Item.STATUS_SKIPPED,
-                ) and item.cascade_skip:
-                    # if an item fails or is skipped, all items that depend on
-                    # it shall be removed from the queue
-                    items_with_deps, skipped_items = remove_item_dependents(
-                        items_with_deps,
-                        item.id,
-                    )
-                    # since we removed them from further processing, we
-                    # fake the status of the removed items so they still
-                    # show up in the result statistics
-                    for skipped_item in skipped_items:
-                        if skipped_item.ITEM_TYPE_NAME == 'dummy':
-                            continue
-                        formatted_result = format_item_result(
-                            Item.STATUS_SKIPPED,
-                            node.name,
-                            skipped_item.bundle.name,
-                            skipped_item.id,
-                            interactive=interactive,
-                        )
-                        if interactive:
-                            print(formatted_result)
-                        else:
-                            LOG.info(formatted_result)
-                        yield (skipped_item.id, Item.STATUS_SKIPPED, msg['duration'])
+                if status_code == Item.STATUS_FAILED:
+                    item_queue.item_failed(item)
+                elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
+                    item_queue.item_fixed(item)
+                elif status_code == Item.STATUS_OK:
+                    item_queue.item_ok(item)
+                elif status_code == Item.STATUS_SKIPPED:
+                    item_queue.item_skipped(item)
                 else:
-                    # if an item is applied successfully, all
-                    # dependencies on it can be removed from the
-                    # remaining items
-                    items_with_deps = remove_dep_from_items(
-                        items_with_deps,
-                        item.id,
-                    )
-
-                # now that we removed some deps from items_with_deps, we
-                # again need to look for items that don't have any deps
-                # left and can be processed next
-                items_with_deps, items_without_deps = \
-                    split_items_without_deps(items_with_deps + items_without_deps)
-
-                if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED) or (
-                    status_code == Item.STATUS_SKIPPED and
-                    not item.cascade_skip
-                ):
-                    # action succeeded or item was fixed
-                    for triggered_item_id in item.triggers:
-                        try:
-                            triggered_item = find_item(
-                                triggered_item_id,
-                                items_with_deps + items_without_deps,
-                            )
-                            triggered_item.has_been_triggered = True
-                        except NoSuchItem:
-                            LOG.debug(_(
-                                "{item} tried to trigger {triggered_item}, "
-                                "but it wasn't available. It must have been skipped previously."
-                            ).format(
-                                item=item.id,
-                                triggered_item=triggered_item_id,
-                            ))
+                    raise AssertionError(_(
+                        "unknown item status return for {item}: {status}".format(
+                            item=item.id,
+                            status=repr(status_code),
+                        ),
+                    ))
 
                 if item.ITEM_TYPE_NAME != 'dummy':
                     yield (item.id, status_code, msg['duration'])
@@ -263,16 +183,16 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
 
     # we have no items without deps left and none are processing
     # there must be a loop
-    if items_with_deps:
+    if item_queue.items_with_deps:
         LOG.debug(_(
             "There was a dependency problem. Look at the debug.svg generated "
             "by the following command and try to find a loop:\n"
             "echo '{}' | dot -Tsvg -odebug.svg"
-        ).format("\\n".join(graph_for_items(node.name, items_with_deps))))
+        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
 
         raise ItemDependencyError(
             _("bad dependencies between these items: {}").format(
-                ", ".join([i.id for i in items_with_deps]),
+                ", ".join([i.id for i in item_queue.items_with_deps]),
             )
         )
 
