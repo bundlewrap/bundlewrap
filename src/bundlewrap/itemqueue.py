@@ -97,9 +97,10 @@ class ItemQueue(object):
                     self.items_with_deps = remove_dep_from_items(self.items_with_deps, item.id)
                     self._split()
                     skipped_items.append(item)
+                    item = None
                     continue
             break
-
+        assert item is not None
         self.pending_items.append(item)
         return (item, skipped_items)
 
