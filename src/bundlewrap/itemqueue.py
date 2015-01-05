@@ -21,6 +21,14 @@ class ItemQueue(object):
     def all_items(self):
         return self.items_with_deps + self.items_without_deps
 
+    def item_failed(self, item):
+        """
+        Called when an item could not be fixed. Yields all items that
+        have been skipped as a result by cascading.
+        """
+        for skipped_item in self.item_skipped(item):
+            yield skipped_item
+
     def item_fixed(self, item):
         """
         Called when an item has successfully been fixed.

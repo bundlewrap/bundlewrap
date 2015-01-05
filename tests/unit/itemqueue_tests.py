@@ -9,32 +9,6 @@ class ItemQueueFireTriggersTest(TestCase):
     """
     Tests bundlewrap.itemqueue.ItemQueue._fire_triggers_for_item().
     """
-    def test_item_not_triggered(self):
-        item1 = get_mock_item("type1", "name1", [], [])
-        item1.triggers = ["type1:name2"]
-        item2 = get_mock_item("type1", "name2", [], [])
-        item2.triggered = True
-        iq = itemqueue.ItemQueue([item1, item2])
-        popped_item = iq.pop()
-        self.assertEqual(popped_item, item1)
-        iq.item_ok(popped_item)
-        popped_item = iq.pop()
-        self.assertEqual(popped_item, item2)
-        self.assertFalse(popped_item.has_been_triggered)
-
-    def test_item_triggered(self):
-        item1 = get_mock_item("type1", "name1", [], [])
-        item1.triggers = ["type1:name2"]
-        item2 = get_mock_item("type1", "name2", [], [])
-        item2.triggered = True
-        iq = itemqueue.ItemQueue([item1, item2])
-        popped_item = iq.pop()
-        self.assertEqual(popped_item, item1)
-        iq.item_fixed(popped_item)
-        popped_item = iq.pop()
-        self.assertEqual(popped_item, item2)
-        self.assertTrue(popped_item.has_been_triggered)
-
     def test_item_previously_skipped(self):
         item1 = get_mock_item("type1", "name1", [], [])
         item1.cascade_skip = True
@@ -53,6 +27,42 @@ class ItemQueueFireTriggersTest(TestCase):
         iq.item_fixed(item2)
 
 
+class ItemQueueItemFailedTest(TestCase):
+    """
+    Tests bundlewrap.itemqueue.ItemQueue.item_failed().
+    """
+    def test_item_failed(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item2 = get_mock_item("type1", "name2", [], ["type1:name1"])
+        iq = itemqueue.ItemQueue([item1, item2])
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item1)
+        self.assertEqual(
+            list(iq.item_failed(popped_item)),
+            [item2],
+        )
+        with self.assertRaises(IndexError):
+            iq.pop()
+
+
+class ItemQueueItemFixedTest(TestCase):
+    """
+    Tests bundlewrap.itemqueue.ItemQueue.item_fixed().
+    """
+    def test_item_triggered(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item1.triggers = ["type1:name2"]
+        item2 = get_mock_item("type1", "name2", [], [])
+        item2.triggered = True
+        iq = itemqueue.ItemQueue([item1, item2])
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item1)
+        iq.item_fixed(popped_item)
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item2)
+        self.assertTrue(popped_item.has_been_triggered)
+
+
 class ItemQueueItemOKTest(TestCase):
     """
     Tests bundlewrap.itemqueue.ItemQueue.item_ok().
@@ -66,6 +76,47 @@ class ItemQueueItemOKTest(TestCase):
         self.assertEqual(iq.pending_items, [])
         # just the bundle and type dummy items remain
         self.assertEqual(len(iq.items_without_deps), 2)
+
+    def test_dependency(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item2 = get_mock_item("type1", "name2", [], ["type1:name1"])
+        iq = itemqueue.ItemQueue([item1, item2])
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item1)
+        iq.item_ok(popped_item)
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item2)
+
+    def test_item_not_triggered(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item1.triggers = ["type1:name2"]
+        item2 = get_mock_item("type1", "name2", [], [])
+        item2.triggered = True
+        iq = itemqueue.ItemQueue([item1, item2])
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item1)
+        iq.item_ok(popped_item)
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item2)
+        self.assertFalse(popped_item.has_been_triggered)
+
+
+class ItemQueueItemSkippedTest(TestCase):
+    """
+    Tests bundlewrap.itemqueue.ItemQueue.item_skipped().
+    """
+    def test_item_skipped(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item2 = get_mock_item("type1", "name2", [], ["type1:name1"])
+        iq = itemqueue.ItemQueue([item1, item2])
+        popped_item = iq.pop()
+        self.assertEqual(popped_item, item1)
+        self.assertEqual(
+            list(iq.item_skipped(popped_item)),
+            [item2],
+        )
+        with self.assertRaises(IndexError):
+            iq.pop()
 
 
 class ItemQueuePopTest(TestCase):
