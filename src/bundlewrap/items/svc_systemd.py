@@ -38,7 +38,12 @@ class SvcSystemd(Item):
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_systemd"
-    NEEDS_STATIC = ["pkg_apt:", "pkg_pacman:"]
+    NEEDS_STATIC = [
+        "pkg_apt:",
+        "pkg_pacman:",
+        "pkg_yum:",
+        "pkg_zypper:",
+    ]
 
     def __repr__(self):
         return "<SvcSystemd name:{} running:{}>".format(
