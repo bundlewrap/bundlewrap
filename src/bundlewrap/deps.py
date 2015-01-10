@@ -12,6 +12,8 @@ class BundleItem(object):
     """
     Represents a dependency on all items in a certain bundle.
     """
+    triggered = False
+
     def __init__(self, bundle):
         self.NEEDS_STATIC = []
         self.bundle = bundle
@@ -42,6 +44,7 @@ class DummyItem(object):
     Represents a dependency on all items of a certain type.
     """
     bundle = None
+    triggered = False
 
     def __init__(self, item_type):
         self.NEEDS_STATIC = []
@@ -125,6 +128,20 @@ def _get_deps_for_item(item, items, deps_found=None):
                 deps_found,
             )
     return deps
+
+
+def _has_trigger_path(items, item, target_item_id):
+    """
+    Returns True if the given item directly or indirectly (trough
+    other items) triggers the item with the given target item id.
+    """
+    if target_item_id in item.triggers:
+        return True
+    for triggered_id in item.triggers:
+        triggered_item = find_item(triggered_id, items)
+        if _has_trigger_path(items, triggered_item, target_item_id):
+            return True
+    return False
 
 
 def _inject_bundle_items(items):
@@ -420,14 +437,20 @@ def remove_dep_from_items(items, dep):
     return items
 
 
-def remove_item_dependents(items, dep):
+def remove_item_dependents(items, dep_item):
     """
     Removes the items depending on the given id from the list of items.
     """
     removed_items = []
     for item in items:
-        if dep in item._deps:
-            removed_items.append(item)
+        if dep_item.id in item._deps:
+            if _has_trigger_path(items, dep_item, item.id):
+                # triggered items cannot be removed here since they
+                # may yet be triggered by another item and will be
+                # skipped anyway if they aren't
+                item._deps.remove(dep_item.id)
+            else:
+                removed_items.append(item)
 
     for item in removed_items:
         items.remove(item)
@@ -436,7 +459,7 @@ def remove_item_dependents(items, dep):
         LOG.debug(
             "skipped these items because they depend on {item}, which was "
             "skipped previously: {skipped}".format(
-                item=dep,
+                item=dep_item.id,
                 skipped=", ".join([item.id for item in removed_items]),
             )
         )
@@ -444,7 +467,7 @@ def remove_item_dependents(items, dep):
     all_recursively_removed_items = []
     for removed_item in removed_items:
         items, recursively_removed_items = \
-            remove_item_dependents(items, removed_item.id)
+            remove_item_dependents(items, removed_item)
         all_recursively_removed_items += recursively_removed_items
 
     return (items, removed_items + all_recursively_removed_items)

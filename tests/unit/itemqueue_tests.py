@@ -147,6 +147,32 @@ class ItemQueueItemSkippedTest(TestCase):
         self.assertEqual(popped_item, item2)
         self.assertEqual(skipped_items, [])
 
+    def test_item_dont_skip_triggered(self):
+        """
+        Regression test for #152
+        """
+        item1 = get_mock_item("type1", "name1", [], [])
+        item1.triggers = ["type1:name3"]
+        item2 = get_mock_item("type1", "name2", [], [])
+        item2.triggers = ["type1:name3"]
+        item3 = get_mock_item("type1", "name3", [], [])
+        item3.triggered = True
+        iq = itemqueue.ItemQueue([item1, item2, item3])
+        popped_item, skipped_items = iq.pop()
+        self.assertEqual(popped_item, item2)
+        self.assertEqual(skipped_items, [])
+        self.assertEqual(
+            list(iq.item_skipped(popped_item)),
+            [],
+        )
+        popped_item, skipped_items = iq.pop()
+        self.assertEqual(popped_item, item1)
+        self.assertEqual(skipped_items, [])
+        iq.item_fixed(popped_item)
+        popped_item, skipped_items = iq.pop()
+        self.assertEqual(popped_item, item3)
+        self.assertEqual(skipped_items, [])
+
 
 class ItemQueuePopTest(TestCase):
     """

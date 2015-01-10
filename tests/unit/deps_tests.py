@@ -313,6 +313,6 @@ class RemoveItemDependentsTest(TestCase):
         items = [item1, item2, item3]
 
         self.assertEqual(
-            deps.remove_item_dependents(items, "item3"),
+            deps.remove_item_dependents(items, item3),
             ([item3], [item2, item1]),
         )

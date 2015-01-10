@@ -60,7 +60,7 @@ class ItemQueue(object):
             # it shall be removed from the queue
             self.items_with_deps, skipped_items = remove_item_dependents(
                 self.items_with_deps,
-                item.id,
+                item,
             )
             # since we removed them from further processing, we
             # fake the status of the removed items so they still
