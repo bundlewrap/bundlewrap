@@ -12,6 +12,7 @@ BundleWrap has the following properties that are unique to it or at least not co
 * :doc:`Mako file templates <item_file_templates>`
 * verifies that each action taken actually fixed the item in question
 * useful and actionable error messages
+* can apply actions (and other items) :ref:`prior <preceded_by>` to fixing an item (and only then)
 * built-in :ref:`visualization <bw_plot>` of node configuration
 * nice :doc:`Python API <api>`
 * designed to be mastered quickly and easily remembered

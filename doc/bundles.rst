@@ -173,6 +173,8 @@ The above example will run :command:`service daemon restart` every time BundleWr
 
 |
 
+.. _preceded_by:
+
 ``preceded_by``
 ###############
 
