@@ -72,7 +72,11 @@ def get_all_attrs_from_file(path, cache=True, base_env=None):
     if path not in __GETATTR_CACHE or not cache:
         source = get_file_contents(path)
         env = base_env.copy()
-        exec(source, env)
+        try:
+            exec(source, env)
+        except:
+            LOG.error("exception while executing {}".format(path))
+            raise
         if cache:
             __GETATTR_CACHE[path] = env
     else:
