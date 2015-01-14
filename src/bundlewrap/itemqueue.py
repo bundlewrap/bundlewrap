@@ -74,7 +74,7 @@ class ItemQueue(object):
                 self.items_with_deps,
                 item.id,
             )
-            self._split()
+        self._split()
 
     def pop(self, interactive=False):
         skipped_items = []
