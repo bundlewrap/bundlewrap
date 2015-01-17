@@ -449,6 +449,11 @@ def remove_item_dependents(items, dep_item):
                 # may yet be triggered by another item and will be
                 # skipped anyway if they aren't
                 item._deps.remove(dep_item.id)
+            elif item.ITEM_TYPE_NAME == 'dummy' and \
+                    dep_item.triggered and not dep_item.has_been_triggered:
+                # don't skip dummy items because of untriggered members
+                # see issue #151; separate elif for clarity
+                item._deps.remove(dep_item.id)
             else:
                 removed_items.append(item)
 
