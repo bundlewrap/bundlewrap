@@ -439,7 +439,7 @@ def remove_dep_from_items(items, dep):
 
 def remove_item_dependents(items, dep_item):
     """
-    Removes the items depending on the given id from the list of items.
+    Removes the items depending on the given item from the list of items.
     """
     removed_items = []
     for item in items:
