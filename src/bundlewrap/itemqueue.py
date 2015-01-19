@@ -77,6 +77,12 @@ class ItemQueue(object):
         self._split()
 
     def pop(self, interactive=False):
+        """
+        Gets the next item available for processing and moves it into
+        self.pending_items. Will raise IndexError if no item is
+        available. Otherwise, it will return the item and a list of
+        items that have been skipped while looking for the item.
+        """
         skipped_items = []
 
         if not self.items_without_deps:
