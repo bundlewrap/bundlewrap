@@ -437,7 +437,7 @@ def remove_dep_from_items(items, dep):
     return items
 
 
-def remove_item_dependents(items, dep_item):
+def remove_item_dependents(items, dep_item, skipped=False):
     """
     Removes the items depending on the given item from the list of items.
     """
@@ -449,7 +449,7 @@ def remove_item_dependents(items, dep_item):
                 # may yet be triggered by another item and will be
                 # skipped anyway if they aren't
                 item._deps.remove(dep_item.id)
-            elif item.ITEM_TYPE_NAME == 'dummy' and \
+            elif skipped and item.ITEM_TYPE_NAME == 'dummy' and \
                     dep_item.triggered and not dep_item.has_been_triggered:
                 # don't skip dummy items because of untriggered members
                 # see issue #151; separate elif for clarity
@@ -472,7 +472,7 @@ def remove_item_dependents(items, dep_item):
     all_recursively_removed_items = []
     for removed_item in removed_items:
         items, recursively_removed_items = \
-            remove_item_dependents(items, removed_item)
+            remove_item_dependents(items, removed_item, skipped=skipped)
         all_recursively_removed_items += recursively_removed_items
 
     return (items, removed_items + all_recursively_removed_items)

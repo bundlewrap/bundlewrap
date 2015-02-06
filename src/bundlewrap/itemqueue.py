@@ -26,7 +26,7 @@ class ItemQueue(object):
         Called when an item could not be fixed. Yields all items that
         have been skipped as a result by cascading.
         """
-        for skipped_item in self.item_skipped(item):
+        for skipped_item in self.item_skipped(item, _skipped=False):
             yield skipped_item
 
     def item_fixed(self, item):
@@ -49,7 +49,7 @@ class ItemQueue(object):
         )
         self._split()
 
-    def item_skipped(self, item):
+    def item_skipped(self, item, _skipped=True):
         """
         Called when an item has been skipped. Yields all items that have
         been skipped as a result by cascading.
@@ -61,6 +61,7 @@ class ItemQueue(object):
             self.items_with_deps, skipped_items = remove_item_dependents(
                 self.items_with_deps,
                 item,
+                skipped=_skipped,
             )
             # since we removed them from further processing, we
             # fake the status of the removed items so they still
