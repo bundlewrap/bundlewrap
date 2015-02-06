@@ -375,6 +375,14 @@ def _inject_preceded_by_dependencies(items):
     preceded_by items and attaches triggering items to preceding items.
     """
     for item in items:
+        if item.preceded_by and item.triggered:
+            raise BundleError(_(
+                "triggered item '{item}' in bundle '{bundle}' must not use "
+                "'preceded_by' (use chained triggers instead)".format(
+                    bundle=item.bundle.name,
+                    item=item.id,
+                ),
+            ))
         for triggered_item_id in item.preceded_by:
             try:
                 triggered_item = find_item(triggered_item_id, items)

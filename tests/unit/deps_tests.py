@@ -6,6 +6,8 @@ from bundlewrap import deps
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 
+from .node_tests import get_mock_item
+
 
 class MockItem(Item):
     BUNDLE_ATTRIBUTE_NAME = "mock"
@@ -230,6 +232,21 @@ class InjectConcurrencyBlockersTest(TestCase):
 
         for item in injected:
             self.assertEqual(item._deps, deps_should[item])
+
+
+class InjectPrecededByDepsTest(TestCase):
+    """
+    Tests bundlewrap.deps._inject_preceded_by_dependencies.
+    """
+    def test_exception_with_triggered(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item1.triggers = ["type1:name2"]
+        item2 = get_mock_item("type1", "name2", [], [])
+        item2.preceded_by = ["type1:name3"]
+        item2.triggered = True
+        item3 = get_mock_item("type1", "name3", [], [])
+        with self.assertRaises(BundleError):
+            deps._inject_preceded_by_dependencies([item1, item2, item3])
 
 
 class ItemSplitWithoutDepTest(TestCase):
