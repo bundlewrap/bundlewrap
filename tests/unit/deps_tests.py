@@ -249,6 +249,25 @@ class InjectPrecededByDepsTest(TestCase):
             deps._inject_preceded_by_dependencies([item1, item2, item3])
 
 
+class InjectReverseTriggersTest(TestCase):
+    """
+    Tests bundlewrap.deps._inject_reverse_triggers.
+    """
+    def test_triggered_by(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item1.triggered_by = ["type1:name2"]
+        item2 = get_mock_item("type1", "name2", [], [])
+        deps._inject_reverse_triggers([item1, item2])
+        self.assertEqual(item2.triggers, ["type1:name1"])
+
+    def test_precedes(self):
+        item1 = get_mock_item("type1", "name1", [], [])
+        item1.precedes = ["type1:name2"]
+        item2 = get_mock_item("type1", "name2", [], [])
+        deps._inject_reverse_triggers([item1, item2])
+        self.assertEqual(item2.preceded_by, ["type1:name1"])
+
+
 class ItemSplitWithoutDepTest(TestCase):
     """
     Tests bundlewrap.deps.split_items_without_deps.

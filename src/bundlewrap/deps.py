@@ -18,9 +18,11 @@ class BundleItem(object):
         self.NEEDS_STATIC = []
         self.bundle = bundle
         self.ITEM_TYPE_NAME = 'dummy'
-        self.needs = []
         self.needed_by = []
+        self.needs = []
         self.preceded_by = []
+        self.precedes = []
+        self.triggered_by = []
         self.triggers = []
         self._deps = []
         self._precedes_items = []
@@ -50,9 +52,11 @@ class DummyItem(object):
         self.NEEDS_STATIC = []
         self.item_type = item_type
         self.ITEM_TYPE_NAME = 'dummy'
-        self.needs = []
         self.needed_by = []
+        self.needs = []
         self.preceded_by = []
+        self.precedes = []
+        self.triggered_by = []
         self.triggers = []
         self._deps = []
         self._precedes_items = []
@@ -336,6 +340,21 @@ def _inject_reverse_dependencies(items):
     return items
 
 
+def _inject_reverse_triggers(items):
+    """
+    Looks for 'triggered_by' and 'precedes' attributes and turns them
+    into standard triggers (defined on the opposing end).
+    """
+    for item in items:
+        for triggering_item_id in item.triggered_by:
+            triggering_item = find_item(triggering_item_id, items)
+            triggering_item.triggers.append(item.id)
+        for preceded_item_id in item.precedes:
+            preceded_item = find_item(preceded_item_id, items)
+            preceded_item.preceded_by.append(item.id)
+    return items
+
+
 def _inject_trigger_dependencies(items):
     """
     Injects dependencies from all triggered items to their triggering
@@ -424,6 +443,7 @@ def prepare_dependencies(items):
     items = _inject_dummy_items(items)
     items = _inject_bundle_items(items)
     items = _inject_canned_actions(items)
+    items = _inject_reverse_triggers(items)
     items = _inject_reverse_dependencies(items)
     items = _inject_trigger_dependencies(items)
     items = _inject_preceded_by_dependencies(items)

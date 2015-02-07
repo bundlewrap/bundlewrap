@@ -171,6 +171,8 @@ In some scenarios, you may want to execute an :ref:`action <item_action>` only w
 
 The above example will run :command:`service daemon restart` every time BundleWrap successfully applies a change to :file:`/etc/daemon.conf`. If an action is triggered multiple times, it will only be run once.
 
+Similar to ``needed_by``, ``triggered_by`` can be used to define a ``triggers`` relationship from the opposite direction.
+
 |
 
 .. _preceded_by:
@@ -199,6 +201,8 @@ Operates like ``triggers``, but will apply the triggered item *before* the trigg
 	}
 
 In this configuration, ``/etc/example.conf`` will always be copied before and only if it is changed. You would probably also want to set ``cascade_skip`` to ``False`` on the action so you can skip it in interactive mode when you're sure you don't need the backup copy.
+
+Similar to ``needed_by``, ``precedes`` can be used to define a ``preceded_by`` relationship from the opposite direction.
 
 |
 

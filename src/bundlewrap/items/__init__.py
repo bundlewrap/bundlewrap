@@ -16,10 +16,12 @@ from bundlewrap.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': True,
-    'needs': [],
     'needed_by': [],
+    'needs': [],
     'preceded_by': [],
+    'precedes': [],
     'triggered': False,
+    'triggered_by': [],
     'triggers': [],
     'unless': "",
 }
