@@ -625,10 +625,10 @@ def test_items(items, workers=1):
                 ))
 
 
-def verify_items(items_with_actions, workers=1):
+def verify_items(all_items, workers=1):
     items = []
-    for item in items_with_actions:
-        if not item.ITEM_TYPE_NAME == 'action':
+    for item in all_items:
+        if not item.ITEM_TYPE_NAME == 'action' and not item.triggered:
             items.append(item)
 
     with WorkerPool(workers=workers) as worker_pool:
