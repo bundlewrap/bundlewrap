@@ -9,12 +9,15 @@ Handles Python packages installed by ``pip``.
 .. code-block:: python
 
     pkg_pip = {
-        "foopkg": {
+        "foo": {
             "installed": True,  # default
             "version": "1.0",  # optional
         },
         "bar": {
             "installed": False,
+        },
+        "/path/to/virtualenv/foo": {
+        	# will install foo in the virtualenv at /path/to/virtualenv
         },
     }
 

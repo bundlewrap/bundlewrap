@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from os.path import join, split
 from pipes import quote
 
 from bundlewrap.exceptions import BundleError
@@ -12,15 +13,15 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 def pkg_install(node, pkgname, version=None):
     if version:
-        pkg = "{}=={}".format(pkgname, version)
-    else:
-        pkg = pkgname
-    return node.run("pip install -U {}".format(quote(pkg)))
+        pkgname = "{}=={}".format(pkgname, version)
+    pip_path, pkgname = split_path(pkgname)
+    return node.run("{} install -U {}".format(quote(pip_path), quote(pkgname)))
 
 
 def pkg_installed(node, pkgname):
+    pip_path, pkgname = split_path(pkgname)
     result = node.run(
-        "pip freeze | grep '^{}=='".format(pkgname),
+        "{} freeze | grep '^{}=='".format(quote(pip_path), pkgname),
         may_fail=True,
     )
     if result.return_code != 0:
@@ -30,7 +31,8 @@ def pkg_installed(node, pkgname):
 
 
 def pkg_remove(node, pkgname):
-    return node.run("pip uninstall -y {}".format(quote(pkgname)))
+    pip_path, pkgname = split_path(pkgname)
+    return node.run("{} uninstall -y {}".format(quote(pip_path), quote(pkgname)))
 
 
 class PipPkg(Item):
@@ -110,3 +112,9 @@ class PipPkg(Item):
                 bundle=bundle.name,
                 item=item_id,
             ))
+
+
+def split_path(pkgname):
+    virtualenv, pkgname = split(pkgname)
+    pip_path = join(virtualenv, "bin", "pip") if virtualenv else "pip"
+    return pip_path, pkgname
