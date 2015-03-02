@@ -113,11 +113,12 @@ def run(hostname, command, ignore_failure=False, stderr=None,
         with prefix("export LANG=C"):
             fabric_result = runner(
                 command,
-                shell=True,
-                pty=pty,
                 combine_stderr=False,
-                stdout=stdout,
+                pty=pty,
+                shell=True,
                 stderr=stderr,
+                stdout=stdout,
+                warn_only=True,
             )
 
     LOG.debug("command finished with return code {}".format(fabric_result.return_code))
