@@ -1,7 +1,11 @@
 1.4.0
 =====
 
-unreleased
+2015-03-02
+
+* added virtualenv support for pkg_pip
+* added reverse syntax for triggers and preceded_by
+* lots of fixes and internal improvements around preceded_by
 
 
 1.3.0
