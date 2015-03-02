@@ -21,6 +21,7 @@ setup(
     url="http://bundlewrap.org",
     package_dir={'': "src"},
     packages=find_packages("src"),
+    test_suite="tests",
     entry_points={
         'console_scripts': [
             "bw=bundlewrap.cmdline:main",

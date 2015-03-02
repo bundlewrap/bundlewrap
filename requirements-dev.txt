@@ -4,8 +4,6 @@ distribute
 Fabric
 Mako
 mock
-nose
-nose-cov
 passlib
 requests
 Sphinx

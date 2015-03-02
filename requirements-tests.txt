@@ -5,7 +5,5 @@ Fabric>=1.5.0
 Jinja2
 Mako
 mock
-nose
-nose-cov
 passlib
 requests>=1.0.0

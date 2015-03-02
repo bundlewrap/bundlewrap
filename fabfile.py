@@ -72,18 +72,12 @@ def run_pylint(ignore_warnings=True):
 
 
 def run_tests(coverage=True):
-    sys.path.append(PROJECT_PATH + "/src")
     os.environ['BWCOLORS'] = "0"
-    with lcd(PROJECT_PATH + "/tests"):
-        if coverage:
-            local(
-                "nosetests "
-                "--with-cov --cov bundlewrap --cov-config .coveragerc 2>&1"
-            )
-            local("coverage combine")
-            local("mv .coverage ..")
-        else:
-            local("nosetests")
+    if coverage:
+        local("coverage run setup.py test")
+        local("coverage combine")
+    else:
+        local("nosetests")
 
 
 def submit_coverage():
