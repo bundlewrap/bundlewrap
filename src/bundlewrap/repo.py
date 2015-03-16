@@ -223,7 +223,7 @@ class LibsProxy(object):
         self.__path = state
 
 
-def nodes_from_file(filepath, libs):
+def nodes_from_file(filepath, libs, repo_path):
     """
     Returns a list of nodes as defined in the given nodes.py.
     """
@@ -231,7 +231,7 @@ def nodes_from_file(filepath, libs):
         flat_node_dict = utils.getattr_from_file(
             filepath,
             'nodes',
-            base_env={'libs': libs},
+            base_env={'libs': libs, 'repo_path': repo_path},
         )
     except KeyError:
         raise RepositoryError(
@@ -427,7 +427,7 @@ class Repository(object):
 
         # populate nodes
         self.node_dict = {}
-        for node in nodes_from_file(self.nodes_file, self.libs):
+        for node in nodes_from_file(self.nodes_file, self.libs, self.path):
             self.add_node(node)
 
     @utils.cached_property
