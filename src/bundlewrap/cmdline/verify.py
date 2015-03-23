@@ -33,6 +33,7 @@ def bw_verify(repo, args):
                         node.verify,
                         task_id=node.name,
                         kwargs={
+                            'only_needs_fixing': args['only_needs_fixing'],
                             'workers': args['item_workers'],
                         },
                     )

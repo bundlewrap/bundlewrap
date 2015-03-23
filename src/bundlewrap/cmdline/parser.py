@@ -443,6 +443,13 @@ def build_parser_bw():
         help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_verify.add_argument(
+        "-F",
+        "--only-needs-fixing",
+        action='store_true',
+        dest='only_needs_fixing',
+        help=_("only show items that need fixing"),
+    )
+    parser_verify.add_argument(
         "-p",
         "--parallel-nodes",
         default=4,

@@ -510,9 +510,10 @@ class Node(object):
             password=self.password,
         )
 
-    def verify(self, workers=4):
+    def verify(self, only_needs_fixing=False, workers=4):
         verify_items(
             self.items,
+            only_needs_fixing=only_needs_fixing,
             workers=workers,
         )
 
@@ -625,7 +626,7 @@ def test_items(items, workers=1):
                 ))
 
 
-def verify_items(all_items, workers=1):
+def verify_items(all_items, only_needs_fixing=False, workers=1):
     items = []
     for item in all_items:
         if not item.ITEM_TYPE_NAME == 'action' and not item.triggered:
@@ -652,7 +653,7 @@ def verify_items(all_items, workers=1):
                         red("✘"),
                         item_id,
                     ))
-                else:
+                elif not only_needs_fixing:
                     LOG.info("{} {}".format(
                         green("✓"),
                         item_id,
