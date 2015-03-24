@@ -28,7 +28,7 @@ def cached_property(prop):
     def cache_wrapper(self):
         if not hasattr(self, "_cache"):
             self._cache = {}
-        if not prop.__name__ in self._cache:
+        if prop.__name__ not in self._cache:
             return_value = prop(self)
             if isgenerator(return_value):
                 return_value = tuple(return_value)
