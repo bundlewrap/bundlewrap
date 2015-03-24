@@ -11,6 +11,7 @@ BundleWrap has the following properties that are unique to it or at least not co
 * interactive mode to review configuration as it it being applied
 * :doc:`Mako file templates <item_file_templates>`
 * verifies that each action taken actually fixed the item in question
+* verify mode to assess the state of your configuration without mutating it
 * useful and actionable error messages
 * can apply actions (and other items) :ref:`prior <preceded_by>` to fixing an item (and only then)
 * built-in :ref:`visualization <bw_plot>` of node configuration
@@ -28,15 +29,17 @@ Ansible
 
 `Ansible <http://ansible.com>`_ is very similar to BundleWrap in how it communicates with nodes. Both systems do not use server or agent processes, but SSH. Ansible can optionally use OpenSSH instead of a Python SSH implementation to speed up performance. On the other hand, BundleWrap will always use the Python implementation, but with multiple connections to each node. This should give BundleWrap a performance advantage on very complex systems with many items, since each connection can work on a different item simultaneously.
 
-To apply configuration, Ansible uploads pieces of code called modules to each node and runs them there. Many Ansible modules depend on the node having a Python 2.x interpreter installed. BundleWrap runs commands on the target node just as you would in an interactive SSH session. Most of the :doc:`commands needed <requirements>` by BundleWrap are provided by coreutils and should be present on all standard Linux systems.
+To apply configuration, Ansible uploads pieces of code called modules to each node and runs them there. Many Ansible modules depend on the node having a Python 2.x interpreter installed. In some cases, third-party Python libraries are needed as well, increasing the footprint on the node. BundleWrap runs commands on the target node just as you would in an interactive SSH session. Most of the :doc:`commands needed <requirements>` by BundleWrap are provided by coreutils and should be present on all standard Linux systems.
 
 Ansible ships with loads of modules while BundleWrap will only give you the most needed primitives to work with. For example, we will not add an item type for remote downloads because you can easily build that yourself using an :doc:`action <item_action>` with :command:`wget`.
 
-Ansible's playbooks roughly correspond to BundleWrap's bundles, but are written in YAML using a special playbook language. BundleWrap uses Python for this purpose, so if you know some basic Python you only need to learn the schema of the dictionaries you're building.
+Ansible's playbooks roughly correspond to BundleWrap's bundles, but are written in YAML using a special playbook language. BundleWrap uses Python for this purpose, so if you know some basic Python you only need to learn the schema of the dictionaries you're building. This also means that you will never run into a problem the playbook language cannot solve. Anything you can do in Python, you can do in BundleWrap.
+
+While you can automate application deployments in BundleWrap, Ansible is much more capable in that regard as it combines config management and sophisticated deployment mechanisms (multi-stage, rolling updates).
 
 File templates in Ansible are `Jinja2 <http://jinja2.pocoo.org>`_, while BundleWrap uses `Mako <http://makotemplates.org>`_ by default and offers Jinja2 as an option.
 
-Ansible, Inc. offers paid support for Ansible and an optional web-based addon called `Ansible Tower <http://ansible.com/tower>`_.
+Ansible, Inc. offers paid support for Ansible and an optional web-based addon called `Ansible Tower <http://ansible.com/tower>`_. No such offerings are available for BundleWrap.
 
 |
 
