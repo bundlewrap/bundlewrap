@@ -211,7 +211,11 @@ class LibsProxy(object):
         if attrname not in self.__module_cache:
             filename = attrname + ".py"
             filepath = join(self.__path, filename)
-            m = load_source('bundlewrap.repo.libs_{}'.format(attrname), filepath)
+            try:
+                m = load_source('bundlewrap.repo.libs_{}'.format(attrname), filepath)
+            except:
+                utils.LOG.error(_("Exception while trying to load {}:").format(filepath))
+                raise
             self.__module_cache[attrname] = m
         return self.__module_cache[attrname]
 
