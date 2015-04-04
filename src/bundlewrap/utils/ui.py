@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from io import BytesIO
 from sys import stdout
 
-from .text import force_text, mark_for_translation as _
+from .text import mark_for_translation as _
 
 
 class LineBuffer(object):
@@ -20,7 +20,6 @@ class LineBuffer(object):
             self.target(self.buffer)
 
     def flush(self):
-        self.buffer = self.buffer.replace(b"\r", b"\n")
         while b"\n" in self.buffer:
             chunk, self.buffer = self.buffer.split(b"\n", 1)
             self.record.write(chunk + b"\n")
