@@ -7,10 +7,7 @@ from os import getcwd
 import re
 from sys import argv, exit, stderr, stdout
 
-from fabric.network import disconnect_all
-
 from ..exceptions import NoSuchRepository
-from ..operations import set_up_fabric
 from ..repo import Repository
 from ..utils.text import force_text, mark_for_translation as _, red
 from .parser import build_parser_bw
@@ -102,7 +99,6 @@ def main(*args):
         # 'bw repo create' is a special case that only takes a path
         repo = getcwd()
     else:
-        set_up_fabric()
         try:
             repo = Repository(getcwd())
         except NoSuchRepository:
@@ -130,8 +126,5 @@ def main(*args):
             break
         else:
             print(line.encode('utf-8'))
-
-    # clean up Fabric connections
-    disconnect_all()
 
     exit(return_code)
