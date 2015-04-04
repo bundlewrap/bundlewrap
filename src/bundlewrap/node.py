@@ -25,7 +25,7 @@ from .exceptions import (
 from .itemqueue import ItemQueue
 from .items import Item
 from .utils import cached_property, LOG, graph_for_items, names
-from .utils.text import mark_for_translation as _
+from .utils.text import force_text, mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
 
@@ -480,17 +480,17 @@ class Node(object):
                 pwd = group.password
         return pwd
 
-    def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
-            sudo=True):
+    def run(self, command, may_fail=False, log_output=False):
+        if log_output:
+            def log_function(msg):
+                LOG.info("[{}] {}".format(self.name, force_text(msg).rstrip("\n")))
+        else:
+            log_function = None
         return operations.run(
             self.hostname,
             command,
             ignore_failure=may_fail,
-            stderr=stderr,
-            stdout=stdout,
-            sudo=sudo,
-            password=self.password,
-            pty=pty,
+            log_function=log_function,
         )
 
     def test(self, workers=4):

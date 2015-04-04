@@ -1,14 +1,25 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from __future__ import unicode_literals
 
 from base64 import b64decode
 from pipes import quote
-from stat import S_IRUSR, S_IWUSR
+from select import select
+from subprocess import Popen
+from threading import Event, Thread
+from os import close, pipe, read
 
 from .exceptions import RemoteException
 from .utils import LOG
 from .utils.text import force_text, mark_for_translation as _, randstr
 from .utils.ui import LineBuffer
+
+
+def output_thread_body(line_buffer, read_fd, quit_event):
+    while not quit_event.is_set():
+        r, w, x = select([read_fd], [], [], 0.1)
+        if r:
+            line_buffer.write(read(read_fd, 1024))
 
 
 def download(hostname, remote_path, local_path, ignore_failure=False, password=None):
@@ -26,7 +37,7 @@ def download(hostname, remote_path, local_path, ignore_failure=False, password=N
     elif not ignore_failure:
         raise RemoteException(_(
             "reading file '{path}' on {host} failed: {error}").format(
-                error=,
+                error=None,
                 host=hostname,
                 path=remote_path,
             )
@@ -43,36 +54,61 @@ class RunResult(object):
         return self.stdout
 
 
-def run(hostname, command, ignore_failure=False, stderr=None,
-        stdout=None, password=None, pty=False, sudo=True):
+def run(hostname, command, ignore_failure=False, log_function=None):
     """
     Runs a command on a remote system.
     """
-    if stderr is None:
-        stderr = LineBuffer(lambda s: None)
-    if stdout is None:
-        stdout = LineBuffer(lambda s: None)
+    stderr_lb = LineBuffer(log_function)
+    stdout_lb = LineBuffer(log_function)
 
     LOG.debug("running on {host}: {command}".format(command=command, host=hostname))
 
-    #export LANG=C
+    stdout_fd_r, stdout_fd_w = pipe()
+    stderr_fd_r, stderr_fd_w = pipe()
 
-    LOG.debug("command finished with return code {}".format())
+    ssh_process = Popen(
+        ["ssh", hostname, "LANG=C " + command],
+        stderr=stderr_fd_w,
+        stdout=stdout_fd_w,
+    )
+    quit_event = Event()
+    stdout_thread = Thread(
+        args=(stdout_lb, stdout_fd_r, quit_event),
+        target=output_thread_body,
+    )
+    stderr_thread = Thread(
+        args=(stderr_lb, stderr_fd_r, quit_event),
+        target=output_thread_body,
+    )
+    stdout_thread.start()
+    stderr_thread.start()
+    try:
+        ssh_process.communicate()
+    finally:
+        quit_event.set()
+        stdout_thread.join()
+        stderr_thread.join()
+        stdout_lb.close()
+        stderr_lb.close()
+        for fd in (stdout_fd_r, stdout_fd_w, stderr_fd_r, stderr_fd_w):
+            close(fd)
 
-    if not XXX_SUCCESS and not ignore_failure:
+    LOG.debug("command finished with return code {}".format(ssh_process.returncode))
+
+    result = RunResult()
+    result.stdout = stdout_lb.record.getvalue()
+    result.stderr = stderr_lb.record.getvalue()
+    result.return_code = ssh_process.returncode
+
+    if not result.return_code == 0 and not ignore_failure:
         raise RemoteException(_(
             "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}"
         ).format(
             command=command,
             host=hostname,
-            rcode=,
-            result=force_text() + force_text(),
+            rcode=result.return_code,
+            result=force_text(result.stdout) + force_text(result.stderr),
         ))
-
-    result = RunResult()
-    result.stdout = force_text()
-    result.stderr = force_text()
-    result.return_code =
     return result
 
 
