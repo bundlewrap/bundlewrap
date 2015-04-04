@@ -67,7 +67,7 @@ def run(hostname, command, ignore_failure=False, log_function=None):
     stderr_fd_r, stderr_fd_w = pipe()
 
     ssh_process = Popen(
-        ["ssh", hostname, "LANG=C " + command],
+        ["ssh", hostname, "LANG=C sudo bash -c " + quote(command)],
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )
