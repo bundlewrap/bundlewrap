@@ -143,7 +143,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
     )
     stdout, stderr = scp_process.communicate()
 
-    if scp_process.return_code != 0:
+    if scp_process.returncode != 0:
         raise RemoteException(_(
             "upload to {host} failed for: {failed}").format(
                 failed=remote_path,
