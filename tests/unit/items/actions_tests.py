@@ -14,7 +14,7 @@ class ActionInitTest(TestCase):
     Tests initialization of bundlewrap.items.actions.Action.
     """
     def test_ok(self):
-        Action(MagicMock(), "action", { 'command': "/bin/true" })
+        Action(MagicMock(), "action", {'command': "/bin/true"})
 
     def test_no_command(self):
         with self.assertRaises(BundleError):
@@ -48,7 +48,7 @@ class ActionRunTest(TestCase):
         bundle = MagicMock()
         bundle.node.run.return_value = run_result
 
-        action = Action(bundle, "action", { 'command': "/bin/true" })
+        action = Action(bundle, "action", {'command': "/bin/true"})
 
         self.assertEqual(action.run(), run_result)
 
