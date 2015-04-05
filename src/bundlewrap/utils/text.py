@@ -4,12 +4,12 @@ from __future__ import unicode_literals
 from os import environ
 from os.path import normpath
 from random import choice
-from string import digits, letters
+from string import digits, ascii_letters
 from sys import version_info
 
 from fabric import colors as _fabric_colors
 
-VALID_NAME_CHARS = digits + letters + "-_.+"
+VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
 
 
 def _ansi_wrapper(colorizer):
