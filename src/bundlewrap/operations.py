@@ -2,7 +2,6 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from base64 import b64decode
 from pipes import quote
 from select import select
 from subprocess import Popen
@@ -22,22 +21,26 @@ def output_thread_body(line_buffer, read_fd, quit_event):
             line_buffer.write(read(read_fd, 1024))
 
 
-def download(hostname, remote_path, local_path, ignore_failure=False, password=None):
+def download(hostname, remote_path, local_path, add_host_keys=False):
     """
     Download a file.
     """
-    # See issue #39.
-
     LOG.debug(_("downloading {host}:{path} -> {target}").format(
         host=hostname, path=remote_path, target=local_path))
 
-    if XXX_SUCCESS:
+    result = run(
+        hostname,
+        "cat {}".format(quote(remote_path)),  # See issue #39.
+        add_host_keys=add_host_keys,
+    )
+
+    if result.return_code == 0:
         with open(local_path, "w") as f:
-            f.write()
-    elif not ignore_failure:
+            f.write(result.stdout)
+    else:
         raise RemoteException(_(
             "reading file '{path}' on {host} failed: {error}").format(
-                error=None,
+                error=force_text(result.stderr) + force_text(result.stdout),
                 host=hostname,
                 path=remote_path,
             )
