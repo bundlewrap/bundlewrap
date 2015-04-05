@@ -62,14 +62,12 @@ class RemoveTest(TmpDirTest):
         pm.remove("plugin1")
         self.assertFalse(exists(join(self.tmpdir, "file1")))
 
-
         with open(join(self.tmpdir, "plugins.json")) as f:
             plugin_db = f.read()
         self.assertEqual(
             loads(plugin_db),
             {},
         )
-
 
     def test_leave_modified(self):
         with open(join(self.tmpdir, "plugins.json"), 'w') as f:
