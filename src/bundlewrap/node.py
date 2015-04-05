@@ -295,8 +295,9 @@ class Node(object):
 
         self.name = name
         self._bundles = infodict.get('bundles', [])
-        self.hostname = infodict.get('hostname', self.name)
         self._node_metadata = infodict.get('metadata', {})
+        self.add_ssh_host_keys = False
+        self.hostname = infodict.get('hostname', self.name)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
     def __cmp__(self, other):
@@ -433,7 +434,7 @@ class Node(object):
             self.hostname,
             remote_path,
             local_path,
-            ignore_failure=ignore_failure,
+            add_host_keys=self.add_ssh_host_keys,
         )
 
     def get_item(self, item_id):
@@ -462,7 +463,7 @@ class Node(object):
             self.hostname,
             command,
             ignore_failure=may_fail,
-            add_host_keys=self.repo.add_ssh_host_keys,
+            add_host_keys=self.add_ssh_host_keys,
             log_function=log_function,
         )
 
@@ -480,6 +481,7 @@ class Node(object):
             mode=mode,
             owner=owner,
             group=group,
+            add_host_keys=self.add_ssh_host_keys,
         )
 
     def verify(self, workers=4):

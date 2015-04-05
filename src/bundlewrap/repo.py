@@ -317,6 +317,8 @@ class Repository(object):
         if node.name in utils.names(self.nodes):
             raise RepositoryError(_("you cannot have two nodes "
                                     "both named '{}'").format(node.name))
+
+        node.add_ssh_host_keys = self.add_ssh_host_keys
         node.repo = self
         self.node_dict[node.name] = node
 

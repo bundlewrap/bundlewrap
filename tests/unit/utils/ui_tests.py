@@ -21,14 +21,15 @@ class LineBufferTest(TestCase):
         self.assertEqual(
             target.call_args_list,
             [
-                call("aaaaaa"),
-                call("bbbbb"),
-                call("cccc"),
-                call("ddd"),
-                call("ee"),
-                call("f"),
+                call("aaaaaa\n"),
+                call("bbbbb\n"),
+                call("cccc\n"),
+                call("ddd\n"),
+                call("ee\n"),
+                call("f\n"),
             ],
         )
+
 
 class AskInteractivelyTest(TestCase):
     """
