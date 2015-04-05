@@ -297,7 +297,6 @@ class Node(object):
         self._bundles = infodict.get('bundles', [])
         self.hostname = infodict.get('hostname', self.name)
         self._node_metadata = infodict.get('metadata', {})
-        self._password = infodict.get('password', None)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
     def __cmp__(self, other):
@@ -435,7 +434,6 @@ class Node(object):
             remote_path,
             local_path,
             ignore_failure=ignore_failure,
-            password=self.password,
         )
 
     def get_item(self, item_id):
@@ -453,32 +451,6 @@ class Node(object):
             for metadata_processor in group.metadata_processors:
                 m = metadata_processor(self.name, group_order, m)
         return m
-
-    @property
-    def password(self):
-        if self._password:
-            return self._password
-        elif not hasattr(self, "repo"):
-            # in-memory nodes might not be attached to a repo
-            return None
-        elif self._password_from_groups:
-            return self._password_from_groups
-        else:
-            return self.repo.password
-
-    @password.setter
-    def password(self, value):
-        self._password = value
-
-    @property
-    def _password_from_groups(self):
-        pwd = None
-        group_order = _flatten_group_hierarchy(self.groups)
-        for group_name in group_order:
-            group = self.repo.get_group(group_name)
-            if group.password:
-                pwd = group.password
-        return pwd
 
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
@@ -508,7 +480,6 @@ class Node(object):
             mode=mode,
             owner=owner,
             group=group,
-            password=self.password,
         )
 
     def verify(self, workers=4):

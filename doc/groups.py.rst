@@ -102,19 +102,6 @@ As you can see, the metadata processor function is passed the node name, a list 
 
 |
 
-``password``
-------------
-
-SSH and sudo password to use for nodes in this group. Overrides password set on the command line.
-
-.. warning::
-   Please do not write any passwords into your :file:`groups.py`. This attribute is intended to be used with an external source of passwords and filled dynamically.
-
-.. warning::
-	Be careful when defining passwords in groups that share one or more nodes. BundleWrap will consider group hierarchy when determining the password to use. For example, it is possible to define a default password for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Passwords in independent groups will be chosen in an undefined way.
-
-|
-
 ``subgroups``
 -------------
 

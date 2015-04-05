@@ -242,7 +242,7 @@ def nodes_from_file(filepath, libs):
 
 
 class Repository(object):
-    def __init__(self, repo_path=None, password=None):
+    def __init__(self, repo_path=None):
         self.path = "/dev/null" if repo_path is None else repo_path
 
         self._set_path(self.path)
@@ -251,7 +251,6 @@ class Repository(object):
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
-        self.password = password
 
         if repo_path is not None:
             self.populate_from_path(repo_path)

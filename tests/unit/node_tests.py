@@ -296,29 +296,6 @@ class NodeTest(TestCase):
         n = Node("node2", {'hostname': "node2.example.com"})
         self.assertEqual(n.hostname, "node2.example.com")
 
-    def test_password(self):
-        n = Node("node1", {})
-        self.assertIsNone(n.password)
-        n.password = "foo"
-        self.assertEqual(n.password, "foo")
-
-    def test_password_from_repo(self):
-        n = Node("node1", {})
-        repo = Repository()
-        repo.password = "repopasswd"
-        repo.add_node(n)
-        self.assertEqual(n.password, "repopasswd")
-
-    def test_password_from_group(self):
-        n = Node("node1", {})
-        g = Group("group1", {'password': "grouppasswd"})
-        r = Repository()
-        r.add_group(g)
-        r.add_node(n)
-        with patch('tests.unit.node_tests.Node.groups', new=(g,)):
-            self.assertEqual(n.password, "grouppasswd")
-
-
 
 class NodeLockTest(TestCase):
     """
