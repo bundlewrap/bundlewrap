@@ -1,6 +1,9 @@
 from unittest import TestCase
 
-from mock import call, MagicMock, patch
+try:
+    from unittest.mock import call, MagicMock, patch
+except ImportError:
+    from mock import call, MagicMock, patch
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import directories, ItemStatus

@@ -3,7 +3,10 @@ from platform import system
 from tempfile import mkstemp
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap.node import Node
 from bundlewrap.operations import RunResult

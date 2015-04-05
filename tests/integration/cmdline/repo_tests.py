@@ -4,7 +4,10 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from bundlewrap.cmdline import main
 

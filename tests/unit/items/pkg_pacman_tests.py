@@ -2,7 +2,10 @@
 from __future__ import unicode_literals
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import pkg_pacman

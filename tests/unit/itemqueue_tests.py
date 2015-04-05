@@ -1,6 +1,9 @@
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from .node_tests import get_mock_item
 

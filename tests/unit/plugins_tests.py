@@ -4,7 +4,10 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap import plugins
 from bundlewrap.exceptions import NoSuchPlugin, PluginLocalConflict
