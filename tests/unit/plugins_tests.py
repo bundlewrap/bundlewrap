@@ -10,7 +10,6 @@ from bundlewrap import plugins
 from bundlewrap.exceptions import NoSuchPlugin, PluginLocalConflict
 
 
-
 class TmpDirTest(TestCase):
     def setUp(self):
         self.tmpdir = mkdtemp()
