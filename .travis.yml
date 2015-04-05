@@ -11,8 +11,11 @@ install:
 before_script:
 - ssh-keygen -f ~/.ssh/id_rsa -N ""
 - cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
-script: fab run_tests
-after_success: fab submit_coverage
+- ssh -o StrictHostKeyChecking=no localhost id
+script:
+- coverage run setup.py test
+- coverage combine
+after_success: coveralls
 notifications:
   irc:
     channels:
