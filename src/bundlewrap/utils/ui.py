@@ -7,6 +7,12 @@ from sys import stdout
 from .text import mark_for_translation as _
 
 
+try:
+    input_function = raw_input
+except NameError:
+    input_function = input
+
+
 class LineBuffer(object):
     def __init__(self, target):
         self.buffer = b""
@@ -30,7 +36,7 @@ class LineBuffer(object):
         self.flush()
 
 
-def ask_interactively(question, default, get_input=raw_input):
+def ask_interactively(question, default, get_input=input_function):
     answers = _("[Y/n]") if default else _("[y/N]")
     question = question + " " + answers + " "
     while True:
