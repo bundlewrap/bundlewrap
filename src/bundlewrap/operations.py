@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from pipes import quote
 from select import select
-from subprocess import Popen
+from subprocess import Popen, PIPE
 from threading import Event, Thread
 from os import close, pipe, read
 
@@ -122,7 +122,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
 
 
 def upload(hostname, local_path, remote_path, mode=None, owner="",
-           group="", ignore_failure=False, password=None):
+           group="", add_host_keys=False):
     """
     Upload a file.
     """
@@ -130,10 +130,23 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
         host=hostname, path=local_path, target=remote_path))
     temp_filename = ".bundlewrap_tmp_" + randstr()
 
-    if not ignore_failure and not XXX_SUCCESS:
+    scp_process = Popen(
+        [
+            "scp",
+            "-o",
+            "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+            local_path,
+            "{}:{}".format(hostname, temp_filename),
+        ],
+        stdout=PIPE,
+        stderr=PIPE,
+    )
+    stdout, stderr = scp_process.communicate()
+
+    if scp_process.return_code != 0:
         raise RemoteException(_(
             "upload to {host} failed for: {failed}").format(
-                failed=", ".join(),
+                failed=remote_path,
                 host=hostname,
             )
         )
@@ -148,7 +161,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
                 group,
                 quote(temp_filename),
             ),
-            password=password,
+            add_host_keys=add_host_keys,
         )
 
     if mode:
@@ -158,7 +171,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
                 mode,
                 quote(temp_filename),
             ),
-            password=password,
+            add_host_keys=add_host_keys,
         )
 
     run(
@@ -167,5 +180,5 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
             quote(temp_filename),
             quote(remote_path),
         ),
-        password=password,
+        add_host_keys=add_host_keys,
     )
