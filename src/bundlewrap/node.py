@@ -490,6 +490,7 @@ class Node(object):
             self.hostname,
             command,
             ignore_failure=may_fail,
+            add_host_keys=self.repo.add_ssh_host_keys,
             log_function=log_function,
         )
 

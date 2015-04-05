@@ -54,7 +54,7 @@ class RunResult(object):
         return self.stdout
 
 
-def run(hostname, command, ignore_failure=False, log_function=None):
+def run(hostname, command, ignore_failure=False, add_host_keys=False, log_function=None):
     """
     Runs a command on a remote system.
     """
@@ -67,7 +67,13 @@ def run(hostname, command, ignore_failure=False, log_function=None):
     stderr_fd_r, stderr_fd_w = pipe()
 
     ssh_process = Popen(
-        ["ssh", hostname, "LANG=C sudo bash -c " + quote(command)],
+        [
+            "ssh",
+            "-o",
+            "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+            hostname,
+            "LANG=C sudo bash -c " + quote(command),
+        ],
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )

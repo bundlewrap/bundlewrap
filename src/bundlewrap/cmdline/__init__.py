@@ -106,13 +106,10 @@ def main(*args):
                     "is not a BundleWrap repository.".format(x=red("!"))))
             exit(1)
 
-        if pargs.password:
-            repo.password = pargs.password
-        elif pargs.ask_password:
-            repo.password = getpass(_("Enter global default SSH/sudo password: "))
-
     # convert all string args into text
     text_args = {key: force_text(value) for key, value in vars(pargs).items()}
+
+    repo.add_ssh_host_keys = pargs.add_ssh_host_keys
 
     output = pargs.func(repo, text_args)
     if output is None:

@@ -247,6 +247,7 @@ class Repository(object):
 
         self._set_path(self.path)
 
+        self.add_ssh_host_keys = False
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
