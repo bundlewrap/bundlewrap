@@ -1,8 +1,10 @@
 language: python
 python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
+- "2.7"
+- "3.3"
+- "3.4"
+env:
+- BWCOLORS=0
 install:
 - python setup.py install
 - pip install -r requirements-tests.txt
