@@ -7,26 +7,35 @@ from random import choice
 from string import digits, ascii_letters
 from sys import version_info
 
-from fabric import colors as _fabric_colors
 
 VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
 
 
-def _ansi_wrapper(colorizer):
+def ansi_wrapper(colorizer):
     if environ.get("BWCOLORS", "1") != "0":
         return colorizer
     else:
         return lambda s, **kwargs: s
 
 
-def _bold_wrapper(text):
+@ansi_wrapper
+def bold(text):
     return "\033[1m{}\033[0m".format(text)
 
 
-bold = _ansi_wrapper(_bold_wrapper)
-green = _ansi_wrapper(_fabric_colors.green)
-red = _ansi_wrapper(_fabric_colors.red)
-yellow = _ansi_wrapper(_fabric_colors.yellow)
+@ansi_wrapper
+def green(text):
+    return "\033[32m{}\033[0m".format(text)
+
+
+@ansi_wrapper
+def red(text):
+    return "\033[31m{}\033[0m".format(text)
+
+
+@ansi_wrapper
+def yellow(text):
+    return "\033[33m{}\033[0m".format(text)
 
 
 def error_summary(errors):

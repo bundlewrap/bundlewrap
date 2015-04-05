@@ -525,19 +525,8 @@ class NodeLock(object):
             }))
         self.node.upload(local_path, LOCK_FILE)
 
-        # See issue #19. We've just opened an SSH connection to the node,
-        # but before we can fork(), all connections *MUST* be closed!
-        # XXX: Revise this once we're using Fabric 2.0.
-        operations.disconnect_all()
-
     def __exit__(self, type, value, traceback):
         result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
-
-        # See __enter__(). Most likely we won't fork() again now.
-        # Nevertheless, clean up the state so a future code change won't
-        # cause chaos.
-        # XXX: Revise this once we're using Fabric 2.0.
-        operations.disconnect_all()
 
         if result.return_code != 0:
             LOG.error(_("Could not release lock for node '{node}'").format(

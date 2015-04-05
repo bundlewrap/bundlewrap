@@ -9,8 +9,6 @@ from os import dup, fdopen
 import sys
 from traceback import format_exception
 
-from fabric.network import disconnect_all
-
 from .exceptions import WorkerException
 from .utils import LOG
 from .utils.text import force_text, mark_for_translation as _
@@ -61,9 +59,6 @@ def _worker_process(wid, messages, pipe, stdin=None):
         messages.put({'msg': 'REQUEST_WORK', 'wid': wid})
         msg = pipe.recv()
         if msg['msg'] == 'DIE':
-            # clean up Fabric connections first...
-            disconnect_all()
-            # then die
             return
         elif msg['msg'] == 'NOOP':
             pass
