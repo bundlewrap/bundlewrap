@@ -244,6 +244,8 @@ if on_rtd:
     html_theme = 'sphinx_rtd_theme'
 else:
     todo_include_todos = True
+    html_theme = "sphinx_rtd_theme"
+    html_theme_path = ["_themes"]
 
 from bundlewrap import VERSION, VERSION_STRING
 
