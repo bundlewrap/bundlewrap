@@ -40,7 +40,7 @@ def get_path_type(node, path):
 
 def stat(node, path):
     result = node.run("stat --printf '%U:%G:%a:%s' -- {}".format(quote(path)))
-    owner, group, mode, size = result.stdout.split(":")
+    owner, group, mode, size = force_text(result.stdout).split(":")
     mode = mode.zfill(4)
     file_stat = {
         'owner': owner,
