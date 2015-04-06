@@ -16,7 +16,7 @@ def svc_start(node, svcname):
 
 def svc_running(node, svcname):
     result = node.run("initctl status -- {}".format(quote(svcname)))
-    if " start/" not in result.stdout:
+    if " start/" not in result.stdout_text:
         return False
     else:
         return True

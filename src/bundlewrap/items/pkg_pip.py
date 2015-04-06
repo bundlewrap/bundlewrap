@@ -27,7 +27,7 @@ def pkg_installed(node, pkgname):
     if result.return_code != 0:
         return False
     else:
-        return result.stdout.split("=")[-1].strip()
+        return result.stdout_text.split("=")[-1].strip()
 
 
 def pkg_remove(node, pkgname):

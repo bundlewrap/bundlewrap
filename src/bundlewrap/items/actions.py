@@ -113,7 +113,7 @@ class Action(Item):
             ))
 
         if self.attributes['expected_stderr'] is not None and \
-                result.stderr != self.attributes['expected_stderr']:
+                result.stderr_text != self.attributes['expected_stderr']:
             raise ActionFailure(_(
                 "wrong stderr for action '{action}' in bundle '{bundle}'"
             ).format(
@@ -122,7 +122,7 @@ class Action(Item):
             ))
 
         if self.attributes['expected_stdout'] is not None and \
-                result.stdout != self.attributes['expected_stdout']:
+                result.stdout_text != self.attributes['expected_stdout']:
             raise ActionFailure(_(
                 "wrong stdout for action '{action}' in bundle '{bundle}'"
             ).format(

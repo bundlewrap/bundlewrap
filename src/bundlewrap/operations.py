@@ -9,7 +9,7 @@ from threading import Event, Thread
 from os import close, pipe, read
 
 from .exceptions import RemoteException
-from .utils import LOG
+from .utils import cached_property, LOG
 from .utils.text import force_text, mark_for_translation as _, randstr
 from .utils.ui import LineBuffer
 
@@ -53,8 +53,13 @@ class RunResult(object):
         self.stderr = None
         self.stdout = None
 
-    def __str__(self):
-        return self.stdout
+    @cached_property
+    def stderr_text(self):
+        return force_text(self.stderr)
+
+    @cached_property
+    def stdout_text(self):
+        return force_text(self.stdout)
 
 
 def run(hostname, command, ignore_failure=False, add_host_keys=False, log_function=None):

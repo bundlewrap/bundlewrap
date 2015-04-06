@@ -21,7 +21,7 @@ def pkg_installed(node, pkgname):
         "dpkg -s {} | grep '^Status: '".format(quote(pkgname)),
         may_fail=True,
     )
-    if result.return_code != 0 or " installed" not in result.stdout:
+    if result.return_code != 0 or " installed" not in result.stdout_text:
         return False
     else:
         return True

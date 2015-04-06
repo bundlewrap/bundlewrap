@@ -53,7 +53,7 @@ def _group_name_for_gid(node, gid):
     if group_output.return_code != 0:
         return None
     else:
-        return group_output.stdout.split(":")[0]
+        return group_output.stdout_text.split(":")[0]
 
 
 def _groups_for_user(node, username):
@@ -61,8 +61,8 @@ def _groups_for_user(node, username):
     Returns the list of group names for the given username on the given
     node.
     """
-    groups = node.run("id -Gn {}".format(username)).stdout.strip().split(" ")
-    primary_group = node.run("id -gn {}".format(username)).stdout.strip()
+    groups = node.run("id -Gn {}".format(username)).stdout_text.strip().split(" ")
+    primary_group = node.run("id -gn {}".format(username)).stdout_text.strip()
     groups.remove(primary_group)
     return groups
 
@@ -200,7 +200,7 @@ class User(Item):
         status = ItemStatus(correct=True, info={'exists': True})
         status.info['needs_fixing'] = []
 
-        status.info.update(_parse_passwd_line(passwd_grep_result.stdout))
+        status.info.update(_parse_passwd_line(passwd_grep_result.stdout_text))
 
         if self.attributes['gid'] is not None:
             if self.attributes['gid'].isdigit():
@@ -226,7 +226,7 @@ class User(Item):
                     status.info['shadow_hash'] = None
                     status.info['needs_fixing'].append('password')
                 else:
-                    status.info['shadow_hash'] = shadow_grep_result.stdout.split(":")[1]
+                    status.info['shadow_hash'] = shadow_grep_result.stdout_text.split(":")[1]
                     if status.info['shadow_hash'] != self.attributes['password_hash']:
                         status.info['needs_fixing'].append('password_hash')
             else:
