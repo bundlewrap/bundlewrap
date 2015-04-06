@@ -1,0 +1,27 @@
+body {
+	font-family: "Maven Pro", Helvetica, sans-serif;
+}
+a.icon-home {
+	font-size: 0;
+	margin-top: 0;
+	margin-bottom: 20px;
+}
+h1, h2, h3, h4, h5, h6, legend {
+	font-family: "Maven Pro", Helvetica, sans-serif;
+}
+.wy-nav-side {
+	background-color: black;
+	color: white;
+}
+.wy-nav-content {
+	background-color: white;
+}
+.wy-nav-content-wrap {
+	background-color: white;
+}
+.wy-side-nav-search {
+	background-color: #f0f0f0;
+}
+.wy-side-nav-search input[type="text"] {
+	border-color: #aaa;
+}
