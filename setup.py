@@ -1,11 +1,4 @@
 from setuptools import setup, find_packages
-from sys import stderr, version_info
-
-if version_info < (2, 7):
-    stderr.write("BundleWrap needs Python 2.7\n")
-    stderr.flush()
-    exit(1)
-
 
 setup(
     name="bundlewrap",

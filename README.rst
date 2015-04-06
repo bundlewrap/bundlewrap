@@ -24,7 +24,7 @@ For more information, have a look at `bundlewrap.org <http://bundlewrap.org/>`_ 
    :target: https://landscape.io/github/bundlewrap/bundlewrap/master
    :alt: Code health
 
-.. image:: http://img.shields.io/badge/Python-2.7-green.svg
+.. image:: http://img.shields.io/badge/Python-2.7,%203.3+-green.svg
     :target: https://pypi.python.org/pypi/bundlewrap/
     :alt: Python 2.7
 
