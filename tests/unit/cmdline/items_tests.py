@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp

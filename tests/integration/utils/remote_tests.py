@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from getpass import getuser
 from platform import system
 from tempfile import mkstemp

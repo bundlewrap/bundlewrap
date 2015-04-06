@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from os import chdir, getcwd, mkdir
 from os.path import join
 from shutil import rmtree
