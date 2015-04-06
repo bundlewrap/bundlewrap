@@ -300,8 +300,8 @@ class Node(object):
         self.hostname = infodict.get('hostname', self.name)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
-    def __cmp__(self, other):
-        return cmp(self.name, other.name)
+    def __lt__(self, other):
+        return self.name < other.name
 
     def __repr__(self):
         return "<Node '{}'>".format(self.name)

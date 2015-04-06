@@ -117,6 +117,9 @@ class Item(object):
                 copy(attribute_default),
             ))
 
+    def __lt__(self, other):
+        return self.id < other.id
+
     def __str__(self):
         return self.id
 

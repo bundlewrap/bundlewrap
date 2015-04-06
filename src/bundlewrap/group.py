@@ -47,8 +47,8 @@ class Group(object):
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
 
-    def __cmp__(self, other):
-        return cmp(self.name, other.name)
+    def __lt__(self, other):
+        return self.name < other.name
 
     def __getstate__(self):
         """
