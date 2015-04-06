@@ -115,7 +115,7 @@ class PathInfo(object):
     @cached_property
     def sha1(self):
         result = self.node.run("sha1sum -- " + quote(self.path))
-        return result.stdout.strip().split()[0]
+        return force_text(result.stdout).strip().split()[0]
 
     @property
     def size(self):
