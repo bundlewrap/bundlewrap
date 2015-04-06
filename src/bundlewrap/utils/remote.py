@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from pipes import quote
 
 from . import cached_property, LOG
-from .text import mark_for_translation as _
+from .text import force_text, mark_for_translation as _
 
 
 def _parse_file_output(file_output):
@@ -34,7 +34,7 @@ def get_path_type(node, path):
     result = node.run("file -bh -- {}".format(quote(path)), may_fail=True)
     if result.return_code != 0:
         return ('nonexistent', "")
-    file_output = result.stdout.strip()
+    file_output = force_text(result.stdout.strip())
     return _parse_file_output(file_output)
 
 

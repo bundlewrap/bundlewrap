@@ -30,7 +30,7 @@ class ContentProcessorJinja2Test(TestCase):
             },
             'encoding': "latin-1",
         }
-        item._template_content = b"Hi fröm {{number}}@{{ node.name }}!"
+        item._template_content = "Hi fröm {{number}}@{{ node.name }}!"
         self.assertEqual(
             files.content_processor_jinja2(item),
             "Hi fröm 47@localhost!".encode("latin-1"),
@@ -50,7 +50,7 @@ class ContentProcessorMakoTest(TestCase):
             },
             'encoding': "latin-1",
         }
-        item._template_content = b"Hi fröm ${number}@${node.name}!"
+        item._template_content = "Hi fröm ${number}@${node.name}!"
         self.assertEqual(
             files.content_processor_mako(item),
             "Hi fröm 47@localhost!".encode("latin-1"),
@@ -133,7 +133,7 @@ class DiffTest(TestCase):
                 green("+++ <bundlewrap content>") + "\n" +
                 "@@ -1 +1 @@\n" +
                 red("-lineö1") + "\n" +
-                green("+lineö1") + " (line encoded in latin-1)\n"
+                green("+line�1") + "\n"
             ),
         )
 
@@ -151,16 +151,16 @@ class DiffTest(TestCase):
                 green("+++ <bundlewrap content>") + "\n" +
                 "@@ -1 +1 @@\n" +
                 red("-lineö1") + "\n" +
-                green("+") + " (line not encoded in UTF-8 or ascii)\n"
+                green("+line�1") + "\n"
             ),
         )
 
     def test_long_line(self):
         content_old = (
-            "line1\n"
+            b"line1\n"
         )
         content_new = (
-            "line1" + 500 * "1" + "\n"
+            b"line1" + 500 * b"1" + b"\n"
         )
         self.assertEqual(
             files.diff(content_old, content_new, "/foo"),

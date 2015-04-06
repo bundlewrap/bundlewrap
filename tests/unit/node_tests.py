@@ -101,7 +101,6 @@ class ApplyItemsTest(TestCase):
         self.assertEqual(results[1][0], "type1:name2")
         self.assertEqual(results[2][0], "type1:name1")
 
-
     def test_implicit_order(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], [])
@@ -129,7 +128,6 @@ class ApplyItemsTest(TestCase):
         self.assertEqual(results[0][0], "type1:name3")
         self.assertEqual(results[1][0], "type1:name2")
         self.assertEqual(results[2][0], "type1:name1")
-
 
     def test_apply_interactive(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
@@ -231,10 +229,8 @@ class FlattenGroupHierarchyTest(TestCase):
         group2.subgroups = []
         group1.subgroups = []
 
-        self.assertEqual(
-            _flatten_group_hierarchy([group1, group2, group3]),
-            ["group1", "group3", "group2"],
-        )
+        order = _flatten_group_hierarchy([group1, group2, group3])
+        self.assertTrue(order.index("group3") < order.index("group2"))
 
     def test_loop(self):
         group1 = MagicMock()

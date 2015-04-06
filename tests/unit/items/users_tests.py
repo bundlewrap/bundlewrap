@@ -291,8 +291,8 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("useradd -s /bin/bash -g 2345 -G group1,group2 -u 1123 "
-                     "-d /home/bundlewrap -p secret bundlewrap", may_fail=True),
+                call("useradd -g 2345 -G group1,group2 -d /home/bundlewrap -p secret "
+                     "-s /bin/bash -u 1123 bundlewrap", may_fail=True),
             ],
         )
 
@@ -319,8 +319,8 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("usermod -s /bin/bash -g 2345 -G group1,group2 -u 1123 "
-                     "-d /home/bundlewrap -p secret bundlewrap", may_fail=True),
+                call("usermod -g 2345 -G group1,group2 -d /home/bundlewrap -p secret "
+                     "-s /bin/bash -u 1123 bundlewrap", may_fail=True),
             ],
         )
 

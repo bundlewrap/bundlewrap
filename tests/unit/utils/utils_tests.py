@@ -46,10 +46,10 @@ class DownloadTest(TestCase):
     @patch('bundlewrap.utils.get')
     def test_download(self, get):
         getresult = MagicMock()
-        getresult.iter_content.return_value = ("content", "")
+        getresult.iter_content.return_value = (b"content", b"")
         get.return_value = getresult
         utils.download("url", self.fname)
-        self.assertEqual(utils.get_file_contents(self.fname), "content")
+        self.assertEqual(utils.get_file_contents(self.fname), b"content")
 
 
 class GetAttrFromFileTest(TestCase):

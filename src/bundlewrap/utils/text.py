@@ -98,7 +98,7 @@ def randstr(length=24):
     """
     Returns a random alphanumeric string of the given length.
     """
-    return ''.join(choice(letters + digits) for c in range(length))
+    return ''.join(choice(ascii_letters + digits) for c in range(length))
 
 
 def validate_name(name):

@@ -28,7 +28,7 @@ def cached_property(prop):
     def cache_wrapper(self):
         if not hasattr(self, "_cache"):
             self._cache = {}
-        if not prop.__name__ in self._cache:
+        if prop.__name__ not in self._cache:
             return_value = prop(self)
             if isgenerator(return_value):
                 return_value = tuple(return_value)
@@ -53,7 +53,7 @@ def download(url, path):
 
 
 def get_file_contents(path):
-    with open(path) as f:
+    with open(path, 'rb') as f:
         content = f.read()
     return content
 
@@ -106,6 +106,8 @@ def graph_for_items(
     reverse=True,
     auto=True,
 ):
+    items = sorted(items)
+
     yield "digraph bundlewrap"
     yield "{"
 
@@ -161,7 +163,7 @@ def graph_for_items(
                     yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep)
 
         if auto:
-            for dep in item._deps:
+            for dep in sorted(item._deps):
                 if dep in item._concurrency_deps:
                     if concurrency:
                         yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)

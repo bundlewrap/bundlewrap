@@ -76,6 +76,8 @@ def main(*args):
     if not args:
         args = argv[1:]
 
+    text_args = [force_text(arg) for arg in args]
+
     parser_bw = build_parser_bw()
     pargs = parser_bw.parse_args(args)
 
@@ -89,28 +91,29 @@ def main(*args):
         interactive=interactive,
     )
 
-    if len(args) >= 1 and (
-        args[0] == b"--version" or
-        (len(args) >= 2 and args[0] == b"repo" and args[1] == b"create") or
-        args[0] == b"zen" or
-        b"-h" in args or
-        b"--help" in args
+    if len(text_args) >= 1 and (
+        text_args[0] == "--version" or
+        (len(text_args) >= 2 and text_args[0] == "repo" and text_args[1] == "create") or
+        text_args[0] == "zen" or
+        "-h" in text_args or
+        "--help" in text_args
     ):
         # 'bw repo create' is a special case that only takes a path
         repo = getcwd()
     else:
         try:
             repo = Repository(getcwd())
+            repo.add_ssh_host_keys = pargs.add_ssh_host_keys
         except NoSuchRepository:
             print(_("{x} The current working directory "
                     "is not a BundleWrap repository.".format(x=red("!"))))
             exit(1)
-        repo.add_ssh_host_keys = pargs.add_ssh_host_keys
+            return  # used during texting when exit() is mocked
 
     # convert all string args into text
-    text_args = {key: force_text(value) for key, value in vars(pargs).items()}
+    text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}
 
-    output = pargs.func(repo, text_args)
+    output = pargs.func(repo, text_pargs)
     if output is None:
         output = ()
 

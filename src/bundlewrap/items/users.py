@@ -170,7 +170,7 @@ class User(Item):
             self.node.run("userdel {}".format(self.name), may_fail=True)
         else:
             command = "useradd " if not status.info['exists'] else "usermod "
-            for attr, option in _ATTRIBUTE_OPTIONS.items():
+            for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
                 if attr in status.info['needs_fixing'] and self.attributes[attr] is not None:
                     if attr == 'groups':
                         value = ",".join(self.attributes[attr])
@@ -189,12 +189,12 @@ class User(Item):
         if passwd_grep_result.return_code != 0:
             return ItemStatus(
                 correct=self.attributes['delete'],
-                info={'exists': False, 'needs_fixing': list(_ATTRIBUTE_OPTIONS.keys())},
+                info={'exists': False, 'needs_fixing': sorted(_ATTRIBUTE_OPTIONS.keys())},
             )
         elif self.attributes['delete']:
             return ItemStatus(correct=False, info={
                 'exists': True,
-                'needs_fixing': list(_ATTRIBUTE_OPTIONS.keys()),
+                'needs_fixing': sorted(_ATTRIBUTE_OPTIONS.keys()),
             })
 
         status = ItemStatus(correct=True, info={'exists': True})

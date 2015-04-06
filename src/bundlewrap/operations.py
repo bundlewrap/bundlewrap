@@ -35,7 +35,7 @@ def download(hostname, remote_path, local_path, add_host_keys=False):
     )
 
     if result.return_code == 0:
-        with open(local_path, "w") as f:
+        with open(local_path, "wb") as f:
             f.write(result.stdout)
     else:
         raise RemoteException(_(

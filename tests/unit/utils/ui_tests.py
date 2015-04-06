@@ -18,21 +18,21 @@ class LineBufferTest(TestCase):
     def test_buffer(self):
         target = MagicMock()
         buffer = ui.LineBuffer(target)
-        buffer.write("aaaaaa\nbbb")
-        buffer.write("bb\ncccc\n")
-        buffer.write("ddd\nee")
-        buffer.write("\n")
-        buffer.write("f\n")
+        buffer.write(b"aaaaaa\nbbb")
+        buffer.write(b"bb\ncccc\n")
+        buffer.write(b"ddd\nee")
+        buffer.write(b"\n")
+        buffer.write(b"f\n")
 
         self.assertEqual(
             target.call_args_list,
             [
-                call("aaaaaa\n"),
-                call("bbbbb\n"),
-                call("cccc\n"),
-                call("ddd\n"),
-                call("ee\n"),
-                call("f\n"),
+                call(b"aaaaaa\n"),
+                call(b"bbbbb\n"),
+                call(b"cccc\n"),
+                call(b"ddd\n"),
+                call(b"ee\n"),
+                call(b"f\n"),
             ],
         )
 
@@ -47,7 +47,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", True, get_input=get_input),
             True,
         )
-        get_input.assert_called_once_with("OHAI? [Y/n] ")
+        get_input.assert_called_once_with(b"OHAI? [Y/n] ")
 
     def test_no(self):
         get_input = MagicMock(return_value="n")
@@ -55,7 +55,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", True, get_input=get_input),
             False,
         )
-        get_input.assert_called_once_with("OHAI? [Y/n] ")
+        get_input.assert_called_once_with(b"OHAI? [Y/n] ")
 
     def test_default_yes(self):
         get_input = MagicMock(return_value="")
@@ -63,7 +63,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", True, get_input=get_input),
             True,
         )
-        get_input.assert_called_once_with("OHAI? [Y/n] ")
+        get_input.assert_called_once_with(b"OHAI? [Y/n] ")
 
     def test_default_no(self):
         get_input = MagicMock(return_value="")
@@ -71,7 +71,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", False, get_input=get_input),
             False,
         )
-        get_input.assert_called_once_with("OHAI? [y/N] ")
+        get_input.assert_called_once_with(b"OHAI? [y/N] ")
 
     def test_invalid_input(self):
         answers = ["wat", "zomg", "\n", "y"]
