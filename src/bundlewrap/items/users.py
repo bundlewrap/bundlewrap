@@ -115,7 +115,7 @@ class User(Item):
 
         output = ""
         for key in status.info['needs_fixing']:
-            if key in ('groups', 'password'):
+            if key in ('groups', 'password', 'password_hash'):
                 continue
             output += "{} {} → {}\n".format(
                 bold(_ATTRIBUTE_NAMES[key]),
