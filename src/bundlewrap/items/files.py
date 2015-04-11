@@ -122,10 +122,7 @@ def content_processor_mako(item):
 
 
 def content_processor_text(item):
-    content = copy(item._template_content)
-    if item.attributes['encoding'].lower() != "utf-8":
-        content = content.encode(item.attributes['encoding'])
-    return content
+    return item._template_content.encode(item.attributes['encoding'])
 
 
 CONTENT_PROCESSORS = {
