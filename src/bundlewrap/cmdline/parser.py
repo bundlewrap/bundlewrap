@@ -370,12 +370,6 @@ def build_parser_bw():
         help=_("command to run"),
     )
     parser_run.add_argument(
-        "--no-sudo",
-        action='store_false',
-        dest='sudo',
-        help=_("do not use sudo, execute with user privs"),
-    )
-    parser_run.add_argument(
         "-f",
         "--may-fail",
         action='store_true',

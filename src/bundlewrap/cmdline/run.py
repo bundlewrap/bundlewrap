@@ -14,7 +14,7 @@ from ..utils.text import error_summary, green, red
 from ..utils.ui import LineBuffer
 
 
-def run_on_node(node, command, may_fail, sudo, interactive):
+def run_on_node(node, command, may_fail, interactive):
     if interactive:
         stdout = sys.stdout
         stderr = sys.stderr
@@ -34,7 +34,6 @@ def run_on_node(node, command, may_fail, sudo, interactive):
         may_fail=may_fail,
         stdout=stdout,
         stderr=stderr,
-        sudo=sudo,
         pty=interactive,
     )
     end = datetime.now()
@@ -108,7 +107,6 @@ def bw_run(repo, args):
                             node,
                             args['command'],
                             args['may_fail'],
-                            args['sudo'],
                             args['node_workers'] == 1,
                         ),
                     )
