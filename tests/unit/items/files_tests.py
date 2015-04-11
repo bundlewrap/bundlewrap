@@ -74,7 +74,7 @@ class ContentProcessorTextTest(TestCase):
         )
         self.assertEqual(
             files.content_processor_text(item),
-            "Hi from ${node.name}!",
+            b"Hi from ${node.name}!",
         )
 
     def test_encoding(self):
