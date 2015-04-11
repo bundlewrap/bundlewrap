@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from getpass import getpass
 import logging
 from os import getcwd
 import re
