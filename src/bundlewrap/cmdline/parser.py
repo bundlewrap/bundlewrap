@@ -30,7 +30,7 @@ def build_parser_bw():
         action='store_true',
         default=False,
         dest='add_ssh_host_keys',
-        help=_("set StrictHostKeyChecking=no for SSH"),
+        help=_("set StrictHostKeyChecking=no instead of yes for SSH"),
     )
     parser.add_argument(
         "-d",
