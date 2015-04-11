@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from getpass import getuser
 import json
+from os import environ
 from pipes import quote
 from socket import gethostname
 from tempfile import mkstemp
@@ -434,7 +435,7 @@ class Node(object):
             self.hostname,
             remote_path,
             local_path,
-            add_host_keys=self.add_ssh_host_keys,
+            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
         )
 
     def get_item(self, item_id):
@@ -463,7 +464,7 @@ class Node(object):
             self.hostname,
             command,
             ignore_failure=may_fail,
-            add_host_keys=self.add_ssh_host_keys,
+            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
             log_function=log_function,
         )
 
@@ -481,7 +482,7 @@ class Node(object):
             mode=mode,
             owner=owner,
             group=group,
-            add_host_keys=self.add_ssh_host_keys,
+            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
         )
 
     def verify(self, workers=4):

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import logging
-from os import getcwd
+from os import environ, getcwd
 import re
 from sys import argv, exit, stderr, stdout
 
@@ -90,6 +90,8 @@ def main(*args):
         interactive=interactive,
     )
 
+    environ.setdefault('BWADDHOSTKEYS', "1" if pargs.add_ssh_host_keys else "0")
+
     if len(text_args) >= 1 and (
         text_args[0] == "--version" or
         (len(text_args) >= 2 and text_args[0] == "repo" and text_args[1] == "create") or
@@ -102,7 +104,6 @@ def main(*args):
     else:
         try:
             repo = Repository(getcwd())
-            repo.add_ssh_host_keys = pargs.add_ssh_host_keys
         except NoSuchRepository:
             print(_("{x} The current working directory "
                     "is not a BundleWrap repository.".format(x=red("!"))))

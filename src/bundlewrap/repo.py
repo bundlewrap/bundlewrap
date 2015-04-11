@@ -247,7 +247,6 @@ class Repository(object):
 
         self._set_path(self.path)
 
-        self.add_ssh_host_keys = False
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
@@ -318,7 +317,6 @@ class Repository(object):
             raise RepositoryError(_("you cannot have two nodes "
                                     "both named '{}'").format(node.name))
 
-        node.add_ssh_host_keys = self.add_ssh_host_keys
         node.repo = self
         self.node_dict[node.name] = node
 
