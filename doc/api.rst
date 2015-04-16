@@ -103,6 +103,16 @@ Reference
 		:return: All nodes present in at least one group.
 		:rtype: generator
 
+	|
+
+	.. py:method:: nodes_in_group(group_name)
+
+		Returns a list of nodes in the given group.
+
+		:param str group_name: Name of the group.
+		:return: All nodes in that group.
+		:rtype: list
+
 |
 |
 

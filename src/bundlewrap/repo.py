@@ -404,6 +404,12 @@ class Repository(object):
             if node.in_any_group(group_names):
                 yield node
 
+    def nodes_in_group(self, group_name):
+        """
+        Returns a list of nodes in the given group.
+        """
+        return self.nodes_in_all_groups([group_name])
+
     def populate_from_path(self, path):
         if not self.is_repo(path):
             raise NoSuchRepository(
