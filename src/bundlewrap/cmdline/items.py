@@ -16,7 +16,7 @@ def write_preview(file_item, base_path):
     dir_path = dirname(file_path)
     if not exists(dir_path):
         makedirs(dir_path)
-    with open(file_path, 'w') as f:
+    with open(file_path, 'wb') as f:
         f.write(file_item.content)
 
 
