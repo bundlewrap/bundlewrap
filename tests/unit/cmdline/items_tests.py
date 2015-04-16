@@ -16,7 +16,7 @@ from bundlewrap.cmdline import items
 
 class MockItem(object):
     def __init__(self, id):
-        self.content = "content"
+        self.content = b"content"
         self.id = id
         self.name = id.split(":")[1]
 
