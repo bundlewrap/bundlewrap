@@ -31,6 +31,11 @@ def bw_items(repo, args):
         for item in node.items:
             if not item.id.startswith("file:"):
                 continue
+            if item.attributes['content_type'] == 'any':
+                LOG.warning(_(
+                    "skipping file with 'any' content {filename}..."
+                ).format(filename=item.name))
+                continue
             if item.attributes['content_type'] == 'binary':
                 LOG.warning(_(
                     "skipping binary file {filename}..."
