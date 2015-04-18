@@ -37,6 +37,7 @@ setup(
     ],
     install_requires=[
         "distribute",
+        "Jinja2",
         "Mako",
         "passlib",
         "requests >= 1.0.0",
