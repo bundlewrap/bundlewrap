@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from codecs import getwriter
 import logging
 from os import environ, getcwd
 import re
@@ -11,15 +12,26 @@ from ..repo import Repository
 from ..utils.text import force_text, mark_for_translation as _, red
 from .parser import build_parser_bw
 
+
 ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
+
+try:
+    STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
+except AttributeError:  # Python 2
+    STDERR_WRITER = getwriter('utf-8')(stderr)
+
+try:
+    STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
+except AttributeError:  # Python 2
+    STDOUT_WRITER = getwriter('utf-8')(stdout)
 
 
 class FilteringHandler(logging.Handler):
     def emit(self, record):
         if record.levelno >= logging.WARNING:
-            stream = stderr
+            stream = STDERR_WRITER
         else:
-            stream = stdout
+            stream = STDOUT_WRITER
 
         try:
             msg = self.format(record)
@@ -27,7 +39,7 @@ class FilteringHandler(logging.Handler):
             if stream.isatty():
                 stream.write(msg)
             else:
-                stream.write(ANSI_ESCAPE.sub("", msg).encode('utf-8'))
+                stream.write(ANSI_ESCAPE.sub("", msg))
             stream.write("\n")
 
             self.acquire()
@@ -124,6 +136,6 @@ def main(*args):
             return_code = line
             break
         else:
-            print(line.encode('utf-8'))
+            STDOUT_WRITER.write(line)
 
     exit(return_code)
