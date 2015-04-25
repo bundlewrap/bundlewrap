@@ -137,5 +137,6 @@ def main(*args):
             break
         else:
             STDOUT_WRITER.write(line)
+            STDOUT_WRITER.write("\n")
 
     exit(return_code)
