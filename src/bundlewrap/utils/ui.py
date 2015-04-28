@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from codecs import getwriter
 from io import BytesIO
 from sys import stdout
 
@@ -9,8 +10,13 @@ from .text import mark_for_translation as _
 
 try:
     input_function = raw_input
-except NameError:
+except NameError:  # Python 3
     input_function = input
+
+try:
+    STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
+except AttributeError:  # Python 2
+    STDOUT_WRITER = getwriter('utf-8')(stdout)
 
 
 class LineBuffer(object):
@@ -40,10 +46,11 @@ def ask_interactively(question, default, get_input=input_function):
     answers = _("[Y/n]") if default else _("[y/N]")
     question = question + " " + answers + " "
     while True:
-        stdout.write("\a")
-        stdout.flush()
+        STDOUT_WRITER.write("\a")
+        STDOUT_WRITER.write(question)
+        STDOUT_WRITER.flush()
 
-        answer = get_input(question.encode('utf-8'))
+        answer = get_input()
         if answer.lower() in (_("y"), _("yes")) or (
             not answer and default
         ):
@@ -52,4 +59,5 @@ def ask_interactively(question, default, get_input=input_function):
             not answer and not default
         ):
             return False
-        print(_("Please answer with 'y(es)' or 'n(o)'."))
+        STDOUT_WRITER.write(_("Please answer with 'y(es)' or 'n(o)'.\n"))
+        STDOUT_WRITER.flush()

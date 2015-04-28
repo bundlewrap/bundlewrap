@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from codecs import getwriter
 import hashlib
 from inspect import isgenerator
 import logging
 from os import chmod, makedirs
 from os.path import dirname, exists
 import stat
+from sys import stderr, stdout
 
 from requests import get
 
@@ -17,6 +19,16 @@ __GETATTR_NODEFAULT = "very_unlikely_default_value"
 LOG = logging.getLogger('bundlewrap')
 
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+
+try:
+    STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
+except AttributeError:  # Python 2
+    STDERR_WRITER = getwriter('utf-8')(stderr)
+
+try:
+    STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
+except AttributeError:  # Python 2
+    STDOUT_WRITER = getwriter('utf-8')(stdout)
 
 
 def cached_property(prop):

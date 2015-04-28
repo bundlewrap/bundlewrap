@@ -1,29 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from codecs import getwriter
 import logging
 from os import environ, getcwd
 import re
-from sys import argv, exit, stderr, stdout
+from sys import argv, exit
 
 from ..exceptions import NoSuchRepository
 from ..repo import Repository
+from ..utils import STDERR_WRITER, STDOUT_WRITER
 from ..utils.text import force_text, mark_for_translation as _, red
 from .parser import build_parser_bw
 
 
 ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
-
-try:
-    STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
-except AttributeError:  # Python 2
-    STDERR_WRITER = getwriter('utf-8')(stderr)
-
-try:
-    STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
-except AttributeError:  # Python 2
-    STDOUT_WRITER = getwriter('utf-8')(stdout)
 
 
 class FilteringHandler(logging.Handler):
@@ -117,8 +107,11 @@ def main(*args):
         try:
             repo = Repository(getcwd())
         except NoSuchRepository:
-            print(_("{x} The current working directory "
-                    "is not a BundleWrap repository.".format(x=red("!"))))
+            STDERR_WRITER.write(_(
+                "{x} The current working directory "
+                "is not a BundleWrap repository.\n".format(x=red("!"))
+            ))
+            STDERR_WRITER.flush()
             exit(1)
             return  # used during texting when exit() is mocked
 

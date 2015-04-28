@@ -25,7 +25,7 @@ from .exceptions import (
 )
 from .itemqueue import ItemQueue
 from .items import Item
-from .utils import cached_property, LOG, graph_for_items, names
+from .utils import cached_property, LOG, graph_for_items, names, STDOUT_WRITER
 from .utils.text import force_text, mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
@@ -84,7 +84,9 @@ def handle_apply_result(node, item, status_code, interactive):
     )
     if formatted_result is not None:
         if interactive:
-            print(formatted_result)
+            STDOUT_WRITER.write(formatted_result)
+            STDOUT_WRITER.write("\n")
+            STDOUT_WRITER.flush()
         else:
             if status_code == Item.STATUS_FAILED:
                 LOG.error(formatted_result)

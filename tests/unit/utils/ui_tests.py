@@ -47,7 +47,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", True, get_input=get_input),
             True,
         )
-        get_input.assert_called_once_with(b"OHAI? [Y/n] ")
+        get_input.assert_called_once_with()
 
     def test_no(self):
         get_input = MagicMock(return_value="n")
@@ -55,7 +55,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", True, get_input=get_input),
             False,
         )
-        get_input.assert_called_once_with(b"OHAI? [Y/n] ")
+        get_input.assert_called_once_with()
 
     def test_default_yes(self):
         get_input = MagicMock(return_value="")
@@ -63,7 +63,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", True, get_input=get_input),
             True,
         )
-        get_input.assert_called_once_with(b"OHAI? [Y/n] ")
+        get_input.assert_called_once_with()
 
     def test_default_no(self):
         get_input = MagicMock(return_value="")
@@ -71,7 +71,7 @@ class AskInteractivelyTest(TestCase):
             ui.ask_interactively("OHAI?", False, get_input=get_input),
             False,
         )
-        get_input.assert_called_once_with(b"OHAI? [y/N] ")
+        get_input.assert_called_once_with()
 
     def test_invalid_input(self):
         answers = ["wat", "zomg", "\n", "y"]

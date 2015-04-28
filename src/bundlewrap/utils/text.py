@@ -7,6 +7,8 @@ from random import choice
 from string import digits, ascii_letters
 from sys import version_info
 
+from . import STDERR_WRITER
+
 
 VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
 
@@ -43,17 +45,21 @@ def error_summary(errors):
         return
 
     if len(errors) == 1:
-        print(_("\n{x} There was an error, repeated below.\n").format(
+        STDERR_WRITER.write(_("\n{x} There was an error, repeated below.\n\n").format(
             x=red("!!!"),
         ))
+        STDERR_WRITER.flush()
     else:
-        print(_("\n{x} There were {count} errors, repeated below.\n").format(
+        STDERR_WRITER.write(_("\n{x} There were {count} errors, repeated below.\n\n").format(
             count=len(errors),
             x=red("!!!"),
         ))
+        STDERR_WRITER.flush()
 
     for e in errors:
-        print(e)
+        STDERR_WRITER.write(e)
+        STDERR_WRITER.write("\n")
+        STDERR_WRITER.flush()
 
 
 def force_text(data):
