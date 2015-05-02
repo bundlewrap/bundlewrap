@@ -50,7 +50,9 @@ def get_role(node, role):
         else:
             role_attrs[AUTHID_COLUMNS[key]] = value
 
-    role_attrs['superuser'] = role_attrs['superuser'] == "t"
+    for bool_attr in ('superuser',):
+        if bool_attr in role_attrs:
+            role_attrs[bool_attr] = role_attrs[bool_attr] == "t"
 
     return role_attrs
 
@@ -78,12 +80,14 @@ class PostgresRole(Item):
             return red(_("Will be deleted."))
         output = []
         for attr, attr_pretty in ATTRS.items():
+            if self.attributes[attr] is None:
+                continue
             if status.info[attr] != self.attributes[attr]:
-                return "{} {} → {}".format(
+                output.append("{} {} → {}".format(
                     bold(attr_pretty),
                     status.info[attr],
                     self.attributes[attr],
-                )
+                ))
         return "\n".join(output)
 
     def fix(self, status):

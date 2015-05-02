@@ -15,12 +15,30 @@ class AskTest(TestCase):
     """
     Tests bundlewrap.items.postgres_roles.PostgresRole.ask.
     """
+    def test_change_password(self):
+        role = postgres_roles.PostgresRole(MagicMock(), "bw", {
+            'superuser': False,
+            'password': "new",
+        })
+        status = MagicMock()
+        status.info = {
+            'exists': True,
+            'needs_fixing': ['superuser'],
+            'password_hash': "old",
+            'superuser': False,
+        }
+        self.assertEqual(
+            role.ask(status),
+            "password hash old → md5d4011cb5bc2abb087f5ae9d3ca846423",
+        )
+
     def test_change_superuser(self):
         role = postgres_roles.PostgresRole(MagicMock(), "bw", {'superuser': False})
         status = MagicMock()
         status.info = {
             'exists': True,
             'needs_fixing': ['superuser'],
+            'password_hash': "foo",
             'superuser': True,
         }
         self.assertEqual(
@@ -31,7 +49,10 @@ class AskTest(TestCase):
     def test_create(self):
         role = postgres_roles.PostgresRole(MagicMock(), "bw", {})
         status = MagicMock()
-        status.info = {'exists': False, 'needs_fixing': ['existence']}
+        status.info = {
+            'exists': False,
+            'needs_fixing': ['existence'],
+        }
         self.assertEqual(
             role.ask(status),
             "Doesn't exist. Do you want to create it?",
@@ -64,6 +85,7 @@ class FixTest(TestCase):
         status = ItemStatus(correct=False, info={
             'exists': True,
             'needs_fixing': ['superuser'],
+            'password_hash': "foo",
             'superuser': False,
         })
         role.fix(status)
@@ -85,6 +107,8 @@ class FixTest(TestCase):
         status = ItemStatus(correct=False, info={
             'exists': False,
             'needs_fixing': ['existence'],
+            'password_hash': "foo",
+            'superuser': False,
         })
         role.fix(status)
         self.assertEqual(
@@ -104,6 +128,8 @@ class FixTest(TestCase):
         status = ItemStatus(correct=False, info={
             'exists': True,
             'needs_fixing': ['existence'],
+            'password_hash': "foo",
+            'superuser': False,
         })
         role.fix(status)
         self.assertEqual(
@@ -118,6 +144,16 @@ class GetRoleTest(TestCase):
     """
     Tests bundlewrap.items.postgres_roles.get_role.
     """
+    def test_empty_role(self):
+        node = MagicMock()
+        result = MagicMock()
+        result.stdout = "\n"
+        node.run.return_value = result
+        self.assertEqual(
+            postgres_roles.get_role(node, "bw"),
+            {},
+        )
+
     def test_get_role(self):
         node = MagicMock()
         result = MagicMock()
