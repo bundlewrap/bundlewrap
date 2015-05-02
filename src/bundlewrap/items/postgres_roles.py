@@ -27,7 +27,7 @@ def delete_role(node, role):
 def fix_role(node, role, attrs, create=False):
     password = " PASSWORD '{}'".format(attrs['password_hash'])
     node.run(
-        "echo \"{operation} ROLE '{role}' WITH {superuser}SUPERUSER{password}\" "
+        "echo \"{operation} ROLE {role} WITH {superuser}SUPERUSER{password}\" "
         "| sudo -u postgres psql -nqw".format(
             operation="CREATE" if create else "ALTER",
             password="" if attrs['password_hash'] is None else password,
@@ -114,11 +114,12 @@ class PostgresRole(Item):
             fix_role(self.node, self.name, self.attributes)
 
     def get_status(self):
-        role_attrs = get_role(self.name, self.name)
+        role_attrs = get_role(self.node, self.name)
         status_info = {
             'exists': bool(role_attrs),
             'needs_fixing': [],
         }
+        status_info.update(role_attrs)
 
         if self.attributes['delete'] == status_info['exists']:
             status_info['needs_fixing'].append('existence')

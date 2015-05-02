@@ -88,6 +88,7 @@ class PostgresDB(Item):
             'exists': self.name in databases,
             'needs_fixing': [],
         }
+        status_info.update(databases[self.name])
         if self.attributes['delete'] == status_info['exists']:
             status_info['needs_fixing'].append('existence')
             return ItemStatus(correct=False, info=status_info)
