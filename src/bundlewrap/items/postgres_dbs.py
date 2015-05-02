@@ -67,7 +67,7 @@ class PostgresDB(Item):
         if status.info['exists'] and self.attributes['delete']:
             return red(_("Will be deleted."))
         if status.info['owner'] != self.attributes['owner']:
-            return "{} {} → {}".format(
+            return "{}  {} → {}".format(
                 bold(_("owner")),
                 status.info['owner'],
                 self.attributes['owner'],

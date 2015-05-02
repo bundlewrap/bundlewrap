@@ -25,7 +25,7 @@ class AskTest(TestCase):
         }
         self.assertEqual(
             db.ask(status),
-            "owner foo → bar",
+            "owner  foo → bar",
         )
 
     def test_create(self):
