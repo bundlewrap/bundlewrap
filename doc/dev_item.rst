@@ -20,13 +20,13 @@ Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use
         """
         A foo.
         """
+        BLOCK_CONCURRENT = []
         BUNDLE_ATTRIBUTE_NAME = "foo"
-        DEPENDS_STATIC = []
+        NEEDS_STATIC = []
         ITEM_ATTRIBUTES = {
             'attribute': "default value",
         }
         ITEM_TYPE_NAME = "foo"
-        PARALLEL_APPLY = True
         REQUIRED_ATTRIBUTES = ['attribute']
 
         def __repr__(self):
@@ -70,11 +70,11 @@ Step 2: Define attributes
 ...then you should put ``BUNDLE_ATTRIBUTE_NAME = "foo"`` here.
 
 
-``DEPENDS_STATIC`` is a list of hard-wired dependencies for all intances of your item. For example, all services inherently depend on all packages (because you can't start the service without installing its package first). Most of the time, this will be a wildcard dependency on a whole type of items, not a specific one:
+``NEEDS_STATIC`` is a list of hard-wired dependencies for all intances of your item. For example, all services inherently depend on all packages (because you can't start the service without installing its package first). Most of the time, this will be a wildcard dependency on a whole type of items, not a specific one:
 
 .. code-block:: python
 
-    DEPENDS_STATIC = ["file:/etc/hosts", "user:"]  # depends on /etc/hosts and all users
+    NEEDS_STATIC = ["file:/etc/hosts", "user:"]  # depends on /etc/hosts and all users
 
 
 ``ITEM_ATTRIBUTES`` is a dictionary of the attributes users will be able to configure for your item. For files, that would be stuff like owner, group, and permissions. Every attribute (even if it's mandatory) needs a default value, ``None`` is totally acceptable:
@@ -91,11 +91,11 @@ Step 2: Define attributes
     ITEM_TYPE_NAME = "foo"
 
 
-``PARALLEL_APPLY`` indicates whether multiple instances of this item can be applied in parallel. For most items this is OK (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time):
+``BLOCK_CONCURRENT`` is a list of item types (e.g. ``pkg_apt``), that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time):
 
 .. code-block:: python
 
-    PARALLEL_APPLY = False
+    BLOCK_CONCURRENT = ["pkg_apt"]
 
 
 ``REQUIRED_ATTRIBUTES`` is a list of attribute names that must be set on each item of this type. If BundleWrap encounters an item without all these attributes during bundle inspection, an exception will be raised. Example:
@@ -108,3 +108,9 @@ Step 2: Define attributes
 
 Step 3: Implement methods
 -------------------------
+
+You should probably start with ``get_status``. Use ``self.node.run("command")`` to run shell commands on the current node and check the ``stdout`` property of the returned object. The info dict passed to ``ItemStatus`` can be filled with arbitrary information on how to efficiently fix the item.
+
+Next up is the ``ask`` method. It must return a string containing all information a user needs in interactive mode to decide whether they want to apply the item or not and offer a preview of all changes that would be made.
+
+Finally, the ``fix`` method doesn't have to return anything and just uses ``self.node.run()`` to fix the item. To do this efficiently, it may use the ``status.info`` dict you built earlier.
