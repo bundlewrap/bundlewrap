@@ -29,7 +29,7 @@ class AskTest(TestCase):
         }
         self.assertEqual(
             role.ask(status),
-            "password hash old → md5d4011cb5bc2abb087f5ae9d3ca846423",
+            "password hash  old\n            →  md5d4011cb5bc2abb087f5ae9d3ca846423",
         )
 
     def test_change_superuser(self):
@@ -43,7 +43,7 @@ class AskTest(TestCase):
         }
         self.assertEqual(
             role.ask(status),
-            "superuser True → False",
+            "superuser  True → False",
         )
 
     def test_create(self):

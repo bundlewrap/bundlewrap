@@ -89,11 +89,19 @@ class PostgresRole(Item):
             if self.attributes[attr] is None:
                 continue
             if status.info[attr] != self.attributes[attr]:
-                output.append("{} {} → {}".format(
-                    bold(attr_pretty),
-                    status.info[attr],
-                    self.attributes[attr],
-                ))
+                if attr in ('password_hash',):
+                    output.append("{}  {}\n{}→  {}".format(
+                        bold(attr_pretty),
+                        status.info[attr],
+                        " " * (len(attr_pretty) - 1),
+                        self.attributes[attr],
+                    ))
+                else:
+                    output.append("{}  {} → {}".format(
+                        bold(attr_pretty),
+                        status.info[attr],
+                        self.attributes[attr],
+                    ))
         return "\n".join(output)
 
     def fix(self, status):
