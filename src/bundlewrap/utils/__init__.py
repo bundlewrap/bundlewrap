@@ -75,7 +75,8 @@ def get_all_attrs_from_file(path, cache=True, base_env=None):
         try:
             exec(source, env)
         except:
-            LOG.error("Exception while executing {}:".format(path))
+            LOG.error("Exception while executing {} "
+                      "(use --debug to get a traceback):".format(path))
             raise
         if cache:
             __GETATTR_CACHE[path] = env

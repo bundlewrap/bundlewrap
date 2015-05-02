@@ -90,7 +90,7 @@ def _worker_process(wid, messages, pipe, stdin=None):
                     exception = e.wrapped_exception
                     exception_task_id = e.task_id
                 else:
-                    exception = force_text(str(e))
+                    exception = force_text(repr(e))
                     exception_task_id = msg['task_id']
                 traceback = "".join([force_text(line) for line in format_exception(*sys.exc_info())])
                 return_value = None
