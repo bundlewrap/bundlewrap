@@ -10,7 +10,7 @@ Manages Postgres roles.
 
     postgres_roles = {
         "me": {
-        	"superuser": True,
+            "superuser": True,
             "password": "itsamemario",
         },
     }
