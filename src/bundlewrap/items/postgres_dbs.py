@@ -51,8 +51,13 @@ class PostgresDB(Item):
         'owner': "postgres",
     }
     ITEM_TYPE_NAME = "postgres_db"
-    NEEDS_STATIC = ["postgres_role:"]
-
+    NEEDS_STATIC = [
+        "pkg_apt:",
+        "pkg_pacman:",
+        "pkg_yum:",
+        "pkg_zypper:",
+        "postgres_role:",
+    ]
     def __repr__(self):
         return "<PostgresDB name:{}>".format(self.name)
 
