@@ -64,7 +64,7 @@ class FixTest(TestCase):
         )
         status = ItemStatus(correct=False, info={
             'exists': True,
-            'needs_fixing': 'owner',
+            'needs_fixing': ['owner'],
             'owner': "foo",
         })
         db.fix(status)
@@ -85,7 +85,7 @@ class FixTest(TestCase):
         )
         status = ItemStatus(correct=False, info={
             'exists': False,
-            'needs_fixing': 'existence',
+            'needs_fixing': ['existence'],
         })
         db.fix(status)
         self.assertEqual(
@@ -104,7 +104,7 @@ class FixTest(TestCase):
         )
         status = ItemStatus(correct=False, info={
             'exists': True,
-            'needs_fixing': 'existence',
+            'needs_fixing': ['existence'],
         })
         db.fix(status)
         self.assertEqual(
