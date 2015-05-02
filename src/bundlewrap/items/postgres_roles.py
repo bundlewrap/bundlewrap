@@ -93,7 +93,7 @@ class PostgresRole(Item):
             else:
                 fix_role(self.node, self.name, self.attributes, create=True)
         else:
-            fix_role(self.name, self.name, self.attributes)
+            fix_role(self.node, self.name, self.attributes)
 
     def get_status(self):
         role_attrs = get_role(self.name, self.name)
@@ -101,15 +101,16 @@ class PostgresRole(Item):
             'exists': bool(role_attrs),
             'needs_fixing': [],
         }
+
         if self.attributes['delete'] == status_info['exists']:
             status_info['needs_fixing'].append('existence')
 
-        if not self.attributes['delete']:
+        if not self.attributes['delete'] and status_info['exists']:
             for attr in ATTRS.keys():
-                if self.attributes[attr] != role_attrs[attr]:
+                if self.attributes[attr] is not None and self.attributes[attr] != role_attrs[attr]:
                     status_info['needs_fixing'].append(attr)
 
-        return ItemStatus(correct=bool(status_info['needs_fixing']), info=status_info)
+        return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
 
     def patch_attributes(self, attributes):
         if 'password' in attributes:
