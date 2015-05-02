@@ -117,6 +117,14 @@ class Item(object):
                 copy(attribute_default),
             ))
 
+        if self.id in self.triggers:
+            raise BundleError(_(
+                "item {item} in bundle '{bundle}' can't trigger itself"
+            ).format(
+                bundle=self.bundle.name,
+                item=self.id,
+            ))
+
     def __str__(self):
         return self.id
 
