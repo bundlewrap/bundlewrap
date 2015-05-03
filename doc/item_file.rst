@@ -119,3 +119,14 @@ File name of the file template. If this says ``my_template``, BundleWrap will lo
 .. seealso::
 
 	:doc:`Writing file templates <item_file_templates>`
+
+|
+
+``verify_cmd_local`` and ``verify_cmd_remote``
+++++++++++++++++++++++++++++++++++++++++++++++
+
+These attributes can be used to run external validation commands on a file before it is applied to a node. The file is first written to a temporary location, verified there and moved into place only if verification succeeds. Verification is considered successful when the exit code of the verification command is 0. Use ``{}`` as a placeholder for the shell-quoted path to the temporary file. Here is an example for verifying sudoers files:
+
+	visudo -cf {}
+
+Note that as the name suggests ``verify_cmd_local`` is executed on the machine running BundleWrap while ``verify_cmd_remote`` is executed on the node. In many cases, you can use the exact same command for both attributes. Sometimes however a command can only be made available locally or on the node. In this case you obviously only set the corresponding attribute. Setting both commands (as opposed to only the remote one, which will usually be more important) allows ``bw test`` to still perform verification without touching the network. During ``bw apply`` and ``bw verify``, only the remote command will be used if both are set.

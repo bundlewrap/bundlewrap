@@ -8,6 +8,7 @@ from difflib import unified_diff
 from os import remove
 from os.path import dirname, exists, join, normpath
 from pipes import quote
+from subprocess import call
 from sys import exc_info
 from tempfile import mkstemp
 from traceback import format_exception
@@ -236,6 +237,8 @@ class File(Item):
         'mode': None,
         'owner': None,
         'source': None,
+        'verify_cmd_local': None,
+        'verify_cmd_remote': None,
     }
     ITEM_TYPE_NAME = "file"
     NEEDS_STATIC = ["user:"]
@@ -377,12 +380,8 @@ class File(Item):
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content(self, status):
-        if self.attributes['content_type'] == 'binary':
-            local_path = self.template
-        else:
-            handle, local_path = mkstemp()
-            with open(local_path, 'w') as f:
-                f.write(self.content)
+        local_path = self._write_local_file()
+
         try:
             self.node.upload(
                 local_path,
@@ -390,6 +389,7 @@ class File(Item):
                 mode=self.attributes['mode'],
                 owner=self.attributes['owner'] or "",
                 group=self.attributes['group'] or "",
+                remote_verify=self.attributes['verify_cmd_remote'],
             )
         finally:
             if self.attributes['content_type'] != 'binary':
@@ -485,8 +485,12 @@ class File(Item):
                 item=self.id,
                 path=self.template,
             ))
-        if self.attributes['content_type'] in ('mako', 'text'):
-            self.content
+
+        try:
+            local_path = self._write_local_file(force_local_verify=True)
+        finally:
+            if self.attributes['content_type'] != 'binary':
+                remove(local_path)
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
@@ -529,3 +533,34 @@ class File(Item):
                 normpath=normpath(name),
                 path=name,
             ))
+
+    def _write_local_file(self, force_local_verify=False):
+        """
+        Makes the file contents available at the returned temporary path
+        and performs local verification if necessary or requested.
+
+        The calling method is responsible for cleaning up the file at
+        the returned path (only if not a binary).
+        """
+        if self.attributes['content_type'] == 'binary':
+            local_path = self.template
+        else:
+            handle, local_path = mkstemp()
+            with open(local_path, 'w') as f:
+                f.write(self.content)
+
+        if (
+            (self.attributes['verify_cmd_remote'] is None or force_local_verify)
+            and self.attributes['verify_cmd_local']
+        ):
+            cmd = self.attributes['verify_cmd_local'].format(quote(local_path))
+            LOG.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
+            try:
+                call(cmd, shell=True)
+            except:
+                LOG.error("{i} failed local validation using: {c}".format(c=cmd, i=self.id))
+                raise
+            else:
+                LOG.debug("{i} passed local validation".format(i=self.id))
+
+        return local_path
