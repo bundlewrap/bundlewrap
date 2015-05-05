@@ -103,24 +103,6 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
             if msg['msg'] == 'REQUEST_WORK':
                 try:
                     item, skipped_items = item_queue.pop()
-
-                    for skipped_item in skipped_items:
-                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
-                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
-
-                    if item.ITEM_TYPE_NAME == 'action':
-                        target = item.get_result
-                    else:
-                        target = item.apply
-
-                    # start_task() increases jobs_open.
-                    worker_pool.start_task(
-                        msg['wid'],
-                        target,
-                        task_id=item.id,
-                        kwargs={'interactive': interactive},
-                    )
-
                 except IndexError:
                     if worker_pool.jobs_open > 0:
                         # No work right now, but another worker might
@@ -131,6 +113,18 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         # No work, no outstanding jobs. We're done.
                         # quit() decreases workers_alive.
                         worker_pool.quit(msg['wid'])
+                else:
+                    for skipped_item in skipped_items:
+                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
+                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
+
+                    # start_task() increases jobs_open.
+                    worker_pool.start_task(
+                        msg['wid'],
+                        item.get_result if item.ITEM_TYPE_NAME == 'action' else item.apply,
+                        task_id=item.id,
+                        kwargs={'interactive': interactive},
+                    )
 
             elif msg['msg'] == 'FINISHED_WORK':
                 # worker_pool automatically decreases jobs_open when it
