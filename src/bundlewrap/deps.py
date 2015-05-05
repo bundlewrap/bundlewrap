@@ -449,6 +449,11 @@ def prepare_dependencies(items):
     items = _inject_preceded_by_dependencies(items)
     items = _flatten_dependencies(items)
     items = _inject_concurrency_blockers(items)
+
+    for item in items:
+        if item.ITEM_TYPE_NAME != 'dummy':
+            item._check_redundant_dependencies()
+
     return items
 
 

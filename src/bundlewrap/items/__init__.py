@@ -159,6 +159,22 @@ class Item(object):
                     bundle2=self.bundle.name,
                 ))
 
+    def _check_redundant_dependencies(self):
+        """
+        Alerts the user if they have defined a redundant dependency
+        (such as settings 'needs' on a triggered item pointing to the
+        triggering item).
+        """
+        for dep in self._deps:
+            if self._deps.count(dep) > 1:
+                raise BundleError(_(
+                    "redundant dependency of {item1} in bundle '{bundle}' on {item2}".format(
+                        bundle=self.bundle.name,
+                        item1=self.id,
+                        item2=dep,
+                    ),
+                ))
+
     @cached_property
     def cached_status(self):
         return self.get_status()
