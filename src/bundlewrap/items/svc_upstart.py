@@ -85,6 +85,10 @@ class SvcUpstart(Item):
                 'command': "restart {}".format(self.name),
                 'needs': [self.id],
             },
+            'stopstart': {
+                'command': "stop {0} && start {0}".format(self.name),
+                'needs': [self.id],
+            },
         }
 
     def get_status(self):
