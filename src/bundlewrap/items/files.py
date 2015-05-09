@@ -438,7 +438,6 @@ class File(Item):
         return deps
 
     def get_status(self):
-        correct = True
         path_info = PathInfo(self.node, self.name)
         status_info = {'needs_fixing': [], 'path_info': path_info}
 
@@ -464,9 +463,7 @@ class File(Item):
                         path_info.group != self.attributes['group']:
                     status_info['needs_fixing'].append('group')
 
-        if status_info['needs_fixing']:
-            correct = False
-        return ItemStatus(correct=correct, info=status_info)
+        return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
 
     def patch_attributes(self, attributes):
         if 'context' not in attributes:
