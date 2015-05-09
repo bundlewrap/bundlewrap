@@ -1,9 +1,2 @@
-coverage
-coveralls
-distribute
-Mako
-mock
-passlib
-requests
 Sphinx
 wheel

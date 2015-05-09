@@ -5,10 +5,8 @@ python:
 - 3.3
 - 3.4
 - pypy3
-env:
-- BWCOLORS=0
 install:
-- pip install coverage coveralls tox
+- pip install tox
 - sudo rm -rf /dev/shm
 - sudo ln -s /run/shm /dev/shm
 before_script:
@@ -21,7 +19,6 @@ script:
 - if [[ $TRAVIS_PYTHON_VERSION == 'pypy3' ]]; then tox -e py32; fi
 - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then tox -e py33; fi
 - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then tox -e py34; fi
-- coverage combine
 after_success:
 - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then coveralls; fi
 notifications:
