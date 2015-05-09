@@ -24,7 +24,7 @@ from .exceptions import (
 )
 from .itemqueue import ItemQueue
 from .items import Item
-from .utils import cached_property, LOG, graph_for_items, names
+from .utils import cached_property, LOG, graph_for_items, merge_dict, names
 from .utils.text import mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
@@ -438,14 +438,21 @@ class Node(object):
     @cached_property
     def metadata(self):
         m = {}
+
+        # step 1: group metadata
         group_order = _flatten_group_hierarchy(self.groups)
         for group_name in group_order:
-            m.update(self.repo.get_group(group_name).metadata)
-        m.update(self._node_metadata)
+            m = merge_dict(m, self.repo.get_group(group_name).metadata)
+
+        # step 2: node metadata
+        m = merge_dict(m, self._node_metadata)
+
+        # step 3: metadata processors
         for group_name in group_order:
             group = self.repo.get_group(group_name)
             for metadata_processor in group.metadata_processors:
                 m = metadata_processor(self.name, group_order, m)
+
         return m
 
     @property

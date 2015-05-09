@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from copy import deepcopy
 import hashlib
 from inspect import isgenerator
 import logging
@@ -185,6 +186,89 @@ def hash_local_file(path):
     Retuns the sha1 hash of a file on the local machine.
     """
     return sha1(get_file_contents(path))
+
+
+class _Atomic(object):
+    """
+    This and the following related classes are used to mark objects as
+    non-mergeable for the purposes of merge_dict().
+    """
+    pass
+
+
+class _AtomicDict(dict, _Atomic):
+    pass
+
+
+class _AtomicList(list, _Atomic):
+    pass
+
+
+class _AtomicSet(set, _Atomic):
+    pass
+
+
+class _AtomicTuple(tuple, _Atomic):
+    pass
+
+
+ATOMIC_TYPES = {
+    dict: _AtomicDict,
+    list: _AtomicList,
+    set: _AtomicSet,
+    tuple: _AtomicTuple,
+}
+
+
+def merge_dict(base, update):
+    """
+    Recursively merges the base dict into the update dict.
+    """
+    if not isinstance(update, dict):
+        return update
+
+    merged = deepcopy(base)
+
+    for key, value in update.items():
+        merge = key in base and not isinstance(value, _Atomic)
+        if merge and isinstance(base[key], dict):
+            merged[key] = merge_dict(base[key], value)
+        elif (
+            merge and
+            isinstance(base[key], list) and
+            (
+                isinstance(value, list) or
+                isinstance(value, set) or
+                isinstance(value, tuple)
+            )
+        ):
+            extended = deepcopy(base[key])
+            extended.extend(value)
+            merged[key] = extended
+        elif (
+            merge and
+            isinstance(base[key], tuple) and
+            (
+                isinstance(value, list) or
+                isinstance(value, set) or
+                isinstance(value, tuple)
+            )
+        ):
+            merged[key] = base[key] + tuple(value)
+        elif (
+            merge and
+            isinstance(base[key], set) and
+            (
+                isinstance(value, list) or
+                isinstance(value, set) or
+                isinstance(value, tuple)
+            )
+        ):
+            merged[key] = base[key].union(set(value))
+        else:
+            merged[key] = value
+
+    return merged
 
 
 def names(obj_list):
