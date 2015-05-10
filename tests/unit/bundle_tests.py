@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap.bundle import Bundle
 from bundlewrap.items import Item

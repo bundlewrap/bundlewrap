@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from collections import defaultdict
-from copy import copy
 from datetime import datetime
 from difflib import unified_diff
 from os import remove
@@ -18,7 +17,7 @@ from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
 from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, LOG, sha1
 from bundlewrap.utils.remote import PathInfo
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import bold, green, is_subdirectory, red
 
 
@@ -38,7 +37,7 @@ def content_processor_jinja2(item):
     loader = FileSystemLoader(searchpath=[item.item_data_dir, item.item_dir])
     env = Environment(loader=loader)
 
-    template = env.from_string(item._template_content.decode('utf-8'))
+    template = env.from_string(item._template_content)
 
     LOG.debug("{node}:{bundle}:{item}: rendering with Jinja2...".format(
         bundle=item.bundle.name,
@@ -78,7 +77,7 @@ def content_processor_mako(item):
     from mako.lookup import TemplateLookup
     from mako.template import Template
     template = Template(
-        item._template_content,
+        item._template_content.encode('utf-8'),
         input_encoding='utf-8',
         lookup=TemplateLookup(directories=[item.item_data_dir, item.item_dir]),
         output_encoding=item.attributes['encoding'],
@@ -123,11 +122,7 @@ def content_processor_mako(item):
 
 
 def content_processor_text(item):
-    content = copy(item._template_content)
-    if item.attributes['encoding'].lower() != "utf-8":
-        content = content.decode("utf-8")
-        content = content.encode(item.attributes['encoding'])
-    return content
+    return item._template_content.encode(item.attributes['encoding'])
 
 
 CONTENT_PROCESSORS = {
@@ -146,6 +141,8 @@ def diff(content_old, content_new, filename, encoding_hint=None):
         len_before=len(content_old),
         len_after=len(content_new),
     ))
+    content_old = force_text(content_old)
+    content_new = force_text(content_new)
     start = datetime.now()
     for line in unified_diff(
         content_old.splitlines(True),
@@ -154,21 +151,7 @@ def diff(content_old, content_new, filename, encoding_hint=None):
         tofile=_("<bundlewrap content>"),
     ):
         suffix = ""
-        try:
-            line = line.decode('utf-8')
-        except UnicodeDecodeError:
-            if encoding_hint and encoding_hint.lower() != "utf-8":
-                try:
-                    line = line.decode(encoding_hint)
-                    suffix += _(" (line encoded in {})").format(encoding_hint)
-                except UnicodeDecodeError:
-                    line = line[0]
-                    suffix += _(" (line not encoded in UTF-8 or {})").format(encoding_hint)
-            else:
-                line = line[0]
-                suffix += _(" (line not encoded in UTF-8)")
-
-        line = line.rstrip("\n")
+        line = force_text(line).rstrip("\n")
         if len(line) > DIFF_MAX_LINE_LENGTH:
             line = line[:DIFF_MAX_LINE_LENGTH]
             suffix += _(" (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)
@@ -197,16 +180,6 @@ def get_remote_file_contents(node, path):
     return content
 
 
-def validator_content(item_id, value):
-    if value is not None:
-        try:
-            value.decode('utf-8')
-        except UnicodeDecodeError:
-            raise BundleError(
-                _("'content' for {} must be a UTF-8 encoded string").format(item_id)
-            )
-
-
 def validator_content_type(item_id, value):
     if value not in CONTENT_PROCESSORS:
         raise BundleError(_(
@@ -216,7 +189,6 @@ def validator_content_type(item_id, value):
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
 ATTRIBUTE_VALIDATORS.update({
-    'content': validator_content,
     'content_type': validator_content_type,
     'mode': validator_mode,
 })
@@ -259,9 +231,9 @@ class File(Item):
                 filename = join(self.item_dir, self.attributes['source'])
                 with open(filename) as f:
                     content = f.read()
-            return content
+            return force_text(content)
         else:
-            return self.attributes['content']
+            return force_text(self.attributes['content'])
 
     @cached_property
     def content(self):
@@ -539,7 +511,7 @@ class File(Item):
             local_path = self.template
         else:
             handle, local_path = mkstemp()
-            with open(local_path, 'w') as f:
+            with open(local_path, 'wb') as f:
                 f.write(self.content)
 
         if self.attributes['verify_with']:

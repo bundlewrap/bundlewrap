@@ -9,8 +9,6 @@ from os import dup, fdopen
 import sys
 from traceback import format_exception
 
-from fabric.network import disconnect_all
-
 from .exceptions import WorkerException
 from .utils import LOG
 from .utils.text import force_text, mark_for_translation as _
@@ -39,14 +37,10 @@ def _patch_logger(logger, new_handler=None):
     logger.setLevel(0)
 
 
-def _worker_process(wid, messages, pipe, stdin=None):
+def _worker_process(wid, messages, pipe):
     """
     This is what actually runs in the child process.
     """
-    if stdin is not None:
-        # replace stdin with the one our parent gave us
-        sys.stdin = stdin
-
     # replace the child logger with one that will send logs back to the
     # parent process
     from bundlewrap import utils
@@ -61,9 +55,6 @@ def _worker_process(wid, messages, pipe, stdin=None):
         messages.put({'msg': 'REQUEST_WORK', 'wid': wid})
         msg = pipe.recv()
         if msg['msg'] == 'DIE':
-            # clean up Fabric connections first...
-            disconnect_all()
-            # then die
             return
         elif msg['msg'] == 'NOOP':
             pass
@@ -146,11 +137,10 @@ class WorkerPool(object):
         # (see below).
         self.messages = Manager().Queue()
 
-        stdin = fdopen(dup(sys.stdin.fileno())) if workers == 1 else None
         for i in range(workers):
             (parent_conn, child_conn) = Pipe()
             p = Process(target=_worker_process,
-                        args=(i, self.messages, child_conn, stdin,))
+                        args=(i, self.messages, child_conn))
             p.start()
             self.workers.append((p, parent_conn))
 

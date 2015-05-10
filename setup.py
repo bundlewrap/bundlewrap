@@ -1,11 +1,4 @@
 from setuptools import setup, find_packages
-from sys import stderr, version_info
-
-if version_info < (2, 7):
-    stderr.write("BundleWrap needs Python 2.7\n")
-    stderr.flush()
-    exit(1)
-
 
 setup(
     name="bundlewrap",
@@ -37,12 +30,14 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
         "Topic :: System :: Installation/Setup",
         "Topic :: System :: Systems Administration",
     ],
     install_requires=[
         "distribute",
-        "Fabric >= 1.5.0",
+        "Jinja2",
         "Mako",
         "passlib",
         "requests >= 1.0.0",

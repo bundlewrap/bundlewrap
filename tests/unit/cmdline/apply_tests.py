@@ -1,7 +1,13 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from datetime import datetime
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from bundlewrap.cmdline.apply import bw_apply, format_node_result
 from bundlewrap.node import ApplyResult

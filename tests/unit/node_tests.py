@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap.exceptions import ItemDependencyError, NodeAlreadyLockedException, RepositoryError
 from bundlewrap.group import Group
@@ -95,7 +101,6 @@ class ApplyItemsTest(TestCase):
         self.assertEqual(results[1][0], "type1:name2")
         self.assertEqual(results[2][0], "type1:name1")
 
-
     def test_implicit_order(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
         i2 = get_mock_item("type1", "name2", [], [])
@@ -123,7 +128,6 @@ class ApplyItemsTest(TestCase):
         self.assertEqual(results[0][0], "type1:name3")
         self.assertEqual(results[1][0], "type1:name2")
         self.assertEqual(results[2][0], "type1:name1")
-
 
     def test_apply_interactive(self):
         i1 = get_mock_item("type1", "name1", [], ["type1:name2"])
@@ -225,10 +229,8 @@ class FlattenGroupHierarchyTest(TestCase):
         group2.subgroups = []
         group1.subgroups = []
 
-        self.assertEqual(
-            _flatten_group_hierarchy([group1, group2, group3]),
-            ["group1", "group3", "group2"],
-        )
+        order = _flatten_group_hierarchy([group1, group2, group3])
+        self.assertTrue(order.index("group3") < order.index("group2"))
 
     def test_loop(self):
         group1 = MagicMock()
@@ -295,29 +297,6 @@ class NodeTest(TestCase):
         self.assertEqual(n.hostname, "node1")
         n = Node("node2", {'hostname': "node2.example.com"})
         self.assertEqual(n.hostname, "node2.example.com")
-
-    def test_password(self):
-        n = Node("node1", {})
-        self.assertIsNone(n.password)
-        n.password = "foo"
-        self.assertEqual(n.password, "foo")
-
-    def test_password_from_repo(self):
-        n = Node("node1", {})
-        repo = Repository()
-        repo.password = "repopasswd"
-        repo.add_node(n)
-        self.assertEqual(n.password, "repopasswd")
-
-    def test_password_from_group(self):
-        n = Node("node1", {})
-        g = Group("group1", {'password': "grouppasswd"})
-        r = Repository()
-        r.add_group(g)
-        r.add_node(n)
-        with patch('tests.unit.node_tests.Node.groups', new=(g,)):
-            self.assertEqual(n.password, "grouppasswd")
-
 
 
 class NodeLockTest(TestCase):

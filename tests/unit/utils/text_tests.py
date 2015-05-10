@@ -25,7 +25,7 @@ class ForceTextTest(TestCase):
         self.assertEqual(text.force_text(u"ö"), u"ö")
 
     def test_utf8(self):
-        self.assertEqual(text.force_text(b"ö"), u"ö")
+        self.assertEqual(text.force_text(u"ö".encode('utf-8')), u"ö")
 
 
 class IsSubdirectoryTest(TestCase):

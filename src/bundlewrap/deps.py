@@ -27,6 +27,9 @@ class BundleItem(object):
         self._deps = []
         self._precedes_items = []
 
+    def __lt__(self, other):
+        return self.id < other.id
+
     def __repr__(self):
         return "<BundleItem: {}>".format(self.bundle.name)
 
@@ -60,6 +63,9 @@ class DummyItem(object):
         self.triggers = []
         self._deps = []
         self._precedes_items = []
+
+    def __lt__(self, other):
+        return self.id < other.id
 
     def __repr__(self):
         return "<DummyItem: {}>".format(self.item_type)

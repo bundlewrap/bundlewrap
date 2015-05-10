@@ -1,16 +1,26 @@
 language: python
 python:
-  - "2.7"
+- 2.7
+- pypy
+- 3.3
+- 3.4
+- pypy3
 install:
-- python setup.py install
-- pip install -r requirements-tests.txt
+- pip install tox
 - sudo rm -rf /dev/shm
 - sudo ln -s /run/shm /dev/shm
 before_script:
 - ssh-keygen -f ~/.ssh/id_rsa -N ""
 - cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
-script: fab run_tests
-after_success: fab submit_coverage
+- ssh -o StrictHostKeyChecking=no localhost id
+script:
+- if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then tox -e py27; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then tox -e py27; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 'pypy3' ]]; then tox -e pypy3; fi
+- if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then tox -e py33; fi
+- if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then tox -e py34; fi
+after_success:
+- if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then coveralls; fi
 notifications:
   irc:
     channels:

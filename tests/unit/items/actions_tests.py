@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap.items.actions import Action
 from bundlewrap.exceptions import ActionFailure, BundleError
@@ -11,7 +17,7 @@ class ActionInitTest(TestCase):
     Tests initialization of bundlewrap.items.actions.Action.
     """
     def test_ok(self):
-        Action(MagicMock(), "action", { 'command': "/bin/true" })
+        Action(MagicMock(), "action", {'command': "/bin/true"})
 
     def test_no_command(self):
         with self.assertRaises(BundleError):
@@ -45,7 +51,7 @@ class ActionRunTest(TestCase):
         bundle = MagicMock()
         bundle.node.run.return_value = run_result
 
-        action = Action(bundle, "action", { 'command': "/bin/true" })
+        action = Action(bundle, "action", {'command': "/bin/true"})
 
         self.assertEqual(action.run(), run_result)
 

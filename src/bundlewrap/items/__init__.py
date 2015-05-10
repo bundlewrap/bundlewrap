@@ -10,7 +10,7 @@ from os.path import join
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.utils import cached_property, LOG
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
 from bundlewrap.utils.ui import ask_interactively
 
@@ -105,17 +105,20 @@ class Item(object):
                 self.ITEM_ATTRIBUTES.items():
             if attribute_name in BUILTIN_ITEM_ATTRIBUTES:
                 continue
-            self.attributes[attribute_name] = attributes.get(
+            self.attributes[attribute_name] = force_text(attributes.get(
                 attribute_name,
                 attribute_default,
-            )
+            ))
 
         for attribute_name, attribute_default in \
                 BUILTIN_ITEM_ATTRIBUTES.items():
-            setattr(self, attribute_name, attributes.get(
+            setattr(self, attribute_name, force_text(attributes.get(
                 attribute_name,
                 copy(attribute_default),
-            ))
+            )))
+
+    def __lt__(self, other):
+        return self.id < other.id
 
         if self.id in self.triggers:
             raise BundleError(_(

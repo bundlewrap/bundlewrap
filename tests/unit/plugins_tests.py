@@ -1,14 +1,19 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from json import dumps, loads
 from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap import plugins
 from bundlewrap.exceptions import NoSuchPlugin, PluginLocalConflict
-
 
 
 class TmpDirTest(TestCase):
@@ -60,14 +65,12 @@ class RemoveTest(TmpDirTest):
         pm.remove("plugin1")
         self.assertFalse(exists(join(self.tmpdir, "file1")))
 
-
         with open(join(self.tmpdir, "plugins.json")) as f:
             plugin_db = f.read()
         self.assertEqual(
             loads(plugin_db),
             {},
         )
-
 
     def test_leave_modified(self):
         with open(join(self.tmpdir, "plugins.json"), 'w') as f:

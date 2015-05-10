@@ -96,7 +96,7 @@ class Group(Item):
             return ItemStatus(correct=self.attributes['delete'], info={'exists': False})
 
         status = ItemStatus(correct=not self.attributes['delete'], info={'exists': True})
-        status.info.update(_parse_group_line(grep_result.stdout))
+        status.info.update(_parse_group_line(grep_result.stdout_text))
 
         if self.attributes['gid'] is not None and \
                 status.info['gid'] != self.attributes['gid']:

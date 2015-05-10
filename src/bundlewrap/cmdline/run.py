@@ -1,27 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import sys
-
 from datetime import datetime
 
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
-from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
 from ..utils.text import error_summary, green, red
-from ..utils.ui import LineBuffer
 
 
-def run_on_node(node, command, may_fail, sudo, interactive):
-    if interactive:
-        stdout = sys.stdout
-        stderr = sys.stderr
-    else:
-        stdout = LineBuffer(LOG.info)
-        stderr = LineBuffer(LOG.error)
-
+def run_on_node(node, command, may_fail, log_output):
     node.repo.hooks.node_run_start(
         node.repo,
         node,
@@ -32,10 +21,7 @@ def run_on_node(node, command, may_fail, sudo, interactive):
     result = node.run(
         command,
         may_fail=may_fail,
-        stdout=stdout,
-        stderr=stderr,
-        sudo=sudo,
-        pty=interactive,
+        log_output=log_output,
     )
     end = datetime.now()
     duration = end - start
@@ -108,8 +94,7 @@ def bw_run(repo, args):
                             node,
                             args['command'],
                             args['may_fail'],
-                            args['sudo'],
-                            args['node_workers'] == 1,
+                            True,
                         ),
                     )
                 else:

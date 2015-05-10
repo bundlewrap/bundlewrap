@@ -25,27 +25,20 @@ def build_parser_bw():
         "BundleWrap - config management for Python addicts"
     ))
     parser.add_argument(
+        "-a",
+        "--add-host-keys",
+        action='store_true',
+        default=False,
+        dest='add_ssh_host_keys',
+        help=_("set StrictHostKeyChecking=no instead of yes for SSH"),
+    )
+    parser.add_argument(
         "-d",
         "--debug",
         action='store_true',
         default=False,
         dest='debug',
         help=_("print debugging info (implies -v)"),
-    )
-    parser.add_argument(
-        "-p",
-        "--ask-password",
-        action='store_true',
-        default=False,
-        dest='ask_password',
-        help=_("prompt for global default SSH/sudo password"),
-    )
-    parser.add_argument(
-        "--password",
-        dest='password',
-        metavar="PASS",
-        type=str,
-        help=_("set global default SSH/sudo password (not recommended)"),
     )
     parser.add_argument(
         "--version",
@@ -375,12 +368,6 @@ def build_parser_bw():
         metavar=_("COMMAND"),
         type=str,
         help=_("command to run"),
-    )
-    parser_run.add_argument(
-        "--no-sudo",
-        action='store_false',
-        dest='sudo',
-        help=_("do not use sudo, execute with user privs"),
     )
     parser_run.add_argument(
         "-f",

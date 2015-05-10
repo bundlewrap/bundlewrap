@@ -4,29 +4,40 @@ from __future__ import unicode_literals
 from os import environ
 from os.path import normpath
 from random import choice
-from string import digits, letters
+from string import digits, ascii_letters
 from sys import version_info
 
-from fabric import colors as _fabric_colors
-
-VALID_NAME_CHARS = digits + letters + "-_.+"
+from . import STDERR_WRITER
 
 
-def _ansi_wrapper(colorizer):
+VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
+
+
+def ansi_wrapper(colorizer):
     if environ.get("BWCOLORS", "1") != "0":
         return colorizer
     else:
         return lambda s, **kwargs: s
 
 
-def _bold_wrapper(text):
+@ansi_wrapper
+def bold(text):
     return "\033[1m{}\033[0m".format(text)
 
 
-bold = _ansi_wrapper(_bold_wrapper)
-green = _ansi_wrapper(_fabric_colors.green)
-red = _ansi_wrapper(_fabric_colors.red)
-yellow = _ansi_wrapper(_fabric_colors.yellow)
+@ansi_wrapper
+def green(text):
+    return "\033[32m{}\033[0m".format(text)
+
+
+@ansi_wrapper
+def red(text):
+    return "\033[31m{}\033[0m".format(text)
+
+
+@ansi_wrapper
+def yellow(text):
+    return "\033[33m{}\033[0m".format(text)
 
 
 def error_summary(errors):
@@ -34,17 +45,21 @@ def error_summary(errors):
         return
 
     if len(errors) == 1:
-        print(_("\n{x} There was an error, repeated below.\n").format(
+        STDERR_WRITER.write(_("\n{x} There was an error, repeated below.\n\n").format(
             x=red("!!!"),
         ))
+        STDERR_WRITER.flush()
     else:
-        print(_("\n{x} There were {count} errors, repeated below.\n").format(
+        STDERR_WRITER.write(_("\n{x} There were {count} errors, repeated below.\n\n").format(
             count=len(errors),
             x=red("!!!"),
         ))
+        STDERR_WRITER.flush()
 
     for e in errors:
-        print(e)
+        STDERR_WRITER.write(e)
+        STDERR_WRITER.write("\n")
+        STDERR_WRITER.flush()
 
 
 def force_text(data):
@@ -89,7 +104,7 @@ def randstr(length=24):
     """
     Returns a random alphanumeric string of the given length.
     """
-    return ''.join(choice(letters + digits) for c in range(length))
+    return ''.join(choice(ascii_letters + digits) for c in range(length))
 
 
 def validate_name(name):

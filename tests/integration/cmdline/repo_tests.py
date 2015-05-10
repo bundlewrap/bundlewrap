@@ -1,10 +1,16 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from os import chdir, getcwd
 from os.path import getsize, isfile, isdir, join
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from bundlewrap.cmdline import main
 

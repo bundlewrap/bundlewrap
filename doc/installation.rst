@@ -19,7 +19,7 @@ It's as simple as::
 
     pip install bundlewrap
 
-Note that you need Python 2.7 to run BundleWrap.
+Note that you need at least Python 2.7 to run BundleWrap. Python 3 is supported as long as it's >= 3.3.
 
 |
 

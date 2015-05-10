@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from bundlewrap.exceptions import NoSuchNode, NoSuchGroup, UsageException
 from bundlewrap.utils import cmdline

@@ -1,7 +1,13 @@
-from cPickle import dumps
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from pickle import dumps
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from bundlewrap import utils
 

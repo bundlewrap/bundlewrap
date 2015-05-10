@@ -53,7 +53,11 @@ Run a command
 
 The first thing you can do is run a command on your army of one :term:`node`::
 
-	bw run node1 "uptime"
+	bw -a run node1 "uptime"
+
+.. note::
+
+	The ``-a`` switch tells bw to automatically trust unknown SSH host keys (when you're connecting to a new node). By default, only known host keys will be accepted.
 
 You should see something like this::
 

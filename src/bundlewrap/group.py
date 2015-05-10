@@ -44,12 +44,11 @@ class Group(object):
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.metadata = infodict.get('metadata', {})
         self.metadata_processor_names = infodict.get('metadata_processors', [])
-        self.password = infodict.get('password', None)
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
 
-    def __cmp__(self, other):
-        return cmp(self.name, other.name)
+    def __lt__(self, other):
+        return self.name < other.name
 
     def __getstate__(self):
         """

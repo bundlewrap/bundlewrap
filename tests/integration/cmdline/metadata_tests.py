@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from os import chdir, getcwd, mkdir
 from os.path import join
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
-
-from mock import MagicMock
 
 from bundlewrap.cmdline.metadata import bw_metadata
 from bundlewrap.repo import Repository

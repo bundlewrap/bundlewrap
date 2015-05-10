@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from bundlewrap.cmdline import plot
 from bundlewrap.items import Item
@@ -10,6 +16,8 @@ class PlotTest(TestCase):
     """
     Tests bundlewrap.cmdline.repo.bw_repo_plot.
     """
+    maxDiff = None
+
     def test_output(self):
         class FakeItem1(Item):
             BUNDLE_ATTRIBUTE_NAME = "fakes1"
@@ -70,25 +78,10 @@ class PlotTest(TestCase):
             "digraph bundlewrap\n"
             "{\n"
             "rankdir = LR\n"
-            "graph [color=\"#303030\"; "
-            "fontname=Helvetica; "
-            "penwidth=2; "
-            "shape=box; "
-            "style=\"rounded,dashed\"]\n"
-            "node [color=\"#303030\"; "
-            "fillcolor=\"#303030\"; "
-            "fontcolor=white; "
-            "fontname=Helvetica; "
-            "shape=box; "
-            "style=\"rounded,filled\"]\n"
+            "graph [color=\"#303030\"; fontname=Helvetica; penwidth=2; shape=box; style=\"rounded,dashed\"]\n"
+            "node [color=\"#303030\"; fillcolor=\"#303030\"; fontcolor=white; fontname=Helvetica; shape=box; style=\"rounded,filled\"]\n"
             "edge [arrowhead=vee]\n"
             "subgraph cluster_0\n"
-            "{\n"
-            "label = \"bundle2\"\n"
-            "\"bundle:bundle2\"\n"
-            "\"type3:item1\"\n"
-            "}\n"
-            "subgraph cluster_1\n"
             "{\n"
             "label = \"bundle1\"\n"
             "\"bundle:bundle1\"\n"
@@ -96,19 +89,24 @@ class PlotTest(TestCase):
             "\"type1:item2\"\n"
             "\"type2:item1\"\n"
             "}\n"
-            "\"bundle:bundle2\" -> \"type3:item1\" [color=\"#6BB753\",penwidth=2]\n"
+            "subgraph cluster_1\n"
+            "{\n"
+            "label = \"bundle2\"\n"
+            "\"bundle:bundle2\"\n"
+            "\"type3:item1\"\n"
+            "}\n"
             "\"bundle:bundle1\" -> \"type1:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"bundle:bundle1\" -> \"type1:item2\" [color=\"#6BB753\",penwidth=2]\n"
             "\"bundle:bundle1\" -> \"type2:item1\" [color=\"#6BB753\",penwidth=2]\n"
+            "\"bundle:bundle2\" -> \"type3:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type1:\" -> \"type1:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type1:\" -> \"type1:item2\" [color=\"#6BB753\",penwidth=2]\n"
-            "\"type3:\" -> \"type3:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type2:\" -> \"type2:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type2:item1\" -> \"type1:item1\" [color=\"#C24948\",penwidth=2]\n"
+            "\"type3:\" -> \"type3:item1\" [color=\"#6BB753\",penwidth=2]\n"
             "\"type3:item1\" -> \"type2:\" [color=\"#3991CC\",penwidth=2]\n"
             "fontsize = 28\n"
             "label = \"node\"\n"
             "labelloc = \"t\"\n"
-            "}"
-            ,
+            "}",
         )

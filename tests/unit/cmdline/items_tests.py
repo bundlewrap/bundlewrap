@@ -1,16 +1,22 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from bundlewrap.cmdline import items
 
 
 class MockItem(object):
     def __init__(self, id):
-        self.content = "content"
+        self.content = b"content"
         self.id = id
         self.name = id.split(":")[1]
 

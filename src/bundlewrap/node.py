@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from getpass import getuser
 import json
+from os import environ
 from pipes import quote
 from socket import gethostname
 from tempfile import mkstemp
@@ -24,8 +25,8 @@ from .exceptions import (
 )
 from .itemqueue import ItemQueue
 from .items import Item
-from .utils import cached_property, LOG, graph_for_items, names
-from .utils.text import mark_for_translation as _
+from .utils import cached_property, LOG, graph_for_items, names, STDOUT_WRITER
+from .utils.text import force_text, mark_for_translation as _
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.ui import ask_interactively
 
@@ -83,7 +84,9 @@ def handle_apply_result(node, item, status_code, interactive):
     )
     if formatted_result is not None:
         if interactive:
-            print(formatted_result)
+            STDOUT_WRITER.write(formatted_result)
+            STDOUT_WRITER.write("\n")
+            STDOUT_WRITER.flush()
         else:
             if status_code == Item.STATUS_FAILED:
                 LOG.error(formatted_result)
@@ -289,13 +292,13 @@ class Node(object):
 
         self.name = name
         self._bundles = infodict.get('bundles', [])
-        self.hostname = infodict.get('hostname', self.name)
         self._node_metadata = infodict.get('metadata', {})
-        self._password = infodict.get('password', None)
+        self.add_ssh_host_keys = False
+        self.hostname = infodict.get('hostname', self.name)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
 
-    def __cmp__(self, other):
-        return cmp(self.name, other.name)
+    def __lt__(self, other):
+        return self.name < other.name
 
     def __repr__(self):
         return "<Node '{}'>".format(self.name)
@@ -428,8 +431,7 @@ class Node(object):
             self.hostname,
             remote_path,
             local_path,
-            ignore_failure=ignore_failure,
-            password=self.password,
+            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
         )
 
     def get_item(self, item_id):
@@ -448,43 +450,18 @@ class Node(object):
                 m = metadata_processor(self.name, group_order, m)
         return m
 
-    @property
-    def password(self):
-        if self._password:
-            return self._password
-        elif not hasattr(self, "repo"):
-            # in-memory nodes might not be attached to a repo
-            return None
-        elif self._password_from_groups:
-            return self._password_from_groups
+    def run(self, command, may_fail=False, log_output=False):
+        if log_output:
+            def log_function(msg):
+                LOG.info("[{}] {}".format(self.name, force_text(msg).rstrip("\n")))
         else:
-            return self.repo.password
-
-    @password.setter
-    def password(self, value):
-        self._password = value
-
-    @property
-    def _password_from_groups(self):
-        pwd = None
-        group_order = _flatten_group_hierarchy(self.groups)
-        for group_name in group_order:
-            group = self.repo.get_group(group_name)
-            if group.password:
-                pwd = group.password
-        return pwd
-
-    def run(self, command, may_fail=False, pty=False, stderr=None, stdout=None,
-            sudo=True):
+            log_function = None
         return operations.run(
             self.hostname,
             command,
             ignore_failure=may_fail,
-            stderr=stderr,
-            stdout=stdout,
-            sudo=sudo,
-            password=self.password,
-            pty=pty,
+            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
+            log_function=log_function,
         )
 
     def test(self, workers=4):
@@ -501,7 +478,7 @@ class Node(object):
             mode=mode,
             owner=owner,
             group=group,
-            password=self.password,
+            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
         )
 
     def verify(self, only_needs_fixing=False, workers=4):
@@ -554,19 +531,8 @@ class NodeLock(object):
             }))
         self.node.upload(local_path, LOCK_FILE)
 
-        # See issue #19. We've just opened an SSH connection to the node,
-        # but before we can fork(), all connections *MUST* be closed!
-        # XXX: Revise this once we're using Fabric 2.0.
-        operations.disconnect_all()
-
     def __exit__(self, type, value, traceback):
         result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
-
-        # See __enter__(). Most likely we won't fork() again now.
-        # Nevertheless, clean up the state so a future code change won't
-        # cause chaos.
-        # XXX: Revise this once we're using Fabric 2.0.
-        operations.disconnect_all()
 
         if result.return_code != 0:
             LOG.error(_("Could not release lock for node '{node}'").format(

@@ -4,7 +4,10 @@ from __future__ import unicode_literals
 from subprocess import CalledProcessError
 from unittest import TestCase
 
-from mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from bundlewrap.utils import scm
 

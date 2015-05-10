@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from os import mkdir
 from os.path import join
 from pickle import dumps, loads
@@ -5,7 +8,10 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from bundlewrap import repo
 from bundlewrap.items import Item

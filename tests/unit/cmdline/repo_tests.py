@@ -3,7 +3,10 @@ from __future__ import unicode_literals
 
 from unittest import TestCase
 
-from mock import MagicMock, patch
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from bundlewrap.cmdline.repo import bw_repo_plugin_install, bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_update
 from bundlewrap.exceptions import NoSuchPlugin

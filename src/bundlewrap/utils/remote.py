@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from pipes import quote
 
 from . import cached_property, LOG
-from .text import mark_for_translation as _
+from .text import force_text, mark_for_translation as _
 
 
 def _parse_file_output(file_output):
@@ -34,13 +34,13 @@ def get_path_type(node, path):
     result = node.run("file -bh -- {}".format(quote(path)), may_fail=True)
     if result.return_code != 0:
         return ('nonexistent', "")
-    file_output = result.stdout.strip()
+    file_output = force_text(result.stdout.strip())
     return _parse_file_output(file_output)
 
 
 def stat(node, path):
     result = node.run("stat --printf '%U:%G:%a:%s' -- {}".format(quote(path)))
-    owner, group, mode, size = result.stdout.split(":")
+    owner, group, mode, size = force_text(result.stdout).split(":")
     mode = mode.zfill(4)
     file_stat = {
         'owner': owner,
@@ -115,7 +115,7 @@ class PathInfo(object):
     @cached_property
     def sha1(self):
         result = self.node.run("sha1sum -- " + quote(self.path))
-        return result.stdout.strip().split()[0]
+        return force_text(result.stdout).strip().split()[0]
 
     @property
     def size(self):

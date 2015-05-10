@@ -3,7 +3,10 @@ from __future__ import unicode_literals
 
 from unittest import TestCase
 
-from mock import MagicMock, call
+try:
+    from unittest.mock import call, MagicMock
+except ImportError:
+    from mock import call, MagicMock
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import ItemStatus, groups

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from codecs import getwriter
 import hashlib
 from inspect import isgenerator
 import logging
 from os import chmod, makedirs
 from os.path import dirname, exists
 import stat
+from sys import stderr, stdout
 
 from requests import get
 
@@ -17,6 +19,16 @@ __GETATTR_NODEFAULT = "very_unlikely_default_value"
 LOG = logging.getLogger('bundlewrap')
 
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+
+try:
+    STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
+except AttributeError:  # Python 2
+    STDERR_WRITER = getwriter('utf-8')(stderr)
+
+try:
+    STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
+except AttributeError:  # Python 2
+    STDOUT_WRITER = getwriter('utf-8')(stdout)
 
 
 def cached_property(prop):
@@ -53,7 +65,7 @@ def download(url, path):
 
 
 def get_file_contents(path):
-    with open(path) as f:
+    with open(path, 'rb') as f:
         content = f.read()
     return content
 
@@ -107,6 +119,8 @@ def graph_for_items(
     reverse=True,
     auto=True,
 ):
+    items = sorted(items)
+
     yield "digraph bundlewrap"
     yield "{"
 
@@ -162,7 +176,7 @@ def graph_for_items(
                     yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep)
 
         if auto:
-            for dep in item._deps:
+            for dep in sorted(item._deps):
                 if dep in item._concurrency_deps:
                     if concurrency:
                         yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)

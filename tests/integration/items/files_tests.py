@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from getpass import getuser
 from os import mkdir, remove
 from os.path import join
@@ -5,7 +8,10 @@ from platform import system
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase
 
-from mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 from bundlewrap.items import files
 from bundlewrap.node import Node
