@@ -237,8 +237,7 @@ class File(Item):
         'mode': None,
         'owner': None,
         'source': None,
-        'verify_cmd_local': None,
-        'verify_cmd_remote': None,
+        'verify_with': None,
     }
     ITEM_TYPE_NAME = "file"
     NEEDS_STATIC = ["user:"]
@@ -389,7 +388,6 @@ class File(Item):
                 mode=self.attributes['mode'],
                 owner=self.attributes['owner'] or "",
                 group=self.attributes['group'] or "",
-                remote_verify=self.attributes['verify_cmd_remote'],
             )
         finally:
             if self.attributes['content_type'] != 'binary':
@@ -483,11 +481,9 @@ class File(Item):
                 path=self.template,
             ))
 
-        try:
-            local_path = self._write_local_file(force_local_verify=True)
-        finally:
-            if self.attributes['content_type'] != 'binary':
-                remove(local_path)
+        local_path = self._write_local_file()
+        if self.attributes['content_type'] != 'binary':
+            remove(local_path)
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
@@ -531,7 +527,7 @@ class File(Item):
                 path=name,
             ))
 
-    def _write_local_file(self, force_local_verify=False):
+    def _write_local_file(self):
         """
         Makes the file contents available at the returned temporary path
         and performs local verification if necessary or requested.
@@ -546,18 +542,14 @@ class File(Item):
             with open(local_path, 'w') as f:
                 f.write(self.content)
 
-        if (
-            (self.attributes['verify_cmd_remote'] is None or force_local_verify)
-            and self.attributes['verify_cmd_local']
-        ):
-            cmd = self.attributes['verify_cmd_local'].format(quote(local_path))
+        if self.attributes['verify_with']:
+            cmd = self.attributes['verify_with'].format(quote(local_path))
             LOG.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
-            try:
-                call(cmd, shell=True)
-            except:
-                LOG.error("{i} failed local validation using: {c}".format(c=cmd, i=self.id))
-                raise
-            else:
+            if call(cmd, shell=True) == 0:
                 LOG.debug("{i} passed local validation".format(i=self.id))
+            else:
+                raise BundleError(_(
+                    "{i} failed local validation using: {c}"
+                ).format(c=cmd, i=self.id))
 
         return local_path
