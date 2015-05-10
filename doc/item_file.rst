@@ -119,3 +119,14 @@ File name of the file template. If this says ``my_template``, BundleWrap will lo
 .. seealso::
 
 	:doc:`Writing file templates <item_file_templates>`
+
+|
+
+``verify_with``
++++++++++++++++
+
+This can be used to run external validation commands on a file before it is applied to a node. The file is verified locally on the machine running BundleWrap. Verification is considered successful when the exit code of the verification command is 0. Use ``{}`` as a placeholder for the shell-quoted path to the temporary file. Here is an example for verifying sudoers files:
+
+	visudo -cf {}
+
+Keep in mind that all team members will have to have the verification command installed on their machines.

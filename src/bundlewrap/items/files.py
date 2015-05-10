@@ -8,6 +8,7 @@ from difflib import unified_diff
 from os import remove
 from os.path import dirname, exists, join, normpath
 from pipes import quote
+from subprocess import call
 from sys import exc_info
 from tempfile import mkstemp
 from traceback import format_exception
@@ -236,6 +237,7 @@ class File(Item):
         'mode': None,
         'owner': None,
         'source': None,
+        'verify_with': None,
     }
     ITEM_TYPE_NAME = "file"
     NEEDS_STATIC = ["user:"]
@@ -377,12 +379,8 @@ class File(Item):
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content(self, status):
-        if self.attributes['content_type'] == 'binary':
-            local_path = self.template
-        else:
-            handle, local_path = mkstemp()
-            with open(local_path, 'w') as f:
-                f.write(self.content)
+        local_path = self._write_local_file()
+
         try:
             self.node.upload(
                 local_path,
@@ -438,7 +436,6 @@ class File(Item):
         return deps
 
     def get_status(self):
-        correct = True
         path_info = PathInfo(self.node, self.name)
         status_info = {'needs_fixing': [], 'path_info': path_info}
 
@@ -464,9 +461,7 @@ class File(Item):
                         path_info.group != self.attributes['group']:
                     status_info['needs_fixing'].append('group')
 
-        if status_info['needs_fixing']:
-            correct = False
-        return ItemStatus(correct=correct, info=status_info)
+        return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
 
     def patch_attributes(self, attributes):
         if 'context' not in attributes:
@@ -485,8 +480,10 @@ class File(Item):
                 item=self.id,
                 path=self.template,
             ))
-        if self.attributes['content_type'] in ('mako', 'text'):
-            self.content
+
+        local_path = self._write_local_file()
+        if self.attributes['content_type'] != 'binary':
+            remove(local_path)
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
@@ -529,3 +526,30 @@ class File(Item):
                 normpath=normpath(name),
                 path=name,
             ))
+
+    def _write_local_file(self):
+        """
+        Makes the file contents available at the returned temporary path
+        and performs local verification if necessary or requested.
+
+        The calling method is responsible for cleaning up the file at
+        the returned path (only if not a binary).
+        """
+        if self.attributes['content_type'] == 'binary':
+            local_path = self.template
+        else:
+            handle, local_path = mkstemp()
+            with open(local_path, 'w') as f:
+                f.write(self.content)
+
+        if self.attributes['verify_with']:
+            cmd = self.attributes['verify_with'].format(quote(local_path))
+            LOG.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
+            if call(cmd, shell=True) == 0:
+                LOG.debug("{i} passed local validation".format(i=self.id))
+            else:
+                raise BundleError(_(
+                    "{i} failed local validation using: {c}"
+                ).format(c=cmd, i=self.id))
+
+        return local_path
