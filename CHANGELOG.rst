@@ -1,7 +1,17 @@
 1.5.0
 =====
 
-unreleased
+2015-05-10
+
+* added postgres_db and postgres_role items
+* added `bw verify --only-needs-fixing`
+* added `bw verify --summary`
+* added `Repository.nodes_in_group()`
+* added `verify_with` attribute for file items
+* libs now have access to `repo_path`
+* user items: fixed asking for password hash change
+* file items: fixed `bw items -w` with `content_type: 'any'`
+* improved various error messages
 
 
 1.4.0
