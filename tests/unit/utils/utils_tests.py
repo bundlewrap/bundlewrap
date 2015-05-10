@@ -12,6 +12,7 @@ except ImportError:
     from mock import MagicMock, patch
 
 from bundlewrap import utils
+from bundlewrap.metadata import atomic
 
 
 class CachedPropertyTest(TestCase):
@@ -114,6 +115,71 @@ class GetAttrFromFileTest(TestCase):
             f.write("c = 48")
         self.assertEqual(
             utils.getattr_from_file(self.fname, 'c'), 48)
+
+
+class MergeDictTest(TestCase):
+    """
+    Tests bundlewrap.utils.merge_dict.
+    """
+    def test_empty_base(self):
+        self.assertEqual(
+            utils.merge_dict({}, {1: 2}),
+            {1: 2},
+        )
+
+    def test_empty_update(self):
+        self.assertEqual(
+            utils.merge_dict({1: 2}, {}),
+            {1: 2},
+        )
+
+    def test_nested_update(self):
+        self.assertEqual(
+            utils.merge_dict({1: 2}, {3: {4: 5}}),
+            {1: 2, 3: {4: 5}},
+        )
+
+    def test_nested_overwrite(self):
+        self.assertEqual(
+            utils.merge_dict({1: 2}, {1: {3: 4}}),
+            {1: {3: 4}},
+        )
+
+    def test_nested_two_levels(self):
+        self.assertEqual(
+            utils.merge_dict({1: {2: 3, 4: 5}}, {1: {2: 6}}),
+            {1: {2: 6, 4: 5}},
+        )
+
+    def test_overwrite_dict(self):
+        self.assertEqual(
+            utils.merge_dict({1: {2: 3}}, {1: None}),
+            {1: None},
+        )
+
+    def test_list_extend(self):
+        self.assertEqual(
+            utils.merge_dict({1: ["a"]}, {1: ["b"]}),
+            {1: ["a", "b"]},
+        )
+
+    def test_list_overwrite(self):
+        self.assertEqual(
+            utils.merge_dict({1: ["a"]}, {1: utils._AtomicList(["b"])}),
+            {1: ["b"]},
+        )
+
+    def test_set_extend(self):
+        self.assertEqual(
+            utils.merge_dict({1: set(["a"])}, {1: set(["b"])}),
+            {1: set(["a", "b"])},
+        )
+
+    def test_tuple_extend(self):
+        self.assertEqual(
+            utils.merge_dict({1: ("a",)}, {1: ("b",)}),
+            {1: ("a", "b")},
+        )
 
 
 class NamesTest(TestCase):
