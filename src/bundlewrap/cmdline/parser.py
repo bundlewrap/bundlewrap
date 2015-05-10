@@ -465,6 +465,13 @@ def build_parser_bw():
         help=_("number of items to verify to simultaneously on each node"),
         type=int,
     )
+    parser_verify.add_argument(
+        "-s",
+        "--summary",
+        action='store_true',
+        dest='summary',
+        help=_("show stats summary"),
+    )
 
     # bw zen
     parser_zen = subparsers.add_parser("zen")

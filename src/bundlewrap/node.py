@@ -505,11 +505,19 @@ class Node(object):
         )
 
     def verify(self, only_needs_fixing=False, workers=4):
-        verify_items(
+        bad = 0
+        good = 0
+        for item_status in verify_items(
             self.items,
             only_needs_fixing=only_needs_fixing,
             workers=workers,
-        )
+        ):
+            if item_status:
+                good += 1
+            else:
+                bad += 1
+
+        return {'good': good, 'bad': bad}
 
 
 class NodeLock(object):
@@ -647,8 +655,11 @@ def verify_items(all_items, only_needs_fixing=False, workers=1):
                         red("✘"),
                         item_id,
                     ))
-                elif not only_needs_fixing:
-                    LOG.info("{} {}".format(
-                        green("✓"),
-                        item_id,
-                    ))
+                    yield False
+                else:
+                    if not only_needs_fixing:
+                        LOG.info("{} {}".format(
+                            green("✓"),
+                            item_id,
+                        ))
+                    yield True
