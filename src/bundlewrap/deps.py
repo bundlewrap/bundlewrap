@@ -274,7 +274,7 @@ def _inject_concurrency_blockers(items):
                 break
             if previous_item is not None:  # unless we're at the first item
                 # add dep to previous item -- unless it's already in there
-                if not previous_item.id in item._deps:
+                if previous_item.id not in item._deps:
                     item._deps.append(previous_item.id)
                     item._concurrency_deps.append(previous_item.id)
                     item._flattened_deps.append(previous_item.id)

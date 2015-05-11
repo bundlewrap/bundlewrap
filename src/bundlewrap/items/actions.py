@@ -49,8 +49,8 @@ class Action(Item):
 
         if (
             interactive and
-            self.attributes['interactive'] is not False
-            and not ask_interactively(
+            self.attributes['interactive'] is not False and
+            not ask_interactively(
                 wrap_question(
                     self.id,
                     self.attributes['command'],

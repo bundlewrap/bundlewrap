@@ -25,7 +25,7 @@ class Bundle(object):
         if not validate_name(name):
             raise RepositoryError(_("invalid bundle name: {}").format(name))
 
-        if not name in self.repo.bundle_names:
+        if name not in self.repo.bundle_names:
             raise NoSuchBundle(_("bundle not found: {}").format(name))
 
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
