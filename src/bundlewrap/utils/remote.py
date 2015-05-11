@@ -11,7 +11,7 @@ def _parse_file_output(file_output):
     if file_output.startswith("cannot open "):
         # required for Mac OS X and CentOS/RHEL
         return ('nonexistent', "")
-    elif file_output in ("directory", "sticky directory"):
+    elif file_output in ("directory", "setgid directory", "sticky directory"):
         return ('directory', file_output)
     elif file_output.startswith("block special") or \
             file_output.startswith("character special"):
