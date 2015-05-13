@@ -38,17 +38,16 @@ From git
 
 Install basic requirements::
 
-    aptitude install build-essential git python-dev python-distribute
+    aptitude install build-essential git python-dev python-pip
 
 Clone the GitHub repository::
 
     cd /opt
     git clone https://github.com/bundlewrap/bundlewrap.git
 
-Use ``setup.py`` to install in "development mode"::
+Use ``pip install -e`` to install in "development mode"::
 
-    cd /opt/bundlewrap
-    python setup.py develop
+    pip install -e /opt/bundlewrap
 
 You can now try running the ``bw`` command line utility::
 
