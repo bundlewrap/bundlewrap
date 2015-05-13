@@ -208,6 +208,8 @@ class LibsProxy(object):
         self.__path = path
 
     def __getattr__(self, attrname):
+        if attrname.startswith("__") and attrname.endswith("__"):
+            raise AttributeError(attrname)
         if attrname not in self.__module_cache:
             filename = attrname + ".py"
             filepath = join(self.__path, filename)
