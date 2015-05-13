@@ -280,6 +280,8 @@ The following example will offer to run an ``apt-get update`` before installing 
 	    },
 	}
 
+``cascade_skip`` defaults to ``True``. However, if the item uses the ``unless`` attribute or is triggered, the default changes to ``False``. Most of the time, this is what you'll want.
+
 |
 
 .. _canned_actions:

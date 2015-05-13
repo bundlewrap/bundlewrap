@@ -15,7 +15,7 @@ from bundlewrap.utils.text import bold, wrap_question
 from bundlewrap.utils.ui import ask_interactively
 
 BUILTIN_ITEM_ATTRIBUTES = {
-    'cascade_skip': True,
+    'cascade_skip': None,
     'needed_by': [],
     'needs': [],
     'preceded_by': [],
@@ -116,6 +116,9 @@ class Item(object):
                 attribute_name,
                 copy(attribute_default),
             )))
+
+        if self.cascade_skip is None:
+            self.cascade_skip = not (self.unless or self.triggered)
 
     def __lt__(self, other):
         return self.id < other.id
