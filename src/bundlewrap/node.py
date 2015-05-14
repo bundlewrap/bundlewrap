@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from getpass import getuser
 import json
+from os import remove
 from pipes import quote
 from socket import gethostname
 from tempfile import mkstemp
@@ -529,30 +530,33 @@ class NodeLock(object):
     def __enter__(self):
         handle, local_path = mkstemp()
 
-        result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
-        if result.return_code != 0:
-            self.node.download(LOCK_FILE, local_path, ignore_failure=True)
-            with open(local_path, 'r') as f:
-                try:
-                    info = json.loads(f.read())
-                except:
-                    LOG.warn(_("unable to read or parse lock file contents"))
-                    info = {}
-            if self.ignore or (self.interactive and ask_interactively(
-                self._warning_message(info),
-                False,
-            )):
-                pass
-            else:
-                raise NodeAlreadyLockedException(info)
+        try:
+            result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
+            if result.return_code != 0:
+                self.node.download(LOCK_FILE, local_path, ignore_failure=True)
+                with open(local_path, 'r') as f:
+                    try:
+                        info = json.loads(f.read())
+                    except:
+                        LOG.warn(_("unable to read or parse lock file contents"))
+                        info = {}
+                if self.ignore or (self.interactive and ask_interactively(
+                    self._warning_message(info),
+                    False,
+                )):
+                    pass
+                else:
+                    raise NodeAlreadyLockedException(info)
 
-        with open(local_path, 'w') as f:
-            f.write(json.dumps({
-                'date': time(),
-                'user': getuser(),
-                'host': gethostname(),
-            }))
-        self.node.upload(local_path, LOCK_FILE)
+            with open(local_path, 'w') as f:
+                f.write(json.dumps({
+                    'date': time(),
+                    'user': getuser(),
+                    'host': gethostname(),
+                }))
+            self.node.upload(local_path, LOCK_FILE)
+        finally:
+            remove(local_path)
 
         # See issue #19. We've just opened an SSH connection to the node,
         # but before we can fork(), all connections *MUST* be closed!
