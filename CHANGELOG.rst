@@ -9,6 +9,16 @@ unreleased
 * metadata is now merged recursively (BACKWARDS INCOMPATIBLE)
 
 
+1.5.1
+=====
+
+2015-06-11
+
+* clean up local lock files
+* fixed detection of some types of directories
+* fixed exception spam when trying to load internal attributes as libs
+
+
 1.5.0
 =====
 
