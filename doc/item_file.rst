@@ -54,9 +54,9 @@ How the file pointed to by ``source`` or the string given to ``content`` should 
 +--------------------+----------------------------------------------------------------------------+
 | ``jinja2``         | content is interpreted by the Jinja2 template engine                       |
 +--------------------+----------------------------------------------------------------------------+
-| ``mako`` (default) | content is interpreted by the Mako template engine                         |
+| ``mako``           | content is interpreted by the Mako template engine                         |
 +--------------------+----------------------------------------------------------------------------+
-| ``text``           | like ``binary``, but will be diffed in interactive mode                    |
+| ``text`` (default) | like ``binary``, but will be diffed in interactive mode                    |
 +--------------------+----------------------------------------------------------------------------+
 
 .. note::

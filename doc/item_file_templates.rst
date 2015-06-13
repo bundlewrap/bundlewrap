@@ -2,7 +2,7 @@
 Writing file templates
 ######################
 
-BundleWrap uses `Mako <http://www.makotemplates.org>`_ for file templating by default (Jinja2 is also available). This enables you to dynamically contruct your config files. Templates reside in the :file:`files` subdirectory of a bundle and are bound to a file item using the ``source`` :ref:`attribute <file_item_source>`. This page explains how to get started with Mako.
+BundleWrap can use `Mako <http://www.makotemplates.org>`_ or `Jinja2 <http://jinja.pocoo.org>`_ for file templating. This enables you to dynamically contruct your config files. Templates reside in the :file:`files` subdirectory of a bundle and are bound to a file item using the ``source`` :ref:`attribute <file_item_source>`. This page explains how to get started with Mako.
 
 The most basic example would be::
 

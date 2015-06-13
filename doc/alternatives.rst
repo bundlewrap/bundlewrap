@@ -37,7 +37,7 @@ Ansible's playbooks roughly correspond to BundleWrap's bundles, but are written 
 
 While you can automate application deployments in BundleWrap, Ansible is much more capable in that regard as it combines config management and sophisticated deployment mechanisms (multi-stage, rolling updates).
 
-File templates in Ansible are `Jinja2 <http://jinja2.pocoo.org>`_, while BundleWrap uses `Mako <http://makotemplates.org>`_ by default and offers Jinja2 as an option.
+File templates in Ansible are `Jinja2 <http://jinja2.pocoo.org>`_, while BundleWrap offers both `Mako <http://makotemplates.org>`_ and Jinja2.
 
 Ansible, Inc. offers paid support for Ansible and an optional web-based addon called `Ansible Tower <http://ansible.com/tower>`_. No such offerings are available for BundleWrap.
 

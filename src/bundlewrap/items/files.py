@@ -201,7 +201,7 @@ class File(Item):
     BUNDLE_ATTRIBUTE_NAME = "files"
     ITEM_ATTRIBUTES = {
         'content': None,
-        'content_type': "mako",
+        'content_type': 'text',
         'context': None,
         'delete': False,
         'encoding': "utf-8",
