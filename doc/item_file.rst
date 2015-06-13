@@ -114,7 +114,7 @@ Username of the file's owner. Defaults to ``None`` (don't care about owner).
 ``source``
 ++++++++++
 
-File name of the file template. If this says ``my_template``, BundleWrap will look in :file:`data/my_bundle/files/my_template` and then :file:`bundles/my_bundle/files/my_template`. Most of the time, you will want to put config templates into the latter directory. The :file:`data/` subdirectory is meant for files that are very specific to your infrastructure (e.g. DNS zone files). This separation allows you to write your bundles in a generic way so that they could be open-sourced and shared with other people.
+File name of the file template. If this says ``my_template``, BundleWrap will look in :file:`data/my_bundle/files/my_template` and then :file:`bundles/my_bundle/files/my_template`. Most of the time, you will want to put config templates into the latter directory. The :file:`data/` subdirectory is meant for files that are very specific to your infrastructure (e.g. DNS zone files). This separation allows you to write your bundles in a generic way so that they could be open-sourced and shared with other people. Defaults to the filename of this item (e.g. ``foo.conf`` when this item is ``/etc/foo.conf``.
 
 .. seealso::
 

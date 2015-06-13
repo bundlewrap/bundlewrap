@@ -7,6 +7,7 @@ unreleased
 * switched from Fabric/Paramiko to OpenSSH
 * removed SSH and sudo passwords (BACKWARDS INCOMPATIBLE)
 * metadata is now merged recursively (BACKWARDS INCOMPATIBLE)
+* the source attribute for file items now has a default (BACKWARDS INCOMPATIBLE)
 
 
 1.5.1

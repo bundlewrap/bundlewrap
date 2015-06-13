@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from difflib import unified_diff
 from os import remove
-from os.path import dirname, exists, join, normpath
+from os.path import basename, dirname, exists, join, normpath
 from pipes import quote
 from subprocess import call
 from sys import exc_info
@@ -200,7 +200,7 @@ class File(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "files"
     ITEM_ATTRIBUTES = {
-        'content': "",
+        'content': None,
         'content_type': "mako",
         'context': None,
         'delete': False,
@@ -436,6 +436,8 @@ class File(Item):
         return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
 
     def patch_attributes(self, attributes):
+        if 'content' not in attributes and 'source' not in attributes:
+            attributes['source'] = basename(self.name)
         if 'context' not in attributes:
             attributes['context'] = {}
         if 'mode' in attributes and attributes['mode'] is not None:
