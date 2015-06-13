@@ -9,6 +9,7 @@ unreleased
 * metadata is now merged recursively (BACKWARDS INCOMPATIBLE)
 * file items: the source attribute now has a default (BACKWARDS INCOMPATIBLE)
 * file items: the default content_type is now text (BACKWARDS INCOMPATIBLE)
+* reworked command line options for `bw verify` (BACKWARDS INCOMPATIBLE)
 
 
 1.5.1

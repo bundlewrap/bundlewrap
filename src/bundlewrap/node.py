@@ -604,7 +604,7 @@ def test_items(items, workers=1):
                 ))
 
 
-def verify_items(all_items, only_needs_fixing=False, workers=1):
+def verify_items(all_items, show_all=False, workers=1):
     items = []
     for item in all_items:
         if not item.ITEM_TYPE_NAME == 'action' and not item.triggered:
@@ -633,7 +633,7 @@ def verify_items(all_items, only_needs_fixing=False, workers=1):
                     ))
                     yield False
                 else:
-                    if not only_needs_fixing:
+                    if show_all:
                         LOG.info("{} {}".format(
                             green("✓"),
                             item_id,

@@ -430,11 +430,11 @@ def build_parser_bw():
         help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_verify.add_argument(
-        "-F",
-        "--only-needs-fixing",
+        "-a",
+        "--show-all",
         action='store_true',
-        dest='only_needs_fixing',
-        help=_("only show items that need fixing"),
+        dest='show_all',
+        help=_("show correct items as well as incorrect ones"),
     )
     parser_verify.add_argument(
         "-p",
@@ -453,9 +453,9 @@ def build_parser_bw():
         type=int,
     )
     parser_verify.add_argument(
-        "-s",
-        "--summary",
-        action='store_true',
+        "-S",
+        "---no-summary",
+        action='store_false',
         dest='summary',
         help=_("show stats summary"),
     )
