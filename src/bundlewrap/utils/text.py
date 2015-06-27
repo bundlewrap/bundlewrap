@@ -5,7 +5,6 @@ from os import environ
 from os.path import normpath
 from random import choice
 from string import digits, ascii_letters
-from sys import version_info
 
 from . import STDERR_WRITER
 
@@ -67,12 +66,8 @@ def force_text(data):
     Try to return a text aka unicode object from the given data.
     Also has Python 2/3 compatibility baked in. Oh the humanity.
     """
-    if version_info < (3, 0):
-        if isinstance(data, str):
-            return data.decode('utf-8', 'replace')
-    else:
-        if isinstance(data, bytes):
-            return data.decode('utf-8', 'replace')
+    if isinstance(data, bytes):
+        return data.decode('utf-8', 'replace')
     return data
 
 
