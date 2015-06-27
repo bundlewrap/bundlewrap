@@ -1,4 +1,8 @@
-from setuptools import setup, find_packages
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
 
 setup(
     name="bundlewrap",
@@ -13,7 +17,12 @@ setup(
     license="GPLv3",
     url="http://bundlewrap.org",
     package_dir={'': "src"},
-    packages=find_packages("src"),
+    packages=[
+        'bundlewrap',
+        'bundlewrap.cmdline',
+        'bundlewrap.items',
+        'bundlewrap.utils',
+    ],
     test_suite="tests",
     entry_points={
         'console_scripts': [
@@ -36,7 +45,6 @@ setup(
         "Topic :: System :: Systems Administration",
     ],
     install_requires=[
-        "distribute",
         "Jinja2",
         "Mako",
         "passlib",
