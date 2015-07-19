@@ -1,3 +1,12 @@
+1.5.2
+=====
+
+2015-07-19
+
+* improved compatibility with busybox
+* fixed LOGIN privs on postgres_roles
+
+
 1.5.1
 =====
 
