@@ -6,6 +6,27 @@ Custom item types
 
 .. toctree::
 
+
+Step 0: Understand sdicts
+-------------------------
+
+To represent supposed vs. actual state, BundleWrap uses state dicts (sdicts for short). These are
+normal Python dictionaries with some restrictions:
+
+- keys must be Unicode text
+- every value must be of one of these simple data types:
+
+  - bool
+  - float
+  - int
+  - Unicode text
+  - None
+
+- ...or a list/tuple containing only instances of one of the types above
+
+Additional information can be stored in sdicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" sdict information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply, but everything must be pickleable.
+
+
 Step 1: Create an item module
 -----------------------------
 
@@ -32,29 +53,51 @@ Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use
         def __repr__(self):
             return "<Foo attribute:{}>".format(self.attributes['attribute'])
 
-        def ask(self, status):
+        def sdict(self):
             """
-            Returns a string asking the user if this item should be
-            implemented.
-            """
-            return ""
+            Return an sdict that describes the target state of this item
+            as configured in the repo. An empty dict means that the item
+            should not exist.
 
-        def fix(self, status):
-            """
-            Do whatever is necessary to correct this item.
+            Implementing this method is optional. The default implementation
+            uses the attributes as defined in the bundle.
             """
             raise NotImplementedError
 
-        def get_status(self):
+        def sdict_actual(self):
             """
-            Returns an ItemStatus instance describing the current status of
-            the item on the actual node. Must not be cached.
+            Return an sdict that describes the actual state of this item
+            on the node. An empty dict means that the item does not exist
+            on the node.
+
+            For the item to validate as correct, this sdict and the one
+            produced by self.sdict() have to be identical.
             """
-            return ItemStatus(
-                correct=True,
-                description="No description available.",
-                info={},
-            )
+            raise NotImplementedError
+
+        def sdict_verbose(self, sdict, keys, actual):
+            """
+            Return an sdict based on the given one that is suitable for
+            displaying information during interactive apply mode.
+            The keys parameter indicates which keys are incorrect. It is
+            sufficient to return an sdict that only represents these
+            keys. The boolean actual parameter indicates if the source
+            sdict is based on de facto node state (True) or taken from
+            the repo (False).
+
+            Implementing this method is optional. The default implementation
+            returns the sdict unaltered.
+            """
+            raise NotImplementedError
+
+        def fix(self, keys, sdict, sdict_actual):
+            """
+            Do whatever is necessary to correct this item. The keys
+            argument is a list of keys that differ in the two given
+            sdicts.
+            """
+            raise NotImplementedError
+
 
 |
 
@@ -109,8 +152,8 @@ Step 2: Define attributes
 Step 3: Implement methods
 -------------------------
 
-You should probably start with ``get_status``. Use ``self.node.run("command")`` to run shell commands on the current node and check the ``stdout`` property of the returned object. The info dict passed to ``ItemStatus`` can be filled with arbitrary information on how to efficiently fix the item.
+You should probably start with ``sdict_actual``. Use ``self.node.run("command")`` to run shell commands on the current node and check the ``stdout`` property of the returned object.
 
-Next up is the ``ask`` method. It must return a string containing all information a user needs in interactive mode to decide whether they want to apply the item or not and offer a preview of all changes that would be made.
+The only other method you have to implement is ``fix``. It doesn't have to return anything and just uses ``self.node.run()`` to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.
 
-Finally, the ``fix`` method doesn't have to return anything and just uses ``self.node.run()`` to fix the item. To do this efficiently, it may use the ``status.info`` dict you built earlier.
+If you're having trouble, try looking at the `source code for the items that come with BundleWrap <https://github.com/bundlewrap/bundlewrap/tree/master/src/bundlewrap/items>`_. The ``pkg_*`` items are pretty simple and easy to understand while ``files`` is the most complex to date. Or just drop by on `IRC <irc://chat.freenode.net/bundlewrap>`_, we're glad to help.
