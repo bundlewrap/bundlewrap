@@ -92,7 +92,7 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("echo \"ALTER ROLE bundlewrap WITH SUPERUSER\""
+                call("echo \"ALTER ROLE bundlewrap WITH LOGIN SUPERUSER\""
                      " | sudo -u postgres psql -nqw"),
             ],
         )
@@ -114,7 +114,7 @@ class FixTest(TestCase):
         self.assertEqual(
             bundle.node.run.call_args_list,
             [
-                call("echo \"CREATE ROLE bundlewrap WITH NOSUPERUSER\" | sudo -u postgres psql -nqw"),
+                call("echo \"CREATE ROLE bundlewrap WITH LOGIN NOSUPERUSER\" | sudo -u postgres psql -nqw"),
             ],
         )
 
