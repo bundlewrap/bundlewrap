@@ -5,6 +5,10 @@ Check out the :doc:`quickstart tutorial <quickstart>` to get started.
 
 |
 
+If you run into a problem that is not answered in these docs, please find us on `IRC <irc://chat.freenode.net/bundlewrap>`_ or `Twitter <https://twitter.com/bundlewrap>`_. We're happy to help!
+
+|
+
 Is BundleWrap the right tool for you?
 -------------------------------------
 
