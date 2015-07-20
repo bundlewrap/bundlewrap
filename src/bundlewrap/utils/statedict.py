@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
+from difflib import unified_diff
 from hashlib import sha1
 from json import dumps
 
+from .text import bold, green, red
 from .text import force_text, mark_for_translation as _
 
 
@@ -21,6 +23,8 @@ ALLOWED_VALUE_TYPES = (
     text_type,
     tuple,
 )
+DIFF_MAX_INLINE_LENGTH = 36
+DIFF_MAX_LINE_LENGTH = 128
 
 
 def diff_keys(sdict1, sdict2):
@@ -40,6 +44,64 @@ def diff_keys(sdict1, sdict2):
         if value != sdict2[key]:
             differing_keys.append(key)
     return differing_keys
+
+
+def diff_value_int(title, value1, value2):
+    return diff_value_text(
+        title,
+        "{}".format(value1),
+        "{}".format(value2),
+    )
+
+
+diff_value_float = diff_value_int
+
+
+def diff_value_bool(title, value1, value2):
+    return diff_value_text(
+        title,
+        "yes" if value1 else "no",
+        "yes" if value2 else "no",
+    )
+
+
+def diff_value_text(title, value1, value2):
+    max_length = max(len(value1), len(value2))
+    if (
+        "\n" not in value1 and
+        "\n" not in value2
+    ):
+        if max_length < DIFF_MAX_INLINE_LENGTH:
+            return "{}  {} → {}".format(
+                bold(title),
+                red(value1),
+                green(value2),
+            )
+        elif max_length < DIFF_MAX_LINE_LENGTH:
+            return "{}  {}\n{}→  {}".format(
+                bold(title),
+                red(value1),
+                " " * (len(title) - 1),
+                green(value2),
+            )
+    output = ""
+    for line in unified_diff(
+        value1.splitlines(True),
+        value2.splitlines(True),
+        fromfile=_("<node content>"),
+        tofile=_("<bundlewrap content>"),
+    ):
+        suffix = ""
+        line = line.rstrip("\n")
+        if len(line) > DIFF_MAX_LINE_LENGTH:
+            line = line[:DIFF_MAX_LINE_LENGTH]
+            suffix += _(" (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)
+        if line.startswith("+"):
+            line = green(line)
+        elif line.startswith("-"):
+            line = red(line)
+        output += line + suffix + "\n"
+    return output
 
 
 def hash_statedict(sdict):
