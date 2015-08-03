@@ -10,11 +10,13 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 AUTHID_COLUMNS = {
+    "rolcanlogin": 'can_login',
     "rolsuper": 'superuser',
     "rolpassword": 'password_hash',
 }
 
 ATTRS = {
+    'can_login': _("login allowed"),
     'password_hash': _("password hash"),
     'superuser': _("superuser"),
 }
@@ -38,7 +40,8 @@ def fix_role(node, role, attrs, create=False):
 
 
 def get_role(node, role):
-    result = node.run("echo \"SELECT rolsuper, rolpassword from pg_authid WHERE rolname='{}'\" "
+    result = node.run("echo \"SELECT rolcanlogin, rolsuper, rolpassword from pg_authid "
+                      "WHERE rolname='{}'\" "
                       "| sudo -u postgres psql -Anqwx -F '|'".format(role))
 
     role_attrs = {}
@@ -50,7 +53,7 @@ def get_role(node, role):
         else:
             role_attrs[AUTHID_COLUMNS[key]] = value
 
-    for bool_attr in ('superuser',):
+    for bool_attr in ('can_login', 'superuser'):
         if bool_attr in role_attrs:
             role_attrs[bool_attr] = role_attrs[bool_attr] == "t"
 
@@ -63,6 +66,7 @@ class PostgresRole(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "postgres_roles"
     ITEM_ATTRIBUTES = {
+        'can_login': True,
         'delete': False,
         'password': None,
         'password_hash': None,

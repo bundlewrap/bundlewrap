@@ -22,6 +22,7 @@ class AskTest(TestCase):
         })
         status = MagicMock()
         status.info = {
+            'can_login': True,
             'exists': True,
             'needs_fixing': ['superuser'],
             'password_hash': "old",
@@ -36,6 +37,7 @@ class AskTest(TestCase):
         role = postgres_roles.PostgresRole(MagicMock(), "bw", {'superuser': False})
         status = MagicMock()
         status.info = {
+            'can_login': True,
             'exists': True,
             'needs_fixing': ['superuser'],
             'password_hash': "foo",
@@ -83,6 +85,7 @@ class FixTest(TestCase):
             {'superuser': True},
         )
         status = ItemStatus(correct=False, info={
+            'can_login': True,
             'exists': True,
             'needs_fixing': ['superuser'],
             'password_hash': "foo",
@@ -105,6 +108,7 @@ class FixTest(TestCase):
             {},
         )
         status = ItemStatus(correct=False, info={
+            'can_login': False,
             'exists': False,
             'needs_fixing': ['existence'],
             'password_hash': "foo",
@@ -126,6 +130,7 @@ class FixTest(TestCase):
             {'delete': True},
         )
         status = ItemStatus(correct=False, info={
+            'can_login': True,
             'exists': True,
             'needs_fixing': ['existence'],
             'password_hash': "foo",
@@ -157,13 +162,15 @@ class GetRoleTest(TestCase):
     def test_get_role(self):
         node = MagicMock()
         result = MagicMock()
-        result.stdout = """rolsuper|f
+        result.stdout = """rolcanlogin|t
+rolsuper|f
 rolpassword|foo
 """
         node.run.return_value = result
         self.assertEqual(
             postgres_roles.get_role(node, "bw"),
             {
+                'can_login': True,
                 'superuser': False,
                 'password_hash': "foo",
             },
@@ -177,6 +184,7 @@ class GetStatusTest(TestCase):
     @patch('bundlewrap.items.postgres_roles.get_role')
     def test_change_superuser(self, get_role):
         get_role.return_value = {
+            'can_login': True,
             'password_hash': "foo",
             'superuser': True,
         }
@@ -208,6 +216,7 @@ class GetStatusTest(TestCase):
     @patch('bundlewrap.items.postgres_roles.get_role')
     def test_delete(self, get_role):
         get_role.return_value = {
+            'can_login': True,
             'password_hash': "foo",
             'superuser': False,
         }
@@ -225,6 +234,7 @@ class GetStatusTest(TestCase):
     @patch('bundlewrap.items.postgres_roles.get_role')
     def test_ok(self, get_role):
         get_role.return_value = {
+            'can_login': True,
             'password_hash': "foo",
             'superuser': False,
         }
