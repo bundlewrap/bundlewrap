@@ -49,7 +49,7 @@ def _group_name_for_gid(node, gid):
     """
     Returns the group name that matches the gid.
     """
-    group_output = node.run("grep -e ':{}:$' /etc/group".format(gid), may_fail=True)
+    group_output = node.run("grep -e ':{}:[^:]*$' /etc/group".format(gid), may_fail=True)
     if group_output.return_code != 0:
         return None
     else:
