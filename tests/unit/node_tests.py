@@ -275,7 +275,7 @@ class NodeTest(TestCase):
         NodeLock.__exit__ = lambda x: x
         self.assertEqual(n.apply(), result)
         self.assertEqual(apply_items.call_count, 1)
-        ApplyResult.assert_called_once()
+        assert ApplyResult.call_count == 1
 
     def test_bundles(self):
         repo = Repository()

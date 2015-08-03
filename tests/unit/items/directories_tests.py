@@ -117,13 +117,16 @@ class DirectoryFixTypeTest(TestCase):
         f = directories.Directory(
             bundle,
             "/foo",
-            {},
+            {
+                'mode': "0755",
+                'owner': "bw",
+            },
         )
         f._fix_type(MagicMock())
         assert call("rm -rf -- /foo") in node.run.call_args_list
         assert call("mkdir -p -- /foo") in node.run.call_args_list
-        fix_mode.assert_called_once()
-        fix_owner.assert_called_once()
+        assert fix_mode.call_count == 1
+        assert fix_owner.call_count == 1
 
 
 class DirectoryGetAutoDepsTest(TestCase):

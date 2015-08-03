@@ -322,7 +322,7 @@ class FileFixContentTest(TestCase):
             {'content': "47", 'content_type': 'mako'},
         )
         f._fix_content(MagicMock())
-        node.upload.assert_called_once()
+        assert node.upload.call_count == 1
 
 
 class FileFixModeTest(TestCase):
@@ -376,7 +376,7 @@ class FileFixTypeTest(TestCase):
         f._fix_type(MagicMock())
         assert call("rm -rf -- /foo") in node.run.call_args_list
         assert call("mkdir -p -- /") in node.run.call_args_list
-        fix_content.assert_called_once()
+        assert fix_content.call_count == 1
 
 
 class FileGetAutoDepsTest(TestCase):

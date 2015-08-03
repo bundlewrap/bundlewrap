@@ -70,12 +70,15 @@ class SymlinkFixTypeTest(TestCase):
         f = symlinks.Symlink(
             bundle,
             "/foo",
-            {'target': "/bar"},
+            {
+                'owner': "bw",
+                'target': "/bar",
+            },
         )
         f._fix_type(MagicMock())
         assert call("rm -rf -- /foo") in node.run.call_args_list
         assert call("ln -s -- /bar /foo") in node.run.call_args_list
-        fix_owner.assert_called_once()
+        assert fix_owner.call_count == 1
 
 
 class SymlinkGetAutoDepsTest(TestCase):

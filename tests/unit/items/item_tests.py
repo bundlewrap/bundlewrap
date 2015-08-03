@@ -45,7 +45,7 @@ class ApplyTest(TestCase):
         item.fix = MagicMock()
         item.apply(interactive=True)
         self.assertEqual(item.fix.call_count, 1)
-        ask_interactively.assert_called_once()
+        assert ask_interactively.call_count == 1
 
     @patch('bundlewrap.items.ask_interactively', return_value=False)
     def test_interactive_abort(self, ask_interactively):
@@ -59,7 +59,7 @@ class ApplyTest(TestCase):
         item.fix = MagicMock()
         result = item.apply(interactive=True)
         self.assertFalse(item.fix.called)
-        ask_interactively.assert_called_once()
+        assert ask_interactively.call_count == 1
         self.assertEqual(result, Item.STATUS_SKIPPED)
 
     def test_correct(self):
