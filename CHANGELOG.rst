@@ -1,3 +1,13 @@
+1.5.3
+=====
+
+2015-08-10
+
+* fixed `bw items -w` for files marked for deletion
+* fixed resolving gids for non-empty groups
+* fixed check for LOGIN privs on postgres_roles
+
+
 1.5.2
 =====
 
