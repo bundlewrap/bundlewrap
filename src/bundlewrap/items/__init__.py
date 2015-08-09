@@ -10,6 +10,7 @@ from os.path import join
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.utils import cached_property, LOG
+from bundlewrap.utils.statedict import diff_keys, diff_value, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
 from bundlewrap.utils.ui import ask_interactively
@@ -174,16 +175,42 @@ class Item(object):
         for dep in self._deps:
             if self._deps.count(dep) > 1:
                 raise BundleError(_(
-                    "redundant dependency of {item1} in bundle '{bundle}' on {item2}".format(
-                        bundle=self.bundle.name,
-                        item1=self.id,
-                        item2=dep,
-                    ),
+                    "redundant dependency of {item1} in bundle '{bundle}' on {item2}"
+                ).format(
+                    bundle=self.bundle.name,
+                    item1=self.id,
+                    item2=dep,
                 ))
 
     @cached_property
+    def cached_cdict(self):
+        cdict = self.cdict()
+        try:
+            validate_statedict(cdict)
+        except ValueError as e:
+            raise ValueError(_(
+                "{item} from bundle '{bundle}' returned invalid cdict: {msg}"
+            ).format(
+                bundle=self.bundle.name,
+                item=self.id,
+                msg=e.message,
+            ))
+        return cdict
+
+    @cached_property
     def cached_status(self):
-        return self.get_status()
+        status = self.sdict()
+        try:
+            validate_statedict(status)
+        except ValueError as e:
+            raise ValueError(_(
+                "{item} from bundle '{bundle}' returned invalid status: {msg}"
+            ).format(
+                bundle=self.bundle.name,
+                item=self.id,
+                msg=e.message,
+            ))
+        return status
 
     @cached_property
     def cached_unless_result(self):
@@ -275,6 +302,7 @@ class Item(object):
         status_code = None
         status_before = None
         status_after = None
+        keys_to_fix = []
         start_time = datetime.now()
 
         if self.triggered and not self.has_been_triggered:
@@ -287,28 +315,32 @@ class Item(object):
 
         if status_code is None:
             status_before = self.cached_status
-            if status_before.correct:
+            keys_to_fix = diff_keys(self.cached_cdict, status_before)
+            if not keys_to_fix:
                 status_code = self.STATUS_OK
 
         if status_code is None:
             if not interactive:
-                self.fix(status_before)
-                status_after = self.get_status()
+                self.fix(keys_to_fix, self.cached_cdict, status_before)
             else:
                 question = wrap_question(
                     self.id,
-                    self.ask(status_before),
+                    self.ask(
+                        self.sdict_verbose(status_before, keys_to_fix, True),
+                        self.sdict_verbose(self.cached_cdict, keys_to_fix, False),
+                    ),
                     _("Fix {}?").format(bold(self.id)),
                 )
                 if ask_interactively(question,
                                      interactive_default):
-                    self.fix(status_before)
-                    status_after = self.get_status()
+                    self.fix(keys_to_fix, self.cached_cdict, status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
 
         if status_code is None:
-            if status_after.correct:
+            status_after = self.sdict()
+            keys_to_fix = diff_keys(self.cached_cdict, status_after)
+            if keys_to_fix:
                 status_code = self.STATUS_FIXED
             else:
                 status_code = self.STATUS_FAILED
@@ -323,16 +355,18 @@ class Item(object):
             status_after=status_after,
         )
 
-        return status_code
+        return (status_code, keys_to_fix)
 
-    def ask(self, status):
+    def ask(self, status_actual, status_should):
         """
         Returns a string asking the user if this item should be
         implemented.
-
-        MUST be overridden by subclasses.
         """
-        raise NotImplementedError()
+        result = []
+        relevant_keys = diff_keys(status_should, status_actual)
+        for key in relevant_keys:
+            result.append(diff_value(key, status_actual[key], status_should[key]))
+        return "\n".join(result)
 
     def fix(self, status):
         """
@@ -381,6 +415,46 @@ class Item(object):
         MAY be overridden by subclasses.
         """
         return attributes
+
+    def cdict(self):
+        """
+        Return a statedict that describes the target state of this item
+        as configured in the repo. An empty dict means that the item
+        should not exist.
+
+        MAY be overridden by subclasses.
+        """
+        return self.attributes
+
+    def sdict(self):
+        """
+        Return a statedict that describes the actual state of this item
+        on the node. An empty dict means that the item does not exist
+        on the node.
+
+        For the item to validate as correct, the values for all keys in
+        self.cdict() have to match this statedict.
+
+        MUST be overridden by subclasses.
+        """
+        raise NotImplementedError()
+
+    def statedict_verbose(self, statedict, keys, actual):
+        """
+        Return a statedict based on the given one that is suitable for
+        displaying information during interactive apply mode.
+        The keys parameter indicates which keys are incorrect. It is
+        sufficient to return a statedict that only represents these
+        keys. The boolean actual parameter indicates if the source
+        statedict is based on de facto node state aka sdict (True) or
+        taken from the repo aka cdict (False).
+
+        Implementing this method is optional. The default implementation
+        returns the statedict unaltered.
+
+        MAY be overridden by subclasses.
+        """
+        return statedict
 
     def test(self):
         """

@@ -74,13 +74,14 @@ class ApplyResult(object):
         return self.end - self.start
 
 
-def handle_apply_result(node, item, status_code, interactive):
+def handle_apply_result(node, item, status_code, interactive, sdict_keys=None):
     formatted_result = format_item_result(
         status_code,
         node.name,
         item.bundle.name if item.bundle else "",  # dummy items don't have bundles
         item.id,
         interactive=interactive,
+        sdict_keys=sdict_keys,
     )
     if formatted_result is not None:
         if interactive:
@@ -137,7 +138,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                 item_id = msg['task_id']
                 item = find_item(item_id, item_queue.pending_items)
 
-                status_code = msg['return_value']
+                status_code, keys = msg['return_value']
 
                 if status_code == Item.STATUS_FAILED:
                     for skipped_item in item_queue.item_failed(item):
@@ -159,7 +160,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         ),
                     ))
 
-                handle_apply_result(node, item, status_code, interactive)
+                handle_apply_result(node, item, status_code, interactive, sdict_keys=keys)
                 if item.ITEM_TYPE_NAME != 'dummy':
                     yield (item.id, status_code, msg['duration'])
 

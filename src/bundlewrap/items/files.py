@@ -323,6 +323,17 @@ class File(Item):
 
         return question.rstrip("\n")
 
+    def cdict(self):
+        if self.attributes['delete']:
+            return {}
+        cdict = {}
+        if self.attributes['content_type'] != 'any':
+            cdict['content_hash'] = self.content_hash
+        for optional_attr in ('group', 'mode', 'owner'):
+            if self.attributes[optional_attr] is not None:
+                cdict[optional_attr] = self.attributes[optional_attr]
+        return cdict
+
     def fix(self, status):
         for fix_type in ('type', 'content', 'mode', 'owner', 'group'):
             if fix_type in status.info['needs_fixing']:

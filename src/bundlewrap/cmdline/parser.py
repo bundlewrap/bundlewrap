@@ -7,6 +7,7 @@ from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
+from .cdict import bw_cdict, bw_chash
 from .groups import bw_groups
 from .items import bw_items
 from .metadata import bw_metadata
@@ -97,6 +98,41 @@ def build_parser_bw():
         default=False,
         dest='profiling',
         help=_("print time elapsed for each item"),
+    )
+
+    # bw cdict
+    parser_cdict = subparsers.add_parser("cdict")
+    parser_cdict.set_defaults(func=bw_cdict)
+    parser_cdict.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("show cdict for this node"),
+    )
+    parser_cdict.add_argument(
+        'item',
+        metavar=_("ITEM"),
+        type=str,
+        nargs='?',
+        help=_("show cdict for this item"),
+    )
+
+    # bw chash
+    parser_chash = subparsers.add_parser("chash")
+    parser_chash.set_defaults(func=bw_chash)
+    parser_chash.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        nargs='?',
+        help=_("show chash for this node"),
+    )
+    parser_chash.add_argument(
+        'item',
+        metavar=_("ITEM"),
+        type=str,
+        nargs='?',
+        help=_("show chash for this item"),
     )
 
     # bw debug

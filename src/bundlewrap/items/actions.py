@@ -28,11 +28,11 @@ class Action(Item):
 
     def _get_result(self, interactive=False, interactive_default=True):
         if interactive is False and self.attributes['interactive'] is True:
-            return self.STATUS_SKIPPED
+            return (self.STATUS_SKIPPED, None)
 
         if self.triggered and not self.has_been_triggered:
             LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return self.STATUS_SKIPPED
+            return (self.STATUS_SKIPPED, None)
 
         if self.unless:
             unless_result = self.bundle.node.run(
@@ -45,7 +45,7 @@ class Action(Item):
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
-                return self.STATUS_SKIPPED
+                return (self.STATUS_SKIPPED, None)
 
         if (
             interactive and
@@ -61,12 +61,12 @@ class Action(Item):
                 interactive_default,
             )
         ):
-            return self.STATUS_SKIPPED
+            return (self.STATUS_SKIPPED, None)
         try:
             self.run(interactive=interactive)
-            return self.STATUS_ACTION_SUCCEEDED
+            return (self.STATUS_ACTION_SUCCEEDED, None)
         except ActionFailure:
-            return self.STATUS_FAILED
+            return (self.STATUS_FAILED, None)
 
     def get_result(self, interactive=False, interactive_default=True):
         self.node.repo.hooks.action_run_start(
