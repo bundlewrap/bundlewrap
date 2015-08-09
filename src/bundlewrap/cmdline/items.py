@@ -41,6 +41,11 @@ def bw_items(repo, args):
                     "skipping binary file {filename}..."
                 ).format(filename=item.name))
                 continue
+            if item.attributes['delete']:
+                LOG.warning(_(
+                    "skipping file with 'delete' flag {filename}..."
+                ).format(filename=item.name))
+                continue
             yield _("writing {path}...").format(path=join(
                 args['file_preview_path'],
                 item.name.lstrip("/"),
