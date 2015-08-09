@@ -16,6 +16,10 @@ from bundlewrap.cmdline import items
 
 class MockItem(object):
     def __init__(self, id):
+        self.attributes = {
+            'content_type': 'text',
+            'delete': False,
+        }
         self.content = b"content"
         self.id = id
         self.name = id.split(":")[1]
@@ -33,12 +37,14 @@ class ItemsTest(TestCase):
         item2 = MockItem("type1:item2")
         item3 = MockItem("directory:/bar/baz")
         item4 = MockItem("file:/foo/47")
-        item4.attributes = {'content_type': 'mako'}
+        item4.attributes.update({'content_type': 'mako'})
         item5 = MockItem("file:/foo/48")
-        item5.attributes = {'content_type': 'binary'}
+        item5.attributes.update({'content_type': 'binary'})
+        item6 = MockItem("file:/foo/49")
+        item6.attributes.update({'delete': True})
 
         node = MagicMock()
-        node.items = (item1, item2, item3, item4, item5)
+        node.items = (item1, item2, item3, item4, item5, item6)
 
         self.repo = MagicMock()
         self.repo.get_node.return_value = node
@@ -68,6 +74,7 @@ class ItemsTest(TestCase):
                 "directory:/bar/baz",
                 "file:/foo/47",
                 "file:/foo/48",
+                "file:/foo/49",
             ],
         )
 
@@ -81,5 +88,6 @@ class ItemsTest(TestCase):
 
         self.assertTrue(exists(join(self.tmpdir, "foo/47")))
         self.assertFalse(exists(join(self.tmpdir, "foo/48")))
+        self.assertFalse(exists(join(self.tmpdir, "foo/49")))
         with open(join(self.tmpdir, "foo/47")) as f:
             self.assertEqual(f.read(), "content")
