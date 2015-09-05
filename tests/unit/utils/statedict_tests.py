@@ -24,7 +24,7 @@ class DiffKeysTest(TestCase):
     Tests bundlewrap.utils.statedict.diff_keys.
     """
     def test_different_keys(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             statedict.diff_keys(
                 {'foo': "bar"},
                 {'bar': "foo"},
