@@ -26,8 +26,9 @@ from .exceptions import (
 from .itemqueue import ItemQueue
 from .items import Item
 from .utils import cached_property, LOG, graph_for_items, merge_dict, names, STDOUT_WRITER
-from .utils.text import force_text, mark_for_translation as _
+from .utils.statedict import hash_statedict
 from .utils.text import bold, green, red, validate_name, yellow
+from .utils.text import force_text, mark_for_translation as _
 from .utils.ui import ask_interactively
 
 LOCK_PATH = "/tmp/bundlewrap.lock"
@@ -305,27 +306,6 @@ class Node(object):
         return "<Node '{}'>".format(self.name)
 
     @cached_property
-    def bundles(self):
-        added_bundles = []
-        found_bundles = []
-        for group in self.groups:
-            for bundle_name in group.bundle_names:
-                found_bundles.append(bundle_name)
-
-        for bundle_name in found_bundles + list(self._bundles):
-            if bundle_name not in added_bundles:
-                added_bundles.append(bundle_name)
-                try:
-                    yield Bundle(self, bundle_name)
-                except NoSuchBundle:
-                    raise NoSuchBundle(_(
-                        "Node '{node}' wants bundle '{bundle}', but it doesn't exist."
-                    ).format(
-                        bundle=bundle_name,
-                        node=self.name,
-                    ))
-
-    @cached_property
     def _generated_items_by_bundle(self):
         items = list(self._static_items)
         generated_items_by_bundle = {}
@@ -350,6 +330,36 @@ class Node(object):
         return self._generated_items_by_bundle.get(bundle, [])
 
     @cached_property
+    def bundles(self):
+        added_bundles = []
+        found_bundles = []
+        for group in self.groups:
+            for bundle_name in group.bundle_names:
+                found_bundles.append(bundle_name)
+
+        for bundle_name in found_bundles + list(self._bundles):
+            if bundle_name not in added_bundles:
+                added_bundles.append(bundle_name)
+                try:
+                    yield Bundle(self, bundle_name)
+                except NoSuchBundle:
+                    raise NoSuchBundle(_(
+                        "Node '{node}' wants bundle '{bundle}', but it doesn't exist."
+                    ).format(
+                        bundle=bundle_name,
+                        node=self.name,
+                    ))
+
+    def cdict(self):
+        node_dict = {}
+        for item in self.items:
+            try:
+                node_dict[item.id] = item.hash()
+            except AttributeError:  # actions have no cdict
+                pass
+        return node_dict
+
+    @cached_property
     def groups(self):
         return self.repo.groups_for_node(self)
 
@@ -364,6 +374,9 @@ class Node(object):
             if bundle.name == bundle_name:
                 return True
         return False
+
+    def hash(self):
+        return hash_statedict(self.cdict())
 
     def in_any_group(self, group_list):
         for group_name in group_list:

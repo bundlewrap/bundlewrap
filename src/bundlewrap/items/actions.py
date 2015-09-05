@@ -68,6 +68,9 @@ class Action(Item):
         except ActionFailure:
             return (self.STATUS_FAILED, None)
 
+    def cdict(self):
+        raise AttributeError(_("actions don't have cdicts"))
+
     def get_result(self, interactive=False, interactive_default=True):
         self.node.repo.hooks.action_run_start(
             self.node.repo,

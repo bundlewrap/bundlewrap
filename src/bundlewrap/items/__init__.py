@@ -10,7 +10,7 @@ from os.path import join
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.utils import cached_property, LOG
-from bundlewrap.utils.statedict import diff_keys, diff_value, validate_statedict
+from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
 from bundlewrap.utils.ui import ask_interactively
@@ -286,13 +286,6 @@ class Item(object):
                 attrs=", ".join(missing),
             ))
 
-    @property
-    def id(self):
-        if self.ITEM_TYPE_NAME == 'action' and ":" in self.name:
-            # canned actions don't have an "action:" prefix
-            return self.name
-        return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
-
     def apply(self, interactive=False, interactive_default=True):
         self.node.repo.hooks.item_apply_start(
             self.node.repo,
@@ -368,6 +361,16 @@ class Item(object):
             result.append(diff_value(key, status_actual[key], status_should[key]))
         return "\n".join(result)
 
+    def cdict(self):
+        """
+        Return a statedict that describes the target state of this item
+        as configured in the repo. An empty dict means that the item
+        should not exist.
+
+        MAY be overridden by subclasses.
+        """
+        return self.attributes
+
     def fix(self, status):
         """
         This is supposed to actually implement stuff on the target node.
@@ -407,6 +410,16 @@ class Item(object):
         """
         raise NotImplementedError()
 
+    def hash(self):
+        return hash_statedict(self.cached_cdict)
+
+    @property
+    def id(self):
+        if self.ITEM_TYPE_NAME == 'action' and ":" in self.name:
+            # canned actions don't have an "action:" prefix
+            return self.name
+        return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
+
     def patch_attributes(self, attributes):
         """
         Allows an item to preprocess the attributes it is initialized
@@ -415,16 +428,6 @@ class Item(object):
         MAY be overridden by subclasses.
         """
         return attributes
-
-    def cdict(self):
-        """
-        Return a statedict that describes the target state of this item
-        as configured in the repo. An empty dict means that the item
-        should not exist.
-
-        MAY be overridden by subclasses.
-        """
-        return self.attributes
 
     def sdict(self):
         """

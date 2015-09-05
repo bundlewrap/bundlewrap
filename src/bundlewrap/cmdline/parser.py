@@ -7,8 +7,8 @@ from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
-from .cdict import bw_cdict, bw_chash
 from .groups import bw_groups
+from .hash import bw_hash
 from .items import bw_items
 from .metadata import bw_metadata
 from .nodes import bw_nodes
@@ -100,41 +100,6 @@ def build_parser_bw():
         help=_("print time elapsed for each item"),
     )
 
-    # bw cdict
-    parser_cdict = subparsers.add_parser("cdict")
-    parser_cdict.set_defaults(func=bw_cdict)
-    parser_cdict.add_argument(
-        'node',
-        metavar=_("NODE"),
-        type=str,
-        help=_("show cdict for this node"),
-    )
-    parser_cdict.add_argument(
-        'item',
-        metavar=_("ITEM"),
-        type=str,
-        nargs='?',
-        help=_("show cdict for this item"),
-    )
-
-    # bw chash
-    parser_chash = subparsers.add_parser("chash")
-    parser_chash.set_defaults(func=bw_chash)
-    parser_chash.add_argument(
-        'node',
-        metavar=_("NODE"),
-        type=str,
-        nargs='?',
-        help=_("show chash for this node"),
-    )
-    parser_chash.add_argument(
-        'item',
-        metavar=_("ITEM"),
-        type=str,
-        nargs='?',
-        help=_("show chash for this item"),
-    )
-
     # bw debug
     parser_debug = subparsers.add_parser("debug")
     parser_debug.set_defaults(func=bw_debug)
@@ -168,6 +133,32 @@ def build_parser_bw():
         action='store_true',
         dest='show_nodes',
         help=_("show nodes for each group"),
+    )
+
+    # bw hash
+    parser_hash = subparsers.add_parser("hash", description="Shows a SHA1 hash that summarizes the entire configuration for this repo, node, group, or item.")
+    parser_hash.set_defaults(func=bw_hash)
+    parser_hash.add_argument(
+        "-d",
+        "--dict",
+        action='store_true',
+        default=False,
+        dest='dict',
+        help=_("instead show the data this hash is derived from"),
+    )
+    parser_hash.add_argument(
+        'node_or_group',
+        metavar=_("NODE|GROUP"),
+        type=str,
+        nargs='?',
+        help=_("show config hash for this node or group"),
+    )
+    parser_hash.add_argument(
+        'item',
+        metavar=_("ITEM"),
+        type=str,
+        nargs='?',
+        help=_("show config hash for this item on the given node"),
     )
 
     # bw items

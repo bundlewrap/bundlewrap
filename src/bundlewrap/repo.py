@@ -12,6 +12,7 @@ from .group import Group
 from .node import Node
 from . import utils
 from .utils.scm import get_rev
+from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
 
 DIRNAME_BUNDLES = "bundles"
@@ -326,6 +327,12 @@ class Repository(object):
         node.repo = self
         self.node_dict[node.name] = node
 
+    def cdict(self):
+        repo_dict = {}
+        for node in self.nodes:
+            repo_dict[node.name] = node.hash()
+        return repo_dict
+
     @classmethod
     def create(cls, path):
         """
@@ -377,6 +384,9 @@ class Repository(object):
         for group in self.groups:
             if node in group.nodes:
                 yield group
+
+    def hash(self):
+        return hash_statedict(self.cdict())
 
     @property
     def nodes(self):
