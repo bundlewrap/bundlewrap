@@ -419,33 +419,19 @@ class File(Item):
                     deps.append(item.id)
         return deps
 
-    def get_status(self):
+    def sdict(self):
         path_info = PathInfo(self.node, self.name)
-        status_info = {'needs_fixing': [], 'path_info': path_info}
-
-        if not path_info.is_file:
-            if not self.attributes['delete'] or \
-                    path_info.is_directory or \
-                    path_info.is_symlink:
-                status_info['needs_fixing'].append('type')
+        if not path_info.exists:
+            return {}
         else:
-            if self.attributes['delete']:
-                status_info['needs_fixing'].append('type')
-            else:
-                if self.attributes['content_type'] != 'any' and \
-                        path_info.sha1 != self.content_hash:
-                    status_info['needs_fixing'].append('content')
-                if self.attributes['mode'] is not None and \
-                        path_info.mode != self.attributes['mode']:
-                    status_info['needs_fixing'].append('mode')
-                if self.attributes['owner'] is not None and \
-                        path_info.owner != self.attributes['owner']:
-                    status_info['needs_fixing'].append('owner')
-                if self.attributes['group'] is not None and \
-                        path_info.group != self.attributes['group']:
-                    status_info['needs_fixing'].append('group')
-
-        return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
+            return {
+                'type': path_info.path_type,
+                'content_hash': path_info.sha1 if path_info.path_type == 'file' else None,
+                'mode': path_info.mode,
+                'owner': path_info.owner,
+                'group': path_info.group,
+                'size': path_info.size,
+            }
 
     def patch_attributes(self, attributes):
         if 'content' not in attributes and 'source' not in attributes:
