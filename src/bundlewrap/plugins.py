@@ -9,8 +9,10 @@ from stat import S_IREAD, S_IRGRP, S_IROTH
 from requests import get
 
 from .exceptions import NoSuchPlugin, PluginError, PluginLocalConflict
-from .utils import download, hash_local_file, LOG
+from .utils import download, hash_local_file
 from .utils.text import mark_for_translation as _
+from .utils.ui import io
+
 
 BASE_URL = "https://raw.githubusercontent.com/bundlewrap/plugins/master"
 
@@ -112,7 +114,7 @@ class PluginManager(object):
 
             current_checksum = hash_local_file(file_path)
             if db_checksum != current_checksum and not force:
-                LOG.warning(_(
+                io.stderr(_(
                     "not removing '{path}' because it has been modified since installation"
                 ).format(path=file_path))
                 continue
@@ -132,7 +134,6 @@ class PluginManager(object):
         if plugin not in self.plugin_db:
             raise PluginError(_("plugin '{plugin}' is not installed").format(plugin=plugin))
 
-
         # before updating anything, we need to check for local modifications
         local_changes = self.local_modifications(plugin)
         if local_changes:
@@ -141,7 +142,6 @@ class PluginManager(object):
                 "cannot update '{plugin}' because the following files have been modified locally:"
                 "\n{files}"
             ).format(files="\n".join(files), plugin=plugin))
-
 
         manifest = self.manifest_for_plugin(plugin)
 
@@ -173,7 +173,7 @@ class PluginManager(object):
                     file_path = join(self.path, file)
                     current_checksum = hash_local_file(file_path)
                     if db_checksum != current_checksum and not force:
-                        LOG.warning(_(
+                        io.stderr(_(
                             "not removing '{path}' because it has been modified since installation"
                         ).format(path=file_path))
                         continue

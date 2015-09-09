@@ -5,7 +5,6 @@ from pipes import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils import LOG
 from bundlewrap.utils.text import bold, green, red
 from bundlewrap.utils.text import mark_for_translation as _
 
@@ -61,18 +60,8 @@ class SvcUpstart(Item):
 
     def fix(self, status):
         if self.attributes['running'] is False:
-            LOG.info(_("{node}:{bundle}:{item}: stopping...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             svc_stop(self.node, self.name)
         else:
-            LOG.info(_("{node}:{bundle}:{item}: starting...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             svc_start(self.node, self.name)
 
     def get_canned_actions(self):

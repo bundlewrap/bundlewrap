@@ -5,8 +5,7 @@ from datetime import datetime
 
 from bundlewrap.exceptions import ActionFailure, BundleError
 from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils import LOG
-from bundlewrap.utils.ui import ask_interactively
+from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
 
@@ -31,7 +30,7 @@ class Action(Item):
             return (self.STATUS_SKIPPED, None)
 
         if self.triggered and not self.has_been_triggered:
-            LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
+            io.debug(_("skipping {} because it wasn't triggered").format(self.id))
             return (self.STATUS_SKIPPED, None)
 
         if self.unless:
@@ -40,7 +39,7 @@ class Action(Item):
                 may_fail=True,
             )
             if unless_result.return_code == 0:
-                LOG.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
+                io.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
                     bundle=self.bundle.name,
                     name=self.name,
                     node=self.bundle.node.name,
@@ -50,7 +49,7 @@ class Action(Item):
         if (
             interactive and
             self.attributes['interactive'] is not False and
-            not ask_interactively(
+            not io.ask(
                 wrap_question(
                     self.id,
                     self.attributes['command'],

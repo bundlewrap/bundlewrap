@@ -7,7 +7,6 @@ from pipes import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils import LOG
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold, is_subdirectory
@@ -79,18 +78,6 @@ class Symlink(Item):
     def fix(self, status):
         if 'type' in status.info['needs_fixing']:
             # fixing the type fixes everything
-            if status.info['path_info'].exists:
-                LOG.info(_("{node}:{bundle}:{item}: fixing type...").format(
-                    bundle=self.bundle.name,
-                    item=self.id,
-                    node=self.node.name,
-                ))
-            else:
-                LOG.info(_("{node}:{bundle}:{item}: creating...").format(
-                    bundle=self.bundle.name,
-                    item=self.id,
-                    node=self.node.name,
-                ))
             self._fix_type(status)
             return
 
@@ -100,11 +87,6 @@ class Symlink(Item):
                         'owner' in status.info['needs_fixing']:
                     # owner and group are fixed with a single chown
                     continue
-                LOG.info(_("{node}:{item}: fixing {type}...").format(
-                    item=self.id,
-                    node=self.node.name,
-                    type=fix_type,
-                ))
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_owner(self, status):

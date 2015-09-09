@@ -6,8 +6,6 @@ from pipes import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils import LOG
-from bundlewrap.utils.text import bold, green, red
 from bundlewrap.utils.text import mark_for_translation as _
 
 
@@ -70,27 +68,12 @@ class PacmanPkg(Item):
 
     def fix(self, status):
         if self.attributes['installed'] is False:
-            LOG.info(_("{node}:{bundle}:{item}: removing...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             pkg_remove(self.node, self.name)
         else:
             if self.attributes['tarball']:
-                LOG.info(_("{node}:{bundle}:{item}: installing tarball...").format(
-                    bundle=self.bundle.name,
-                    item=self.id,
-                    node=self.node.name,
-                ))
                 pkg_install_tarball(self.node, join(self.item_dir,
                                                     self.attributes['tarball']))
             else:
-                LOG.info(_("{node}:{bundle}:{item}: installing...").format(
-                    bundle=self.bundle.name,
-                    item=self.id,
-                    node=self.node.name,
-                ))
                 pkg_install(self.node, self.name)
 
     def get_status(self):

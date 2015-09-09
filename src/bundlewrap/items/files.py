@@ -15,10 +15,11 @@ from traceback import format_exception
 from bundlewrap.exceptions import BundleError, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
 from bundlewrap.items.directories import validator_mode
-from bundlewrap.utils import cached_property, hash_local_file, LOG, sha1
+from bundlewrap.utils import cached_property, hash_local_file, sha1
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import bold, green, is_subdirectory, red
+from bundlewrap.utils.ui import io
 
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
@@ -39,7 +40,7 @@ def content_processor_jinja2(item):
 
     template = env.from_string(item._template_content)
 
-    LOG.debug("{node}:{bundle}:{item}: rendering with Jinja2...".format(
+    io.debug("{node}:{bundle}:{item}: rendering with Jinja2...".format(
         bundle=item.bundle.name,
         item=item.id,
         node=item.node.name,
@@ -54,7 +55,7 @@ def content_processor_jinja2(item):
             **item.attributes['context']
         )
     except Exception as e:
-        LOG.debug("".join(format_exception(*exc_info())))
+        io.debug("".join(format_exception(*exc_info())))
         raise TemplateError(_(
             "Error while rendering template for {node}:{bundle}:{item}: {error}"
         ).format(
@@ -64,7 +65,7 @@ def content_processor_jinja2(item):
             node=item.node.name,
         ))
     duration = datetime.now() - start
-    LOG.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
+    io.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
         bundle=item.bundle.name,
         item=item.id,
         node=item.node.name,
@@ -82,7 +83,7 @@ def content_processor_mako(item):
         lookup=TemplateLookup(directories=[item.item_data_dir, item.item_dir]),
         output_encoding=item.attributes['encoding'],
     )
-    LOG.debug("{node}:{bundle}:{item}: rendering with Mako...".format(
+    io.debug("{node}:{bundle}:{item}: rendering with Mako...".format(
         bundle=item.bundle.name,
         item=item.id,
         node=item.node.name,
@@ -97,7 +98,7 @@ def content_processor_mako(item):
             **item.attributes['context']
         )
     except Exception as e:
-        LOG.debug("".join(format_exception(*exc_info())))
+        io.debug("".join(format_exception(*exc_info())))
         if isinstance(e, NameError) and e.message == "Undefined":
             # Mako isn't very verbose here. Try to give a more useful
             # error message - even though we can't pinpoint the excat
@@ -112,7 +113,7 @@ def content_processor_mako(item):
             node=item.node.name,
         ))
     duration = datetime.now() - start
-    LOG.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
+    io.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
         bundle=item.bundle.name,
         item=item.id,
         node=item.node.name,
@@ -136,7 +137,7 @@ CONTENT_PROCESSORS = {
 
 def diff(content_old, content_new, filename, encoding_hint=None):
     output = ""
-    LOG.debug("diffing {filename}: {len_before} B before, {len_after} B after".format(
+    io.debug("diffing {filename}: {len_before} B before, {len_after} B after".format(
         filename=filename,
         len_before=len(content_old),
         len_after=len(content_new),
@@ -161,7 +162,7 @@ def diff(content_old, content_new, filename, encoding_hint=None):
             line = red(line)
         output += line + suffix + "\n"
     duration = datetime.now() - start
-    LOG.debug("diffing {file}: complete after {time}s".format(
+    io.debug("diffing {file}: complete after {time}s".format(
         file=filename,
         time=duration.total_seconds(),
     ))
@@ -347,17 +348,17 @@ class File(Item):
                     continue
                 if status.info['path_info'].exists:
                     if self.attributes['delete']:
-                        LOG.info(_("{node}:{bundle}:{item}: deleting...").format(
+                        io.stdout(_("{node}:{bundle}:{item}: deleting...").format(
                             bundle=self.bundle.name, node=self.node.name, item=self.id))
                     else:
-                        LOG.info(_("{node}:{bundle}:{item}: fixing {type}...").format(
+                        io.stdout(_("{node}:{bundle}:{item}: fixing {type}...").format(
                             bundle=self.bundle.name,
                             item=self.id,
                             node=self.node.name,
                             type=fix_type,
                         ))
                 else:
-                    LOG.info(_("{node}:{bundle}:{item}: creating...").format(
+                    io.stdout(_("{node}:{bundle}:{item}: creating...").format(
                         bundle=self.bundle.name, item=self.id, node=self.node.name))
                 getattr(self, "_fix_" + fix_type)(status)
 
@@ -529,9 +530,9 @@ class File(Item):
 
         if self.attributes['verify_with']:
             cmd = self.attributes['verify_with'].format(quote(local_path))
-            LOG.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
+            io.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
             if call(cmd, shell=True) == 0:
-                LOG.debug("{i} passed local validation".format(i=self.id))
+                io.debug("{i} passed local validation".format(i=self.id))
             else:
                 raise BundleError(_(
                     "{i} failed local validation using: {c}"

@@ -9,11 +9,11 @@ from datetime import datetime
 from os.path import join
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.utils import cached_property, LOG
+from bundlewrap.utils import cached_property
 from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
-from bundlewrap.utils.ui import ask_interactively
+from bundlewrap.utils.ui import io
 
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': None,
@@ -299,11 +299,11 @@ class Item(object):
         start_time = datetime.now()
 
         if self.triggered and not self.has_been_triggered:
-            LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
+            io.debug(_("skipping {} because it wasn't triggered").format(self.id))
             status_code = self.STATUS_SKIPPED
 
         if status_code is None and self.cached_unless_result:
-            LOG.debug(_("'unless' for {} succeeded, not fixing").format(self.id))
+            io.debug(_("'unless' for {} succeeded, not fixing").format(self.id))
             status_code = self.STATUS_SKIPPED
 
         if status_code is None:
@@ -324,9 +324,8 @@ class Item(object):
                     ),
                     _("Fix {}?").format(bold(self.id)),
                 )
-                if ask_interactively(question,
-                                     interactive_default):
                     self.fix(keys_to_fix, self.cached_cdict, status_before)
+                if io.ask(question, interactive_default):
                 else:
                     status_code = self.STATUS_SKIPPED
 

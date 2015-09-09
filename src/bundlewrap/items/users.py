@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from logging import ERROR, getLogger
 from pipes import quote
 from string import ascii_lowercase, digits
 
@@ -8,10 +9,12 @@ from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
-from bundlewrap.utils import LOG
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold
+from bundlewrap.utils.ui import io
 
+
+getLogger('passlib').setLevel(ERROR)
 
 _ATTRIBUTE_NAMES = {
     'full_name': _("full name"),
@@ -164,7 +167,7 @@ class User(Item):
                 msg = _("{node}:{bundle}:{item}: updating...")
         else:
             msg = _("{node}:{bundle}:{item}: creating...")
-        LOG.info(msg.format(bundle=self.bundle.name, item=self.id, node=self.node.name))
+        io.stdout(msg.format(bundle=self.bundle.name, item=self.id, node=self.node.name))
 
         if self.attributes['delete']:
             self.node.run("userdel {}".format(self.name), may_fail=True)

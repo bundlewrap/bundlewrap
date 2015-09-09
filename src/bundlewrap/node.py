@@ -25,11 +25,11 @@ from .exceptions import (
 )
 from .itemqueue import ItemQueue
 from .items import Item
-from .utils import cached_property, LOG, graph_for_items, merge_dict, names, STDOUT_WRITER
+from .utils import cached_property, graph_for_items, merge_dict, names
 from .utils.statedict import hash_statedict
 from .utils.text import bold, green, red, validate_name, yellow
 from .utils.text import force_text, mark_for_translation as _
-from .utils.ui import ask_interactively
+from .utils.ui import io
 
 LOCK_PATH = "/tmp/bundlewrap.lock"
 LOCK_FILE = LOCK_PATH + "/info"
@@ -85,15 +85,10 @@ def handle_apply_result(node, item, status_code, interactive, sdict_keys=None):
         sdict_keys=sdict_keys,
     )
     if formatted_result is not None:
-        if interactive:
-            STDOUT_WRITER.write(formatted_result)
-            STDOUT_WRITER.write("\n")
-            STDOUT_WRITER.flush()
+        if status_code == Item.STATUS_FAILED:
+            io.stderr(formatted_result)
         else:
-            if status_code == Item.STATUS_FAILED:
-                LOG.error(formatted_result)
-            else:
-                LOG.info(formatted_result)
+            io.stdout(formatted_result)
 
 
 def apply_items(node, workers=1, interactive=False, profiling=False):
@@ -172,7 +167,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
     # we have no items without deps left and none are processing
     # there must be a loop
     if item_queue.items_with_deps:
-        LOG.debug(_(
+        io.debug(_(
             "There was a dependency problem. Look at the debug.svg generated "
             "by the following command and try to find a loop:\n"
             "echo '{}' | dot -Tsvg -odebug.svg"
@@ -421,7 +416,7 @@ class Node(object):
                 ))
         except NodeAlreadyLockedException as e:
             if not interactive:
-                LOG.error(_("Node '{node}' already locked: {info}").format(
+                io.error(_("Node '{node}' already locked: {info}").format(
                     node=self.name,
                     info=e.args,
                 ))
@@ -474,7 +469,7 @@ class Node(object):
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
             def log_function(msg):
-                LOG.info("[{}] {}".format(self.name, force_text(msg).rstrip("\n")))
+                io.stdout("[{}] {}".format(self.name, force_text(msg).rstrip("\n")))
         else:
             log_function = None
         return operations.run(
@@ -502,12 +497,12 @@ class Node(object):
             add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
         )
 
-    def verify(self, only_needs_fixing=False, workers=4):
+    def verify(self, show_all=False, workers=4):
         bad = 0
         good = 0
         for item_status in verify_items(
             self.items,
-            only_needs_fixing=only_needs_fixing,
+            show_all=show_all,
             workers=workers,
         ):
             if item_status:
@@ -535,9 +530,9 @@ class NodeLock(object):
                     try:
                         info = json.loads(f.read())
                     except:
-                        LOG.warn(_("unable to read or parse lock file contents"))
+                        io.stderr(_("unable to read or parse lock file contents"))
                         info = {}
-                if self.ignore or (self.interactive and ask_interactively(
+                if self.ignore or (self.interactive and io.ask(
                     self._warning_message(info),
                     False,
                 )):
@@ -559,7 +554,7 @@ class NodeLock(object):
         result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
 
         if result.return_code != 0:
-            LOG.error(_("Could not release lock for node '{node}'").format(
+            io.stderr(_("Could not release lock for node '{node}'").format(
                 node=self.node.name,
             ))
 
@@ -612,7 +607,7 @@ def test_items(items, workers=1):
                         break
             elif msg['msg'] == 'FINISHED_WORK':
                 item_id = msg['task_id']
-                LOG.info("{} {}".format(
+                io.stdout("{} {}".format(
                     green("✓"),
                     item_id,
                 ))
@@ -641,14 +636,14 @@ def verify_items(all_items, show_all=False, workers=1):
                 item_id = msg['task_id']
                 item_status = msg['return_value']
                 if not item_status.correct:
-                    LOG.warning("{} {}".format(
+                    io.stderr("{} {}".format(
                         red("✘"),
                         item_id,
                     ))
                     yield False
                 else:
                     if show_all:
-                        LOG.info("{} {}".format(
+                        io.stdout("{} {}".format(
                             green("✓"),
                             item_id,
                         ))
