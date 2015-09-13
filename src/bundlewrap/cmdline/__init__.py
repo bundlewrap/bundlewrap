@@ -27,7 +27,7 @@ def main(*args, path=None):
     parser_bw = build_parser_bw()
     pargs = parser_bw.parse_args(args)
 
-    io.activate_as_parent()
+    io.activate_as_parent(debug=pargs.debug)
 
     environ.setdefault('BWADDHOSTKEYS', "1" if pargs.add_ssh_host_keys else "0")
 
