@@ -79,6 +79,16 @@ class IOManager(object):
                     return False
                 STDOUT_WRITER.write(_("Please answer with 'y(es)' or 'n(o)'.\n"))
 
+    @contextmanager
+    def capture(self):
+        self.capture_mode = True
+        self.captured_io = {
+            'stderr': [],
+            'stdout': [],
+        }
+        yield self.captured_io
+        self.capture_mode = False
+
     @property
     def child_parameters(self):
         return (self.output_lock, self.output_queue, self.status_line_cleared)
@@ -121,26 +131,26 @@ class IOManager(object):
                 if self.debug_mode and msg['log_type'] in ('OUT', 'DBG', 'ERR'):
                     msg['text'] = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg['text']
                 if self.jobs and TTY:
-                    write_to_stream(STDOUT_WRITER, "\r\033[K")
+                    self._write("\r\033[K")
                 if msg['log_type'] == 'OUT':
-                    write_to_stream(STDOUT_WRITER, msg['text'] + "\n")
+                    self._write(msg['text'] + "\n")
                 elif msg['log_type'] == 'ERR':
-                    write_to_stream(STDERR_WRITER, msg['text'] + "\n")
+                    self._write(msg['text'] + "\n", err=True)
                 elif msg['log_type'] == 'DBG' and self.debug_mode:
-                    write_to_stream(STDOUT_WRITER, msg['text'] + "\n")
+                    self._write(msg['text'] + "\n")
                 elif msg['log_type'] == 'JOB_ADD' and TTY:
                     self.jobs.append(msg['text'])
                 elif msg['log_type'] == 'JOB_DEL' and TTY:
                     self.jobs.remove(msg['text'])
                 if self.jobs and TTY:
-                    write_to_stream(STDOUT_WRITER, "[status] " + self.jobs[0])
+                    self._write("[status] " + self.jobs[0])
                 self.output_lock.release()
             else:  # someone else is holding the output lock
                 # the process holding the lock should now be waiting for
                 # us to remove any status lines present before it starts
                 # printing
                 if self.jobs and TTY:
-                    write_to_stream(STDOUT_WRITER, "\r\033[K")
+                    self._write("\r\033[K")
                 self.status_line_cleared.notify()
                 # now we wait until the other process has finished and
                 # released the output lock
@@ -151,6 +161,11 @@ class IOManager(object):
         assert self.parent_mode
         self.output_queue.put({'msg': 'LOG', 'log_type': 'QUIT'})
         self.thread.join()
+
+    def _write(self, msg, err=False):
+        write_to_stream(STDERR_WRITER if err else STDOUT_WRITER, msg)
+        if self.capture_mode:
+            self.captured_io['stderr' if err else 'stdout'].append(msg)
 
 
 io = IOManager()
