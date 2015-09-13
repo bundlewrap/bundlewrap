@@ -2,6 +2,7 @@ from codecs import getwriter
 from contextlib import contextmanager
 from datetime import datetime
 from multiprocessing import Condition, Lock, Queue
+from signal import signal, SIGPIPE, SIG_DFL
 from sys import stderr, stdout
 from threading import Thread
 
@@ -17,21 +18,20 @@ TTY = STDOUT_WRITER.isatty()
 
 try:
     input_function = raw_input
-    pipe_error = IOError
 except NameError:  # Python 3
     input_function = input
-    pipe_error = BrokenPipeError
+
+# prevent BrokenPipeError when piping into `head`
+# http://stackoverflow.com/questions/14207708/ioerror-errno-32-broken-pipe-python
+signal(SIGPIPE, SIG_DFL)
 
 
 def write_to_stream(stream, msg):
-    try:
-        if TTY:
-            stream.write(msg)
-        else:
-            stream.write(ANSI_ESCAPE.sub("", msg))
-        stream.flush()
-    except pipe_error:
-        pass
+    if TTY:
+        stream.write(msg)
+    else:
+        stream.write(ANSI_ESCAPE.sub("", msg))
+    stream.flush()
 
 
 class IOManager(object):
@@ -151,7 +151,6 @@ class IOManager(object):
         assert self.parent_mode
         self.output_queue.put({'msg': 'LOG', 'log_type': 'QUIT'})
         self.thread.join()
-        stderr.close()  # prevent BrokenPipeError message when piping into head
 
 
 io = IOManager()
