@@ -5,7 +5,7 @@ from os.path import join, split
 from pipes import quote
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import Item, ItemStatus
+from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
@@ -51,37 +51,18 @@ class PipPkg(Item):
             self.attributes['installed'],
         )
 
-    def ask(self, status):
-        before = status.info['version'] if status.info['version'] \
-            else _("not installed")
-        target = green(self.attributes['version']) if self.attributes['version'] else \
-                 green(_("installed"))
-        after = target if self.attributes['installed'] \
-            else red(_("not installed"))
-        return "{} {} → {}\n".format(
-            bold(_("status")),
-            before,
-            after,
-        )
-
     def fix(self, status):
         if self.attributes['installed'] is False:
             pkg_remove(self.node, self.name)
         else:
             pkg_install(self.node, self.name, version=self.attributes['version'])
 
-    def get_status(self):
+    def sdict(self):
         install_status = pkg_installed(self.node, self.name)
-        item_status = (bool(install_status) == self.attributes['installed'])
-        if self.attributes['version']:
-            item_status = (item_status and install_status == self.attributes['version'])
-        return ItemStatus(
-            correct=item_status,
-            info={
-                'installed': bool(install_status),
-                'version': None if install_status is False else install_status,
-            },
-        )
+        return {
+            'installed': bool(install_status),
+            'version': None if install_status is False else install_status,
+        }
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):

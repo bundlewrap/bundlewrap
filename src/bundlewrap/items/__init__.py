@@ -46,23 +46,20 @@ def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered
 class ItemStatus(object):
     """
     Holds information on a particular Item such as whether it needs
-    fixing, a description of what's wrong etc.
+    fixing and what's broken.
     """
 
-    def __init__(
-        self,
-        correct=True,
-        description="No description available.",
-        info=None,
-        skipped=False,
-    ):
-        self.skipped = skipped
-        self.correct = correct
-        self.description = description
-        self.info = {} if info is None else info
+    def __init__(self, cdict, sdict):
+        self.cdict = cdict
+        self.sdict = sdict
+        self.keys = diff_keys(cdict, sdict)
 
     def __repr__(self):
         return "<ItemStatus correct:{}>".format(self.correct)
+
+    @property
+    def correct(self):
+        return not bool(self.keys)
 
 
 class Item(object):
@@ -198,7 +195,7 @@ class Item(object):
         return cdict
 
     @cached_property
-    def cached_status(self):
+    def cached_sdict(self):
         status = self.sdict()
         try:
             validate_statedict(status)
@@ -211,6 +208,10 @@ class Item(object):
                 msg=e.message,
             ))
         return status
+
+    @cached_property
+    def cached_status(self):
+        return self.get_status()
 
     @cached_property
     def cached_unless_result(self):
@@ -314,7 +315,7 @@ class Item(object):
 
         if status_code is None:
             if not interactive:
-                self.fix(keys_to_fix, self.cached_cdict, status_before)
+                self.fix(status_before)
             else:
                 question = wrap_question(
                     self.id,
@@ -324,18 +325,14 @@ class Item(object):
                     ),
                     _("Fix {}?").format(bold(self.id)),
                 )
-                    self.fix(keys_to_fix, self.cached_cdict, status_before)
                 if io.ask(question, interactive_default):
+                    self.fix(status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
 
         if status_code is None:
-            status_after = self.sdict()
-            keys_to_fix = diff_keys(self.cached_cdict, status_after)
-            if keys_to_fix:
-                status_code = self.STATUS_FIXED
-            else:
-                status_code = self.STATUS_FAILED
+            status_after = self.get_status(cached=False)
+            status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
@@ -347,7 +344,7 @@ class Item(object):
             status_after=status_after,
         )
 
-        return (status_code, keys_to_fix)
+        return (status_code, status_after.keys)
 
     def ask(self, status_actual, status_should):
         """
@@ -400,14 +397,14 @@ class Item(object):
         """
         return {}
 
-    def get_status(self):
+    def get_status(self, cached=True):
         """
         Returns an ItemStatus instance describing the current status of
-        the item on the actual node. Must not be cached.
-
-        MUST be overridden by subclasses.
+        the item on the actual node.
         """
-        raise NotImplementedError()
+        if not cached:
+            del self._cache['cached_sdict']
+        return ItemStatus(self.cached_cdict, self.cached_sdict)
 
     def hash(self):
         return hash_statedict(self.cached_cdict)
