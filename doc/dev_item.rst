@@ -90,11 +90,14 @@ Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use
             """
             raise NotImplementedError
 
-        def fix(self, keys, sdict, sdict_actual):
+        def fix(self, status):
             """
-            Do whatever is necessary to correct this item. The keys
-            argument is a list of keys that differ in the two given
-            sdicts.
+            Do whatever is necessary to correct this item. The given ItemStatus
+            object has the following useful information:
+
+                status.keys     list of cdict keys that need fixing
+                status.cdict    cached copy of self.cdict()
+                status.sdict    cached copy of self.sdict()
             """
             raise NotImplementedError
 
