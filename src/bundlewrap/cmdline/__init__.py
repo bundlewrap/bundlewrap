@@ -68,4 +68,6 @@ def main(*args, **kwargs):
                 io.stdout(line)
     finally:
         io.shutdown()
-    exit(return_code)
+
+    if return_code != 0:  # not raising SystemExit every time to ease testing
+        exit(return_code)

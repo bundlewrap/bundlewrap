@@ -83,8 +83,8 @@ class IOManager(object):
     def capture(self):
         self.capture_mode = True
         self.captured_io = {
-            'stderr': [],
-            'stdout': [],
+            'stderr': "",
+            'stdout': "",
         }
         yield self.captured_io
         self.capture_mode = False
@@ -165,7 +165,7 @@ class IOManager(object):
     def _write(self, msg, err=False):
         write_to_stream(STDERR_WRITER if err else STDOUT_WRITER, msg)
         if self.capture_mode:
-            self.captured_io['stderr' if err else 'stdout'].append(msg)
+            self.captured_io['stderr' if err else 'stdout'] += msg
 
 
 io = IOManager()
