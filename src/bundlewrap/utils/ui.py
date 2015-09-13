@@ -17,16 +17,21 @@ TTY = STDOUT_WRITER.isatty()
 
 try:
     input_function = raw_input
+    pipe_error = IOError
 except NameError:  # Python 3
     input_function = input
+    pipe_error = BrokenPipeError
 
 
 def write_to_stream(stream, msg):
-    if TTY:
-        stream.write(msg)
-    else:
-        stream.write(ANSI_ESCAPE.sub("", msg))
-    stream.flush()
+    try:
+        if TTY:
+            stream.write(msg)
+        else:
+            stream.write(ANSI_ESCAPE.sub("", msg))
+        stream.flush()
+    except pipe_error:
+        pass
 
 
 class IOManager(object):
@@ -146,6 +151,7 @@ class IOManager(object):
         assert self.parent_mode
         self.output_queue.put({'msg': 'LOG', 'log_type': 'QUIT'})
         self.thread.join()
+        stderr.close()  # prevent BrokenPipeError message when piping into head
 
 
 io = IOManager()
