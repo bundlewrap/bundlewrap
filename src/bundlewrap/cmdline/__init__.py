@@ -11,7 +11,7 @@ from ..utils.ui import io
 from .parser import build_parser_bw
 
 
-def main(*args, path=None):
+def main(*args, **kwargs):
     """
     Entry point for the 'bw' command line utility.
 
@@ -19,8 +19,7 @@ def main(*args, path=None):
     """
     if not args:
         args = argv[1:]
-    if not path:
-        path = getcwd()
+    path = kwargs.get('path', getcwd())
 
     text_args = [force_text(arg) for arg in args]
 
