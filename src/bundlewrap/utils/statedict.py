@@ -12,8 +12,10 @@ from .text import force_text, mark_for_translation as _
 
 try:
     text_type = unicode
+    byte_type = str
 except NameError:
     text_type = str
+    byte_type = bytes
 
 DIFF_MAX_INLINE_LENGTH = 36
 DIFF_MAX_LINE_LENGTH = 128
@@ -95,6 +97,7 @@ def diff_value_text(title, value1, value2):
 
 TYPE_DIFFS = {
     bool: diff_value_bool,
+    byte_type: diff_value_text,
     float: diff_value_int,
     int: diff_value_int,
     list: diff_value_list,
