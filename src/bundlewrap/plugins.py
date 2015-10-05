@@ -136,7 +136,7 @@ class PluginManager(object):
 
         # before updating anything, we need to check for local modifications
         local_changes = self.local_modifications(plugin)
-        if local_changes:
+        if local_changes and not force:
             files = [path for path, c1, c2 in local_changes]
             raise PluginLocalConflict(_(
                 "cannot update '{plugin}' because the following files have been modified locally:"
@@ -147,7 +147,7 @@ class PluginManager(object):
 
         for file in manifest['provides']:
             file_path = join(self.path, file)
-            if exists(file_path) and file not in self.plugin_db[plugin]['files']:
+            if exists(file_path) and file not in self.plugin_db[plugin]['files'] and not force:
                 # new version added a file that already existed locally
                 raise PluginLocalConflict(_(
                     "cannot update '{plugin}' because it would overwrite '{path}'"
