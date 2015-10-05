@@ -14,6 +14,7 @@ from . import utils
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
+from .utils.ui import io
 
 DIRNAME_BUNDLES = "bundles"
 DIRNAME_DATA = "data"
@@ -217,7 +218,7 @@ class LibsProxy(object):
             try:
                 m = load_source('bundlewrap.repo.libs_{}'.format(attrname), filepath)
             except:
-                utils.LOG.error(_("Exception while trying to load {}:").format(filepath))
+                io.stderr(_("Exception while trying to load {}:").format(filepath))
                 raise
             self.__module_cache[attrname] = m
         return self.__module_cache[attrname]
