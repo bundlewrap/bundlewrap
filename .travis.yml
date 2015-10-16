@@ -7,7 +7,7 @@ python:
 - 3.5
 - pypy3
 install:
-- pip install tox
+- pip install coveralls tox
 - sudo rm -rf /dev/shm
 - sudo ln -s /run/shm /dev/shm
 before_script:
