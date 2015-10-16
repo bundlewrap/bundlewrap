@@ -4,9 +4,7 @@ from __future__ import unicode_literals
 from pipes import quote
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils import LOG
-from bundlewrap.utils.text import bold, green, red
+from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
@@ -52,40 +50,16 @@ class ZypperPkg(Item):
             self.attributes['installed'],
         )
 
-    def ask(self, status):
-        before = _("installed") if status.info['installed'] \
-            else _("not installed")
-        after = green(_("installed")) if self.attributes['installed'] \
-            else red(_("not installed"))
-        return "{} {} → {}\n".format(
-            bold(_("status")),
-            before,
-            after,
-        )
-
     def fix(self, status):
         if self.attributes['installed'] is False:
-            LOG.info(_("{node}:{bundle}:{item}: removing...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             pkg_remove(self.node, self.name)
         else:
-            LOG.info(_("{node}:{bundle}:{item}: installing...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             pkg_install(self.node, self.name)
 
-    def get_status(self):
-        install_status = pkg_installed(self.node, self.name)
-        item_status = (install_status == self.attributes['installed'])
-        return ItemStatus(
-            correct=item_status,
-            info={'installed': install_status},
-        )
+    def sdict(self):
+        return {
+            'installed': pkg_installed(self.node, self.name),
+        }
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):

@@ -7,10 +7,10 @@ from pipes import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils import LOG
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold, is_subdirectory
+from bundlewrap.utils.ui import io
 
 
 def validator_mode(item_id, value):
@@ -96,13 +96,13 @@ class Directory(Item):
         if 'type' in status.info['needs_fixing']:
             # fixing the type fixes everything
             if status.info['path_info'].exists:
-                LOG.info(_("{node}:{bundle}:{item}: fixing type...").format(
+                io.stdout(_("{node}:{bundle}:{item}: fixing type...").format(
                     bundle=self.bundle.name,
                     item=self.id,
                     node=self.node.name,
                 ))
             else:
-                LOG.info(_("{node}:{bundle}:{item}: creating...").format(
+                io.stdout(_("{node}:{bundle}:{item}: creating...").format(
                     bundle=self.bundle.name,
                     item=self.id,
                     node=self.node.name,
@@ -116,7 +116,7 @@ class Directory(Item):
                         'owner' in status.info['needs_fixing']:
                     # owner and group are fixed with a single chown
                     continue
-                LOG.info(_("{node}:{bundle}:{item}: fixing {fix_type}...").format(
+                io.stdout(_("{node}:{bundle}:{item}: fixing {fix_type}...").format(
                     bundle=self.bundle.name,
                     item=self.id,
                     fix_type=fix_type,

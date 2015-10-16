@@ -64,7 +64,7 @@ class ActionRunTest(TestCase):
         bundle = MagicMock()
         bundle.node.run.return_value = run_result
 
-        action = Action(bundle, "action", { 'command': "/bin/true" })
+        action = Action(bundle, "action", {'command': "/bin/true"})
 
         with self.assertRaises(ActionFailure):
             action.run()
@@ -115,14 +115,14 @@ class ActionGetResultTest(TestCase):
         bundle = MagicMock()
         bundle.node.run.return_value = unless_result
 
-        action = Action(bundle, "action", { 'command': "/bin/true", 'unless': "true" })
+        action = Action(bundle, "action", {'command': "/bin/true", 'unless': "true"})
         self.assertEqual(
             action.get_result(),
             Action.STATUS_SKIPPED,
         )
 
     def test_skip_noninteractive(self):
-        action = Action(MagicMock(), "action", { 'command': "/bin/true", 'interactive': True })
+        action = Action(MagicMock(), "action", {'command': "/bin/true", 'interactive': True})
         self.assertEqual(
             action.get_result(interactive=False),
             Action.STATUS_SKIPPED,
@@ -130,14 +130,14 @@ class ActionGetResultTest(TestCase):
 
     @patch('bundlewrap.items.actions.ask_interactively', return_value=False)
     def test_declined_interactive(self, ask_interactively):
-        action = Action(MagicMock(), "action", { 'command': "/bin/true" })
+        action = Action(MagicMock(), "action", {'command': "/bin/true"})
         self.assertEqual(
             action.get_result(interactive=True),
             Action.STATUS_SKIPPED,
         )
 
     def test_ok(self):
-        action = Action(MagicMock(), "action", { 'command': "/bin/true" })
+        action = Action(MagicMock(), "action", {'command': "/bin/true"})
         action.run = MagicMock(return_value=None)
         self.assertEqual(
             action.get_result(interactive=False),
@@ -145,7 +145,7 @@ class ActionGetResultTest(TestCase):
         )
 
     def test_fail(self):
-        action = Action(MagicMock(), "action", { 'command': "/bin/false" })
+        action = Action(MagicMock(), "action", {'command': "/bin/false"})
         action.run = MagicMock(side_effect=ActionFailure)
         self.assertEqual(
             action.get_result(interactive=False),

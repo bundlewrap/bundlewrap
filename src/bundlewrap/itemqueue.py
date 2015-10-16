@@ -6,8 +6,8 @@ from .deps import (
     split_items_without_deps,
 )
 from .exceptions import NoSuchItem
-from .utils import LOG
 from .utils.text import mark_for_translation as _
+from .utils.ui import io
 
 
 class ItemQueue(object):
@@ -99,7 +99,7 @@ class ItemQueue(object):
                     # we do not have to cascade here at all because
                     # all chained preceding items will be skipped by
                     # this same mechanism
-                    LOG.debug(
+                    io.debug(
                         _("skipping {node}:{bundle}:{item} because its precede trigger "
                           "did not fire").format(
                             bundle=item.bundle.name,
@@ -126,7 +126,7 @@ class ItemQueue(object):
                 )
                 triggered_item.has_been_triggered = True
             except NoSuchItem:
-                LOG.debug(_(
+                io.debug(_(
                     "{item} tried to trigger {triggered_item}, "
                     "but it wasn't available. It must have been skipped previously."
                 ).format(

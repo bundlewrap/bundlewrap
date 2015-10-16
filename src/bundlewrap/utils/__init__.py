@@ -5,7 +5,6 @@ from codecs import getwriter
 from copy import deepcopy
 import hashlib
 from inspect import isgenerator
-import logging
 from os import chmod, makedirs
 from os.path import dirname, exists
 import stat
@@ -16,8 +15,6 @@ from requests import get
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
-
-LOG = logging.getLogger('bundlewrap')
 
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
@@ -88,7 +85,8 @@ def get_all_attrs_from_file(path, cache=True, base_env=None):
         try:
             exec(source, env)
         except:
-            LOG.error("Exception while executing {} "
+            from .ui import io
+            io.stderr("Exception while executing {} "
                       "(use --debug to get a traceback):".format(path))
             raise
         if cache:

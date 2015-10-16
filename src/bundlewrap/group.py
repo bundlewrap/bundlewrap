@@ -5,6 +5,7 @@ import re
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .utils import cached_property
+from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
 
 
@@ -66,6 +67,15 @@ class Group(object):
 
     def __str__(self):
         return self.name
+
+    def cdict(self):
+        group_dict = {}
+        for node in self.nodes:
+            group_dict[node.name] = node.hash()
+        return group_dict
+
+    def hash(self):
+        return hash_statedict(self.cdict())
 
     @cached_property
     def metadata_processors(self):

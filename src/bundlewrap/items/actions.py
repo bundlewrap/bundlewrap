@@ -5,8 +5,7 @@ from datetime import datetime
 
 from bundlewrap.exceptions import ActionFailure, BundleError
 from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils import LOG
-from bundlewrap.utils.ui import ask_interactively
+from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
 
@@ -28,11 +27,11 @@ class Action(Item):
 
     def _get_result(self, interactive=False, interactive_default=True):
         if interactive is False and self.attributes['interactive'] is True:
-            return self.STATUS_SKIPPED
+            return (self.STATUS_SKIPPED, None)
 
         if self.triggered and not self.has_been_triggered:
-            LOG.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return self.STATUS_SKIPPED
+            io.debug(_("skipping {} because it wasn't triggered").format(self.id))
+            return (self.STATUS_SKIPPED, None)
 
         if self.unless:
             unless_result = self.bundle.node.run(
@@ -40,17 +39,17 @@ class Action(Item):
                 may_fail=True,
             )
             if unless_result.return_code == 0:
-                LOG.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
+                io.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
                     bundle=self.bundle.name,
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
-                return self.STATUS_SKIPPED
+                return (self.STATUS_SKIPPED, None)
 
         if (
             interactive and
             self.attributes['interactive'] is not False and
-            not ask_interactively(
+            not io.ask(
                 wrap_question(
                     self.id,
                     self.attributes['command'],
@@ -61,12 +60,15 @@ class Action(Item):
                 interactive_default,
             )
         ):
-            return self.STATUS_SKIPPED
+            return (self.STATUS_SKIPPED, None)
         try:
             self.run(interactive=interactive)
-            return self.STATUS_ACTION_SUCCEEDED
+            return (self.STATUS_ACTION_SUCCEEDED, None)
         except ActionFailure:
-            return self.STATUS_FAILED
+            return (self.STATUS_FAILED, None)
+
+    def cdict(self):
+        raise AttributeError(_("actions don't have cdicts"))
 
     def get_result(self, interactive=False, interactive_default=True):
         self.node.repo.hooks.action_run_start(

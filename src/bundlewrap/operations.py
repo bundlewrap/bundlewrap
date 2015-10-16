@@ -8,9 +8,9 @@ from threading import Event, Thread
 from os import close, pipe, read
 
 from .exceptions import RemoteException
-from .utils import cached_property, LOG
-from .utils.text import force_text, mark_for_translation as _, randstr
-from .utils.ui import LineBuffer
+from .utils import cached_property
+from .utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
+from .utils.ui import io
 
 
 def output_thread_body(line_buffer, read_fd, quit_event):
@@ -24,7 +24,7 @@ def download(hostname, remote_path, local_path, add_host_keys=False):
     """
     Download a file.
     """
-    LOG.debug(_("downloading {host}:{path} -> {target}").format(
+    io.debug(_("downloading {host}:{path} -> {target}").format(
         host=hostname, path=remote_path, target=local_path))
 
     result = run(
@@ -68,7 +68,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     stderr_lb = LineBuffer(log_function)
     stdout_lb = LineBuffer(log_function)
 
-    LOG.debug("running on {host}: {command}".format(command=command, host=hostname))
+    io.debug("running on {host}: {command}".format(command=command, host=hostname))
 
     stdout_fd_r, stdout_fd_w = pipe()
     stderr_fd_r, stderr_fd_w = pipe()
@@ -106,7 +106,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
         for fd in (stdout_fd_r, stdout_fd_w, stderr_fd_r, stderr_fd_w):
             close(fd)
 
-    LOG.debug("command finished with return code {}".format(ssh_process.returncode))
+    io.debug("command finished with return code {}".format(ssh_process.returncode))
 
     result = RunResult()
     result.stdout = stdout_lb.record.getvalue()
@@ -130,7 +130,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
     """
     Upload a file.
     """
-    LOG.debug(_("uploading {path} -> {host}:{target}").format(
+    io.debug(_("uploading {path} -> {host}:{target}").format(
         host=hostname, path=local_path, target=remote_path))
     temp_filename = ".bundlewrap_tmp_" + randstr()
 

@@ -3,50 +3,25 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 from inspect import ismethod, isgenerator
-from logging import getLogger, Handler
 from multiprocessing import Manager, Pipe, Process
-from os import dup, fdopen
 import sys
 from traceback import format_exception
 
 from .exceptions import WorkerException
-from .utils import LOG
 from .utils.text import force_text, mark_for_translation as _
+from .utils.ui import io
 
 JOIN_TIMEOUT = 5  # seconds
 
 
-class ChildLogHandler(Handler):
-    """
-    Captures log events in child processes and inserts them into the
-    queue to be processed by the parent process.
-    """
-    def __init__(self, messages):
-        Handler.__init__(self)
-        self.messages = messages
-
-    def emit(self, record):
-        self.messages.put({'msg': 'LOG_ENTRY', 'log_entry': record})
-
-
-def _patch_logger(logger, new_handler=None):
-    for handler in logger.handlers:
-        logger.removeHandler(handler)
-    if new_handler is not None:
-        logger.addHandler(new_handler)
-    logger.setLevel(0)
-
-
-def _worker_process(wid, messages, pipe):
+def _worker_process(wid, messages, pipe, io_params):
     """
     This is what actually runs in the child process.
     """
     # replace the child logger with one that will send logs back to the
     # parent process
-    from bundlewrap import utils
-    child_log_handler = ChildLogHandler(messages)
-    _patch_logger(getLogger(), child_log_handler)
-    _patch_logger(utils.LOG)
+    #from bundlewrap.utils import ui
+    io.activate_as_child(*io_params)
 
     while True:
         # These two calls can block for an infinite amount of time. We
@@ -140,7 +115,7 @@ class WorkerPool(object):
         for i in range(workers):
             (parent_conn, child_conn) = Pipe()
             p = Process(target=_worker_process,
-                        args=(i, self.messages, child_conn))
+                        args=(i, self.messages, child_conn, io.child_parameters))
             p.start()
             self.workers.append((p, parent_conn))
 
@@ -165,8 +140,6 @@ class WorkerPool(object):
                     msg['exception'],
                     msg['traceback'],
                 )
-        elif msg['msg'] == 'LOG_ENTRY':
-            LOG.handle(msg['log_entry'])
         return msg
 
     def start_task(self, wid, target, task_id=None, args=None, kwargs=None):
@@ -223,7 +196,7 @@ class WorkerPool(object):
         pipe.close()
         process.join(JOIN_TIMEOUT)
         if process.is_alive():
-            LOG.warn(_(
+            io.stderr(_(
                 "worker process with PID {pid} didn't join "
                 "within {time} seconds, terminating...").format(
                     pid=process.pid,

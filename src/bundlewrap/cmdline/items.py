@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from os import makedirs
 from os.path import dirname, exists, join
 
-from ..utils import LOG
 from ..utils.text import force_text, mark_for_translation as _
+from ..utils.ui import io
 
 
 def write_preview(file_item, base_path):
@@ -24,7 +24,7 @@ def bw_items(repo, args):
     node = repo.get_node(args['node'])
     if args['file_preview_path']:
         if exists(args['file_preview_path']):
-            LOG.error(_(
+            io.stderr(_(
                 "not writing to existing path: {path}"
             ).format(path=args['file_preview_path']))
             yield 1
@@ -32,17 +32,17 @@ def bw_items(repo, args):
             if not item.id.startswith("file:"):
                 continue
             if item.attributes['content_type'] == 'any':
-                LOG.warning(_(
+                io.stderr(_(
                     "skipping file with 'any' content {filename}..."
                 ).format(filename=item.name))
                 continue
             if item.attributes['content_type'] == 'binary':
-                LOG.warning(_(
+                io.stderr(_(
                     "skipping binary file {filename}..."
                 ).format(filename=item.name))
                 continue
             if item.attributes['delete']:
-                LOG.warning(_(
+                io.stderr(_(
                     "skipping file with 'delete' flag {filename}..."
                 ).format(filename=item.name))
                 continue

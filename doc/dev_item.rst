@@ -7,10 +7,10 @@ Custom item types
 .. toctree::
 
 
-Step 0: Understand sdicts
--------------------------
+Step 0: Understand statedicts
+-----------------------------
 
-To represent supposed vs. actual state, BundleWrap uses state dicts (sdicts for short). These are
+To represent supposed vs. actual state, BundleWrap uses statedicts. These are
 normal Python dictionaries with some restrictions:
 
 - keys must be Unicode text
@@ -24,7 +24,7 @@ normal Python dictionaries with some restrictions:
 
 - ...or a list/tuple containing only instances of one of the types above
 
-Additional information can be stored in sdicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" sdict information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply, but everything must be pickleable.
+Additional information can be stored in statedicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" sdict information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply, but everything must be pickleable.
 
 
 Step 1: Create an item module
@@ -53,9 +53,9 @@ Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use
         def __repr__(self):
             return "<Foo attribute:{}>".format(self.attributes['attribute'])
 
-        def sdict(self):
+        def cdict(self):
             """
-            Return an sdict that describes the target state of this item
+            Return a statedict that describes the target state of this item
             as configured in the repo. An empty dict means that the item
             should not exist.
 
@@ -64,37 +64,40 @@ Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use
             """
             raise NotImplementedError
 
-        def sdict_actual(self):
+        def sdict(self):
             """
-            Return an sdict that describes the actual state of this item
+            Return a statedict that describes the actual state of this item
             on the node. An empty dict means that the item does not exist
             on the node.
 
-            For the item to validate as correct, this sdict and the one
-            produced by self.sdict() have to be identical.
+            For the item to validate as correct, the values for all keys in
+            self.cdict() have to match this statedict.
             """
             raise NotImplementedError
 
-        def sdict_verbose(self, sdict, keys, actual):
+        def statedict_verbose(self, statedict, keys, actual):
             """
-            Return an sdict based on the given one that is suitable for
+            Return a statedict based on the given one that is suitable for
             displaying information during interactive apply mode.
             The keys parameter indicates which keys are incorrect. It is
-            sufficient to return an sdict that only represents these
+            sufficient to return a statedict that only represents these
             keys. The boolean actual parameter indicates if the source
-            sdict is based on de facto node state (True) or taken from
-            the repo (False).
+            statedict is based on de facto node state aka sdict (True) or
+            taken from the repo aka cdict (False).
 
             Implementing this method is optional. The default implementation
-            returns the sdict unaltered.
+            returns the statedict unaltered.
             """
             raise NotImplementedError
 
-        def fix(self, keys, sdict, sdict_actual):
+        def fix(self, status):
             """
-            Do whatever is necessary to correct this item. The keys
-            argument is a list of keys that differ in the two given
-            sdicts.
+            Do whatever is necessary to correct this item. The given ItemStatus
+            object has the following useful information:
+
+                status.keys     list of cdict keys that need fixing
+                status.cdict    cached copy of self.cdict()
+                status.sdict    cached copy of self.sdict()
             """
             raise NotImplementedError
 

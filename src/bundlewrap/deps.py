@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from .exceptions import BundleError, NoSuchItem
 from .items import Item
 from .items.actions import Action
-from .utils import LOG
 from .utils.text import mark_for_translation as _
+from .utils.ui import io
 
 
 class BundleItem(object):
@@ -500,7 +500,7 @@ def remove_item_dependents(items, dep_item, skipped=False):
         items.remove(item)
 
     if removed_items:
-        LOG.debug(
+        io.debug(
             "skipped these items because they depend on {item}, which was "
             "skipped previously: {skipped}".format(
                 item=dep_item.id,

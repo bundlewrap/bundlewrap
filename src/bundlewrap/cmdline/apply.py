@@ -5,10 +5,10 @@ from datetime import datetime
 
 from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
-from ..utils import LOG
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, red, yellow
 from ..utils.text import error_summary, mark_for_translation as _
+from ..utils.ui import io
 
 
 def format_node_result(result):
@@ -73,7 +73,7 @@ def bw_apply(repo, args):
                             node_start_time,
                         )
                     else:
-                        LOG.info(_("{}: run started at {}").format(
+                        io.stdout(_("{}: run started at {}").format(
                             node.name,
                             node_start_time,
                         ))
@@ -112,11 +112,11 @@ def bw_apply(repo, args):
                         stats=format_node_result(results[node_name]),
                     )
                 else:
-                    LOG.info(_("{node}: run completed after {time}s").format(
+                    io.stdout(_("{node}: run completed after {time}s").format(
                         node=node_name,
                         time=results[node_name].duration.total_seconds(),
                     ))
-                    LOG.info(_("{node}: stats: {stats}").format(
+                    io.stdout(_("{node}: stats: {stats}").format(
                         node=node_name,
                         stats=format_node_result(results[node_name]),
                     ))

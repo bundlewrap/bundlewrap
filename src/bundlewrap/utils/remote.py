@@ -3,13 +3,14 @@ from __future__ import unicode_literals
 
 from pipes import quote
 
-from . import cached_property, LOG
+from . import cached_property
 from .text import force_text, mark_for_translation as _
+from .ui import io
 
 
 def _parse_file_output(file_output):
     if file_output.startswith("cannot open "):
-        # required for Mac OS X and CentOS/RHEL
+        # required for Mac OS X, OpenBSD, and CentOS/RHEL
         return ('nonexistent', "")
     elif file_output.endswith("directory"):
         return ('directory', file_output)
@@ -48,7 +49,7 @@ def stat(node, path):
         'mode': mode,
         'size': int(size),
     }
-    LOG.debug(_("stat for '{path}' on {node}: {result}".format(
+    io.debug(_("stat for '{path}' on {node}: {result}".format(
         node=node.name,
         path=path,
         result=repr(file_stat),

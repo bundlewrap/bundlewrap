@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
 from bundlewrap.items.users import _USERNAME_VALID_CHARACTERS
-from bundlewrap.utils import LOG
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold
+from bundlewrap.utils.ui import io
 
 
 def _parse_group_line(line):
@@ -52,7 +52,7 @@ class Group(Item):
 
     def fix(self, status):
         if not status.info['exists']:
-            LOG.info(_("{node}:{bundle}:{item}: creating...").format(
+            io.stdout(_("{node}:{bundle}:{item}: creating...").format(
                 bundle=self.bundle.name,
                 item=self.id,
                 node=self.node.name,
@@ -66,14 +66,14 @@ class Group(Item):
                 )
             self.node.run(command, may_fail=True)
         elif self.attributes['delete']:
-            LOG.info(_("{node}:{bundle}:{item}: deleting...").format(
+            io.stdout(_("{node}:{bundle}:{item}: deleting...").format(
                 bundle=self.bundle.name,
                 item=self.id,
                 node=self.node.name,
             ))
             self.node.run("groupdel {}".format(self.name), may_fail=True)
         else:
-            LOG.info(_("{node}:{bundle}:{item}: updating...").format(
+            io.stdout(_("{node}:{bundle}:{item}: updating...").format(
                 bundle=self.bundle.name,
                 item=self.id,
                 node=self.node.name,
