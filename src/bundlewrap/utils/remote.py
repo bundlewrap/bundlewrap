@@ -10,7 +10,7 @@ from .ui import io
 
 def _parse_file_output(file_output):
     if file_output.startswith("cannot open "):
-        # required for Mac OS X and CentOS/RHEL
+        # required for Mac OS X, OpenBSD, and CentOS/RHEL
         return ('nonexistent', "")
     elif file_output.endswith("directory"):
         return ('directory', file_output)
