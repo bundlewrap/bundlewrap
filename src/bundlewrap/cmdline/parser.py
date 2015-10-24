@@ -191,10 +191,10 @@ def build_parser_bw():
     parser_metadata = subparsers.add_parser("metadata")
     parser_metadata.set_defaults(func=bw_metadata)
     parser_metadata.add_argument(
-        'target',
-        metavar=_("NODE|GROUP"),
+        'node',
+        metavar=_("NODE"),
         type=str,
-        help=_("node or group to print JSON-formatted metadata for"),
+        help=_("node to print JSON-formatted metadata for"),
     )
 
     # bw nodes
