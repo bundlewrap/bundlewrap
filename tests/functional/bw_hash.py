@@ -68,4 +68,4 @@ def test_deterministic(tmpdir):
         hashes.add(captured['stdout'].strip())
 
     assert len(hashes) == 1
-    assert hashes.pop() == "4b3081d0916a16101afcc03d5e8c29e22e9b9efc"
+    assert hashes.pop() == "8c155b4e7056463eb2c8a8345f4f316f6d7359f6"
