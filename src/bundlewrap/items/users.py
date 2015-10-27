@@ -110,71 +110,25 @@ class User(Item):
     def __repr__(self):
         return "<User name:{}>".format(self.name)
 
-    def ask(self, status):
-        if not status.info['exists']:
-            return _("'{}' not found in /etc/passwd").format(self.name)
-        elif self.attributes['delete']:
-            return _("'{}' found in /etc/passwd. Will be deleted.").format(self.name)
-
-        output = ""
-        for key in status.info['needs_fixing']:
-            if key in ('groups', 'password', 'password_hash'):
-                continue
-            output += "{} {} → {}\n".format(
-                bold(_ATTRIBUTE_NAMES[key]),
-                status.info[key],
-                self.attributes[key],
-            )
-
-        if self.attributes['password_hash'] is not None:
-            if self.attributes['use_shadow']:
-                filename = "/etc/shadow"
-                found_hash = status.info['shadow_hash']
-            else:
-                filename = "/etc/passwd"
-                found_hash = status.info['passwd_hash']
-
-            if found_hash is None:
-                output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
-                          _("not found in {}").format(filename) + "\n"
-            elif found_hash != self.attributes['password_hash']:
-                output += bold(_ATTRIBUTE_NAMES['password_hash']) + " " + \
-                          found_hash + "\n"
-                output += " " * (len(_ATTRIBUTE_NAMES['password_hash']) - 1) + "→ " + \
-                          self.attributes['password_hash'] + "\n"
-
-        if self.attributes['groups'] is not None:
-            groups_should = set(self.attributes['groups'])
-            groups_is = set(status.info['groups'])
-            missing_groups = sorted(groups_should.difference(groups_is))
-            extra_groups = sorted(groups_is.difference(groups_should))
-
-            if missing_groups:
-                output += bold(_("missing groups")) + " " + \
-                          ", ".join(missing_groups) + "\n"
-
-            if extra_groups:
-                output += bold(_("extra groups")) + " " + \
-                          ", ".join(extra_groups) + "\n"
-
-        return output
+    def cdict(self):
+        if self.attributes['delete']:
+            return {}
+        cdict = self.attributes.copy()
+        cdict['groups'] = set(cdict['groups'])
+        del cdict['delete']
+        del cdict['hash_method']
+        del cdict['password']
+        del cdict['salt']
+        del cdict['use_shadow']
+        return cdict
 
     def fix(self, status):
-        if status.info['exists']:
-            if self.attributes['delete']:
-                msg = _("{node}:{bundle}:{item}: deleting...")
-            else:
-                msg = _("{node}:{bundle}:{item}: updating...")
-        else:
-            msg = _("{node}:{bundle}:{item}: creating...")
-        io.stdout(msg.format(bundle=self.bundle.name, item=self.id, node=self.node.name))
-
-        if self.attributes['delete']:
+        if not status.cdict:
             self.node.run("userdel {}".format(self.name), may_fail=True)
         else:
-            command = "useradd " if not status.info['exists'] else "usermod "
+            command = "useradd " if not status.sdict else "usermod "
             for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
-                if attr in status.info['needs_fixing'] and self.attributes[attr] is not None:
+                if attr in status.keys and self.attributes[attr] is not None:
                     if attr == 'groups':
                         value = ",".join(self.attributes[attr])
                     else:
@@ -183,40 +137,19 @@ class User(Item):
             command += self.name
             self.node.run(command, may_fail=True)
 
-    def get_status(self):
+    def sdict(self):
         # verify content of /etc/passwd
         passwd_grep_result = self.node.run(
             "grep -e '^{}:' /etc/passwd".format(self.name),
             may_fail=True,
         )
         if passwd_grep_result.return_code != 0:
-            return ItemStatus(
-                correct=self.attributes['delete'],
-                info={'exists': False, 'needs_fixing': sorted(_ATTRIBUTE_OPTIONS.keys())},
-            )
-        elif self.attributes['delete']:
-            return ItemStatus(correct=False, info={
-                'exists': True,
-                'needs_fixing': sorted(_ATTRIBUTE_OPTIONS.keys()),
-            })
+            return {}
 
-        status = ItemStatus(correct=True, info={'exists': True})
-        status.info['needs_fixing'] = []
+        sdict = _parse_passwd_line(passwd_grep_result.stdout_text)
 
-        status.info.update(_parse_passwd_line(passwd_grep_result.stdout_text))
-
-        if self.attributes['gid'] is not None:
-            if self.attributes['gid'].isdigit():
-                if int(self.attributes['gid']) != status.info['gid']:
-                    status.info['needs_fixing'].append('gid')
-            elif _group_name_for_gid(self.node, status.info['gid']) != self.attributes['gid']:
-                status.info['needs_fixing'].append('gid')
-
-        for fieldname in ('uid', 'full_name', 'home', 'shell'):
-            if self.attributes[fieldname] is None:
-                continue
-            if status.info[fieldname] != self.attributes[fieldname]:
-                status.info['needs_fixing'].append(fieldname)
+        if self.attributes['gid'] is not None and not self.attributes['gid'].isdigit():
+            sdict['gid'] = _group_name_for_gid(self.node, sdict['gid'])
 
         if self.attributes['password_hash'] is not None:
             if self.attributes['use_shadow']:
@@ -226,27 +159,17 @@ class User(Item):
                     may_fail=True,
                 )
                 if shadow_grep_result.return_code != 0:
-                    status.info['shadow_hash'] = None
-                    status.info['needs_fixing'].append('password')
+                    sdict['password_hash'] = None
                 else:
-                    status.info['shadow_hash'] = shadow_grep_result.stdout_text.split(":")[1]
-                    if status.info['shadow_hash'] != self.attributes['password_hash']:
-                        status.info['needs_fixing'].append('password_hash')
+                    sdict['password_hash'] = shadow_grep_result.stdout_text.split(":")[1]
             else:
-                if status.info['passwd_hash'] != self.attributes['password_hash']:
-                    status.info['needs_fixing'].append('password_hash')
+                sdict['password_hash'] = sdict['passwd_hash']
+        del sdict['passwd_hash']
 
         # verify content of /etc/group
-        status.info['groups'] = _groups_for_user(self.node, self.name)
+        sdict['groups'] = set(_groups_for_user(self.node, self.name))
 
-        if self.attributes['groups'] is not None and \
-                set(self.attributes['groups']) != set(status.info['groups']):
-            status.info['needs_fixing'].append('groups')
-
-        if status.info['needs_fixing']:
-            status.correct = False
-
-        return status
+        return sdict
 
     def patch_attributes(self, attributes):
         if attributes.get('password', None) is not None:

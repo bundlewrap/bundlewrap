@@ -35,56 +35,25 @@ class Symlink(Item):
             self.attributes['target'],
         )
 
-    def ask(self, status):
-        if 'type' in status.info['needs_fixing']:
-            if not status.info['path_info'].exists:
-                return _("Doesn't exist.")
-            else:
-                return "{} {} → {}\n".format(
-                    bold(_("type")),
-                    status.info['path_info'].desc,
-                    _("file"),
-                )
-
-        question = ""
-
-        if 'owner' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("owner")),
-                status.info['path_info'].owner,
-                self.attributes['owner'],
-            )
-
-        if 'group' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("group")),
-                status.info['path_info'].group,
-                self.attributes['group'],
-            )
-
-        if 'target' in status.info['needs_fixing']:
-            question += "{} {}\n".format(
-                bold(_("target")),
-                status.info['path_info'].symlink_target,
-            )
-            question += "{}{} {}\n".format(
-                " " * (len(_("target")) - 1),
-                bold("→"),
-                self.attributes['target'],
-            )
-
-        return question.rstrip("\n")
+    def cdict(self):
+        cdict = {
+            'target': self.attributes['target'],
+            'type': 'symlink',
+        }
+        for optional_attr in ('group', 'owner'):
+            if self.attributes[optional_attr] is not None:
+                cdict[optional_attr] = self.attributes[optional_attr]
+        return cdict
 
     def fix(self, status):
-        if 'type' in status.info['needs_fixing']:
+        if 'type' in status.keys:
             # fixing the type fixes everything
             self._fix_type(status)
             return
 
         for fix_type in ('owner', 'group', 'target'):
-            if fix_type in status.info['needs_fixing']:
-                if fix_type == 'group' and \
-                        'owner' in status.info['needs_fixing']:
+            if fix_type in status.keys:
+                if fix_type == 'group' and 'owner' in status.keys:
                     # owner and group are fixed with a single chown
                     continue
                 getattr(self, "_fix_" + fix_type)(status)
@@ -139,26 +108,16 @@ class Symlink(Item):
                     deps.append(item.id)
         return deps
 
-    def get_status(self):
-        correct = True
+    def sdict(self):
         path_info = PathInfo(self.node, self.name)
-        status_info = {'needs_fixing': [], 'path_info': path_info}
-
-        if not path_info.is_symlink:
-            status_info['needs_fixing'].append('type')
+        if not path_info.exists:
+            return {}
         else:
-            if path_info.symlink_target != self.attributes['target']:
-                status_info['needs_fixing'].append('target')
-            if self.attributes['owner'] is not None and \
-                    path_info.owner != self.attributes['owner']:
-                status_info['needs_fixing'].append('owner')
-            if self.attributes['group'] is not None and \
-                    path_info.group != self.attributes['group']:
-                status_info['needs_fixing'].append('group')
-
-        if status_info['needs_fixing']:
-            correct = False
-        return ItemStatus(correct=correct, info=status_info)
+            return {
+                'type': path_info.path_type,
+                'owner': path_info.owner,
+                'group': path_info.group,
+            }
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):

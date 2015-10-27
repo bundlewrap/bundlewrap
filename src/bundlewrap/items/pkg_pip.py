@@ -51,6 +51,12 @@ class PipPkg(Item):
             self.attributes['installed'],
         )
 
+    def cdict(self):
+        cdict = {'installed': self.attributes['installed']}
+        if self.attributes.get('version') is not None:
+            cdict['version'] = self.attributes['version']
+        return cdict
+
     def fix(self, status):
         if self.attributes['installed'] is False:
             pkg_remove(self.node, self.name)

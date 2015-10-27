@@ -55,6 +55,10 @@ class PacmanPkg(Item):
             self.attributes['tarball'],
         )
 
+    def cdict(self):
+        # TODO/FIXME: this is bad because it ignores tarball
+        return {'installed': self.attributes['installed']}
+
     def fix(self, status):
         if self.attributes['installed'] is False:
             pkg_remove(self.node, self.name)

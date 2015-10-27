@@ -4,8 +4,7 @@ from __future__ import unicode_literals
 from passlib.apps import postgres_context
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils.text import bold, red
+from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
@@ -13,12 +12,6 @@ AUTHID_COLUMNS = {
     "rolcanlogin": 'can_login',
     "rolsuper": 'superuser',
     "rolpassword": 'password_hash',
-}
-
-ATTRS = {
-    'can_login': _("login allowed"),
-    'password_hash': _("password hash"),
-    'superuser': _("superuser"),
 }
 
 
@@ -83,57 +76,24 @@ class PostgresRole(Item):
     def __repr__(self):
         return "<PostgresRole name:{}>".format(self.name)
 
-    def ask(self, status):
-        if not status.info['exists'] and not self.attributes['delete']:
-            return _("Doesn't exist. Do you want to create it?")
-        if status.info['exists'] and self.attributes['delete']:
-            return red(_("Will be deleted."))
-        output = []
-        for attr, attr_pretty in ATTRS.items():
-            if self.attributes[attr] is None:
-                continue
-            if status.info[attr] != self.attributes[attr]:
-                if attr in ('password_hash',):
-                    output.append("{}  {}\n{}→  {}".format(
-                        bold(attr_pretty),
-                        status.info[attr],
-                        " " * (len(attr_pretty) - 1),
-                        self.attributes[attr],
-                    ))
-                else:
-                    output.append("{}  {} → {}".format(
-                        bold(attr_pretty),
-                        status.info[attr],
-                        self.attributes[attr],
-                    ))
-        return "\n".join(output)
+    def cdict(self):
+        if self.attributes['delete']:
+            return {}
+        cdict = self.attributes.copy()
+        del cdict['delete']
+        del cdict['password']
+        return cdict
 
     def fix(self, status):
-        if 'existence' in status.info['needs_fixing']:
-            if self.attributes['delete']:
-                delete_role(self.node, self.name)
-            else:
-                fix_role(self.node, self.name, self.attributes, create=True)
+        if not status.cdict:
+            delete_role(self.node, self.name)
+        elif not status.sdict:
+            fix_role(self.node, self.name, self.attributes, create=True)
         else:
             fix_role(self.node, self.name, self.attributes)
 
-    def get_status(self):
-        role_attrs = get_role(self.node, self.name)
-        status_info = {
-            'exists': bool(role_attrs),
-            'needs_fixing': [],
-        }
-        status_info.update(role_attrs)
-
-        if self.attributes['delete'] == status_info['exists']:
-            status_info['needs_fixing'].append('existence')
-
-        if not self.attributes['delete'] and status_info['exists']:
-            for attr in ATTRS.keys():
-                if self.attributes[attr] is not None and self.attributes[attr] != role_attrs[attr]:
-                    status_info['needs_fixing'].append(attr)
-
-        return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
+    def sdict(self):
+        return get_role(self.node, self.name)
 
     def patch_attributes(self, attributes):
         if 'password' in attributes:

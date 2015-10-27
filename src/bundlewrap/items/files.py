@@ -13,7 +13,7 @@ from tempfile import mkstemp
 from traceback import format_exception
 
 from bundlewrap.exceptions import BundleError, TemplateError
-from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
+from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, sha1
 from bundlewrap.utils.remote import PathInfo
@@ -327,7 +327,7 @@ class File(Item):
     def cdict(self):
         if self.attributes['delete']:
             return {}
-        cdict = {}
+        cdict = {'type': 'file'}
         if self.attributes['content_type'] != 'any':
             cdict['content_hash'] = self.content_hash
         for optional_attr in ('group', 'mode', 'owner'):

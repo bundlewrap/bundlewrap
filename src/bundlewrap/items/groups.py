@@ -2,11 +2,9 @@
 from __future__ import unicode_literals
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
+from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.users import _USERNAME_VALID_CHARACTERS
 from bundlewrap.utils.text import mark_for_translation as _
-from bundlewrap.utils.text import bold
-from bundlewrap.utils.ui import io
 
 
 def _parse_group_line(line):
@@ -38,25 +36,16 @@ class Group(Item):
     def __repr__(self):
         return "<Group name:{}>".format(self.name)
 
-    def ask(self, status):
-        if not status.info['exists']:
-            return _("'{}' not found in /etc/group").format(self.name)
-        elif self.attributes['delete']:
-            return _("'{}' found in /etc/group. Will be deleted.").format(self.name)
-        else:
-            return "{} {} → {}\n".format(
-                bold(_("GID")),
-                status.info['gid'],
-                self.attributes['gid'],
-            )
+    def cdict(self):
+        if self.attributes['delete']:
+            return {}
+        cdict = {}
+        if self.attributes.get('gid') is not None:
+            cdict['gid'] = self.attributes['gid']
+        return cdict
 
     def fix(self, status):
         if not status.info['exists']:
-            io.stdout(_("{node}:{bundle}:{item}: creating...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             if self.attributes['gid'] is None:
                 command = "groupadd {}".format(self.name)
             else:
@@ -66,18 +55,8 @@ class Group(Item):
                 )
             self.node.run(command, may_fail=True)
         elif self.attributes['delete']:
-            io.stdout(_("{node}:{bundle}:{item}: deleting...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             self.node.run("groupdel {}".format(self.name), may_fail=True)
         else:
-            io.stdout(_("{node}:{bundle}:{item}: updating...").format(
-                bundle=self.bundle.name,
-                item=self.id,
-                node=self.node.name,
-            ))
             self.node.run(
                 "groupmod -g {gid} {groupname}".format(
                     gid=self.attributes['gid'],
@@ -86,23 +65,17 @@ class Group(Item):
                 may_fail=True,
             )
 
-    def get_status(self):
+    def sdict(self):
         # verify content of /etc/group
         grep_result = self.node.run(
             "grep -e '^{}:' /etc/group".format(self.name),
             may_fail=True,
         )
         if grep_result.return_code != 0:
-            return ItemStatus(correct=self.attributes['delete'], info={'exists': False})
+            return {}
+        else:
+            return _parse_group_line(grep_result.stdout_text)
 
-        status = ItemStatus(correct=not self.attributes['delete'], info={'exists': True})
-        status.info.update(_parse_group_line(grep_result.stdout_text))
-
-        if self.attributes['gid'] is not None and \
-                status.info['gid'] != self.attributes['gid']:
-            status.correct = False
-
-        return status
     def patch_attributes(self, attributes):
         if attributes.get('gid') is not None:
             attributes['gid'] = int(attributes['gid'])

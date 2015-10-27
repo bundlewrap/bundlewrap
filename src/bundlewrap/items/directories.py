@@ -6,11 +6,10 @@ from os.path import normpath
 from pipes import quote
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import Item, ItemStatus
+from bundlewrap.items import Item
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import mark_for_translation as _
-from bundlewrap.utils.text import bold, is_subdirectory
-from bundlewrap.utils.ui import io
+from bundlewrap.utils.text import is_subdirectory
 
 
 def validator_mode(item_id, value):
@@ -54,74 +53,26 @@ class Directory(Item):
             quote(self.name),
         )
 
-    def ask(self, status):
-        if 'type' in status.info['needs_fixing']:
-            if not status.info['path_info'].exists:
-                return _("Doesn't exist. Do you want to create it?")
-            else:
-                return _(
-                    "Not a directory. "
-                    "The `file` utility says it's a '{}'.\n"
-                    "Do you want it removed and replaced?"
-                ).format(
-                    status.info['path_info'].desc,
-                )
-
-        question = ""
-
-        if 'mode' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("mode")),
-                status.info['path_info'].mode,
-                self.attributes['mode'],
-            )
-
-        if 'owner' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("owner")),
-                status.info['path_info'].owner,
-                self.attributes['owner'],
-            )
-
-        if 'group' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("group")),
-                status.info['path_info'].group,
-                self.attributes['group'],
-            )
-
-        return question.rstrip("\n")
+    def cdict(self):
+        if self.attributes['delete']:
+            return {}
+        cdict = {'type': 'directory'}
+        for optional_attr in ('group', 'mode', 'owner'):
+            if self.attributes[optional_attr] is not None:
+                cdict[optional_attr] = self.attributes[optional_attr]
+        return cdict
 
     def fix(self, status):
-        if 'type' in status.info['needs_fixing']:
+        if 'type' in status.keys:
             # fixing the type fixes everything
-            if status.info['path_info'].exists:
-                io.stdout(_("{node}:{bundle}:{item}: fixing type...").format(
-                    bundle=self.bundle.name,
-                    item=self.id,
-                    node=self.node.name,
-                ))
-            else:
-                io.stdout(_("{node}:{bundle}:{item}: creating...").format(
-                    bundle=self.bundle.name,
-                    item=self.id,
-                    node=self.node.name,
-                ))
             self._fix_type(status)
             return
 
         for fix_type in ('mode', 'owner', 'group'):
-            if fix_type in status.info['needs_fixing']:
-                if fix_type == 'group' and \
-                        'owner' in status.info['needs_fixing']:
+            if fix_type in status.keys:
+                if fix_type == 'group' and 'owner' in status.keys:
                     # owner and group are fixed with a single chown
                     continue
-                io.stdout(_("{node}:{bundle}:{item}: fixing {fix_type}...").format(
-                    bundle=self.bundle.name,
-                    item=self.id,
-                    fix_type=fix_type,
-                    node=self.node.name,
-                ))
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_mode(self, status):
@@ -179,27 +130,17 @@ class Directory(Item):
                     deps.append(item.id)
         return deps
 
-    def get_status(self):
-        correct = True
+    def sdict(self):
         path_info = PathInfo(self.node, self.name)
-        status_info = {'needs_fixing': [], 'path_info': path_info}
-
-        if not path_info.is_directory:
-            status_info['needs_fixing'].append('type')
+        if not path_info.exists:
+            return {}
         else:
-            if self.attributes['mode'] is not None and \
-                    path_info.mode != self.attributes['mode']:
-                status_info['needs_fixing'].append('mode')
-            if self.attributes['owner'] is not None and \
-                    path_info.owner != self.attributes['owner']:
-                status_info['needs_fixing'].append('owner')
-            if self.attributes['group'] is not None and \
-                    path_info.group != self.attributes['group']:
-                status_info['needs_fixing'].append('group')
-
-        if status_info['needs_fixing']:
-            correct = False
-        return ItemStatus(correct=correct, info=status_info)
+            return {
+                'type': path_info.path_type,
+                'mode': path_info.mode,
+                'owner': path_info.owner,
+                'group': path_info.group,
+            }
 
     def patch_attributes(self, attributes):
         if 'mode' in attributes and attributes['mode'] is not None:

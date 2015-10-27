@@ -4,8 +4,7 @@ from __future__ import unicode_literals
 from pipes import quote
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import Item, ItemStatus
-from bundlewrap.utils.text import bold, green, red
+from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
@@ -15,10 +14,7 @@ def svc_start(node, svcname):
 
 def svc_running(node, svcname):
     result = node.run("initctl status -- {}".format(quote(svcname)))
-    if " start/" not in result.stdout_text:
-        return False
-    else:
-        return True
+    return " start/" in result.stdout_text
 
 
 def svc_stop(node, svcname):
@@ -47,17 +43,6 @@ class SvcUpstart(Item):
             self.attributes['running'],
         )
 
-    def ask(self, status):
-        before = _("running") if status.info['running'] \
-            else _("not running")
-        after = green(_("running")) if self.attributes['running'] \
-            else red(_("not running"))
-        return "{} {} → {}\n".format(
-            bold(_("status")),
-            before,
-            after,
-        )
-
     def fix(self, status):
         if self.attributes['running'] is False:
             svc_stop(self.node, self.name)
@@ -80,13 +65,8 @@ class SvcUpstart(Item):
             },
         }
 
-    def get_status(self):
-        service_running = svc_running(self.node, self.name)
-        item_status = (service_running == self.attributes['running'])
-        return ItemStatus(
-            correct=item_status,
-            info={'running': service_running},
-        )
+    def sdict(self):
+        return {'running': svc_running(self.node, self.name)}
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):

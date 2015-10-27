@@ -101,6 +101,7 @@ TYPE_DIFFS = {
     float: diff_value_int,
     int: diff_value_int,
     list: diff_value_list,
+    set: diff_value_list,
     text_type: diff_value_text,
     tuple: diff_value_list,
 }
