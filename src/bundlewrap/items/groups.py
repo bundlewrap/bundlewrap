@@ -103,6 +103,10 @@ class Group(Item):
             status.correct = False
 
         return status
+    def patch_attributes(self, attributes):
+        if attributes.get('gid') is not None:
+            attributes['gid'] = int(attributes['gid'])
+        return attributes
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
