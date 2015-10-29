@@ -105,6 +105,20 @@ class PostgresRole(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
+        if attributes.get('password') is None and attributes.get('password_hash') is None:
+            raise BundleError(_(
+                "expected either 'password' or 'password_hash' on {item} in bundle '{bundle}'"
+            ).format(
+                bundle=bundle.name,
+                item=item_id,
+            ))
+        if attributes.get('password') is not None and attributes.get('password_hash') is not None:
+            raise BundleError(_(
+                "can't define both 'password' and 'password_hash' on {item} in bundle '{bundle}'"
+            ).format(
+                bundle=bundle.name,
+                item=item_id,
+            ))
         if not isinstance(attributes.get('delete', True), bool):
             raise BundleError(_(
                 "expected boolean for 'delete' on {item} in bundle '{bundle}'"
