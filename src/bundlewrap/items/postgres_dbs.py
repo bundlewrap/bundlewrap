@@ -56,6 +56,7 @@ class PostgresDB(Item):
         "pkg_pacman:",
         "pkg_yum:",
         "pkg_zypper:",
+        "pkg_pkgsrc:",
         "postgres_role:",
     ]
     def __repr__(self):

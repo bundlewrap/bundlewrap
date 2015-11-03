@@ -78,6 +78,7 @@ class PostgresRole(Item):
         "pkg_pacman:",
         "pkg_yum:",
         "pkg_zypper:",
+        "pkg_pkgsrc:",
     ]
 
     def __repr__(self):
