@@ -86,7 +86,7 @@ class SvcSmf(Item):
                 'needs': [self.id],
             },
             'restart': {
-                'command': "svcadm refresh {}".format(self.name),
+                'command': "svcadm restart {}".format(self.name),
                 'needs': [self.id],
             },
         }
