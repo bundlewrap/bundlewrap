@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from collections import defaultdict
 from datetime import datetime
-from difflib import unified_diff
 from os import remove
 from os.path import basename, dirname, exists, join, normpath
 from pipes import quote
@@ -18,7 +17,7 @@ from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, sha1
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import force_text, mark_for_translation as _
-from bundlewrap.utils.text import bold, green, is_subdirectory, red
+from bundlewrap.utils.text import is_subdirectory
 from bundlewrap.utils.ui import io
 
 
@@ -135,40 +134,6 @@ CONTENT_PROCESSORS = {
 }
 
 
-def diff(content_old, content_new, filename, encoding_hint=None):
-    output = ""
-    io.debug("diffing {filename}: {len_before} B before, {len_after} B after".format(
-        filename=filename,
-        len_before=len(content_old),
-        len_after=len(content_new),
-    ))
-    content_old = force_text(content_old)
-    content_new = force_text(content_new)
-    start = datetime.now()
-    for line in unified_diff(
-        content_old.splitlines(True),
-        content_new.splitlines(True),
-        fromfile=filename,
-        tofile=_("<bundlewrap content>"),
-    ):
-        suffix = ""
-        line = force_text(line).rstrip("\n")
-        if len(line) > DIFF_MAX_LINE_LENGTH:
-            line = line[:DIFF_MAX_LINE_LENGTH]
-            suffix += _(" (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)
-        if line.startswith("+"):
-            line = green(line)
-        elif line.startswith("-"):
-            line = red(line)
-        output += line + suffix + "\n"
-    duration = datetime.now() - start
-    io.debug("diffing {file}: complete after {time}s".format(
-        file=filename,
-        time=duration.total_seconds(),
-    ))
-    return output
-
-
 def get_remote_file_contents(node, path):
     """
     Returns the contents of the given path as a string.
@@ -253,76 +218,6 @@ class File(Item):
         if exists(data_template):
             return data_template
         return join(self.item_dir, self.attributes['source'])
-
-    def ask(self, status):
-        if 'type' in status.info['needs_fixing']:
-            if not status.info['path_info'].exists:
-                return _("Doesn't exist.")
-            elif self.attributes['delete']:
-                if status.info['path_info'].is_directory:
-                    return _("Directory and its contents will be deleted.")
-                else:
-                    return _("File will be deleted.")
-            else:
-                return "{} {} → {}\n".format(
-                    bold(_("type")),
-                    status.info['path_info'].desc,
-                    _("file"),
-                )
-
-        question = ""
-
-        if 'content' in status.info['needs_fixing']:
-            question += bold(_("content "))
-            if (
-                status.info['path_info'].is_text_file and
-                not self.attributes['content_type'] == 'binary'
-            ):
-                if status.info['path_info'].size > DIFF_MAX_FILE_SIZE:
-                    question += _("(remote file larger than {} bytes, skipping diff)\n").format(
-                        DIFF_MAX_FILE_SIZE,
-                    )
-                elif len(self.content) > DIFF_MAX_FILE_SIZE:
-                    question += _("(new content larger than {} bytes, skipping diff)\n").format(
-                        DIFF_MAX_FILE_SIZE,
-                    )
-                else:
-                    content_is = get_remote_file_contents(self.node, self.name)
-                    content_should = self.content
-                    question += "\n" + diff(
-                        content_is,
-                        content_should,
-                        self.name,
-                        encoding_hint=self.attributes['encoding'],
-                    ) + "\n"
-            else:
-                question += "'{}' → {}\n".format(
-                    status.info['path_info'].desc,
-                    _("<bundlewrap content>"),
-                )
-
-        if 'mode' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("mode")),
-                status.info['path_info'].mode,
-                self.attributes['mode'],
-            )
-
-        if 'owner' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("owner")),
-                status.info['path_info'].owner,
-                self.attributes['owner'],
-            )
-
-        if 'group' in status.info['needs_fixing']:
-            question += "{} {} → {}\n".format(
-                bold(_("group")),
-                status.info['path_info'].group,
-                self.attributes['group'],
-            )
-
-        return question.rstrip("\n")
 
     def cdict(self):
         if self.attributes['delete']:
