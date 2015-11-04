@@ -29,6 +29,8 @@ While the following list might appear long, even very minimal systems should pro
 * sftp-enabled SSH server (your home directory must be writable)
 * :command:`sudo`
 * :command:`sha1sum`
+* :command:`svcadm` (only used with :doc:`svc_smf <item_svc_smf>` items)
+* :command:`svcs` (only used with :doc:`svc_smf <item_svc_smf>` items)
 * :command:`systemctl` (only used with :doc:`svc_systemd <item_svc_systemd>` items)
 * :command:`test`
 * :command:`useradd`

@@ -101,7 +101,9 @@ This table lists all item types included in BundleWrap along with the bundle att
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
 | :doc:`svc_systemd <item_svc_systemd>`     | ``svc_systemd``    | Starts and stops services with systemd                                                 |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
-| :doc:`svc_systemv <item_svc_systemv>`     | ``svc_systemv``    | Starts and stops services with traditional System V init scripts                       |
+| :doc:`svc_systemv <item_svc_smf>`         | ``svc_systemv``    | Starts and stops services with traditional System V init scripts                       |
++-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
+| :doc:`svc_smf <item_svc_smf>`             | ``svc_smf``        | Starts and stops services with the service management facility                         |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
 | :doc:`symlink <item_symlink>`             | ``symlinks``       | Manages symbolic links and their ownership                                             |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
