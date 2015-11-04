@@ -22,6 +22,7 @@ While the following list might appear long, even very minimal systems should pro
 * :command:`initctl` (only used with :doc:`svc_upstart <item_svc_upstart>` items)
 * :command:`mkdir`
 * :command:`mv`
+* :command:`pkgin` (only used with :doc:`pkg_pkgsrc <item_pkg_pkgsrc>` items)
 * :command:`pacman` (only used with :doc:`pkg_pacman <item_pkg_pacman>` items)
 * :command:`rm`
 * :command:`sed`
