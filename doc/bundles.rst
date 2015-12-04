@@ -16,6 +16,7 @@ Bundles
 	item_pkg_pip
 	item_pkg_yum
 	item_pkg_zypper
+	item_pkg_pkgsrc
 	item_postgres_db
 	item_postgres_role
 	item_svc_upstart
@@ -88,6 +89,8 @@ This table lists all item types included in BundleWrap along with the bundle att
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
 | :doc:`pkg_zypper <item_pkg_zypper>`       | ``pkg_zypper``     | Installs and removes packages with zypper                                              |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
+| :doc:`pkg_pkgsrc <item_pkg_pkgsrc>`       | ``pkg_pkgsrc``     | Installs and removes packages with pkgsrc                                              |
++-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
 | :doc:`postgres_db <item_postgres_db>`     | ``postgres_dbs``   | Manages Postgres databases                                                             |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
 | :doc:`postgres_role <item_postgres_role>` | ``postgres_roles`` | Manages Postgres roles                                                                 |
@@ -98,7 +101,9 @@ This table lists all item types included in BundleWrap along with the bundle att
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
 | :doc:`svc_systemd <item_svc_systemd>`     | ``svc_systemd``    | Starts and stops services with systemd                                                 |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
-| :doc:`svc_systemv <item_svc_systemv>`     | ``svc_systemv``    | Starts and stops services with traditional System V init scripts                       |
+| :doc:`svc_systemv <item_svc_smf>`         | ``svc_systemv``    | Starts and stops services with traditional System V init scripts                       |
++-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
+| :doc:`svc_smf <item_svc_smf>`             | ``svc_smf``        | Starts and stops services with the service management facility                         |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+
 | :doc:`symlink <item_symlink>`             | ``symlinks``       | Manages symbolic links and their ownership                                             |
 +-------------------------------------------+--------------------+----------------------------------------------------------------------------------------+

@@ -11,30 +11,33 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def svc_start(node, svcname):
-    return node.run("initctl start --no-wait -- {}".format(quote(svcname)))
+    return node.run("svcadm enable {}".format(quote(svcname)))
 
 
 def svc_running(node, svcname):
-    result = node.run("initctl status -- {}".format(quote(svcname)))
-    if " start/" not in result.stdout:
+    result = node.run(
+        "svcs -H -o state {}".format(quote(svcname)),
+        may_fail=True,
+    )
+    if result.return_code != 0 or "online" not in result.stdout:
         return False
     else:
         return True
 
 
 def svc_stop(node, svcname):
-    return node.run("initctl stop --no-wait -- {}".format(quote(svcname)))
+    return node.run("svcadm disable {}".format(quote(svcname)))
 
 
-class SvcUpstart(Item):
+class SvcSmf(Item):
     """
-    A service managed by Upstart.
+    A service managed by the (Solaris) Service Management Facility.
     """
-    BUNDLE_ATTRIBUTE_NAME = "svc_upstart"
+    BUNDLE_ATTRIBUTE_NAME = "svc_smf"
     ITEM_ATTRIBUTES = {
         'running': True,
     }
-    ITEM_TYPE_NAME = "svc_upstart"
+    ITEM_TYPE_NAME = "svc_smf"
     NEEDS_STATIC = [
         "pkg_apt:",
         "pkg_pacman:",
@@ -44,7 +47,7 @@ class SvcUpstart(Item):
     ]
 
     def __repr__(self):
-        return "<SvcUpstart name:{} running:{}>".format(
+        return "<SvcSmf name:{} running:{}>".format(
             self.name,
             self.attributes['running'],
         )
@@ -79,15 +82,11 @@ class SvcUpstart(Item):
     def get_canned_actions(self):
         return {
             'reload': {
-                'command': "reload {}".format(self.name),
+                'command': "svcadm refresh {}".format(self.name),
                 'needs': [self.id],
             },
             'restart': {
-                'command': "restart {}".format(self.name),
-                'needs': [self.id],
-            },
-            'stopstart': {
-                'command': "stop {0} && start {0}".format(self.name),
+                'command': "svcadm restart {}".format(self.name),
                 'needs': [self.id],
             },
         }
