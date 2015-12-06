@@ -40,9 +40,11 @@ def get_path_type(node, path):
 
 
 def stat(node, path):
-    result = node.run("stat -c '%U:%G:%a:%s' -- {}".format(quote(path)))
+    result = node.run(
+        "stat -c '%U:%G:%a:%s' -- {0} || stat -f '%Su:%Sg:%p:%z' -- {0}".format(quote(path))
+    )
     owner, group, mode, size = force_text(result.stdout).split(":")
-    mode = mode.zfill(4)
+    mode = mode[-4:].zfill(4)  # cut off BSD file type
     file_stat = {
         'owner': owner,
         'group': group,
@@ -115,7 +117,9 @@ class PathInfo(object):
 
     @cached_property
     def sha1(self):
-        result = self.node.run("sha1sum -- " + quote(self.path))
+        result = self.node.run(
+            "sha1sum -- {0} || sha1 -q -- {0} || shasum -a 1 -- {0}".format(quote(self.path))
+        )
         return force_text(result.stdout).strip().split()[0]
 
     @property
