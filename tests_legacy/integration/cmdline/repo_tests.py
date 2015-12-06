@@ -44,10 +44,10 @@ class RepoBundleCreateTest(TestCase):
     def test_simple_create(self, exit):
         chdir(self.tmpdir)
         main("repo", "create")
-        self.assertFalse(isfile(join(self.tmpdir, "bundles", "test", "bundle.py")))
+        self.assertFalse(isfile(join(self.tmpdir, "bundles", "test", "items.py")))
         self.assertFalse(isdir(join(self.tmpdir, "bundles", "test", "files")))
         main("repo", "bundle", "create", "test")
-        self.assertTrue(isfile(join(self.tmpdir, "bundles", "test", "bundle.py")))
+        self.assertTrue(isfile(join(self.tmpdir, "bundles", "test", "items.py")))
         self.assertTrue(isdir(join(self.tmpdir, "bundles", "test", "files")))
 
 

@@ -10,7 +10,7 @@ from .utils.text import mark_for_translation as _
 from .utils.text import validate_name
 
 
-FILENAME_BUNDLE = "bundle.py"
+FILENAME_BUNDLE = "items.py"
 
 
 class Bundle(object):

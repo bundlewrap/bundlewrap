@@ -1,3 +1,6 @@
+from ..bundle import FILENAME_BUNDLE
+
+
 def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     bundles = {} if bundles is None else bundles
     groups = {} if groups is None else groups
@@ -6,7 +9,7 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     bundles_dir = tmpdir.mkdir("bundles")
     for bundle, items in bundles.items():
         bundle_dir = bundles_dir.mkdir(bundle)
-        bundlepy = bundle_dir.join("bundle.py")
+        bundlepy = bundle_dir.join(FILENAME_BUNDLE)
         bundle_content = ""
         for itemtype, itemconfig in items.items():
             bundle_content += "{} = {}\n".format(itemtype, repr(itemconfig))

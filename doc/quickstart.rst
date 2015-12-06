@@ -99,7 +99,7 @@ To manage a file, you need two things:
 	1. a file item in your bundle
 	2. a template for the file contents
 
-Add this to your :file:`bundles/mybundle/bundle.py`:
+Add this to your :file:`bundles/mybundle/items.py`:
 
 .. code-block:: python
 
@@ -118,7 +118,7 @@ You can use this for example content::
 
 	Welcome to ${node.name}!
 
-Note that the "source" attribute in :file:`bundle.py` contains a path relative to the :file:`files` directory of your bundle. It's up to you how to organize the contents of this directory.
+Note that the "source" attribute in :file:`items.py` contains a path relative to the :file:`files` directory of your bundle. It's up to you how to organize the contents of this directory.
 
 |
 

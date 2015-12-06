@@ -24,7 +24,7 @@ Bundles
 	item_symlink
 	item_user
 
-Bundles are subdirectories of the :file:`bundles/` directory of your BundleWrap repository. Within each bundle, there must be a file called :file:`bundle.py`. They define any number of magic attributes that are automatically processed by BundleWrap. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
+Bundles are subdirectories of the :file:`bundles/` directory of your BundleWrap repository. Within each bundle, there must be a file called :file:`items.py`. They define any number of magic attributes that are automatically processed by BundleWrap. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
 
 A typical bundle might look like this:
 

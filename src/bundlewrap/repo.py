@@ -7,6 +7,7 @@ from os import listdir, mkdir
 from os.path import isdir, isfile, join
 
 from . import items
+from .bundle import FILENAME_BUNDLE
 from .exceptions import NoSuchGroup, NoSuchNode, NoSuchRepository, RepositoryError
 from .group import Group
 from .node import Node
@@ -363,7 +364,7 @@ class Repository(object):
         mkdir(bundle_dir)
         mkdir(join(bundle_dir, "files"))
 
-        open(join(bundle_dir, "bundle.py"), 'a').close()
+        open(join(bundle_dir, FILENAME_BUNDLE), 'a').close()
 
     def get_group(self, group_name):
         try:
