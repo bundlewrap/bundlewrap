@@ -123,12 +123,13 @@ class User(Item):
         return cdict
 
     def fix(self, status):
-        if not status.cdict:
+        if status.must_be_deleted:
             self.node.run("userdel {}".format(self.name), may_fail=True)
         else:
-            command = "useradd " if not status.sdict else "usermod "
+            command = "useradd " if status.must_be_created else "usermod "
             for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
-                if attr in status.keys and self.attributes[attr] is not None:
+                if (attr in status.keys_to_fix or status.must_be_created) and \
+                        self.attributes[attr] is not None:
                     if attr == 'groups':
                         value = ",".join(self.attributes[attr])
                     else:

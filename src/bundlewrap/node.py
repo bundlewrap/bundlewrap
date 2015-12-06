@@ -75,14 +75,14 @@ class ApplyResult(object):
         return self.end - self.start
 
 
-def handle_apply_result(node, item, status_code, interactive, sdict_keys=None):
+def handle_apply_result(node, item, status_code, interactive, changes=None):
     formatted_result = format_item_result(
         status_code,
         node.name,
         item.bundle.name if item.bundle else "",  # dummy items don't have bundles
         item.id,
         interactive=interactive,
-        sdict_keys=sdict_keys,
+        changes=changes,
     )
     if formatted_result is not None:
         if status_code == Item.STATUS_FAILED:
@@ -134,7 +134,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                 item_id = msg['task_id']
                 item = find_item(item_id, item_queue.pending_items)
 
-                status_code, keys = msg['return_value']
+                status_code, changes = msg['return_value']
 
                 if status_code == Item.STATUS_FAILED:
                     for skipped_item in item_queue.item_failed(item):
@@ -156,7 +156,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         ),
                     ))
 
-                handle_apply_result(node, item, status_code, interactive, sdict_keys=keys)
+                handle_apply_result(node, item, status_code, interactive, changes=changes)
                 if item.ITEM_TYPE_NAME != 'dummy':
                     yield (item.id, status_code, msg['duration'])
 
@@ -224,7 +224,8 @@ def _flatten_group_hierarchy(groups):
     return order
 
 
-def format_item_result(result, node, bundle, item, interactive=False):
+def format_item_result(result, node, bundle, item, interactive=False, changes=None):
+    # TODO use 'changes' (True when creating, False when deleting, list when editing)
     if result == Item.STATUS_FAILED:
         if interactive:
             return _("\n  {} {} failed").format(

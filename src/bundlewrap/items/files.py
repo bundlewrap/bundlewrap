@@ -231,31 +231,20 @@ class File(Item):
         return cdict
 
     def fix(self, status):
-        for fix_type in ('type', 'content', 'mode', 'owner', 'group'):
-            if fix_type in status.info['needs_fixing']:
-                if fix_type == 'group' and \
-                        'owner' in status.info['needs_fixing']:
-                    # owner and group are fixed with a single chown
-                    continue
-                if fix_type in ('mode', 'owner', 'group') and \
-                        'content' in status.info['needs_fixing']:
-                    # fixing content implies settings mode and owner/group
-                    continue
-                if status.info['path_info'].exists:
-                    if self.attributes['delete']:
-                        io.stdout(_("{node}:{bundle}:{item}: deleting...").format(
-                            bundle=self.bundle.name, node=self.node.name, item=self.id))
-                    else:
-                        io.stdout(_("{node}:{bundle}:{item}: fixing {type}...").format(
-                            bundle=self.bundle.name,
-                            item=self.id,
-                            node=self.node.name,
-                            type=fix_type,
-                        ))
-                else:
-                    io.stdout(_("{node}:{bundle}:{item}: creating...").format(
-                        bundle=self.bundle.name, item=self.id, node=self.node.name))
-                getattr(self, "_fix_" + fix_type)(status)
+        if status.must_be_created or status.must_be_deleted or 'type' in status.keys_to_fix:
+            self._fix_type(status)
+        else:
+            for fix_type in ('content', 'mode', 'owner', 'group'):
+                if fix_type in status.keys_to_fix:
+                    if fix_type == 'group' and \
+                            'owner' in status.keys_to_fix:
+                        # owner and group are fixed with a single chown
+                        continue
+                    if fix_type in ('mode', 'owner', 'group') and \
+                            'content' in status.keys_to_fix:
+                        # fixing content implies settings mode and owner/group
+                        continue
+                    getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content(self, status):
         local_path = self._write_local_file()
@@ -290,9 +279,9 @@ class File(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        if status.info['path_info'].exists:
+        if status.sdict:
             self.node.run("rm -rf -- {}".format(quote(self.name)))
-        if not self.attributes['delete']:
+        if not status.must_be_deleted:
             self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
             self._fix_content(status)
 

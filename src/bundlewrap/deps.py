@@ -38,7 +38,7 @@ class BundleItem(object):
         return "bundle:{}".format(self.bundle.name)
 
     def apply(self, *args, **kwargs):
-        return Item.STATUS_OK
+        return (Item.STATUS_OK, [])
 
     def test(self):
         pass
@@ -75,7 +75,7 @@ class DummyItem(object):
         return "{}:".format(self.item_type)
 
     def apply(self, *args, **kwargs):
-        return Item.STATUS_OK
+        return (Item.STATUS_OK, [])
 
     def test(self):
         pass

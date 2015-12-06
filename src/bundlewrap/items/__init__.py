@@ -52,14 +52,18 @@ class ItemStatus(object):
     def __init__(self, cdict, sdict):
         self.cdict = cdict
         self.sdict = sdict
-        self.keys = diff_keys(cdict, sdict)
+        self.keys_to_fix = []
+        self.must_be_deleted = (self.sdict and not self.cdict)
+        self.must_be_created = (self.cdict and not self.sdict)
+        if not self.must_be_deleted and not self.must_be_created:
+            self.keys_to_fix = diff_keys(cdict, sdict)
 
     def __repr__(self):
         return "<ItemStatus correct:{}>".format(self.correct)
 
     @property
     def correct(self):
-        return not bool(self.keys)
+        return not self.must_be_deleted and not self.must_be_created and not bool(self.keys_to_fix)
 
 
 class Item(object):
@@ -296,7 +300,6 @@ class Item(object):
         status_code = None
         status_before = None
         status_after = None
-        keys_to_fix = []
         start_time = datetime.now()
 
         if self.triggered and not self.has_been_triggered:
@@ -309,20 +312,25 @@ class Item(object):
 
         if status_code is None:
             status_before = self.cached_status
-            keys_to_fix = diff_keys(self.cached_cdict, status_before)
-            if not keys_to_fix:
+            if status_before.correct:
                 status_code = self.STATUS_OK
 
         if status_code is None:
             if not interactive:
                 self.fix(status_before)
             else:
+                if status_before.must_be_created:
+                    question_text = _("Doesn't exist. Will be created.")
+                elif status_before.must_be_deleted:
+                    question_text = _("Found on node. Will be removed.")
+                else:
+                    question_text = self.ask(
+                        self.sdict_verbose(status_before.sdict, status_before.keys_to_fix, True),
+                        self.sdict_verbose(self.cached_cdict, status_before.keys_to_fix, False),
+                    )
                 question = wrap_question(
                     self.id,
-                    self.ask(
-                        self.sdict_verbose(status_before, keys_to_fix, True),
-                        self.sdict_verbose(self.cached_cdict, keys_to_fix, False),
-                    ),
+                    question_text,
                     _("Fix {}?").format(bold(self.id)),
                 )
                 if io.ask(question, interactive_default):
@@ -334,6 +342,15 @@ class Item(object):
             status_after = self.get_status(cached=False)
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
+        if status_before.must_be_created:
+            changes = True
+        elif status_before.must_be_deleted:
+            changes = False
+        elif status_code == self.STATUS_FAILED:
+            changes = status_after.keys_to_fix
+        else:
+            changes = status_before.keys_to_fix
+
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
             self.node,
@@ -343,8 +360,7 @@ class Item(object):
             status_before=status_before,
             status_after=status_after,
         )
-
-        return (status_code, status_after.keys)
+        return (status_code, changes)
 
     def ask(self, status_actual, status_should):
         """
