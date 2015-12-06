@@ -301,30 +301,6 @@ class Node(object):
         return "<Node '{}'>".format(self.name)
 
     @cached_property
-    def _generated_items_by_bundle(self):
-        items = list(self._static_items)
-        generated_items_by_bundle = {}
-        while items:
-            item = items.pop()
-            for bundle in self.bundles:
-                if bundle.name not in generated_items_by_bundle:
-                    generated_items_by_bundle[bundle.name] = []
-                for item_generator_name in bundle.item_generator_names:
-                    module_name, function_name = item_generator_name.split(".")
-                    module = getattr(self.repo.libs, module_name)
-                    item_generator = getattr(module, function_name)
-                    new_items = item_generator(self, bundle, item)
-                    for item_attribute in new_items:
-                        for item_name, item_dict in new_items[item_attribute].items():
-                            new_item_obj = bundle.make_item(item_attribute, item_name, item_dict)
-                            items.append(new_item_obj)
-                            generated_items_by_bundle[bundle.name].append(new_item_obj)
-        return generated_items_by_bundle
-
-    def _generated_items_for_bundle(self, bundle):
-        return self._generated_items_by_bundle.get(bundle, [])
-
-    @cached_property
     def bundles(self):
         added_bundles = []
         found_bundles = []

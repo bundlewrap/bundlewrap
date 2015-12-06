@@ -54,16 +54,8 @@ class Bundle(object):
             },
         )
 
-    @property
-    def item_generator_names(self):
-        return self.bundle_attrs.get('item_generators', [])
-
     @cached_property
-    def _generated_items(self):
-        return self.node._generated_items_for_bundle(self.name)
-
-    @cached_property
-    def _static_items(self):
+    def items(self):
         for item_class in self.repo.item_classes:
             for item_name, item_attrs in self.bundle_attrs.get(
                 item_class.BUNDLE_ATTRIBUTE_NAME,
@@ -74,13 +66,6 @@ class Bundle(object):
                     item_name,
                     item_attrs,
                 )
-
-    @property
-    def items(self):
-        for item in self._static_items:
-            yield item
-        for item in self._generated_items:
-            yield item
 
     def make_item(self, attribute_name, item_name, item_attrs):
         for item_class in self.repo.item_classes:
