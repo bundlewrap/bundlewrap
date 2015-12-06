@@ -434,13 +434,25 @@ class Node(object):
         # step 2: node metadata
         m = merge_dict(m, self._node_metadata)
 
-        # step 3: metadata processors
-        for group_name in group_order:
-            group = self.repo.get_group(group_name)
-            for metadata_processor in group.metadata_processors:
-                m = metadata_processor(self.name, group_order, m)
+        # step 3: metadata.py
+        # TODO safeguard against endless loop
+        while True:
+            modified = False
+            for metadata_processor in self.metadata_processors:
+                processed = metadata_processor(m)
+                if processed is not None:
+                    m = processed
+                    modified = True
+            if not modified:
+                break
 
         return m
+
+    @property
+    def metadata_processors(self):
+        for bundle in self.bundles:
+            for metadata_processor in bundle.metadata_processors:
+                yield metadata_processor
 
     def run(self, command, may_fail=False, log_output=False):
         if log_output:

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from copy import copy
-from os.path import join
+from os.path import exists, join
 
 from .exceptions import NoSuchBundle, RepositoryError
 from .utils import cached_property, get_all_attrs_from_file
@@ -11,6 +11,7 @@ from .utils.text import validate_name
 
 
 FILENAME_BUNDLE = "items.py"
+FILENAME_METADATA = "metadata.py"
 
 
 class Bundle(object):
@@ -31,6 +32,7 @@ class Bundle(object):
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
         self.bundle_data_dir = join(self.repo.data_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
+        self.metadata_file = join(self.bundle_dir, FILENAME_METADATA)
 
     def __getstate__(self):
         """
@@ -79,3 +81,14 @@ class Bundle(object):
                 item=item_name,
             )
         )
+
+    @cached_property
+    def metadata_processors(self):
+        if not exists(self.metadata_file):
+            return []
+        result = []
+        for name, attr in get_all_attrs_from_file(self.metadata_file).items():
+            if name.startswith("_") or not callable(attr):
+                continue
+            result.append(attr)
+        return result

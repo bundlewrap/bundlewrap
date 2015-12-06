@@ -24,7 +24,7 @@ Bundles
 	item_symlink
 	item_user
 
-Bundles are subdirectories of the :file:`bundles/` directory of your BundleWrap repository. Within each bundle, there must be a file called :file:`items.py`. They define any number of magic attributes that are automatically processed by BundleWrap. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
+Bundles are subdirectories of the :file:`bundles/` directory of your BundleWrap repository. Within each bundle, there must be a file called :file:`items.py`. It defines any number of magic attributes that are automatically processed by BundleWrap. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
 
 A typical bundle might look like this:
 
@@ -305,5 +305,23 @@ Some item types have what we call "canned actions". Those are pre-defined action
 	}
 
 Canned actions always have to be triggered in order to run. In the example above, a change in the file :file:`/etc/mysql/my.cnf` will trigger the ``reload`` action defined by the :doc:`svc_upstart item type <item_svc_upstart>` for the mysql service.
+
+|
+
+.. _metadatapy:
+
+metadata.py
+-----------
+
+Alongside :file:`items.py` you may create another file called :file:`metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before :file:`items.py` is evaluated. To do that, you simply write any number of functions whose name doesn't start with an underscore and put them into :file:`metadata.py`. These functions take the metadata dictionary generated so far as their single argument. You may then return the same dictionary with your modifications or `None` if you don't want to make further changes. These function are called metadata processors. Every metadata processor from every bundle is called repeatedly with the latest metadata dictionary until they all return `None`. It is vital that every metadata processor can recognize when it already has done its job and then returns `None` (otherwise you'll get stuck in an infinite loop). Here's an example for how a :file:`metadata.py` could look like:
+
+.. code-block:: python
+
+	def my_metadata_processor(metadata):
+	    if "foo" in metadata:
+	        return None
+	    else:
+	        metadata["foo"] = metadata.get("bar", "baz")
+	        return metadata
 
 |
