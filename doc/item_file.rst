@@ -36,7 +36,7 @@ Attribute reference
 ``content``
 +++++++++++
 
-May be used instead of ``source`` to provide file content without a template file. Must be a UTF-8 string. Defaults to ``""``.
+May be used instead of ``source`` to provide file content without a template file. May be either Unicode text or raw bytes (when using the "binary" ``content_type``). Defaults to ``""``.
 
 |
 

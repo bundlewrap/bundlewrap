@@ -16,7 +16,7 @@ from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, sha1
 from bundlewrap.utils.remote import PathInfo
-from bundlewrap.utils.text import force_text, mark_for_translation as _
+from bundlewrap.utils.text import force_bytes, force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
 from bundlewrap.utils.ui import io
 
@@ -164,6 +164,7 @@ class File(Item):
     """
     A file.
     """
+    BINARY_ATTRIBUTES = ['content']
     BUNDLE_ATTRIBUTE_NAME = "files"
     ITEM_ATTRIBUTES = {
         'content': None,
@@ -203,11 +204,14 @@ class File(Item):
 
     @cached_property
     def content(self):
-        return CONTENT_PROCESSORS[self.attributes['content_type']](self)
+        if self.attributes['content_type'] == 'binary' and self.attributes['content'] is not None:
+            return force_bytes(self.attributes['content'], encoding=self.attributes['encoding'])
+        else:
+            return CONTENT_PROCESSORS[self.attributes['content_type']](self)
 
     @cached_property
     def content_hash(self):
-        if self.attributes['content_type'] == 'binary':
+        if self.attributes['content_type'] == 'binary' and self.attributes['content'] is None:
             return hash_local_file(self.template)
         else:
             return sha1(self.content)
@@ -258,8 +262,10 @@ class File(Item):
                 group=self.attributes['group'] or "",
             )
         finally:
-            if self.attributes['content_type'] != 'binary':
-                remove(local_path)
+            if not (self.attributes['content_type'] == 'binary' and
+                    not self.attributes['content']):
+                pass
+                #remove(local_path)
 
     def _fix_mode(self, status):
         self.node.run("chmod {} -- {}".format(
@@ -391,7 +397,7 @@ class File(Item):
         The calling method is responsible for cleaning up the file at
         the returned path (only if not a binary).
         """
-        if self.attributes['content_type'] == 'binary':
+        if self.attributes['content_type'] == 'binary' and not self.attributes['content']:
             local_path = self.template
         else:
             handle, local_path = mkstemp()

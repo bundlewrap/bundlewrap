@@ -70,6 +70,7 @@ class Item(object):
     """
     A single piece of configuration (e.g. a file, a package, a service).
     """
+    BINARY_ATTRIBUTES = []
     BLOCK_CONCURRENT = []
     BUNDLE_ATTRIBUTE_NAME = None
     ITEM_ATTRIBUTES = {}
@@ -107,10 +108,16 @@ class Item(object):
                 self.ITEM_ATTRIBUTES.items():
             if attribute_name in BUILTIN_ITEM_ATTRIBUTES:
                 continue
-            self.attributes[attribute_name] = force_text(attributes.get(
-                attribute_name,
-                attribute_default,
-            ))
+            if attribute_name in self.BINARY_ATTRIBUTES:
+                self.attributes[attribute_name] = attributes.get(
+                    attribute_name,
+                    attribute_default,
+                )
+            else:
+                self.attributes[attribute_name] = force_text(attributes.get(
+                    attribute_name,
+                    attribute_default,
+                ))
 
         for attribute_name, attribute_default in \
                 BUILTIN_ITEM_ATTRIBUTES.items():
