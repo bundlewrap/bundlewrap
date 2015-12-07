@@ -7,7 +7,7 @@ from bundlewrap.cmdline import main
 from bundlewrap.utils.testing import make_repo
 
 
-def test_empty(tmpdir):
+def test_binary_inline_content(tmpdir):
     make_repo(
         tmpdir,
         bundles={
