@@ -128,7 +128,11 @@ class WorkerPool(object):
         """
         Blocks until a message from a worker is received.
         """
-        msg = self.messages.get()
+        try:
+            msg = self.messages.get()
+        except EOFError:
+            # TODO investigate why this occurs
+            return {'msg': 'EOF_ERROR'}
         if msg['msg'] == 'FINISHED_WORK':
             self.jobs_open -= 1
             # check for exception in child process and raise it
