@@ -264,8 +264,7 @@ class File(Item):
         finally:
             if not (self.attributes['content_type'] == 'binary' and
                     not self.attributes['content']):
-                pass
-                #remove(local_path)
+                remove(local_path)
 
     def _fix_mode(self, status):
         self.node.run("chmod {} -- {}".format(

@@ -20,7 +20,6 @@ def _worker_process(wid, messages, pipe, io_params):
     """
     # replace the child logger with one that will send logs back to the
     # parent process
-    #from bundlewrap.utils import ui
     io.activate_as_child(*io_params)
 
     while True:
