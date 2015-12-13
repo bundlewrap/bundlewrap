@@ -27,7 +27,8 @@ DIFF_MAX_LINE_LENGTH = 128
 
 
 def content_processor_base64(item):
-    return b64decode(item._template_content)
+    # .encode() is required for pypy3 only
+    return b64decode(item._template_content.encode())
 
 
 def content_processor_jinja2(item):
