@@ -6,10 +6,10 @@ from os.path import dirname, normpath
 from pipes import quote
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import Item, ItemStatus
+from bundlewrap.items import Item
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import mark_for_translation as _
-from bundlewrap.utils.text import bold, is_subdirectory
+from bundlewrap.utils.text import is_subdirectory
 
 
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)

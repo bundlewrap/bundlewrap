@@ -104,17 +104,13 @@ class Directory(Item):
         for item in items:
             if item == self:
                 continue
-            if (
-                (
+            if ((
                     item.ITEM_TYPE_NAME == "file" and
                     is_subdirectory(item.name, self.name)
-                )
-                or
-                (
+                ) or (
                     item.ITEM_TYPE_NAME in ("file", "symlink") and
                     item.name == self.name
-                )
-            ):
+            )):
                 raise BundleError(_(
                     "{item1} (from bundle '{bundle1}') blocking path to "
                     "{item2} (from bundle '{bundle2}')"

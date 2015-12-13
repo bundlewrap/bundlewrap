@@ -8,10 +8,8 @@ from string import ascii_lowercase, digits
 from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
+from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.utils.text import mark_for_translation as _
-from bundlewrap.utils.text import bold
-from bundlewrap.utils.ui import io
 
 
 getLogger('passlib').setLevel(ERROR)
