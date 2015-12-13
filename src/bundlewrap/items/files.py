@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from base64 import b64decode
 from collections import defaultdict
 from datetime import datetime
 from os import remove
@@ -16,13 +17,17 @@ from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, sha1
 from bundlewrap.utils.remote import PathInfo
-from bundlewrap.utils.text import force_bytes, force_text, mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
 from bundlewrap.utils.ui import io
 
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
 DIFF_MAX_LINE_LENGTH = 128
+
+
+def content_processor_base64(item):
+    return b64decode(item._template_content)
 
 
 def content_processor_jinja2(item):
@@ -127,6 +132,7 @@ def content_processor_text(item):
 
 CONTENT_PROCESSORS = {
     'any': lambda item: "",
+    'base64': content_processor_base64,
     'binary': None,
     'jinja2': content_processor_jinja2,
     'mako': content_processor_mako,
@@ -164,7 +170,6 @@ class File(Item):
     """
     A file.
     """
-    BINARY_ATTRIBUTES = ['content']
     BUNDLE_ATTRIBUTE_NAME = "files"
     ITEM_ATTRIBUTES = {
         'content': None,
@@ -203,14 +208,11 @@ class File(Item):
 
     @cached_property
     def content(self):
-        if self.attributes['content_type'] == 'binary' and self.attributes['content'] is not None:
-            return force_bytes(self.attributes['content'], encoding=self.attributes['encoding'])
-        else:
-            return CONTENT_PROCESSORS[self.attributes['content_type']](self)
+        return CONTENT_PROCESSORS[self.attributes['content_type']](self)
 
     @cached_property
     def content_hash(self):
-        if self.attributes['content_type'] == 'binary' and self.attributes['content'] is None:
+        if self.attributes['content_type'] == 'binary':
             return hash_local_file(self.template)
         else:
             return sha1(self.content)
@@ -363,6 +365,22 @@ class File(Item):
                 "{item} from bundle '{bundle}' cannot have both 'content' and 'source'"
             ).format(item=item_id, bundle=bundle.name))
 
+        if 'content' in attributes and attributes.get('content_type') == 'binary':
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' cannot have binary inline content "
+                "(use content_type 'base64' instead)"
+            ).format(item=item_id, bundle=bundle.name))
+
+        if 'encoding' in attributes and attributes.get('content_type') in (
+            'any',
+            'base64',
+            'binary',
+        ):
+            raise BundleError(_(
+                "content_type of {item} from bundle '{bundle}' cannot provide different encoding "
+                "(remove the 'encoding' attribute)"
+            ).format(item=item_id, bundle=bundle.name))
+
         if (
             attributes.get('content_type', None) == "any" and (
                 'content' in attributes or
@@ -399,7 +417,7 @@ class File(Item):
         The calling method is responsible for cleaning up the file at
         the returned path (only if not a binary).
         """
-        if self.attributes['content_type'] == 'binary' and not self.attributes['content']:
+        if self.attributes['content_type'] == 'binary':
             local_path = self.template
         else:
             handle, local_path = mkstemp()

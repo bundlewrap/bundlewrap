@@ -36,7 +36,7 @@ Attribute reference
 ``content``
 +++++++++++
 
-May be used instead of ``source`` to provide file content without a template file. May be either Unicode text or raw bytes (when using the "binary" ``content_type``). Defaults to ``""``.
+May be used instead of ``source`` to provide file content without a template file.
 
 |
 
@@ -49,6 +49,8 @@ How the file pointed to by ``source`` or the string given to ``content`` should 
 | Value              | Effect                                                                     |
 +====================+============================================================================+
 | ``any``            | only cares about file owner, group, and mode                               |
++--------------------+----------------------------------------------------------------------------+
+| ``base64``         | content is decoded from base64                                             |
 +--------------------+----------------------------------------------------------------------------+
 | ``binary``         | file is uploaded verbatim, no content processing occurs                    |
 +--------------------+----------------------------------------------------------------------------+

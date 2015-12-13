@@ -105,14 +105,7 @@ class Item(object):
 
         for attribute_name, attribute_default in \
                 self.ITEM_ATTRIBUTES.items():
-            if attribute_name in BUILTIN_ITEM_ATTRIBUTES:
-                continue
-            if attribute_name in self.BINARY_ATTRIBUTES:
-                self.attributes[attribute_name] = attributes.get(
-                    attribute_name,
-                    attribute_default,
-                )
-            else:
+            if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
                 self.attributes[attribute_name] = force_text(attributes.get(
                     attribute_name,
                     attribute_default,

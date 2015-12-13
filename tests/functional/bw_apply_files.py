@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from base64 import b64encode
 from os.path import join
 
 from bundlewrap.cmdline import main
@@ -14,8 +15,8 @@ def test_binary_inline_content(tmpdir):
             "test": {
                 'files': {
                     join(str(tmpdir), "foo.bin"): {
-                        'content_type': 'binary',
-                        'content': "ö".encode('latin-1'),
+                        'content_type': 'base64',
+                        'content': b64encode("ö".encode('latin-1')),
                     },
                 },
             },

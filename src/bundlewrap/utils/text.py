@@ -64,16 +64,6 @@ def error_summary(errors):
         STDERR_WRITER.flush()
 
 
-def force_bytes(data, encoding='utf-8'):
-    """
-    Try to return a bytes object from the given data.
-    """
-    if not isinstance(data, bytes):
-        return data.encode(encoding)
-    else:
-        return data
-
-
 def force_text(data):
     """
     Try to return a text aka unicode object from the given data.
