@@ -46,7 +46,6 @@ class Directory(Item):
         'owner': None,
     }
     ITEM_TYPE_NAME = "directory"
-    NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
         return "<Directory path:{}>".format(
@@ -125,6 +124,10 @@ class Directory(Item):
                     item2=self.id,
                     bundle2=self.bundle.name,
                 ))
+            elif item.ITEM_TYPE_NAME == "user" and item.name == self.attributes['owner']:
+                deps.append(item.id)
+            elif item.ITEM_TYPE_NAME == "group" and item.name == self.attributes['group']:
+                deps.append(item.id)
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
                     deps.append(item.id)

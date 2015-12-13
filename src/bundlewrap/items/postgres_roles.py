@@ -66,12 +66,6 @@ class PostgresRole(Item):
         'superuser': False,
     }
     ITEM_TYPE_NAME = "postgres_role"
-    NEEDS_STATIC = [
-        "pkg_apt:",
-        "pkg_pacman:",
-        "pkg_yum:",
-        "pkg_zypper:",
-    ]
 
     def __repr__(self):
         return "<PostgresRole name:{}>".format(self.name)

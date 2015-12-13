@@ -179,7 +179,6 @@ class File(Item):
         'verify_with': None,
     }
     ITEM_TYPE_NAME = "file"
-    NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
         return "<File path:{} content_hash:{}>".format(
@@ -303,6 +302,10 @@ class File(Item):
                     item2=self.id,
                     bundle2=self.bundle.name,
                 ))
+            elif item.ITEM_TYPE_NAME == "user" and item.name == self.attributes['owner']:
+                deps.append(item.id)
+            elif item.ITEM_TYPE_NAME == "group" and item.name == self.attributes['group']:
+                deps.append(item.id)
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
                     deps.append(item.id)

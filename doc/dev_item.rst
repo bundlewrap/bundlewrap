@@ -43,7 +43,6 @@ Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use
         """
         BLOCK_CONCURRENT = []
         BUNDLE_ATTRIBUTE_NAME = "foo"
-        NEEDS_STATIC = []
         ITEM_ATTRIBUTES = {
             'attribute': "default value",
         }
@@ -114,13 +113,6 @@ Step 2: Define attributes
    foo = { [...] }
 
 ...then you should put ``BUNDLE_ATTRIBUTE_NAME = "foo"`` here.
-
-
-``NEEDS_STATIC`` is a list of hard-wired dependencies for all intances of your item. For example, all services inherently depend on all packages (because you can't start the service without installing its package first). Most of the time, this will be a wildcard dependency on a whole type of items, not a specific one:
-
-.. code-block:: python
-
-    NEEDS_STATIC = ["file:/etc/hosts", "user:"]  # depends on /etc/hosts and all users
 
 
 ``ITEM_ATTRIBUTES`` is a dictionary of the attributes users will be able to configure for your item. For files, that would be stuff like owner, group, and permissions. Every attribute (even if it's mandatory) needs a default value, ``None`` is totally acceptable:

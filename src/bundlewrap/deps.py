@@ -15,7 +15,6 @@ class BundleItem(object):
     triggered = False
 
     def __init__(self, bundle):
-        self.NEEDS_STATIC = []
         self.bundle = bundle
         self.ITEM_TYPE_NAME = 'dummy'
         self.needed_by = []
@@ -52,7 +51,6 @@ class DummyItem(object):
     triggered = False
 
     def __init__(self, item_type):
-        self.NEEDS_STATIC = []
         self.item_type = item_type
         self.ITEM_TYPE_NAME = 'dummy'
         self.needed_by = []

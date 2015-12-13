@@ -27,7 +27,6 @@ class Symlink(Item):
     }
     ITEM_TYPE_NAME = "symlink"
     REQUIRED_ATTRIBUTES = ['target']
-    NEEDS_STATIC = ["user:"]
 
     def __repr__(self):
         return "<Symlink path:{} target:{}>".format(
@@ -103,6 +102,10 @@ class Symlink(Item):
                     item2=self.id,
                     bundle2=self.bundle.name,
                 ))
+            elif item.ITEM_TYPE_NAME == "user" and item.name == self.attributes['owner']:
+                deps.append(item.id)
+            elif item.ITEM_TYPE_NAME == "group" and item.name == self.attributes['group']:
+                deps.append(item.id)
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
                     deps.append(item.id)

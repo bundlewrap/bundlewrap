@@ -50,13 +50,7 @@ class PostgresDB(Item):
         'owner': "postgres",
     }
     ITEM_TYPE_NAME = "postgres_db"
-    NEEDS_STATIC = [
-        "pkg_apt:",
-        "pkg_pacman:",
-        "pkg_yum:",
-        "pkg_zypper:",
-        "postgres_role:",
-    ]
+
     def __repr__(self):
         return "<PostgresDB name:{}>".format(self.name)
 
@@ -75,6 +69,13 @@ class PostgresDB(Item):
             set_owner(self.node, self.name, self.attributes['owner'])
         else:
             raise AssertionError("this shouldn't happen")
+
+    def get_auto_deps(self, items):
+        deps = []
+        for item in items:
+            if item.ITEM_TYPE_NAME == "postgres_role" and item.name == self.attributes['owner']:
+                deps.append(item.id)
+        return deps
 
     def sdict(self):
         databases = get_databases(self.node)

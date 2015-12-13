@@ -105,7 +105,6 @@ class User(Item):
         'use_shadow': None,
     }
     ITEM_TYPE_NAME = "user"
-    NEEDS_STATIC = ["group:"]
 
     def __repr__(self):
         return "<User name:{}>".format(self.name)
@@ -137,6 +136,13 @@ class User(Item):
                     command += "{} {} ".format(option, quote(value))
             command += self.name
             self.node.run(command, may_fail=True)
+
+    def get_auto_deps(self, items):
+        deps = []
+        for item in items:
+            if item.ITEM_TYPE_NAME == "group":
+                deps.append(item.id)
+        return deps
 
     def sdict(self):
         # verify content of /etc/passwd

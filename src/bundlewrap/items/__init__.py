@@ -76,7 +76,6 @@ class Item(object):
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
     REQUIRED_ATTRIBUTES = []
-    NEEDS_STATIC = []
     STATUS_OK = 1
     STATUS_FIXED = 2
     STATUS_FAILED = 3
@@ -252,10 +251,8 @@ class Item(object):
         return not self.cached_status.correct
 
     def _prepare_deps(self, items):
-        # merge static and user-defined deps
-        self._deps = list(self.NEEDS_STATIC)
-        self._deps += self.needs
-        self._deps += list(self.get_auto_deps(items))
+        # merge automatic and user-defined deps
+        self._deps = list(self.needs) + list(self.get_auto_deps(items))
 
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
