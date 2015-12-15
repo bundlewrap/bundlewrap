@@ -540,8 +540,7 @@ class NodeLock(object):
             with open(local_path, 'w') as f:
                 f.write(json.dumps({
                     'date': time(),
-                    'user': getuser(),
-                    'host': gethostname(),
+                    'user': environ.get('BW_IDENTITY', "{}@{}".format(getuser(), gethostname())),
                 }))
             self.node.upload(local_path, LOCK_FILE)
         finally:
@@ -568,14 +567,13 @@ class NodeLock(object):
             "  {warning}\n\n"
             "  Looks like somebody is currently using BundleWrap on this node.\n"
             "  You should let them finish or override the lock if it has gone stale.\n\n"
-            "  locked by: {user}@{host}\n"
+            "  locked by: {user}\n"
             "  lock acquired: {duration} ago ({date})\n\n"
             "  Override lock?"
         ).format(
             warning=red(_("WARNING")),
             node=bold(self.node.name),
             user=bold(info.get('user', _("<unknown>"))),
-            host=info.get('host', _("<unknown>")),
             date=date,
             duration=bold(duration),
         )
