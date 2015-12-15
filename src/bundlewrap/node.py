@@ -519,7 +519,15 @@ class NodeLock(object):
                     try:
                         info = json.loads(f.read())
                     except:
-                        io.stderr(_("unable to read or parse lock file contents"))
+                        io.stderr(_(
+                            "{warning}  corrupted lock on {node}: "
+                            "unable to read or parse lock file contents "
+                            "(clear it with `rm -R {path}`)"
+                        ).format(
+                            node=self.node.name,
+                            path=LOCK_FILE,
+                            warning=red(_("WARNING")),
+                        ))
                         info = {}
                 if self.ignore or (self.interactive and io.ask(
                     self._warning_message(info),
