@@ -28,6 +28,11 @@ def bold(text):
 
 
 @ansi_wrapper
+def inverse(text):
+    return "\033[7m{}\033[0m".format(text)
+
+
+@ansi_wrapper
 def green(text):
     return "\033[32m{}\033[0m".format(text)
 

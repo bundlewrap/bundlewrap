@@ -6,7 +6,7 @@ from signal import signal, SIGPIPE, SIG_DFL
 from sys import stderr, stdout
 from threading import Thread
 
-from .text import ANSI_ESCAPE, mark_for_translation as _
+from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
 
 try:
     STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
@@ -143,7 +143,7 @@ class IOManager(object):
                 elif msg['log_type'] == 'JOB_DEL' and TTY:
                     self.jobs.remove(msg['text'])
                 if self.jobs and TTY:
-                    self._write("[status] " + self.jobs[0])
+                    self._write(inverse(_("[status] {} ").format(self.jobs[0])))
                 self.output_lock.release()
             else:  # someone else is holding the output lock
                 # the process holding the lock should now be waiting for
