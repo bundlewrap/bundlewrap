@@ -93,11 +93,15 @@ class IOManager(object):
 
     @property
     def child_parameters(self):
+        try:
+            new_stdin = os.fdopen(os.dup(sys.stdin.fileno()))
+        except ValueError:  # with pytest: redirected Stdin is pseudofile, has no fileno()
+            new_stdin = sys.stdin
         return (
             self.output_lock,
             self.output_queue,
             self.status_line_cleared,
-            os.fdopen(os.dup(sys.stdin.fileno())),
+            new_stdin,
         )
 
     def debug(self, msg):
