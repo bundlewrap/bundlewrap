@@ -62,7 +62,7 @@ class Action(Item):
         ):
             return (self.STATUS_SKIPPED, None)
         try:
-            self.run(interactive=interactive)
+            self.run()
             return (self.STATUS_ACTION_SUCCEEDED, None)
         except ActionFailure:
             return (self.STATUS_FAILED, None)
@@ -96,11 +96,11 @@ class Action(Item):
 
         return status_code
 
-    def run(self, interactive=False):
         result = self.bundle.node.run(
             self.attributes['command'],
             may_fail=True,
         )
+    def run(self):
 
         if self.attributes['expected_return_code'] is not None and \
                 not result.return_code == self.attributes['expected_return_code']:
