@@ -53,8 +53,6 @@ class Directory(Item):
         )
 
     def cdict(self):
-        if self.attributes['delete']:
-            return {}
         cdict = {'type': 'directory'}
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
