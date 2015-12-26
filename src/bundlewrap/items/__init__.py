@@ -466,7 +466,7 @@ class Item(object):
         """
         raise NotImplementedError()
 
-    def statedict_verbose(self, statedict, keys, actual):
+    def sdict_verbose(self, statedict, keys, actual):
         """
         Return a statedict based on the given one that is suitable for
         displaying information during interactive apply mode.
