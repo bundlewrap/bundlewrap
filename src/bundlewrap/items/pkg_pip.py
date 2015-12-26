@@ -19,7 +19,7 @@ def pkg_install(node, pkgname, version=None):
 def pkg_installed(node, pkgname):
     pip_path, pkgname = split_path(pkgname)
     result = node.run(
-        "{} freeze | grep '^{}=='".format(quote(pip_path), pkgname),
+        "{} freeze | grep -i '^{}=='".format(quote(pip_path), pkgname),
         may_fail=True,
     )
     if result.return_code != 0:
@@ -56,6 +56,25 @@ class PipPkg(Item):
         if self.attributes.get('version') is not None:
             cdict['version'] = self.attributes['version']
         return cdict
+
+    def get_auto_deps(self, items):
+        for item in items:
+            if item == self:
+                continue
+            if (
+                item.ITEM_TYPE_NAME == self.ITEM_TYPE_NAME and
+                item.name.lower() == self.name.lower()
+            ):
+                raise BundleError(_(
+                    "{item1} (from bundle '{bundle1}') has name collision with "
+                    "{item2} (from bundle '{bundle2}')"
+                ).format(
+                    item1=item.id,
+                    bundle1=item.bundle.name,
+                    item2=self.id,
+                    bundle2=self.bundle.name,
+                ))
+        return []
 
     def fix(self, status):
         if self.attributes['installed'] is False:
