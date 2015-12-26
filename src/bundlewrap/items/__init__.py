@@ -314,7 +314,12 @@ class Item(object):
 
         if status_code is None:
             if not interactive:
-                self.fix(status_before)
+                with io.job(_("{node}  {bundle}  {item}: fixing...").format(
+                    bundle=self.bundle.name,
+                    item=self.id,
+                    node=self.node.name,
+                )):
+                    self.fix(status_before)
             else:
                 if status_before.must_be_created:
                     question_text = _("Doesn't exist. Will be created.")
@@ -331,7 +336,12 @@ class Item(object):
                     _("Fix {}?").format(bold(self.id)),
                 )
                 if io.ask(question, interactive_default):
-                    self.fix(status_before)
+                    with io.job(_("{node}  {bundle}  {item}: fixing...").format(
+                        bundle=self.bundle.name,
+                        item=self.id,
+                        node=self.node.name,
+                    )):
+                        self.fix(status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
 
@@ -415,9 +425,14 @@ class Item(object):
         Returns an ItemStatus instance describing the current status of
         the item on the actual node.
         """
-        if not cached:
-            del self._cache['cached_sdict']
-        return ItemStatus(self.cached_cdict, self.cached_sdict)
+        with io.job(_("{node}  {bundle}  {item}: getting status...").format(
+            bundle=self.bundle.name,
+            item=self.id,
+            node=self.node.name,
+        )):
+            if not cached:
+                del self._cache['cached_sdict']
+            return ItemStatus(self.cached_cdict, self.cached_sdict)
 
     def hash(self):
         return hash_statedict(self.cached_cdict)

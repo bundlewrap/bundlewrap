@@ -34,10 +34,15 @@ class Action(Item):
             return (self.STATUS_SKIPPED, None)
 
         if self.unless:
-            unless_result = self.bundle.node.run(
-                self.unless,
-                may_fail=True,
-            )
+            with io.job(_("{node}  {bundle}  {item}: checking 'unless' condition...").format(
+                bundle=self.bundle.name,
+                item=self.id,
+                node=self.node.name,
+            )):
+                unless_result = self.bundle.node.run(
+                    self.unless,
+                    may_fail=True,
+                )
             if unless_result.return_code == 0:
                 io.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
                     bundle=self.bundle.name,
@@ -96,11 +101,16 @@ class Action(Item):
 
         return status_code
 
-        result = self.bundle.node.run(
-            self.attributes['command'],
-            may_fail=True,
-        )
     def run(self):
+        with io.job(_("{node}  {bundle}  {item}: running...").format(
+            bundle=self.bundle.name,
+            item=self.id,
+            node=self.node.name,
+        )):
+            result = self.bundle.node.run(
+                self.attributes['command'],
+                may_fail=True,
+            )
 
         if self.attributes['expected_return_code'] is not None and \
                 not result.return_code == self.attributes['expected_return_code']:
