@@ -121,9 +121,6 @@ class Item(object):
         if self.cascade_skip is None:
             self.cascade_skip = not (self.unless or self.triggered)
 
-    def __lt__(self, other):
-        return self.id < other.id
-
         if self.id in self.triggers:
             raise BundleError(_(
                 "item {item} in bundle '{bundle}' can't trigger itself"
@@ -131,6 +128,9 @@ class Item(object):
                 bundle=self.bundle.name,
                 item=self.id,
             ))
+
+    def __lt__(self, other):
+        return self.id < other.id
 
     def __str__(self):
         return self.id
