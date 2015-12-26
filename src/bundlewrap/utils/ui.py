@@ -1,19 +1,20 @@
 from codecs import getwriter
 from contextlib import contextmanager
 from datetime import datetime
-from multiprocessing import Condition, Lock, Queue
+from multiprocessing import Event, Lock, Queue
+import os
 from signal import signal, SIGPIPE, SIG_DFL
-from sys import stderr, stdout
+import sys
 from threading import Thread
 
 from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
 
 try:
-    STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
-    STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
+    STDOUT_WRITER = getwriter('utf-8')(sys.stdout.buffer)
+    STDERR_WRITER = getwriter('utf-8')(sys.stderr.buffer)
 except AttributeError:  # Python 2
-    STDOUT_WRITER = getwriter('utf-8')(stdout)
-    STDERR_WRITER = getwriter('utf-8')(stderr)
+    STDOUT_WRITER = getwriter('utf-8')(sys.stdout)
+    STDERR_WRITER = getwriter('utf-8')(sys.stderr)
 TTY = STDOUT_WRITER.isatty()
 
 try:
@@ -40,12 +41,13 @@ class IOManager(object):
         self.child_mode = False
         self.parent_mode = False
 
-    def activate_as_child(self, output_lock, output_queue, status_line_cleared):
+    def activate_as_child(self, output_lock, output_queue, status_line_cleared, stdin):
         self.parent_mode = False
         self.child_mode = True
         self.status_line_cleared = status_line_cleared
         self.output_lock = output_lock
         self.output_queue = output_queue
+        sys.stdin = stdin
 
     def activate_as_parent(self, debug=False):
         assert not self.child_mode
@@ -54,7 +56,7 @@ class IOManager(object):
         self.output_lock = Lock()
         self.parent_mode = True
         self.output_queue = Queue()
-        self.status_line_cleared = Condition()
+        self.status_line_cleared = Event()
         self.thread = Thread(target=self._print_thread)
         self.thread.daemon = True
         self.thread.start()
@@ -91,7 +93,12 @@ class IOManager(object):
 
     @property
     def child_parameters(self):
-        return (self.output_lock, self.output_queue, self.status_line_cleared)
+        return (
+            self.output_lock,
+            self.output_queue,
+            self.status_line_cleared,
+            os.fdopen(os.dup(sys.stdin.fileno())),
+        )
 
     def debug(self, msg):
         self.output_queue.put({'msg': 'LOG', 'log_type': 'DBG', 'text': msg})
@@ -143,6 +150,7 @@ class IOManager(object):
                 elif msg['log_type'] == 'JOB_DEL' and TTY:
                     self.jobs.remove(msg['text'])
                 if self.jobs and TTY:
+                    self.status_line_cleared.clear()
                     self._write(inverse(_("[status] {} ").format(self.jobs[0])))
                 self.output_lock.release()
             else:  # someone else is holding the output lock
@@ -151,7 +159,7 @@ class IOManager(object):
                 # printing
                 if self.jobs and TTY:
                     self._write("\r\033[K")
-                self.status_line_cleared.notify()
+                self.status_line_cleared.set()
                 # now we wait until the other process has finished and
                 # released the output lock
                 self.output_lock.acquire()
