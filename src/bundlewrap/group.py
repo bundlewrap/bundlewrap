@@ -45,6 +45,7 @@ class Group(object):
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.metadata = infodict.get('metadata', {})
         self.metadata_processor_names = infodict.get('metadata_processors', [])
+        self.os = infodict.get('os')
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
 

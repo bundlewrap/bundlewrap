@@ -228,6 +228,12 @@ def build_parser_bw():
         dest='show_groups',
         help=_("show group membership for each node"),
     )
+    parser_nodes.add_argument(
+        "--os",
+        action='store_true',
+        dest='show_os',
+        help=_("show OS for each node"),
+    )
 
     # bw plot
     parser_plot = subparsers.add_parser("plot")

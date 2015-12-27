@@ -101,6 +101,15 @@ This can be a dictionary of arbitrary data. You can access it from your template
 
 |
 
+.. _node_os:
+
+``os``
+------
+
+Currently, only the default value of "linux" is supported. Your mileage may vary for "macosx" or "openbsd".
+
+|
+
 ``use_shadow_passwords``
 ------------------------
 

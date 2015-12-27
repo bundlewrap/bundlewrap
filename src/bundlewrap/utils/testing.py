@@ -1,4 +1,16 @@
+import platform
+
 from ..bundle import FILENAME_BUNDLE
+
+
+HOST_OS = {
+    "Darwin": 'macosx',
+    "Linux": 'linux',
+}
+
+
+def host_os():
+    return HOST_OS[platform.system()]
 
 
 def make_repo(tmpdir, bundles=None, groups=None, nodes=None):

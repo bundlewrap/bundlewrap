@@ -19,4 +19,6 @@ def bw_nodes(repo, args):
             line += ": " + ", ".join(names(node.bundles))
         elif args['show_groups']:
             line += ": " + ", ".join(names(node.groups))
+        elif args['show_os']:
+            line += ": " + node.os
         yield line

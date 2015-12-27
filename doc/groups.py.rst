@@ -113,25 +113,10 @@ The NTP servers are appended: a node in both groups will have all three nameserv
 
 |
 
-``metadata_processors``
------------------------
+``os``
+------
 
-.. note::
-
-	This is an advanced feature. You should already be very familiar with BundleWrap before using this.
-
-A list of strings formatted as ``module.function`` where *module* is the name of a file in the ``libs/`` :doc:`subdirectory <libs>` of your repo (without the ``.py`` extension) and *function* is the name of a function in that file.
-
-This function can be used to dynamically manipulate metadata after the static metadata has been generated. It looks like this:
-
-.. code-block:: python
-
-	def example1(node_name, groups, metadata, **kwargs):
-	    if "group1" in groups and "group2" in groups:
-	        metadata['foo'].append("bar")
-	    return metadata
-
-As you can see, the metadata processor function is passed the node name, a list of group names and the metadata dictionary generated so far. You can then manipulate that dictionary based on these parameters and must return the modified metadata dictionary.
+Changes the :ref:`default OS <node_os>` for nodes in this group. Subgroups can override this for their parent groups.
 
 |
 

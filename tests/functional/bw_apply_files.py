@@ -5,7 +5,7 @@ from base64 import b64encode
 from os.path import join
 
 from bundlewrap.cmdline import main
-from bundlewrap.utils.testing import make_repo
+from bundlewrap.utils.testing import host_os, make_repo
 
 
 def test_binary_inline_content(tmpdir):
@@ -24,6 +24,7 @@ def test_binary_inline_content(tmpdir):
         nodes={
             "localhost": {
                 'bundles': ["test"],
+                'os': host_os(),
             },
         },
     )

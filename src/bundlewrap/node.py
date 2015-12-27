@@ -281,6 +281,16 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
 
 
 class Node(object):
+    OS_LINUX = 'linux'
+    OS_MACOSX = 'macosx'
+    OS_OPENBSD = 'openbsd'
+
+    OS_ALIASES = {
+        'linux': OS_LINUX,
+        'macosx': OS_MACOSX,
+        'openbsd': OS_OPENBSD,
+    }
+
     def __init__(self, name, infodict=None):
         if infodict is None:
             infodict = {}
@@ -291,6 +301,7 @@ class Node(object):
         self.name = name
         self._bundles = infodict.get('bundles', [])
         self._node_metadata = infodict.get('metadata', {})
+        self._node_os = infodict.get('os')
         self.add_ssh_host_keys = False
         self.hostname = infodict.get('hostname', self.name)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
@@ -454,6 +465,20 @@ class Node(object):
         for bundle in self.bundles:
             for metadata_processor in bundle.metadata_processors:
                 yield metadata_processor
+
+    @cached_property
+    def os(self):
+        os = None
+
+        group_order = _flatten_group_hierarchy(self.groups)
+        for group_name in group_order:
+            group = self.repo.get_group(group_name)
+            os = os if group.os is None else group.os
+
+        os = self._node_os if os is None else os
+        os = 'linux' if os is None else os
+
+        return self.OS_ALIASES[os.lower()]
 
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
