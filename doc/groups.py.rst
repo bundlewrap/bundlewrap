@@ -69,6 +69,8 @@ A tuple or list of node names that belong to this group.
 
 |
 
+.. _group_metadata:
+
 ``metadata``
 ------------
 
@@ -109,7 +111,7 @@ The NTP servers are appended: a node in both groups will have all three nameserv
 
 .. warning::
 
-	Be careful when defining conflicting metadata (i.e. dictionaries that have some common keys) in multiple groups. BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order.
+	BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order.
 
 |
 

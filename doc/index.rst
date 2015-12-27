@@ -46,6 +46,7 @@ We have also prepared a :doc:`comparison <alternatives>` with other popular conf
 
    quickstart
    installation
+   migration_12
    requirements
    repository
    cli
