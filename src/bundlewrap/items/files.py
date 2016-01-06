@@ -147,7 +147,7 @@ def get_remote_file_contents(node, path):
     """
     handle, tmp_file = mkstemp()
     node.download(path, tmp_file)
-    with open(tmp_file) as f:
+    with open(tmp_file, 'rb') as f:
         content = f.read()
     remove(tmp_file)
     return content
@@ -327,6 +327,21 @@ class File(Item):
                 'group': path_info.group,
                 'size': path_info.size,
             }
+
+    def interactive_dicts(self, cdict, sdict, keys):
+        if (
+            'content_hash' in keys and
+            self.attributes['content_type'] not in ('base64', 'binary') and
+            sdict['size'] < DIFF_MAX_FILE_SIZE and
+            len(self.content) < DIFF_MAX_FILE_SIZE
+        ):
+            del cdict['content_hash']
+            del sdict['content_hash']
+            keys.remove('content_hash')
+            keys.append('content')
+            cdict['content'] = self.content
+            sdict['content'] = get_remote_file_contents(self.node, self.name)
+        return (cdict, sdict, keys)
 
     def patch_attributes(self, attributes):
         if 'content' not in attributes and 'source' not in attributes:

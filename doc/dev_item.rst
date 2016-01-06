@@ -74,20 +74,15 @@ Create a new file called :file:`/your/bundlewrap/repo/items/foo.py`. You can use
             """
             raise NotImplementedError
 
-        def sdict_verbose(self, statedict, keys, actual):
+        def interactive_dicts(self, cdict, sdict, keys):
             """
-            Return a statedict based on the given one that is suitable for
-            displaying information during interactive apply mode.
-            The keys parameter indicates which keys are incorrect. It is
-            sufficient to return a statedict that only represents these
-            keys. The boolean actual parameter indicates if the source
-            statedict is based on de facto node state aka sdict (True) or
-            taken from the repo aka cdict (False).
+            Given cdict and sdict as implemented above plus a list of keys
+            that differ between the two, modify them to better suit interactive
+            presentation.
 
-            Implementing this method is optional. The default implementation
-            returns the statedict unaltered.
+            Implementing this method is optional.
             """
-            raise NotImplementedError
+            return (cdict, sdict, keys)
 
         def fix(self, status):
             """

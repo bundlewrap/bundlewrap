@@ -58,6 +58,7 @@ def diff_value_list(title, value1, value2):
 
 def diff_value_text(title, value1, value2):
     max_length = max(len(value1), len(value2))
+    value1, value2 = force_text(value1), force_text(value2)
     if (
         "\n" not in value1 and
         "\n" not in value2

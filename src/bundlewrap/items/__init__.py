@@ -326,10 +326,12 @@ class Item(object):
                 elif status_before.must_be_deleted:
                     question_text = _("Found on node. Will be removed.")
                 else:
-                    question_text = self.ask(
-                        self.sdict_verbose(status_before.sdict, status_before.keys_to_fix, True),
-                        self.sdict_verbose(self.cached_cdict, status_before.keys_to_fix, False),
+                    cdict, sdict, keys_to_fix = self.interactive_dicts(
+                        self.cached_cdict,
+                        status_before.sdict,
+                        status_before.keys_to_fix,
                     )
+                    question_text = self.ask(cdict, sdict, keys_to_fix)
                 question = wrap_question(
                     self.id,
                     question_text,
@@ -369,13 +371,12 @@ class Item(object):
         )
         return (status_code, changes)
 
-    def ask(self, status_actual, status_should):
+    def ask(self, status_should, status_actual, relevant_keys):
         """
         Returns a string asking the user if this item should be
         implemented.
         """
         result = []
-        relevant_keys = diff_keys(status_should, status_actual)
         for key in relevant_keys:
             result.append(diff_value(key, status_actual[key], status_should[key]))
         return "\n".join(result)
@@ -444,6 +445,18 @@ class Item(object):
             return self.name
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
+    def interactive_dicts(self, cdict, sdict, keys):
+        """
+        Given cdict and sdict as implemented above plus a list of keys
+        that differ between the two, modify them to better suit interactive
+        presentation.
+
+        Implementing this method is optional.
+
+        MAY be overridden by subclasses.
+        """
+        return (cdict, sdict, keys)
+
     def patch_attributes(self, attributes):
         """
         Allows an item to preprocess the attributes it is initialized
@@ -465,23 +478,6 @@ class Item(object):
         MUST be overridden by subclasses.
         """
         raise NotImplementedError()
-
-    def sdict_verbose(self, statedict, keys, actual):
-        """
-        Return a statedict based on the given one that is suitable for
-        displaying information during interactive apply mode.
-        The keys parameter indicates which keys are incorrect. It is
-        sufficient to return a statedict that only represents these
-        keys. The boolean actual parameter indicates if the source
-        statedict is based on de facto node state aka sdict (True) or
-        taken from the repo aka cdict (False).
-
-        Implementing this method is optional. The default implementation
-        returns the statedict unaltered.
-
-        MAY be overridden by subclasses.
-        """
-        return statedict
 
     def test(self):
         """
