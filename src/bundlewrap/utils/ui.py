@@ -41,11 +41,12 @@ class IOManager(object):
         self.child_mode = False
         self.parent_mode = False
 
-    def activate_as_child(self, output_lock, output_queue, status_line_cleared, stdin):
+    def activate_as_child(self, child_lock, child_finished, output_queue, status_line_cleared, stdin):
         self.parent_mode = False
         self.child_mode = True
         self.status_line_cleared = status_line_cleared
-        self.output_lock = output_lock
+        self.child_lock = child_lock
+        self.child_finished = child_finished
         self.output_queue = output_queue
         sys.stdin = stdin
 
@@ -53,7 +54,8 @@ class IOManager(object):
         assert not self.child_mode
         self.debug_mode = debug
         self.jobs = []
-        self.output_lock = Lock()
+        self.child_lock = Lock()
+        self.child_finished = Event()
         self.parent_mode = True
         self.output_queue = Queue()
         self.status_line_cleared = Event()
@@ -98,7 +100,8 @@ class IOManager(object):
         except ValueError:  # with pytest: redirected Stdin is pseudofile, has no fileno()
             new_stdin = sys.stdin
         return (
-            self.output_lock,
+            self.child_lock,
+            self.child_finished,
             self.output_queue,
             self.status_line_cleared,
             new_stdin,
@@ -128,46 +131,50 @@ class IOManager(object):
     @property
     @contextmanager
     def lock(self):
-        with self.output_lock:
+        with self.child_lock:
+            # the child lock is required to make sure that only one
+            # child can send the CLEAR command to the parent at the
+            # same time
+            self.child_finished.clear()
+            self.output_queue.put({'msg': 'LOG', 'log_type': 'CLEAR'})
+            # the CLEAR message tells the parent process to remove the
+            # status line and we wait until it has done so
             self.status_line_cleared.wait()
             yield
+            # we tell the parent process that it may continue
+            self.child_finished.set()
 
     def _print_thread(self):
         assert self.parent_mode
         while True:
-            if self.output_lock.acquire(False):
-                msg = self.output_queue.get()
-                if msg['log_type'] == 'QUIT':
-                    break
-                if self.debug_mode and msg['log_type'] in ('OUT', 'DBG', 'ERR'):
-                    msg['text'] = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg['text']
-                if self.jobs and TTY:
-                    self._write("\r\033[K")
-                if msg['log_type'] == 'OUT':
-                    self._write(msg['text'] + "\n")
-                elif msg['log_type'] == 'ERR':
-                    self._write(msg['text'] + "\n", err=True)
-                elif msg['log_type'] == 'DBG' and self.debug_mode:
-                    self._write(msg['text'] + "\n")
-                elif msg['log_type'] == 'JOB_ADD' and TTY:
-                    self.jobs.append(msg['text'])
-                elif msg['log_type'] == 'JOB_DEL' and TTY:
-                    self.jobs.remove(msg['text'])
-                if self.jobs and TTY:
-                    self.status_line_cleared.clear()
-                    self._write(inverse(_("[status] {} ").format(self.jobs[0])))
-                self.output_lock.release()
-            else:  # someone else is holding the output lock
-                # the process holding the lock should now be waiting for
+            msg = self.output_queue.get()
+            if msg['log_type'] == 'QUIT':
+                break
+            if self.debug_mode and msg['log_type'] in ('OUT', 'DBG', 'ERR'):
+                msg['text'] = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg['text']
+            if self.jobs and TTY:
+                self._write("\r\033[K")
+            if msg['log_type'] == 'OUT':
+                self._write(msg['text'] + "\n")
+            elif msg['log_type'] == 'ERR':
+                self._write(msg['text'] + "\n", err=True)
+            elif msg['log_type'] == 'DBG' and self.debug_mode:
+                self._write(msg['text'] + "\n")
+            elif msg['log_type'] == 'JOB_ADD' and TTY:
+                self.jobs.append(msg['text'])
+            elif msg['log_type'] == 'JOB_DEL' and TTY:
+                self.jobs.remove(msg['text'])
+            elif msg['log_type'] == 'CLEAR':
+                # the process holding the outer lock should now be waiting for
                 # us to remove any status lines present before it starts
                 # printing
-                if self.jobs and TTY:
-                    self._write("\r\033[K")
                 self.status_line_cleared.set()
-                # now we wait until the other process has finished and
-                # released the output lock
-                self.output_lock.acquire()
-                self.output_lock.release()
+                # now we wait for the child process to complete its output
+                self.child_finished.wait()
+
+            if self.jobs and TTY:
+                self.status_line_cleared.clear()
+                self._write(inverse(_("[status] {} ").format(self.jobs[0])))
 
     def shutdown(self):
         assert self.parent_mode
