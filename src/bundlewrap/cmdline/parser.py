@@ -10,6 +10,7 @@ from .debug import bw_debug
 from .groups import bw_groups
 from .items import bw_items
 from .metadata import bw_metadata
+from .migrate import bw_migrate
 from .nodes import bw_nodes
 from .plot import bw_plot_node
 from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_plugin_install, \
@@ -176,6 +177,10 @@ def build_parser_bw():
         type=str,
         help=_("node or group to print JSON-formatted metadata for"),
     )
+
+    # bw migrate
+    parser_migrate = subparsers.add_parser("migrate")
+    parser_migrate.set_defaults(func=bw_migrate)
 
     # bw nodes
     parser_nodes = subparsers.add_parser("nodes")
