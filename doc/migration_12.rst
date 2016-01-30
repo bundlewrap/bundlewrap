@@ -64,3 +64,10 @@ Standard dictionaries in Python have no defined order. This may result in lines 
 	% endfor
 
 |
+
+Action hooks status argument
+++++++++++++++++++++++++++++
+
+The :doc:`hook <hooks>` ``action_run_end`` no longer receives an ``ItemStatus`` instance, but one of ``bundlewrap.items.Item.STATUS_FAILED``, ``bundlewrap.items.Item.STATUS_SKIPPED``, or ``bundlewrap.items.Item.STATUS_ACTION_SUCCEEDED``.
+
+|
