@@ -240,7 +240,7 @@ class File(Item):
         if status.must_be_created or status.must_be_deleted or 'type' in status.keys_to_fix:
             self._fix_type(status)
         else:
-            for fix_type in ('content', 'mode', 'owner', 'group'):
+            for fix_type in ('content_hash', 'mode', 'owner', 'group'):
                 if fix_type in status.keys_to_fix:
                     if fix_type == 'group' and \
                             'owner' in status.keys_to_fix:
@@ -252,7 +252,7 @@ class File(Item):
                         continue
                     getattr(self, "_fix_" + fix_type)(status)
 
-    def _fix_content(self, status):
+    def _fix_content_hash(self, status):
         local_path = self._write_local_file()
 
         try:
