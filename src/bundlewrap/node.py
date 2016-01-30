@@ -537,7 +537,7 @@ class NodeLock(object):
         handle, local_path = mkstemp()
 
         try:
-            with io.job(_("{node}: getting lock status...").format(node=self.node.name)):
+            with io.job(_("[{node}]  getting lock status...").format(node=self.node.name)):
                 result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
                 if result.return_code != 0:
                     self.node.download(LOCK_FILE, local_path, ignore_failure=True)
@@ -563,7 +563,7 @@ class NodeLock(object):
                     else:
                         raise NodeAlreadyLockedException(info)
 
-            with io.job(_("{node}: uploading lock file...").format(node=self.node.name)):
+            with io.job(_("[{node}]  uploading lock file...").format(node=self.node.name)):
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
@@ -577,7 +577,7 @@ class NodeLock(object):
             remove(local_path)
 
     def __exit__(self, type, value, traceback):
-        with io.job(_("{node}: removing lock...").format(node=self.node.name)):
+        with io.job(_("[{node}]  removing lock...").format(node=self.node.name)):
             result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
 
         if result.return_code != 0:

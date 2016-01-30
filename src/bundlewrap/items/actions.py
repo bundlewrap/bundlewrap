@@ -34,7 +34,7 @@ class Action(Item):
             return (self.STATUS_SKIPPED, None)
 
         if self.unless:
-            with io.job(_("{node}  {bundle}  {item}: checking 'unless' condition...").format(
+            with io.job(_("[{node}] [{bundle}] [{item}]  checking 'unless' condition...").format(
                 bundle=self.bundle.name,
                 item=self.id,
                 node=self.node.name,
@@ -96,7 +96,7 @@ class Action(Item):
         return status_code
 
     def run(self):
-        with io.job(_("{node}  {bundle}  {item}: running...").format(
+        with io.job(_("[{node}] [{bundle}] [{item}]  running...").format(
             bundle=self.bundle.name,
             item=self.id,
             node=self.node.name,

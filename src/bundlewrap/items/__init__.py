@@ -314,7 +314,7 @@ class Item(object):
 
         if status_code is None:
             if not interactive:
-                with io.job(_("{node}  {bundle}  {item}: fixing...").format(
+                with io.job(_("[{node}] [{bundle}] [{item}]  fixing...").format(
                     bundle=self.bundle.name,
                     item=self.id,
                     node=self.node.name,
@@ -338,7 +338,7 @@ class Item(object):
                     _("Fix {}?").format(bold(self.id)),
                 )
                 if io.ask(question, interactive_default):
-                    with io.job(_("{node}  {bundle}  {item}: fixing...").format(
+                    with io.job(_("[{node}] [{bundle}] [{item}]  fixing...").format(
                         bundle=self.bundle.name,
                         item=self.id,
                         node=self.node.name,
@@ -426,7 +426,7 @@ class Item(object):
         Returns an ItemStatus instance describing the current status of
         the item on the actual node.
         """
-        with io.job(_("{node}  {bundle}  {item}: getting status...").format(
+        with io.job(_("[{node}] [{bundle}] [{item}]  getting status...").format(
             bundle=self.bundle.name,
             item=self.id,
             node=self.node.name,
