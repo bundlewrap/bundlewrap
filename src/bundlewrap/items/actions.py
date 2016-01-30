@@ -84,19 +84,13 @@ class Action(Item):
         start_time = datetime.now()
 
         status_code = self._get_result(interactive, interactive_default)
-        if status_code == Item.STATUS_SKIPPED:
-            status = ItemStatus(correct=False, skipped=True)
-        elif status_code == Item.STATUS_ACTION_SUCCEEDED:
-            status = ItemStatus()
-        else:
-            status = ItemStatus(correct=False)
 
         self.node.repo.hooks.action_run_end(
             self.node.repo,
             self.node,
             self,
             duration=datetime.now() - start_time,
-            status=status,
+            status=status_code,
         )
 
         return status_code
