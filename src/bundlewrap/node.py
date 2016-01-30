@@ -150,7 +150,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
                 else:
                     raise AssertionError(_(
-                        "unknown item status return for {item}: {status}".format(
+                        "unknown item status returned for {item}: {status}".format(
                             item=item.id,
                             status=repr(status_code),
                         ),
