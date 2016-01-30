@@ -48,6 +48,14 @@ class Group(object):
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
 
+        if self.metadata_processor_names:
+            print(
+                "MIGRATION WARNING: group '{}' uses metadata_processors, "
+                "which are no longer available "
+                "(see the 2.0 migration guide for information "
+                "on how to rewrite them)".format(self.name)
+            )
+
     def __cmp__(self, other):
         return cmp(self.name, other.name)
 
