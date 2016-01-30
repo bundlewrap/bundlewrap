@@ -56,7 +56,13 @@ class Bundle(object):
 
     @property
     def item_generator_names(self):
-        return self.bundle_attrs.get('item_generators', [])
+        names = self.bundle_attrs.get('item_generators', [])
+        if names:
+            print("MIGRATION WARNING: bundle '{}' uses item_generators, "
+                  "which are no longer available "
+                  "(see the 2.0 migration guide for information "
+                  "on how to rewrite them)".format(self.name))
+        return names
 
     @cached_property
     def _generated_items(self):
