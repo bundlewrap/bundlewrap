@@ -12,6 +12,7 @@ from subprocess import call
 from sys import exc_info
 from tempfile import mkstemp
 from traceback import format_exception
+from warnings import warn
 
 from bundlewrap.exceptions import BundleError, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item, ItemStatus
@@ -229,7 +230,7 @@ class File(Item):
     BUNDLE_ATTRIBUTE_NAME = "files"
     ITEM_ATTRIBUTES = {
         'content': "",
-        'content_type': "mako",
+        'content_type': None,
         'context': None,
         'delete': False,
         'encoding': "utf-8",
@@ -464,6 +465,10 @@ class File(Item):
         return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
 
     def patch_attributes(self, attributes):
+        if 'content_type' not in attributes:
+            attributes['content_type'] = 'mako'
+            warn("BundleWrap 2.0 Migration: {} from bundle {} "
+                 "should set 'mako' as 'content_type'".format(self.id, self.bundle.name))
         if 'context' not in attributes:
             attributes['context'] = {}
         if 'mode' in attributes and attributes['mode'] is not None:
