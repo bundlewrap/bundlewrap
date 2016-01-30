@@ -45,14 +45,14 @@ class Symlink(Item):
         return cdict
 
     def fix(self, status):
-        if 'type' in status.keys:
+        if status.must_be_created or 'type' in status.keys_to_fix:
             # fixing the type fixes everything
             self._fix_type(status)
             return
 
         for fix_type in ('owner', 'group', 'target'):
-            if fix_type in status.keys:
-                if fix_type == 'group' and 'owner' in status.keys:
+            if fix_type in status.keys_to_fix:
+                if fix_type == 'group' and 'owner' in status.keys_to_fix:
                     # owner and group are fixed with a single chown
                     continue
                 getattr(self, "_fix_" + fix_type)(status)
@@ -117,6 +117,7 @@ class Symlink(Item):
             return {}
         else:
             return {
+                'target': path_info.symlink_target,
                 'type': path_info.path_type,
                 'owner': path_info.owner,
                 'group': path_info.group,
