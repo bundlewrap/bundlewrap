@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from base64 import b64decode
 from collections import defaultdict
+from contextlib import contextmanager
 from datetime import datetime
 from os import remove
 from os.path import basename, dirname, exists, join, normpath
@@ -253,9 +254,7 @@ class File(Item):
                     getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_content_hash(self, status):
-        local_path = self._write_local_file()
-
-        try:
+        with self._write_local_file() as local_path:
             self.node.upload(
                 local_path,
                 self.name,
@@ -263,10 +262,6 @@ class File(Item):
                 owner=self.attributes['owner'] or "",
                 group=self.attributes['group'] or "",
             )
-        finally:
-            if not (self.attributes['content_type'] == 'binary' and
-                    not self.attributes['content']):
-                remove(local_path)
 
     def _fix_mode(self, status):
         self.node.run("chmod {} -- {}".format(
@@ -363,9 +358,8 @@ class File(Item):
                 path=self.template,
             ))
 
-        local_path = self._write_local_file()
-        if self.attributes['content_type'] != 'binary':
-            remove(local_path)
+        with self._write_local_file():
+            pass
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
@@ -425,6 +419,7 @@ class File(Item):
                 path=name,
             ))
 
+    @contextmanager
     def _write_local_file(self):
         """
         Makes the file contents available at the returned temporary path
@@ -450,4 +445,7 @@ class File(Item):
                     "{i} failed local validation using: {c}"
                 ).format(c=cmd, i=self.id))
 
-        return local_path
+        yield local_path
+
+        if self.attributes['content_type'] != 'binary':
+                remove(local_path)
