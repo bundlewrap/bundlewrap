@@ -285,7 +285,7 @@ class File(Item):
             self.node.run("rm -rf -- {}".format(quote(self.name)))
         if not status.must_be_deleted:
             self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
-            self._fix_content(status)
+            self._fix_content_hash(status)
 
     def get_auto_deps(self, items):
         deps = []
