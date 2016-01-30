@@ -233,7 +233,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
                 bold(item),
             )
         else:
-            return "{node}:{bundle}:{item}: {status}".format(
+            return "[{node}] [{bundle}] [{item}]  {status}".format(
                 bundle=bundle,
                 item=item,
                 node=node,
@@ -246,7 +246,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
                 bold(item),
             )
         else:
-            return "{node}:{bundle}:{item}: {status}".format(
+            return "[{node}] [{bundle}] [{item}]  {status}".format(
                 bundle=bundle,
                 item=item,
                 node=node,
@@ -259,7 +259,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
                 bold(item),
             )
         else:
-            return "{node}:{bundle}:{item}: {status}".format(
+            return "[{node}] [{bundle}] [{item}]  {status}".format(
                 bundle=bundle,
                 item=item,
                 node=node,
@@ -272,7 +272,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
                 bold(item),
             )
         else:
-            return "{node}:{bundle}:{item}: {status}".format(
+            return "[{node}] [{bundle}] [{item}]  {status}".format(
                 bundle=bundle,
                 item=item,
                 node=node,

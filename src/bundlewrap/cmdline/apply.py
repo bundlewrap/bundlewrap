@@ -68,14 +68,14 @@ def bw_apply(repo, args):
                     node_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                     if args['interactive']:
-                        yield _("\n{}: run started at {}").format(
-                            bold(node.name),
-                            node_start_time,
+                        yield _("\n[{node}]  run started at {time}").format(
+                            node=bold(node.name),
+                            time=node_start_time,
                         )
                     else:
-                        io.stdout(_("{}: run started at {}").format(
-                            node.name,
-                            node_start_time,
+                        io.stdout(_("[{node}]  run started at {time}").format(
+                            node=node.name,
+                            time=node_start_time,
                         ))
 
                     worker_pool.start_task(
@@ -106,17 +106,17 @@ def bw_apply(repo, args):
                     yield _("{}: END PROFILING DATA").format(node_name)
 
                 if args['interactive']:
-                    yield _("\n{node}: run completed after {time}s ({stats})\n").format(
+                    yield _("\n[{node}]  run completed after {time}s ({stats})\n").format(
                         node=bold(node_name),
                         time=results[node_name].duration.total_seconds(),
                         stats=format_node_result(results[node_name]),
                     )
                 else:
-                    io.stdout(_("{node}: run completed after {time}s").format(
+                    io.stdout(_("[{node}]  run completed after {time}s").format(
                         node=node_name,
                         time=results[node_name].duration.total_seconds(),
                     ))
-                    io.stdout(_("{node}: stats: {stats}").format(
+                    io.stdout(_("[{node}]  stats: {stats}").format(
                         node=node_name,
                         stats=format_node_result(results[node_name]),
                     ))
