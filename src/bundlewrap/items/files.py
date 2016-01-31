@@ -343,7 +343,11 @@ class File(Item):
         return keys
 
     def patch_attributes(self, attributes):
-        if 'content' not in attributes and 'source' not in attributes:
+        if (
+            'content' not in attributes and
+            'source' not in attributes and
+            attributes.get('delete', False) is False
+        ):
             attributes['source'] = basename(self.name)
         if 'context' not in attributes:
             attributes['context'] = {}
@@ -362,8 +366,9 @@ class File(Item):
                 path=self.template,
             ))
 
-        with self._write_local_file():
-            pass
+        if not self.attributes['delete']:
+            with self._write_local_file():
+                pass
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
