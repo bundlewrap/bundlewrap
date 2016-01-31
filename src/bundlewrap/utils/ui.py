@@ -193,7 +193,7 @@ class IOManager(object):
 
             if self.jobs and TTY:
                 self.status_line_cleared.clear()
-                self._write(inverse("{} ".format(self.jobs[0]))[:TERM_WIDTH])
+                self._write(inverse("{} ".format(self.jobs[0])[:TERM_WIDTH - 1]))
 
     def shutdown(self):
         assert self.parent_mode
