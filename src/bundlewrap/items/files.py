@@ -323,20 +323,24 @@ class File(Item):
                 'size': path_info.size,
             }
 
-    def interactive_dicts(self, cdict, sdict, keys):
+    def display_dicts(self, cdict, sdict, keys):
+        if 'content' in keys:
+            del cdict['content_hash']
+            del sdict['content_hash']
+            cdict['content'] = self.content
+            sdict['content'] = get_remote_file_contents(self.node, self.name)
+        return (cdict, sdict)
+
+    def display_keys(self, cdict, sdict, keys):
         if (
             'content_hash' in keys and
             self.attributes['content_type'] not in ('base64', 'binary') and
             sdict['size'] < DIFF_MAX_FILE_SIZE and
             len(self.content) < DIFF_MAX_FILE_SIZE
         ):
-            del cdict['content_hash']
-            del sdict['content_hash']
             keys.remove('content_hash')
             keys.append('content')
-            cdict['content'] = self.content
-            sdict['content'] = get_remote_file_contents(self.node, self.name)
-        return (cdict, sdict, keys)
+        return keys
 
     def patch_attributes(self, attributes):
         if 'content' not in attributes and 'source' not in attributes:

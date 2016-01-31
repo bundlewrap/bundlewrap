@@ -294,6 +294,7 @@ class Item(object):
             self.node,
             self,
         )
+        keys_to_fix = None
         status_code = None
         status_before = None
         status_after = None
@@ -313,6 +314,11 @@ class Item(object):
                 status_code = self.STATUS_OK
 
         if status_code is None:
+            keys_to_fix = self.display_keys(
+                self.cached_cdict.copy(),
+                status_before.sdict.copy(),
+                status_before.keys_to_fix[:],
+            )
             if not interactive:
                 with io.job(_("[{node}] [{bundle}] [{item}]  fixing...").format(
                     bundle=self.bundle.name,
@@ -326,16 +332,17 @@ class Item(object):
                 elif status_before.must_be_deleted:
                     question_text = _("Found on node. Will be removed.")
                 else:
-                    cdict, sdict, keys_to_fix = self.interactive_dicts(
-                        self.cached_cdict,
-                        status_before.sdict,
-                        status_before.keys_to_fix,
+                    cdict, sdict = self.display_dicts(
+                        self.cached_cdict.copy(),
+                        status_before.sdict.copy(),
+                        keys_to_fix,
                     )
                     question_text = self.ask(cdict, sdict, keys_to_fix)
                 question = wrap_question(
                     self.id,
                     question_text,
                     _("Fix {}?").format(bold(self.id)),
+                    prefix="[{}]".format(bold(self.node.name)),
                 )
                 if io.ask(question, interactive_default):
                     with io.job(_("[{node}] [{bundle}] [{item}]  fixing...").format(
@@ -346,6 +353,7 @@ class Item(object):
                         self.fix(status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
+                io.stdout("[{}]".format(bold(self.node.name)))
 
         if status_code is None:
             status_after = self.get_status(cached=False)
@@ -356,9 +364,13 @@ class Item(object):
         elif status_before.must_be_deleted:
             changes = False
         elif status_code == self.STATUS_FAILED:
-            changes = status_after.keys_to_fix
+            changes = self.display_keys(
+                self.cached_cdict.copy(),
+                status_after.sdict.copy(),
+                status_after.keys_to_fix[:],
+            )
         else:
-            changes = status_before.keys_to_fix
+            changes = keys_to_fix
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
@@ -445,17 +457,25 @@ class Item(object):
             return self.name
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
-    def interactive_dicts(self, cdict, sdict, keys):
+    def display_dicts(self, cdict, sdict, keys):
         """
-        Given cdict and sdict as implemented above plus a list of keys
-        that differ between the two, modify them to better suit interactive
-        presentation.
-
-        Implementing this method is optional.
+        Given cdict and sdict as implemented above, modify them to
+        better suit interactive presentation. The keys parameter is the
+        return value of display_keys (see below) and provided for
+        reference only.
 
         MAY be overridden by subclasses.
         """
-        return (cdict, sdict, keys)
+        return (cdict, sdict)
+
+    def display_keys(self, cdict, sdict, keys):
+        """
+        Given a list of keys whose values differ between cdict and
+        sdict, modify them to better suit presentation to the user.
+
+        MAY be overridden by subclasses.
+        """
+        return keys
 
     def patch_attributes(self, attributes):
         """
