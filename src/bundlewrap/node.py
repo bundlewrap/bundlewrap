@@ -226,58 +226,42 @@ def _flatten_group_hierarchy(groups):
 
 def format_item_result(result, node, bundle, item, interactive=False, changes=None):
     # TODO use 'changes' (True when creating, False when deleting, list when editing)
+    if changes is True:
+        changes_text = _("create")
+    elif changes is False:
+        changes_text = _("remove")
+    elif changes is not None:
+        changes_text = ", ".join(changes)
     if result == Item.STATUS_FAILED:
-        if interactive:
-            return _("\n  {} {} failed").format(
-                red("✘"),
-                bold(item),
-            )
-        else:
-            return "[{node}] [{bundle}] [{item}]  {status}".format(
-                bundle=bundle,
-                item=item,
-                node=node,
-                status=red(_("FAILED")),
-            )
+        return "[{node}] [{bundle}]  {item}  {status}  [{changes}]".format(
+            bundle=bold(bundle),
+            changes=changes_text,
+            item=item,
+            node=bold(node),
+            status=red(bold("✘ ")) + red(_("FAILED")),
+        )
     elif result == Item.STATUS_ACTION_SUCCEEDED:
-        if interactive:
-            return _("\n  {} {} succeeded").format(
-                green("✓"),
-                bold(item),
-            )
-        else:
-            return "[{node}] [{bundle}] [{item}]  {status}".format(
-                bundle=bundle,
-                item=item,
-                node=node,
-                status=green(_("SUCCEEDED")),
-            )
+        return "[{node}] [{bundle}]  {item}  {status}".format(
+            bundle=bold(bundle),
+            item=item,
+            node=bold(node),
+            status=green(bold("✓ ")) + green(_("SUCCEEDED")),
+        )
     elif result == Item.STATUS_SKIPPED:
-        if interactive:
-            return _("\n  {} {} skipped").format(
-                yellow("»"),
-                bold(item),
-            )
-        else:
-            return "[{node}] [{bundle}] [{item}]  {status}".format(
-                bundle=bundle,
-                item=item,
-                node=node,
-                status=yellow(_("SKIPPED")),
-            )
+        return "[{node}] [{bundle}]  {item}  {status}".format(
+            bundle=bold(bundle),
+            item=item,
+            node=bold(node),
+            status=yellow(bold("» ")) + yellow(_("SKIPPED")),
+        )
     elif result == Item.STATUS_FIXED:
-        if interactive:
-            return _("\n  {} fixed {}").format(
-                green("✓"),
-                bold(item),
-            )
-        else:
-            return "[{node}] [{bundle}] [{item}]  {status}".format(
-                bundle=bundle,
-                item=item,
-                node=node,
-                status=green(_("FIXED")),
-            )
+        return "[{node}] [{bundle}]  {item}  {status}  [{changes}]".format(
+            bundle=bold(bundle),
+            changes=changes_text,
+            item=item,
+            node=bold(node),
+            status=green(bold("✓ ")) + green(_("FIXED")),
+        )
 
 
 class Node(object):
@@ -654,23 +638,27 @@ def verify_items(all_items, show_all=False, workers=1):
                     worker_pool.start_task(
                         msg['wid'],
                         item.get_status,
-                        task_id=item.node.name + ":" + item.id,
+                        task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
                     )
                 else:
                     worker_pool.quit(msg['wid'])
             elif msg['msg'] == 'FINISHED_WORK':
-                item_id = msg['task_id']
+                node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
                 item_status = msg['return_value']
                 if not item_status.correct:
-                    io.stderr("{} {}".format(
-                        red("✘"),
-                        item_id,
+                    io.stderr("{x} [{node}] [{bundle}]  {item}".format(
+                        bundle=bold(bundle_name),
+                        item=item_id,
+                        node=bold(node_name),
+                        x=red("✘"),
                     ))
                     yield False
                 else:
                     if show_all:
-                        io.stdout("{} {}".format(
-                            green("✓"),
-                            item_id,
+                        io.stdout("{x} [{node}] [{bundle}]  {item}".format(
+                            bundle=bold(bundle_name),
+                            item=item_id,
+                            node=bold(node_name),
+                            x=green("✓"),
                         ))
                     yield True

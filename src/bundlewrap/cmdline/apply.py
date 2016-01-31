@@ -67,16 +67,10 @@ def bw_apply(repo, args):
                     node = pending_nodes.pop()
                     node_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    if args['interactive']:
-                        yield _("\n[{node}]  run started at {time}").format(
-                            node=bold(node.name),
-                            time=node_start_time,
-                        )
-                    else:
-                        io.stdout(_("[{node}]  run started at {time}").format(
-                            node=node.name,
-                            time=node_start_time,
-                        ))
+                    io.stdout(_("[{node}]  run started at {time}").format(
+                        node=bold(node.name),
+                        time=node_start_time,
+                    ))
 
                     worker_pool.start_task(
                         msg['wid'],
@@ -97,29 +91,24 @@ def bw_apply(repo, args):
 
                 if args['profiling']:
                     total_time = 0.0
-                    yield _("{}: BEGIN PROFILING DATA (most expensive items first)").format(node_name)
-                    yield _("{}:    seconds   item").format(node_name)
+                    yield _("[{}]").format(bold(node_name))
+                    yield _("[{}] BEGIN PROFILING DATA (most expensive items first)").format(bold(node_name))
+                    yield _("[{}]    seconds   item").format(bold(node_name))
                     for time_elapsed, item_id in results[node_name].profiling_info:
-                        yield "{}: {:10.3f}   {}".format(node_name, time_elapsed.total_seconds(), item_id)
+                        yield "[{}] {:10.3f}   {}".format(bold(node_name), time_elapsed.total_seconds(), item_id)
                         total_time += time_elapsed.total_seconds()
-                    yield _("{}: {:10.3f}   (total)").format(node_name, total_time)
-                    yield _("{}: END PROFILING DATA").format(node_name)
+                    yield _("[{}] {:10.3f}   (total)").format(bold(node_name), total_time)
+                    yield _("[{}] END PROFILING DATA").format(bold(node_name))
+                    yield _("[{}]").format(bold(node_name))
 
-                if args['interactive']:
-                    yield _("\n[{node}]  run completed after {time}s ({stats})\n").format(
-                        node=bold(node_name),
-                        time=results[node_name].duration.total_seconds(),
-                        stats=format_node_result(results[node_name]),
-                    )
-                else:
-                    io.stdout(_("[{node}]  run completed after {time}s").format(
-                        node=node_name,
-                        time=results[node_name].duration.total_seconds(),
-                    ))
-                    io.stdout(_("[{node}]  stats: {stats}").format(
-                        node=node_name,
-                        stats=format_node_result(results[node_name]),
-                    ))
+                io.stdout(_("[{node}]  run completed after {time}s").format(
+                    node=bold(node_name),
+                    time=results[node_name].duration.total_seconds(),
+                ))
+                io.stdout(_("[{node}]  stats: {stats}").format(
+                    node=bold(node_name),
+                    stats=format_node_result(results[node_name]),
+                ))
 
     error_summary(errors)
 

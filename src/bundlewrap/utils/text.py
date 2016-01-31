@@ -124,14 +124,14 @@ def validate_name(name):
     return True
 
 
-def wrap_question(title, body, question):
-    output = ("\n"
-              " ╭  {}\n"
-              " ┃\n".format(title))
+def wrap_question(title, body, question, prefix=""):
+    output = ("{0}\n"
+              "{0} ╭  {1}\n"
+              "{0} ┃\n".format(prefix, title))
     for line in body.splitlines():
-        output += " ┃   {}\n".format(line)
-    output += (" ┃\n"
-               " ╰  " + question)
+        output += "{0} ┃   {1}\n".format(prefix, line)
+    output += ("{0} ┃\n"
+               "{0} ╰  ".format(prefix) + question)
     return output
 
 
