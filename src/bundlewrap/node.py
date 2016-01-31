@@ -233,7 +233,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
     elif changes is not None:
         changes_text = ", ".join(changes)
     if result == Item.STATUS_FAILED:
-        return "{x} [{node}] [{bundle}]  {item} {status} [{changes}]".format(
+        return "{x} {node}  {bundle}  {item} {status} [{changes}]".format(
             bundle=bold(bundle),
             changes=changes_text,
             item=item,
@@ -242,7 +242,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
             x=bold(red("✘ ")),
         )
     elif result == Item.STATUS_ACTION_SUCCEEDED:
-        return "{x} [{node}] [{bundle}]  {item} {status}".format(
+        return "{x} {node}  {bundle}  {item} {status}".format(
             bundle=bold(bundle),
             item=item,
             node=bold(node),
@@ -250,7 +250,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
             x=bold(green("✓")),
         )
     elif result == Item.STATUS_SKIPPED:
-        return "{x} [{node}] [{bundle}]  {item} {status}".format(
+        return "{x} {node}  {bundle}  {item} {status}".format(
             bundle=bold(bundle),
             item=item,
             node=bold(node),
@@ -258,7 +258,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
             status=yellow(_("skipped")),
         )
     elif result == Item.STATUS_FIXED:
-        return "{x} [{node}] [{bundle}]  {item} {status} [{changes}]".format(
+        return "{x} {node}  {bundle}  {item} {status} [{changes}]".format(
             bundle=bold(bundle),
             changes=changes_text,
             item=item,
@@ -471,7 +471,7 @@ class Node(object):
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
             def log_function(msg):
-                io.stdout("{x} [{node}] {msg}".format(
+                io.stdout("{x} {node}  {msg}".format(
                     node=bold(self.name),
                     msg=force_text(msg).rstrip("\n"),
                     x=cyan("›"),
@@ -529,7 +529,7 @@ class NodeLock(object):
         handle, local_path = mkstemp()
 
         try:
-            with io.job(_("  [{node}]  getting lock status...").format(node=self.node.name)):
+            with io.job(_("  {node}  getting lock status...").format(node=self.node.name)):
                 result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
                 if result.return_code != 0:
                     self.node.download(LOCK_FILE, local_path, ignore_failure=True)
@@ -555,7 +555,7 @@ class NodeLock(object):
                     else:
                         raise NodeAlreadyLockedException(info)
 
-            with io.job(_("  [{node}]  uploading lock file...").format(node=self.node.name)):
+            with io.job(_("  {node}  uploading lock file...").format(node=self.node.name)):
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
@@ -569,7 +569,7 @@ class NodeLock(object):
             remove(local_path)
 
     def __exit__(self, type, value, traceback):
-        with io.job(_("  [{node}]  removing lock...").format(node=self.node.name)):
+        with io.job(_("  {node}  removing lock...").format(node=self.node.name)):
             result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
 
         if result.return_code != 0:
@@ -625,7 +625,7 @@ def test_items(items, workers=1):
                         break
             elif msg['msg'] == 'FINISHED_WORK':
                 node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
-                io.stdout("{x} [{node}] [{bundle}]  {item}".format(
+                io.stdout("{x} {node}  {bundle}  {item}".format(
                     bundle=bold(bundle_name),
                     item=item_id,
                     node=bold(node_name),
@@ -656,7 +656,7 @@ def verify_items(all_items, show_all=False, workers=1):
                 node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
                 item_status = msg['return_value']
                 if not item_status.correct:
-                    io.stderr("{x} [{node}] [{bundle}]  {item}".format(
+                    io.stderr("{x} {node}  {bundle}  {item}".format(
                         bundle=bold(bundle_name),
                         item=item_id,
                         node=bold(node_name),
@@ -665,7 +665,7 @@ def verify_items(all_items, show_all=False, workers=1):
                     yield False
                 else:
                     if show_all:
-                        io.stdout("{x} [{node}] [{bundle}]  {item}".format(
+                        io.stdout("{x} {node}  {bundle}  {item}".format(
                             bundle=bold(bundle_name),
                             item=item_id,
                             node=bold(node_name),

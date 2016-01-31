@@ -37,7 +37,7 @@ def run_on_node(node, command, may_fail, log_output):
     )
 
     if result.return_code == 0:
-        yield "{x} [{node}] {msg}".format(
+        yield "{x} {node}  {msg}".format(
             msg=_("completed successfully after {time}s").format(
                 time=duration.total_seconds(),
             ),
@@ -45,7 +45,7 @@ def run_on_node(node, command, may_fail, log_output):
             x=green("✓"),
         )
     else:
-        yield "{x} [{node}] {msg}".format(
+        yield "{x} {node}  {msg}".format(
             msg=_("failed after {time}s (return code {rcode})").format(
                 rcode=result.return_code,
                 time=duration.total_seconds(),
@@ -73,7 +73,7 @@ def bw_run(repo, args):
             try:
                 msg = worker_pool.get_event()
             except WorkerException as e:
-                msg = "{x} [{node}] {msg}".format(
+                msg = "{x} {node}  {msg}".format(
                     msg=e.wrapped_exception,
                     node=bold(e.task_id),
                     x=red("!"),
