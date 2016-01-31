@@ -12,7 +12,7 @@ from bundlewrap.exceptions import BundleError
 from bundlewrap.utils import cached_property
 from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
-from bundlewrap.utils.text import bold, wrap_question
+from bundlewrap.utils.text import blue, bold, wrap_question
 from bundlewrap.utils.ui import io
 
 BUILTIN_ITEM_ATTRIBUTES = {
@@ -342,9 +342,17 @@ class Item(object):
                     self.id,
                     question_text,
                     _("Fix {}?").format(bold(self.id)),
-                    prefix="  [{}]".format(bold(self.node.name)),
+                    prefix="{x} {node} ".format(
+                        node=bold(self.node.name),
+                        x=blue("?"),
+                    ),
                 )
-                if io.ask(question, interactive_default):
+                answer = io.ask(question, interactive_default)
+                io.stdout("{x} {node}".format(
+                    node=bold(self.node.name),
+                    x=blue("?"),
+                ))
+                if answer:
                     with io.job(_("  {node}  {bundle}  {item}  fixing...").format(
                         bundle=self.bundle.name,
                         item=self.id,
@@ -353,7 +361,6 @@ class Item(object):
                         self.fix(status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
-                io.stdout("  [{}]".format(bold(self.node.name)))
 
         if status_code is None:
             status_after = self.get_status(cached=False)
@@ -391,7 +398,7 @@ class Item(object):
         result = []
         for key in relevant_keys:
             result.append(diff_value(key, status_actual[key], status_should[key]))
-        return "\n".join(result)
+        return "\n\n".join(result)
 
     def cdict(self):
         """

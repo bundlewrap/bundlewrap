@@ -76,7 +76,7 @@ def diff_value_text(title, value1, value2):
                 " " * (len(title) - 1),
                 green(value2),
             )
-    output = ""
+    output = bold(title) + "\n"
     for line in unified_diff(
         value1.splitlines(True),
         value2.splitlines(True),
