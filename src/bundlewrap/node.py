@@ -27,7 +27,7 @@ from .itemqueue import ItemQueue
 from .items import Item
 from .utils import cached_property, graph_for_items, merge_dict, names
 from .utils.statedict import hash_statedict
-from .utils.text import bold, green, red, validate_name, yellow
+from .utils.text import bold, cyan, green, red, validate_name, yellow
 from .utils.text import force_text, mark_for_translation as _
 from .utils.ui import io
 
@@ -233,34 +233,38 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
     elif changes is not None:
         changes_text = ", ".join(changes)
     if result == Item.STATUS_FAILED:
-        return "[{node}] [{bundle}]  {item}  {status}  [{changes}]".format(
+        return "{x} [{node}] [{bundle}]  {item} {status} [{changes}]".format(
             bundle=bold(bundle),
             changes=changes_text,
             item=item,
             node=bold(node),
-            status=red(bold("✘ ")) + red(_("FAILED")),
+            status=red(_("failed")),
+            x=bold(red("✘ ")),
         )
     elif result == Item.STATUS_ACTION_SUCCEEDED:
-        return "[{node}] [{bundle}]  {item}  {status}".format(
+        return "{x} [{node}] [{bundle}]  {item} {status}".format(
             bundle=bold(bundle),
             item=item,
             node=bold(node),
-            status=green(bold("✓ ")) + green(_("SUCCEEDED")),
+            status=green(_("succeeded")),
+            x=bold(green("✓")),
         )
     elif result == Item.STATUS_SKIPPED:
-        return "[{node}] [{bundle}]  {item}  {status}".format(
+        return "{x} [{node}] [{bundle}]  {item} {status}".format(
             bundle=bold(bundle),
             item=item,
             node=bold(node),
-            status=yellow(bold("» ")) + yellow(_("SKIPPED")),
+            x=bold(yellow("»")),
+            status=yellow(_("skipped")),
         )
     elif result == Item.STATUS_FIXED:
-        return "[{node}] [{bundle}]  {item}  {status}  [{changes}]".format(
+        return "{x} [{node}] [{bundle}]  {item} {status} [{changes}]".format(
             bundle=bold(bundle),
             changes=changes_text,
             item=item,
             node=bold(node),
-            status=green(bold("✓ ")) + green(_("FIXED")),
+            x=bold(green("✓")),
+            status=green(_("fixed")),
         )
 
 
@@ -467,7 +471,11 @@ class Node(object):
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
             def log_function(msg):
-                io.stdout("[{}] {}".format(self.name, force_text(msg).rstrip("\n")))
+                io.stdout("{x} [{node}] {msg}".format(
+                    node=bold(self.name),
+                    msg=force_text(msg).rstrip("\n"),
+                    x=cyan("›"),
+                ))
         else:
             log_function = None
         return operations.run(
@@ -521,7 +529,7 @@ class NodeLock(object):
         handle, local_path = mkstemp()
 
         try:
-            with io.job(_("[{node}]  getting lock status...").format(node=self.node.name)):
+            with io.job(_("  [{node}]  getting lock status...").format(node=self.node.name)):
                 result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
                 if result.return_code != 0:
                     self.node.download(LOCK_FILE, local_path, ignore_failure=True)
@@ -547,7 +555,7 @@ class NodeLock(object):
                     else:
                         raise NodeAlreadyLockedException(info)
 
-            with io.job(_("[{node}]  uploading lock file...").format(node=self.node.name)):
+            with io.job(_("  [{node}]  uploading lock file...").format(node=self.node.name)):
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
@@ -561,7 +569,7 @@ class NodeLock(object):
             remove(local_path)
 
     def __exit__(self, type, value, traceback):
-        with io.job(_("[{node}]  removing lock...").format(node=self.node.name)):
+        with io.job(_("  [{node}]  removing lock...").format(node=self.node.name)):
             result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
 
         if result.return_code != 0:
@@ -609,17 +617,19 @@ def test_items(items, workers=1):
                         worker_pool.start_task(
                             msg['wid'],
                             item.test,
-                            task_id=item.node.name + ":" + item.id,
+                            task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
                         )
                         break
                     else:
                         worker_pool.quit(msg['wid'])
                         break
             elif msg['msg'] == 'FINISHED_WORK':
-                item_id = msg['task_id']
-                io.stdout("{} {}".format(
-                    green("✓"),
-                    item_id,
+                node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
+                io.stdout("{x} [{node}] [{bundle}]  {item}".format(
+                    bundle=bold(bundle_name),
+                    item=item_id,
+                    node=bold(node_name),
+                    x=green("✓"),
                 ))
 
 

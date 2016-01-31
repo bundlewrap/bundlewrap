@@ -7,7 +7,7 @@ from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
 from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import green, mark_for_translation as _, red
+from ..utils.text import bold, green, mark_for_translation as _, red
 
 
 def bw_test(repo, args):
@@ -20,9 +20,12 @@ def bw_test(repo, args):
             try:
                 msg = worker_pool.get_event()
             except WorkerException as e:
-                msg = "{} {}\n".format(
-                    red("✘"),
-                    e.task_id,
+                node_name, bundle_name, item_id = e.task_id.split(":", 2)
+                msg = "{x} [{node}] [{bundle}]  {item}\n".format(
+                    bundle=bold(bundle_name),
+                    item=item_id,
+                    node=bold(node_name),
+                    x=red("✘"),
                 )
                 yield msg
                 yield e.traceback

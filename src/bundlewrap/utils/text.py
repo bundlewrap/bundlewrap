@@ -23,8 +23,18 @@ def ansi_wrapper(colorizer):
 
 
 @ansi_wrapper
+def blue(text):
+    return "\033[34m{}\033[0m".format(text)
+
+
+@ansi_wrapper
 def bold(text):
     return "\033[1m{}\033[0m".format(text)
+
+
+@ansi_wrapper
+def cyan(text):
+    return "\033[36m{}\033[0m".format(text)
 
 
 @ansi_wrapper
