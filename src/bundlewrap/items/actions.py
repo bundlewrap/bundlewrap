@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from bundlewrap.exceptions import ActionFailure, BundleError
-from bundlewrap.items import Item, ItemStatus
+from bundlewrap.items import Item
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import bold, wrap_question
