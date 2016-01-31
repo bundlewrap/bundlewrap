@@ -225,13 +225,12 @@ def _flatten_group_hierarchy(groups):
 
 
 def format_item_result(result, node, bundle, item, interactive=False, changes=None):
-    # TODO use 'changes' (True when creating, False when deleting, list when editing)
     if changes is True:
         changes_text = _("create")
     elif changes is False:
         changes_text = _("remove")
     elif changes is not None:
-        changes_text = ", ".join(changes)
+        changes_text = ", ".join(sorted(changes))
     if result == Item.STATUS_FAILED:
         return "{x} {node}  {bundle}  {item} {status} [{changes}]".format(
             bundle=bold(bundle),
