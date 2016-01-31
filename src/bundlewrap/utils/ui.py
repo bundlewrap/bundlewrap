@@ -1,9 +1,11 @@
 from codecs import getwriter
 from contextlib import contextmanager
 from datetime import datetime
+from functools import wraps
 from multiprocessing import Event, Lock, Queue
 import os
 from signal import signal, SIGPIPE, SIG_DFL
+from subprocess import check_output
 import sys
 from threading import Thread
 
@@ -16,6 +18,8 @@ except AttributeError:  # Python 2
     STDOUT_WRITER = getwriter('utf-8')(sys.stdout)
     STDERR_WRITER = getwriter('utf-8')(sys.stderr)
 TTY = STDOUT_WRITER.isatty()
+TERM_WIDTH = int(check_output(['stty', 'size']).split()[1]) if TTY else 0
+
 
 try:
     input_function = raw_input
@@ -25,6 +29,18 @@ except NameError:  # Python 3
 # prevent BrokenPipeError when piping into `head`
 # http://stackoverflow.com/questions/14207708/ioerror-errno-32-broken-pipe-python
 signal(SIGPIPE, SIG_DFL)
+
+
+def clear_formatting(f):
+    """
+    Makes sure formatting from cut-off lines can't bleed into next one
+    """
+    @wraps(f)
+    def wrapped(self, msg):
+        if TTY and os.environ.get("BWCOLORS", "1") != "0":
+            msg = "\033[0m" + msg
+        return f(self, msg)
+    return wrapped
 
 
 def write_to_stream(stream, msg):
@@ -107,6 +123,7 @@ class IOManager(object):
             new_stdin,
         )
 
+    @clear_formatting
     def debug(self, msg):
         self.output_queue.put({'msg': 'LOG', 'log_type': 'DBG', 'text': msg})
 
@@ -116,9 +133,11 @@ class IOManager(object):
     def job_del(self, msg):
         self.output_queue.put({'msg': 'LOG', 'log_type': 'JOB_DEL', 'text': msg})
 
+    @clear_formatting
     def stderr(self, msg):
         self.output_queue.put({'msg': 'LOG', 'log_type': 'ERR', 'text': msg})
 
+    @clear_formatting
     def stdout(self, msg):
         self.output_queue.put({'msg': 'LOG', 'log_type': 'OUT', 'text': msg})
 
@@ -174,7 +193,7 @@ class IOManager(object):
 
             if self.jobs and TTY:
                 self.status_line_cleared.clear()
-                self._write(inverse("{} ".format(self.jobs[0])))
+                self._write(inverse("{} ".format(self.jobs[0]))[:TERM_WIDTH])
 
     def shutdown(self):
         assert self.parent_mode

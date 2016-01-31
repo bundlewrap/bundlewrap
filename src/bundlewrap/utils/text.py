@@ -29,7 +29,7 @@ def bold(text):
 
 @ansi_wrapper
 def inverse(text):
-    return "\033[7m{}\033[0m".format(text)
+    return "\033[0m\033[7m{}\033[0m".format(text)
 
 
 @ansi_wrapper
