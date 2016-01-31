@@ -34,4 +34,4 @@ For more information, have a look at `bundlewrap.org <http://bundlewrap.org/>`_ 
 
 ------------------------------------------------------------------------
 
-BundleWrap is © 2014, 2015 `Torsten Rehn <mailto:torsten@rehn.email>`_
+BundleWrap is © 2013 - 2016 `Torsten Rehn <mailto:torsten@rehn.email>`_
