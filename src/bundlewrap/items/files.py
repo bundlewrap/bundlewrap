@@ -228,7 +228,7 @@ class File(Item):
 
     def cdict(self):
         if self.attributes['delete']:
-            return {}
+            return None
         cdict = {'type': 'file'}
         if self.attributes['content_type'] != 'any':
             cdict['content_hash'] = self.content_hash
@@ -312,7 +312,7 @@ class File(Item):
     def sdict(self):
         path_info = PathInfo(self.node, self.name)
         if not path_info.exists:
-            return {}
+            return None
         else:
             return {
                 'type': path_info.path_type,

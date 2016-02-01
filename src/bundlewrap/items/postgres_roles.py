@@ -50,7 +50,7 @@ def get_role(node, role):
         if bool_attr in role_attrs:
             role_attrs[bool_attr] = role_attrs[bool_attr] == "t"
 
-    return role_attrs
+    return role_attrs if role_attrs else None
 
 
 class PostgresRole(Item):
@@ -72,7 +72,7 @@ class PostgresRole(Item):
 
     def cdict(self):
         if self.attributes['delete']:
-            return {}
+            return None
         cdict = self.attributes.copy()
         del cdict['delete']
         del cdict['password']

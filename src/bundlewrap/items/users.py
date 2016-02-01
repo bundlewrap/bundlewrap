@@ -109,17 +109,18 @@ class User(Item):
 
     def cdict(self):
         if self.attributes['delete']:
-            return {}
+            return None
         cdict = self.attributes.copy()
-        if cdict['groups'] is None:
-            cdict['groups'] = None
-        else:
-            cdict['groups'] = set(cdict['groups'])
         del cdict['delete']
         del cdict['hash_method']
         del cdict['password']
         del cdict['salt']
         del cdict['use_shadow']
+        for key in list(cdict.keys()):
+            if cdict[key] is None:
+                del cdict[key]
+        if 'groups' in cdict:
+            cdict['groups'] = set(cdict['groups'])
         return cdict
 
     def fix(self, status):
@@ -152,7 +153,7 @@ class User(Item):
             may_fail=True,
         )
         if passwd_grep_result.return_code != 0:
-            return {}
+            return None
 
         sdict = _parse_passwd_line(passwd_grep_result.stdout_text)
 

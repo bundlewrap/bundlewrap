@@ -29,6 +29,10 @@ def diff_keys(sdict1, sdict2):
     Note that only keys in the first statedict are considered. If a key
     only exists in the second one, it is disregarded.
     """
+    if sdict1 is None:
+        return []
+    if sdict2 is None:
+        return sdict1.keys()
     differing_keys = []
     for key, value in sdict1.items():
         if value != sdict2[key]:
@@ -143,13 +147,18 @@ def statedict_to_json(sdict, pretty=False):
     """
     Returns a canonical JSON representation of the given statedict.
     """
-    return dumps(order_dict(sdict), indent=4 if pretty else None)
+    if sdict is None:
+        return ""
+    else:
+        return dumps(order_dict(sdict), indent=4 if pretty else None)
 
 
 def validate_statedict(sdict):
     """
     Raises ValueError if the given statedict is invalid.
     """
+    if sdict is None:
+        return
     for key, value in sdict.items():
         if not isinstance(force_text(key), text_type):
             raise ValueError(_("non-text statedict key: {}").format(key))

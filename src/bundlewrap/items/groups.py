@@ -38,7 +38,7 @@ class Group(Item):
 
     def cdict(self):
         if self.attributes['delete']:
-            return {}
+            return None
         cdict = {}
         if self.attributes.get('gid') is not None:
             cdict['gid'] = self.attributes['gid']
@@ -72,7 +72,7 @@ class Group(Item):
             may_fail=True,
         )
         if grep_result.return_code != 0:
-            return {}
+            return None
         else:
             return _parse_group_line(grep_result.stdout_text)
 

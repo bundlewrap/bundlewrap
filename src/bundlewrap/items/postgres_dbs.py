@@ -56,7 +56,7 @@ class PostgresDB(Item):
 
     def cdict(self):
         if self.attributes['delete']:
-            return {}
+            return None
         else:
             return {'owner': self.attributes['owner']}
 
@@ -80,7 +80,7 @@ class PostgresDB(Item):
     def sdict(self):
         databases = get_databases(self.node)
         if self.name not in databases:
-            return {}
+            return None
         else:
             return {'owner': databases[self.name]['owner']}
 

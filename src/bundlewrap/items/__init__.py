@@ -53,8 +53,8 @@ class ItemStatus(object):
         self.cdict = cdict
         self.sdict = sdict
         self.keys_to_fix = []
-        self.must_be_deleted = (self.sdict and not self.cdict)
-        self.must_be_created = (self.cdict and not self.sdict)
+        self.must_be_deleted = (self.sdict and self.cdict is None)
+        self.must_be_created = (self.cdict and self.sdict is None)
         if not self.must_be_deleted and not self.must_be_created:
             self.keys_to_fix = diff_keys(cdict, sdict)
 
@@ -315,8 +315,8 @@ class Item(object):
 
         if status_code is None:
             keys_to_fix = self.display_keys(
-                self.cached_cdict.copy(),
-                status_before.sdict.copy(),
+                copy(self.cached_cdict),
+                copy(status_before.sdict),
                 status_before.keys_to_fix[:],
             )
             if not interactive:
@@ -333,8 +333,8 @@ class Item(object):
                     question_text = _("Found on node. Will be removed.")
                 else:
                     cdict, sdict = self.display_dicts(
-                        self.cached_cdict.copy(),
-                        status_before.sdict.copy(),
+                        copy(self.cached_cdict),
+                        copy(status_before.sdict),
                         keys_to_fix,
                     )
                     question_text = self.ask(cdict, sdict, keys_to_fix)

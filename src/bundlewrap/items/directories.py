@@ -130,7 +130,7 @@ class Directory(Item):
     def sdict(self):
         path_info = PathInfo(self.node, self.name)
         if not path_info.exists:
-            return {}
+            return None
         else:
             return {
                 'type': path_info.path_type,

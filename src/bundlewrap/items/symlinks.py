@@ -114,7 +114,7 @@ class Symlink(Item):
     def sdict(self):
         path_info = PathInfo(self.node, self.name)
         if not path_info.exists:
-            return {}
+            return None
         else:
             return {
                 'target': path_info.symlink_target,
