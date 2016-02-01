@@ -111,7 +111,10 @@ class User(Item):
         if self.attributes['delete']:
             return {}
         cdict = self.attributes.copy()
-        cdict['groups'] = set(cdict['groups'])
+        if cdict['groups'] is None:
+            cdict['groups'] = None
+        else:
+            cdict['groups'] = set(cdict['groups'])
         del cdict['delete']
         del cdict['hash_method']
         del cdict['password']
