@@ -655,8 +655,15 @@ def verify_items(all_items, show_all=False, workers=1):
                 node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
                 item_status = msg['return_value']
                 if not item_status.correct:
-                    io.stderr("{x} {node}  {bundle}  {item}".format(
+                    if item_status.must_be_created:
+                        changes_text = _("create")
+                    elif item_status.must_be_deleted:
+                        changes_text = _("remove")
+                    else:
+                        changes_text = ", ".join(sorted(item_status.keys_to_fix))
+                    io.stderr("{x} {node}  {bundle}  {item} [{changes}]".format(
                         bundle=bold(bundle_name),
+                        changes=changes_text,
                         item=item_id,
                         node=bold(node_name),
                         x=red("✘"),
