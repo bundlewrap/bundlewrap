@@ -190,7 +190,7 @@ class File(Item):
     def __repr__(self):
         return "<File path:{} content_hash:{}>".format(
             quote(self.name),
-            self.content_hash,
+            None if self.attributes['delete'] else self.content_hash,
         )
 
     @property
