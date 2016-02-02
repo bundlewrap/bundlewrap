@@ -141,7 +141,18 @@ class User(Item):
         deps = []
         for item in items:
             if item.ITEM_TYPE_NAME == "group":
-                deps.append(item.id)
+                if item.attributes['delete']:
+                    raise BundleError(_(
+                        "{item1} (from bundle '{bundle1}') depends on item "
+                        "{item2} (from bundle '{bundle2}') which is set to be deleted"
+                    ).format(
+                        item1=self.id,
+                        bundle1=self.bundle.name,
+                        item2=item.id,
+                        bundle2=item.bundle.name,
+                    ))
+                else:
+                    deps.append(item.id)
         return deps
 
     def sdict(self):
