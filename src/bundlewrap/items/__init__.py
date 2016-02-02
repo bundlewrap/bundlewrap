@@ -53,8 +53,8 @@ class ItemStatus(object):
         self.cdict = cdict
         self.sdict = sdict
         self.keys_to_fix = []
-        self.must_be_deleted = (self.sdict and self.cdict is None)
-        self.must_be_created = (self.cdict and self.sdict is None)
+        self.must_be_deleted = (self.sdict is not None and self.cdict is None)
+        self.must_be_created = (self.cdict is not None and self.sdict is None)
         if not self.must_be_deleted and not self.must_be_created:
             self.keys_to_fix = diff_keys(cdict, sdict)
 
