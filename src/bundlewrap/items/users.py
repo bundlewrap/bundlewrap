@@ -206,8 +206,9 @@ class User(Item):
         if 'use_shadow' not in attributes:
             attributes['use_shadow'] = self.node.use_shadow_passwords
 
-        if isinstance(attributes.get('gid'), int):
-            attributes['gid'] = str(attributes['gid'])
+        for attr in ('gid', 'uid'):
+            if isinstance(attributes.get(attr), int):
+                attributes[attr] = str(attributes[attr])
 
         return attributes
 
