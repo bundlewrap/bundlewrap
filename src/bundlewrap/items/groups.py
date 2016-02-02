@@ -45,7 +45,7 @@ class Group(Item):
         return cdict
 
     def fix(self, status):
-        if not status.info['exists']:
+        if status.must_be_created:
             if self.attributes['gid'] is None:
                 command = "groupadd {}".format(self.name)
             else:
@@ -54,7 +54,7 @@ class Group(Item):
                     groupname=self.name,
                 )
             self.node.run(command, may_fail=True)
-        elif self.attributes['delete']:
+        elif status.must_be_deleted:
             self.node.run("groupdel {}".format(self.name), may_fail=True)
         else:
             self.node.run(
