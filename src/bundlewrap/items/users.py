@@ -77,8 +77,6 @@ def _parse_passwd_line(line):
         ('username', 'passwd_hash', 'uid', 'gid', 'gecos', 'home', 'shell'),
         line.strip().split(":"),
     ))
-    result['uid'] = int(result['uid'])
-    result['gid'] = int(result['gid'])
     result['full_name'] = result['gecos'].split(",")[0]
     return result
 
@@ -197,7 +195,7 @@ class User(Item):
         if 'use_shadow' not in attributes:
             attributes['use_shadow'] = self.node.use_shadow_passwords
 
-        if attributes.get('gid', None) is not None:
+        if isinstance(attributes.get('gid'), int):
             attributes['gid'] = str(attributes['gid'])
 
         return attributes

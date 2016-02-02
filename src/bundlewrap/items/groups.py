@@ -16,7 +16,7 @@ def _parse_group_line(line):
         ('groupname', 'password', 'gid', 'members'),
         line.strip().split(":"),
     ))
-    result['gid'] = int(result['gid'])
+    result['gid'] = result['gid']
     del result['password']  # nothing useful here
     return result
 
@@ -77,8 +77,8 @@ class Group(Item):
             return _parse_group_line(grep_result.stdout_text)
 
     def patch_attributes(self, attributes):
-        if attributes.get('gid') is not None:
-            attributes['gid'] = int(attributes['gid'])
+        if isinstance(attributes.get('gid'), int):
+            attributes['gid'] = str(attributes['gid'])
         return attributes
 
     @classmethod
