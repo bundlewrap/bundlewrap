@@ -238,7 +238,7 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
             item=item,
             node=bold(node),
             status=red(_("failed")),
-            x=bold(red("✘ ")),
+            x=bold(red("✘")),
         )
     elif result == Item.STATUS_ACTION_SUCCEEDED:
         return "{x} {node}  {bundle}  {item} {status}".format(
