@@ -20,11 +20,8 @@ def bw_test(repo, args):
             try:
                 msg = worker_pool.get_event()
             except WorkerException as e:
-                node_name, bundle_name, item_id = e.task_id.split(":", 2)
-                msg = "{x} {node}  {bundle}  {item}\n".format(
-                    bundle=bold(bundle_name),
-                    item=item_id,
-                    node=bold(node_name),
+                msg = "{x} {msg}\n".format(
+                    msg=bold(e.task_id),
                     x=red("✘"),
                 )
                 yield msg
