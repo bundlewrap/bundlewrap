@@ -1,12 +1,14 @@
 from codecs import getwriter
 from contextlib import contextmanager
 from datetime import datetime
+import fcntl
 from functools import wraps
 from multiprocessing import Event, Lock, Queue
 import os
 from signal import signal, SIGPIPE, SIG_DFL
-from subprocess import check_output
+import struct
 import sys
+import termios
 from threading import Thread
 
 from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
@@ -18,7 +20,6 @@ except AttributeError:  # Python 2
     STDOUT_WRITER = getwriter('utf-8')(sys.stdout)
     STDERR_WRITER = getwriter('utf-8')(sys.stderr)
 TTY = STDOUT_WRITER.isatty()
-TERM_WIDTH = int(check_output(['stty', 'size']).split()[1]) if TTY else 0
 
 
 try:
@@ -41,6 +42,15 @@ def clear_formatting(f):
             msg = "\033[0m" + msg
         return f(self, msg)
     return wrapped
+
+
+def term_width():
+    if not TTY:
+        return 0
+
+    fd = sys.stdout.fileno()
+    _, width = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, 'aaaa'))
+    return width
 
 
 def write_to_stream(stream, msg):
@@ -193,7 +203,7 @@ class IOManager(object):
 
             if self.jobs and TTY:
                 self.status_line_cleared.clear()
-                self._write(inverse("{} ".format(self.jobs[0])[:TERM_WIDTH - 1]))
+                self._write(inverse("{} ".format(self.jobs[0])[:term_width() - 1]))
 
     def shutdown(self):
         assert self.parent_mode
