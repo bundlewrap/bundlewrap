@@ -47,8 +47,7 @@ def bw_apply(repo, args):
 
     start_time = datetime.now()
 
-    worker_count = 1 if args['interactive'] else args['node_workers']
-    with WorkerPool(workers=worker_count) as worker_pool:
+    with WorkerPool(workers=args['node_workers']) as worker_pool:
         results = {}
         while worker_pool.keep_running():
             try:

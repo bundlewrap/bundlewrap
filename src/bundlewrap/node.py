@@ -380,12 +380,11 @@ class Node(object):
         )
 
         start = datetime.now()
-        worker_count = 1 if interactive else workers
         try:
             with NodeLock(self, interactive, ignore=force):
                 item_results = list(apply_items(
                     self,
-                    workers=worker_count,
+                    workers=workers,
                     interactive=interactive,
                     profiling=profiling,
                 ))
