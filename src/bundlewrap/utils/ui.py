@@ -154,8 +154,10 @@ class IOManager(object):
     @contextmanager
     def job(self, job_text):
         self.job_add(job_text)
-        yield
-        self.job_del(job_text)
+        try:
+            yield
+        finally:
+            self.job_del(job_text)
 
     @property
     @contextmanager
