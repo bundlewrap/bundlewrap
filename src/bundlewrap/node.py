@@ -391,9 +391,12 @@ class Node(object):
                 ))
         except NodeAlreadyLockedException as e:
             if not interactive:
-                io.error(_("Node '{node}' already locked: {info}").format(
-                    node=self.name,
-                    info=e.args,
+                io.stderr(_("{x} {node} already locked by {user} at {date} ({duration} ago, `bw apply -f` to override)").format(
+                    date=bold(e.args[0]['date']),
+                    duration=e.args[0]['duration'],
+                    node=bold(self.name),
+                    user=bold(e.args[0]['user']),
+                    x=red("!"),
                 ))
             item_results = []
         result = ApplyResult(self, item_results)
@@ -546,6 +549,16 @@ class NodeLock(object):
                                 warning=red(_("WARNING")),
                             ))
                             info = {}
+                    try:
+                        d = info['date']
+                    except KeyError:
+                        info['date'] = _("<unknown>")
+                        info['duration'] = _("<unknown>")
+                    else:
+                        info['date'] = datetime.fromtimestamp(d).strftime("%c")
+                        info['duration'] = str(datetime.now() - datetime.fromtimestamp(d)).split(".")[0]
+                    if 'user' not in info:
+                        info['user'] = _("<unknown>")
                     if self.ignore or (self.interactive and io.ask(
                         self._warning_message(info),
                         False,
@@ -577,13 +590,6 @@ class NodeLock(object):
             ))
 
     def _warning_message(self, info):
-        try:
-            d = info['date']
-            date = datetime.fromtimestamp(d).strftime("%c")
-            duration = str(datetime.now() - datetime.fromtimestamp(d)).split(".")[0]
-        except KeyError:
-            date = _("<unknown>")
-            duration = _("<unknown>")
         return _(
             "\n"
             "  {warning}\n\n"
@@ -595,9 +601,9 @@ class NodeLock(object):
         ).format(
             warning=red(_("WARNING")),
             node=bold(self.node.name),
-            user=bold(info.get('user', _("<unknown>"))),
-            date=date,
-            duration=bold(duration),
+            user=bold(info['user']),
+            date=info['date'],
+            duration=bold(info['duration']),
         )
 
 
