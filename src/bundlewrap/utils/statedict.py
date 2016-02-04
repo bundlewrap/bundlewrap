@@ -57,7 +57,11 @@ def diff_value_int(title, value1, value2):
 
 
 def diff_value_list(title, value1, value2):
-    raise NotImplementedError()
+    return diff_value_text(
+        title,
+        "\n".join([str(i) for i in value1]),
+        "\n".join([str(i) for i in value2]),
+    )
 
 
 def diff_value_text(title, value1, value2):
@@ -84,8 +88,8 @@ def diff_value_text(title, value1, value2):
     for line in unified_diff(
         value1.splitlines(True),
         value2.splitlines(True),
-        fromfile=_("<node content>"),
-        tofile=_("<bundlewrap content>"),
+        fromfile=_("<node>"),
+        tofile=_("<bundlewrap>"),
     ):
         suffix = ""
         line = line.rstrip("\n")
