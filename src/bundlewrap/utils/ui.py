@@ -89,7 +89,7 @@ class IOManager(object):
         self.thread.daemon = True
         self.thread.start()
 
-    def ask(self, question, default, get_input=input_function):
+    def ask(self, question, default, epilogue=None, get_input=input_function):
         answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
         with self.lock:
@@ -102,12 +102,19 @@ class IOManager(object):
                 if answer.lower() in (_("y"), _("yes")) or (
                     not answer and default
                 ):
-                    return True
+                    answer = True
+                    break
                 elif answer.lower() in (_("n"), _("no")) or (
                     not answer and not default
                 ):
-                    return False
+                    answer = False
+                    break
                 STDOUT_WRITER.write(_("Please answer with 'y(es)' or 'n(o)'.\n"))
+                STDOUT_WRITER.flush()
+            if epilogue:
+                STDOUT_WRITER.write(epilogue + "\n")
+                STDOUT_WRITER.flush()
+        return answer
 
     @contextmanager
     def capture(self):

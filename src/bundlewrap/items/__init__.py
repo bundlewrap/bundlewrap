@@ -347,11 +347,14 @@ class Item(object):
                         x=blue("?"),
                     ),
                 )
-                answer = io.ask(question, interactive_default)
-                io.stdout("{x} {node}".format(
-                    node=bold(self.node.name),
-                    x=blue("?"),
-                ))
+                answer = io.ask(
+                    question,
+                    interactive_default,
+                    epilogue="{x} {node}".format(
+                        node=bold(self.node.name),
+                        x=blue("?"),
+                    ),
+                )
                 if answer:
                     with io.job(_("  {node}  {bundle}  {item}  fixing...").format(
                         bundle=self.bundle.name,
