@@ -86,12 +86,12 @@ def test_metadatapy(tmpdir):
     if "baz" in metadata:
         return None
     else:
-        metadata["baz"] = 47
+        metadata["baz"] = node.name
 """)
     with io.capture() as captured:
         main("metadata", "node1", path=str(tmpdir))
     assert loads(captured['stdout']) == {
-        "baz": 47,
+        "baz": "node1",
         "foo": "bar",
     }
     assert captured['stderr'] == ""
