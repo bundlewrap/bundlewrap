@@ -18,6 +18,7 @@ from .deps import (
     prepare_dependencies,
 )
 from .exceptions import (
+    BundleError,
     ItemDependencyError,
     NodeAlreadyLockedException,
     NoSuchBundle,
@@ -287,6 +288,7 @@ class Node(object):
 
         self.name = name
         self._bundles = infodict.get('bundles', [])
+        self._compiling_metadata = False
         self._node_metadata = infodict.get('metadata', {})
         self._node_os = infodict.get('os')
         self.add_ssh_host_keys = False
@@ -425,6 +427,11 @@ class Node(object):
 
     @cached_property
     def metadata(self):
+        if self._compiling_metadata:
+            raise BundleError("trying to access metadata while it is "
+                              "being compiled (check your metadata.py)")
+        else:
+            self._compiling_metadata = True
         m = {}
 
         # step 1: group metadata
@@ -447,6 +454,7 @@ class Node(object):
             if not modified:
                 break
 
+        self._compiling_metadata = False
         return m
 
     @property
