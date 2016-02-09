@@ -53,13 +53,13 @@ While not a strict requirement, it is highly recommended to ensure your entire c
 
 A common pitfall here is iteration over dictionaries in templates::
 
-	% for key, value in my_dict:
+	% for key, value in my_dict.items():
 	${value}
 	% endfor
 
 Standard dictionaries in Python have no defined order. This may result in lines occasionally changing their position. To solve this, you can simply use ``sorted()``::
 
-	% for key, value in sorted(my_dict):
+	% for key, value in sorted(my_dict.items()):
 	${value}
 	% endfor
 
