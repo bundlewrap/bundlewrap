@@ -48,13 +48,16 @@ class Bundle(object):
 
     @cached_property
     def bundle_attrs(self):
-        return get_all_attrs_from_file(
-            self.bundle_file,
-            base_env={
-                'node': self.node,
-                'repo': self.repo,
-            },
-        )
+        if not exists(self.bundle_file):
+            return {}
+        else:
+            return get_all_attrs_from_file(
+                self.bundle_file,
+                base_env={
+                    'node': self.node,
+                    'repo': self.repo,
+                },
+            )
 
     @cached_property
     def items(self):
