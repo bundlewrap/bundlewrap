@@ -90,7 +90,13 @@ class Bundle(object):
         if not exists(self.metadata_file):
             return []
         result = []
-        for name, attr in get_all_attrs_from_file(self.metadata_file).items():
+        for name, attr in get_all_attrs_from_file(
+            self.metadata_file,
+            base_env={
+                'node': self.node,
+                'repo': self.repo,
+            },
+        ).items():
             if name.startswith("_") or not callable(attr):
                 continue
             result.append(attr)

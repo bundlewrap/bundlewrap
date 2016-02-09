@@ -313,7 +313,7 @@ Canned actions always have to be triggered in order to run. In the example above
 metadata.py
 -----------
 
-Alongside :file:`items.py` you may create another file called :file:`metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before :file:`items.py` is evaluated. To do that, you simply write any number of functions whose name doesn't start with an underscore and put them into :file:`metadata.py`. These functions take the metadata dictionary generated so far as their single argument. You may then return the same dictionary with your modifications or `None` if you don't want to make further changes. These function are called metadata processors. Every metadata processor from every bundle is called repeatedly with the latest metadata dictionary until they all return `None`. It is vital that every metadata processor can recognize when it already has done its job and then returns `None` (otherwise you'll get stuck in an infinite loop). Here's an example for how a :file:`metadata.py` could look like:
+Alongside :file:`items.py` you may create another file called :file:`metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before :file:`items.py` is evaluated. To do that, you simply write any number of functions whose name doesn't start with an underscore and put them into :file:`metadata.py`. These functions take the metadata dictionary generated so far as their single argument. You may then return the same dictionary with your modifications or `None` if you don't want to make further changes. These function are called metadata processors. Every metadata processor from every bundle is called repeatedly with the latest metadata dictionary until they all return `None`. It is vital that every metadata processor can recognize when it already has done its job and then returns `None` (otherwise you'll get stuck in an infinite loop). Here's an example for how a :file:`metadata.py` could look like (note that you have access to `repo` and `node` just like in :file:`items.py`):
 
 .. code-block:: python
 
@@ -321,7 +321,7 @@ Alongside :file:`items.py` you may create another file called :file:`metadata.py
 	    if "foo" in metadata:
 	        return None
 	    else:
-	        metadata["foo"] = metadata.get("bar", "baz")
+	        metadata["foo"] = node.name
 	        return metadata
 
 |
