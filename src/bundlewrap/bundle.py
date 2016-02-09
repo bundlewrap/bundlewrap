@@ -36,7 +36,7 @@ class Bundle(object):
 
     def __getstate__(self):
         """
-        Removes cached items prior to pickling because their classed are
+        Removes cached items prior to pickling because their classes are
         loaded dynamically and can't be pickled.
         """
         state = copy(self.__dict__)
