@@ -21,10 +21,18 @@ from .verify import bw_verify
 from .zen import bw_zen
 
 
+def print_usage(parser):
+    def wrapped(*args, **kwargs):
+        return parser.print_usage()
+    return wrapped
+
+
 def build_parser_bw():
-    parser = ArgumentParser(prog="bw", description=_(
-        "BundleWrap - config management for Python addicts"
-    ))
+    parser = ArgumentParser(
+        prog="bw",
+        description=_("BundleWrap - Config Management with Python"),
+    )
+    parser.set_defaults(func=print_usage(parser))
     parser.add_argument(
         "-a",
         "--add-host-keys",

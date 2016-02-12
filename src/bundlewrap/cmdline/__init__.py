@@ -45,8 +45,9 @@ def main(*args, **kwargs):
         except NoSuchRepository:
             io.stderr(_(
                 "{x} The current working directory "
-                "is not a BundleWrap repository.\n".format(x=red("!"))
-            ))
+                "is not a BundleWrap repository."
+            ).format(x=red("!")))
+            io.shutdown()
             exit(1)
             return  # used during texting when exit() is mocked
 
