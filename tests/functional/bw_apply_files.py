@@ -82,7 +82,7 @@ def test_mako_template_content(tmpdir):
     main("apply", "localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
-    assert content == "localhost"
+    assert content == b"localhost"
 
 
 def test_text_template_content(tmpdir):
@@ -108,4 +108,4 @@ def test_text_template_content(tmpdir):
     main("apply", "localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
-    assert content == "${node.name}"
+    assert content == b"${node.name}"
