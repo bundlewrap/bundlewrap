@@ -1,2 +1,4 @@
+pytest
 Sphinx
+tox
 wheel
