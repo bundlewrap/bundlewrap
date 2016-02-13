@@ -3,7 +3,7 @@
 
 unreleased
 
-* added support for Python 3.3+, PyPy, and PyPy3
+* added support for Python 3.3+
 * switched from Fabric/Paramiko to OpenSSH
 * removed SSH and sudo passwords (BACKWARDS INCOMPATIBLE)
 * metadata is now merged recursively (BACKWARDS INCOMPATIBLE)
