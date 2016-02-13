@@ -12,6 +12,7 @@ unreleased
 * reworked command line options for `bw verify` (BACKWARDS INCOMPATIBLE)
 * `bw verify` and `bw apply` now show incorrect/fixed/failed attributes
 * `bw apply` now uses a status line to show current activity
+* generally improved output formatting
 
 
 1.5.1
