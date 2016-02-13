@@ -1,4 +1,3 @@
-from codecs import getwriter
 from contextlib import contextmanager
 from datetime import datetime
 import fcntl
@@ -11,14 +10,9 @@ import sys
 import termios
 from threading import Thread
 
+from . import STDERR_WRITER, STDOUT_WRITER
 from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
 
-try:
-    STDOUT_WRITER = getwriter('utf-8')(sys.stdout.buffer)
-    STDERR_WRITER = getwriter('utf-8')(sys.stderr.buffer)
-except AttributeError:  # Python 2
-    STDOUT_WRITER = getwriter('utf-8')(sys.stdout)
-    STDERR_WRITER = getwriter('utf-8')(sys.stderr)
 TTY = STDOUT_WRITER.isatty()
 
 
