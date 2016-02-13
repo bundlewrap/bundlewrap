@@ -12,8 +12,8 @@ def test_empty(tmpdir):
         },
     )
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert stdout == "{}\n"
-    assert stderr == ""
+    assert stdout == b"{}\n"
+    assert stderr == b""
 
 
 def test_simple(tmpdir):
@@ -24,8 +24,8 @@ def test_simple(tmpdir):
         },
     )
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert loads(stdout) == {"foo": "bar"}
-    assert stderr == ""
+    assert loads(stdout.decode()) == {"foo": "bar"}
+    assert stderr == b""
 
 
 def test_merge(tmpdir):
@@ -54,14 +54,14 @@ def test_merge(tmpdir):
         },
     )
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert loads(stdout) == {
+    assert loads(stdout.decode()) == {
         "ding": 5,
         "foo": {
             "bar": "baz",
             "baz": "bar",
         },
     }
-    assert stderr == ""
+    assert stderr == b""
 
 
 def test_metadatapy(tmpdir):
@@ -84,8 +84,8 @@ def test_metadatapy(tmpdir):
         metadata["baz"] = node.name
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert loads(stdout) == {
+    assert loads(stdout.decode()) == {
         "baz": "node1",
         "foo": "bar",
     }
-    assert stderr == ""
+    assert stderr == b""
