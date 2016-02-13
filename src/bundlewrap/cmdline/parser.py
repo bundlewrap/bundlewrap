@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from argparse import ArgumentParser
+from sys import exit
 
 from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
@@ -21,18 +22,18 @@ from .verify import bw_verify
 from .zen import bw_zen
 
 
-def print_usage(parser):
-    def wrapped(*args, **kwargs):
-        return parser.print_usage()
-    return wrapped
+class UsagePrintingArgumentParser(ArgumentParser):
+    def error(self, message):
+        print(message)
+        self.print_help()
+        exit(2)
 
 
 def build_parser_bw():
-    parser = ArgumentParser(
+    parser = UsagePrintingArgumentParser(
         prog="bw",
         description=_("BundleWrap - Config Management with Python"),
     )
-    parser.set_defaults(func=print_usage(parser))
     parser.add_argument(
         "-a",
         "--add-host-keys",
