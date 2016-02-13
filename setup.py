@@ -1,7 +1,4 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import find_packages, setup
 
 
 setup(
@@ -16,13 +13,7 @@ setup(
     author_email="torsten@rehn.email",
     license="GPLv3",
     url="http://bundlewrap.org",
-    package_dir={'': "src"},
-    packages=[
-        'bundlewrap',
-        'bundlewrap.cmdline',
-        'bundlewrap.items',
-        'bundlewrap.utils',
-    ],
+    packages=find_packages(),
     test_suite="tests",
     entry_points={
         'console_scripts': [

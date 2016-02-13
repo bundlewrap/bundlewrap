@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>User items &mdash; BundleWrap 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/bundlewrap.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="BundleWrap 2.0.0 documentation" href="index.html"/>
+        <link rel="up" title="Bundles" href="bundles.html"/>
+        <link rel="next" title="Hooks" href="hooks.html"/>
+        <link rel="prev" title="Symlink items" href="item_symlink.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html">
+        
+
+        
+          
+          <img src="_static/logo.png" class="logo" />
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-repository">Create a repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#run-a-command">Run a command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-bundle">Create a bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-file-template">Create a file template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#apply-configuration">Apply configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#further-reading">Further reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pip">Using <cite>pip</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-git">From git</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements for managed systems</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="repository.html">Repository reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nodes.py.html">nodes.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="groups.py.html">groups.py</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_item.html">Custom item types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libs.html">Custom code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-apply"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">apply</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-run"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">run</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-nodes-and-bw-groups"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">nodes</span></code> and <code class="docutils literal"><span class="pre">bw</span> <span class="pre">groups</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-debug"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">debug</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-plot"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">plot</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-test"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">test</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#reference">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev_contrib.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#submitting-bug-reports">Submitting bug reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#contributing-code">Contributing code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#help">Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#technical">Technical</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#the-bundlewrap-project">The BundleWrap Project</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#ansible">Ansible</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#bcfg2">BCFG2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#chef">Chef</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">BundleWrap</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="repository.html">Repository reference</a> &raquo;</li>
+      
+          <li><a href="bundles.html">Bundles</a> &raquo;</li>
+      
+    <li>User items</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="user-items">
+<span id="item-user"></span><h1>User items<a class="headerlink" href="#user-items" title="Permalink to this headline">¶</a></h1>
+<p>Manages system user accounts.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">users</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;jdoe&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&quot;full_name&quot;</span><span class="p">:</span> <span class="s">&quot;Jane Doe&quot;</span><span class="p">,</span>
+        <span class="s">&quot;gid&quot;</span><span class="p">:</span> <span class="mi">2342</span><span class="p">,</span>
+        <span class="s">&quot;groups&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;admins&quot;</span><span class="p">,</span> <span class="s">&quot;users&quot;</span><span class="p">,</span> <span class="s">&quot;wheel&quot;</span><span class="p">],</span>
+        <span class="s">&quot;home&quot;</span><span class="p">:</span> <span class="s">&quot;/home/jdoe&quot;</span><span class="p">,</span>
+        <span class="s">&quot;password_hash&quot;</span><span class="p">:</span> <span class="s">&quot;$6$abcdef$ghijklmnopqrstuvwxyz&quot;</span><span class="p">,</span>
+        <span class="s">&quot;shell&quot;</span><span class="p">:</span> <span class="s">&quot;/bin/zsh&quot;</span><span class="p">,</span>
+        <span class="s">&quot;uid&quot;</span><span class="p">:</span> <span class="mi">4747</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="attribute-reference">
+<h2>Attribute reference<a class="headerlink" href="#attribute-reference" title="Permalink to this headline">¶</a></h2>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="bundles.html#builtin-item-attributes"><span>The list of generic builtin item attributes</span></a></p>
+</div>
+<p>All attributes are optional.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="section" id="delete">
+<h3><code class="docutils literal"><span class="pre">delete</span></code><a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h3>
+<p>When set to <code class="docutils literal"><span class="pre">True</span></code>, this user will be removed from the system. Note that because of how <strong class="command">userdel</strong> works, the primary group of the user will be removed if it contains no other users. When using <code class="docutils literal"><span class="pre">delete</span></code>, no other attributes are allowed.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="full-name">
+<h3><code class="docutils literal"><span class="pre">full_name</span></code><a class="headerlink" href="#full-name" title="Permalink to this headline">¶</a></h3>
+<p>Full name of the user.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="gid">
+<h3><code class="docutils literal"><span class="pre">gid</span></code><a class="headerlink" href="#gid" title="Permalink to this headline">¶</a></h3>
+<p>Primary group of the user as numerical ID or group name.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Due to how <code class="docutils literal"><span class="pre">useradd</span></code> works, this attribute is required whenever you <em>don&#8217;t</em> want the default behavior of <code class="docutils literal"><span class="pre">useradd</span></code> (usually that means automatically creating a group with the same name as the user). If you want to use an unmanaged group already on the node, you need this attribute. If you want to use a group managed by BundleWrap, you need this attribute. This is true even if the groups mentioned are in fact named like the user.</p>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="groups">
+<h3><code class="docutils literal"><span class="pre">groups</span></code><a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
+<p>List of groups (names, not GIDs) the user should belong to. Must NOT include the group referenced by <code class="docutils literal"><span class="pre">gid</span></code>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="hash-method">
+<h3><code class="docutils literal"><span class="pre">hash_method</span></code><a class="headerlink" href="#hash-method" title="Permalink to this headline">¶</a></h3>
+<p>One of:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">md5</span></code></li>
+<li><code class="docutils literal"><span class="pre">sha256</span></code></li>
+<li><code class="docutils literal"><span class="pre">sha512</span></code></li>
+</ul>
+<p>Defaults to <code class="docutils literal"><span class="pre">sha512</span></code>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="home">
+<h3><code class="docutils literal"><span class="pre">home</span></code><a class="headerlink" href="#home" title="Permalink to this headline">¶</a></h3>
+<p>Path to home directory. Defaults to <code class="docutils literal"><span class="pre">/home/USERNAME</span></code>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="password">
+<h3><code class="docutils literal"><span class="pre">password</span></code><a class="headerlink" href="#password" title="Permalink to this headline">¶</a></h3>
+<p>The user&#8217;s password in plaintext.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Please do not write any passwords into your bundles. This attribute is intended to be used with an external source of passwords and filled dynamically. If you don&#8217;t have or want such an elaborate setup, specify passwords using the <code class="docutils literal"><span class="pre">password_hash</span></code> attribute instead.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you don&#8217;t specify a <code class="docutils literal"><span class="pre">salt</span></code> along with the password, BundleWrap will use a static salt. Be aware that this is basically the same as using no salt at all.</p>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="password-hash">
+<h3><code class="docutils literal"><span class="pre">password_hash</span></code><a class="headerlink" href="#password-hash" title="Permalink to this headline">¶</a></h3>
+<p>Hashed password as it would be returned by <code class="docutils literal"><span class="pre">crypt()</span></code> and written to <code class="file docutils literal"><span class="pre">/etc/shadow</span></code>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="salt">
+<h3><code class="docutils literal"><span class="pre">salt</span></code><a class="headerlink" href="#salt" title="Permalink to this headline">¶</a></h3>
+<p>Recommended for use with the <code class="docutils literal"><span class="pre">password</span></code> attribute. BundleWrap will use 5000 rounds of SHA-512 on this salt and the provided password.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="shell">
+<h3><code class="docutils literal"><span class="pre">shell</span></code><a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h3>
+<p>Path to login shell executable.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="uid">
+<h3><code class="docutils literal"><span class="pre">uid</span></code><a class="headerlink" href="#uid" title="Permalink to this headline">¶</a></h3>
+<p>Numerical user ID. It&#8217;s your job to make sure it&#8217;s unique.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="hooks.html" class="btn btn-neutral float-right" title="Hooks" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="item_symlink.html" class="btn btn-neutral" title="Symlink items" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

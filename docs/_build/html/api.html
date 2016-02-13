@@ -1,0 +1,658 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API &mdash; BundleWrap 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/bundlewrap.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="BundleWrap 2.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Contributing" href="dev_contrib.html"/>
+        <link rel="prev" title="Command Line Interface" href="cli.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html">
+        
+
+        
+          
+          <img src="_static/logo.png" class="logo" />
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-repository">Create a repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#run-a-command">Run a command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-bundle">Create a bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-file-template">Create a file template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#apply-configuration">Apply configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#further-reading">Further reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pip">Using <cite>pip</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-git">From git</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements for managed systems</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nodes.py.html">nodes.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="groups.py.html">groups.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_item.html">Custom item types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libs.html">Custom code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-apply"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">apply</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-run"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">run</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-nodes-and-bw-groups"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">nodes</span></code> and <code class="docutils literal"><span class="pre">bw</span> <span class="pre">groups</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-debug"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">debug</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-plot"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">plot</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-test"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">test</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reference">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev_contrib.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#submitting-bug-reports">Submitting bug reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#contributing-code">Contributing code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#help">Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#technical">Technical</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#the-bundlewrap-project">The BundleWrap Project</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#ansible">Ansible</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#bcfg2">BCFG2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#chef">Chef</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">BundleWrap</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="api">
+<span id="id1"></span><h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<p>While most users will interact with BundleWrap through the <strong class="command">bw</strong> command line utility, you can also use it from your own code to extract data or further automate config management tasks.</p>
+<p>Even within BundleWrap itself (e.g. templates, libs, and hooks) you are often given repo and/or node objects to work with. Their methods and attributes are documented below.</p>
+<p>Some general notes on using BundleWrap&#8217;s API:</p>
+<ul class="simple">
+<li>There can be an arbitrary amount of <a class="reference internal" href="#bundlewrap.repo.Repository" title="bundlewrap.repo.Repository"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.repo.Repository</span></code></a> objects per process.</li>
+<li>Repositories are read as needed and not re-read when something changes. Modifying files in a repo during the lifetime of the matching Repository object may result in undefined behavior.</li>
+</ul>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>Here&#8217;s a short example of how to use BundleWrap to get the uptime for a node.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bundlewrap.repo</span> <span class="kn">import</span> <span class="n">Repository</span>
+
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s">&quot;/path/to/my/repo&quot;</span><span class="p">)</span>
+<span class="n">node</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s">&quot;mynode&quot;</span><span class="p">)</span>
+<span class="n">uptime</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s">&quot;uptime&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">uptime</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<span class="target" id="module-bundlewrap.repo"></span><dl class="class">
+<dt id="bundlewrap.repo.Repository">
+<em class="property">class </em><code class="descclassname">bundlewrap.repo.</code><code class="descname">Repository</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.repo.Repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>The starting point of any interaction with BundleWrap. An object of this class represents the repository at the given path.</p>
+<dl class="attribute">
+<dt id="bundlewrap.repo.Repository.groups">
+<code class="descname">groups</code><a class="headerlink" href="#bundlewrap.repo.Repository.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all groups in the repo (instances of <a class="reference internal" href="#bundlewrap.group.Group" title="bundlewrap.group.Group"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.group.Group</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.repo.Repository.group_names">
+<code class="descname">group_names</code><a class="headerlink" href="#bundlewrap.repo.Repository.group_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all group names in this repo.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.repo.Repository.nodes">
+<code class="descname">nodes</code><a class="headerlink" href="#bundlewrap.repo.Repository.nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all nodes in the repo (instances of <a class="reference internal" href="#bundlewrap.node.Node" title="bundlewrap.node.Node"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.node.Node</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.repo.Repository.node_names">
+<code class="descname">node_names</code><a class="headerlink" href="#bundlewrap.repo.Repository.node_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all node names in this repo</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.repo.Repository.revision">
+<code class="descname">revision</code><a class="headerlink" href="#bundlewrap.repo.Repository.revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current git, hg or bzr revision of this repo. <code class="docutils literal"><span class="pre">None</span></code> if no SCM was detected.</p>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.repo.Repository.get_group">
+<code class="descname">get_group</code><span class="sig-paren">(</span><em>group_name</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.repo.Repository.get_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the group object with the given name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group_name</strong> (<em>str</em>) &#8211; Name of the desired group</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The group object for the given name</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#bundlewrap.group.Group" title="bundlewrap.group.Group"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.group.Group</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.repo.Repository.get_node">
+<code class="descname">get_node</code><span class="sig-paren">(</span><em>node_name</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.repo.Repository.get_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the node object with the given name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>node_name</strong> (<em>str</em>) &#8211; Name of the desired node</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The node object for the given name</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#bundlewrap.node.Node" title="bundlewrap.node.Node"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.node.Node</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.repo.Repository.nodes_in_all_groups">
+<code class="descname">nodes_in_all_groups</code><span class="sig-paren">(</span><em>group_names</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.repo.Repository.nodes_in_all_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of nodes where every node is a member of every group given.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group_names</strong> (<em>list</em>) &#8211; Names of groups to search for common nodes.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">All nodes common to all given groups.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.repo.Repository.nodes_in_any_group">
+<code class="descname">nodes_in_any_group</code><span class="sig-paren">(</span><em>group_names</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.repo.Repository.nodes_in_any_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all nodes that are a member of at least one of the given groups.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group_names</strong> (<em>list</em>) &#8211; Names of groups to search for nodes.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">All nodes present in at least one group.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">generator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.repo.Repository.nodes_in_group">
+<code class="descname">nodes_in_group</code><span class="sig-paren">(</span><em>group_name</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.repo.Repository.nodes_in_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of nodes in the given group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group_name</strong> (<em>str</em>) &#8211; Name of the group.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">All nodes in that group.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<span class="target" id="module-bundlewrap.node"></span><dl class="class">
+<dt id="bundlewrap.node.Node">
+<em class="property">class </em><code class="descclassname">bundlewrap.node.</code><code class="descname">Node</code><a class="headerlink" href="#bundlewrap.node.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>A system managed by BundleWrap.</p>
+<dl class="attribute">
+<dt id="bundlewrap.node.Node.bundles">
+<code class="descname">bundles</code><a class="headerlink" href="#bundlewrap.node.Node.bundles" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all bundles associated with this node (instances of <code class="xref py py-class docutils literal"><span class="pre">bundlewrap.bundle.Bundle</span></code>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.node.Node.groups">
+<code class="descname">groups</code><a class="headerlink" href="#bundlewrap.node.Node.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of <a class="reference internal" href="#bundlewrap.group.Group" title="bundlewrap.group.Group"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.group.Group</span></code></a> objects this node belongs to</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.node.Node.hostname">
+<code class="descname">hostname</code><a class="headerlink" href="#bundlewrap.node.Node.hostname" title="Permalink to this definition">¶</a></dt>
+<dd><p>The DNS name BundleWrap uses to connect to this node</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.node.Node.items">
+<code class="descname">items</code><a class="headerlink" href="#bundlewrap.node.Node.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of items on this node (instances of subclasses of <code class="xref py py-class docutils literal"><span class="pre">bundlewrap.items.Item</span></code>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.node.Node.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#bundlewrap.node.Node.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of custom metadata, merged from information in <a class="reference internal" href="nodes.py.html"><em>nodes.py</em></a> and <a class="reference internal" href="groups.py.html"><em>groups.py</em></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.node.Node.name">
+<code class="descname">name</code><a class="headerlink" href="#bundlewrap.node.Node.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The internal identifier for this node</p>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.download">
+<code class="descname">download</code><span class="sig-paren">(</span><em>remote_path</em>, <em>local_path</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads a file from the node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>remote_path</strong> (<em>str</em>) &#8211; Which file to get from the node</li>
+<li><strong>local_path</strong> (<em>str</em>) &#8211; Where to put the file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.get_item">
+<code class="descname">get_item</code><span class="sig-paren">(</span><em>item_id</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.get_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the item object with the given ID (e.g. &#8220;<a class="reference external" href="file:/etc/motd">file:/etc/motd</a>&#8221;).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item_id</strong> (<em>str</em>) &#8211; ID of the desired item</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The item object for the given ID</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">instances of subclasses of <code class="xref py py-class docutils literal"><span class="pre">bundlewrap.items.Item</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.has_bundle">
+<code class="descname">has_bundle</code><span class="sig-paren">(</span><em>bundle_name</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.has_bundle" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">True</span></code> if the node has a bundle with the given name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bundle_name</strong> (<em>str</em>) &#8211; Name of the bundle to look for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.has_any_bundle">
+<code class="descname">has_any_bundle</code><span class="sig-paren">(</span><em>bundle_names</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.has_any_bundle" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">True</span></code> if the node has a bundle with any of the given names.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bundle_names</strong> (<em>list</em>) &#8211; List of bundle names to look for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.in_group">
+<code class="descname">in_group</code><span class="sig-paren">(</span><em>group_name</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.in_group" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">True</span></code> if the node is in a group with the given name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group_name</strong> (<em>str</em>) &#8211; Name of the group to look for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.in_any_group">
+<code class="descname">in_any_group</code><span class="sig-paren">(</span><em>group_names</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.in_any_group" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">True</span></code> if the node is in a group with any of the given names.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group_names</strong> (<em>list</em>) &#8211; List of group names to look for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>command</em>, <em>may_fail=False</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a command on the node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> (<em>str</em>) &#8211; What should be executed on the node</li>
+<li><strong>may_fail</strong> (<em>bool</em>) &#8211; If <code class="docutils literal"><span class="pre">False</span></code>, <code class="xref py py-exc docutils literal"><span class="pre">bundlewrap.exceptions.RemoteException</span></code> will be raised if the command does not return 0.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An object that holds the return code as well as captured stdout and stderr</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.operations.RunResult</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="method">
+<dt id="bundlewrap.node.Node.upload">
+<code class="descname">upload</code><span class="sig-paren">(</span><em>local_path</em>, <em>remote_path</em>, <em>mode=None</em>, <em>owner=&quot;&quot;</em>, <em>group=&quot;&quot;</em><span class="sig-paren">)</span><a class="headerlink" href="#bundlewrap.node.Node.upload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uploads a file to the node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>local_path</strong> (<em>str</em>) &#8211; Which file to upload</li>
+<li><strong>remote_path</strong> (<em>str</em>) &#8211; Where to put the file on the target node</li>
+<li><strong>mode</strong> (<em>str</em>) &#8211; File mode, e.g. &#8220;0644&#8221;</li>
+<li><strong>owner</strong> (<em>str</em>) &#8211; Username of the file owner</li>
+<li><strong>group</strong> (<em>str</em>) &#8211; Group name of the file group</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<span class="target" id="module-bundlewrap.group"></span><dl class="class">
+<dt id="bundlewrap.group.Group">
+<em class="property">class </em><code class="descclassname">bundlewrap.group.</code><code class="descname">Group</code><a class="headerlink" href="#bundlewrap.group.Group" title="Permalink to this definition">¶</a></dt>
+<dd><p>A user-defined group of nodes.</p>
+<dl class="attribute">
+<dt id="bundlewrap.group.Group.name">
+<code class="descname">name</code><a class="headerlink" href="#bundlewrap.group.Group.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of this group</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bundlewrap.group.Group.nodes">
+<code class="descname">nodes</code><a class="headerlink" href="#bundlewrap.group.Group.nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all nodes in this group (instances of <a class="reference internal" href="#bundlewrap.node.Node" title="bundlewrap.node.Node"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.node.Node</span></code></a>, includes subgroup members)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dev_contrib.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cli.html" class="btn btn-neutral" title="Command Line Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

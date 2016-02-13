@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Custom code &mdash; BundleWrap 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/bundlewrap.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="BundleWrap 2.0.0 documentation" href="index.html"/>
+        <link rel="up" title="Repository reference" href="repository.html"/>
+        <link rel="next" title="Plugins" href="plugins.html"/>
+        <link rel="prev" title="Custom item types" href="dev_item.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html">
+        
+
+        
+          
+          <img src="_static/logo.png" class="logo" />
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-repository">Create a repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#run-a-command">Run a command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-bundle">Create a bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-file-template">Create a file template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#apply-configuration">Apply configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#further-reading">Further reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pip">Using <cite>pip</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-git">From git</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements for managed systems</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="repository.html">Repository reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nodes.py.html">nodes.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="groups.py.html">groups.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_item.html">Custom item types</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Custom code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-apply"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">apply</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-run"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">run</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-nodes-and-bw-groups"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">nodes</span></code> and <code class="docutils literal"><span class="pre">bw</span> <span class="pre">groups</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-debug"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">debug</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-plot"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">plot</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-test"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">test</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#reference">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev_contrib.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#submitting-bug-reports">Submitting bug reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#contributing-code">Contributing code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#help">Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#technical">Technical</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#the-bundlewrap-project">The BundleWrap Project</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#ansible">Ansible</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#bcfg2">BCFG2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#chef">Chef</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">BundleWrap</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="repository.html">Repository reference</a> &raquo;</li>
+      
+    <li>Custom code</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="custom-code">
+<span id="libs"></span><h1>Custom code<a class="headerlink" href="#custom-code" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>The <code class="file docutils literal"><span class="pre">libs/</span></code> subdirectory of your repository provides a convenient place to put reusable code used throughout your bundles and hooks.</p>
+<p>A Python module called <code class="file docutils literal"><span class="pre">example.py</span></code> placed in this directory will be available as <code class="docutils literal"><span class="pre">repo.libs.example</span></code> wherever you have access to a <a class="reference internal" href="api.html#bundlewrap.repo.Repository" title="bundlewrap.repo.Repository"><code class="xref py py-class docutils literal"><span class="pre">bundlewrap.repo.Repository</span></code></a> object. In <code class="file docutils literal"><span class="pre">nodes.py</span></code> and <code class="file docutils literal"><span class="pre">groups.py</span></code>, you can do the same thing with just <code class="docutils literal"><span class="pre">libs.example</span></code>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Only single files, no subdirectories or packages, are supported at the moment.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plugins.html" class="btn btn-neutral float-right" title="Plugins" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="dev_item.html" class="btn btn-neutral" title="Custom item types" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

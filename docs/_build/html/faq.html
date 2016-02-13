@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FAQ &mdash; BundleWrap 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/bundlewrap.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="BundleWrap 2.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Glossary" href="glossary.html"/>
+        <link rel="prev" title="Writing your own plugins" href="dev_plugins.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html">
+        
+
+        
+          
+          <img src="_static/logo.png" class="logo" />
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-repository">Create a repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#run-a-command">Run a command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-bundle">Create a bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-file-template">Create a file template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#apply-configuration">Apply configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#further-reading">Further reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pip">Using <cite>pip</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-git">From git</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements for managed systems</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nodes.py.html">nodes.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="groups.py.html">groups.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_item.html">Custom item types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libs.html">Custom code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-apply"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">apply</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-run"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">run</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-nodes-and-bw-groups"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">nodes</span></code> and <code class="docutils literal"><span class="pre">bw</span> <span class="pre">groups</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-debug"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">debug</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-plot"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">plot</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bw-test"><code class="docutils literal"><span class="pre">bw</span> <span class="pre">test</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#reference">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev_contrib.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#submitting-bug-reports">Submitting bug reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#contributing-code">Contributing code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_contrib.html#help">Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#technical">Technical</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-bundlewrap-project">The BundleWrap Project</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#ansible">Ansible</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#bcfg2">BCFG2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternatives.html#chef">Chef</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">BundleWrap</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>FAQ</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="faq">
+<h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="technical">
+<h2>Technical<a class="headerlink" href="#technical" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bundlewrap-says-an-item-failed-to-apply-what-do-i-do-now">
+<h3>BundleWrap says an item failed to apply, what do I do now?<a class="headerlink" href="#bundlewrap-says-an-item-failed-to-apply-what-do-i-do-now" title="Permalink to this headline">¶</a></h3>
+<p>Try running <strong class="command">bw apply -i nodename</strong> to see which attribute of the item could not be fixed. If that doesn&#8217;t tell you enough, try <code class="docutils literal"><span class="pre">bw</span> <span class="pre">--debug</span> <span class="pre">apply</span> <span class="pre">-i</span> <span class="pre">nodename</span></code> and look for the command BundleWrap is using to fix the <a class="reference internal" href="glossary.html#term-item"><span class="xref std std-term">item</span></a> in question. Then try running that command yourself and check for any errors.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="what-happens-when-two-people-start-applying-configuration-to-the-same-node">
+<h3>What happens when two people start applying configuration to the same node?<a class="headerlink" href="#what-happens-when-two-people-start-applying-configuration-to-the-same-node" title="Permalink to this headline">¶</a></h3>
+<p>BundleWrap uses a locking mechanism to prevent collisions like this. When BundleWrap finds a lock on a <a class="reference internal" href="glossary.html#term-node"><span class="xref std std-term">node</span></a> in interactive mode, it will display information about who acquired the lock (and when) and will ask whether to ignore the lock or abort the process. In noninteractive mode, the operation is always cancelled for the node in question unless <code class="xref std std-option docutils literal"><span class="pre">--force</span></code> is used.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="how-can-i-have-bundlewrap-reload-my-services-after-config-changes">
+<h3>How can I have BundleWrap reload my services after config changes?<a class="headerlink" href="#how-can-i-have-bundlewrap-reload-my-services-after-config-changes" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference internal" href="bundles.html#canned-actions"><span>canned actions</span></a> and <a class="reference internal" href="bundles.html#triggers"><span>triggers</span></a>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="will-bundlewrap-keep-track-of-package-updates">
+<h3>Will BundleWrap keep track of package updates?<a class="headerlink" href="#will-bundlewrap-keep-track-of-package-updates" title="Permalink to this headline">¶</a></h3>
+<p>No. BundleWrap will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an <a class="reference internal" href="item_action.html"><em>action</em></a> with the <code class="docutils literal"><span class="pre">interactive</span></code> attribute set to <code class="docutils literal"><span class="pre">True</span></code>). Selecting specific versions should be done through your package manager.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="is-there-a-probing-mechanism-like-ohai">
+<h3>Is there a probing mechanism like Ohai?<a class="headerlink" href="#is-there-a-probing-mechanism-like-ohai" title="Permalink to this headline">¶</a></h3>
+<p>No. BundleWrap is meant to be very push-focused. The node should not have any say in what configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a <a class="reference internal" href="hooks.html#hooks"><span>hook</span></a> to gather the data and populate <code class="docutils literal"><span class="pre">node.metadata</span></code>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="is-there-a-way-to-remove-any-unmanaged-files-directories-in-a-directory">
+<h3>Is there a way to remove any unmanaged files/directories in a directory?<a class="headerlink" href="#is-there-a-way-to-remove-any-unmanaged-files-directories-in-a-directory" title="Permalink to this headline">¶</a></h3>
+<p>Not at the moment. We&#8217;re tracking this topic in issue <a class="reference external" href="https://github.com/bundlewrap/bundlewrap/issues/56">#56</a>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="is-there-any-integration-with-my-favorite-cloud">
+<h3>Is there any integration with my favorite Cloud?<a class="headerlink" href="#is-there-any-integration-with-my-favorite-cloud" title="Permalink to this headline">¶</a></h3>
+<p>Not right now. A separate project (called &#8220;cloudwart&#8221;) is in planning, but no code has been written and it&#8217;s not a priority at the moment.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="is-bundlewrap-secure">
+<h3>Is BundleWrap secure?<a class="headerlink" href="#is-bundlewrap-secure" title="Permalink to this headline">¶</a></h3>
+<p>BundleWrap is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a BundleWrap repository that could compromise your machine. You should only use trusted repositories and plugins. We also recommend following commit logs to your repos.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+<div class="section" id="the-bundlewrap-project">
+<h2>The BundleWrap Project<a class="headerlink" href="#the-bundlewrap-project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="why-do-contributors-have-to-sign-a-copyright-assignment-agreement">
+<h3>Why do contributors have to sign a Copyright Assignment Agreement?<a class="headerlink" href="#why-do-contributors-have-to-sign-a-copyright-assignment-agreement" title="Permalink to this headline">¶</a></h3>
+<p>While it sounds scary, Copyright assignment is used to improve the enforceability of the GPL. Even the FSF does it, <a class="reference external" href="http://www.gnu.org/licenses/why-assign.html">read their explanation why</a>. The agreement used by BundleWrap is from <a class="reference external" href="http://harmonyagreements.org">harmonyagreements.org</a>.</p>
+<p>If you&#8217;re still concerned, please do not hesitate to contact <a class="reference external" href="https://twitter.com/trehn">&#64;trehn</a>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="isn-t-this-all-very-similar-to-ansible">
+<h3>Isn&#8217;t this all very similar to Ansible?<a class="headerlink" href="#isn-t-this-all-very-similar-to-ansible" title="Permalink to this headline">¶</a></h3>
+<p>Some parts are, but there are significant differences as well. Check out the <span class="xref std std-ref">Alternatives page</span> for a writeup of the details.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="glossary.html" class="btn btn-neutral float-right" title="Glossary" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="dev_plugins.html" class="btn btn-neutral" title="Writing your own plugins" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
