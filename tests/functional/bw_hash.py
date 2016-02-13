@@ -1,14 +1,11 @@
-from bundlewrap.cmdline import main
-from bundlewrap.utils.testing import make_repo
-from bundlewrap.utils.ui import io
+from bundlewrap.utils.testing import make_repo, run
 
 
 def test_empty(tmpdir):
     make_repo(tmpdir)
-    with io.capture() as captured:
-        main("hash", path=str(tmpdir))
-    assert captured['stdout'] == "bf21a9e8fbc5a3846fb05b4fa0859e0917b2202f\n"
-    assert captured['stderr'] == ""
+    stdout, stderr, rcode = run("bw hash", path=str(tmpdir))
+    assert stdout == b"bf21a9e8fbc5a3846fb05b4fa0859e0917b2202f\n"
+    assert stderr == b""
 
 
 def test_nondeterministic(tmpdir):
@@ -34,9 +31,8 @@ def test_nondeterministic(tmpdir):
     hashes = set()
 
     for i in range(3):
-        with io.capture() as captured:
-            main("hash", path=str(tmpdir))
-        hashes.add(captured['stdout'].strip())
+        stdout, stderr, rcode = run("bw hash", path=str(tmpdir))
+        hashes.add(stdout.strip())
 
     assert len(hashes) > 1
 
@@ -63,9 +59,8 @@ def test_deterministic(tmpdir):
     hashes = set()
 
     for i in range(3):
-        with io.capture() as captured:
-            main("hash", path=str(tmpdir))
-        hashes.add(captured['stdout'].strip())
+        stdout, stderr, rcode = run("bw hash", path=str(tmpdir))
+        hashes.add(stdout.strip())
 
     assert len(hashes) == 1
-    assert hashes.pop() == "8c155b4e7056463eb2c8a8345f4f316f6d7359f6"
+    assert hashes.pop() == b"8c155b4e7056463eb2c8a8345f4f316f6d7359f6"

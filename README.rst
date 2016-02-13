@@ -16,10 +16,6 @@ For more information, have a look at `bundlewrap.org <http://bundlewrap.org/>`_ 
     :target: https://travis-ci.org/bundlewrap/bundlewrap
     :alt: Build status
 
-.. image:: https://coveralls.io/repos/bundlewrap/bundlewrap/badge.svg?branch=master&service=github
-    :target: https://coveralls.io/github/bundlewrap/bundlewrap?branch=master
-    :alt: Code coverage
-
 .. image:: https://landscape.io/github/bundlewrap/bundlewrap/master/landscape.svg?style=flat
    :target: https://landscape.io/github/bundlewrap/bundlewrap/master
    :alt: Code health

@@ -1,4 +1,2 @@
-coverage
-coveralls
 pytest
 tox

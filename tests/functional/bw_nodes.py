@@ -1,30 +1,27 @@
 from bundlewrap.cmdline import main
-from bundlewrap.utils.testing import make_repo
+from bundlewrap.utils.testing import make_repo, run
 from bundlewrap.utils.ui import io
 
 
 def test_empty(tmpdir):
     make_repo(tmpdir)
-    with io.capture() as captured:
-        main("nodes", path=str(tmpdir))
-    assert captured['stdout'] == ""
-    assert captured['stderr'] == ""
+    stdout, stderr, rcode = run("bw nodes", path=str(tmpdir))
+    assert stdout == b""
+    assert stderr == b""
 
 
 def test_single(tmpdir):
     make_repo(tmpdir, nodes={"node1": {}})
-    with io.capture() as captured:
-        main("nodes", path=str(tmpdir))
-    assert captured['stdout'] == "node1\n"
-    assert captured['stderr'] == ""
+    stdout, stderr, rcode = run("bw nodes", path=str(tmpdir))
+    assert stdout == b"node1\n"
+    assert stderr == b""
 
 
 def test_hostname(tmpdir):
     make_repo(tmpdir, nodes={"node1": {'hostname': "node1.example.com"}})
-    with io.capture() as captured:
-        main("nodes", "--hostnames", path=str(tmpdir))
-    assert captured['stdout'] == "node1.example.com\n"
-    assert captured['stderr'] == ""
+    stdout, stderr, rcode = run("bw nodes --hostnames", path=str(tmpdir))
+    assert stdout == b"node1.example.com\n"
+    assert stderr == b""
 
 
 def test_in_group(tmpdir):
@@ -40,10 +37,9 @@ def test_in_group(tmpdir):
             "node2": {},
         },
     )
-    with io.capture() as captured:
-        main("nodes", "-g", "group1", path=str(tmpdir))
-    assert captured['stdout'] == "node2\n"
-    assert captured['stderr'] == ""
+    stdout, stderr, rcode = run("bw nodes -g group1", path=str(tmpdir))
+    assert stdout == b"node2\n"
+    assert stderr == b""
 
 
 def test_bundles(tmpdir):
@@ -58,13 +54,12 @@ def test_bundles(tmpdir):
             "node2": {'bundles': ["bundle2"]},
         },
     )
-    with io.capture() as captured:
-        main("nodes", "--bundles", path=str(tmpdir))
-    assert captured['stdout'].strip().split("\n") == [
+    stdout, stderr, rcode = run("bw nodes --bundles", path=str(tmpdir))
+    assert stdout.decode().strip().split("\n") == [
         "node1: bundle1, bundle2",
         "node2: bundle2",
     ]
-    assert captured['stderr'] == ""
+    assert stderr == b""
 
 
 def test_groups(tmpdir):
@@ -80,10 +75,9 @@ def test_groups(tmpdir):
             "node2": {},
         },
     )
-    with io.capture() as captured:
-        main("nodes", "--groups", path=str(tmpdir))
-    assert captured['stdout'].strip().split("\n") == [
+    stdout, stderr, rcode = run("bw nodes --groups", path=str(tmpdir))
+    assert stdout.decode().strip().split("\n") == [
         "node1: ",
         "node2: group1",
     ]
-    assert captured['stderr'] == ""
+    assert stderr == b""

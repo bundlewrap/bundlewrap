@@ -1,4 +1,5 @@
 import platform
+from subprocess import Popen, PIPE
 
 from ..bundle import FILENAME_BUNDLE
 
@@ -32,3 +33,9 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
 
     nodespy = tmpdir.join("nodes.py")
     nodespy.write("nodes = {}\n".format(repr(nodes)))
+
+
+def run(command, path=None):
+    process = Popen(command, cwd=path, shell=True, stderr=PIPE, stdout=PIPE)
+    stdout, stderr = process.communicate()
+    return (stdout, stderr, process.returncode)

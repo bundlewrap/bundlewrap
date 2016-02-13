@@ -4,8 +4,7 @@ from __future__ import unicode_literals
 from os import readlink, symlink
 from os.path import join
 
-from bundlewrap.cmdline import main
-from bundlewrap.utils.testing import host_os, make_repo
+from bundlewrap.utils.testing import host_os, make_repo, run
 
 
 def test_create(tmpdir):
@@ -27,7 +26,7 @@ def test_create(tmpdir):
             },
         },
     )
-    main("apply", "localhost", path=str(tmpdir))
+    run("bw apply localhost", path=str(tmpdir))
     assert readlink(join(str(tmpdir), "foo")) == "/dev/null"
 
 
@@ -51,5 +50,5 @@ def test_fix(tmpdir):
             },
         },
     )
-    main("apply", "localhost", path=str(tmpdir))
+    run("bw apply localhost", path=str(tmpdir))
     assert readlink(join(str(tmpdir), "foo")) == "/dev/null"

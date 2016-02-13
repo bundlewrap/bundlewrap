@@ -1,15 +1,10 @@
-import pytest
-
-from bundlewrap.cmdline import main
-from bundlewrap.utils.testing import make_repo
-from bundlewrap.utils.ui import io
+from bundlewrap.utils.testing import make_repo, run
 
 
 def test_empty(tmpdir):
     make_repo(tmpdir)
-    with io.capture() as captured:
-        main("test", path=str(tmpdir))
-    assert captured['stdout'] == ""
+    stdout, stderr, rcode = run("bw test", path=str(tmpdir))
+    assert stdout == b""
 
 
 def test_bundle_not_found(tmpdir):
@@ -21,8 +16,7 @@ def test_bundle_not_found(tmpdir):
             },
         },
     )
-    with pytest.raises(SystemExit):
-        main("test", path=str(tmpdir))
+    assert run("bw test", path=str(tmpdir))[2] == 1
 
 
 #def test_circular_dep_direct(tmpdir):
@@ -118,8 +112,7 @@ def test_file_invalid_attribute(tmpdir):
             },
         },
     )
-    with pytest.raises(SystemExit):
-        main("test", path=str(tmpdir))
+    assert run("bw test", path=str(tmpdir))[2] == 1
 
 
 def test_file_template_error(tmpdir):
@@ -141,5 +134,4 @@ def test_file_template_error(tmpdir):
             },
         },
     )
-    with pytest.raises(SystemExit):
-        main("test", path=str(tmpdir))
+    assert run("bw test", path=str(tmpdir))[2] == 1

@@ -1,9 +1,7 @@
 from json import loads
 from os.path import join
 
-from bundlewrap.cmdline import main
-from bundlewrap.utils.testing import make_repo
-from bundlewrap.utils.ui import io
+from bundlewrap.utils.testing import make_repo, run
 
 
 def test_empty(tmpdir):
@@ -13,10 +11,9 @@ def test_empty(tmpdir):
             "node1": {},
         },
     )
-    with io.capture() as captured:
-        main("metadata", "node1", path=str(tmpdir))
-    assert captured['stdout'] == "{}\n"
-    assert captured['stderr'] == ""
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert stdout == "{}\n"
+    assert stderr == ""
 
 
 def test_simple(tmpdir):
@@ -26,10 +23,9 @@ def test_simple(tmpdir):
             "node1": {'metadata': {"foo": "bar"}},
         },
     )
-    with io.capture() as captured:
-        main("metadata", "node1", path=str(tmpdir))
-    assert loads(captured['stdout']) == {"foo": "bar"}
-    assert captured['stderr'] == ""
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout) == {"foo": "bar"}
+    assert stderr == ""
 
 
 def test_merge(tmpdir):
@@ -57,16 +53,15 @@ def test_merge(tmpdir):
             },
         },
     )
-    with io.capture() as captured:
-        main("metadata", "node1", path=str(tmpdir))
-    assert loads(captured['stdout']) == {
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout) == {
         "ding": 5,
         "foo": {
             "bar": "baz",
             "baz": "bar",
         },
     }
-    assert captured['stderr'] == ""
+    assert stderr == ""
 
 
 def test_metadatapy(tmpdir):
@@ -88,10 +83,9 @@ def test_metadatapy(tmpdir):
     else:
         metadata["baz"] = node.name
 """)
-    with io.capture() as captured:
-        main("metadata", "node1", path=str(tmpdir))
-    assert loads(captured['stdout']) == {
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout) == {
         "baz": "node1",
         "foo": "bar",
     }
-    assert captured['stderr'] == ""
+    assert stderr == ""
