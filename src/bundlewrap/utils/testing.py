@@ -38,6 +38,6 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
 def run(command, path=None):
     process = Popen(command, cwd=path, shell=True, stderr=PIPE, stdout=PIPE)
     stdout, stderr = process.communicate()
-    print(stdout.decode())
-    print(stderr.decode())
+    print(stdout.decode('utf-8'))
+    print(stderr.decode('utf-8'))
     return (stdout, stderr, process.returncode)
