@@ -22,7 +22,7 @@ def bw_test(repo, args):
             except WorkerException as e:
                 msg = "{x} {msg}\n".format(
                     msg=bold(e.task_id),
-                    x=red("✘"),
+                    x=red("!"),
                 )
                 yield msg
                 yield e.traceback
