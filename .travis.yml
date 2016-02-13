@@ -5,7 +5,7 @@ python:
 - 3.4
 - 3.5
 install:
-- pip install coveralls tox
+- pip install tox
 - sudo rm -rf /dev/shm
 - sudo ln -s /run/shm /dev/shm
 before_script:
@@ -17,8 +17,6 @@ script:
 - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then tox -e py33; fi
 - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then tox -e py34; fi
 - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then tox -e py35; fi
-after_success:
-- if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then coveralls; fi
 notifications:
   irc:
     channels:
