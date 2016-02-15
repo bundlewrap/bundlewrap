@@ -90,7 +90,7 @@ class Action(Item):
             self.node,
             self,
             duration=datetime.now() - start_time,
-            status=status_code,
+            status=status_code[0],
         )
 
         return status_code
