@@ -4,6 +4,7 @@ site_dir: build
 theme_dir: cinder
 repo_url: "https://github.com/bundlewrap/bundlewrap"
 copyright: "BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>"
+google_analytics: ['UA-33891245-2', 'docs.bundlewrap.org']
 pages:
 - <i class="fa fa-home"></i>: index.md
 - Guides:
