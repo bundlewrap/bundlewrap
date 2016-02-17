@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">   
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+
+    <title>Python API - BundleWrap</title>
+
+    <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css">
+    <link href='//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700,700italic&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="../../css/base.css" rel="stylesheet">
+    <link href="../../css/cinder.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+    <script>
+    WebFont.load({
+        google: {
+            families: ['Open Sans', 'PT Sans']
+        }
+    });
+    </script>
+
+    
+    <script>
+    (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function() {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-33891245-2', 'docs.bundlewrap.org');
+    ga('send', 'pageview');
+    </script>
+    
+</head>
+
+<body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="../..">BundleWrap</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="../.."><i class="fa fa-home"></i></a>
+                    </li>
+                
+                
+                
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../quickstart/">Quickstart</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../cli/">CLI</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../item_file_templates/">File templates</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../dev_item/">Custom items</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../dev_plugin/">Writing plugins</a>
+</li>
+
+                        
+                            
+<li class="active">
+    <a href="./">Python API</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../migrate_12/">Migrating to 2.0</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Repository <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../repo/layout/">Overview</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/nodes.py/">nodes.py</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/groups.py/">groups.py</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/bundles/">bundles/</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/hooks/">hooks/</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/libs/">libs/</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/plugins/">Plugins</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Items <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../items/action/">action</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/directory/">directory</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/file/">file</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/group/">group</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_apt/">pkg_apt</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_pacman/">pkg_pacman</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_pip/">pkg_pip</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_yum/">pkg_yum</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_zypper/">pkg_zypper</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/postgres_db/">postgres_db</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/postgres_role/">postgres_role</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/svc_systemd/">svc_systemd</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/svc_systemv/">svc_systemv</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/svc_upstart/">svc_upstart</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/symlink/">symlink</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/user/">user</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Misc <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../misc/about/">About</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/glossary/">Glossary</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/faq/">FAQ</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/alternatives/">Alternatives</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/contributing/">Contributing</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                </ul>
+            
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                
+                    <li >
+                        <a rel="next" href="../dev_plugin/">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../migrate_12/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a href="https://github.com/bundlewrap/bundlewrap">
+                            
+                                <i class="fa fa-github"></i>
+                            
+                            GitHub
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="first-level active"><a href="#api">API</a></li>
+        
+            <li class="second-level"><a href="#example">Example</a></li>
+            
+        
+            <li class="second-level"><a href="#reference">Reference</a></li>
+            
+                <li class="third-level"><a href="#bundlewrapreporepositorypath">bundlewrap.repo.Repository(path)</a></li>
+            
+                <li class="third-level"><a href="#bundlewrapnodenode">bundlewrap.node.Node()</a></li>
+            
+                <li class="third-level"><a href="#bundlewrapgroupgroup">bundlewrap.group.Group</a></li>
+            
+        
+    
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 id="api">API</h1>
+<p>While most users will interact with BundleWrap through the <code>bw</code> command line utility, you can also use it from your own code to extract data or further automate config management tasks.</p>
+<p>Even within BundleWrap itself (e.g. templates, libs, and hooks) you are often given repo and/or node objects to work with. Their methods and attributes are documented below.</p>
+<p>Some general notes on using BundleWrap's API:</p>
+<ul>
+<li>There can be an arbitrary amount of <code>bundlewrap.repo.Repository</code> objects per process.</li>
+<li>Repositories are read as needed and not re-read when something changes. Modifying files in a repo during the lifetime of the matching Repository object may result in undefined behavior.</li>
+</ul>
+<p><br></p>
+<h2 id="example">Example</h2>
+<p>Here's a short example of how to use BundleWrap to get the uptime for a node.</p>
+<pre><code>from bundlewrap.repo import Repository
+
+repo = Repository("/path/to/my/repo")
+node = repo.get_node("mynode")
+uptime = node.run("uptime")
+print(uptime.stdout)
+</code></pre>
+<p><br></p>
+<h2 id="reference">Reference</h2>
+<h3 id="bundlewrapreporepositorypath">bundlewrap.repo.Repository(path)</h3>
+<p>The starting point of any interaction with BundleWrap. An object of this class represents the repository at the given path.</p>
+<p><br></p>
+<p><strong><code>.groups</code></strong></p>
+<p>A list of all groups in the repo (instances of <code>bundlewrap.group.Group</code>)</p>
+<p><br></p>
+<p><strong><code>.group_names</code></strong></p>
+<p>A list of all group names in this repo.</p>
+<p><br></p>
+<p><strong><code>.nodes</code></strong></p>
+<p>A list of all nodes in the repo (instances of <code>bundlewrap.node.Node</code>)</p>
+<p><br></p>
+<p><strong><code>.node_names</code></strong></p>
+<p>A list of all node names in this repo</p>
+<p><br></p>
+<p><strong><code>.revision</code></strong></p>
+<p>The current git, hg or bzr revision of this repo. <code>None</code> if no SCM was detected.</p>
+<p><br></p>
+<p><strong><code>.get_group(group_name)</code></strong></p>
+<p>Returns the Group object for the given name.</p>
+<p><br></p>
+<p><strong><code>.get_node(node_name)</code></strong></p>
+<p>Returns the Node object with the given name.</p>
+<p><br></p>
+<p><strong><code>.nodes_in_all_groups(group_names)</code></strong></p>
+<p>Returns a list of Node objects where every node is a member of every group name given.</p>
+<p><br></p>
+<p><strong><code>.nodes_in_any_group(group_names)</code></strong></p>
+<p>Returns all Node objects that are a member of at least one of the given group names.</p>
+<p><br></p>
+<p><strong><code>.nodes_in_group(group_name)</code></strong></p>
+<p>Returns a list of Node objects in the named group.</p>
+<p><br></p>
+<h3 id="bundlewrapnodenode">bundlewrap.node.Node()</h3>
+<p>A system managed by BundleWrap.</p>
+<p><br></p>
+<p><strong><code>.bundles</code></strong></p>
+<p>A list of all bundles associated with this node (instances of <code>bundlewrap.bundle.Bundle</code>)</p>
+<p><br></p>
+<p><strong><code>.groups</code></strong></p>
+<p>A list of <code>bundlewrap.group.Group</code> objects this node belongs to</p>
+<p><br></p>
+<p><strong><code>.hostname</code></strong></p>
+<p>The DNS name BundleWrap uses to connect to this node</p>
+<p><br></p>
+<p><strong><code>.items</code></strong></p>
+<p>A list of items on this node (instances of subclasses of <code>bundlewrap.items.Item</code>)</p>
+<p><br></p>
+<p><strong><code>.metadata</code></strong></p>
+<p>A dictionary of custom metadata, merged from information in :doc:<code>nodes.py &lt;nodes.py&gt;</code> and :doc:<code>groups.py &lt;groups.py&gt;</code></p>
+<p><br></p>
+<p><strong><code>.name</code></strong></p>
+<p>The internal identifier for this node</p>
+<p><br></p>
+<p><strong><code>.download(remote_path, local_path)</code></strong></p>
+<p>Downloads a file from the node.</p>
+<p><code>remote_path</code> Which file to get from the node
+<code>local_path</code> Where to put the file</p>
+<p><br></p>
+<p><strong><code>.get_item(item_id)</code></strong></p>
+<p>Get the Item object with the given ID (e.g. "file:/etc/motd").</p>
+<p><br></p>
+<p><strong><code>.has_bundle(bundle_name)</code></strong></p>
+<p><code>True</code> if the node has a bundle with the given name.</p>
+<p><br></p>
+<p><strong><code>.has_any_bundle(bundle_names)</code></strong></p>
+<p><code>True</code> if the node has a bundle with any of the given names.</p>
+<p><br></p>
+<p><strong><code>.in_group(group_name)</code></strong></p>
+<p><code>True</code> if the node is in a group with the given name.</p>
+<p><br></p>
+<p><strong><code>.in_any_group(group_names)</code></strong></p>
+<p><code>True</code> if the node is in a group with any of the given names.</p>
+<p><br></p>
+<p><strong><code>.run(command, may_fail=False)</code></strong></p>
+<p>Runs a command on the node. Returns an instance of <code>bundlewrap.operations.RunResult</code>.</p>
+<p><code>command</code> What should be executed on the node
+<code>may_fail</code> If <code>False</code>, <code>bundlewrap.exceptions.RemoteException</code> will be raised if the command does not return 0.</p>
+<p><br></p>
+<p><strong><code>.upload(local_path, remote_path, mode=None, owner="", group="")</code></strong></p>
+<p>Uploads a file to the node.</p>
+<p><code>local_path</code> Which file to upload
+<code>remote_path</code> Where to put the file on the target node
+<code>mode</code> File mode, e.g. "0644"
+<code>owner</code> Username of the file owner
+<code>group</code> Group name of the file group</p>
+<p><br></p>
+<h3 id="bundlewrapgroupgroup">bundlewrap.group.Group</h3>
+<p>A user-defined group of nodes.</p>
+<p><br></p>
+<p><strong><code>.name</code></strong></p>
+<p>The name of this group</p>
+<p><br></p>
+<p><strong><code>.nodes</code></strong></p>
+<p>A list of all nodes in this group (instances of <code>bundlewrap.node.Node</code>, includes subgroup members)</p></div>
+        
+    </div>
+
+    <footer class="col-md-12 text-center">
+        <hr>
+        <p>
+        <small>BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a><br></small>
+        
+        <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p></small>
+    </footer>
+
+    <script src="../../js/jquery-1.10.2.min.js"></script>
+    <script src="../../js/bootstrap-3.0.3.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script>
+    var base_url = '../..';
+    </script>
+    <script data-main="../../mkdocs/js/search.js" src="../../mkdocs/js/require.js"></script>
+    <script src="../../js/base.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        From here you can search these documents. Enter your search terms below.
+                    </p>
+                    <form role="form">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        </div>
+                    </form>
+                    <div id="mkdocs-search-results"></div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </body>
+
+</html>

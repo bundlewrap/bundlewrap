@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">   
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+
+    <title>Writing plugins - BundleWrap</title>
+
+    <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css">
+    <link href='//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700,700italic&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="../../css/base.css" rel="stylesheet">
+    <link href="../../css/cinder.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+    <script>
+    WebFont.load({
+        google: {
+            families: ['Open Sans', 'PT Sans']
+        }
+    });
+    </script>
+
+    
+    <script>
+    (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function() {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-33891245-2', 'docs.bundlewrap.org');
+    ga('send', 'pageview');
+    </script>
+    
+</head>
+
+<body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="../..">BundleWrap</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="../.."><i class="fa fa-home"></i></a>
+                    </li>
+                
+                
+                
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../quickstart/">Quickstart</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../cli/">CLI</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../item_file_templates/">File templates</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../dev_item/">Custom items</a>
+</li>
+
+                        
+                            
+<li class="active">
+    <a href="./">Writing plugins</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../api/">Python API</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../migrate_12/">Migrating to 2.0</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Repository <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../repo/layout/">Overview</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/nodes.py/">nodes.py</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/groups.py/">groups.py</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/bundles/">bundles/</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/hooks/">hooks/</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/libs/">libs/</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../repo/plugins/">Plugins</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Items <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../items/action/">action</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/directory/">directory</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/file/">file</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/group/">group</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_apt/">pkg_apt</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_pacman/">pkg_pacman</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_pip/">pkg_pip</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_yum/">pkg_yum</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/pkg_zypper/">pkg_zypper</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/postgres_db/">postgres_db</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/postgres_role/">postgres_role</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/svc_systemd/">svc_systemd</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/svc_systemv/">svc_systemv</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/svc_upstart/">svc_upstart</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/symlink/">symlink</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/user/">user</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Misc <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../misc/about/">About</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/glossary/">Glossary</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/faq/">FAQ</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/alternatives/">Alternatives</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../misc/contributing/">Contributing</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                </ul>
+            
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                
+                    <li >
+                        <a rel="next" href="../dev_item/">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../api/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a href="https://github.com/bundlewrap/bundlewrap">
+                            
+                                <i class="fa fa-github"></i>
+                            
+                            GitHub
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="first-level active"><a href="#writing-your-own-plugins">Writing your own plugins</a></li>
+        
+            <li class="second-level"><a href="#starting-a-new-plugin">Starting a new plugin</a></li>
+            
+                <li class="third-level"><a href="#step-1-clone-the-plugins-repo">Step 1: Clone the plugins repo</a></li>
+            
+                <li class="third-level"><a href="#step-2-create-a-branch">Step 2: Create a branch</a></li>
+            
+                <li class="third-level"><a href="#step-3-copy-your-plugin-files">Step 3: Copy your plugin files</a></li>
+            
+                <li class="third-level"><a href="#step-4-create-required-files">Step 4: Create required files</a></li>
+            
+                <li class="third-level"><a href="#step-5-update-the-plugin-index">Step 5: Update the plugin index</a></li>
+            
+                <li class="third-level"><a href="#step-6-run-tests">Step 6: Run tests</a></li>
+            
+                <li class="third-level"><a href="#step-7-commit">Step 7: Commit</a></li>
+            
+                <li class="third-level"><a href="#step-8-create-pull-request">Step 8: Create pull request</a></li>
+            
+        
+            <li class="second-level"><a href="#updating-an-existing-plugin">Updating an existing plugin</a></li>
+            
+        
+    
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 id="writing-your-own-plugins">Writing your own plugins</h1>
+<p><a href="../../repo/plugins/">Plugins</a> can provide almost any file in a BundleWrap repository: bundles, custom items, hooks, libs, etc.</p>
+<p>Notable exceptions are <code>nodes.py</code> and <code>groups.py</code>. If your plugin wants to extend those, use a <a href="../../repo/libs/">lib</a> instead and ask users to add the result of a function call in your lib to their nodes or groups dicts.</p>
+<div class="alert alert-warning">If your plugin depends on other libraries, make sure that it catches ImportErrors in a way that makes it obvious for the user what's missing. Keep in mind that people will often just <code>git pull</code> their repo and not install your plugin themselves.</div>
+
+<p><br></p>
+<h2 id="starting-a-new-plugin">Starting a new plugin</h2>
+<h3 id="step-1-clone-the-plugins-repo">Step 1: Clone the plugins repo</h3>
+<p>Create a clone of the <a href="https://github.com/bundlewrap/plugins">official plugins repo</a> on GitHub.</p>
+<h3 id="step-2-create-a-branch">Step 2: Create a branch</h3>
+<p>You should work on a branch specific to your plugin.</p>
+<h3 id="step-3-copy-your-plugin-files">Step 3: Copy your plugin files</h3>
+<p>Now take the files that make up your plugin and move them into a subfolder of the plugins repo. The subfolder must be named like your plugin.</p>
+<h3 id="step-4-create-required-files">Step 4: Create required files</h3>
+<p>In your plugin subfolder, create a file called <code>manifest.json</code> from this template:</p>
+<pre><code>{
+    "desc": "Concise description (keep it somewhere around 80 characters)",
+    "help": "Optional verbose help text to be displayed after installing. May\ninclude\nnewlines.",
+    "provides": [
+        "bundles/example/items.py",
+        "hooks/example.py"
+    ],
+    "version": 1
+}
+</code></pre>
+<p>The <code>provides</code> section must contain a list of all files provided by your plugin.</p>
+<p>You also have to create an <code>AUTHORS</code> file containing your name and email address.</p>
+<p>Last but not least we require a <code>LICENSE</code> file with an OSI-approved Free Software license.</p>
+<h3 id="step-5-update-the-plugin-index">Step 5: Update the plugin index</h3>
+<p>Run the <code>update_index.py</code> script at the root of the plugins repo.</p>
+<h3 id="step-6-run-tests">Step 6: Run tests</h3>
+<p>Run the <code>test.py</code> script at the root of the plugins repo. It will tell you if there is anything wrong with your plugin.</p>
+<h3 id="step-7-commit">Step 7: Commit</h3>
+<p>Commit all changes to your branch</p>
+<h3 id="step-8-create-pull-request">Step 8: Create pull request</h3>
+<p>Create a pull request on GitHub to request inclusion of your new plugin in the official repo. Only then will your plugin become available to be installed by :command:<code>bw repo plugin install yourplugin</code>.</p>
+<p><br></p>
+<h2 id="updating-an-existing-plugin">Updating an existing plugin</h2>
+<p>To release a new version of your plugin:</p>
+<ul>
+<li>Increase the version number in <code>manifest.json</code></li>
+<li>Update the list of provided files in <code>manifest.json</code></li>
+<li>If you're updating someone elses plugin, you should get their consent and add your name to <code>AUTHORS</code></li>
+</ul>
+<p>Then just follow the instructions above from step 5 onward.</p></div>
+        
+    </div>
+
+    <footer class="col-md-12 text-center">
+        <hr>
+        <p>
+        <small>BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a><br></small>
+        
+        <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p></small>
+    </footer>
+
+    <script src="../../js/jquery-1.10.2.min.js"></script>
+    <script src="../../js/bootstrap-3.0.3.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script>
+    var base_url = '../..';
+    </script>
+    <script data-main="../../mkdocs/js/search.js" src="../../mkdocs/js/require.js"></script>
+    <script src="../../js/base.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        From here you can search these documents. Enter your search terms below.
+                    </p>
+                    <form role="form">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        </div>
+                    </form>
+                    <div id="mkdocs-search-results"></div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </body>
+
+</html>
