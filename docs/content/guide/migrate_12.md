@@ -56,6 +56,6 @@ Standard dictionaries in Python have no defined order. This may result in lines 
 
 <br>
 
-## Action hooks status argument
+## Hook arguments
 
-The [hook](../repo/hooks.md) `action_run_end` no longer receives an `ItemStatus` instance, but one of `bundlewrap.items.Item.STATUS_FAILED`, `bundlewrap.items.Item.STATUS_SKIPPED`, or `bundlewrap.items.Item.STATUS_ACTION_SUCCEEDED`.
+Some [hooks](../repo/hooks.md) had their arguments adjusted slightly.
