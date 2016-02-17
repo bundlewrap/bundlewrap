@@ -1,22 +1,20 @@
-2.0.0
-=====
+# 2.0.0
 
 unreleased
 
 * added support for Python 3.3+
 * switched from Fabric/Paramiko to OpenSSH
-* removed SSH and sudo passwords (BACKWARDS INCOMPATIBLE)
-* metadata is now merged recursively (BACKWARDS INCOMPATIBLE)
-* file items: the source attribute now has a default (BACKWARDS INCOMPATIBLE)
-* file items: the default content_type is now text (BACKWARDS INCOMPATIBLE)
-* reworked command line options for `bw verify` (BACKWARDS INCOMPATIBLE)
+* removed SSH and sudo passwords **(BACKWARDS INCOMPATIBLE)**
+* metadata is now merged recursively **(BACKWARDS INCOMPATIBLE)**
+* file items: the source attribute now has a default **(BACKWARDS INCOMPATIBLE)**
+* file items: the default content_type is now text **(BACKWARDS INCOMPATIBLE)**
+* reworked command line options for `bw verify` **(BACKWARDS INCOMPATIBLE)**
 * `bw verify` and `bw apply` now show incorrect/fixed/failed attributes
 * `bw apply` now uses a status line to show current activity
 * generally improved output formatting
 
 
-1.5.1
-=====
+# 1.5.1
 
 2015-06-11
 
@@ -25,8 +23,7 @@ unreleased
 * fixed exception spam when trying to load internal attributes as libs
 
 
-1.5.0
-=====
+# 1.5.0
 
 2015-05-10
 
@@ -41,8 +38,7 @@ unreleased
 * improved various error messages
 
 
-1.4.0
-=====
+# 1.4.0
 
 2015-03-02
 
@@ -51,8 +47,7 @@ unreleased
 * lots of fixes and internal improvements around preceded_by
 
 
-1.3.0
-=====
+# 1.3.0
 
 2014-12-31
 
@@ -65,24 +60,21 @@ unreleased
 * fixed handling UTF-8 output of failed commands
 
 
-1.2.2
-=====
+# 1.2.2
 
 2014-10-27
 
 * fixed item classes not being restored after repo serialization
 
 
-1.2.1
-=====
+# 1.2.1
 
 2014-10-21
 
 * fixed a critical bug in bundle serialization
 
 
-1.2.0
-=====
+# 1.2.0
 
 2014-10-19
 
@@ -93,8 +85,7 @@ unreleased
 * fixed logging issues
 
 
-1.1.0
-=====
+# 1.1.0
 
 2014-08-11
 
@@ -107,8 +98,7 @@ unreleased
 * improved various error messages
 
 
-1.0.0
-=====
+# 1.0.0
 
 2014-07-19
 
@@ -118,18 +108,16 @@ unreleased
 * fixed some CLI commands not terminating correctly
 
 
-0.14.0
-======
+# 0.14.0
 
 2014-07-13
 
 * files, directories and symlinks don't care about ownership and mode by
-  default (BACKWARDS INCOMPATIBLE)
+  default **(BACKWARDS INCOMPATIBLE)**
 * Mako file templates can now use include
 
 
-0.13.0
-======
+# 0.13.0
 
 2014-06-19
 
@@ -137,49 +125,45 @@ unreleased
 * fixed symlink items not checking existing link targets
 * fixed exception when triggering skipped items
 * output is now prefixed with `node:bundle:item_type:item_name`
-* `bw repo debug` is now a top-level command (BACKWARDS INCOMPATIBLE)
-* `bw repo plot` is now a top-level command (BACKWARDS INCOMPATIBLE)
-* `bw repo test` is now a top-level command (BACKWARDS INCOMPATIBLE)
+* `bw repo debug` is now a top-level command **(BACKWARDS INCOMPATIBLE)**
+* `bw repo plot` is now a top-level command **(BACKWARDS INCOMPATIBLE)**
+* `bw repo test` is now a top-level command **(BACKWARDS INCOMPATIBLE)**
 
 
-0.12.0
-======
+# 0.12.0
 
 2014-05-11
 
 * added plugins
 * added group metadata
 * user and group attributes are now optional
-* user groups may no longer contain primary group (BACKWARDS INCOMPATIBLE)
+* user groups may no longer contain primary group **(BACKWARDS INCOMPATIBLE)**
 * improvements to logging and output
 * fixed a critical bug preventing per-node customization of bundles
 * fixed pkg_apt choking on interactive dpkg prompts
 * fixed hashing of plaintext user passwords without salt
 
 
-0.11.2
-======
+# 0.11.2
 
 2014-04-02
 
 * packaging fixes only
 
 
-0.11.1
-======
+# 0.11.1
 
 2014-04-02
 
 * packaging fixes only
 
 
-0.11.0
-======
+# 0.11.0
 
 2014-03-23
 
-* renamed builtin item attribute 'depends' to 'needs' (BACKWARDS INCOMPATIBLE)
-* removed PARALLEL_APPLY on custom items in favor of BLOCK_CONCURRENT (BACKWARDS INCOMPATIBLE)
+* renamed builtin item attribute 'depends' to 'needs' **(BACKWARDS INCOMPATIBLE)**
+* removed PARALLEL_APPLY on custom items in favor of BLOCK_CONCURRENT **(BACKWARDS INCOMPATIBLE)**
 * added builtin item attribute 'needed_by'
 * added canned actions for services
 * added deletion of files, groups and users
@@ -190,12 +174,11 @@ unreleased
 * various fixes and improvements around dependency handling
 
 
-0.10.0
-======
+# 0.10.0
 
 2014-03-08
 
-* removed the 'timing' attribute on actions (BACKWARDS INCOMPATIBLE)
+* removed the 'timing' attribute on actions **(BACKWARDS INCOMPATIBLE)**
 * actions are now first-class items
 * items can now trigger each other (most useful with actions)
 * added System V service item
@@ -207,8 +190,7 @@ unreleased
 * fixed creating symlinks in nonexistent unmanaged directories
 
 
-0.9.0
-=====
+# 0.9.0
 
 2014-02-24
 
@@ -219,8 +201,7 @@ unreleased
 * slightly more verbose output
 
 
-0.8.0
-=====
+# 0.8.0
 
 2014-02-21
 
@@ -234,8 +215,7 @@ unreleased
 * prevented output of some extraneous whitespace
 
 
-0.7.0
-=====
+# 0.7.0
 
 2014-02-16
 
@@ -251,21 +231,19 @@ unreleased
 * fixed a bug that prevented managing /etc/sudoers
 
 
-0.6.0
-=====
+# 0.6.0
 
 2014-01-01
 
 * added actions
-* reworked group patterns (BACKWARDS INCOMPATIBLE)
-* reworked output verbosity (BACKWARDS INCOMPATIBLE)
+* reworked group patterns **(BACKWARDS INCOMPATIBLE)**
+* reworked output verbosity **(BACKWARDS INCOMPATIBLE)**
 * added support for libs directory
 * fixed high CPU load while waiting for interactive response
 * various other minor fixes and improvements
 
 
-0.5.0
-=====
+# 0.5.0
 
 2013-11-09
 
@@ -278,8 +256,7 @@ unreleased
 * encoding fixes for file handling
 
 
-0.4.0
-=====
+# 0.4.0
 
 2013-08-25
 
@@ -288,8 +265,7 @@ unreleased
 * UI improvements
 
 
-0.3.0
-=====
+# 0.3.0
 
 2013-08-04
 
@@ -300,8 +276,7 @@ unreleased
 * lots of other small improvements
 
 
-0.2.0
-=====
+# 0.2.0
 
 2013-07-12
 
@@ -310,8 +285,7 @@ unreleased
 * new concurrency helpers
 
 
-0.1.0
-=====
+# 0.1.0
 
 2013-06-16
 
