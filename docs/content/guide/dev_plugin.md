@@ -56,7 +56,7 @@ Commit all changes to your branch
 
 ### Step 8: Create pull request
 
-Create a pull request on GitHub to request inclusion of your new plugin in the official repo. Only then will your plugin become available to be installed by :command:`bw repo plugin install yourplugin`.
+Create a pull request on GitHub to request inclusion of your new plugin in the official repo. Only then will your plugin become available to be installed by `bw repo plugin install yourplugin`.
 
 <br>
 

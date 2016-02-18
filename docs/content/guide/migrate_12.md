@@ -34,7 +34,7 @@ BundleWrap 1.6.0 will print warnings for every group that uses metadata processo
 
 ## Custom item types
 
-The API for defining your own items has changed. Generally, you should be able to upgrade your items with relatively little effort. Refer to :doc:`the docs <dev_item>` for details.
+The API for defining your own items has changed. Generally, you should be able to upgrade your items with relatively little effort. Refer to [the docs](dev_item.md) for details.
 
 <br>
 

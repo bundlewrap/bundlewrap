@@ -70,7 +70,7 @@ Name of the group this file belongs to. Defaults to `None` (don't care about gro
 
 ### mode
 
-File mode as returned by :command:`stat -c %a <file>`. Defaults to `None` (don't care about mode).
+File mode as returned by `stat -c %a <file>`. Defaults to `None` (don't care about mode).
 
 <br>
 

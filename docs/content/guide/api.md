@@ -125,7 +125,7 @@ A list of items on this node (instances of subclasses of `bundlewrap.items.Item`
 
 **`.metadata`**
 
-A dictionary of custom metadata, merged from information in :doc:`nodes.py <nodes.py>` and :doc:`groups.py <groups.py>`
+A dictionary of custom metadata, merged from information in [nodes.py](../repo/nodes.py.md) and [groups.py](../repo/groups.py.md)
 
 <br>
 
