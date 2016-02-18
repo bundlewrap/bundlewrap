@@ -1,4 +1,5 @@
+mkdocs
+mkdocs-cinder
 pytest
-Sphinx
 tox
 wheel
