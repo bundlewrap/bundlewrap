@@ -28,6 +28,15 @@ def test_simple(tmpdir):
     assert stderr == b""
 
 
+def test_object(tmpdir):
+    make_repo(tmpdir)
+    with open(join(str(tmpdir), "nodes.py"), 'w') as f:
+        f.write("nodes = {'node1': {'metadata': {'foo': object}}}")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {"foo": "<class 'object'>"}
+    assert stderr == b""
+
+
 def test_merge(tmpdir):
     make_repo(
         tmpdir,
