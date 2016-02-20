@@ -23,5 +23,5 @@ def bw_metadata(repo, args):
         yield 1
         raise StopIteration()
 
-    for line in dumps(node.metadata, cls=ReprJSONEncoder, indent=4).splitlines():
+    for line in dumps(node.metadata, cls=ReprJSONEncoder, indent=4, sort_keys=True).splitlines():
         yield force_text(line)
