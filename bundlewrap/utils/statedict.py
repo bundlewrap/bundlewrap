@@ -92,10 +92,12 @@ def diff_value_text(title, value1, value2):
         tofile=_("<bundlewrap>"),
     ):
         suffix = ""
-        line = line.rstrip("\n")
         if len(line) > DIFF_MAX_LINE_LENGTH:
             line = line[:DIFF_MAX_LINE_LENGTH]
             suffix += _(" (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)
+        if not line.endswith("\n"):
+            suffix += _(" (no newline at end of file)")
+        line = line.rstrip("\n")
         if line.startswith("+"):
             line = green(line)
         elif line.startswith("-"):
