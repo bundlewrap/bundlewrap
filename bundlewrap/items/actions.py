@@ -7,7 +7,7 @@ from bundlewrap.exceptions import ActionFailure, BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
-from bundlewrap.utils.text import bold, wrap_question
+from bundlewrap.utils.text import blue, bold, wrap_question
 
 
 class Action(Item):
@@ -61,8 +61,16 @@ class Action(Item):
                     _("Run action {}?").format(
                         bold(self.name),
                     ),
+                    prefix="{x} {node} ".format(
+                        node=bold(self.node.name),
+                        x=blue("?"),
+                    ),
                 ),
                 interactive_default,
+                epilogue="{x} {node}".format(
+                    node=bold(self.node.name),
+                    x=blue("?"),
+                ),
             )
         ):
             return (self.STATUS_SKIPPED, None)
