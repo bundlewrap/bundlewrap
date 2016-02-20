@@ -14,6 +14,7 @@ def test_empty(tmpdir):
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert stdout == b"{}\n"
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_simple(tmpdir):
@@ -26,6 +27,7 @@ def test_simple(tmpdir):
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {"foo": "bar"}
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_object(tmpdir):
@@ -35,6 +37,7 @@ def test_object(tmpdir):
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode())["foo"] in ("<class 'object'>", "<type 'object'>")
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_merge(tmpdir):
@@ -71,6 +74,7 @@ def test_merge(tmpdir):
         },
     }
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_metadatapy(tmpdir):
@@ -87,10 +91,8 @@ def test_metadatapy(tmpdir):
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
 """def foo(metadata):
-    if "baz" in metadata:
-        return None
-    else:
-        metadata["baz"] = node.name
+    metadata["baz"] = node.name
+    return metadata
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
@@ -98,3 +100,25 @@ def test_metadatapy(tmpdir):
         "foo": "bar",
     }
     assert stderr == b""
+    assert rcode == 0
+
+
+def test_metadatapy_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": 1},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""def foo(metadata):
+    metadata["foo"] += 1
+    return metadata
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1

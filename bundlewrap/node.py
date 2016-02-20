@@ -34,6 +34,7 @@ from .utils.ui import io
 
 LOCK_PATH = "/tmp/bundlewrap.lock"
 LOCK_FILE = LOCK_PATH + "/info"
+META_PROC_MAX_ITER = 9999  # maximum iterations for metadata processors
 
 
 class ApplyResult(object):
@@ -303,24 +304,25 @@ class Node(object):
 
     @cached_property
     def bundles(self):
-        added_bundles = []
-        found_bundles = []
-        for group in self.groups:
-            for bundle_name in group.bundle_names:
-                found_bundles.append(bundle_name)
+        with io.job(_("  {node}  loading bundles...").format(node=self.name)):
+            added_bundles = []
+            found_bundles = []
+            for group in self.groups:
+                for bundle_name in group.bundle_names:
+                    found_bundles.append(bundle_name)
 
-        for bundle_name in found_bundles + list(self._bundles):
-            if bundle_name not in added_bundles:
-                added_bundles.append(bundle_name)
-                try:
-                    yield Bundle(self, bundle_name)
-                except NoSuchBundle:
-                    raise NoSuchBundle(_(
-                        "Node '{node}' wants bundle '{bundle}', but it doesn't exist."
-                    ).format(
-                        bundle=bundle_name,
-                        node=self.name,
-                    ))
+            for bundle_name in found_bundles + list(self._bundles):
+                if bundle_name not in added_bundles:
+                    added_bundles.append(bundle_name)
+                    try:
+                        yield Bundle(self, bundle_name)
+                    except NoSuchBundle:
+                        raise NoSuchBundle(_(
+                            "Node '{node}' wants bundle '{bundle}', but it doesn't exist."
+                        ).format(
+                            bundle=bundle_name,
+                            node=self.name,
+                        ))
 
     def cdict(self):
         node_dict = {}
@@ -434,25 +436,39 @@ class Node(object):
             self._compiling_metadata = True
         m = {}
 
-        # step 1: group metadata
-        group_order = _flatten_group_hierarchy(self.groups)
-        for group_name in group_order:
-            m = merge_dict(m, self.repo.get_group(group_name).metadata)
+        with io.job(_("  {node}  building group metadata...").format(node=self.name)):
+            group_order = _flatten_group_hierarchy(self.groups)
+            for group_name in group_order:
+                m = merge_dict(m, self.repo.get_group(group_name).metadata)
 
-        # step 2: node metadata
-        m = merge_dict(m, self._node_metadata)
+        with io.job(_("  {node}  merging node metadata...").format(node=self.name)):
+            m = merge_dict(m, self._node_metadata)
 
-        # step 3: metadata.py
-        # TODO safeguard against endless loop
-        while True:
-            modified = False
-            for metadata_processor in self.metadata_processors:
-                processed = metadata_processor(m)
-                if processed is not None:
-                    m = processed
-                    modified = True
-            if not modified:
-                break
+        with io.job(_("  {node}  running metadata processors...").format(node=self.name)):
+            iterations = {}
+            while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
+                modified = False
+                for metadata_processor in self.metadata_processors:
+                    iterations.setdefault(metadata_processor.__name__, 1)
+                    processed = metadata_processor(m.copy())
+                    assert isinstance(processed, dict)
+                    if processed != m:
+                        m = processed
+                        iterations[metadata_processor.__name__] += 1
+                        modified = True
+                if not modified:
+                    break
+
+        for metadata_processor, number_of_iterations in iterations.items():
+            if number_of_iterations >= META_PROC_MAX_ITER:
+                raise BundleError(_(
+                    "metadata processor '{proc}' stopped after too many iterations "
+                    "({max_iter}) for node '{node}' to prevent infinite loop".format(
+                        max_iter=META_PROC_MAX_ITER,
+                        node=self.name,
+                        proc=metadata_processor,
+                    ),
+                ))
 
         self._compiling_metadata = False
         return m
