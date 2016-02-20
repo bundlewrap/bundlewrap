@@ -464,7 +464,7 @@ class File(Item):
         return ItemStatus(correct=not bool(status_info['needs_fixing']), info=status_info)
 
     def patch_attributes(self, attributes):
-        if 'content_type' not in attributes:
+        if 'content_type' not in attributes and not attributes.get('delete', False):
             attributes['content_type'] = 'mako'
             print(
                 "MIGRATION WARNING: item '{}' from bundle '{}' "
@@ -487,9 +487,10 @@ class File(Item):
                 path=self.template,
             ))
 
-        local_path = self._write_local_file()
-        if self.attributes['content_type'] != 'binary':
-            remove(local_path)
+        if self.attributes['content_type'] is not None:
+            local_path = self._write_local_file()
+            if self.attributes['content_type'] != 'binary':
+                remove(local_path)
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
