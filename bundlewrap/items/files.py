@@ -368,6 +368,7 @@ class File(Item):
         if (
             'content' not in attributes and
             'source' not in attributes and
+            attributes.get('content_type', 'text') != 'any' and
             attributes.get('delete', False) is False
         ):
             attributes['source'] = basename(self.name)
@@ -388,7 +389,7 @@ class File(Item):
                 path=self.template,
             ))
 
-        if not self.attributes['delete']:
+        if not self.attributes['delete'] and not self.attributes['content_type'] == 'any':
             with self._write_local_file():
                 pass
 
