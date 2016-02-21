@@ -369,7 +369,9 @@ class Item(object):
             status_after = self.get_status(cached=False)
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
-        if status_before.must_be_created:
+        if status_code == self.STATUS_SKIPPED:
+            changes = None
+        elif status_before.must_be_created:
             changes = True
         elif status_before.must_be_deleted:
             changes = False
