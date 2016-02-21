@@ -5,7 +5,7 @@ from passlib.apps import postgres_context
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
 AUTHID_COLUMNS = {
@@ -38,7 +38,7 @@ def get_role(node, role):
                       "| sudo -u postgres psql -Anqwx -F '|'".format(role))
 
     role_attrs = {}
-    for line in result.stdout.strip().split("\n"):
+    for line in force_text(result.stdout).strip().split("\n"):
         try:
             key, value = line.split("|")
         except ValueError:

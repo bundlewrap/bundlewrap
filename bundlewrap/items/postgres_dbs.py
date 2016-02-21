@@ -5,7 +5,7 @@ from pipes import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
 def create_db(node, name, owner):
@@ -22,7 +22,7 @@ def drop_db(node, name):
 def get_databases(node):
     output = node.run("echo '\\l' | sudo -u postgres psql -Anqt -F '|' | grep '|'").stdout
     result = {}
-    for line in output.strip().split("\n"):
+    for line in force_text(output).strip().split("\n"):
         db, owner = line.strip().split("|", 2)[:2]
         result[db] = {
             'owner': owner,
