@@ -8,6 +8,7 @@ from .exceptions import NoSuchBundle, RepositoryError
 from .utils import cached_property, get_all_attrs_from_file
 from .utils.text import mark_for_translation as _
 from .utils.text import validate_name
+from .utils.ui import io
 
 
 FILENAME_BUNDLE = "items.py"
@@ -51,13 +52,17 @@ class Bundle(object):
         if not exists(self.bundle_file):
             return {}
         else:
-            return get_all_attrs_from_file(
-                self.bundle_file,
-                base_env={
-                    'node': self.node,
-                    'repo': self.repo,
-                },
-            )
+            with io.job(_("  {node}  {bundle}  collecting items...").format(
+                node=self.node.name,
+                bundle=self.name,
+            )):
+                return get_all_attrs_from_file(
+                    self.bundle_file,
+                    base_env={
+                        'node': self.node,
+                        'repo': self.repo,
+                    },
+                )
 
     @cached_property
     def items(self):
@@ -87,17 +92,21 @@ class Bundle(object):
 
     @cached_property
     def metadata_processors(self):
-        if not exists(self.metadata_file):
-            return []
-        result = []
-        for name, attr in get_all_attrs_from_file(
-            self.metadata_file,
-            base_env={
-                'node': self.node,
-                'repo': self.repo,
-            },
-        ).items():
-            if name.startswith("_") or not callable(attr):
-                continue
-            result.append(attr)
-        return result
+        with io.job(_("  {node}  {bundle}  collecting metadata processors...").format(
+            node=self.node.name,
+            bundle=self.name,
+        )):
+            if not exists(self.metadata_file):
+                return []
+            result = []
+            for name, attr in get_all_attrs_from_file(
+                self.metadata_file,
+                base_env={
+                    'node': self.node,
+                    'repo': self.repo,
+                },
+            ).items():
+                if name.startswith("_") or not callable(attr):
+                    continue
+                result.append(attr)
+            return result
