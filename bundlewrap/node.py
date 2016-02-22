@@ -28,7 +28,7 @@ from .itemqueue import ItemQueue
 from .items import Item
 from .utils import cached_property, graph_for_items, merge_dict, names
 from .utils.statedict import hash_statedict
-from .utils.text import bold, cyan, green, red, validate_name, yellow
+from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
 from .utils.text import force_text, mark_for_translation as _
 from .utils.ui import io
 
@@ -591,6 +591,7 @@ class NodeLock(object):
                     if self.ignore or (self.interactive and io.ask(
                         self._warning_message(info),
                         False,
+                        epilogue=blue("?"),
                     )):
                         pass
                     else:
@@ -620,19 +621,23 @@ class NodeLock(object):
 
     def _warning_message(self, info):
         return _(
-            "\n"
-            "  {warning}\n\n"
-            "  Looks like somebody is currently using BundleWrap on this node.\n"
-            "  You should let them finish or override the lock if it has gone stale.\n\n"
-            "  locked by: {user}\n"
-            "  lock acquired: {duration} ago ({date})\n\n"
-            "  Override lock?"
+            "{x}\n"
+            "{x}  {warning}\n"
+            "{x}\n"
+            "{x}  Looks like somebody is currently using BundleWrap on this node.\n"
+            "{x}  You should let them finish or override the lock if it has gone stale.\n"
+            "{x}\n"
+            "{x}  locked by: {user}\n"
+            "{x}  lock acquired: {duration} ago ({date})\n"
+            "{x}\n"
+            "{x}  Override lock?"
         ).format(
             warning=red(_("WARNING")),
             node=bold(self.node.name),
             user=bold(info['user']),
             date=info['date'],
             duration=bold(info['duration']),
+            x=blue("?"),
         )
 
 
