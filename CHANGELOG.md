@@ -1,6 +1,6 @@
 # 2.0.0
 
-unreleased
+2016-02-22
 
 * added support for Python 3.3+
 * switched from Fabric/Paramiko to OpenSSH
@@ -13,6 +13,14 @@ unreleased
 * `bw verify` and `bw apply` now show incorrect/fixed/failed attributes
 * `bw apply` now uses a status line to show current activity
 * generally improved output formatting
+
+
+# 1.6.0
+
+2016-02-22
+
+* added `bw migrate` **(will be removed in 2.0.0)**
+* added warnings for upgrading to 2.0.0 **(will be removed in 2.0.0)**
 
 
 # 1.5.1
