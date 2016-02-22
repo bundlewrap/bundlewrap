@@ -88,8 +88,7 @@ class IOManager(object):
         answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
         with self.lock:
-            if self.jobs and TTY:
-                write_to_stream(STDOUT_WRITER, "\r\033[K")
+            self._clear_last_job()
             while True:
                 STDOUT_WRITER.write("\a")
                 STDOUT_WRITER.write(question)
@@ -137,16 +136,14 @@ class IOManager(object):
     def job_add(self, msg):
         with self.lock:
             if TTY:
-                if self.jobs:
-                    write_to_stream(STDOUT_WRITER, "\r\033[K")
+                self._clear_last_job()
                 write_to_stream(STDOUT_WRITER, inverse("{} ".format(msg)[:term_width() - 1]))
             self.jobs.append(msg)
 
     def job_del(self, msg):
         with self.lock:
+            self._clear_last_job()
             self.jobs.remove(msg)
-            if TTY:
-                write_to_stream(STDOUT_WRITER, "\r\033[K")
             self._write_current_job()
 
     @clear_formatting
@@ -168,6 +165,10 @@ class IOManager(object):
             yield
         finally:
             self.job_del(job_text)
+
+    def _clear_last_job(self):
+        if self.jobs and TTY:
+            write_to_stream(STDOUT_WRITER, "\r\033[K")
 
     def _write(self, msg, err=False):
         if self.jobs and TTY:
