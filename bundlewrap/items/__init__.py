@@ -303,10 +303,12 @@ class Item(object):
         if self.triggered and not self.has_been_triggered:
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
             status_code = self.STATUS_SKIPPED
+            keys_to_fix = [_("not triggered")]
 
         if status_code is None and self.cached_unless_result:
             io.debug(_("'unless' for {} succeeded, not fixing").format(self.id))
             status_code = self.STATUS_SKIPPED
+            keys_to_fix = ["unless"]
 
         if status_code is None:
             status_before = self.cached_status
@@ -364,13 +366,15 @@ class Item(object):
                         self.fix(status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
+                    keys_to_fix = [_("interactive")]
 
         if status_code is None:
             status_after = self.get_status(cached=False)
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
         if status_code == self.STATUS_SKIPPED:
-            changes = None
+            # can't use else for this because status_before is None
+            changes = keys_to_fix
         elif status_before.must_be_created:
             changes = True
         elif status_before.must_be_deleted:

@@ -27,11 +27,11 @@ class Action(Item):
 
     def _get_result(self, interactive=False, interactive_default=True):
         if interactive is False and self.attributes['interactive'] is True:
-            return (self.STATUS_SKIPPED, None)
+            return (self.STATUS_SKIPPED, [_("interactive only")])
 
         if self.triggered and not self.has_been_triggered:
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return (self.STATUS_SKIPPED, None)
+            return (self.STATUS_SKIPPED, [_("no trigger")])
 
         if self.unless:
             with io.job(_("[{node}] [{bundle}] [{item}]  checking 'unless' condition...").format(
@@ -49,7 +49,7 @@ class Action(Item):
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
-                return (self.STATUS_SKIPPED, None)
+                return (self.STATUS_SKIPPED, ["unless"])
 
         if (
             interactive and
@@ -73,7 +73,7 @@ class Action(Item):
                 ),
             )
         ):
-            return (self.STATUS_SKIPPED, None)
+            return (self.STATUS_SKIPPED, [_("interactive")])
         try:
             self.run()
             return (self.STATUS_ACTION_SUCCEEDED, None)

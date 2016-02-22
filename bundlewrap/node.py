@@ -117,7 +117,13 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         worker_pool.quit(msg['wid'])
                 else:
                     for skipped_item in skipped_items:
-                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
+                        handle_apply_result(
+                            node,
+                            skipped_item,
+                            Item.STATUS_SKIPPED,
+                            interactive,
+                            changes=[_("no pre-trigger")],
+                        )
                         yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
 
                     # start_task() increases jobs_open.
@@ -140,7 +146,13 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
 
                 if status_code == Item.STATUS_FAILED:
                     for skipped_item in item_queue.item_failed(item):
-                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
+                        handle_apply_result(
+                            node,
+                            skipped_item,
+                            Item.STATUS_SKIPPED,
+                            interactive,
+                            changes=[_("dep failed")],
+                        )
                         yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
                 elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
                     item_queue.item_fixed(item)
@@ -148,7 +160,13 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                     item_queue.item_ok(item)
                 elif status_code == Item.STATUS_SKIPPED:
                     for skipped_item in item_queue.item_skipped(item):
-                        handle_apply_result(node, skipped_item, Item.STATUS_SKIPPED, interactive)
+                        handle_apply_result(
+                            node,
+                            skipped_item,
+                            Item.STATUS_SKIPPED,
+                            interactive,
+                            changes=[_("dep skipped")],
+                        )
                         yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
                 else:
                     raise AssertionError(_(
@@ -253,8 +271,9 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
             x=bold(green("✓")),
         )
     elif result == Item.STATUS_SKIPPED:
-        return "{x} {node}  {bundle}  {item} {status}".format(
+        return "{x} {node}  {bundle}  {item} {status} {changes}".format(
             bundle=bold(bundle),
+            changes=changes_text,
             item=item,
             node=bold(node),
             x=bold(yellow("»")),
