@@ -87,6 +87,12 @@ class IOManager(object):
         answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
         with self.lock:
+            # FIXME
+            # a most unfortunate workaround, but it does prevent the
+            # last two lines of a question being cut off sometimes :(
+            from time import sleep
+            sleep(0.1)
+
             while True:
                 STDOUT_WRITER.write("\a")
                 STDOUT_WRITER.write(question)
