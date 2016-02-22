@@ -1,3 +1,12 @@
+1.6.0
+=====
+
+2016-02-22
+
+* added `bw migrate` **(will be removed in 2.0.0)**
+* added warnings for upgrading to 2.0.0 **(will be removed in 2.0.0)**
+
+
 1.5.3
 =====
 
