@@ -17,6 +17,7 @@ from .plot import bw_plot_node
 from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_plugin_install, \
     bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_remove, bw_repo_plugin_update
 from .run import bw_run
+from .stats import bw_stats
 from .test import bw_test
 from .verify import bw_verify
 from .zen import bw_zen
@@ -426,6 +427,10 @@ def build_parser_bw():
         help=_("number of nodes to run command on simultaneously"),
         type=int,
     )
+
+    # bw stats
+    parser_stats = subparsers.add_parser("stats")
+    parser_stats.set_defaults(func=bw_stats)
 
     # bw test
     parser_test = subparsers.add_parser("test")
