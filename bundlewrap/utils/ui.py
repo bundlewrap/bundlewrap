@@ -111,8 +111,7 @@ class IOManager(object):
             if epilogue:
                 STDOUT_WRITER.write(epilogue + "\n")
                 STDOUT_WRITER.flush()
-            if self.jobs and TTY:
-                write_to_stream(STDOUT_WRITER, inverse("{} ".format(self.jobs[-1])[:term_width() - 1]))
+            self._write_current_job()
         return answer
 
     @property
@@ -148,11 +147,7 @@ class IOManager(object):
             self.jobs.remove(msg)
             if TTY:
                 write_to_stream(STDOUT_WRITER, "\r\033[K")
-                if self.jobs:
-                    write_to_stream(
-                        STDOUT_WRITER,
-                        inverse("{} ".format(self.jobs[-1])[:term_width() - 1]),
-                    )
+            self._write_current_job()
 
     @clear_formatting
     @add_debug_timestamp
@@ -179,6 +174,9 @@ class IOManager(object):
             write_to_stream(STDOUT_WRITER, "\r\033[K")
         if msg is not None:
             write_to_stream(STDERR_WRITER if err else STDOUT_WRITER, msg + "\n")
+        self._write_current_job()
+
+    def _write_current_job(self):
         if self.jobs and TTY:
             write_to_stream(STDOUT_WRITER, inverse("{} ".format(self.jobs[-1])[:term_width() - 1]))
 
