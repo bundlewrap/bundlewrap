@@ -47,28 +47,24 @@ def main(*args, **kwargs):
                 "{x} The current working directory "
                 "is not a BundleWrap repository."
             ).format(x=red("!")))
-            io.shutdown()
             exit(1)
             return  # used during texting when exit() is mocked
 
     # convert all string args into text
     text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}
 
-    try:
-        output = pargs.func(repo, text_pargs)
-        if output is None:
-            output = ()
+    output = pargs.func(repo, text_pargs)
+    if output is None:
+        output = ()
 
-        return_code = 0
+    return_code = 0
 
-        for line in output:
-            if isinstance(line, int):
-                return_code = line
-                break
-            else:
-                io.stdout(line)
-    finally:
-        io.shutdown()
+    for line in output:
+        if isinstance(line, int):
+            return_code = line
+            break
+        else:
+            io.stdout(line)
 
     if return_code != 0:  # not raising SystemExit every time to ease testing
         exit(return_code)
