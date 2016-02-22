@@ -1,3 +1,12 @@
+# 2.0.1
+
+2016-02-22
+
+* fixed display of failed actions
+* updated display of interactive lock override prompt
+* improved robustness of internal output subsystem
+
+
 # 2.0.0
 
 2016-02-22
