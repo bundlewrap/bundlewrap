@@ -128,9 +128,10 @@ class IOManager(object):
 
     def job_add(self, msg):
         with self.lock:
-            if self.jobs and TTY:
-                write_to_stream(STDOUT_WRITER, "\r\033[K")
-            write_to_stream(STDOUT_WRITER, inverse("{} ".format(msg)[:term_width() - 1]))
+            if TTY:
+                if self.jobs:
+                    write_to_stream(STDOUT_WRITER, "\r\033[K")
+                write_to_stream(STDOUT_WRITER, inverse("{} ".format(msg)[:term_width() - 1]))
             self.jobs.append(msg)
 
     def job_del(self, msg):
