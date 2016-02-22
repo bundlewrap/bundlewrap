@@ -25,6 +25,15 @@ except NameError:  # Python 3
 signal(SIGPIPE, SIG_DFL)
 
 
+def add_debug_timestamp(f):
+    @wraps(f)
+    def wrapped(self, msg):
+        if self.debug_mode:
+            msg = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg
+        return f(self, msg)
+    return wrapped
+
+
 def clear_formatting(f):
     """
     Makes sure formatting from cut-off lines can't bleed into next one
@@ -120,9 +129,9 @@ class IOManager(object):
         )
 
     @clear_formatting
+    @add_debug_timestamp
     def debug(self, msg):
         if self.debug_mode:
-            msg = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg
             with self.lock:
                 self._write(msg)
 
@@ -146,16 +155,14 @@ class IOManager(object):
                     )
 
     @clear_formatting
+    @add_debug_timestamp
     def stderr(self, msg):
-        if self.debug_mode:
-            msg = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg
         with self.lock:
             self._write(msg, err=True)
 
     @clear_formatting
+    @add_debug_timestamp
     def stdout(self, msg):
-        if self.debug_mode:
-            msg = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg
         with self.lock:
             self._write(msg)
 
