@@ -591,7 +591,7 @@ class NodeLock(object):
                     if self.ignore or (self.interactive and io.ask(
                         self._warning_message(info),
                         False,
-                        epilogue=blue("?"),
+                        epilogue=blue("?") + " " + bold(self.node.name),
                     )):
                         pass
                     else:
@@ -621,16 +621,16 @@ class NodeLock(object):
 
     def _warning_message(self, info):
         return _(
-            "{x}\n"
-            "{x}  {warning}\n"
-            "{x}\n"
-            "{x}  Looks like somebody is currently using BundleWrap on this node.\n"
-            "{x}  You should let them finish or override the lock if it has gone stale.\n"
-            "{x}\n"
-            "{x}  locked by: {user}\n"
-            "{x}  lock acquired: {duration} ago ({date})\n"
-            "{x}\n"
-            "{x}  Override lock?"
+            "{x} {node}\n"
+            "{x} {node}  {warning}\n"
+            "{x} {node}\n"
+            "{x} {node}  Looks like somebody is currently using BundleWrap on this node.\n"
+            "{x} {node}  You should let them finish or override the lock if it has gone stale.\n"
+            "{x} {node}\n"
+            "{x} {node}  locked by: {user}\n"
+            "{x} {node}  lock acquired: {duration} ago ({date})\n"
+            "{x} {node}\n"
+            "{x} {node}  Override lock?"
         ).format(
             warning=red(_("WARNING")),
             node=bold(self.node.name),
