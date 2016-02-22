@@ -399,7 +399,7 @@
             <li class="second-level"><a href="#deterministic-templates">Deterministic templates</a></li>
             
         
-            <li class="second-level"><a href="#action-hooks-status-argument">Action hooks status argument</a></li>
+            <li class="second-level"><a href="#hook-arguments">Hook arguments</a></li>
             
         
     
@@ -425,7 +425,7 @@
 <p>BundleWrap 1.6.0 will print warnings for every group that uses metadata processors and any item generators when running <code>bw test</code>.</p>
 <p><br></p>
 <h2 id="custom-item-types">Custom item types</h2>
-<p>The API for defining your own items has changed. Generally, you should be able to upgrade your items with relatively little effort. Refer to :doc:<code>the docs &lt;dev_item&gt;</code> for details.</p>
+<p>The API for defining your own items has changed. Generally, you should be able to upgrade your items with relatively little effort. Refer to <a href="../dev_item/">the docs</a> for details.</p>
 <p><br></p>
 <h2 id="deterministic-templates">Deterministic templates</h2>
 <p>While not a strict requirement, it is highly recommended to ensure your entire configuration can be created deterministically (i.e. remains exactly the same no matter how often you generate it). Otherwise, you won't ne able to take advantage of the new functionality provided by <code>bw hash</code>.</p>
@@ -440,8 +440,8 @@ ${value}
 % endfor
 </code></pre>
 <p><br></p>
-<h2 id="action-hooks-status-argument">Action hooks status argument</h2>
-<p>The <a href="../../repo/hooks/">hook</a> <code>action_run_end</code> no longer receives an <code>ItemStatus</code> instance, but one of <code>bundlewrap.items.Item.STATUS_FAILED</code>, <code>bundlewrap.items.Item.STATUS_SKIPPED</code>, or <code>bundlewrap.items.Item.STATUS_ACTION_SUCCEEDED</code>.</p></div>
+<h2 id="hook-arguments">Hook arguments</h2>
+<p>Some <a href="../../repo/hooks/">hooks</a> had their arguments adjusted slightly.</p></div>
         
     </div>
 
