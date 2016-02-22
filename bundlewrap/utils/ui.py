@@ -90,9 +90,7 @@ class IOManager(object):
         with self.lock:
             self._clear_last_job()
             while True:
-                STDOUT_WRITER.write("\a")
-                STDOUT_WRITER.write(question)
-                STDOUT_WRITER.flush()
+                write_to_stream(STDOUT_WRITER, "\a" + question)
 
                 answer = get_input()
                 if answer.lower() in (_("y"), _("yes")) or (
@@ -105,11 +103,9 @@ class IOManager(object):
                 ):
                     answer = False
                     break
-                STDOUT_WRITER.write(_("Please answer with 'y(es)' or 'n(o)'.\n"))
-                STDOUT_WRITER.flush()
+                write_to_stream(STDOUT_WRITER, _("Please answer with 'y(es)' or 'n(o)'.\n"))
             if epilogue:
-                STDOUT_WRITER.write(epilogue + "\n")
-                STDOUT_WRITER.flush()
+                write_to_stream(STDOUT_WRITER, epilogue + "\n")
             self._write_current_job()
         return answer
 
