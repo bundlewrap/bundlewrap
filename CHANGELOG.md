@@ -1,3 +1,15 @@
+# 2.1.0
+
+unreleased
+
+* added `bw stats`
+* added `bw items --file-preview`
+* added hooks for `bw test`
+* reason for skipping an item is now displayed in regular output
+* fixed exception handling for invalid cdicts/sdicts
+* fixed handling of SSH errors
+
+
 # 2.0.1
 
 2016-02-22
