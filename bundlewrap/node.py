@@ -692,7 +692,7 @@ class NodeLock(object):
                 date=info['date'],
                 duration=bold(info['duration']),
             ),
-            _("Override lock?"),
+            bold(_("Override lock?")),
             prefix="{x} {node} ".format(node=bold(self.node.name), x=blue("?")),
         )
 
