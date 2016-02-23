@@ -40,7 +40,7 @@ The API for defining your own items has changed. Generally, you should be able t
 
 ## Deterministic templates
 
-While not a strict requirement, it is highly recommended to ensure your entire configuration can be created deterministically (i.e. remains exactly the same no matter how often you generate it). Otherwise, you won't ne able to take advantage of the new functionality provided by `bw hash`.
+While not a strict requirement, it is highly recommended to ensure your entire configuration can be created deterministically (i.e. remains exactly the same no matter how often you generate it). Otherwise, you won't be able to take advantage of the new functionality provided by `bw hash`.
 
 A common pitfall here is iteration over dictionaries in templates:
 
