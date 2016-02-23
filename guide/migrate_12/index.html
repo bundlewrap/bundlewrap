@@ -428,7 +428,7 @@
 <p>The API for defining your own items has changed. Generally, you should be able to upgrade your items with relatively little effort. Refer to <a href="../dev_item/">the docs</a> for details.</p>
 <p><br></p>
 <h2 id="deterministic-templates">Deterministic templates</h2>
-<p>While not a strict requirement, it is highly recommended to ensure your entire configuration can be created deterministically (i.e. remains exactly the same no matter how often you generate it). Otherwise, you won't ne able to take advantage of the new functionality provided by <code>bw hash</code>.</p>
+<p>While not a strict requirement, it is highly recommended to ensure your entire configuration can be created deterministically (i.e. remains exactly the same no matter how often you generate it). Otherwise, you won't be able to take advantage of the new functionality provided by <code>bw hash</code>.</p>
 <p>A common pitfall here is iteration over dictionaries in templates:</p>
 <pre><code>% for key, value in my_dict.items():
 ${value}

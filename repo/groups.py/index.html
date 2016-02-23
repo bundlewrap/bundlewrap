@@ -451,7 +451,7 @@
 <p><br></p>
 <h2 id="metadata">metadata</h2>
 <p>A dictionary of arbitrary data that will be accessible from each node's <code>node.metadata</code>. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.</p>
-<p>Metadata is merged recursively by default, meaning nested dicts will overwrite each other. Lists will be appended to each other, but not recursed into. In come cases, you want to overwrite instead of merge a piece of metadata. This is accomplished through the use of <code>bundlewrap.metadata.atomic()</code> and best illustrated as an example:</p>
+<p>Metadata is merged recursively by default, meaning nested dicts will overlay each other. Lists will be appended to each other, but not recursed into. In come cases, you want to overwrite instead of merge a piece of metadata. This is accomplished through the use of <code>bundlewrap.metadata.atomic()</code> and best illustrated as an example:</p>
 <pre><code>from bundlewrap.metadata import atomic
 
 groups = {
