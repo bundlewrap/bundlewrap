@@ -77,6 +77,28 @@ class ApplyResult(object):
         return self.end - self.start
 
 
+def format_node_result(result):
+    output = []
+    output.append(("{count} OK").format(count=result.correct))
+
+    if result.fixed:
+        output.append(green(_("{count} fixed").format(count=result.fixed)))
+    else:
+        output.append(_("{count} fixed").format(count=result.fixed))
+
+    if result.skipped:
+        output.append(yellow(_("{count} skipped").format(count=result.skipped)))
+    else:
+        output.append(_("{count} skipped").format(count=result.skipped))
+
+    if result.failed:
+        output.append(red(_("{count} failed").format(count=result.failed)))
+    else:
+        output.append(_("{count} failed").format(count=result.failed))
+
+    return ", ".join(output)
+
+
 def handle_apply_result(node, item, status_code, interactive, changes=None):
     formatted_result = format_item_result(
         status_code,
@@ -398,13 +420,23 @@ class Node(object):
                 yield item
 
     def apply(self, interactive=False, force=False, workers=4, profiling=False):
+        if not list(self.items):
+            io.debug(_("not applying to {}, it has no items").format(self.name))
+            return None
+
+        start = datetime.now()
+
+        io.stdout(_("{x} {node} run started at {time}").format(
+            node=bold(self.name),
+            time=start.strftime("%Y-%m-%d %H:%M:%S"),
+            x=blue("i"),
+        ))
         self.repo.hooks.node_apply_start(
             self.repo,
             self,
             interactive=interactive,
         )
 
-        start = datetime.now()
         try:
             with NodeLock(self, interactive, ignore=force):
                 item_results = list(apply_items(
@@ -426,6 +458,17 @@ class Node(object):
         result = ApplyResult(self, item_results)
         result.start = start
         result.end = datetime.now()
+
+        io.stdout(_("{x} {node} run completed after {time}s").format(
+            node=bold(self.name),
+            time=(result.end - start).total_seconds(),
+            x=blue("i"),
+        ))
+        io.stdout(_("{x} {node} stats: {stats}").format(
+            node=bold(self.name),
+            stats=format_node_result(result),
+            x=blue("i"),
+        ))
 
         self.repo.hooks.node_apply_end(
             self.repo,
