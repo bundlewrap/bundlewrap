@@ -581,9 +581,6 @@ class Node(object):
             workers=workers,
         )
 
-    def test_connection(self):
-        self.run("true")
-
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
         return operations.upload(
             self.hostname,
@@ -596,7 +593,6 @@ class Node(object):
         )
 
     def verify(self, show_all=False, workers=4):
-        self.test_connection()
         bad = 0
         good = 0
         for item_status in verify_items(

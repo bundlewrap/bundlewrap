@@ -113,7 +113,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     result.stderr = stderr_lb.record.getvalue()
     result.return_code = ssh_process.returncode
 
-    if not result.return_code == 0 and not ignore_failure:
+    if result.return_code != 0 and (not ignore_failure or result.return_code == 255):
         raise RemoteException(_(
             "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}"
         ).format(
