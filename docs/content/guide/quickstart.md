@@ -112,7 +112,7 @@ BundleWrap will ask to replace your previous MOTD:
 
 <pre><code class="nohighlight">i node-1 run started at 2016-02-13 21:25:45
 ? node-1
-? node-1  ╭ file:/etc/motd
+? node-1  ╭─ file:/etc/motd
 ? node-1  │
 ? node-1  │  content
 ? node-1  │  --- &lt;node&gt;
@@ -121,7 +121,7 @@ BundleWrap will ask to replace your previous MOTD:
 ? node-1  │  -your old motd
 ? node-1  │  +Welcome to node-1!
 ? node-1  │
-? node-1  ╰ Fix file:/etc/motd? [Y/n]
+? node-1  ╰─ Fix file:/etc/motd? [Y/n]
 </code></pre>
 
 That completes the quickstart tutorial!
