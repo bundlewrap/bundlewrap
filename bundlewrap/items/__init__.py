@@ -193,7 +193,7 @@ class Item(object):
             ).format(
                 bundle=self.bundle.name,
                 item=self.id,
-                msg=e.message,
+                msg=repr(e),
             ))
         return cdict
 
@@ -208,7 +208,7 @@ class Item(object):
             ).format(
                 bundle=self.bundle.name,
                 item=self.id,
-                msg=e.message,
+                msg=repr(e),
             ))
         return status
 
