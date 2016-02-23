@@ -22,7 +22,19 @@ def write_preview(file_item, base_path):
 
 def bw_items(repo, args):
     node = repo.get_node(args['node'])
-    if args['file_preview_path']:
+    if args['file_preview']:
+        item = node.get_item("file:{}".format(args['file_preview']))
+        if (
+            item.attributes['content_type'] in ('any', 'base64', 'binary') or
+            item.attributes['delete'] is True
+        ):
+            io.stderr(_(
+                "cannot preview {node} (unsuitable content_type or deleted)"
+            ).format(node=node.name))
+            yield 1
+        else:
+            io.stdout(item.content.decode(item.attributes['encoding']), append_newline=False)
+    elif args['file_preview_path']:
         if exists(args['file_preview_path']):
             io.stderr(_(
                 "not writing to existing path: {path}"
@@ -53,8 +65,6 @@ def bw_items(repo, args):
             write_preview(item, args['file_preview_path'])
     else:
         for item in node.items:
-            if args['file_preview_path']:
-                pass
             if args['show_repr']:
                 yield force_text(repr(item))
             else:

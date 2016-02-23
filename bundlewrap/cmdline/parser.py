@@ -181,6 +181,15 @@ def build_parser_bw():
         help=_("list items for this node"),
     )
     parser_items.add_argument(
+        "-f",
+        "--file-preview",
+        dest='file_preview',
+        help=_("print preview of given file"),
+        metavar=_("FILE"),
+        required=False,
+        type=str,
+    )
+    parser_items.add_argument(
         "-w",
         "--write-file-previews",
         default=None,

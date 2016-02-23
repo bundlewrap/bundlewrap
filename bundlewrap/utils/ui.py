@@ -27,10 +27,10 @@ signal(SIGPIPE, SIG_DFL)
 
 def add_debug_timestamp(f):
     @wraps(f)
-    def wrapped(self, msg):
+    def wrapped(self, msg, **kwargs):
         if self.debug_mode:
             msg = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg
-        return f(self, msg)
+        return f(self, msg, **kwargs)
     return wrapped
 
 
@@ -39,10 +39,10 @@ def clear_formatting(f):
     Makes sure formatting from cut-off lines can't bleed into next one
     """
     @wraps(f)
-    def wrapped(self, msg):
+    def wrapped(self, msg, **kwargs):
         if TTY and os.environ.get("BWCOLORS", "1") != "0":
             msg = "\033[0m" + msg
-        return f(self, msg)
+        return f(self, msg, **kwargs)
     return wrapped
 
 
@@ -124,10 +124,10 @@ class IOManager(object):
 
     @clear_formatting
     @add_debug_timestamp
-    def debug(self, msg):
+    def debug(self, msg, append_newline=True):
         if self.debug_mode:
             with self.lock:
-                self._write(msg)
+                self._write(msg, append_newline=append_newline)
 
     def job_add(self, msg):
         with self.lock:
@@ -144,15 +144,15 @@ class IOManager(object):
 
     @clear_formatting
     @add_debug_timestamp
-    def stderr(self, msg):
+    def stderr(self, msg, append_newline=True):
         with self.lock:
-            self._write(msg, err=True)
+            self._write(msg, append_newline=append_newline, err=True)
 
     @clear_formatting
     @add_debug_timestamp
-    def stdout(self, msg):
+    def stdout(self, msg, append_newline=True):
         with self.lock:
-            self._write(msg)
+            self._write(msg, append_newline=append_newline)
 
     @contextmanager
     def job(self, job_text):
@@ -166,11 +166,13 @@ class IOManager(object):
         if self.jobs and TTY:
             write_to_stream(STDOUT_WRITER, "\r\033[K")
 
-    def _write(self, msg, err=False):
+    def _write(self, msg, append_newline=True, err=False):
         if self.jobs and TTY:
             write_to_stream(STDOUT_WRITER, "\r\033[K")
         if msg is not None:
-            write_to_stream(STDERR_WRITER if err else STDOUT_WRITER, msg + "\n")
+            if append_newline:
+                msg += "\n"
+            write_to_stream(STDERR_WRITER if err else STDOUT_WRITER, msg)
         self._write_current_job()
 
     def _write_current_job(self):
