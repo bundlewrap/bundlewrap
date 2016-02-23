@@ -38,6 +38,8 @@ HOOK_EVENTS = (
     'node_run_end',
     'run_start',
     'run_end',
+    'test',
+    'test_node',
 )
 
 INITIAL_CONTENT = {

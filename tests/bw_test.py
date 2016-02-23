@@ -1,3 +1,5 @@
+from os.path import join
+
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -17,6 +19,28 @@ def test_bundle_not_found(tmpdir):
         },
     )
     assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_hooks(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {},
+            "node2": {},
+        },
+    )
+    with open(join(str(tmpdir), "hooks", "test.py"), 'w') as f:
+        f.write("""from bundlewrap.utils.ui import io
+def test(repo, **kwargs):
+    io.stdout("fin")
+
+def test_node(repo, node, **kwargs):
+    io.stdout(node.name)
+""")
+    assert run("bw test", path=str(tmpdir))[0] in (
+        b"node1\nnode2\nfin\n",
+        b"node2\nnode1\nfin\n",
+    )
 
 
 #def test_circular_dep_direct(tmpdir):

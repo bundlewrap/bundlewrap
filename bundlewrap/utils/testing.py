@@ -28,6 +28,8 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
             bundle_content += "{} = {}\n".format(itemtype, repr(itemconfig))
         bundlepy.write(bundle_content)
 
+    tmpdir.mkdir("hooks")
+
     groupspy = tmpdir.join("groups.py")
     groupspy.write("groups = {}\n".format(repr(groups)))
 

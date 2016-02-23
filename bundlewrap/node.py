@@ -580,6 +580,7 @@ class Node(object):
             self.items,
             workers=workers,
         )
+        self.repo.hooks.test_node(self.repo, self)
 
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
         return operations.upload(

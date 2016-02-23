@@ -199,3 +199,21 @@ Called each time a `bw run` command finishes.
 `command` The command that was run.
 
 `duration` How long it took to run the command on all nodes (timedelta).
+
+---
+
+**`test(repo, **kwargs)`**
+
+Called at the end of a full `bw test`.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+---
+
+**`test_node(repo, node, **kwargs)`**
+
+Called during `bw test` for each node.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`node` The current node (instance of `bundlewrap.node.Node`).

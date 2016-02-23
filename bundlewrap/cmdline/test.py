@@ -64,3 +64,6 @@ def bw_test(repo, args):
                     plugin=plugin,
                     x=green("✓"),
                 )
+
+    if not args['target']:
+        repo.hooks.test(repo)
