@@ -268,13 +268,13 @@ def _flatten_group_hierarchy(groups):
 
 def format_item_result(result, node, bundle, item, interactive=False, changes=None):
     if changes is True:
-        changes_text = "[{}]".format(_("create"))
+        changes_text = "({})".format(_("create"))
     elif changes is False:
-        changes_text = "[{}]".format(_("remove"))
+        changes_text = "({})".format(_("remove"))
     elif changes is None:
         changes_text = ""
     else:
-        changes_text = "[{}]".format(", ".join(sorted(changes)))
+        changes_text = "({})".format(", ".join(sorted(changes)))
     if result == Item.STATUS_FAILED:
         return "{x} {node}  {bundle}  {item} {status} {changes}".format(
             bundle=bold(bundle),
@@ -763,7 +763,7 @@ def verify_items(all_items, show_all=False, workers=1):
                         changes_text = _("remove")
                     else:
                         changes_text = ", ".join(sorted(item_status.keys_to_fix))
-                    io.stderr("{x} {node}  {bundle}  {item} [{changes}]".format(
+                    io.stderr("{x} {node}  {bundle}  {item} ({changes})".format(
                         bundle=bold(bundle_name),
                         changes=changes_text,
                         item=item_id,
