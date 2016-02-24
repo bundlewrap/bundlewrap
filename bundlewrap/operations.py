@@ -81,6 +81,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
             hostname,
             "LANG=C sudo bash -c " + quote(command),
         ],
+        stdin=PIPE,
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )
@@ -142,6 +143,7 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
             local_path,
             "{}:{}".format(hostname, temp_filename),
         ],
+        stdin=PIPE,
         stdout=PIPE,
         stderr=PIPE,
     )
