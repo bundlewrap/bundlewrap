@@ -14,10 +14,12 @@ from .utils.ui import io
 
 
 def output_thread_body(line_buffer, read_fd, quit_event):
-    while not quit_event.is_set():
+    while True:
         r, w, x = select([read_fd], [], [], 0.1)
         if r:
             line_buffer.write(read(read_fd, 1024))
+        elif quit_event.is_set():
+            return
 
 
 def download(hostname, remote_path, local_path, add_host_keys=False):
