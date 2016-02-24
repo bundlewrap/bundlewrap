@@ -67,14 +67,28 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     """
     Runs a command on a remote system.
     """
+
+    # LineBuffer objects take care of always printing complete lines
+    # which have been properly terminated by a newline. This is only
+    # relevant when using "bw run".
     stderr_lb = LineBuffer(log_function)
     stdout_lb = LineBuffer(log_function)
 
     io.debug("running on {host}: {command}".format(command=command, host=hostname))
 
+    # Create pipes which will be used by the SSH child process. We do
+    # not use subprocess.PIPE because we want *both* ends to remain open
+    # (Python automatically closes those ends of the pipes which *you*
+    # don't need). This way, a call to read() or select() in
+    # output_thread_body() will never report EOF, which, in turn, means
+    # that those threads will *only* terminate by means of quit_event or
+    # fatal errors.
     stdout_fd_r, stdout_fd_w = pipe()
     stderr_fd_r, stderr_fd_w = pipe()
 
+    # Launch OpenSSH. It's important that SSH gets a dummy stdin, i.e.
+    # it must *not* read from the terminal. Otherwise, it can steal user
+    # input.
     ssh_process = Popen(
         [
             "ssh",
@@ -87,6 +101,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )
+
     quit_event = Event()
     stdout_thread = Thread(
         args=(stdout_lb, stdout_fd_r, quit_event),
@@ -98,9 +113,31 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     )
     stdout_thread.start()
     stderr_thread.start()
+
     try:
         ssh_process.communicate()
     finally:
+        # Once we end up here, the OpenSSH process has terminated. We
+        # can now set quit_event to tell reader threads to terminate as
+        # well.
+        #
+        # Now, the big question is: Why do we need an Event here? Why
+        # not just use pipes the traditional way? We *could* close the
+        # writing ends of the pipes we created above (or we could just
+        # use subprocess.PIPE) and then rely on the kernel to shut down
+        # those pipes properly when the SSH process dies.
+        #
+        # Problem is, a user could use SSH multiplexing with
+        # auto-forking (e.g., "ControlPersist 10m"). In this case,
+        # OpenSSH forks another process which holds the "master"
+        # connection. This forked process *inherits* our pipes (at least
+        # for stderr). Thus, only when that master process finally
+        # terminates (possibly after many minutes), we will be informed
+        # about EOF on our stderr pipe. That doesn't work. bw will hang.
+        #
+        # So, instead, we use a busy loop in output_thread_body() which
+        # checks for quit_event being set. This way, we don't rely on
+        # pipes being shut down.
         quit_event.set()
         stdout_thread.join()
         stderr_thread.join()
