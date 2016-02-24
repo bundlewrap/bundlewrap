@@ -81,4 +81,4 @@ While the following list might appear long, even very minimal systems should pro
 * `useradd`
 * `usermod`
 
-Additionally, you need to pre-configure your SSH client so that it can connect to your nodes without having to type a password (including `sudo` on the node).
+Additionally, you need to pre-configure your SSH client so that it can connect to your nodes without having to type a password (including `sudo` on the node, which also must *not* have the `requiretty` option set).
