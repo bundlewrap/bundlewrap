@@ -495,7 +495,16 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <p><code>target</code> The group or node name you gave on the command line.</p>
 <p><code>nodes</code> A list of node objects affected (list of <code>bundlewrap.node.Node</code> instances).</p>
 <p><code>command</code> The command that was run.</p>
-<p><code>duration</code> How long it took to run the command on all nodes (timedelta).</p></div>
+<p><code>duration</code> How long it took to run the command on all nodes (timedelta).</p>
+<hr />
+<p><strong><code>test(repo, **kwargs)</code></strong></p>
+<p>Called at the end of a full <code>bw test</code>.</p>
+<p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
+<hr />
+<p><strong><code>test_node(repo, node, **kwargs)</code></strong></p>
+<p>Called during <code>bw test</code> for each node.</p>
+<p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
+<p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p></div>
         
     </div>
 
