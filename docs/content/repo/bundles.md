@@ -232,7 +232,11 @@ Canned actions always have to be triggered in order to run. In the example above
 
 # metadata.py
 
-Alongside `items.py` you may create another file called `metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before `items.py` is evaluated. To do that, you simply write any number of functions whose name doesn't start with an underscore and put them into `metadata.py`. These functions take the metadata dictionary generated so far as their single argument. You must then return the same dictionary with any modifications you need to make. These function are called metadata processors. Every metadata processor from every bundle is called *repeatedly* with the latest metadata dictionary until no more changes are made to the metadata. Here's an example for how a `metadata.py` could look like (note that you have access to `repo` and `node` just like in `items.py`):
+Alongside `items.py` you may create another file called `metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before `items.py` is evaluated. To do that, you simply write any number of functions whose name doesn't start with an underscore and put them into `metadata.py`.
+
+<div class="alert alert-warning">Understand that <strong>any</strong> function will be used as a metadata processor, unless its name starts with an underscore. This is also true for imported functions, so you'll need to import them like this: <code>from module import func as _func</code>.</div>
+
+These functions take the metadata dictionary generated so far as their single argument. You must then return the same dictionary with any modifications you need to make. These functions are called metadata processors. Every metadata processor from every bundle is called *repeatedly* with the latest metadata dictionary until no more changes are made to the metadata. Here's an example for how a `metadata.py` could look like (note that you have access to `repo` and `node` just like in `items.py`):
 
 	def my_metadata_processor(metadata):
 	    metadata["foo"] = node.name
