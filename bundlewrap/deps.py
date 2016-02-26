@@ -79,6 +79,42 @@ class DummyItem(object):
         pass
 
 
+class TagItem(object):
+    """
+    This item depends on all items with the given tag.
+    """
+    bundle = None
+    triggered = False
+
+    def __init__(self, tag_name):
+        self.tag_name = tag_name
+        self.ITEM_TYPE_NAME = 'dummy'
+        self.needed_by = []
+        self.needs = []
+        self.preceded_by = []
+        self.precedes = []
+        self.triggered_by = []
+        self.triggers = []
+        self._deps = []
+        self._precedes_items = []
+
+    def __lt__(self, other):
+        return self.id < other.id
+
+    def __repr__(self):
+        return "<TagItem: {}>".format(self.tag_name)
+
+    @property
+    def id(self):
+        return "tag:{}".format(self.tag_name)
+
+    def apply(self, *args, **kwargs):
+        return (Item.STATUS_OK, [])
+
+    def test(self):
+        pass
+
+
 def find_item(item_id, items):
     """
     Returns the first item with the given ID within the given list of
@@ -309,6 +345,22 @@ def _inject_dummy_items(items):
     return list(dummy_items.values()) + items
 
 
+def _inject_tag_items(items):
+    """
+    Takes a list of items and adds tag items depending on each type of
+    item in the list. Returns the appended list.
+    """
+    tag_items = {}
+    items = list(items)
+    for item in items:
+        for tag in item.tags:
+            if tag not in tag_items:
+                tag_items[tag] = TagItem(tag)
+            tag_items[tag]._deps.append(item.id)
+
+    return list(tag_items.values()) + items
+
+
 def _inject_reverse_dependencies(items):
     """
     Looks for 'needed_by' deps and creates standard dependencies
@@ -446,6 +498,7 @@ def prepare_dependencies(items):
 
     items = _inject_dummy_items(items)
     items = _inject_bundle_items(items)
+    items = _inject_tag_items(items)
     items = _inject_canned_actions(items)
     items = _inject_reverse_triggers(items)
     items = _inject_reverse_dependencies(items)
