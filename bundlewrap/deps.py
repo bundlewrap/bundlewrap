@@ -143,7 +143,7 @@ def _find_items_of_types(item_types, items, include_dummy=False):
 def _flatten_dependencies(items):
     """
     This will cause all dependencies - direct AND inherited - to be
-    listed in item._deps.
+    listed in item._flattened_deps.
     """
     for item in items:
         item._flattened_deps = list(set(
