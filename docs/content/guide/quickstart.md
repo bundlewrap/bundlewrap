@@ -134,7 +134,7 @@ Here are some suggestions on what to do next:
 
 * take a moment to think about what groups and bundles you will create
 * read up on how a [BundleWrap repository](../repo/layout.md) is laid out
-* ...especially what types of items you can add to your [bundles](../repo/bundles.md)
+* ...especially what [types of items](../repo/bundles.md#item-types) you can add to your bundles
 * familiarize yourself with [the Mako template language](http://www.makotemplates.org/)
 * explore the [command line interface](cli.md)
 * follow [@bundlewrap](https://twitter.com/bundlewrap) on Twitter
