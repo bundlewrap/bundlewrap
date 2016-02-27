@@ -34,7 +34,7 @@ The contents should be fairly self-explanatory, but you can always check the [do
 
 At this point you will want to edit `nodes.py` and maybe change "localhost" to the hostname of a system you have passwordless (including sudo) SSH access to.
 
-<div class="alert">BundleWrap will honor your <code>~/.ssh/config</code>, so if <code>ssh mynode.example.com sudo id</code> works without any password prompts in your terminal, you're good to go. If you need a password for SSH and/or sudo, please add <code>-p</code> directly after <code>bw</code> when calling <code>bw run</code> or <code>bw apply</code>.</div>
+<div class="alert">BundleWrap will honor your <code>~/.ssh/config</code>, so if <code>ssh mynode.example.com sudo id</code> works without any password prompts in your terminal, you're good to go.</div>
 
 
 Run a command
