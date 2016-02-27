@@ -30,6 +30,12 @@ Here are the steps:
 
 <br>
 
+## Contributing documentation
+
+The process is essentially the same as detailed above for code contributions. You will find the docs in `docs/content/` and can preview them using `cd docs && mkdocs serve`.
+
+<br>
+
 ## Help
 
 If at any point you need help or are not sure what to do, just drop by in [#bundlewrap on Freenode](irc://chat.freenode.net/bundlewrap) or poke [@bundlewrap on Twitter](https://twitter.com/bundlewrap).
