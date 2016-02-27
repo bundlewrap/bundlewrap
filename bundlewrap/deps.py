@@ -51,7 +51,7 @@ class BundleItem(DummyItem):
         return "bundle:{}".format(self.bundle.name)
 
 
-class TagItem(object):
+class TagItem(DummyItem):
     """
     This item depends on all items with the given tag.
     """
