@@ -100,6 +100,26 @@ This attribute is an alternative way of defining dependencies. It works just lik
 
 <br>
 
+### tags
+
+A list of string to tag an item with. Tagging has no immediate effect in itself, but can be useful in a number of places. For example, you can add dependencies on all items with a given tag:
+
+    pkg_apt = {
+        "mysql-server-{}".format(node.metadata.get('mysql_version', "5.5")): {
+            'tags': ["provides-mysqld"],
+        },
+    }
+
+    svc_systemd = {
+        "myapp": {
+            'needs': ["tag:provides-mysqld"],
+        },
+    }
+
+In this simplified example we save ourselves from duplicating the logic that gets the current MySQL version from metadata (which is probably overkill here, but you might encounter more complex situations).
+
+<br>
+
 ### triggers and triggered
 
 In some scenarios, you may want to execute an [action](../items/action.md) only when an item is fixed (e.g. restart a daemon after a config file has changed or run `postmap` after updating an alias file). To do this, BundleWrap has the builtin atttribute `triggers`. You can use it to point to any item that has its `triggered` attribute set to `True`. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).

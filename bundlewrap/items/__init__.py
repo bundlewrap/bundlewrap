@@ -21,6 +21,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'needs': [],
     'preceded_by': [],
     'precedes': [],
+    'tags': [],
     'triggered': False,
     'triggered_by': [],
     'triggers': [],

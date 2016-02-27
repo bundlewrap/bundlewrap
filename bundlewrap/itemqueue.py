@@ -1,4 +1,5 @@
 from .deps import (
+    DummyItem,
     find_item,
     prepare_dependencies,
     remove_item_dependents,
@@ -67,9 +68,8 @@ class ItemQueue(object):
             # fake the status of the removed items so they still
             # show up in the result statistics
             for skipped_item in skipped_items:
-                if skipped_item.ITEM_TYPE_NAME == 'dummy':
-                    continue
-                yield skipped_item
+                if not isinstance(skipped_item, DummyItem):
+                    yield skipped_item
         else:
             self.items_with_deps = remove_dep_from_items(
                 self.items_with_deps,
