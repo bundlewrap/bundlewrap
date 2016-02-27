@@ -8,19 +8,16 @@ from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
 
-class BundleItem(object):
-    """
-    Represents a dependency on all items in a certain bundle.
-    """
+class DummyItem(object):
+    bundle = None
     triggered = False
 
-    def __init__(self, bundle):
-        self.bundle = bundle
-        self.ITEM_TYPE_NAME = 'dummy'
+    def __init__(self, *args, **kwargs):
         self.needed_by = []
         self.needs = []
         self.preceded_by = []
         self.precedes = []
+        self.tags = []
         self.triggered_by = []
         self.triggers = []
         self._deps = []
@@ -28,6 +25,23 @@ class BundleItem(object):
 
     def __lt__(self, other):
         return self.id < other.id
+
+    def apply(self, *args, **kwargs):
+        return (Item.STATUS_OK, [])
+
+    def test(self):
+        pass
+
+
+class BundleItem(DummyItem):
+    """
+    Represents a dependency on all items in a certain bundle.
+    """
+    ITEM_TYPE_NAME = 'bundle'
+
+    def __init__(self, bundle):
+        self.bundle = bundle
+        super(BundleItem, self).__init__()
 
     def __repr__(self):
         return "<BundleItem: {}>".format(self.bundle.name)
@@ -36,70 +50,16 @@ class BundleItem(object):
     def id(self):
         return "bundle:{}".format(self.bundle.name)
 
-    def apply(self, *args, **kwargs):
-        return (Item.STATUS_OK, [])
-
-    def test(self):
-        pass
-
-
-class DummyItem(object):
-    """
-    Represents a dependency on all items of a certain type.
-    """
-    bundle = None
-    triggered = False
-
-    def __init__(self, item_type):
-        self.item_type = item_type
-        self.ITEM_TYPE_NAME = 'dummy'
-        self.needed_by = []
-        self.needs = []
-        self.preceded_by = []
-        self.precedes = []
-        self.triggered_by = []
-        self.triggers = []
-        self._deps = []
-        self._precedes_items = []
-
-    def __lt__(self, other):
-        return self.id < other.id
-
-    def __repr__(self):
-        return "<DummyItem: {}>".format(self.item_type)
-
-    @property
-    def id(self):
-        return "{}:".format(self.item_type)
-
-    def apply(self, *args, **kwargs):
-        return (Item.STATUS_OK, [])
-
-    def test(self):
-        pass
-
 
 class TagItem(object):
     """
     This item depends on all items with the given tag.
     """
-    bundle = None
-    triggered = False
+    ITEM_TYPE_NAME = 'tag'
 
     def __init__(self, tag_name):
         self.tag_name = tag_name
-        self.ITEM_TYPE_NAME = 'dummy'
-        self.needed_by = []
-        self.needs = []
-        self.preceded_by = []
-        self.precedes = []
-        self.triggered_by = []
-        self.triggers = []
-        self._deps = []
-        self._precedes_items = []
-
-    def __lt__(self, other):
-        return self.id < other.id
+        super(TagItem, self).__init__()
 
     def __repr__(self):
         return "<TagItem: {}>".format(self.tag_name)
@@ -108,11 +68,23 @@ class TagItem(object):
     def id(self):
         return "tag:{}".format(self.tag_name)
 
-    def apply(self, *args, **kwargs):
-        return (Item.STATUS_OK, [])
 
-    def test(self):
-        pass
+class TypeItem(DummyItem):
+    """
+    Represents a dependency on all items of a certain type.
+    """
+    ITEM_TYPE_NAME = 'type'
+
+    def __init__(self, item_type):
+        self.item_type = item_type
+        super(TypeItem, self).__init__()
+
+    def __repr__(self):
+        return "<TypeItem: {}>".format(self.item_type)
+
+    @property
+    def id(self):
+        return "{}:".format(self.item_type)
 
 
 def find_item(item_id, items):
@@ -134,7 +106,7 @@ def _find_items_of_types(item_types, items, include_dummy=False):
     return list(filter(
         lambda item:
             item.id.split(":", 1)[0] in item_types and (
-                include_dummy or not item.id.endswith(":")
+                include_dummy or not isinstance(item, DummyItem)
             ),
         items,
     ))
@@ -265,17 +237,14 @@ def _inject_concurrency_blockers(items):
     dependencies to force a sequential apply.
     """
     # find every item type that cannot be applied in parallel
-    item_types = []
+    item_types = set()
     for item in items:
         item._concurrency_deps = []
         if (
-            item.ITEM_TYPE_NAME == 'dummy' or
-            item.__class__ in item_types or
-            not item.BLOCK_CONCURRENT
+            not isinstance(item, DummyItem) and
+            item.BLOCK_CONCURRENT
         ):
-            continue
-        else:
-            item_types.append(item.__class__)
+            item_types.add(item.__class__)
 
     # daisy-chain all items of the blocking type and all items of the
     # blocked types while respecting existing dependencies between them
@@ -322,29 +291,6 @@ def _inject_concurrency_blockers(items):
     return items
 
 
-def _inject_dummy_items(items):
-    """
-    Takes a list of items and adds dummy items depending on each type of
-    item in the list. Returns the appended list.
-    """
-    # first, find all types of items and add dummy deps
-    dummy_items = {}
-    items = list(items)
-    for item in items:
-        # create dummy items that depend on each item of their type
-        item_type = item.id.split(":")[0]
-        if item_type not in dummy_items:
-            dummy_items[item_type] = DummyItem(item_type)
-        dummy_items[item_type]._deps.append(item.id)
-
-        # create DummyItem for every type
-        for dep in item._deps:
-            item_type = dep.split(":")[0]
-            if item_type not in dummy_items:
-                dummy_items[item_type] = DummyItem(item_type)
-    return list(dummy_items.values()) + items
-
-
 def _inject_tag_items(items):
     """
     Takes a list of items and adds tag items depending on each type of
@@ -359,6 +305,29 @@ def _inject_tag_items(items):
             tag_items[tag]._deps.append(item.id)
 
     return list(tag_items.values()) + items
+
+
+def _inject_type_items(items):
+    """
+    Takes a list of items and adds dummy items depending on each type of
+    item in the list. Returns the appended list.
+    """
+    # first, find all types of items and add dummy deps
+    type_items = {}
+    items = list(items)
+    for item in items:
+        # create dummy items that depend on each item of their type
+        item_type = item.id.split(":")[0]
+        if item_type not in type_items:
+            type_items[item_type] = TypeItem(item_type)
+        type_items[item_type]._deps.append(item.id)
+
+        # create DummyItem for every type
+        for dep in item._deps:
+            item_type = dep.split(":")[0]
+            if item_type not in type_items:
+                type_items[item_type] = TypeItem(item_type)
+    return list(type_items.values()) + items
 
 
 def _inject_reverse_dependencies(items):
@@ -383,7 +352,14 @@ def _inject_reverse_dependencies(items):
                     if depending_item.bundle.name == depending_bundle_name:
                         add_dep(depending_item, item.id)
 
-            # dummy items
+            # tag items
+            if depending_item_id.startswith("tag:"):
+                tag_name = depending_item_id.split(":")[1]
+                for depending_item in items:
+                    if tag_name in depending_item.tags:
+                        add_dep(depending_item, item.id)
+
+            # type items
             if depending_item_id.endswith(":"):
                 target_type = depending_item_id[:-1]
                 for depending_item in _find_items_of_types([target_type], items):
@@ -496,9 +472,9 @@ def prepare_dependencies(items):
         item._check_bundle_collisions(items)
         item._prepare_deps(items)
 
-    items = _inject_dummy_items(items)
     items = _inject_bundle_items(items)
     items = _inject_tag_items(items)
+    items = _inject_type_items(items)
     items = _inject_canned_actions(items)
     items = _inject_reverse_triggers(items)
     items = _inject_reverse_dependencies(items)
@@ -508,7 +484,7 @@ def prepare_dependencies(items):
     items = _inject_concurrency_blockers(items)
 
     for item in items:
-        if item.ITEM_TYPE_NAME != 'dummy':
+        if not isinstance(item, DummyItem):
             item._check_redundant_dependencies()
 
     return items
@@ -539,7 +515,7 @@ def remove_item_dependents(items, dep_item, skipped=False):
                 # may yet be triggered by another item and will be
                 # skipped anyway if they aren't
                 item._deps.remove(dep_item.id)
-            elif skipped and item.ITEM_TYPE_NAME == 'dummy' and \
+            elif skipped and isinstance(item, DummyItem) and \
                     dep_item.triggered and not dep_item.has_been_triggered:
                 # don't skip dummy items because of untriggered members
                 # see issue #151; separate elif for clarity
