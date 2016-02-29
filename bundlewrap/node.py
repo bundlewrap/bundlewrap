@@ -14,6 +14,7 @@ from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
 from .deps import (
+    DummyItem,
     find_item,
     prepare_dependencies,
 )
@@ -199,7 +200,7 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                     ))
 
                 handle_apply_result(node, item, status_code, interactive, changes=changes)
-                if item.ITEM_TYPE_NAME != 'dummy':
+                if not isinstance(item, DummyItem):
                     yield (item.id, status_code, msg['duration'])
 
                 # Finally, we have a new job queue. Thus, tell all idle
@@ -707,7 +708,7 @@ def test_items(items, workers=1):
                 while True:
                     if items:
                         item = items.pop()
-                        if item.ITEM_TYPE_NAME == 'dummy':
+                        if isinstance(item, DummyItem):
                             continue
                         worker_pool.start_task(
                             msg['wid'],
