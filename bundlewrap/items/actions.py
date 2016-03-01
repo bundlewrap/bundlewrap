@@ -89,7 +89,7 @@ class Action(Item):
     def cdict(self):
         raise AttributeError(_("actions don't have cdicts"))
 
-    def get_result(self, interactive=False, interactive_default=True):
+    def get_result(self, *args, **kwargs):
         self.node.repo.hooks.action_run_start(
             self.node.repo,
             self.node,
@@ -97,7 +97,7 @@ class Action(Item):
         )
         start_time = datetime.now()
 
-        status_code = self._get_result(interactive, interactive_default)
+        status_code = self._get_result(*args, **kwargs)
 
         self.node.repo.hooks.action_run_end(
             self.node.repo,
