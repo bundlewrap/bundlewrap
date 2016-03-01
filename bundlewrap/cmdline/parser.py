@@ -107,7 +107,13 @@ def build_parser_bw():
         "--skip",
         default="",
         dest='autoskip',
-        help=_("e.g. 'tag:foo,bundle:bar' to skip all items with tag 'foo' or in bundle 'bar'"),
+        help=_(
+            "e.g. 'tag:foo,bundle:bar,node:baz,group:frob' "
+            "to skip all items with tag 'foo', "
+            "or in bundle 'bar', "
+            "or on node 'baz', "
+            "or on a node in group 'frob'"
+        ),
         metavar=_("SELECTOR"),
         type=str,
     )

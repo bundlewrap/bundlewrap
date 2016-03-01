@@ -380,6 +380,19 @@ class Node(object):
                 pass
         return node_dict
 
+    def covered_by_autoskip_selector(self, autoskip_selector):
+        """
+        True if this node should be skipped based on the given selector
+        string (e.g. "node:foo,group:bar").
+        """
+        components = [c.strip() for c in autoskip_selector.split(",")]
+        if "node:{}".format(self.name) in components:
+            return True
+        for group in self.groups:
+            if "group:{}".format(group.name) in components:
+                return True
+        return False
+
     @cached_property
     def groups(self):
         return self.repo.groups_for_node(self)
@@ -433,6 +446,10 @@ class Node(object):
     ):
         if not list(self.items):
             io.debug(_("not applying to {}, it has no items").format(self.name))
+            return None
+
+        if self.covered_by_autoskip_selector(autoskip_selector):
+            io.debug(_("skipping {}, matches autoskip selector").format(self.name))
             return None
 
         start = datetime.now()
