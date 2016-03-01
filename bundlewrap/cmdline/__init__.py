@@ -25,6 +25,9 @@ def main(*args, **kwargs):
 
     parser_bw = build_parser_bw()
     pargs = parser_bw.parse_args(args)
+    if not hasattr(pargs, 'func'):
+        parser_bw.print_help()
+        exit(2)
 
     io.activate_as_parent(debug=pargs.debug)
 

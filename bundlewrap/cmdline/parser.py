@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from argparse import ArgumentParser
 from os import environ
-from sys import exit
 
 from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
@@ -24,15 +23,8 @@ from .verify import bw_verify
 from .zen import bw_zen
 
 
-class UsagePrintingArgumentParser(ArgumentParser):
-    def error(self, message):
-        print(message)
-        self.print_help()
-        exit(2)
-
-
 def build_parser_bw():
-    parser = UsagePrintingArgumentParser(
+    parser = ArgumentParser(
         prog="bw",
         description=_("BundleWrap - Config Management with Python"),
     )
