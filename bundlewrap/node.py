@@ -116,7 +116,7 @@ def handle_apply_result(node, item, status_code, interactive, changes=None):
             io.stdout(formatted_result)
 
 
-def apply_items(node, workers=1, interactive=False, profiling=False):
+def apply_items(node, autoskip_selector="", workers=1, interactive=False, profiling=False):
     item_queue = ItemQueue(node.items)
     with WorkerPool(workers=workers) as worker_pool:
         # This whole thing is set in motion because every worker
@@ -154,7 +154,10 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         msg['wid'],
                         item.get_result if item.ITEM_TYPE_NAME == 'action' else item.apply,
                         task_id=item.id,
-                        kwargs={'interactive': interactive},
+                        kwargs={
+                            'autoskip_selector': autoskip_selector,
+                            'interactive': interactive,
+                        },
                     )
 
             elif msg['msg'] == 'FINISHED_WORK':
@@ -420,7 +423,14 @@ class Node(object):
             for item in bundle._static_items:
                 yield item
 
-    def apply(self, interactive=False, force=False, workers=4, profiling=False):
+    def apply(
+        self,
+        autoskip_selector="",
+        interactive=False,
+        force=False,
+        workers=4,
+        profiling=False,
+    ):
         if not list(self.items):
             io.debug(_("not applying to {}, it has no items").format(self.name))
             return None
@@ -442,6 +452,7 @@ class Node(object):
             with NodeLock(self, interactive, ignore=force):
                 item_results = list(apply_items(
                     self,
+                    autoskip_selector=autoskip_selector,
                     workers=workers,
                     interactive=interactive,
                     profiling=profiling,

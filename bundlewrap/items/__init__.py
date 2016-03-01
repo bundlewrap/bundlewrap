@@ -289,7 +289,7 @@ class Item(object):
                 attrs=", ".join(missing),
             ))
 
-    def apply(self, interactive=False, interactive_default=True):
+    def apply(self, autoskip_selector="", interactive=False, interactive_default=True):
         self.node.repo.hooks.item_apply_start(
             self.node.repo,
             self.node,
@@ -301,13 +301,24 @@ class Item(object):
         status_after = None
         start_time = datetime.now()
 
+        if self.covered_by_autoskip_selector(autoskip_selector):
+            io.debug(_(
+                "autoskip matches {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            status_code = self.STATUS_SKIPPED
+            keys_to_fix = [_("cmdline")]
+
         if self.triggered and not self.has_been_triggered:
-            io.debug(_("skipping {} because it wasn't triggered").format(self.id))
+            io.debug(_(
+                "skipping {item} on {node} because it wasn't triggered"
+            ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             keys_to_fix = [_("not triggered")]
 
         if status_code is None and self.cached_unless_result:
-            io.debug(_("'unless' for {} succeeded, not fixing").format(self.id))
+            io.debug(_(
+                "'unless' for {item} on {node} succeeded, not fixing"
+            ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             keys_to_fix = ["unless"]
 
@@ -419,6 +430,22 @@ class Item(object):
         MAY be overridden by subclasses.
         """
         return self.attributes
+
+    def covered_by_autoskip_selector(self, autoskip_selector):
+        """
+        True if this item should be skipped based on the given selector
+        string (e.g. "tag:foo,bundle:bar").
+        """
+        components = [c.strip() for c in autoskip_selector.split(",")]
+        if (
+            "bundle:{}".format(self.bundle.name) in components or
+            "{}:".format(self.ITEM_TYPE_NAME) in components
+        ):
+            return True
+        for tag in self.tags:
+            if "tag:{}".format(tag) in components:
+                return True
+        return False
 
     def fix(self, status):
         """
