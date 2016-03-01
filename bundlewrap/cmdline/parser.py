@@ -108,8 +108,9 @@ def build_parser_bw():
         default="",
         dest='autoskip',
         help=_(
-            "e.g. 'tag:foo,bundle:bar,node:baz,group:frob' "
-            "to skip all items with tag 'foo', "
+            "e.g. 'file:/foo,tag:foo,bundle:bar,node:baz,group:frob' "
+            "to skip all instances of file:/foo "
+            "and items with tag 'foo', "
             "or in bundle 'bar', "
             "or on node 'baz', "
             "or on a node in group 'frob'"

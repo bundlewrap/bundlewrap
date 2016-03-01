@@ -55,6 +55,29 @@ def test_skip_group(tmpdir):
     assert not exists(join(str(tmpdir), "foo"))
 
 
+def test_skip_id(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'files': {
+                    join(str(tmpdir), "foo"): {
+                        'content': "nope",
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    run("bw apply --skip file:{} localhost".format(join(str(tmpdir), "foo")), path=str(tmpdir))
+    assert not exists(join(str(tmpdir), "foo"))
+
+
 def test_skip_node(tmpdir):
     make_repo(
         tmpdir,

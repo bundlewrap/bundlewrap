@@ -438,6 +438,7 @@ class Item(object):
         """
         components = [c.strip() for c in autoskip_selector.split(",")]
         if (
+            self.id in components or
             "bundle:{}".format(self.bundle.name) in components or
             "{}:".format(self.ITEM_TYPE_NAME) in components
         ):
