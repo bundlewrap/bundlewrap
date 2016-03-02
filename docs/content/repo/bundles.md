@@ -102,7 +102,7 @@ This attribute is an alternative way of defining dependencies. It works just lik
 
 ### tags
 
-A list of string to tag an item with. Tagging has no immediate effect in itself, but can be useful in a number of places. For example, you can add dependencies on all items with a given tag:
+A list of strings to tag an item with. Tagging has no immediate effect in itself, but can be useful in a number of places. For example, you can add dependencies on all items with a given tag:
 
     pkg_apt = {
         "mysql-server-{}".format(node.metadata.get('mysql_version', "5.5")): {
