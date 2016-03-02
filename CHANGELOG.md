@@ -1,6 +1,6 @@
 # 2.2.0
 
-unreleased
+2016-02-03
 
 * added item tagging
 * added `bw apply --skip`
