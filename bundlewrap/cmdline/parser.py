@@ -102,6 +102,22 @@ def build_parser_bw():
         dest='profiling',
         help=_("print time elapsed for each item"),
     )
+    parser_apply.add_argument(
+        "-s",
+        "--skip",
+        default="",
+        dest='autoskip',
+        help=_(
+            "e.g. 'file:/foo,tag:foo,bundle:bar,node:baz,group:frob' "
+            "to skip all instances of file:/foo "
+            "and items with tag 'foo', "
+            "or in bundle 'bar', "
+            "or on node 'baz', "
+            "or on a node in group 'frob'"
+        ),
+        metavar=_("SELECTOR"),
+        type=str,
+    )
 
     # bw debug
     parser_debug = subparsers.add_parser("debug")

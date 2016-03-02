@@ -116,7 +116,7 @@ def handle_apply_result(node, item, status_code, interactive, changes=None):
             io.stdout(formatted_result)
 
 
-def apply_items(node, workers=1, interactive=False, profiling=False):
+def apply_items(node, autoskip_selector="", workers=1, interactive=False, profiling=False):
     item_queue = ItemQueue(node.items)
     with WorkerPool(workers=workers) as worker_pool:
         # This whole thing is set in motion because every worker
@@ -154,7 +154,10 @@ def apply_items(node, workers=1, interactive=False, profiling=False):
                         msg['wid'],
                         item.get_result if item.ITEM_TYPE_NAME == 'action' else item.apply,
                         task_id=item.id,
-                        kwargs={'interactive': interactive},
+                        kwargs={
+                            'autoskip_selector': autoskip_selector,
+                            'interactive': interactive,
+                        },
                     )
 
             elif msg['msg'] == 'FINISHED_WORK':
@@ -377,6 +380,19 @@ class Node(object):
                 pass
         return node_dict
 
+    def covered_by_autoskip_selector(self, autoskip_selector):
+        """
+        True if this node should be skipped based on the given selector
+        string (e.g. "node:foo,group:bar").
+        """
+        components = [c.strip() for c in autoskip_selector.split(",")]
+        if "node:{}".format(self.name) in components:
+            return True
+        for group in self.groups:
+            if "group:{}".format(group.name) in components:
+                return True
+        return False
+
     @cached_property
     def groups(self):
         return self.repo.groups_for_node(self)
@@ -420,9 +436,20 @@ class Node(object):
             for item in bundle._static_items:
                 yield item
 
-    def apply(self, interactive=False, force=False, workers=4, profiling=False):
+    def apply(
+        self,
+        autoskip_selector="",
+        interactive=False,
+        force=False,
+        workers=4,
+        profiling=False,
+    ):
         if not list(self.items):
             io.debug(_("not applying to {}, it has no items").format(self.name))
+            return None
+
+        if self.covered_by_autoskip_selector(autoskip_selector):
+            io.debug(_("skipping {}, matches autoskip selector").format(self.name))
             return None
 
         start = datetime.now()
@@ -442,6 +469,7 @@ class Node(object):
             with NodeLock(self, interactive, ignore=force):
                 item_results = list(apply_items(
                     self,
+                    autoskip_selector=autoskip_selector,
                     workers=workers,
                     interactive=interactive,
                     profiling=profiling,

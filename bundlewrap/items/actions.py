@@ -25,7 +25,13 @@ class Action(Item):
     ITEM_TYPE_NAME = 'action'
     REQUIRED_ATTRIBUTES = ['command']
 
-    def _get_result(self, interactive=False, interactive_default=True):
+    def _get_result(self, autoskip_selector="", interactive=False, interactive_default=True):
+        if self.covered_by_autoskip_selector(autoskip_selector):
+            io.debug(_(
+                "autoskip matches {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            return (self.STATUS_SKIPPED, [_("cmdline")])
+
         if interactive is False and self.attributes['interactive'] is True:
             return (self.STATUS_SKIPPED, [_("interactive only")])
 
@@ -83,7 +89,7 @@ class Action(Item):
     def cdict(self):
         raise AttributeError(_("actions don't have cdicts"))
 
-    def get_result(self, interactive=False, interactive_default=True):
+    def get_result(self, *args, **kwargs):
         self.node.repo.hooks.action_run_start(
             self.node.repo,
             self.node,
@@ -91,7 +97,7 @@ class Action(Item):
         )
         start_time = datetime.now()
 
-        status_code = self._get_result(interactive, interactive_default)
+        status_code = self._get_result(*args, **kwargs)
 
         self.node.repo.hooks.action_run_end(
             self.node.repo,

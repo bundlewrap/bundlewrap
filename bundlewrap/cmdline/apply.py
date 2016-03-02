@@ -47,6 +47,7 @@ def bw_apply(repo, args):
                         node.apply,
                         task_id=node.name,
                         kwargs={
+                            'autoskip_selector': args['autoskip'],
                             'force': args['force'],
                             'interactive': args['interactive'],
                             'workers': args['item_workers'],
