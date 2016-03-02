@@ -4,7 +4,7 @@
     
     <url>
      <loc>None/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -13,49 +13,49 @@
         
     <url>
      <loc>None/guide/quickstart/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/guide/installation/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/guide/cli/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/guide/item_file_templates/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/guide/dev_item/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/guide/dev_plugin/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/guide/api/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/guide/migrate_12/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -65,43 +65,43 @@
         
     <url>
      <loc>None/repo/layout/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/repo/nodes.py/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/repo/groups.py/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/repo/bundles/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/repo/hooks/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/repo/libs/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/repo/plugins/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -111,97 +111,97 @@
         
     <url>
      <loc>None/items/action/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/directory/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/file/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/group/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/pkg_apt/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/pkg_pacman/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/pkg_pip/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/pkg_yum/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/pkg_zypper/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/postgres_db/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/postgres_role/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/svc_systemd/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/svc_systemv/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/svc_upstart/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/symlink/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/items/user/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -211,31 +211,31 @@
         
     <url>
      <loc>None/misc/about/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/misc/glossary/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/misc/faq/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/misc/alternatives/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/misc/contributing/</loc>
-     <lastmod>2016-02-27</lastmod>
+     <lastmod>2016-03-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
