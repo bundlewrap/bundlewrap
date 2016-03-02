@@ -1,3 +1,13 @@
+# 2.2.0
+
+unreleased
+
+* added item tagging
+* added `bw apply --skip`
+* fixed newline warning on long diff files
+* fixed calling `bw` without arguments
+
+
 # 2.1.0
 
 2016-02-25
