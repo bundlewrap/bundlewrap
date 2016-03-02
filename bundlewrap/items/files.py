@@ -198,11 +198,11 @@ class File(Item):
         if self.attributes['source'] is not None:
             filename = join(self.item_data_dir, self.attributes['source'])
             if exists(filename):
-                with open(filename) as f:
+                with open(filename, 'rb') as f:
                     content = f.read()
             else:
                 filename = join(self.item_dir, self.attributes['source'])
-                with open(filename) as f:
+                with open(filename, 'rb') as f:
                     content = f.read()
             return force_text(content)
         else:

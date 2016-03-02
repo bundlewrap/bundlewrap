@@ -22,6 +22,7 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     bundles_dir = tmpdir.mkdir("bundles")
     for bundle, items in bundles.items():
         bundle_dir = bundles_dir.mkdir(bundle)
+        bundle_dir.mkdir("files")
         bundlepy = bundle_dir.join(FILENAME_BUNDLE)
         bundle_content = ""
         for itemtype, itemconfig in items.items():

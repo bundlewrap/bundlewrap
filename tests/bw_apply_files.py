@@ -33,6 +33,34 @@ def test_binary_inline_content(tmpdir):
     assert content.decode('latin-1') == "ö"
 
 
+def test_binary_template_content(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'files': {
+                    join(str(tmpdir), "foo.bin"): {
+                        'encoding': 'latin-1',
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "files", "foo.bin"), 'wb') as f:
+        f.write("ö".encode('utf-8'))
+
+    run("bw apply localhost", path=str(tmpdir))
+    with open(join(str(tmpdir), "foo.bin"), 'rb') as f:
+        content = f.read()
+    assert content.decode('latin-1') == "ö"
+
+
 def test_delete(tmpdir):
     with open(join(str(tmpdir), "foo"), 'w') as f:
         f.write("foo")
