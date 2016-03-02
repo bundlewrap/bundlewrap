@@ -86,6 +86,9 @@ class Action(Item):
         except ActionFailure:
             return (self.STATUS_FAILED, None)
 
+    def apply(self, *args, **kwargs):
+        return self.get_result(*args, **kwargs)
+
     def cdict(self):
         raise AttributeError(_("actions don't have cdicts"))
 

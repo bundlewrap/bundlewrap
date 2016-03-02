@@ -152,7 +152,7 @@ def apply_items(node, autoskip_selector="", workers=1, interactive=False, profil
                     # start_task() increases jobs_open.
                     worker_pool.start_task(
                         msg['wid'],
-                        item.get_result if item.ITEM_TYPE_NAME == 'action' else item.apply,
+                        item.apply,
                         task_id=item.id,
                         kwargs={
                             'autoskip_selector': autoskip_selector,
