@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from functools import wraps
 from os import environ, getcwd
-from sys import argv, exit
+from sys import argv, exit, stderr, stdout
 
 from ..exceptions import NoSuchRepository
 from ..repo import Repository
@@ -62,17 +62,16 @@ def suppress_broken_pipe_msg(f):
         try:
             return f(*args, **kwargs)
         finally:
-            import sys
             try:
-                sys.stdout.flush()
+                stdout.flush()
             finally:
                 try:
-                    sys.stdout.close()
+                    stdout.close()
                 finally:
                     try:
-                        sys.stderr.flush()
+                        stderr.flush()
                     finally:
-                        sys.stderr.close()
+                        stderr.close()
     return wrapper
 
 

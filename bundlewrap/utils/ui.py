@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from datetime import datetime
+from errno import EPIPE
 import fcntl
 from functools import wraps
 from multiprocessing import Lock, Manager
@@ -59,8 +60,10 @@ def write_to_stream(stream, msg):
         else:
             stream.write(ANSI_ESCAPE.sub("", msg))
         stream.flush()
-    except broken_pipe_exception:
-        pass
+    except broken_pipe_exception as e:
+        if broken_pipe_exception == IOError:
+            if e.errno != EPIPE:
+                raise
 
 
 class IOManager(object):
