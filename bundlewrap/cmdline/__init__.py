@@ -66,6 +66,7 @@ def suppress_broken_pipe_msg(f):
             raise
         except:
             print_exc()
+            exit(1)
         finally:
             try:
                 stdout.flush()
