@@ -211,7 +211,7 @@ There are some situations where you don't want to default behavior of skipping e
 * because they haven't been triggered or
 * because one of their dependencies failed or
 * they failed their `unless` condition or
-* because an [action](../items/actionmd) had its `interactive` attribute set to `True` during a non-interactive run
+* because an [action](../items/action.md) had its `interactive` attribute set to `True` during a non-interactive run
 
 The following example will offer to run an `apt-get update` before installing a package, but continue to install the package even if the update is declined interactively.
 
