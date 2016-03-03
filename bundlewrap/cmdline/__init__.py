@@ -53,7 +53,7 @@ def suppress_broken_pipe_msg(f):
     This worked fine for a while but broke when using
     multiprocessing.Manager() to share the list of jobs in utils.ui
     between processes. When the main process terminated, it quit with
-    return code 127 (indicating a broken pipe), and the background
+    return code 141 (indicating a broken pipe), and the background
     process used for the manager continued to hang around indefinitely.
     Bonus fun: This was observed only on Ubuntu Trusty (14.04).
     """
