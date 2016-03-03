@@ -1,0 +1,25 @@
+# Environment Variables
+
+## `BWCOLORS`
+
+Colors are enabled by default. Setting this variable to `0` tells BundleWrap to never use any ANSI color escape sequences.
+
+## `BWADDHOSTKEYS`
+
+As BundleWrap uses OpenSSH to connect to hosts, host key checking is involved. By default, strict host key checking is activated. This might not be suitable for your setup. You can set this variable to `1` to cause BundleWrap to set the OpenSSH option `StrictHostKeyChecking=no`.
+
+You can also use `bw -a ...` to achieve the same effect.
+
+## `BWNODEWORKERS` and `BWITEMWORKERS`
+
+BundleWrap attempts to parallelize work. These two options specify the number of nodes and items, respectively, which will be handled concurrently. To be more precise, when setting `BWNODEWORKERS=8` and `BWITEMWORKERS=2`, BundleWrap will work on eight nodes in parallel, each handling two items in parallel.
+
+You can also use the command line options `-p` and `-P`, e.g. `bw apply -p ... -P ... ...`, to achieve the same effect. Command line arguments override environment variables.
+
+There is no single default for these values. For example, when running `bw apply`, four nodes are being handled by default. However, when running `bw test`, only one node will be tested by default. `BWNODEWORKERS` and `BWITEMWORKERS` apply to *all* these operations.
+
+Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.
+
+## `BWIDENTITY`
+
+When BundleWrap locks a node, it stores a short description about "you". By default, this is the string `$USER@$HOSTNAME`, e.g. `john@mymachine`. You can use `BWIDENTITY` to specify a custom string. (No variables will be evaluated in user supplied strings.)
