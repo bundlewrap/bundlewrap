@@ -689,7 +689,7 @@ class NodeLock(object):
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
-                        'user': environ.get('BW_IDENTITY', "{}@{}".format(
+                        'user': environ.get('BWIDENTITY', "{}@{}".format(
                             getuser(),
                             gethostname(),
                         )),
