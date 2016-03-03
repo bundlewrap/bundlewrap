@@ -40,23 +40,23 @@ This table lists all item types included in BundleWrap along with the bundle att
 
 <table>
 <tr><th>Type</th><th>Bundle attribute</th><th>Description</th></tr>
-<tr><td><a href="../items/action">action</a></td><td><code>actions</code></td><td>Actions allow you to run commands on every <code>bw apply</code></td></tr>
-<tr><td><a href="../items/directory">directory</a></td><td><code>directories</code></td><td>Manages permissions and ownership for directories</td></tr>
-<tr><td><a href="../items/file">file</a></td><td><code>files</code></td><td>Manages contents, permissions, and ownership for files</td></tr>
-<tr><td><a href="../items/group">group</a></td><td><code>groups</code></td><td>Manages groups by wrapping <code>groupadd</code>, <code>groupmod</code> and <code>groupdel</code></td></tr>
-<tr><td><a href="../items/pkg_apt">pkg_apt</a></td><td><code>pkg_apt</code></td><td>Installs and removes packages with APT</td></tr>
-<tr><td><a href="../items/pkg_pacman">pkg_pacman</a></td><td><code>pkg_pacman</code></td><td>Installs and removes packages with pacman</td></tr>
-<tr><td><a href="../items/pkg_pip">pkg_pip</a></td><td><code>pkg_pip</code></td><td>Installs and removes Python packages with pip</td></tr>
-<tr><td><a href="../items/pkg_yum">pkg_yum</a></td><td><code>pkg_yum</code></td><td>Installs and removes packages with yum</td></tr>
-<tr><td><a href="../items/pkg_zypper">pkg_zypper</a></td><td><code>pkg_zypper</code></td><td>Installs and removes packages with zypper</td></tr>
-<tr><td><a href="../items/postgres_db">postgres_db</a></td><td><code>postgres_dbs</code></td><td>Manages Postgres databases</td></tr>
-<tr><td><a href="../items/postgres_role">postgres_role</a></td><td><code>postgres_roles</code></td><td>Manages Postgres roles</td></tr>
-<tr><td><a href="../items/pkg_pip">pkg_pip</a></td><td><code>pkg_pip</code></td><td>Installs and removes Python packages with pip</td></tr>
-<tr><td><a href="../items/svc_upstart">svc_upstart</a></td><td><code>svc_upstart</code></td><td>Starts and stops services with Upstart</td></tr>
-<tr><td><a href="../items/svc_systemd">svc_systemd</a></td><td><code>svc_systemd</code></td><td>Starts and stops services with systemd</td></tr>
-<tr><td><a href="../items/svc_systemv">svc_systemv</a></td><td><code>svc_systemv</code></td><td>Starts and stops services with traditional System V init scripts</td></tr>
-<tr><td><a href="../items/symlink">symlink</a></td><td><code>symlinks</code></td><td>Manages symbolic links and their ownership</td></tr>
-<tr><td><a href="../items/user">user</a></td><td><code>users</code></td><td>Manages users by wrapping <code>useradd</code>, <code>usermod</code> and <code>userdel</code></td></tr>
+<tr><td><a href="../../items/action">action</a></td><td><code>actions</code></td><td>Actions allow you to run commands on every <code>bw apply</code></td></tr>
+<tr><td><a href="../../items/directory">directory</a></td><td><code>directories</code></td><td>Manages permissions and ownership for directories</td></tr>
+<tr><td><a href="../../items/file">file</a></td><td><code>files</code></td><td>Manages contents, permissions, and ownership for files</td></tr>
+<tr><td><a href="../../items/group">group</a></td><td><code>groups</code></td><td>Manages groups by wrapping <code>groupadd</code>, <code>groupmod</code> and <code>groupdel</code></td></tr>
+<tr><td><a href="../../items/pkg_apt">pkg_apt</a></td><td><code>pkg_apt</code></td><td>Installs and removes packages with APT</td></tr>
+<tr><td><a href="../../items/pkg_pacman">pkg_pacman</a></td><td><code>pkg_pacman</code></td><td>Installs and removes packages with pacman</td></tr>
+<tr><td><a href="../../items/pkg_pip">pkg_pip</a></td><td><code>pkg_pip</code></td><td>Installs and removes Python packages with pip</td></tr>
+<tr><td><a href="../../items/pkg_yum">pkg_yum</a></td><td><code>pkg_yum</code></td><td>Installs and removes packages with yum</td></tr>
+<tr><td><a href="../../items/pkg_zypper">pkg_zypper</a></td><td><code>pkg_zypper</code></td><td>Installs and removes packages with zypper</td></tr>
+<tr><td><a href="../../items/postgres_db">postgres_db</a></td><td><code>postgres_dbs</code></td><td>Manages Postgres databases</td></tr>
+<tr><td><a href="../../items/postgres_role">postgres_role</a></td><td><code>postgres_roles</code></td><td>Manages Postgres roles</td></tr>
+<tr><td><a href="../../items/pkg_pip">pkg_pip</a></td><td><code>pkg_pip</code></td><td>Installs and removes Python packages with pip</td></tr>
+<tr><td><a href="../../items/svc_upstart">svc_upstart</a></td><td><code>svc_upstart</code></td><td>Starts and stops services with Upstart</td></tr>
+<tr><td><a href="../../items/svc_systemd">svc_systemd</a></td><td><code>svc_systemd</code></td><td>Starts and stops services with systemd</td></tr>
+<tr><td><a href="../../items/svc_systemv">svc_systemv</a></td><td><code>svc_systemv</code></td><td>Starts and stops services with traditional System V init scripts</td></tr>
+<tr><td><a href="../../items/symlink">symlink</a></td><td><code>symlinks</code></td><td>Manages symbolic links and their ownership</td></tr>
+<tr><td><a href="../../items/user">user</a></td><td><code>users</code></td><td>Manages users by wrapping <code>useradd</code>, <code>usermod</code> and <code>userdel</code></td></tr>
 </table>
 
 <br>
