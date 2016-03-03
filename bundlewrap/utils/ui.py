@@ -4,7 +4,6 @@ import fcntl
 from functools import wraps
 from multiprocessing import Lock, Manager
 import os
-from signal import signal, SIGPIPE, SIG_DFL
 import struct
 import sys
 import termios
@@ -17,12 +16,10 @@ TTY = STDOUT_WRITER.isatty()
 
 try:
     input_function = raw_input
+    broken_pipe_exception = IOError
 except NameError:  # Python 3
+    broken_pipe_exception = BrokenPipeError
     input_function = input
-
-# prevent BrokenPipeError when piping into `head`
-# http://stackoverflow.com/questions/14207708/ioerror-errno-32-broken-pipe-python
-signal(SIGPIPE, SIG_DFL)
 
 
 def add_debug_timestamp(f):
@@ -56,11 +53,14 @@ def term_width():
 
 
 def write_to_stream(stream, msg):
-    if TTY:
-        stream.write(msg)
-    else:
-        stream.write(ANSI_ESCAPE.sub("", msg))
-    stream.flush()
+    try:
+        if TTY:
+            stream.write(msg)
+        else:
+            stream.write(ANSI_ESCAPE.sub("", msg))
+        stream.flush()
+    except broken_pipe_exception:
+        pass
 
 
 class IOManager(object):
