@@ -11,17 +11,23 @@ from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
 
-class ItemQueue(object):
+class BaseQueue(object):
     def __init__(self, items):
         self.items_with_deps = prepare_dependencies(items)
         self.items_without_deps = []
         self._split()
         self.pending_items = []
 
+    def _split(self):
+        self.items_with_deps, self.items_without_deps = \
+            split_items_without_deps(self.all_items)
+
     @property
     def all_items(self):
         return self.items_with_deps + self.items_without_deps
 
+
+class ItemQueue(BaseQueue):
     def item_failed(self, item):
         """
         Called when an item could not be fixed. Yields all items that
@@ -134,6 +140,14 @@ class ItemQueue(object):
                     triggered_item=triggered_item_id,
                 ))
 
-    def _split(self):
-        self.items_with_deps, self.items_without_deps = \
-            split_items_without_deps(self.all_items)
+
+class ItemTestQueue(BaseQueue):
+    """
+    A simpler variation of ItemQueue that is used by `bw test` to check
+    for circular dependencies.
+    """
+    def pop(self):
+        item = self.items_without_deps.pop()
+        self.items_with_deps = remove_dep_from_items(self.items_with_deps, item.id)
+        self._split()
+        return item

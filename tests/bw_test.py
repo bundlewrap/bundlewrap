@@ -43,79 +43,97 @@ def test_node(repo, node, **kwargs):
     )
 
 
-#def test_circular_dep_direct(tmpdir):
-#    make_repo(
-#        tmpdir,
-#        nodes={
-#            "node1": {
-#                'bundles': ["bundle1"],
-#            },
-#        },
-#        bundles={
-#            "bundle1": {
-#                "pkg_apt": {
-#                    "foo": {
-#                        'needs': ["pkg_apt:bar"],
-#                    },
-#                    "bar": {
-#                        'needs': ["pkg_apt:foo"],
-#                    },
-#                },
-#            },
-#        },
-#    )
-#    with pytest.raises(SystemExit):
-#        main("test", path=str(tmpdir))
-#
-#
-#def test_circular_dep_indirect(tmpdir):
-#    make_repo(
-#        tmpdir,
-#        nodes={
-#            "node1": {
-#                'bundles': ["bundle1"],
-#            },
-#        },
-#        bundles={
-#            "bundle1": {
-#                "pkg_apt": {
-#                    "foo": {
-#                        'needs': ["pkg_apt:bar"],
-#                    },
-#                    "bar": {
-#                        'needs': ["pkg_apt:baz"],
-#                    },
-#                    "baz": {
-#                        'needs': ["pkg_apt:foo"],
-#                    },
-#                },
-#            },
-#        },
-#    )
-#    with pytest.raises(SystemExit):
-#        main("test", path=str(tmpdir))
-#
-#
-#def test_circular_dep_self(tmpdir):
-#    make_repo(
-#        tmpdir,
-#        nodes={
-#            "node1": {
-#                'bundles': ["bundle1"],
-#            },
-#        },
-#        bundles={
-#            "bundle1": {
-#                "pkg_apt": {
-#                    "foo": {
-#                        'needs': ["pkg_apt:foo"],
-#                    },
-#                },
-#            },
-#        },
-#    )
-#    with pytest.raises(SystemExit):
-#        main("test", path=str(tmpdir))
+def test_circular_dep_direct(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "pkg_apt": {
+                    "foo": {
+                        'needs': ["pkg_apt:bar"],
+                    },
+                    "bar": {
+                        'needs': ["pkg_apt:foo"],
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_circular_dep_indirect(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "pkg_apt": {
+                    "foo": {
+                        'needs': ["pkg_apt:bar"],
+                    },
+                    "bar": {
+                        'needs': ["pkg_apt:baz"],
+                    },
+                    "baz": {
+                        'needs': ["pkg_apt:foo"],
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_circular_dep_self(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "pkg_apt": {
+                    "foo": {
+                        'needs': ["pkg_apt:foo"],
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_circular_trigger_self(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "pkg_apt": {
+                    "foo": {
+                        'triggers': ["pkg_apt:foo"],
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
 
 
 def test_file_invalid_attribute(tmpdir):

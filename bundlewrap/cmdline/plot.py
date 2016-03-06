@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from ..node import prepare_dependencies
+from ..deps import prepare_dependencies
 from ..utils import graph_for_items
 
 
