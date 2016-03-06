@@ -38,7 +38,7 @@ def clear_formatting(f):
     """
     @wraps(f)
     def wrapped(self, msg, **kwargs):
-        if TTY and os.environ.get("BWCOLORS", "1") != "0":
+        if TTY and os.environ.get("BW_COLORS", "1") != "0":
             msg = "\033[0m" + msg
         return f(self, msg, **kwargs)
     return wrapped

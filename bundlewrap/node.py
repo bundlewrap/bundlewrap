@@ -514,7 +514,7 @@ class Node(object):
             self.hostname,
             remote_path,
             local_path,
-            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
+            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
         )
 
     def get_item(self, item_id):
@@ -600,7 +600,7 @@ class Node(object):
             self.hostname,
             command,
             ignore_failure=may_fail,
-            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
+            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
             log_function=log_function,
         )
 
@@ -619,7 +619,7 @@ class Node(object):
             mode=mode,
             owner=owner,
             group=group,
-            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
+            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
         )
 
     def verify(self, show_all=False, workers=4):
@@ -689,7 +689,7 @@ class NodeLock(object):
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
-                        'user': environ.get('BWIDENTITY', "{}@{}".format(
+                        'user': environ.get('BW_IDENTITY', "{}@{}".format(
                             getuser(),
                             gethostname(),
                         )),
