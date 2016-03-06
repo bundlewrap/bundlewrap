@@ -12,6 +12,7 @@ pages:
   - Quickstart: guide/quickstart.md
   - Installation: guide/installation.md
   - CLI: guide/cli.md
+  - Environment Variables: guide/env.md
   - File templates: guide/item_file_templates.md
   - Custom items: guide/dev_item.md
   - Writing plugins: guide/dev_plugin.md
