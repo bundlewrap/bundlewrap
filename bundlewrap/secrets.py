@@ -97,6 +97,22 @@ class SecretProxy(object):
         self.repo = repo
         self.keys = self._load_keys()
 
+    def _decrypt(self, cryptotext=None, key='encrypt'):
+        """
+        Decrypts a given encrypted password.
+        """
+        try:
+            key = self.keys[key]
+        except KeyError:
+            raise FaultUnavailable(_(
+                "Key '{key}' not available for decryption, check your {file}"
+            ).format(
+                file=FILENAME_SECRETS,
+                key=key,
+            ))
+
+        return Fernet(key).decrypt(cryptotext.encode('utf-8')).decode('utf-8')
+
     def _generate_password(self, identifier=None, key='generate', length=32, symbols=False):
         """
         Derives a password from the given identifier and the shared key
@@ -139,6 +155,30 @@ class SecretProxy(object):
         for section in config.sections():
             result[section] = config.get(section, 'key').encode('utf-8')
         return result
+
+    def decrypt(self, cryptotext, key='encrypt'):
+        return Fault(
+            self._decrypt,
+            cryptotext=cryptotext,
+            key=key,
+        )
+
+    def encrypt(self, plaintext, key='encrypt'):
+        """
+        Encrypts a given plaintext password and returns a string that can
+        be fed into decrypt() to get the password back.
+        """
+        try:
+            key = self.keys[key]
+        except KeyError:
+            raise FaultUnavailable(_(
+                "Key '{key}' not available for encryption, check your {file}"
+            ).format(
+                file=FILENAME_SECRETS,
+                key=key,
+            ))
+
+        return Fernet(key).encrypt(plaintext.encode('utf-8')).decode('utf-8')
 
     def password_for(self, identifier, key='generate', length=32, symbols=False):
         return Fault(
