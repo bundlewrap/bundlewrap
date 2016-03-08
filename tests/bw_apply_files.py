@@ -112,6 +112,32 @@ def test_mako_template_content(tmpdir):
     assert content == b"localhost"
 
 
+def test_mako_template_content_with_secret(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'files': {
+                    join(str(tmpdir), "foo"): {
+                        'content_type': 'mako',
+                        'content': "${repo.vault.password_for('testing')}",
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    run("bw apply localhost", path=str(tmpdir))
+    with open(join(str(tmpdir), "foo"), 'rb') as f:
+        content = f.read()
+    assert content == b"PBthaaqOXfNOaZVTQpYoUqGJEkSjUrTU"
+
+
 def test_text_template_content(tmpdir):
     make_repo(
         tmpdir,

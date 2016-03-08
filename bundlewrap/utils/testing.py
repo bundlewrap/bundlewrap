@@ -41,8 +41,8 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
 
     secrets = tmpdir.join(FILENAME_SECRETS)
     secrets.write("[generate]\nkey = {}\n\n[encrypt]\nkey = {}\n".format(
-        b64encode(b"This is a key for testing."),
-        b64encode(b"This is another key for testing."),
+        "Fl53iG1czBcaAPOKhSiJE7RjFU9nIAGkiKDy0k_LoTc=",
+        "DbYiUu5VMfrdeSiKYiAH4rDOAUISipvLSBJI-T0SpeY=",
     ))
 
 

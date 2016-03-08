@@ -42,7 +42,7 @@ class Fault(object):
                 self._exc = exc
 
     def __str__(self):
-        return str(self.resolved)
+        return str(self.value)
 
     @property
     def is_available(self):
