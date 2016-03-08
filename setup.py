@@ -36,6 +36,7 @@ setup(
         "Topic :: System :: Systems Administration",
     ],
     install_requires=[
+        "cryptography",
         "Jinja2",
         "Mako",
         "passlib",
