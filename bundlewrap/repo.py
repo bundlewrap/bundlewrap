@@ -11,7 +11,7 @@ from .bundle import FILENAME_BUNDLE
 from .exceptions import NoSuchGroup, NoSuchNode, NoSuchRepository, RepositoryError
 from .group import Group
 from .node import Node
-from .secrets import SecretProxy
+from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
@@ -71,6 +71,7 @@ nodes = {
     },
 }
     """),
+    FILENAME_SECRETS: generate_initial_secrets_cfg,
 }
 
 
@@ -344,6 +345,8 @@ class Repository(object):
         be empty.
         """
         for filename, content in INITIAL_CONTENT.items():
+            if callable(content):
+                content = content()
             with open(join(path, filename), 'w') as f:
                 f.write(content.strip() + "\n")
 

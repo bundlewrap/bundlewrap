@@ -1,4 +1,3 @@
-import base64
 try:
     from configparser import SafeConfigParser
 except ImportError:  # Python 2
@@ -7,6 +6,8 @@ import hashlib
 import hmac
 from os.path import join
 from string import ascii_letters, punctuation, digits
+
+from cryptography.fernet import Fernet
 
 from .exceptions import FaultUnavailable
 from .utils.text import mark_for_translation as _
@@ -56,6 +57,18 @@ class Fault(object):
         return self._value
 
 
+def generate_initial_secrets_cfg():
+    return (
+        "# DO NOT COMMIT THIS FILE\n"
+        "# share it with your team through a secure channel\n\n"
+        "[generate]\nkey = {}\n\n"
+        "[encrypt]\nkey = {}\n"
+    ).format(
+        SecretProxy.random_key(),
+        SecretProxy.random_key(),
+    )
+
+
 def random(seed):
     """
     Provides a way to get repeatable random numbers from the given seed.
@@ -73,6 +86,13 @@ def random(seed):
 
 
 class SecretProxy(object):
+    @staticmethod
+    def random_key():
+        """
+        Provided as a helper to generate new keys from `bw debug`.
+        """
+        return Fernet.generate_key().decode('utf-8')
+
     def __init__(self, repo):
         self.repo = repo
         self.keys = self._load_keys()
@@ -117,10 +137,7 @@ class SecretProxy(object):
             return {}
         result = {}
         for section in config.sections():
-            raw_key = config.get(section, 'key')
-            result[section] = base64.urlsafe_b64encode(
-                base64.b64decode(raw_key)[:32]
-            )
+            result[section] = config.get(section, 'key').encode('utf-8')
         return result
 
     def password_for(self, identifier, key='generate', length=32, symbols=False):
