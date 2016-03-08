@@ -1,7 +1,9 @@
+from base64 import b64encode
 import platform
 from subprocess import Popen, PIPE
 
 from ..bundle import FILENAME_BUNDLE
+from ..secrets import FILENAME_SECRETS
 
 
 HOST_OS = {
@@ -36,6 +38,12 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
 
     nodespy = tmpdir.join("nodes.py")
     nodespy.write("nodes = {}\n".format(repr(nodes)))
+
+    secrets = tmpdir.join(FILENAME_SECRETS)
+    secrets.write("[generate]\nkey = {}\n\n[encrypt]\nkey = {}\n".format(
+        b64encode(b"This is a key for testing."),
+        b64encode(b"This is another key for testing."),
+    ))
 
 
 def run(command, path=None):

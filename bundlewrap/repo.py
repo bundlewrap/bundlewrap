@@ -6,12 +6,12 @@ from imp import load_source
 from os import listdir, mkdir
 from os.path import isdir, isfile, join
 
-from . import items
+from . import items, utils
 from .bundle import FILENAME_BUNDLE
 from .exceptions import NoSuchGroup, NoSuchNode, NoSuchRepository, RepositoryError
 from .group import Group
 from .node import Node
-from . import utils
+from .secrets import SecretProxy
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
@@ -434,6 +434,8 @@ class Repository(object):
 
         if path != self.path:
             self._set_path(path)
+
+        self.vault = SecretProxy(self)
 
         # populate bundles
         self.bundle_names = []

@@ -19,6 +19,13 @@ class ActionFailure(UnicodeException):
     pass
 
 
+class FaultUnavailable(UnicodeException):
+    """
+    Raised when a Fault object cannot be resolved.
+    """
+    pass
+
+
 class NoSuchBundle(UnicodeException):
     """
     Raised when a bundle of unknown name is requested.
