@@ -13,6 +13,7 @@ pages:
   - Installation: guide/installation.md
   - CLI: guide/cli.md
   - File templates: guide/item_file_templates.md
+  - Handling secrets: guide/secrets.md
   - Custom items: guide/dev_item.md
   - Writing plugins: guide/dev_plugin.md
   - Python API: guide/api.md
