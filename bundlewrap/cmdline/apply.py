@@ -86,3 +86,5 @@ def bw_apply(repo, args):
         target_nodes,
         duration=datetime.now() - start_time,
     )
+
+    yield 1 if errors else 0
