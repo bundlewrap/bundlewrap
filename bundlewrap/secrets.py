@@ -1,3 +1,4 @@
+from base64 import b64encode
 try:
     from configparser import SafeConfigParser
 except ImportError:  # Python 2
@@ -117,7 +118,7 @@ class SecretProxy(object):
     def _decrypt_file(self, source_path=None, key='encrypt'):
         """
         Decrypts the file at source_path (relative to data/) and
-        returns the plaintext as bytes.
+        returns the plaintext as unicode.
         """
         try:
             key = self.keys[key]
@@ -130,7 +131,27 @@ class SecretProxy(object):
             ))
 
         f = Fernet(key)
-        return f.decrypt(get_file_contents(join(self.repo.data_dir, source_path)))
+        return f.decrypt(get_file_contents(join(self.repo.data_dir, source_path))).decode('utf-8')
+
+    def _decrypt_file_as_base64(self, source_path=None, key='encrypt'):
+        """
+        Decrypts the file at source_path (relative to data/) and
+        returns the plaintext as base64.
+        """
+        try:
+            key = self.keys[key]
+        except KeyError:
+            raise FaultUnavailable(_(
+                "Key '{key}' not available for file decryption, check your {file}"
+            ).format(
+                file=FILENAME_SECRETS,
+                key=key,
+            ))
+
+        f = Fernet(key)
+        return b64encode(f.decrypt(get_file_contents(
+            join(self.repo.data_dir, source_path),
+        ))).decode('utf-8')
 
     def _generate_password(self, identifier=None, key='generate', length=32, symbols=False):
         """
@@ -185,6 +206,13 @@ class SecretProxy(object):
     def decrypt_file(self, source_path, key='encrypt'):
         return Fault(
             self._decrypt_file,
+            source_path=source_path,
+            key=key,
+        )
+
+    def decrypt_file_as_base64(self, source_path, key='encrypt'):
+        return Fault(
+            self._decrypt_file_as_base64,
             source_path=source_path,
             key=key,
         )
