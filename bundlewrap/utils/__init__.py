@@ -12,6 +12,8 @@ from sys import stderr, stdout
 
 from requests import get
 
+from ..exceptions import FaultUnavailable
+
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
@@ -57,6 +59,46 @@ def download(url, path):
                 break
             else:
                 f.write(block)
+
+
+class Fault(object):
+    """
+    A proxy object for lazy access to things that may not really be
+    available at the time of use.
+
+    This let's us gracefully skip items that require information that's
+    currently not available.
+    """
+    def __init__(self, callback, **kwargs):
+        self._available = None
+        self._exc = None
+        self._value = None
+        self.callback = callback
+        self.kwargs = kwargs
+
+    def _resolve(self):
+        if self._available is None:
+            try:
+                self._value = self.callback(**self.kwargs)
+                self._available = True
+            except FaultUnavailable as exc:
+                self._available = False
+                self._exc = exc
+
+    def __str__(self):
+        return str(self.value)
+
+    @property
+    def is_available(self):
+        self._resolve()
+        return self._available
+
+    @property
+    def value(self):
+        self._resolve()
+        if not self._available:
+            raise self._exc
+        return self._value
 
 
 def get_file_contents(path):

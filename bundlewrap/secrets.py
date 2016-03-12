@@ -11,52 +11,12 @@ from string import ascii_letters, punctuation, digits
 from cryptography.fernet import Fernet
 
 from .exceptions import FaultUnavailable
-from .utils import get_file_contents
+from .utils import Fault, get_file_contents
 from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
 
 FILENAME_SECRETS = ".secrets.cfg"
-
-
-class Fault(object):
-    """
-    A proxy object for lazy access to things that may not really be
-    available at the time of use.
-
-    This let's us gracefully skip items that require information that's
-    currently not available.
-    """
-    def __init__(self, callback, **kwargs):
-        self._available = None
-        self._exc = None
-        self._value = None
-        self.callback = callback
-        self.kwargs = kwargs
-
-    def _resolve(self):
-        if self._available is None:
-            try:
-                self._value = self.callback(**self.kwargs)
-                self._available = True
-            except FaultUnavailable as exc:
-                self._available = False
-                self._exc = exc
-
-    def __str__(self):
-        return str(self.value)
-
-    @property
-    def is_available(self):
-        self._resolve()
-        return self._available
-
-    @property
-    def value(self):
-        self._resolve()
-        if not self._available:
-            raise self._exc
-        return self._value
 
 
 def generate_initial_secrets_cfg():
