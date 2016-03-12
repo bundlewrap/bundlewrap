@@ -10,6 +10,7 @@ from string import ascii_letters, punctuation, digits
 from cryptography.fernet import Fernet
 
 from .exceptions import FaultUnavailable
+from .utils import get_file_contents
 from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
@@ -113,6 +114,24 @@ class SecretProxy(object):
 
         return Fernet(key).decrypt(cryptotext.encode('utf-8')).decode('utf-8')
 
+    def _decrypt_file(self, source_path=None, key='encrypt'):
+        """
+        Decrypts the file at source_path (relative to data/) and
+        returns the plaintext as bytes.
+        """
+        try:
+            key = self.keys[key]
+        except KeyError:
+            raise FaultUnavailable(_(
+                "Key '{key}' not available for file decryption, check your {file}"
+            ).format(
+                file=FILENAME_SECRETS,
+                key=key,
+            ))
+
+        f = Fernet(key)
+        return f.decrypt(get_file_contents(join(self.repo.data_dir, source_path)))
+
     def _generate_password(self, identifier=None, key='generate', length=32, symbols=False):
         """
         Derives a password from the given identifier and the shared key
@@ -163,6 +182,13 @@ class SecretProxy(object):
             key=key,
         )
 
+    def decrypt_file(self, source_path, key='encrypt'):
+        return Fault(
+            self._decrypt_file,
+            source_path=source_path,
+            key=key,
+        )
+
     def encrypt(self, plaintext, key='encrypt'):
         """
         Encrypts a given plaintext password and returns a string that can
@@ -171,7 +197,7 @@ class SecretProxy(object):
         try:
             key = self.keys[key]
         except KeyError:
-            raise FaultUnavailable(_(
+            raise KeyError(_(
                 "Key '{key}' not available for encryption, check your {file}"
             ).format(
                 file=FILENAME_SECRETS,
@@ -179,6 +205,29 @@ class SecretProxy(object):
             ))
 
         return Fernet(key).encrypt(plaintext.encode('utf-8')).decode('utf-8')
+
+    def encrypt_file(self, source_path, target_path, key='encrypt'):
+        """
+        Encrypts the file at source_path and places the result at
+        target_path. The source_path is relative to CWD or absolute,
+        while target_path is relative to data/.
+        """
+        try:
+            key = self.keys[key]
+        except KeyError:
+            raise KeyError(_(
+                "Key '{key}' not available for file encryption, check your {file}"
+            ).format(
+                file=FILENAME_SECRETS,
+                key=key,
+            ))
+
+        plaintext = get_file_contents(source_path)
+        fernet = Fernet(key)
+        target_file = join(self.repo.data_dir, target_path)
+        with open(target_file, 'wb') as f:
+            f.write(fernet.encrypt(plaintext))
+        return target_file
 
     def password_for(self, identifier, key='generate', length=32, symbols=False):
         return Fault(
