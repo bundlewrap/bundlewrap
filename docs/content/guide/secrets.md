@@ -18,8 +18,9 @@ In some cases, you can control (i.e. manage with BundleWrap) both ends of the au
 
 To accomplish that, just write this in your template (Mako syntax shown here):
 
-	database_user = "foo"
-	database_password = "${repo.vault.password_for("my database")}"
+<pre><code class="nohighlight">database_user = "foo"
+database_password = "${repo.vault.password_for("my database")}"
+</code></pre>
 
 In your bundle, you can then configure your database user like this:
 
@@ -34,6 +35,49 @@ It doesn't really matter what string you call `password_for()` with, it just has
 This makes it easy to change all your passwords at once (e.g. when an employee leaves or when required for compliance reasons) by rotating keys.
 
 <div class="alert alert-warning">However, it also means you have to guard your <code>.secrets.cfg</code> very closely. If it is compromised, so are <strong>all</strong> your passwords. Use your own judgement.</div>
+
+<br>
+
+## Static passwords
+
+When need to store a specific password, you can encrypt it symmetrically:
+
+<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.encrypt('my password'))"
+gAAAA[...]mrVMA==
+</code></pre>
+
+You can then use this encrypted password in a template like this:
+
+<pre><code class="nohighlight">database_user = "foo"
+database_password = "${repo.vault.decrypt("gAAAA[...]mrVMA==")}"
+</code></pre>
+
+<br>
+
+## Files
+
+You can also encrypt entire files:
+
+<pre><code class="nohighlight">$ bw debug -c "repo.vault.encrypt_file('/my/secret.file', 'encrypted.file'))"</code></pre>
+
+<div class="alert alert-info">Encrypted files are always read and written relative to the <code>data/</code> subdirectory of your repo.</div>
+
+If the source file was encoded using UTF-8, you can then simply pass the decrypted content into a file item:
+
+	files = {
+	    "/secret": {
+	        'content': repo.vault.decrypt_file("encrypted.file"),
+	    },
+	}
+
+If the source file is binary however (or any encoding other than UTF-8), you must use base64:
+
+	files = {
+	    "/secret": {
+	        'content': repo.vault.decrypt_file_as_base64("encrypted.file"),
+	        'content_type': 'base64',
+	    },
+	}
 
 <br>
 
