@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from functools import wraps
 from os import environ, getcwd
 from sys import argv, exit, stderr, stdout
+from traceback import print_exc
 
 from ..exceptions import NoSuchRepository
 from ..repo import Repository
@@ -61,6 +62,11 @@ def suppress_broken_pipe_msg(f):
     def wrapper(*args, **kwargs):
         try:
             return f(*args, **kwargs)
+        except SystemExit:
+            raise
+        except:
+            print_exc()
+            exit(1)
         finally:
             try:
                 stdout.flush()
@@ -96,7 +102,16 @@ def main(*args, **kwargs):
 
     io.activate_as_parent(debug=pargs.debug)
 
-    environ.setdefault('BWADDHOSTKEYS', "1" if pargs.add_ssh_host_keys else "0")
+    if 'BWADDHOSTKEYS' in environ:  # TODO remove in 3.0.0
+        environ.setdefault('BW_ADD_HOST_KEYS', environ['BWADDHOSTKEYS'])
+    if 'BWCOLORS' in environ:  # TODO remove in 3.0.0
+        environ.setdefault('BW_COLORS', environ['BWCOLORS'])
+    if 'BWITEMWORKERS' in environ:  # TODO remove in 3.0.0
+        environ.setdefault('BW_ITEM_WORKERS', environ['BWITEMWORKERS'])
+    if 'BWNODEWORKERS' in environ:  # TODO remove in 3.0.0
+        environ.setdefault('BW_NODE_WORKERS', environ['BWNODEWORKERS'])
+
+    environ.setdefault('BW_ADD_HOST_KEYS', "1" if pargs.add_ssh_host_keys else "0")
 
     if len(text_args) >= 1 and (
         text_args[0] == "--version" or

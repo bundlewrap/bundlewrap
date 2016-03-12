@@ -1,6 +1,15 @@
+# 2.2.1
+
+unreleased
+
+* circular dependencies are now detected by `bw test`
+* fixed handling of broken pipes in internal subprocesses
+* fixed reading non-ASCII templates on systems with ASCII locale
+
+
 # 2.2.0
 
-2016-02-03
+2016-03-02
 
 * added item tagging
 * added `bw apply --skip`

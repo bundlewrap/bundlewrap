@@ -16,7 +16,7 @@ VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
 
 
 def ansi_wrapper(colorizer):
-    if environ.get("BWCOLORS", "1") != "0":
+    if environ.get("BW_COLORS", "1") != "0":
         return colorizer
     else:
         return lambda s, **kwargs: s

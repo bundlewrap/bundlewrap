@@ -16,7 +16,6 @@ from .concurrency import WorkerPool
 from .deps import (
     DummyItem,
     find_item,
-    prepare_dependencies,
 )
 from .exceptions import (
     BundleError,
@@ -25,7 +24,7 @@ from .exceptions import (
     NoSuchBundle,
     RepositoryError,
 )
-from .itemqueue import ItemQueue
+from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .utils import cached_property, graph_for_items, merge_dict, names
 from .utils.statedict import hash_statedict
@@ -216,7 +215,7 @@ def apply_items(node, autoskip_selector="", workers=1, interactive=False, profil
         io.debug(_(
             "There was a dependency problem. Look at the debug.svg generated "
             "by the following command and try to find a loop:\n"
-            "echo '{}' | dot -Tsvg -odebug.svg"
+            "printf '{}' | dot -Tsvg -odebug.svg"
         ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
 
         raise ItemDependencyError(
@@ -514,7 +513,7 @@ class Node(object):
             self.hostname,
             remote_path,
             local_path,
-            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
+            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
         )
 
     def get_item(self, item_id):
@@ -600,15 +599,12 @@ class Node(object):
             self.hostname,
             command,
             ignore_failure=may_fail,
-            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
+            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
             log_function=log_function,
         )
 
     def test(self, workers=4):
-        test_items(
-            self.items,
-            workers=workers,
-        )
+        test_items(self, workers=workers)
         self.repo.hooks.test_node(self.repo, self)
 
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
@@ -619,7 +615,7 @@ class Node(object):
             mode=mode,
             owner=owner,
             group=group,
-            add_host_keys=True if environ.get('BWADDHOSTKEYS', False) == "1" else False,
+            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
         )
 
     def verify(self, show_all=False, workers=4):
@@ -726,27 +722,36 @@ class NodeLock(object):
         )
 
 
-def test_items(items, workers=1):
-    items = prepare_dependencies(items)
+def test_items(node, workers=1):
+    item_queue = ItemTestQueue(node.items)
 
     with WorkerPool(workers=workers) as worker_pool:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
             if msg['msg'] == 'REQUEST_WORK':
-                while True:
-                    if items:
-                        item = items.pop()
-                        if isinstance(item, DummyItem):
-                            continue
-                        worker_pool.start_task(
-                            msg['wid'],
-                            item.test,
-                            task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
+                try:
+                    item = item_queue.pop()
+                    if isinstance(item, DummyItem):
+                        continue
+                    worker_pool.start_task(
+                        msg['wid'],
+                        item.test,
+                        task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
+                    )
+                except IndexError:
+                    worker_pool.quit(msg['wid'])
+                    if item_queue.items_with_deps:
+                        io.stderr(_(
+                            "There was a dependency problem. Look at the debug.svg generated "
+                            "by the following command and try to find a loop:\n"
+                            "printf '{}' | dot -Tsvg -odebug.svg"
+                        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
+
+                        raise ItemDependencyError(
+                            _("bad dependencies between these items: {}").format(
+                                ", ".join([i.id for i in item_queue.items_with_deps]),
+                            )
                         )
-                        break
-                    else:
-                        worker_pool.quit(msg['wid'])
-                        break
             elif msg['msg'] == 'FINISHED_WORK':
                 node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
                 io.stdout("{x} {node}  {bundle}  {item}".format(

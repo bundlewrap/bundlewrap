@@ -125,8 +125,7 @@ def get_all_attrs_from_file(path, cache=True, base_env=None):
             exec(source, env)
         except:
             from .ui import io
-            io.stderr("Exception while executing {} "
-                      "(use --debug to get a traceback):".format(path))
+            io.stderr("Exception while executing {}".format(path))
             raise
         if cache:
             __GETATTR_CACHE[path] = env
