@@ -767,8 +767,7 @@ def verify_items(all_items, show_all=False, workers=1):
     for item in all_items:
         if (
             not item.ITEM_TYPE_NAME == 'action' and
-            not item.triggered and
-            not item._faults_missing_for_attributes
+            not item.triggered
         ):
             items.append(item)
 
