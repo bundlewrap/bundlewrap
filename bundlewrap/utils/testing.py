@@ -1,4 +1,3 @@
-from base64 import b64encode
 import platform
 from subprocess import Popen, PIPE
 
@@ -31,6 +30,7 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
             bundle_content += "{} = {}\n".format(itemtype, repr(itemconfig))
         bundlepy.write(bundle_content)
 
+    tmpdir.mkdir("data")
     tmpdir.mkdir("hooks")
 
     groupspy = tmpdir.join("groups.py")
