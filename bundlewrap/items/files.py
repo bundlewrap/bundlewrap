@@ -188,10 +188,7 @@ class File(Item):
     ITEM_TYPE_NAME = "file"
 
     def __repr__(self):
-        return "<File path:{} content_hash:{}>".format(
-            quote(self.name),
-            None if self.attributes['delete'] else self.content_hash,
-        )
+        return "<File path:{}>".format(quote(self.name))
 
     @property
     def _template_content(self):
