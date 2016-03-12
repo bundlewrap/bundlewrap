@@ -32,7 +32,14 @@ ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
 
 
-def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered):
+def unpickle_item_class(
+    class_name,
+    bundle,
+    name,
+    attributes,
+    has_been_triggered,
+    faults_missing_for_attributes,
+):
     for item_class in bundle.node.repo.item_classes:
         if item_class.__name__ == class_name:
             return item_class(
@@ -40,6 +47,7 @@ def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered
                 name,
                 attributes,
                 has_been_triggered=has_been_triggered,
+                faults_missing_for_attributes=faults_missing_for_attributes,
                 skip_validation=True,
             )
     raise RuntimeError(_("unable to unpickle {cls}").format(cls=class_name))
@@ -84,8 +92,16 @@ class Item(object):
     STATUS_SKIPPED = 4
     STATUS_ACTION_SUCCEEDED = 5
 
-    def __init__(self, bundle, name, attributes, has_been_triggered=False, skip_validation=False,
-            skip_name_validation=False):
+    def __init__(
+        self,
+        bundle,
+        name,
+        attributes,
+        faults_missing_for_attributes=None,
+        has_been_triggered=False,
+        skip_validation=False,
+        skip_name_validation=False,
+    ):
         self.attributes = {}
         self.bundle = bundle
         self.has_been_triggered = has_been_triggered
@@ -93,7 +109,8 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
-        self._faults_missing_for_attributes = []
+        self._faults_missing_for_attributes = [] if faults_missing_for_attributes is None \
+            else faults_missing_for_attributes
         self._precedes_items = []
 
         if not skip_validation:
@@ -153,6 +170,7 @@ class Item(object):
                 self.name,
                 attrs,
                 self.has_been_triggered,
+                self._faults_missing_for_attributes,
             ),
         )
 
