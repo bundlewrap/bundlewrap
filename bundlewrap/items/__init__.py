@@ -8,7 +8,7 @@ from copy import copy
 from datetime import datetime
 from os.path import join
 
-from bundlewrap.exceptions import BundleError
+from bundlewrap.exceptions import BundleError, FaultUnavailable
 from bundlewrap.utils import cached_property
 from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
@@ -21,6 +21,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'needs': [],
     'preceded_by': [],
     'precedes': [],
+    'skip_on_missing_fault': True,
     'tags': [],
     'triggered': False,
     'triggered_by': [],
@@ -92,6 +93,7 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
+        self._faults_missing_for_attributes = []
         self._precedes_items = []
 
         if not skip_validation:
@@ -105,19 +107,22 @@ class Item(object):
         attributes = self.patch_attributes(attributes)
 
         for attribute_name, attribute_default in \
-                self.ITEM_ATTRIBUTES.items():
-            if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
-                self.attributes[attribute_name] = force_text(attributes.get(
-                    attribute_name,
-                    attribute_default,
-                ))
-
-        for attribute_name, attribute_default in \
                 BUILTIN_ITEM_ATTRIBUTES.items():
             setattr(self, attribute_name, force_text(attributes.get(
                 attribute_name,
                 copy(attribute_default),
             )))
+
+        for attribute_name, attribute_default in \
+                self.ITEM_ATTRIBUTES.items():
+            if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
+                try:
+                    self.attributes[attribute_name] = force_text(attributes.get(
+                        attribute_name,
+                        attribute_default,
+                    ))
+                except FaultUnavailable:
+                    self._faults_missing_for_attributes.append(attribute_name)
 
         if self.cascade_skip is None:
             self.cascade_skip = not (self.unless or self.triggered)
@@ -308,19 +313,45 @@ class Item(object):
             status_code = self.STATUS_SKIPPED
             keys_to_fix = [_("cmdline")]
 
-        if self.triggered and not self.has_been_triggered:
+        if self.triggered and not self.has_been_triggered and status_code is None:
             io.debug(_(
                 "skipping {item} on {node} because it wasn't triggered"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             keys_to_fix = [_("not triggered")]
 
-        if status_code is None and self.cached_unless_result:
+        if status_code is None and self.cached_unless_result and status_code is None:
             io.debug(_(
                 "'unless' for {item} on {node} succeeded, not fixing"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             keys_to_fix = ["unless"]
+
+        if self._faults_missing_for_attributes and status_code is None:
+            if self.skip_on_missing_fault:
+                io.debug(_(
+                    "skipping {item} on {node} because it is missing faults "
+                    "for these attributes: {attrs} "
+                    "(most of the time this means you're missing "
+                    "a required key in your .secrets.cfg)"
+                ).format(
+                    attrs=", ".join(self._faults_missing_for_attributes),
+                    item=self.id,
+                    node=self.node.name,
+                ))
+                status_code = self.STATUS_SKIPPED
+                keys_to_fix = [_("unavailable")]
+            else:
+                raise FaultUnavailable(_(
+                    "{item} on {node} is missing faults "
+                    "for these attributes: {attrs} "
+                    "(most of the time this means you're missing "
+                    "a required key in your .secrets.cfg)"
+                ).format(
+                    attrs=", ".join(self._faults_missing_for_attributes),
+                    item=self.id,
+                    node=self.node.name,
+                ))
 
         if status_code is None:
             status_before = self.cached_status
