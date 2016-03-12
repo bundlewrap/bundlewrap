@@ -190,6 +190,9 @@ class Item(object):
 
     @cached_property
     def cached_cdict(self):
+        if self._faults_missing_for_attributes:
+            self._raise_for_faults()
+
         cdict = self.cdict()
         try:
             validate_statedict(cdict)
@@ -252,6 +255,18 @@ class Item(object):
     def _prepare_deps(self, items):
         # merge automatic and user-defined deps
         self._deps = list(self.needs) + list(self.get_auto_deps(items))
+
+    def _raise_for_faults(self):
+        raise FaultUnavailable(_(
+            "{item} on {node} is missing faults "
+            "for these attributes: {attrs} "
+            "(most of the time this means you're missing "
+            "a required key in your .secrets.cfg)"
+        ).format(
+            attrs=", ".join(self._faults_missing_for_attributes),
+            item=self.id,
+            node=self.node.name,
+        ))
 
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
@@ -329,6 +344,8 @@ class Item(object):
 
         if self._faults_missing_for_attributes and status_code is None:
             if self.error_on_missing_fault:
+                self._raise_for_faults()
+            else:
                 io.debug(_(
                     "skipping {item} on {node} because it is missing faults "
                     "for these attributes: {attrs} "
@@ -341,17 +358,6 @@ class Item(object):
                 ))
                 status_code = self.STATUS_SKIPPED
                 keys_to_fix = [_("unavailable")]
-            else:
-                raise FaultUnavailable(_(
-                    "{item} on {node} is missing faults "
-                    "for these attributes: {attrs} "
-                    "(most of the time this means you're missing "
-                    "a required key in your .secrets.cfg)"
-                ).format(
-                    attrs=", ".join(self._faults_missing_for_attributes),
-                    item=self.id,
-                    node=self.node.name,
-                ))
 
         if status_code is None:
             status_before = self.cached_status

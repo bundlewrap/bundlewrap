@@ -23,11 +23,10 @@ def bw_hash(repo, args):
         target = repo
 
     if args['dict']:
-        cdict = target.cdict()
-        if cdict is None:
+        if target.cached_cdict is None:
             yield "REMOVE"
         else:
-            for key, value in order_dict(cdict).items():
+            for key, value in order_dict(target.cached_cdict).items():
                 yield "{}\t{}".format(key, value) if args['item'] else "{}  {}".format(value, key)
     else:
         yield target.hash()
