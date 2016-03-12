@@ -21,7 +21,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'needs': [],
     'preceded_by': [],
     'precedes': [],
-    'skip_on_missing_fault': True,
+    'error_on_missing_fault': False,
     'tags': [],
     'triggered': False,
     'triggered_by': [],
@@ -328,7 +328,7 @@ class Item(object):
             keys_to_fix = ["unless"]
 
         if self._faults_missing_for_attributes and status_code is None:
-            if self.skip_on_missing_fault:
+            if self.error_on_missing_fault:
                 io.debug(_(
                     "skipping {item} on {node} because it is missing faults "
                     "for these attributes: {attrs} "
