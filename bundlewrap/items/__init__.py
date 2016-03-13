@@ -378,9 +378,26 @@ class Item(object):
                 keys_to_fix = [_("unavailable")]
 
         if status_code is None:
-            status_before = self.cached_status
-            if status_before.correct:
-                status_code = self.STATUS_OK
+            try:
+                status_before = self.cached_status
+            except FaultUnavailable:
+                if self.error_on_missing_fault:
+                    self._raise_for_faults()
+                else:
+                    io.debug(_(
+                        "skipping {item} on {node} because it is missing faults "
+                        "in a template "
+                        "(most of the time this means you're missing "
+                        "a required key in your .secrets.cfg)"
+                    ).format(
+                        item=self.id,
+                        node=self.node.name,
+                    ))
+                    status_code = self.STATUS_SKIPPED
+                    keys_to_fix = [_("unavailable")]
+            else:
+                if status_before.correct:
+                    status_code = self.STATUS_OK
 
         if status_code is None:
             keys_to_fix = self.display_keys(
