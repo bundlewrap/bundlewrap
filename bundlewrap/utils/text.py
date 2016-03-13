@@ -8,7 +8,7 @@ from random import choice
 import re
 from string import digits, ascii_letters
 
-from . import STDERR_WRITER
+from . import Fault, STDERR_WRITER
 
 
 ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
@@ -86,6 +86,8 @@ def force_text(data):
     """
     if isinstance(data, bytes):
         return data.decode('utf-8', 'replace')
+    elif isinstance(data, Fault):
+        return data.value
     return data
 
 

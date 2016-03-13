@@ -765,22 +765,41 @@ def test_items(node, workers=1):
 def verify_items(all_items, show_all=False, workers=1):
     items = []
     for item in all_items:
-        if not item.ITEM_TYPE_NAME == 'action' and not item.triggered:
+        if (
+            not item.ITEM_TYPE_NAME == 'action' and
+            not item.triggered
+        ):
             items.append(item)
 
     with WorkerPool(workers=workers) as worker_pool:
         while worker_pool.keep_running():
             msg = worker_pool.get_event()
             if msg['msg'] == 'REQUEST_WORK':
-                if items:
-                    item = items.pop()
-                    worker_pool.start_task(
-                        msg['wid'],
-                        item.get_status,
-                        task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
-                    )
-                else:
-                    worker_pool.quit(msg['wid'])
+                while True:
+                    try:
+                        item = items.pop()
+                    except IndexError:
+                        worker_pool.quit(msg['wid'])
+                        break
+                    if item._faults_missing_for_attributes:
+                        if item.error_on_missing_fault:
+                            item._raise_for_faults()
+                        else:
+                            io.stdout(_("{x} {node}  {bundle}  {item}  (unavailable)").format(
+                                bundle=bold(item.bundle.name),
+                                item=item.id,
+                                node=bold(item.node.name),
+                                x=yellow("»"),
+                            ))
+                            continue
+                    else:
+                        worker_pool.start_task(
+                            msg['wid'],
+                            item.get_status,
+                            task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
+                        )
+                        break
+
             elif msg['msg'] == 'FINISHED_WORK':
                 node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
                 item_status = msg['return_value']

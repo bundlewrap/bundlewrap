@@ -63,8 +63,17 @@ This table lists all item types included in BundleWrap along with the bundle att
 
 ## Builtin item attributes
 
+There are also attributes that can be applied to any kind of item.
 
-<br>There are also attributes that can be applied to any kind of item.
+<br>
+
+### error_on_missing_fault
+
+This will simply skip an item instead of raising an error when a Fault used for an attribute on the item is unavailable. Faults are special objects used by `repo.vault` to [handle secrets](../guide/secrets.md). A Fault being unavailable can mean you're missing the secret key required to decrypt a secret you're trying to use as an item attribute value.
+
+Defaults to `False`.
+
+<br>
 
 ### needs
 
@@ -96,7 +105,7 @@ This attribute is an alternative way of defining dependencies. It works just lik
 
 * if you need all items of a certain type to depend on something or
 * if you need all items in a bundle to depend on something or
-* if you need an item in a bundle you can't edit (e.g. because it's provided by a community-maintained [plugin](../repo/plugins.md)) to depend on something in your bundles
+* if you need an item in a bundle you can't edit (e.g. because it's provided by a community-maintained [plugin](plugins.md)) to depend on something in your bundles
 
 <br>
 

@@ -8,7 +8,7 @@ from copy import copy
 from datetime import datetime
 from os.path import join
 
-from bundlewrap.exceptions import BundleError
+from bundlewrap.exceptions import BundleError, FaultUnavailable
 from bundlewrap.utils import cached_property
 from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
@@ -21,6 +21,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'needs': [],
     'preceded_by': [],
     'precedes': [],
+    'error_on_missing_fault': False,
     'tags': [],
     'triggered': False,
     'triggered_by': [],
@@ -31,7 +32,14 @@ ITEM_CLASSES = {}
 ITEM_CLASSES_LOADED = False
 
 
-def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered):
+def unpickle_item_class(
+    class_name,
+    bundle,
+    name,
+    attributes,
+    has_been_triggered,
+    faults_missing_for_attributes,
+):
     for item_class in bundle.node.repo.item_classes:
         if item_class.__name__ == class_name:
             return item_class(
@@ -39,6 +47,7 @@ def unpickle_item_class(class_name, bundle, name, attributes, has_been_triggered
                 name,
                 attributes,
                 has_been_triggered=has_been_triggered,
+                faults_missing_for_attributes=faults_missing_for_attributes,
                 skip_validation=True,
             )
     raise RuntimeError(_("unable to unpickle {cls}").format(cls=class_name))
@@ -83,8 +92,16 @@ class Item(object):
     STATUS_SKIPPED = 4
     STATUS_ACTION_SUCCEEDED = 5
 
-    def __init__(self, bundle, name, attributes, has_been_triggered=False, skip_validation=False,
-            skip_name_validation=False):
+    def __init__(
+        self,
+        bundle,
+        name,
+        attributes,
+        faults_missing_for_attributes=None,
+        has_been_triggered=False,
+        skip_validation=False,
+        skip_name_validation=False,
+    ):
         self.attributes = {}
         self.bundle = bundle
         self.has_been_triggered = has_been_triggered
@@ -92,6 +109,8 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
+        self._faults_missing_for_attributes = [] if faults_missing_for_attributes is None \
+            else faults_missing_for_attributes
         self._precedes_items = []
 
         if not skip_validation:
@@ -105,19 +124,22 @@ class Item(object):
         attributes = self.patch_attributes(attributes)
 
         for attribute_name, attribute_default in \
-                self.ITEM_ATTRIBUTES.items():
-            if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
-                self.attributes[attribute_name] = force_text(attributes.get(
-                    attribute_name,
-                    attribute_default,
-                ))
-
-        for attribute_name, attribute_default in \
                 BUILTIN_ITEM_ATTRIBUTES.items():
             setattr(self, attribute_name, force_text(attributes.get(
                 attribute_name,
                 copy(attribute_default),
             )))
+
+        for attribute_name, attribute_default in \
+                self.ITEM_ATTRIBUTES.items():
+            if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
+                try:
+                    self.attributes[attribute_name] = force_text(attributes.get(
+                        attribute_name,
+                        attribute_default,
+                    ))
+                except FaultUnavailable:
+                    self._faults_missing_for_attributes.append(attribute_name)
 
         if self.cascade_skip is None:
             self.cascade_skip = not (self.unless or self.triggered)
@@ -148,6 +170,7 @@ class Item(object):
                 self.name,
                 attrs,
                 self.has_been_triggered,
+                self._faults_missing_for_attributes,
             ),
         )
 
@@ -185,6 +208,9 @@ class Item(object):
 
     @cached_property
     def cached_cdict(self):
+        if self._faults_missing_for_attributes:
+            self._raise_for_faults()
+
         cdict = self.cdict()
         try:
             validate_statedict(cdict)
@@ -248,6 +274,18 @@ class Item(object):
         # merge automatic and user-defined deps
         self._deps = list(self.needs) + list(self.get_auto_deps(items))
 
+    def _raise_for_faults(self):
+        raise FaultUnavailable(_(
+            "{item} on {node} is missing faults "
+            "for these attributes: {attrs} "
+            "(most of the time this means you're missing "
+            "a required key in your .secrets.cfg)"
+        ).format(
+            attrs=", ".join(self._faults_missing_for_attributes),
+            item=self.id,
+            node=self.node.name,
+        ))
+
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
         invalid_attributes = set(attributes.keys()).difference(
@@ -308,24 +346,58 @@ class Item(object):
             status_code = self.STATUS_SKIPPED
             keys_to_fix = [_("cmdline")]
 
-        if self.triggered and not self.has_been_triggered:
+        if self.triggered and not self.has_been_triggered and status_code is None:
             io.debug(_(
                 "skipping {item} on {node} because it wasn't triggered"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             keys_to_fix = [_("not triggered")]
 
-        if status_code is None and self.cached_unless_result:
+        if status_code is None and self.cached_unless_result and status_code is None:
             io.debug(_(
                 "'unless' for {item} on {node} succeeded, not fixing"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             keys_to_fix = ["unless"]
 
+        if self._faults_missing_for_attributes and status_code is None:
+            if self.error_on_missing_fault:
+                self._raise_for_faults()
+            else:
+                io.debug(_(
+                    "skipping {item} on {node} because it is missing faults "
+                    "for these attributes: {attrs} "
+                    "(most of the time this means you're missing "
+                    "a required key in your .secrets.cfg)"
+                ).format(
+                    attrs=", ".join(self._faults_missing_for_attributes),
+                    item=self.id,
+                    node=self.node.name,
+                ))
+                status_code = self.STATUS_SKIPPED
+                keys_to_fix = [_("unavailable")]
+
         if status_code is None:
-            status_before = self.cached_status
-            if status_before.correct:
-                status_code = self.STATUS_OK
+            try:
+                status_before = self.cached_status
+            except FaultUnavailable:
+                if self.error_on_missing_fault:
+                    self._raise_for_faults()
+                else:
+                    io.debug(_(
+                        "skipping {item} on {node} because it is missing faults "
+                        "in a template "
+                        "(most of the time this means you're missing "
+                        "a required key in your .secrets.cfg)"
+                    ).format(
+                        item=self.id,
+                        node=self.node.name,
+                    ))
+                    status_code = self.STATUS_SKIPPED
+                    keys_to_fix = [_("unavailable")]
+            else:
+                if status_before.correct:
+                    status_code = self.STATUS_OK
 
         if status_code is None:
             keys_to_fix = self.display_keys(

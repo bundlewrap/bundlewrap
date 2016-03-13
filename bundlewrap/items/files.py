@@ -13,7 +13,7 @@ from sys import exc_info
 from tempfile import mkstemp
 from traceback import format_exception
 
-from bundlewrap.exceptions import BundleError, TemplateError
+from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, sha1
@@ -60,6 +60,8 @@ def content_processor_jinja2(item):
             repo=item.node.repo,
             **item.attributes['context']
         )
+    except FaultUnavailable:
+        raise
     except Exception as e:
         io.debug("".join(format_exception(*exc_info())))
         raise TemplateError(_(
@@ -103,6 +105,8 @@ def content_processor_mako(item):
             repo=item.node.repo,
             **item.attributes['context']
         )
+    except FaultUnavailable:
+        raise
     except Exception as e:
         io.debug("".join(format_exception(*exc_info())))
         if isinstance(e, NameError) and str(e) == "Undefined":
@@ -188,10 +192,7 @@ class File(Item):
     ITEM_TYPE_NAME = "file"
 
     def __repr__(self):
-        return "<File path:{} content_hash:{}>".format(
-            quote(self.name),
-            None if self.attributes['delete'] else self.content_hash,
-        )
+        return "<File path:{}>".format(quote(self.name))
 
     @property
     def _template_content(self):

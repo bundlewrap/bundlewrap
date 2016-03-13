@@ -2,6 +2,7 @@ import platform
 from subprocess import Popen, PIPE
 
 from ..bundle import FILENAME_BUNDLE
+from ..secrets import FILENAME_SECRETS
 
 
 HOST_OS = {
@@ -29,6 +30,7 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
             bundle_content += "{} = {}\n".format(itemtype, repr(itemconfig))
         bundlepy.write(bundle_content)
 
+    tmpdir.mkdir("data")
     tmpdir.mkdir("hooks")
 
     groupspy = tmpdir.join("groups.py")
@@ -36,6 +38,12 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
 
     nodespy = tmpdir.join("nodes.py")
     nodespy.write("nodes = {}\n".format(repr(nodes)))
+
+    secrets = tmpdir.join(FILENAME_SECRETS)
+    secrets.write("[generate]\nkey = {}\n\n[encrypt]\nkey = {}\n".format(
+        "Fl53iG1czBcaAPOKhSiJE7RjFU9nIAGkiKDy0k_LoTc=",
+        "DbYiUu5VMfrdeSiKYiAH4rDOAUISipvLSBJI-T0SpeY=",
+    ))
 
 
 def run(command, path=None):

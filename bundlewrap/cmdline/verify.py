@@ -100,4 +100,7 @@ def bw_verify(repo, args):
     if args['summary']:
         for line in stats_summary(node_stats):
             yield line
+
     error_summary(errors)
+
+    yield 1 if errors else 0
