@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from codecs import getwriter
 from copy import deepcopy
-import copy_reg
 import hashlib
 from inspect import isgenerator
 from os import chmod, makedirs
@@ -39,7 +38,6 @@ def _pickle_method(method):
     cls = method.im_class
     if func_name.startswith("__") and not func_name.endswith("__"):
         cls_name = cls.__name__.lstrip("_")
-    if cls_name:
         func_name = "_" + cls_name + func_name
     return _unpickle_method, (func_name, obj, cls)
 
@@ -54,7 +52,11 @@ def _unpickle_method(func_name, obj, cls):
             break
     return func.__get__(obj, cls)
 
-copy_reg.pickle(MethodType, _pickle_method, _unpickle_method)
+try:
+    import copy_reg
+    copy_reg.pickle(MethodType, _pickle_method, _unpickle_method)
+except ImportError:  # Python 3
+    pass
 
 
 def cached_property(prop):
