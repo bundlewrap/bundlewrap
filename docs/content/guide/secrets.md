@@ -6,7 +6,7 @@ We strongly recommend **not** putting any sensitive information such as password
 
 ## .secrets.cfg
 
-When you run initially ran `bw repo create`, a file called `.secrets.cfg` was put into the root level of your repo. It's an INI-style file that by default contains two random keys BundleWrap uses to protect your secrets.
+When you initially ran `bw repo create`, a file called `.secrets.cfg` was put into the root level of your repo. It's an INI-style file that by default contains two random keys BundleWrap uses to protect your secrets.
 
 <div class="alert alert-danger">You should never commit <code>.secrets.cfg</code>. Immediately add it to your <code>.gitignore</code> or equivalent.</div>
 
@@ -40,7 +40,7 @@ This makes it easy to change all your passwords at once (e.g. when an employee l
 
 ## Static passwords
 
-When need to store a specific password, you can encrypt it symmetrically:
+When you need to store a specific password, you can encrypt it symmetrically:
 
 <pre><code class="nohighlight">$ bw debug -c "print(repo.vault.encrypt('my password'))"
 gAAAA[...]mrVMA==
