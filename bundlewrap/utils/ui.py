@@ -15,12 +15,10 @@ from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
 TTY = STDOUT_WRITER.isatty()
 
 
-try:
-    input_function = raw_input
-    broken_pipe_exception = IOError
-except NameError:  # Python 3
+if sys.version_info >= (3, 0):
     broken_pipe_exception = BrokenPipeError
-    input_function = input
+else:
+    broken_pipe_exception = IOError
 
 
 def add_debug_timestamp(f):
@@ -66,6 +64,17 @@ def write_to_stream(stream, msg):
                 raise
 
 
+class DrainableStdin(object):
+    def get_input(self):
+        try:
+            return raw_input()
+        except NameError:  # Python 3
+            return input()
+
+    def drain(self):
+        termios.tcflush(sys.stdin, termios.TCIFLUSH)
+
+
 class IOManager(object):
     def __init__(self):
         self.capture_mode = False
@@ -87,7 +96,7 @@ class IOManager(object):
         self.lock = Lock()
         self.parent_mode = True
 
-    def ask(self, question, default, epilogue=None, get_input=input_function):
+    def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
         with self.lock:
@@ -95,7 +104,8 @@ class IOManager(object):
             while True:
                 write_to_stream(STDOUT_WRITER, "\a" + question)
 
-                answer = get_input()
+                input_handler.drain()
+                answer = input_handler.get_input()
                 if answer.lower() in (_("y"), _("yes")) or (
                     not answer and default
                 ):
