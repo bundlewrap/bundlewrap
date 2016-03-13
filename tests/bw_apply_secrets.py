@@ -39,7 +39,14 @@ def test_fault_content_mako(tmpdir):
     make_repo(
         tmpdir,
         bundles={
-            "test": {},
+            "test": {
+                'files': {
+                    join(str(tmpdir), "secret"): {
+                        'content': "${repo.vault.password_for('test')}",
+                        'content_type': 'mako',
+                    },
+                },
+            },
         },
         nodes={
             "localhost": {
@@ -48,16 +55,6 @@ def test_fault_content_mako(tmpdir):
             },
         },
     )
-
-    with open(join(str(tmpdir), "bundles", "test", "items.py"), 'w') as f:
-        f.write("""
-files = {{
-    "{}": {{
-        'content': "${{repo.vault.password_for('test')}}",
-        'content_type': 'mako',
-    }},
-}}
-""".format(join(str(tmpdir), "secret")))
 
     run("bw apply localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "secret")) as f:
@@ -69,7 +66,14 @@ def test_fault_content_jinja2(tmpdir):
     make_repo(
         tmpdir,
         bundles={
-            "test": {},
+            "test": {
+                'files': {
+                    join(str(tmpdir), "secret"): {
+                        'content': "{{ repo.vault.password_for('test') }}",
+                        'content_type': 'jinja2',
+                    },
+                },
+            },
         },
         nodes={
             "localhost": {
@@ -78,16 +82,6 @@ def test_fault_content_jinja2(tmpdir):
             },
         },
     )
-
-    with open(join(str(tmpdir), "bundles", "test", "items.py"), 'w') as f:
-        f.write("""
-files = {{
-    "{}": {{
-        'content': "{{{{ repo.vault.password_for('test') }}}}",
-        'content_type': 'jinja2',
-    }},
-}}
-""".format(join(str(tmpdir), "secret")))
 
     run("bw apply localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "secret")) as f:
@@ -127,7 +121,14 @@ def test_fault_content_skipped_mako(tmpdir):
     make_repo(
         tmpdir,
         bundles={
-            "test": {},
+            "test": {
+                'files': {
+                    join(str(tmpdir), "secret"): {
+                        'content': "${repo.vault.password_for('test', key='unavailable')}",
+                        'content_type': 'mako',
+                    },
+                },
+            },
         },
         nodes={
             "localhost": {
@@ -136,16 +137,6 @@ def test_fault_content_skipped_mako(tmpdir):
             },
         },
     )
-
-    with open(join(str(tmpdir), "bundles", "test", "items.py"), 'w') as f:
-        f.write("""
-files = {{
-    "{}": {{
-        'content': "${{repo.vault.password_for('test', key='unavailable')}}",
-        'content_type': 'mako',
-    }},
-}}
-""".format(join(str(tmpdir), "secret")))
 
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
@@ -156,7 +147,14 @@ def test_fault_content_skipped_jinja2(tmpdir):
     make_repo(
         tmpdir,
         bundles={
-            "test": {},
+            "test": {
+                'files': {
+                    join(str(tmpdir), "secret"): {
+                        'content': "{{ repo.vault.password_for('test', key='unavailable') }}",
+                        'content_type': 'jinja2',
+                    },
+                },
+            },
         },
         nodes={
             "localhost": {
@@ -165,20 +163,6 @@ def test_fault_content_skipped_jinja2(tmpdir):
             },
         },
     )
-
-    with open(join(str(tmpdir), "bundles", "test", "items.py"), 'w') as f:
-        f.write("""
-files = {{
-    "{}": {{
-        'content': "{{{{ repo.vault.password_for('test', key='unavailable') }}}}",
-        'content_type': 'jinja2',
-    }},
-}}
-""".format(join(str(tmpdir), "secret")))
-
-    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
-    assert rcode == 0
-    assert not exists(join(str(tmpdir), "secret"))
 
 
 def test_fault_content_error(tmpdir):
