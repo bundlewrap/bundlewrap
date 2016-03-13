@@ -62,6 +62,38 @@ def test_fault_content_mako(tmpdir):
     assert content == "Q4WeYdfKaSOOPF8pz13z7yRbjJ6HD7ZB"
 
 
+def test_fault_content_mako_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'files': {
+                    join(str(tmpdir), "secret"): {
+                        'content': "${node.metadata['secret']}",
+                        'content_type': 'mako',
+                    },
+                },
+            },
+        },
+    )
+
+    with open(join(str(tmpdir), "nodes.py"), 'w') as f:
+        f.write("""
+nodes = {{
+    "localhost": {{
+        'bundles': ["test"],
+        'metadata': {{'secret': vault.password_for("test")}},
+        'os': "{}",
+    }},
+}}
+""".format(host_os()))
+
+    run("bw apply localhost", path=str(tmpdir))
+    with open(join(str(tmpdir), "secret")) as f:
+        content = f.read()
+    assert content == "Q4WeYdfKaSOOPF8pz13z7yRbjJ6HD7ZB"
+
+
 def test_fault_content_jinja2(tmpdir):
     make_repo(
         tmpdir,
