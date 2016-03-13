@@ -75,7 +75,7 @@ nodes = {
 }
 
 
-def groups_from_file(filepath, libs):
+def groups_from_file(filepath, libs, repo_path, vault):
     """
     Returns all groups as defined in the given groups.py.
     """
@@ -83,7 +83,11 @@ def groups_from_file(filepath, libs):
         flat_group_dict = utils.getattr_from_file(
             filepath,
             'groups',
-            base_env={'libs': libs},
+            base_env={
+                'libs': libs,
+                'repo_path': repo_path,
+                'vault': vault,
+            },
         )
     except KeyError:
         raise RepositoryError(_(
@@ -235,7 +239,7 @@ class LibsProxy(object):
         self.__path = state
 
 
-def nodes_from_file(filepath, libs, repo_path):
+def nodes_from_file(filepath, libs, repo_path, vault):
     """
     Returns a list of nodes as defined in the given nodes.py.
     """
@@ -243,7 +247,11 @@ def nodes_from_file(filepath, libs, repo_path):
         flat_node_dict = utils.getattr_from_file(
             filepath,
             'nodes',
-            base_env={'libs': libs, 'repo_path': repo_path},
+            base_env={
+                'libs': libs,
+                'repo_path': repo_path,
+                'vault': vault,
+            },
         )
     except KeyError:
         raise RepositoryError(
@@ -448,7 +456,7 @@ class Repository(object):
 
         # populate groups
         self.group_dict = {}
-        for group in groups_from_file(self.groups_file, self.libs):
+        for group in groups_from_file(self.groups_file, self.libs, self.path, self.vault):
             self.add_group(group)
 
         # populate items
@@ -458,7 +466,7 @@ class Repository(object):
 
         # populate nodes
         self.node_dict = {}
-        for node in nodes_from_file(self.nodes_file, self.libs, self.path):
+        for node in nodes_from_file(self.nodes_file, self.libs, self.path, self.vault):
             self.add_node(node)
 
     @utils.cached_property
