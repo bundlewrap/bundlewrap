@@ -13,7 +13,7 @@ from .hash import bw_hash
 from .items import bw_items
 from .metadata import bw_metadata
 from .nodes import bw_nodes
-from .plot import bw_plot_group, bw_plot_node
+from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups
 from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_plugin_install, \
     bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_remove, bw_repo_plugin_update
 from .run import bw_run
@@ -329,6 +329,16 @@ def build_parser_bw():
         action='store_false',
         dest='depends_static',
         help=_("do not show static dependencies"),
+    )
+
+    # bw plot groups-for-node
+    parser_plot_subparsers_node_groups = parser_plot_subparsers.add_parser("groups-for-node")
+    parser_plot_subparsers_node_groups.set_defaults(func=bw_plot_node_groups)
+    parser_plot_subparsers_node_groups.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("node to plot"),
     )
 
     # bw repo

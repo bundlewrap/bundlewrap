@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from ..deps import prepare_dependencies
-from ..utils import graph_for_items
+from ..utils import graph_for_items, names
 
 
 def bw_plot_group(repo, args):
@@ -66,3 +66,40 @@ def bw_plot_node(repo, args):
         auto=args['depends_auto'],
     ):
         yield line
+
+
+def bw_plot_node_groups(repo, args):
+    node = repo.get_node(args['node'])
+
+    yield "digraph bundlewrap"
+    yield "{"
+
+    # Print subgraphs *below* each other
+    yield "rankdir = LR"
+
+    # Global attributes
+    yield ("node [color=\"#303030\"; "
+                 "fillcolor=\"#303030\"; "
+                 "fontname=Helvetica]")
+    yield "edge [arrowhead=vee]"
+
+    for group in node.groups:
+        yield "\"{}\" [fontcolor=white,style=filled];".format(group.name)
+
+    yield "\"{}\" [fontcolor=\"#303030\",shape=box,style=rounded];".format(node.name)
+
+    for group in node.groups:
+        for subgroup in group.immediate_subgroup_names:
+            if subgroup in names(node.groups):
+                yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
+
+    for group in node.groups:
+        if node in group._nodes_from_static_members:
+            yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
+                group.name, node.name)
+
+        if node in group._nodes_from_patterns:
+            yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
+                group.name, node.name)
+
+    yield "}"
