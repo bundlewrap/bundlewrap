@@ -13,7 +13,7 @@ from .hash import bw_hash
 from .items import bw_items
 from .metadata import bw_metadata
 from .nodes import bw_nodes
-from .plot import bw_plot_node
+from .plot import bw_plot_group, bw_plot_node
 from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_plugin_install, \
     bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_remove, bw_repo_plugin_update
 from .run import bw_run
@@ -266,6 +266,24 @@ def build_parser_bw():
     # bw plot
     parser_plot = subparsers.add_parser("plot")
     parser_plot_subparsers = parser_plot.add_subparsers()
+
+    # bw plot group
+    parser_plot_subparsers_group = parser_plot_subparsers.add_parser("group")
+    parser_plot_subparsers_group.set_defaults(func=bw_plot_group)
+    parser_plot_subparsers_group.add_argument(
+        'group',
+        default=None,
+        metavar=_("GROUP"),
+        nargs='?',
+        type=str,
+        help=_("group to plot"),
+    )
+    parser_plot_subparsers_group.add_argument(
+        "-N", "--no-nodes",
+        action='store_false',
+        dest='show_nodes',
+        help=_("do not include nodes in output"),
+    )
 
     # bw plot node
     parser_plot_subparsers_node = parser_plot_subparsers.add_parser("node")
