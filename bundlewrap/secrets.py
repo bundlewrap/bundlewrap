@@ -1,4 +1,4 @@
-from base64 import b64encode
+from base64 import b64encode, urlsafe_b64decode
 try:
     from configparser import SafeConfigParser
 except ImportError:  # Python 2
@@ -124,7 +124,7 @@ class SecretProxy(object):
         PRNG allows for more control over password length and complexity.
         """
         try:
-            key = self.keys[key]
+            key_encoded = self.keys[key]
         except KeyError:
             raise FaultUnavailable(_(
                 "Key '{key}' not available to generate password '{password}', check your {file}"
@@ -138,7 +138,7 @@ class SecretProxy(object):
         if symbols:
             alphabet += punctuation
 
-        h = hmac.new(key, digestmod=hashlib.sha512)
+        h = hmac.new(urlsafe_b64decode(key_encoded), digestmod=hashlib.sha512)
         h.update(identifier.encode('utf-8'))
         prng = random(h.digest())
         return "".join([alphabet[next(prng) % (len(alphabet) - 1)] for i in range(length)])
