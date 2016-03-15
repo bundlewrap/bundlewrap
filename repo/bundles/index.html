@@ -111,7 +111,19 @@
                         
                             
 <li >
+    <a href="../../guide/env/">Environment Variables</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../../guide/item_file_templates/">File templates</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../guide/secrets/">Handling secrets</a>
 </li>
 
                         
@@ -386,6 +398,8 @@
         
             <li class="second-level"><a href="#builtin-item-attributes">Builtin item attributes</a></li>
             
+                <li class="third-level"><a href="#error_on_missing_fault">error_on_missing_fault</a></li>
+            
                 <li class="third-level"><a href="#needs">needs</a></li>
             
                 <li class="third-level"><a href="#needed_by">needed_by</a></li>
@@ -467,7 +481,12 @@ users = {
 
 <p><br></p>
 <h2 id="builtin-item-attributes">Builtin item attributes</h2>
-<p><br>There are also attributes that can be applied to any kind of item.</p>
+<p>There are also attributes that can be applied to any kind of item.</p>
+<p><br></p>
+<h3 id="error_on_missing_fault">error_on_missing_fault</h3>
+<p>This will simply skip an item instead of raising an error when a Fault used for an attribute on the item is unavailable. Faults are special objects used by <code>repo.vault</code> to <a href="../../guide/secrets/">handle secrets</a>. A Fault being unavailable can mean you're missing the secret key required to decrypt a secret you're trying to use as an item attribute value.</p>
+<p>Defaults to <code>False</code>.</p>
+<p><br></p>
 <h3 id="needs">needs</h3>
 <p>One such attribute is <code>needs</code>. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on the users owning them). Here are two examples:</p>
 <pre><code>my_items = {
