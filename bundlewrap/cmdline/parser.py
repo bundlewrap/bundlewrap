@@ -356,7 +356,7 @@ def build_parser_bw():
     )
 
     # bw plot groups-for-node
-    help_plot_node_groups = _("Show where a specific gets its groups from")
+    help_plot_node_groups = _("Show where a specific node gets its groups from")
     parser_plot_subparsers_node_groups = parser_plot_subparsers.add_parser(
         "groups-for-node",
         description=help_plot_node_groups,
