@@ -1,10 +1,13 @@
-# 2.2.1
+# 2.3.0
 
-unreleased
+2016-03-15
 
+* added `repo.vault` for handling secrets
 * circular dependencies are now detected by `bw test`
 * fixed handling of broken pipes in internal subprocesses
+* fixed previous input being read when asking a question
 * fixed reading non-ASCII templates on systems with ASCII locale
+* `bw apply` and `bw verify` now exit with return code 1 if there are errors
 
 
 # 2.2.0

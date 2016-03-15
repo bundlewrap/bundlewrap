@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="bundlewrap",
-    version="2.2.0",
+    version="2.3.0",
     description="Config management with Python",
     long_description=(
         "By allowing for easy and low-overhead config management, BundleWrap fills the gap between complex deployments using Chef or Puppet and old school system administration over SSH.\n"
