@@ -1,3 +1,10 @@
+# 2.3.1
+
+2016-03-15
+
+* fixed handling of 'generate' keys for `repo.vault`
+
+
 # 2.3.0
 
 2016-03-15
