@@ -135,7 +135,7 @@ def test_mako_template_content_with_secret(tmpdir):
     run("bw apply localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
-    assert content == b"PBthaaqOXfNOaZVTQpYoUqGJEkSjUrTU"
+    assert content == b"faCTT76kagtDuZE5wnoiD1CxhGKmbgiX"
 
 
 def test_text_template_content(tmpdir):

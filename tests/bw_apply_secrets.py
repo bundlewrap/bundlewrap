@@ -32,7 +32,7 @@ files = {{
     run("bw apply localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
-    assert content == "Q4WeYdfKaSOOPF8pz13z7yRbjJ6HD7ZB"
+    assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"
 
 
 def test_fault_content_mako(tmpdir):
@@ -59,7 +59,7 @@ def test_fault_content_mako(tmpdir):
     run("bw apply localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
-    assert content == "Q4WeYdfKaSOOPF8pz13z7yRbjJ6HD7ZB"
+    assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"
 
 
 def test_fault_content_mako_metadata(tmpdir):
@@ -91,7 +91,7 @@ nodes = {{
     run("bw apply localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
-    assert content == "Q4WeYdfKaSOOPF8pz13z7yRbjJ6HD7ZB"
+    assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"
 
 
 def test_fault_content_jinja2(tmpdir):
@@ -118,7 +118,7 @@ def test_fault_content_jinja2(tmpdir):
     run("bw apply localhost", path=str(tmpdir))
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
-    assert content == "Q4WeYdfKaSOOPF8pz13z7yRbjJ6HD7ZB"
+    assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"
 
 
 def test_fault_content_skipped(tmpdir):
