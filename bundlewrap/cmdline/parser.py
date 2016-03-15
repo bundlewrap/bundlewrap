@@ -55,7 +55,8 @@ def build_parser_bw():
     )
 
     # bw apply
-    parser_apply = subparsers.add_parser("apply")
+    help_apply = _("Applies the configuration defined in your repository to your nodes")
+    parser_apply = subparsers.add_parser("apply", description=help_apply, help=help_apply)
     parser_apply.set_defaults(func=bw_apply)
     parser_apply.add_argument(
         'target',
@@ -120,7 +121,8 @@ def build_parser_bw():
     )
 
     # bw debug
-    parser_debug = subparsers.add_parser("debug")
+    help_debug = _("Start an interactive Python shell for this repository")
+    parser_debug = subparsers.add_parser("debug", description=help_debug, help=help_debug)
     parser_debug.set_defaults(func=bw_debug)
     parser_debug.add_argument(
         "-c",
@@ -144,7 +146,8 @@ def build_parser_bw():
     )
 
     # bw groups
-    parser_groups = subparsers.add_parser("groups")
+    help_groups = _("Lists groups in this repository")
+    parser_groups = subparsers.add_parser("groups", description=help_groups, help=help_groups)
     parser_groups.set_defaults(func=bw_groups)
     parser_groups.add_argument(
         "-n",
@@ -155,7 +158,8 @@ def build_parser_bw():
     )
 
     # bw hash
-    parser_hash = subparsers.add_parser("hash", description="Shows a SHA1 hash that summarizes the entire configuration for this repo, node, group, or item.")
+    help_hash = _("Shows a SHA1 hash that summarizes the entire configuration for this repo, node, group, or item.")
+    parser_hash = subparsers.add_parser("hash", description=help_hash, help=help_hash)
     parser_hash.set_defaults(func=bw_hash)
     parser_hash.add_argument(
         "-d",
@@ -181,7 +185,8 @@ def build_parser_bw():
     )
 
     # bw items
-    parser_items = subparsers.add_parser("items")
+    help_items = _("List and preview items for a specific node")
+    parser_items = subparsers.add_parser("items", description=help_items, help=help_items)
     parser_items.set_defaults(func=bw_items)
     parser_items.add_argument(
         'node',
@@ -216,7 +221,12 @@ def build_parser_bw():
     )
 
     # bw metadata
-    parser_metadata = subparsers.add_parser("metadata")
+    help_metadata = ("View a JSON representation of a node's metadata")
+    parser_metadata = subparsers.add_parser(
+        "metadata",
+        description=help_metadata,
+        help=help_metadata,
+    )
     parser_metadata.set_defaults(func=bw_metadata)
     parser_metadata.add_argument(
         'node',
@@ -226,7 +236,8 @@ def build_parser_bw():
     )
 
     # bw nodes
-    parser_nodes = subparsers.add_parser("nodes")
+    help_nodes = _("List all nodes in this repository")
+    parser_nodes = subparsers.add_parser("nodes", description=help_nodes, help=help_nodes)
     parser_nodes.set_defaults(func=bw_nodes)
     parser_nodes.add_argument(
         "--bundles",
@@ -264,11 +275,19 @@ def build_parser_bw():
     )
 
     # bw plot
-    parser_plot = subparsers.add_parser("plot")
+    help_plot = _("Generates DOT output that can be piped into `dot -Tsvg -ooutput.svg`. "
+                  "The resulting output.svg can be viewed using most browsers.")
+    parser_plot = subparsers.add_parser("plot", description=help_plot, help=help_plot)
     parser_plot_subparsers = parser_plot.add_subparsers()
 
     # bw plot group
-    parser_plot_subparsers_group = parser_plot_subparsers.add_parser("group")
+    help_plot_group = _("Plot subgroups and node members for the given group "
+                        "or the entire repository")
+    parser_plot_subparsers_group = parser_plot_subparsers.add_parser(
+        "group",
+        description=help_plot_group,
+        help=help_plot_group,
+    )
     parser_plot_subparsers_group.set_defaults(func=bw_plot_group)
     parser_plot_subparsers_group.add_argument(
         'group',
@@ -286,7 +305,12 @@ def build_parser_bw():
     )
 
     # bw plot node
-    parser_plot_subparsers_node = parser_plot_subparsers.add_parser("node")
+    help_plot_node = _("Plot items and their dependencies for the given node")
+    parser_plot_subparsers_node = parser_plot_subparsers.add_parser(
+        "node",
+        description=help_plot_node,
+        help=help_plot_node,
+    )
     parser_plot_subparsers_node.set_defaults(func=bw_plot_node)
     parser_plot_subparsers_node.add_argument(
         'node',
@@ -332,7 +356,12 @@ def build_parser_bw():
     )
 
     # bw plot groups-for-node
-    parser_plot_subparsers_node_groups = parser_plot_subparsers.add_parser("groups-for-node")
+    help_plot_node_groups = _("Show where a specific gets its groups from")
+    parser_plot_subparsers_node_groups = parser_plot_subparsers.add_parser(
+        "groups-for-node",
+        description=help_plot_node_groups,
+        help=help_plot_node_groups,
+    )
     parser_plot_subparsers_node_groups.set_defaults(func=bw_plot_node_groups)
     parser_plot_subparsers_node_groups.add_argument(
         'node',
@@ -342,7 +371,8 @@ def build_parser_bw():
     )
 
     # bw repo
-    parser_repo = subparsers.add_parser("repo")
+    help_repo = _("Various subcommands to manipulate your repository")
+    parser_repo = subparsers.add_parser("repo", description=help_repo, help=help_repo)
     parser_repo_subparsers = parser_repo.add_subparsers()
 
     # bw repo bundle
@@ -444,7 +474,8 @@ def build_parser_bw():
     )
 
     # bw run
-    parser_run = subparsers.add_parser("run")
+    help_run = _("Run a one-off command on a number of nodes")
+    parser_run = subparsers.add_parser("run", description=help_run, help=help_run)
     parser_run.set_defaults(func=bw_run)
     parser_run.add_argument(
         'target',
@@ -475,11 +506,14 @@ def build_parser_bw():
     )
 
     # bw stats
-    parser_stats = subparsers.add_parser("stats")
+    help_stats = _("Show some statistics about your repository")
+    parser_stats = subparsers.add_parser("stats", description=help_stats, help=help_stats)
     parser_stats.set_defaults(func=bw_stats)
 
     # bw test
-    parser_test = subparsers.add_parser("test")
+    help_test = _("Test your repository for consistency "
+                  "(you can use this with a CI tool like Jenkins)")
+    parser_test = subparsers.add_parser("test", description=help_test, help=help_test)
     parser_test.set_defaults(func=bw_test)
     parser_test.add_argument(
         'target',
@@ -514,7 +548,8 @@ def build_parser_bw():
     )
 
     # bw verify
-    parser_verify = subparsers.add_parser("verify")
+    help_verify = _("Inspect the health or 'correctness' of a node without changing it")
+    parser_verify = subparsers.add_parser("verify", description=help_verify, help=help_verify)
     parser_verify.set_defaults(func=bw_verify)
     parser_verify.add_argument(
         'target',
