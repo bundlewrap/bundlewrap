@@ -730,9 +730,11 @@ def test_items(node, workers=1):
             msg = worker_pool.get_event()
             if msg['msg'] == 'REQUEST_WORK':
                 try:
-                    item = item_queue.pop()
-                    if isinstance(item, DummyItem):
-                        continue
+                    # Get the next non-DummyItem in the queue.
+                    while True:
+                        item = item_queue.pop()
+                        if not isinstance(item, DummyItem):
+                            break
                     worker_pool.start_task(
                         msg['wid'],
                         item.test,
