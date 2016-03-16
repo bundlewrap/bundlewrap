@@ -83,7 +83,7 @@ def build_parser_bw():
     parser_apply.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BWNODEWORKERS", "4")),
+        default=int(environ.get("BW_NODE_WORKERS", "4")),
         dest='node_workers',
         help=_("number of nodes to apply to simultaneously"),
         type=int,
@@ -91,7 +91,7 @@ def build_parser_bw():
     parser_apply.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BWITEMWORKERS", "4")),
+        default=int(environ.get("BW_ITEM_WORKERS", "4")),
         dest='item_workers',
         help=_("number of items to apply to simultaneously on each node"),
         type=int,
@@ -499,7 +499,7 @@ def build_parser_bw():
     parser_run.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BWNODEWORKERS", "1")),
+        default=int(environ.get("BW_NODE_WORKERS", "1")),
         dest='node_workers',
         help=_("number of nodes to run command on simultaneously"),
         type=int,
@@ -533,7 +533,7 @@ def build_parser_bw():
     parser_test.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BWNODEWORKERS", "1")),
+        default=int(environ.get("BW_NODE_WORKERS", "1")),
         dest='node_workers',
         help=_("number of nodes to test simultaneously"),
         type=int,
@@ -541,7 +541,7 @@ def build_parser_bw():
     parser_test.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BWITEMWORKERS", "4")),
+        default=int(environ.get("BW_ITEM_WORKERS", "4")),
         dest='item_workers',
         help=_("number of items to test simultaneously for each node"),
         type=int,
@@ -567,7 +567,7 @@ def build_parser_bw():
     parser_verify.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BWNODEWORKERS", "4")),
+        default=int(environ.get("BW_NODE_WORKERS", "4")),
         dest='node_workers',
         help=_("number of nodes to verify to simultaneously"),
         type=int,
@@ -575,7 +575,7 @@ def build_parser_bw():
     parser_verify.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BWITEMWORKERS", "4")),
+        default=int(environ.get("BW_ITEM_WORKERS", "4")),
         dest='item_workers',
         help=_("number of items to verify to simultaneously on each node"),
         type=int,
