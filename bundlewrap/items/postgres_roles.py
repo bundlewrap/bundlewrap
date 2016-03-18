@@ -92,7 +92,7 @@ class PostgresRole(Item):
     def patch_attributes(self, attributes):
         if 'password' in attributes:
             attributes['password_hash'] = postgres_context.encrypt(
-                attributes['password'],
+                force_text(attributes['password']),
                 user=self.name,
             )
         return attributes
