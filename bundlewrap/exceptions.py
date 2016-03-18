@@ -19,6 +19,15 @@ class ActionFailure(UnicodeException):
     pass
 
 
+class DontCache(Exception):
+    """
+    Used in the cached_property decorator to temporily prevent caching
+    the returned result
+    """
+    def __init__(self, obj):
+        self.obj = obj
+
+
 class FaultUnavailable(UnicodeException):
     """
     Raised when a Fault object cannot be resolved.

@@ -13,7 +13,7 @@ from types import MethodType
 
 from requests import get
 
-from ..exceptions import FaultUnavailable
+from ..exceptions import DontCache, FaultUnavailable
 
 __GETATTR_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
@@ -69,10 +69,14 @@ def cached_property(prop):
         if not hasattr(self, "_cache"):
             self._cache = {}
         if prop.__name__ not in self._cache:
-            return_value = prop(self)
-            if isgenerator(return_value):
-                return_value = tuple(return_value)
-            self._cache[prop.__name__] = return_value
+            try:
+                return_value = prop(self)
+                if isgenerator(return_value):
+                    return_value = tuple(return_value)
+            except DontCache as exc:
+                return exc.obj
+            else:
+                self._cache[prop.__name__] = return_value
         return self._cache[prop.__name__]
     return property(cache_wrapper)
 

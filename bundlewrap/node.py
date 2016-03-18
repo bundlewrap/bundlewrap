@@ -19,6 +19,7 @@ from .deps import (
 )
 from .exceptions import (
     BundleError,
+    DontCache,
     ItemDependencyError,
     NodeAlreadyLockedException,
     NoSuchBundle,
@@ -336,6 +337,7 @@ class Node(object):
         self.name = name
         self._bundles = infodict.get('bundles', [])
         self._compiling_metadata = False
+        self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
         self._node_os = infodict.get('os')
         self.add_ssh_host_keys = False
@@ -522,34 +524,46 @@ class Node(object):
     @cached_property
     def metadata(self):
         if self._compiling_metadata:
-            raise BundleError("trying to access metadata while it is "
-                              "being compiled (check your metadata.py)")
-        else:
-            self._compiling_metadata = True
-        m = {}
+            raise DontCache(self._metadata_so_far)
+
+        self._compiling_metadata = True
+        self._metadata_so_far = {}
 
         with io.job(_("  {node}  building group metadata...").format(node=self.name)):
             group_order = _flatten_group_hierarchy(self.groups)
             for group_name in group_order:
-                m = merge_dict(m, self.repo.get_group(group_name).metadata)
+                self._metadata_so_far = merge_dict(self._metadata_so_far, self.repo.get_group(group_name).metadata)
 
         with io.job(_("  {node}  merging node metadata...").format(node=self.name)):
-            m = merge_dict(m, self._node_metadata)
+            self._metadata_so_far = merge_dict(self._metadata_so_far, self._node_metadata)
 
         with io.job(_("  {node}  running metadata processors...").format(node=self.name)):
             iterations = {}
+            # break_next makes sure that we provide one additional opportunity
+            # for metadata changes after all metadata processors for *this*
+            # did not return modified metadata
+            # however, the 'final' iteration of metadata for *this* might cause
+            # metadata to change on *another* node that is access while trying
+            # to compile metadata for *this* node
+            # and metadata changes on other nodes might in turn cause metadata
+            # on *this* node to change...
+            break_next = False
             while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
                 modified = False
                 for metadata_processor in self.metadata_processors:
                     iterations.setdefault(metadata_processor.__name__, 1)
-                    processed = metadata_processor(m.copy())
+                    processed = metadata_processor(self._metadata_so_far.copy())
                     assert isinstance(processed, dict)
-                    if processed != m:
-                        m = processed
+                    if processed != self._metadata_so_far:
+                        self._metadata_so_far = processed
                         iterations[metadata_processor.__name__] += 1
                         modified = True
+                        break_next = False
                 if not modified:
-                    break
+                    if break_next:
+                        break
+                    else:
+                        break_next = True
 
         for metadata_processor, number_of_iterations in iterations.items():
             if number_of_iterations >= META_PROC_MAX_ITER:
@@ -563,7 +577,7 @@ class Node(object):
                 ))
 
         self._compiling_metadata = False
-        return m
+        return self._metadata_so_far
 
     @property
     def metadata_processors(self):
