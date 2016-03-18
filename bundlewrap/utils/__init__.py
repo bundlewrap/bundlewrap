@@ -120,6 +120,9 @@ class Fault(object):
                 self._available = False
                 self._exc = exc
 
+    def __len__(self):
+        return len(self.value)
+
     def __str__(self):
         return str(self.value)
 
