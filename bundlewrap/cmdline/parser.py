@@ -533,7 +533,7 @@ def build_parser_bw():
     parser_test.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        default=int(environ.get("BW_NODE_WORKERS", "1")),
         dest='node_workers',
         help=_("number of nodes to test simultaneously"),
         type=int,
