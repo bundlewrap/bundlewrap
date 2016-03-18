@@ -6,15 +6,23 @@ from imp import load_source
 from os import listdir, mkdir
 from os.path import isdir, isfile, join
 
+from pkg_resources import DistributionNotFound, require, VersionConflict
+
 from . import items, utils
 from .bundle import FILENAME_BUNDLE
-from .exceptions import NoSuchGroup, NoSuchNode, NoSuchRepository, RepositoryError
+from .exceptions import (
+    NoSuchGroup,
+    NoSuchNode,
+    NoSuchRepository,
+    MissingRepoDependency,
+    RepositoryError,
+)
 from .group import Group
 from .node import Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
-from .utils.text import mark_for_translation as _, validate_name
+from .utils.text import mark_for_translation as _, red, validate_name
 from .utils.ui import io
 
 DIRNAME_BUNDLES = "bundles"
@@ -24,6 +32,7 @@ DIRNAME_ITEM_TYPES = "items"
 DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
+FILENAME_REQUIREMENTS = "requirements.txt"
 
 HOOK_EVENTS = (
     'action_run_start',
@@ -445,6 +454,34 @@ class Repository(object):
 
         if path != self.path:
             self._set_path(path)
+
+        # check requirements.txt
+        try:
+            with open(join(path, FILENAME_REQUIREMENTS)) as f:
+                lines = f.readlines()
+        except:
+            pass
+        else:
+            try:
+                require(lines)
+            except DistributionNotFound as exc:
+                raise MissingRepoDependency(_(
+                    "{x} Python package '{pkg}' is listed in requirements.txt, but wasn't found. "
+                    "You probably have to install it with `pip install {pkg}`."
+                ).format(
+                    pkg=exc.req,
+                    x=red("!"),
+                ))
+            except VersionConflict as exc:
+                raise MissingRepoDependency(_(
+                    "{x} Python package '{required}' is listed in requirements.txt, "
+                    "but only '{existing}' was found. "
+                    "You probably have to upgrade it with `pip install {required}`."
+                ).format(
+                    existing=exc.dist,
+                    required=exc.req,
+                    x=red("!"),
+                ))
 
         self.vault = SecretProxy(self)
 

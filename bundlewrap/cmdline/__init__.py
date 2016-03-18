@@ -6,7 +6,8 @@ from os import environ, getcwd
 from sys import argv, exit, stderr, stdout
 from traceback import print_exc
 
-from ..exceptions import NoSuchRepository
+
+from ..exceptions import NoSuchRepository, MissingRepoDependency
 from ..repo import Repository
 from ..utils.text import force_text, mark_for_translation as _, red
 from ..utils.ui import io
@@ -125,13 +126,15 @@ def main(*args, **kwargs):
     else:
         try:
             repo = Repository(path)
+        except MissingRepoDependency as exc:
+            io.stderr(str(exc))
+            exit(1)
         except NoSuchRepository:
             io.stderr(_(
                 "{x} The current working directory "
                 "is not a BundleWrap repository."
             ).format(x=red("!")))
             exit(1)
-            return  # used during texting when exit() is mocked
 
     # convert all string args into text
     text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}

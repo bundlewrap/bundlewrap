@@ -106,6 +106,13 @@ class NoSuchRepository(RepositoryError):
     pass
 
 
+class MissingRepoDependency(RepositoryError):
+    """
+    Raised when a dependency from requirements.txt is missing.
+    """
+    pass
+
+
 class PluginError(RepositoryError):
     """
     Indicates an error related to a plugin.
