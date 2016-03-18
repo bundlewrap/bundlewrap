@@ -9,7 +9,7 @@ from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
 getLogger('passlib').setLevel(ERROR)
@@ -198,7 +198,7 @@ class User(Item):
             )]
             salt = attributes.get('salt', None)
             attributes['password_hash'] = hash_method.encrypt(
-                attributes['password'],
+                force_text(attributes['password']),
                 rounds=5000,  # default from glibc
                 salt=_DEFAULT_SALT if salt is None else salt,
             )
