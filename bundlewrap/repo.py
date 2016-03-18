@@ -467,19 +467,21 @@ class Repository(object):
                 require(lines)
             except DistributionNotFound as exc:
                 raise MissingRepoDependency(_(
-                    "{x} Python package '{pkg}' is listed in requirements.txt, but wasn't found. "
+                    "{x} Python package '{pkg}' is listed in {filename}, but wasn't found. "
                     "You probably have to install it with `pip install {pkg}`."
                 ).format(
+                    filename=FILENAME_REQUIREMENTS,
                     pkg=exc.req,
                     x=red("!"),
                 ))
             except VersionConflict as exc:
                 raise MissingRepoDependency(_(
-                    "{x} Python package '{required}' is listed in requirements.txt, "
+                    "{x} Python package '{required}' is listed in {filename}, "
                     "but only '{existing}' was found. "
                     "You probably have to upgrade it with `pip install {required}`."
                 ).format(
                     existing=exc.dist,
+                    filename=FILENAME_REQUIREMENTS,
                     required=exc.req,
                     x=red("!"),
                 ))
