@@ -8,7 +8,7 @@ from os.path import isdir, isfile, join
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 
-from . import items, utils
+from . import items, utils, VERSION_STRING
 from .bundle import FILENAME_BUNDLE
 from .exceptions import (
     NoSuchGroup,
@@ -80,6 +80,7 @@ nodes = {
     },
 }
     """),
+    FILENAME_REQUIREMENTS: "bundlewrap>={}\n".format(VERSION_STRING),
     FILENAME_SECRETS: generate_initial_secrets_cfg,
 }
 
