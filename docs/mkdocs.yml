@@ -23,6 +23,7 @@ pages:
   - Overview: repo/layout.md
   - nodes.py: repo/nodes.py.md
   - groups.py: repo/groups.py.md
+  - requirements.txt: repo/requirements.txt.md
   - bundles/: repo/bundles.md
   - hooks/: repo/hooks.md
   - libs/: repo/libs.md
