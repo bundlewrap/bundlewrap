@@ -1,3 +1,17 @@
+# 2.4.0
+
+2016-03-20
+
+* added `bw plot group`
+* added `bw plot groups-for-node`
+* `bw` will now check requirements.txt in your repo before doing anything
+* improved output of `--help`
+* metadata processors now have access to partial node metadata while it is being compiled
+* fixed `bw test` when using more than the default number of node workers
+* fixed passing Faults to `postgres_role` and `users`
+* fixed detection of non-existent paths on CentOS and others
+
+
 # 2.3.1
 
 2016-03-15
