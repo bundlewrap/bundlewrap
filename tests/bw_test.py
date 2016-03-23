@@ -1,5 +1,6 @@
 from os.path import join
 
+from bundlewrap.metadata import atomic, dictionary_key_map
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -189,6 +190,54 @@ def test_group_loop(tmpdir):
             },
             "group3": {
                 'subgroups': ["group1"],
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_dictmap():
+    assert set(dictionary_key_map({
+        'key1': 1,
+        'key2': {
+            'key3': [3, 3, 3],
+            'key4': atomic([4, 4, 4]),
+            'key5': {
+                'key6': "6",
+            },
+        },
+    })) == set([
+        ("key1",),
+        ("key2", "key4"),
+        ("key2", "key5", "key6"),
+    ])
+
+
+def test_group_metadata_collision(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={"node1": {}},
+        groups={
+            "group1": {
+                'members': ["node1"],
+                'metadata': {
+                    'foo': {
+                        'baz': 1,
+                    },
+                    'bar': 2,
+                },
+            },
+            "group2": {
+                'metadata': {
+                    'foo': {
+                        'baz': 3,
+                    },
+                    'snap': 4,
+                },
+                'subgroups': ["group3"],
+            },
+            "group3": {
+                'members': ["node1"],
             },
         },
     )

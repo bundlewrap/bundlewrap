@@ -27,6 +27,7 @@ from .exceptions import (
 )
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
+from .metadata import check_for_unsolvable_metadata_key_conflicts
 from .utils import cached_property, graph_for_items, merge_dict, names
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, wrap_question, yellow
@@ -619,7 +620,15 @@ class Node(object):
         )
 
     def test(self, workers=4):
+        with io.job(_("  {node}  checking for metadata collisions...").format(node=self.name)):
+            check_for_unsolvable_metadata_key_conflicts(self)
+        io.stdout(_("{x} {node}  has no metadata collisions").format(
+            x=green("✓"),
+            node=bold(self.name),
+        ))
+
         test_items(self, workers=workers)
+
         self.repo.hooks.test_node(self.repo, self)
 
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
