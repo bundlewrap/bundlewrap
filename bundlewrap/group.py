@@ -154,6 +154,12 @@ class Group(object):
             yield self.name
 
     @cached_property
+    def parent_groups(self):
+        for group in self.repo.groups:
+            if self in group.subgroups:
+                yield group
+
+    @cached_property
     def subgroups(self):
         """
         Iterator over all subgroups as group objects.
