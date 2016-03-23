@@ -20,6 +20,7 @@ from .exceptions import (
 from .group import Group
 from .node import Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
+from .utils import cached_property
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, red, validate_name
@@ -350,6 +351,7 @@ class Repository(object):
         node.repo = self
         self.node_dict[node.name] = node
 
+    @cached_property
     def cdict(self):
         repo_dict = {}
         for node in self.nodes:
@@ -411,7 +413,7 @@ class Repository(object):
                 yield group
 
     def hash(self):
-        return hash_statedict(self.cdict())
+        return hash_statedict(self.cdict)
 
     @property
     def nodes(self):

@@ -69,6 +69,7 @@ class Group(object):
     def __str__(self):
         return self.name
 
+    @cached_property
     def cdict(self):
         group_dict = {}
         for node in self.nodes:
@@ -76,7 +77,7 @@ class Group(object):
         return group_dict
 
     def hash(self):
-        return hash_statedict(self.cdict())
+        return hash_statedict(self.cdict)
 
     @cached_property
     def metadata_processors(self):

@@ -64,3 +64,38 @@ def test_deterministic(tmpdir):
 
     assert len(hashes) == 1
     assert hashes.pop() == b"8c155b4e7056463eb2c8a8345f4f316f6d7359f6"
+
+
+def test_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'files': {
+                    "/test": {
+                        'content': "yes please",
+                    },
+                },
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -d", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"8ab35c696b63a853ccf568b27a50e24a69964487  node1\n"
+
+    stdout, stderr, rcode = run("bw hash -d node1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"503583964eadabacb18fda32cc9fb1e9f66e424b  file:/test\n"
+
+    stdout, stderr, rcode = run("bw hash -d node1 file:/test", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == (
+        b"content_hash\tc05a36d547e2b1682472f76985018038d1feebc5\n"
+        b"type\tfile\n"
+    )

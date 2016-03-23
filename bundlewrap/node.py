@@ -372,6 +372,7 @@ class Node(object):
                             node=self.name,
                         ))
 
+    @cached_property
     def cdict(self):
         node_dict = {}
         for item in self.items:
@@ -411,7 +412,7 @@ class Node(object):
         return False
 
     def hash(self):
-        return hash_statedict(self.cdict())
+        return hash_statedict(self.cdict)
 
     def in_any_group(self, group_list):
         for group_name in group_list:
