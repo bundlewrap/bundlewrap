@@ -32,15 +32,13 @@ def test_hooks(tmpdir):
     with open(join(str(tmpdir), "hooks", "test.py"), 'w') as f:
         f.write("""from bundlewrap.utils.ui import io
 def test(repo, **kwargs):
-    io.stdout("fin")
+    io.stdout("AAA")
 
 def test_node(repo, node, **kwargs):
-    io.stdout(node.name)
+    io.stdout("BBB")
 """)
-    assert run("bw test", path=str(tmpdir))[0] in (
-        b"node1\nnode2\nfin\n",
-        b"node2\nnode1\nfin\n",
-    )
+    assert b"AAA" in run("bw test", path=str(tmpdir))[0]
+    assert b"BBB" in run("bw test", path=str(tmpdir))[0]
 
 
 def test_circular_dep_direct(tmpdir):
