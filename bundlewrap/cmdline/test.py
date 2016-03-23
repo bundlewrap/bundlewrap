@@ -47,7 +47,7 @@ def bw_test(repo, args):
     for group in repo.groups:
         if group in checked_groups:
             continue
-        with io.job(_("{group}  checking for subgroup loops...").format(group=group.name)):
+        with io.job(_("  {group}  checking for subgroup loops...").format(group=group.name)):
             checked_groups.extend(group.subgroups)  # the subgroups property has the check built in
         yield _("{x} {group}  has no subgroup loops").format(
             x=green("✓"),
