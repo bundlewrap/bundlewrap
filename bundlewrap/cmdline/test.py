@@ -8,6 +8,7 @@ from ..exceptions import WorkerException
 from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, mark_for_translation as _, red
+from ..utils.ui import io
 
 
 def bw_test(repo, args):
@@ -42,6 +43,18 @@ def bw_test(repo, args):
                 else:
                     worker_pool.quit(msg['wid'])
 
+    checked_groups = []
+    for group in repo.groups:
+        if group in checked_groups:
+            continue
+        with io.job(_("{group}  checking for subgroup loops...").format(group=group.name)):
+            checked_groups.extend(group.subgroups)  # the subgroups property has the check built in
+        yield _("{x} {group}  has no subgroup loops").format(
+            x=green("✓"),
+            group=bold(group.name),
+        )
+
+    # check for plugin inconsistencies
     if args['plugin_conflict_error']:
         pm = PluginManager(repo.path)
         for plugin, version in pm.list():

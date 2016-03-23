@@ -177,3 +177,21 @@ def test_file_template_error(tmpdir):
         },
     )
     assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_group_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {
+                'subgroups': ["group2"],
+            },
+            "group2": {
+                'subgroups': ["group3"],
+            },
+            "group3": {
+                'subgroups': ["group1"],
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
