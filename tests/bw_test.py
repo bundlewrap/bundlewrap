@@ -1,5 +1,6 @@
 from os.path import join
 
+from bundlewrap.metadata import atomic, dictionary_key_map
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -32,15 +33,13 @@ def test_hooks(tmpdir):
     with open(join(str(tmpdir), "hooks", "test.py"), 'w') as f:
         f.write("""from bundlewrap.utils.ui import io
 def test(repo, **kwargs):
-    io.stdout("fin")
+    io.stdout("AAA")
 
 def test_node(repo, node, **kwargs):
-    io.stdout(node.name)
+    io.stdout("BBB")
 """)
-    assert run("bw test", path=str(tmpdir))[0] in (
-        b"node1\nnode2\nfin\n",
-        b"node2\nnode1\nfin\n",
-    )
+    assert b"AAA" in run("bw test", path=str(tmpdir))[0]
+    assert b"BBB" in run("bw test", path=str(tmpdir))[0]
 
 
 def test_circular_dep_direct(tmpdir):
@@ -173,6 +172,72 @@ def test_file_template_error(tmpdir):
                         'content': "${broken",
                     },
                 },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_group_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {
+                'subgroups': ["group2"],
+            },
+            "group2": {
+                'subgroups': ["group3"],
+            },
+            "group3": {
+                'subgroups': ["group1"],
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_dictmap():
+    assert set(dictionary_key_map({
+        'key1': 1,
+        'key2': {
+            'key3': [3, 3, 3],
+            'key4': atomic([4, 4, 4]),
+            'key5': {
+                'key6': "6",
+            },
+        },
+    })) == set([
+        ("key1",),
+        ("key2", "key4"),
+        ("key2", "key5", "key6"),
+    ])
+
+
+def test_group_metadata_collision(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={"node1": {}},
+        groups={
+            "group1": {
+                'members': ["node1"],
+                'metadata': {
+                    'foo': {
+                        'baz': 1,
+                    },
+                    'bar': 2,
+                },
+            },
+            "group2": {
+                'metadata': {
+                    'foo': {
+                        'baz': 3,
+                    },
+                    'snap': 4,
+                },
+                'subgroups': ["group3"],
+            },
+            "group3": {
+                'members': ["node1"],
             },
         },
     )

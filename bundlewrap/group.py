@@ -44,7 +44,6 @@ class Group(object):
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.metadata = infodict.get('metadata', {})
-        self.metadata_processor_names = infodict.get('metadata_processors', [])
         self.os = infodict.get('os')
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
@@ -78,14 +77,6 @@ class Group(object):
 
     def hash(self):
         return hash_statedict(self.cdict)
-
-    @cached_property
-    def metadata_processors(self):
-        for metadata_processor_name in self.metadata_processor_names:
-            module_name, function_name = metadata_processor_name.split(".")
-            module = getattr(self.repo.libs, module_name)
-            metadata_processor = getattr(module, function_name)
-            yield metadata_processor
 
     @cached_property
     def nodes(self):
@@ -161,6 +152,12 @@ class Group(object):
                 )
         if self.name not in visited_names:
             yield self.name
+
+    @cached_property
+    def parent_groups(self):
+        for group in self.repo.groups:
+            if self in group.subgroups:
+                yield group
 
     @cached_property
     def subgroups(self):
