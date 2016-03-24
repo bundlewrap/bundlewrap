@@ -5,6 +5,7 @@ except ImportError:  # Python 2
     from ConfigParser import SafeConfigParser
 import hashlib
 import hmac
+from os import environ
 from os.path import join
 from string import ascii_letters, punctuation, digits
 
@@ -63,6 +64,8 @@ class SecretProxy(object):
         """
         Decrypts a given encrypted password.
         """
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            return "decrypted text"
         try:
             key = self.keys[key]
         except KeyError:
@@ -80,6 +83,8 @@ class SecretProxy(object):
         Decrypts the file at source_path (relative to data/) and
         returns the plaintext as unicode.
         """
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            return "decrypted file"
         try:
             key = self.keys[key]
         except KeyError:
@@ -98,6 +103,8 @@ class SecretProxy(object):
         Decrypts the file at source_path (relative to data/) and
         returns the plaintext as base64.
         """
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            return b64encode("decrypted file as base64").decode('utf-8')
         try:
             key = self.keys[key]
         except KeyError:
@@ -123,6 +130,8 @@ class SecretProxy(object):
         One could just use the HMAC digest itself as a password, but the
         PRNG allows for more control over password length and complexity.
         """
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            return "generatedpassword"
         try:
             key_encoded = self.keys[key]
         except KeyError:

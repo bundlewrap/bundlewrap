@@ -26,3 +26,8 @@ You can also use the command line options `-p` and `-P`, e.g. `bw apply -p ... -
 There is no single default for these values. For example, when running `bw apply`, four nodes are being handled by default. However, when running `bw test`, only one node will be tested by default. `BW_NODE_WORKERS` and `BW_ITEM_WORKERS` apply to *all* these operations.
 
 Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.
+
+
+## `BW_VAULT_DUMMY_MODE`
+
+Setting this to `1` will make `repo.vault` return dummy values for every [secret](secrets.md). This is useful for running `bw test` on a CI server that you don't want to trust with your `.secrets.cfg`.
