@@ -11,7 +11,6 @@ from os.path import dirname, exists
 import stat
 from sys import stderr, stdout
 from tempfile import mkstemp
-from types import MethodType
 
 from requests import get
 
@@ -29,36 +28,6 @@ try:
 except AttributeError:  # Python 2
     STDERR_WRITER = getwriter('utf-8')(stderr)
     STDOUT_WRITER = getwriter('utf-8')(stdout)
-
-
-# what follows is required to pickle bound instance methods on py2.7
-# see https://travis-ci.org/bundlewrap/bundlewrap/jobs/115654253
-# and http://stackoverflow.com/q/1816958
-def _pickle_method(method):
-    func_name = method.im_func.__name__
-    obj = method.im_self
-    cls = method.im_class
-    if func_name.startswith("__") and not func_name.endswith("__"):
-        cls_name = cls.__name__.lstrip("_")
-        func_name = "_" + cls_name + func_name
-    return _unpickle_method, (func_name, obj, cls)
-
-
-def _unpickle_method(func_name, obj, cls):
-    for cls in cls.mro():
-        try:
-            func = cls.__dict__[func_name]
-        except KeyError:
-            pass
-        else:
-            break
-    return func.__get__(obj, cls)
-
-try:
-    import copy_reg
-    copy_reg.pickle(MethodType, _pickle_method, _unpickle_method)
-except ImportError:  # Python 3
-    pass
 
 
 def cached_property(prop):

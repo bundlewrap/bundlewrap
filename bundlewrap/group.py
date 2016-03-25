@@ -51,17 +51,6 @@ class Group(object):
     def __lt__(self, other):
         return self.name < other.name
 
-    def __getstate__(self):
-        """
-        Removes cached metadata processors prior to pickling because
-        they can't be pickled.
-        """
-        try:
-            del self._cache['metadata_processors']
-        except:
-            pass
-        return self.__dict__
-
     def __repr__(self):
         return "<Group: {}>".format(self.name)
 

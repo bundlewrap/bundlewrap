@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from copy import copy
 from os.path import exists, join
 
 from .exceptions import NoSuchBundle, RepositoryError
@@ -34,18 +33,6 @@ class Bundle(object):
         self.bundle_data_dir = join(self.repo.data_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
         self.metadata_file = join(self.bundle_dir, FILENAME_METADATA)
-
-    def __getstate__(self):
-        """
-        Removes cached items prior to pickling because their classes are
-        loaded dynamically and can't be pickled.
-        """
-        state = copy(self.__dict__)
-        try:
-            del state['_cache']
-        except KeyError:
-            pass
-        return state
 
     @cached_property
     def bundle_attrs(self):

@@ -150,17 +150,11 @@ class HooksProxy(object):
 
         return self.__hook_cache[event]
 
-    def __getstate__(self):
-        return (self.__path, self.__registered_hooks)
-
-    def __setstate__(self, state):
-        self.__hook_cache = {}
-        self.__module_cache = {}
-        self.__path = state[0]
-        self.__registered_hooks = state[1]
-
     def _register_hooks(self):
         """
+        TODO check if this is still required after getting rid of
+        subprocesses and pickling.
+
         Builds an internal dictionary of defined hooks that is used in
         __getstate__ to avoid reimporting all hook modules in child
         processes.
@@ -242,13 +236,6 @@ class LibsProxy(object):
             self.__module_cache[attrname] = m
         return self.__module_cache[attrname]
 
-    def __getstate__(self):
-        return self.__path
-
-    def __setstate__(self, state):
-        self.__module_cache = {}
-        self.__path = state
-
 
 def nodes_from_file(filepath, libs, repo_path, vault):
     """
@@ -292,21 +279,6 @@ class Repository(object):
             # in-memory repos are never equal
             return False
         return self.path == other.path
-
-    def __getstate__(self):
-        """
-        Removes cached item classes prior to pickling because they are loaded
-        dynamically and can't be pickled.
-        """
-        state = copy(self.__dict__)
-        state['item_classes'] = []
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__ = state
-        self.item_classes = list(items_from_path(items.__path__[0]))
-        if self.path != "/dev/null":
-            self.item_classes += list(items_from_path(self.items_dir))
 
     def __repr__(self):
         return "<Repository at '{}'>".format(self.path)

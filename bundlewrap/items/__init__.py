@@ -28,29 +28,6 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'triggers': [],
     'unless': "",
 }
-ITEM_CLASSES = {}
-ITEM_CLASSES_LOADED = False
-
-
-def unpickle_item_class(
-    class_name,
-    bundle,
-    name,
-    attributes,
-    has_been_triggered,
-    faults_missing_for_attributes,
-):
-    for item_class in bundle.node.repo.item_classes:
-        if item_class.__name__ == class_name:
-            return item_class(
-                bundle,
-                name,
-                attributes,
-                has_been_triggered=has_been_triggered,
-                faults_missing_for_attributes=faults_missing_for_attributes,
-                skip_validation=True,
-            )
-    raise RuntimeError(_("unable to unpickle {cls}").format(cls=class_name))
 
 
 class ItemStatus(object):
@@ -157,22 +134,6 @@ class Item(object):
 
     def __str__(self):
         return self.id
-
-    def __reduce__(self):
-        attrs = copy(self.attributes)
-        for attribute_name in BUILTIN_ITEM_ATTRIBUTES.keys():
-            attrs[attribute_name] = getattr(self, attribute_name)
-        return (
-            unpickle_item_class,
-            (
-                self.__class__.__name__,
-                self.bundle,
-                self.name,
-                attrs,
-                self.has_been_triggered,
-                self._faults_missing_for_attributes,
-            ),
-        )
 
     def __repr__(self):
         return "<Item {}>".format(self.id)
