@@ -101,7 +101,7 @@ def main(*args, **kwargs):
         parser_bw.print_help()
         exit(2)
 
-    io.activate_as_parent(debug=pargs.debug)
+    io.debug_mode = pargs.debug
 
     if 'BWADDHOSTKEYS' in environ:  # TODO remove in 3.0.0
         environ.setdefault('BW_ADD_HOST_KEYS', environ['BWADDHOSTKEYS'])

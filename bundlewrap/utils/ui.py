@@ -3,11 +3,11 @@ from datetime import datetime
 from errno import EPIPE
 import fcntl
 from functools import wraps
-from multiprocessing import Lock, Manager
 import os
 import struct
 import sys
 import termios
+from threading import Lock
 
 from . import STDERR_WRITER, STDOUT_WRITER
 from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
@@ -77,24 +77,9 @@ class DrainableStdin(object):
 
 class IOManager(object):
     def __init__(self):
-        self.capture_mode = False
-        self.child_mode = False
-        self.parent_mode = False
-
-    def activate_as_child(self, lock, jobs, debug_mode, stdin):
-        self.parent_mode = False
-        self.child_mode = True
-        self.debug_mode = debug_mode
-        self.lock = lock
-        self.jobs = jobs
-        sys.stdin = stdin
-
-    def activate_as_parent(self, debug=False):
-        assert not self.child_mode
-        self.debug_mode = debug
-        self.jobs = Manager().list()
+        self.debug_mode = False
+        self.jobs = []
         self.lock = Lock()
-        self.parent_mode = True
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         answers = _("[Y/n]") if default else _("[y/N]")
@@ -121,19 +106,6 @@ class IOManager(object):
                 write_to_stream(STDOUT_WRITER, epilogue + "\n")
             self._write_current_job()
         return answer
-
-    @property
-    def child_parameters(self):
-        try:
-            new_stdin = os.fdopen(os.dup(sys.stdin.fileno()))
-        except ValueError:  # with pytest: redirected Stdin is pseudofile, has no fileno()
-            new_stdin = sys.stdin
-        return (
-            self.lock,
-            self.jobs,
-            self.debug_mode,
-            new_stdin,
-        )
 
     @clear_formatting
     @add_debug_timestamp
