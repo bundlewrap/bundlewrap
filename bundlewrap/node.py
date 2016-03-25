@@ -4,10 +4,9 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from getpass import getuser
 import json
-from os import environ, remove
+from os import environ
 from pipes import quote
 from socket import gethostname
-from tempfile import mkstemp
 from time import time
 
 from . import operations
@@ -28,7 +27,7 @@ from .exceptions import (
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .metadata import check_for_unsolvable_metadata_key_conflicts
-from .utils import cached_property, graph_for_items, merge_dict, names
+from .utils import cached_property, graph_for_items, merge_dict, names, tempfile
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, wrap_question, yellow
 from .utils.text import force_text, mark_for_translation as _
@@ -665,9 +664,7 @@ class NodeLock(object):
         self.interactive = interactive
 
     def __enter__(self):
-        handle, local_path = mkstemp()
-
-        try:
+        with tempfile() as local_path:
             with io.job(_("  {node}  getting lock status...").format(node=self.node.name)):
                 result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
                 if result.return_code != 0:
@@ -693,7 +690,9 @@ class NodeLock(object):
                         info['duration'] = _("<unknown>")
                     else:
                         info['date'] = datetime.fromtimestamp(d).strftime("%c")
-                        info['duration'] = str(datetime.now() - datetime.fromtimestamp(d)).split(".")[0]
+                        info['duration'] = str(
+                            datetime.now() - datetime.fromtimestamp(d)
+                        ).split(".")[0]
                     if 'user' not in info:
                         info['user'] = _("<unknown>")
                     if self.ignore or (self.interactive and io.ask(
@@ -715,8 +714,6 @@ class NodeLock(object):
                         )),
                     }))
                 self.node.upload(local_path, LOCK_FILE)
-        finally:
-            remove(local_path)
 
     def __exit__(self, type, value, traceback):
         with io.job(_("  {node}  removing lock...").format(node=self.node.name)):

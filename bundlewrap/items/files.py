@@ -16,7 +16,7 @@ from traceback import format_exception
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
-from bundlewrap.utils import cached_property, hash_local_file, sha1
+from bundlewrap.utils import cached_property, hash_local_file, sha1, tempfile
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
@@ -150,12 +150,11 @@ def get_remote_file_contents(node, path):
     """
     Returns the contents of the given path as a string.
     """
-    handle, tmp_file = mkstemp()
-    node.download(path, tmp_file)
-    with open(tmp_file, 'rb') as f:
-        content = f.read()
-    remove(tmp_file)
-    return content
+    with tempfile() as tmp_file:
+        node.download(path, tmp_file)
+        with open(tmp_file, 'rb') as f:
+            content = f.read()
+        return content
 
 
 def validator_content_type(item_id, value):
@@ -461,24 +460,22 @@ class File(Item):
         The calling method is responsible for cleaning up the file at
         the returned path (only if not a binary).
         """
-        if self.attributes['content_type'] == 'binary':
-            local_path = self.template
-        else:
-            handle, local_path = mkstemp()
-            with open(local_path, 'wb') as f:
-                f.write(self.content)
-
-        if self.attributes['verify_with']:
-            cmd = self.attributes['verify_with'].format(quote(local_path))
-            io.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
-            if call(cmd, shell=True) == 0:
-                io.debug("{i} passed local validation".format(i=self.id))
+        with tempfile() as tmp_file:
+            if self.attributes['content_type'] == 'binary':
+                local_path = self.template
             else:
-                raise BundleError(_(
-                    "{i} failed local validation using: {c}"
-                ).format(c=cmd, i=self.id))
+                local_path = tmp_file
+                with open(local_path, 'wb') as f:
+                    f.write(self.content)
 
-        yield local_path
+            if self.attributes['verify_with']:
+                cmd = self.attributes['verify_with'].format(quote(local_path))
+                io.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
+                if call(cmd, shell=True) == 0:
+                    io.debug("{i} passed local validation".format(i=self.id))
+                else:
+                    raise BundleError(_(
+                        "{i} failed local validation using: {c}"
+                    ).format(c=cmd, i=self.id))
 
-        if self.attributes['content_type'] != 'binary':
-                remove(local_path)
+            yield local_path

@@ -2,13 +2,15 @@
 from __future__ import unicode_literals
 
 from codecs import getwriter
+from contextlib import contextmanager
 from copy import deepcopy
 import hashlib
 from inspect import isgenerator
-from os import chmod, makedirs
+from os import chmod, close, makedirs, remove
 from os.path import dirname, exists
 import stat
 from sys import stderr, stdout
+from tempfile import mkstemp
 from types import MethodType
 
 from requests import get
@@ -372,3 +374,11 @@ def sha1(data):
     hasher = hashlib.sha1()
     hasher.update(data)
     return hasher.hexdigest()
+
+
+@contextmanager
+def tempfile():
+    handle, path = mkstemp()
+    close(handle)
+    yield path
+    remove(path)
