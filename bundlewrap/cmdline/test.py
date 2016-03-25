@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from copy import copy
 
 from ..concurrency import WorkerPool
-from ..exceptions import WorkerException
 from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, mark_for_translation as _, red
@@ -17,31 +16,18 @@ def bw_test(repo, args):
     else:
         pending_nodes = copy(list(repo.nodes))
     with WorkerPool(workers=args['node_workers']) as worker_pool:
-        while worker_pool.keep_running():
-            try:
-                msg = worker_pool.get_event()
-            except WorkerException as e:
-                msg = "{x} {msg}\n".format(
-                    msg=bold(e.task_id),
-                    x=red("!"),
+        while pending_nodes or worker_pool.workers_are_running:
+            while pending_nodes and worker_pool.workers_are_available:
+                node = pending_nodes.pop()
+                worker_pool.start_task(
+                    node.test,
+                    task_id=node.name,
+                    kwargs={
+                        'workers': args['item_workers'],
+                    },
                 )
-                yield msg
-                yield e.traceback
-                yield 1
-                raise StopIteration()
-            if msg['msg'] == 'REQUEST_WORK':
-                if pending_nodes:
-                    node = pending_nodes.pop()
-                    worker_pool.start_task(
-                        msg['wid'],
-                        node.test,
-                        task_id=node.name,
-                        kwargs={
-                            'workers': args['item_workers'],
-                        },
-                    )
-                else:
-                    worker_pool.quit(msg['wid'])
+
+            worker_pool.get_result()
 
     checked_groups = []
     for group in repo.groups:

@@ -119,96 +119,72 @@ def handle_apply_result(node, item, status_code, interactive, changes=None):
 def apply_items(node, autoskip_selector="", workers=1, interactive=False, profiling=False):
     item_queue = ItemQueue(node.items)
     with WorkerPool(workers=workers) as worker_pool:
-        # This whole thing is set in motion because every worker
-        # initially asks for work. He also reports back when he finished
-        # a job. Actually, all these conditions are internal to
-        # worker_pool -- it will tell us whether we must keep going:
-        while worker_pool.keep_running():
-            msg = worker_pool.get_event()
-            if msg['msg'] == 'REQUEST_WORK':
-                try:
-                    item, skipped_items = item_queue.pop()
-                except IndexError:
-                    if worker_pool.jobs_open > 0:
-                        # No work right now, but another worker might
-                        # finish and "create" a new job. Keep this
-                        # worker idle.
-                        worker_pool.mark_idle(msg['wid'])
-                    else:
-                        # No work, no outstanding jobs. We're done.
-                        # quit() decreases workers_alive.
-                        worker_pool.quit(msg['wid'])
-                else:
-                    for skipped_item in skipped_items:
-                        handle_apply_result(
-                            node,
-                            skipped_item,
-                            Item.STATUS_SKIPPED,
-                            interactive,
-                            changes=[_("no pre-trigger")],
-                        )
-                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
-
-                    # start_task() increases jobs_open.
-                    worker_pool.start_task(
-                        msg['wid'],
-                        item.apply,
-                        task_id=item.id,
-                        kwargs={
-                            'autoskip_selector': autoskip_selector,
-                            'interactive': interactive,
-                        },
+        while item_queue.items_without_deps or worker_pool.workers_are_running:
+            while item_queue.items_without_deps and worker_pool.workers_are_available:
+                item, skipped_items = item_queue.pop()
+                for skipped_item in skipped_items:
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive,
+                        changes=[_("no pre-trigger")],
                     )
+                    yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
 
-            elif msg['msg'] == 'FINISHED_WORK':
-                # worker_pool automatically decreases jobs_open when it
-                # sees a 'FINISHED_WORK' message.
+                worker_pool.start_task(
+                    item.apply,
+                    task_id=item.id,
+                    kwargs={
+                        'autoskip_selector': autoskip_selector,
+                        'interactive': interactive,
+                    },
+                )
 
-                # The task's id is the item we just processed.
-                item_id = msg['task_id']
-                item = find_item(item_id, item_queue.pending_items)
+            # now that we have filled our queue, wait until a result
+            # becomes available
+            result = worker_pool.get_result()
 
-                status_code, changes = msg['return_value']
+            item_id = result['task_id']
+            item = find_item(item_id, item_queue.pending_items)
 
-                if status_code == Item.STATUS_FAILED:
-                    for skipped_item in item_queue.item_failed(item):
-                        handle_apply_result(
-                            node,
-                            skipped_item,
-                            Item.STATUS_SKIPPED,
-                            interactive,
-                            changes=[_("dep failed")],
-                        )
-                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
-                elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
-                    item_queue.item_fixed(item)
-                elif status_code == Item.STATUS_OK:
-                    item_queue.item_ok(item)
-                elif status_code == Item.STATUS_SKIPPED:
-                    for skipped_item in item_queue.item_skipped(item):
-                        handle_apply_result(
-                            node,
-                            skipped_item,
-                            Item.STATUS_SKIPPED,
-                            interactive,
-                            changes=[_("dep skipped")],
-                        )
-                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
-                else:
-                    raise AssertionError(_(
-                        "unknown item status returned for {item}: {status}".format(
-                            item=item.id,
-                            status=repr(status_code),
-                        ),
-                    ))
+            status_code, changes = result['return_value']
 
-                handle_apply_result(node, item, status_code, interactive, changes=changes)
-                if not isinstance(item, DummyItem):
-                    yield (item.id, status_code, msg['duration'])
+            if status_code == Item.STATUS_FAILED:
+                for skipped_item in item_queue.item_failed(item):
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive,
+                        changes=[_("dep failed")],
+                    )
+                    yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
+            elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
+                item_queue.item_fixed(item)
+            elif status_code == Item.STATUS_OK:
+                item_queue.item_ok(item)
+            elif status_code == Item.STATUS_SKIPPED:
+                for skipped_item in item_queue.item_skipped(item):
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive,
+                        changes=[_("dep skipped")],
+                    )
+                    yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
+            else:
+                raise AssertionError(_(
+                    "unknown item status returned for {item}: {status}".format(
+                        item=item.id,
+                        status=repr(status_code),
+                    ),
+                ))
 
-                # Finally, we have a new job queue. Thus, tell all idle
-                # workers to ask for work again.
-                worker_pool.activate_idle_workers()
+            handle_apply_result(node, item, status_code, interactive, changes=changes)
+            if not isinstance(item, DummyItem):
+                yield (item.id, status_code, result['duration'])
 
     # we have no items without deps left and none are processing
     # there must be a loop
@@ -746,43 +722,45 @@ class NodeLock(object):
 def test_items(node, workers=1):
     item_queue = ItemTestQueue(node.items)
 
-    with WorkerPool(workers=workers) as worker_pool:
-        while worker_pool.keep_running():
-            msg = worker_pool.get_event()
-            if msg['msg'] == 'REQUEST_WORK':
+    with WorkerPool(pool_id="test_items_{}".format(node.name), workers=workers) as worker_pool:
+        while item_queue.items_without_deps or worker_pool.workers_are_running:
+            while item_queue.items_without_deps and worker_pool.workers_are_available:
                 try:
                     # Get the next non-DummyItem in the queue.
                     while True:
                         item = item_queue.pop()
                         if not isinstance(item, DummyItem):
                             break
+                except IndexError:  # no more items available right now
+                    break
+                else:
                     worker_pool.start_task(
-                        msg['wid'],
                         item.test,
                         task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
                     )
-                except IndexError:
-                    worker_pool.quit(msg['wid'])
-                    if item_queue.items_with_deps:
-                        io.stderr(_(
-                            "There was a dependency problem. Look at the debug.svg generated "
-                            "by the following command and try to find a loop:\n"
-                            "printf '{}' | dot -Tsvg -odebug.svg"
-                        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
 
-                        raise ItemDependencyError(
-                            _("bad dependencies between these items: {}").format(
-                                ", ".join([i.id for i in item_queue.items_with_deps]),
-                            )
-                        )
-            elif msg['msg'] == 'FINISHED_WORK':
-                node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
+            if worker_pool.workers_are_running:
+                completed_task = worker_pool.get_result()
+                node_name, bundle_name, item_id = completed_task['task_id'].split(":", 2)
                 io.stdout("{x} {node}  {bundle}  {item}".format(
                     bundle=bold(bundle_name),
                     item=item_id,
                     node=bold(node_name),
                     x=green("✓"),
                 ))
+
+    if item_queue.items_with_deps:
+        io.stderr(_(
+            "There was a dependency problem. Look at the debug.svg generated "
+            "by the following command and try to find a loop:\n"
+            "printf '{}' | dot -Tsvg -odebug.svg"
+        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
+
+        raise ItemDependencyError(
+            _("bad dependencies between these items: {}").format(
+                ", ".join([i.id for i in item_queue.items_with_deps]),
+            )
+        )
 
 
 def verify_items(all_items, show_all=False, workers=1):
@@ -795,14 +773,12 @@ def verify_items(all_items, show_all=False, workers=1):
             items.append(item)
 
     with WorkerPool(workers=workers) as worker_pool:
-        while worker_pool.keep_running():
-            msg = worker_pool.get_event()
-            if msg['msg'] == 'REQUEST_WORK':
+        while items or worker_pool.workers_are_running:
+            while items and worker_pool.workers_are_available:
                 while True:
                     try:
                         item = items.pop()
                     except IndexError:
-                        worker_pool.quit(msg['wid'])
                         break
                     if item._faults_missing_for_attributes:
                         if item.error_on_missing_fault:
@@ -817,15 +793,15 @@ def verify_items(all_items, show_all=False, workers=1):
                             continue
                     else:
                         worker_pool.start_task(
-                            msg['wid'],
                             item.get_status,
                             task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
                         )
                         break
 
-            elif msg['msg'] == 'FINISHED_WORK':
-                node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
-                item_status = msg['return_value']
+            if worker_pool.workers_are_running:
+                result = worker_pool.get_result()
+                node_name, bundle_name, item_id = result['task_id'].split(":", 2)
+                item_status = result['return_value']
                 if not item_status.correct:
                     if item_status.must_be_created:
                         changes_text = _("create")

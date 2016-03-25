@@ -2,9 +2,8 @@
 from __future__ import unicode_literals
 
 from ..concurrency import WorkerPool
-from ..exceptions import WorkerException
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import error_summary, mark_for_translation as _, red
+from ..utils.text import error_summary, mark_for_translation as _
 
 
 def stats_summary(node_stats):
@@ -66,36 +65,26 @@ def bw_verify(repo, args):
     node_stats = {}
     pending_nodes = get_target_nodes(repo, args['target'])
     with WorkerPool(workers=args['node_workers']) as worker_pool:
-        while worker_pool.keep_running():
-            try:
-                msg = worker_pool.get_event()
-            except WorkerException as e:
-                msg = "{} {}: {}".format(
-                    red("!"),
-                    e.task_id,
-                    e.wrapped_exception,
+        while pending_nodes or worker_pool.workers_are_running:
+            while pending_nodes and worker_pool.workers_are_available:
+                node = pending_nodes.pop()
+                worker_pool.start_task(
+                    node.verify,
+                    task_id=node.name,
+                    kwargs={
+                        'show_all': args['show_all'],
+                        'workers': args['item_workers'],
+                    },
                 )
+            try:
+                result = worker_pool.get_result()
+            except Exception as exc:
                 if args['debug']:
-                    yield e.traceback
-                yield msg
-                errors.append(msg)
-                continue
-            if msg['msg'] == 'REQUEST_WORK':
-                if pending_nodes:
-                    node = pending_nodes.pop()
-                    worker_pool.start_task(
-                        msg['wid'],
-                        node.verify,
-                        task_id=node.name,
-                        kwargs={
-                            'show_all': args['show_all'],
-                            'workers': args['item_workers'],
-                        },
-                    )
-                else:
-                    worker_pool.quit(msg['wid'])
-            elif msg['msg'] == 'FINISHED_WORK':
-                node_stats[msg['task_id']] = msg['return_value']
+                    yield exc.traceback
+                yield str(exc)
+                errors.append(str(exc))
+            else:
+                node_stats[result['task_id']] = result['return_value']
 
     if args['summary']:
         for line in stats_summary(node_stats):
