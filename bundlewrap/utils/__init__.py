@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from codecs import getwriter
 from contextlib import contextmanager
-from copy import deepcopy
 import hashlib
 from inspect import isgenerator
 from os import chmod, close, makedirs, remove
@@ -281,7 +280,7 @@ def merge_dict(base, update):
     if not isinstance(update, dict):
         return update
 
-    merged = deepcopy(base)
+    merged = base.copy()
 
     for key, value in update.items():
         merge = key in base and not isinstance(value, _Atomic)
@@ -296,7 +295,7 @@ def merge_dict(base, update):
                 isinstance(value, tuple)
             )
         ):
-            extended = deepcopy(base[key])
+            extended = base[key][:]
             extended.extend(value)
             merged[key] = extended
         elif (
