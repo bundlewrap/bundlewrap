@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from ..concurrency import WorkerPool
+from ..exceptions import WorkerException
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold
 from ..utils.text import error_summary, mark_for_translation as _
@@ -41,11 +42,15 @@ def bw_apply(repo, args):
 
             try:
                 result = worker_pool.get_result()
-            except Exception as exc:
+            except WorkerException as exc:
+                msg = "{}: {}".format(
+                    exc.kwargs['task_id'],
+                    exc.wrapped_exception,
+                )
                 if args['debug']:
-                    yield exc.traceback
-                yield str(exc)
-                errors.append(str(exc))
+                    yield exc.wrapped_exception.traceback
+                yield msg
+                errors.append(msg)
             else:
                 node_name = result['task_id']
                 if (

@@ -134,7 +134,7 @@ def apply_items(node, autoskip_selector="", workers=1, interactive=False, profil
 
                 worker_pool.start_task(
                     item.apply,
-                    task_id=item.id,
+                    task_id="{}:{}".format(node.name, item.id),
                     kwargs={
                         'autoskip_selector': autoskip_selector,
                         'interactive': interactive,
@@ -145,7 +145,7 @@ def apply_items(node, autoskip_selector="", workers=1, interactive=False, profil
             # becomes available
             result = worker_pool.get_result()
 
-            item_id = result['task_id']
+            item_id = result['task_id'].split(":", 1)[1]
             item = find_item(item_id, item_queue.pending_items)
 
             status_code, changes = result['return_value']

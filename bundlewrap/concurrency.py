@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from datetime import datetime
 from random import randint
 
+from .exceptions import WorkerException
 from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
@@ -62,7 +63,7 @@ class WorkerPool(object):
                 task=task_id,
                 worker=worker_id,
             ))
-            raise exception
+            raise WorkerException(exception, task_id=task_id, worker_id=worker_id)
         else:
             io.debug(_(
                 "worker pool {pool} delivering result of {task} on worker #{worker}"

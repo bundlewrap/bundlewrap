@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from copy import copy
 
 from ..concurrency import WorkerPool
+from ..exceptions import WorkerException
 from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, mark_for_translation as _, red
@@ -27,7 +28,14 @@ def bw_test(repo, args):
                     },
                 )
 
-            worker_pool.get_result()
+            try:
+                worker_pool.get_result()
+            except WorkerException as exc:
+                yield _("{x} {task}:").format(
+                    x=red("!"),
+                    task=exc.kwargs['task_id'],
+                )
+                raise exc.wrapped_exception
 
     checked_groups = []
     for group in repo.groups:
