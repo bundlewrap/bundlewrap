@@ -131,17 +131,6 @@ class HooksProxy(object):
                 if event in events:
                     files.append(filename)
 
-            # check the cache for the imported function,
-            # import if necessary
-            for filename in files:
-                if filename not in self.__module_cache:
-                    self.__module_cache[filename] = {}
-                    filepath = join(self.__path, filename)
-                    for name, obj in utils.get_all_attrs_from_file(filepath).items():
-                        if name not in HOOK_EVENTS:
-                            continue
-                        self.__module_cache[filename][name] = obj
-
             # define a function that calls all hook functions
             def hook(*args, **kwargs):
                 for filename in files:
@@ -152,19 +141,7 @@ class HooksProxy(object):
 
     def _register_hooks(self):
         """
-        TODO check if this is still required after getting rid of
-        subprocesses and pickling.
-
-        Builds an internal dictionary of defined hooks that is used in
-        __getstate__ to avoid reimporting all hook modules in child
-        processes.
-
-        We have to do this since we cannot pass the imported functions
-        to a child process. The dumb-but-simple approach would be to
-        rediscover hooks in every child process (which might be costly).
-
-        From this dictionary the child process knows which hooks exist
-        and can import them only as needed.
+        Builds an internal dictionary of defined hooks.
 
         Priming __module_cache here is just a performance shortcut and
         could be left out.
