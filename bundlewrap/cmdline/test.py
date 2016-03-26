@@ -35,7 +35,9 @@ def bw_test(repo, args):
                     x=red("!"),
                     task=exc.kwargs['task_id'],
                 )
-                raise exc.wrapped_exception
+                yield exc.traceback
+                yield "{}: {}".format(type(exc.wrapped_exception), str(exc.wrapped_exception))
+                exit(1)
 
     checked_groups = []
     for group in repo.groups:

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from datetime import datetime
 from random import randint
+from traceback import format_tb
 
 from .exceptions import WorkerException
 from .utils.text import mark_for_translation as _
@@ -63,7 +64,11 @@ class WorkerPool(object):
                 task=task_id,
                 worker=worker_id,
             ))
-            raise WorkerException(exception, task_id=task_id, worker_id=worker_id)
+            try:
+                traceback = format_tb(exception.__traceback__)
+            except AttributeError:  # Python 2
+                traceback = format_tb(future.exception_info()[1])
+            raise WorkerException(exception, traceback, task_id=task_id, worker_id=worker_id)
         else:
             io.debug(_(
                 "worker pool {pool} delivering result of {task} on worker #{worker}"

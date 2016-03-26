@@ -153,11 +153,13 @@ class WorkerException(Exception):
     Used by worker threads to wrap their exceptions with additional
     data.
     """
-    def __init__(self, wrapped_exception, **kwargs):
+    def __init__(self, wrapped_exception, traceback, **kwargs):
         # avoid nesting WorkerExceptions, just store the original exception
         if isinstance(wrapped_exception, WorkerException):
             self.kwargs = wrapped_exception.kwargs
+            self.traceback = wrapped_exception.traceback
             self.wrapped_exception = wrapped_exception.wrapped_exception
         else:
             self.kwargs = kwargs
+            self.traceback = "".join(traceback)
             self.wrapped_exception = wrapped_exception

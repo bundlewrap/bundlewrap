@@ -85,7 +85,8 @@ def bw_verify(repo, args):
                     exc.wrapped_exception,
                 )
                 if args['debug']:
-                    yield exc.wrapped_exception.traceback
+                    yield exc.traceback
+                    yield repr(exc)
                 yield msg
                 errors.append(msg)
             else:
