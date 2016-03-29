@@ -63,10 +63,55 @@ class RunResult(object):
         return force_text(self.stdout)
 
 
-def run(hostname, command, ignore_failure=False, add_host_keys=False, log_function=None):
+def run(hostname, command, ignore_failure=False, add_host_keys=False):
     """
     Runs a command on a remote system.
     """
+    io.debug("running on {host}: {command}".format(command=command, host=hostname))
+
+    # Launch OpenSSH. It's important that SSH gets a dummy stdin, i.e.
+    # it must *not* read from the terminal. Otherwise, it can steal user
+    # input.
+    ssh_process = Popen(
+        [
+            "ssh",
+            "-o",
+            "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+            hostname,
+            "LANG=C sudo bash -c " + quote(command),
+        ],
+        stdin=PIPE,
+        stderr=PIPE,
+        stdout=PIPE,
+    )
+
+    stdout, stderr = ssh_process.communicate()
+
+    io.debug("command finished with return code {}".format(ssh_process.returncode))
+
+    result = RunResult()
+    result.stdout = stdout
+    result.stderr = stderr
+    result.return_code = ssh_process.returncode
+
+    if result.return_code != 0 and (not ignore_failure or result.return_code == 255):
+        raise RemoteException(_(
+            "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}"
+        ).format(
+            command=command,
+            host=hostname,
+            rcode=result.return_code,
+            result=force_text(result.stdout) + force_text(result.stderr),
+        ))
+    return result
+
+
+def run_with_log(hostname, command, log_fmt, add_host_keys=False):
+    """
+    Runs a command on a remote system.
+    """
+    def log_function(msg):
+        io.stdout(log_fmt.format(force_text(msg).rstrip("\n")))
 
     # LineBuffer objects take care of always printing complete lines
     # which have been properly terminated by a newline. This is only
@@ -153,15 +198,6 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     result.stderr = stderr_lb.record.getvalue()
     result.return_code = ssh_process.returncode
 
-    if result.return_code != 0 and (not ignore_failure or result.return_code == 255):
-        raise RemoteException(_(
-            "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}"
-        ).format(
-            command=command,
-            host=hostname,
-            rcode=result.return_code,
-            result=force_text(result.stdout) + force_text(result.stderr),
-        ))
     return result
 
 
