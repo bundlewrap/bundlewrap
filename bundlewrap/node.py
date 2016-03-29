@@ -7,6 +7,7 @@ import json
 from os import environ
 from pipes import quote
 from socket import gethostname
+from threading import Lock
 from time import time
 
 from . import operations
@@ -316,6 +317,8 @@ class Node(object):
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
         self._node_os = infodict.get('os')
+        self._ssh_conn_established = False
+        self._ssh_first_conn_lock = Lock()
         self.add_ssh_host_keys = False
         self.hostname = infodict.get('hostname', self.name)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
@@ -586,11 +589,33 @@ class Node(object):
                 ))
         else:
             log_function = None
+
+        add_host_keys = True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False
+
+        if not self._ssh_conn_established:
+            # Sometimes we're opening SSH connections to a node too fast
+            # for OpenSSH to establish the ControlMaster socket for the
+            # second and following connections to use.
+            # To prevent this, we just wait until a first dummy command
+            # has completed on the node before trying to reuse the
+            # multiplexed connection.
+            if self._ssh_first_conn_lock.acquire(False):
+                try:
+                    operations.run(self.hostname, "true", add_host_keys=add_host_keys)
+                    self._ssh_conn_established = True
+                finally:
+                    self._ssh_first_conn_lock.release()
+            else:
+                # we didn't get the lock immediately, now we just wait
+                # until it is released before we proceed
+                with self._ssh_first_conn_lock:
+                    pass
+
         return operations.run(
             self.hostname,
             command,
             ignore_failure=may_fail,
-            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
+            add_host_keys=add_host_keys,
             log_function=log_function,
         )
 
