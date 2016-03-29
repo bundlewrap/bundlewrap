@@ -80,7 +80,6 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False):
             hostname,
             "LANG=C sudo bash -c " + quote(command),
         ],
-        stdin=PIPE,
         stderr=PIPE,
         stdout=PIPE,
     )
