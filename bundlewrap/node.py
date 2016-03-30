@@ -313,7 +313,7 @@ class Node(object):
 
         self.name = name
         self._bundles = infodict.get('bundles', [])
-        self._compiling_metadata = False
+        self._compiling_metadata = Lock()
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
         self._node_os = infodict.get('os')
@@ -503,61 +503,64 @@ class Node(object):
 
     @cached_property
     def metadata(self):
-        if self._compiling_metadata:
+        if not self._compiling_metadata.acquire(False):
             raise DontCache(self._metadata_so_far)
+        try:
+            self._metadata_so_far = {}
 
-        self._compiling_metadata = True
-        self._metadata_so_far = {}
+            with io.job(_("  {node}  building group metadata...").format(node=self.name)):
+                group_order = _flatten_group_hierarchy(self.groups)
+                for group_name in group_order:
+                    self._metadata_so_far = merge_dict(
+                        self._metadata_so_far,
+                        self.repo.get_group(group_name).metadata,
+                    )
 
-        with io.job(_("  {node}  building group metadata...").format(node=self.name)):
-            group_order = _flatten_group_hierarchy(self.groups)
-            for group_name in group_order:
-                self._metadata_so_far = merge_dict(self._metadata_so_far, self.repo.get_group(group_name).metadata)
+            with io.job(_("  {node}  merging node metadata...").format(node=self.name)):
+                self._metadata_so_far = merge_dict(self._metadata_so_far, self._node_metadata)
 
-        with io.job(_("  {node}  merging node metadata...").format(node=self.name)):
-            self._metadata_so_far = merge_dict(self._metadata_so_far, self._node_metadata)
+            with io.job(_("  {node}  running metadata processors...").format(node=self.name)):
+                iterations = {}
+                # break_next makes sure that we provide one additional opportunity
+                # for metadata changes after all metadata processors for *this*
+                # did not return modified metadata
+                # however, the 'final' iteration of metadata for *this* might cause
+                # metadata to change on *another* node that is access while trying
+                # to compile metadata for *this* node
+                # and metadata changes on other nodes might in turn cause metadata
+                # on *this* node to change...
+                break_next = False
+                while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
+                    modified = False
+                    for metadata_processor in self.metadata_processors:
+                        iterations.setdefault(metadata_processor.__name__, 1)
+                        processed = metadata_processor(self._metadata_so_far.copy())
+                        assert isinstance(processed, dict)
+                        if processed != self._metadata_so_far:
+                            self._metadata_so_far = processed
+                            iterations[metadata_processor.__name__] += 1
+                            modified = True
+                            break_next = False
+                    if not modified:
+                        if break_next:
+                            break
+                        else:
+                            break_next = True
 
-        with io.job(_("  {node}  running metadata processors...").format(node=self.name)):
-            iterations = {}
-            # break_next makes sure that we provide one additional opportunity
-            # for metadata changes after all metadata processors for *this*
-            # did not return modified metadata
-            # however, the 'final' iteration of metadata for *this* might cause
-            # metadata to change on *another* node that is access while trying
-            # to compile metadata for *this* node
-            # and metadata changes on other nodes might in turn cause metadata
-            # on *this* node to change...
-            break_next = False
-            while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
-                modified = False
-                for metadata_processor in self.metadata_processors:
-                    iterations.setdefault(metadata_processor.__name__, 1)
-                    processed = metadata_processor(self._metadata_so_far.copy())
-                    assert isinstance(processed, dict)
-                    if processed != self._metadata_so_far:
-                        self._metadata_so_far = processed
-                        iterations[metadata_processor.__name__] += 1
-                        modified = True
-                        break_next = False
-                if not modified:
-                    if break_next:
-                        break
-                    else:
-                        break_next = True
+            for metadata_processor, number_of_iterations in iterations.items():
+                if number_of_iterations >= META_PROC_MAX_ITER:
+                    raise BundleError(_(
+                        "metadata processor '{proc}' stopped after too many iterations "
+                        "({max_iter}) for node '{node}' to prevent infinite loop".format(
+                            max_iter=META_PROC_MAX_ITER,
+                            node=self.name,
+                            proc=metadata_processor,
+                        ),
+                    ))
 
-        for metadata_processor, number_of_iterations in iterations.items():
-            if number_of_iterations >= META_PROC_MAX_ITER:
-                raise BundleError(_(
-                    "metadata processor '{proc}' stopped after too many iterations "
-                    "({max_iter}) for node '{node}' to prevent infinite loop".format(
-                        max_iter=META_PROC_MAX_ITER,
-                        node=self.name,
-                        proc=metadata_processor,
-                    ),
-                ))
-
-        self._compiling_metadata = False
-        return self._metadata_so_far
+            return self._metadata_so_far
+        finally:
+            self._compiling_metadata.release()
 
     @property
     def metadata_processors(self):
