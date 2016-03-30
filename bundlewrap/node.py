@@ -30,8 +30,8 @@ from .items import Item
 from .metadata import check_for_unsolvable_metadata_key_conflicts
 from .utils import cached_property, graph_for_items, merge_dict, names, tempfile
 from .utils.statedict import hash_statedict
-from .utils.text import blue, bold, green, red, validate_name, wrap_question, yellow
-from .utils.text import mark_for_translation as _
+from .utils.text import blue, bold, cyan, green, red, validate_name, wrap_question, yellow
+from .utils.text import force_text, mark_for_translation as _
 from .utils.ui import io
 
 LOCK_PATH = "/tmp/bundlewrap.lock"
@@ -579,10 +579,20 @@ class Node(object):
 
         return self.OS_ALIASES[os.lower()]
 
-    def run(self, command, may_fail=False, log_fmt=None):
+    def run(self, command, may_fail=False, log_output=False):
+        if log_output:
+            def log_function(msg):
+                io.stdout("{x} {node}  {msg}".format(
+                    node=bold(self.name),
+                    msg=force_text(msg).rstrip("\n"),
+                    x=cyan("›"),
+                ))
+        else:
+            log_function = None
+
         add_host_keys = True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False
 
-        if log_fmt is None and not self._ssh_conn_established:
+        if not self._ssh_conn_established:
             # Sometimes we're opening SSH connections to a node too fast
             # for OpenSSH to establish the ControlMaster socket for the
             # second and following connections to use.
@@ -601,20 +611,13 @@ class Node(object):
                 with self._ssh_first_conn_lock:
                     pass
 
-        if log_fmt:
-            return operations.run_with_log(
-                self.hostname,
-                command,
-                log_fmt,
-                add_host_keys=add_host_keys,
-            )
-        else:
-            return operations.run(
-                self.hostname,
-                command,
-                ignore_failure=may_fail,
-                add_host_keys=add_host_keys,
-            )
+        return operations.run(
+            self.hostname,
+            command,
+            ignore_failure=may_fail,
+            add_host_keys=add_host_keys,
+            log_function=log_function,
+        )
 
     def test(self, workers=4):
         with io.job(_("  {node}  checking for metadata collisions...").format(node=self.name)):

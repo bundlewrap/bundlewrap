@@ -7,7 +7,7 @@ from ..concurrency import WorkerPool
 from ..exceptions import WorkerException
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
-from ..utils.text import bold, cyan, error_summary, green, red
+from ..utils.text import bold, error_summary, green, red
 
 
 def run_on_node(node, command, may_fail, log_output):
@@ -17,13 +17,12 @@ def run_on_node(node, command, may_fail, log_output):
         command,
     )
 
-    log_fmt = "{x} {node}  {{}}".format(
-        node=bold(node.name),
-        x=cyan("›"),
-    )
-
     start = datetime.now()
-    result = node.run(command, log_fmt=log_fmt)
+    result = node.run(
+        command,
+        may_fail=may_fail,
+        log_output=log_output,
+    )
     end = datetime.now()
     duration = end - start
 
