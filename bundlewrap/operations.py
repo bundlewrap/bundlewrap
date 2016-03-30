@@ -24,6 +24,14 @@ def output_thread_body(line_buffer, read_fd, quit_event, read_until_eof):
             else:  # EOF
                 return
         elif quit_event.is_set() and not read_until_eof:
+            # one last chance to read output after the child process
+            # has died
+            while True:
+                r, w, x = select([read_fd], [], [], 0)
+                if r:
+                    line_buffer.write(read(read_fd, 1024))
+                else:
+                    break
             return
 
 
