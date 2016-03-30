@@ -69,6 +69,8 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False):
     """
     io.debug("running on {host}: {command}".format(command=command, host=hostname))
 
+    stderr_fd_r, stderr_fd_w = pipe()
+
     # Launch OpenSSH. It's important that SSH gets a dummy stdin, i.e.
     # it must *not* read from the terminal. Otherwise, it can steal user
     # input.
@@ -81,17 +83,32 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False):
             "LANG=C sudo bash -c " + quote(command),
         ],
         stdin=PIPE,
-        stderr=PIPE,
+        stderr=stderr_fd_w,
         stdout=PIPE,
     )
 
-    stdout, stderr = ssh_process.communicate()
+    quit_event = Event()
+    stderr_lb = LineBuffer(None)
+    stderr_thread = Thread(
+        args=(stderr_lb, stderr_fd_r, quit_event),
+        target=output_thread_body,
+    )
+    stderr_thread.start()
+
+    try:
+        stdout, empty_stderr = ssh_process.communicate()
+    finally:
+        quit_event.set()
+        stderr_thread.join()
+        stderr_lb.close()
+        close(stderr_fd_r)
+        close(stderr_fd_w)
 
     io.debug("command finished with return code {}".format(ssh_process.returncode))
 
     result = RunResult()
     result.stdout = stdout
-    result.stderr = stderr
+    result.stderr = stderr_lb.record.getvalue()
     result.return_code = ssh_process.returncode
 
     if result.return_code != 0 and (not ignore_failure or result.return_code == 255):
