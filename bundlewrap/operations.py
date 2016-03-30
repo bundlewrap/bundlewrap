@@ -13,12 +13,16 @@ from .utils.text import force_text, LineBuffer, mark_for_translation as _, rands
 from .utils.ui import io
 
 
-def output_thread_body(line_buffer, read_fd, quit_event):
+def output_thread_body(line_buffer, read_fd, quit_event, read_until_eof):
     while True:
         r, w, x = select([read_fd], [], [], 0.1)
         if r:
-            line_buffer.write(read(read_fd, 1024))
-        elif quit_event.is_set():
+            chunk = read(read_fd, 1024)
+            if chunk:
+                line_buffer.write(chunk)
+            else:  # EOF
+                return
+        elif quit_event.is_set() and not read_until_eof:
             return
 
 
@@ -103,11 +107,11 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
 
     quit_event = Event()
     stdout_thread = Thread(
-        args=(stdout_lb, stdout_fd_r, quit_event),
+        args=(stdout_lb, stdout_fd_r, quit_event, True),
         target=output_thread_body,
     )
     stderr_thread = Thread(
-        args=(stderr_lb, stderr_fd_r, quit_event),
+        args=(stderr_lb, stderr_fd_r, quit_event, False),
         target=output_thread_body,
     )
     stdout_thread.start()
@@ -138,11 +142,12 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
         # checks for quit_event being set. This way, we don't rely on
         # pipes being shut down.
         quit_event.set()
+        close(stdout_fd_w)
         stdout_thread.join()
         stderr_thread.join()
         stdout_lb.close()
         stderr_lb.close()
-        for fd in (stdout_fd_r, stdout_fd_w, stderr_fd_r, stderr_fd_w):
+        for fd in (stdout_fd_r, stderr_fd_r, stderr_fd_w):
             close(fd)
 
     io.debug("command finished with return code {}".format(ssh_process.returncode))
