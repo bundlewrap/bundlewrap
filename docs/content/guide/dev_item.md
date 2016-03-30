@@ -15,7 +15,7 @@ normal Python dictionaries with some restrictions:
 	* None
 * ...or a list/tuple containing only instances of one of the types above
 
-Additional information can be stored in statedicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" sdict information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply, but everything must be pickleable.
+Additional information can be stored in statedicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" sdict information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply.
 
 
 ## Step 1: Create an item module
