@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from code import interact
 
 from .. import VERSION_STRING
-from ..repo import Repository
 from ..utils.text import mark_for_translation as _
+from ..utils.ui import io
 
 
 DEBUG_BANNER = _("BundleWrap {version} interactive repository inspector\n"
@@ -17,7 +17,7 @@ DEBUG_BANNER_NODE = DEBUG_BANNER + "\n" + \
 
 
 def bw_debug(repo, args):
-    repo = Repository(repo.path)
+    io.deactivate()
     if args['node'] is None:
         env = {'repo': repo}
         banner = DEBUG_BANNER

@@ -102,6 +102,7 @@ def main(*args, **kwargs):
         exit(2)
 
     io.debug_mode = pargs.debug
+    io.activate()
 
     if 'BWADDHOSTKEYS' in environ:  # TODO remove in 3.0.0
         environ.setdefault('BW_ADD_HOST_KEYS', environ['BWADDHOSTKEYS'])

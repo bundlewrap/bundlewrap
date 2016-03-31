@@ -77,11 +77,16 @@ class DrainableStdin(object):
 
 class IOManager(object):
     def __init__(self):
+        self._active = False
         self.debug_mode = False
         self.jobs = []
         self.lock = Lock()
 
+    def activate(self):
+        self._active = True
+
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
+        assert self._active
         answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
         with self.lock:
@@ -107,6 +112,9 @@ class IOManager(object):
             self._write_current_job()
         return answer
 
+    def deactivate(self):
+        self._active = False
+
     @clear_formatting
     @add_debug_timestamp
     def debug(self, msg, append_newline=True):
@@ -115,6 +123,8 @@ class IOManager(object):
                 self._write(msg, append_newline=append_newline)
 
     def job_add(self, msg):
+        if not self._active:
+            return
         with self.lock:
             if TTY:
                 self._clear_last_job()
@@ -122,6 +132,8 @@ class IOManager(object):
             self.jobs.append(msg)
 
     def job_del(self, msg):
+        if not self._active:
+            return
         with self.lock:
             self._clear_last_job()
             self.jobs.remove(msg)
@@ -152,6 +164,8 @@ class IOManager(object):
             write_to_stream(STDOUT_WRITER, "\r\033[K")
 
     def _write(self, msg, append_newline=True, err=False):
+        if not self._active:
+            return
         if self.jobs and TTY:
             write_to_stream(STDOUT_WRITER, "\r\033[K")
         if msg is not None:
