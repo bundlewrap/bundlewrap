@@ -118,7 +118,7 @@ def handle_apply_result(node, item, status_code, interactive, changes=None):
 
 
 def apply_items(node, autoskip_selector="", workers=1, interactive=False, profiling=False):
-    with io.job(_("  {node} processing dependencies...").format(node=node.name)):
+    with io.job(_("  {node}  processing dependencies...").format(node=node.name)):
         item_queue = ItemQueue(node.items)
     with WorkerPool(workers=workers) as worker_pool:
         while item_queue.items_without_deps or worker_pool.workers_are_running:
