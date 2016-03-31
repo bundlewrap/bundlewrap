@@ -68,7 +68,10 @@ class WorkerPool(object):
                 traceback = format_tb(exception.__traceback__)
             except AttributeError:  # Python 2
                 traceback = format_tb(future.exception_info()[1])
-            raise WorkerException(exception, traceback, task_id=task_id, worker_id=worker_id)
+            if isinstance(exception, SystemExit):
+                raise exception
+            else:
+                raise WorkerException(exception, traceback, task_id=task_id, worker_id=worker_id)
         else:
             io.debug(_(
                 "worker pool {pool} delivering result of {task} on worker #{worker}"

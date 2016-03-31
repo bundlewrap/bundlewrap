@@ -87,7 +87,7 @@ class IOManager(object):
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
-        answers = _("[Y/n]") if default else _("[y/N]")
+        answers = _("[Y/n/q]") if default else _("[y/N/q]")
         question = question + " " + answers + " "
         with self.lock:
             self._clear_last_job()
@@ -106,6 +106,10 @@ class IOManager(object):
                 ):
                     answer = False
                     break
+                elif answer.lower() in (_("q"), _("quit")):
+                    if epilogue:
+                        write_to_stream(STDOUT_WRITER, epilogue + "\n")
+                    sys.exit(0)
                 write_to_stream(STDOUT_WRITER, _("Please answer with 'y(es)' or 'n(o)'.\n"))
             if epilogue:
                 write_to_stream(STDOUT_WRITER, epilogue + "\n")
