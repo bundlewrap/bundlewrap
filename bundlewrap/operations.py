@@ -102,8 +102,9 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     ssh_process = Popen(
         [
             "ssh",
-            "-o",
-            "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+            "-o", "KbdInteractiveAuthentication=no",
+            "-o", "PasswordAuthentication=no",
+            "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
             hostname,
             "LANG=C sudo bash -c " + quote(command),
         ],
