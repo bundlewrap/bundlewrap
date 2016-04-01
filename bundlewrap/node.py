@@ -18,8 +18,6 @@ from .deps import (
     find_item,
 )
 from .exceptions import (
-    BundleError,
-    DontCache,
     ItemDependencyError,
     NodeAlreadyLockedException,
     NoSuchBundle,
@@ -27,8 +25,8 @@ from .exceptions import (
 )
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
-from .metadata import check_for_unsolvable_metadata_key_conflicts, deepcopy_metadata
-from .utils import cached_property, graph_for_items, merge_dict, names, tempfile
+from .metadata import check_for_unsolvable_metadata_key_conflicts
+from .utils import cached_property, graph_for_items, names, tempfile
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, wrap_question, yellow
 from .utils.text import force_text, mark_for_translation as _
@@ -36,7 +34,6 @@ from .utils.ui import io
 
 LOCK_PATH = "/tmp/bundlewrap.lock"
 LOCK_FILE = LOCK_PATH + "/info"
-META_PROC_MAX_ITER = 9999  # maximum iterations for metadata processors
 
 
 class ApplyResult(object):
@@ -502,67 +499,13 @@ class Node(object):
     def get_item(self, item_id):
         return find_item(item_id, self.items)
 
-    @cached_property
+    @property
     def metadata(self):
-        if not self._compiling_metadata.acquire(False):
-            with self._compiling_metadata:
-                return self._metadata_so_far
-        try:
-            self._metadata_so_far = {}
-
-            with io.job(_("  {node}  building group metadata...").format(node=self.name)):
-                group_order = _flatten_group_hierarchy(self.groups)
-                for group_name in group_order:
-                    self._metadata_so_far = merge_dict(
-                        self._metadata_so_far,
-                        self.repo.get_group(group_name).metadata,
-                    )
-
-            with io.job(_("  {node}  merging node metadata...").format(node=self.name)):
-                self._metadata_so_far = merge_dict(self._metadata_so_far, self._node_metadata)
-
-            with io.job(_("  {node}  running metadata processors...").format(node=self.name)):
-                iterations = {}
-                # break_next makes sure that we provide one additional opportunity
-                # for metadata changes after all metadata processors for *this*
-                # did not return modified metadata
-                # however, the 'final' iteration of metadata for *this* might cause
-                # metadata to change on *another* node that is access while trying
-                # to compile metadata for *this* node
-                # and metadata changes on other nodes might in turn cause metadata
-                # on *this* node to change...
-                break_next = False
-                while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
-                    modified = False
-                    for metadata_processor in self.metadata_processors:
-                        iterations.setdefault(metadata_processor.__name__, 1)
-                        processed = metadata_processor(deepcopy_metadata(self._metadata_so_far))
-                        assert isinstance(processed, dict)
-                        if processed != self._metadata_so_far:
-                            self._metadata_so_far = processed
-                            iterations[metadata_processor.__name__] += 1
-                            modified = True
-                            break_next = False
-                    if not modified:
-                        if break_next:
-                            break
-                        else:
-                            break_next = True
-
-            for metadata_processor, number_of_iterations in iterations.items():
-                if number_of_iterations >= META_PROC_MAX_ITER:
-                    raise BundleError(_(
-                        "metadata processor '{proc}' stopped after too many iterations "
-                        "({max_iter}) for node '{node}' to prevent infinite loop".format(
-                            max_iter=META_PROC_MAX_ITER,
-                            node=self.name,
-                            proc=metadata_processor,
-                        ),
-                    ))
-
-            return self._metadata_so_far
-        finally:
-            self._compiling_metadata.release()
+        """
+        Returns full metadata for a node. MUST NOT be used from inside a
+        metadata processor. Use .partial_metadata instead.
+        """
+        return self.repo._metadata_for_node(self.name, partial=False)
 
     @property
     def metadata_processors(self):
@@ -586,7 +529,16 @@ class Node(object):
 
     @property
     def partial_metadata(self):
-        return self._metadata_so_far
+        """
+        Only to be used from inside metadata processors. Can't use the
+        normal .metadata there because it might deadlock when nodes
+        have interdependent metadata.
+
+        It's OK for metadata processors to work with partial metadata
+        because they will be fed all metadata updates until no more
+        changes are made by any metadata processor.
+        """
+        return self.repo._metadata_for_node(self.name, partial=True)
 
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
