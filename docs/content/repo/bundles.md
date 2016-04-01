@@ -272,4 +272,4 @@ These functions take the metadata dictionary generated so far as their single ar
 	    metadata["foo"] = node.name
 	    return metadata
 
-<div class="alert alert-danger">To avoid deadlocks when accessing <strong>other</strong> nodes' metadata from within a metadata processor, use <code>other_node.partial_metadata</code> instead of <code>other_node.metadata</code>.</div>
+<div class="alert alert-danger">To avoid deadlocks when accessing <strong>other</strong> nodes' metadata from within a metadata processor, use <code>other_node.partial_metadata</code> instead of <code>other_node.metadata</code>. For the same reason, always use the <code>metadata</code> parameter to access the current node's metadata, never <code>node.metadata</code>.</div>
