@@ -27,7 +27,7 @@ from .exceptions import (
 )
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
-from .metadata import check_for_unsolvable_metadata_key_conflicts
+from .metadata import check_for_unsolvable_metadata_key_conflicts, deepcopy_metadata
 from .utils import cached_property, graph_for_items, merge_dict, names, tempfile
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, wrap_question, yellow
@@ -535,7 +535,7 @@ class Node(object):
                     modified = False
                     for metadata_processor in self.metadata_processors:
                         iterations.setdefault(metadata_processor.__name__, 1)
-                        processed = metadata_processor(self._metadata_so_far.copy())
+                        processed = metadata_processor(deepcopy_metadata(self._metadata_so_far))
                         assert isinstance(processed, dict)
                         if processed != self._metadata_so_far:
                             self._metadata_so_far = processed

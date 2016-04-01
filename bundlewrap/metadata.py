@@ -1,6 +1,27 @@
+from copy import copy
+from decimal import Decimal
+
 from .exceptions import RepositoryError
-from .utils import _Atomic, ATOMIC_TYPES, merge_dict
+from .utils import _Atomic, ATOMIC_TYPES, Fault, merge_dict
 from .utils.text import mark_for_translation as _
+
+
+try:
+    text_type = unicode
+    byte_type = str
+except NameError:
+    text_type = str
+    byte_type = bytes
+
+METADATA_TYPES = (
+    bool,
+    byte_type,
+    Decimal,
+    Fault,
+    int,
+    text_type,
+    type(None),
+)
 
 
 def atomic(obj):
@@ -110,6 +131,29 @@ def check_for_unsolvable_metadata_key_conflicts(node):
                             chains[index1],
                             chains[index2],
                         )
+
+
+def deepcopy_metadata(obj):
+    """
+    Our own version of deepcopy.copy that doesn't pickle and ensures
+    a limited range of types is used in metadata.
+    """
+    if isinstance(obj, dict):
+        new_obj = {}
+        for key, value in obj.items():
+            if not isinstance(key, METADATA_TYPES):
+                raise ValueError(_("illegal metadata key type: {}").format(repr(key)))
+            new_key = copy(key)
+            new_obj[new_key] = deepcopy_metadata(value)
+    elif isinstance(obj, (list, tuple)):
+        new_obj = []
+        for member in obj:
+            new_obj.append(deepcopy_metadata(member))
+    elif isinstance(obj, METADATA_TYPES):
+        return obj
+    else:
+        raise ValueError(_("illegal metadata value type: {}").format(repr(obj)))
+    return new_obj
 
 
 def dictionary_key_map(mapdict):
