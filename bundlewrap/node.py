@@ -505,7 +505,8 @@ class Node(object):
     @cached_property
     def metadata(self):
         if not self._compiling_metadata.acquire(False):
-            raise DontCache(self._metadata_so_far)
+            with self._compiling_metadata:
+                return self._metadata_so_far
         try:
             self._metadata_so_far = {}
 
@@ -582,6 +583,10 @@ class Node(object):
         os = 'linux' if os is None else os
 
         return self.OS_ALIASES[os.lower()]
+
+    @property
+    def partial_metadata(self):
+        return self._metadata_so_far
 
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
