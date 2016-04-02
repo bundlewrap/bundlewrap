@@ -1,5 +1,4 @@
 from copy import copy
-from decimal import Decimal
 
 from .exceptions import RepositoryError
 from .utils import _Atomic, ATOMIC_TYPES, Fault, merge_dict
@@ -16,7 +15,6 @@ except NameError:
 METADATA_TYPES = (
     bool,
     byte_type,
-    Decimal,
     Fault,
     int,
     text_type,
