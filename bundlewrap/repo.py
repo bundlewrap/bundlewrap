@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from copy import copy
 from imp import load_source
 from os import listdir, mkdir
 from os.path import isdir, isfile, join
+from threading import Lock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 
 from . import items, utils, VERSION_STRING
 from .bundle import FILENAME_BUNDLE
 from .exceptions import (
+    BundleError,
     NoSuchGroup,
     NoSuchNode,
     NoSuchRepository,
@@ -18,9 +19,10 @@ from .exceptions import (
     RepositoryError,
 )
 from .group import Group
-from .node import Node
+from .metadata import deepcopy_metadata
+from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
-from .utils import cached_property
+from .utils import cached_property, merge_dict
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, red, validate_name
@@ -84,6 +86,7 @@ nodes = {
     FILENAME_REQUIREMENTS: "bundlewrap>={}\n".format(VERSION_STRING),
     FILENAME_SECRETS: generate_initial_secrets_cfg,
 }
+META_PROC_MAX_ITER = 9999  # maximum iterations for metadata processors
 
 
 def groups_from_file(filepath, libs, repo_path, vault):
@@ -131,17 +134,6 @@ class HooksProxy(object):
                 if event in events:
                     files.append(filename)
 
-            # check the cache for the imported function,
-            # import if necessary
-            for filename in files:
-                if filename not in self.__module_cache:
-                    self.__module_cache[filename] = {}
-                    filepath = join(self.__path, filename)
-                    for name, obj in utils.get_all_attrs_from_file(filepath).items():
-                        if name not in HOOK_EVENTS:
-                            continue
-                        self.__module_cache[filename][name] = obj
-
             # define a function that calls all hook functions
             def hook(*args, **kwargs):
                 for filename in files:
@@ -150,27 +142,9 @@ class HooksProxy(object):
 
         return self.__hook_cache[event]
 
-    def __getstate__(self):
-        return (self.__path, self.__registered_hooks)
-
-    def __setstate__(self, state):
-        self.__hook_cache = {}
-        self.__module_cache = {}
-        self.__path = state[0]
-        self.__registered_hooks = state[1]
-
     def _register_hooks(self):
         """
-        Builds an internal dictionary of defined hooks that is used in
-        __getstate__ to avoid reimporting all hook modules in child
-        processes.
-
-        We have to do this since we cannot pass the imported functions
-        to a child process. The dumb-but-simple approach would be to
-        rediscover hooks in every child process (which might be costly).
-
-        From this dictionary the child process knows which hooks exist
-        and can import them only as needed.
+        Builds an internal dictionary of defined hooks.
 
         Priming __module_cache here is just a performance shortcut and
         could be left out.
@@ -242,13 +216,6 @@ class LibsProxy(object):
             self.__module_cache[attrname] = m
         return self.__module_cache[attrname]
 
-    def __getstate__(self):
-        return self.__path
-
-    def __setstate__(self, state):
-        self.__module_cache = {}
-        self.__path = state
-
 
 def nodes_from_file(filepath, libs, repo_path, vault):
     """
@@ -281,6 +248,9 @@ class Repository(object):
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
+        self._node_metadata = {}
+        self._node_metadata_complete = False
+        self._node_metadata_lock = Lock()
 
         if repo_path is not None:
             self.populate_from_path(repo_path)
@@ -292,21 +262,6 @@ class Repository(object):
             # in-memory repos are never equal
             return False
         return self.path == other.path
-
-    def __getstate__(self):
-        """
-        Removes cached item classes prior to pickling because they are loaded
-        dynamically and can't be pickled.
-        """
-        state = copy(self.__dict__)
-        state['item_classes'] = []
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__ = state
-        self.item_classes = list(items_from_path(items.__path__[0]))
-        if self.path != "/dev/null":
-            self.item_classes += list(items_from_path(self.items_dir))
 
     def __repr__(self):
         return "<Repository at '{}'>".format(self.path)
@@ -448,6 +403,79 @@ class Repository(object):
         Returns a list of nodes in the given group.
         """
         return self.nodes_in_all_groups([group_name])
+
+    def _metadata_for_node(self, node_name, partial=False):
+        if self._node_metadata_complete or partial:
+            return self._node_metadata.get(node_name, {})
+        elif self._node_metadata_lock.acquire(False):
+            # Full (non-partial) metadata has been requested and we're
+            # the lucky thread to do all the work.
+            try:
+                self._build_node_metadata()
+                self._node_metadata_complete = True
+            finally:
+                self._node_metadata_lock.release()
+            return self._node_metadata[node_name]
+        else:
+            # We didn't get the lock, so another thread is busy building
+            # the metadata for us. Wait until it's done and return the
+            # result.
+            with self._node_metadata_lock:
+                return self._node_metadata[node_name]
+
+    def _build_node_metadata(self):
+        # First, get the static metadata out of the way
+        for node in self.nodes:
+            self._node_metadata[node.name] = {}
+            with io.job(_("  {node}  building group metadata...").format(node=node.name)):
+                group_order = _flatten_group_hierarchy(node.groups)
+                for group_name in group_order:
+                    self._node_metadata[node.name] = merge_dict(
+                        self._node_metadata[node.name],
+                        self.get_group(group_name).metadata,
+                    )
+
+            with io.job(_("  {node}  merging node metadata...").format(node=node.name)):
+                self._node_metadata[node.name] = merge_dict(
+                    self._node_metadata[node.name],
+                    node._node_metadata,
+                )
+
+        # Now for the interesting part: We run all metadata processors
+        # in sequence until none of them return changed metadata.
+        # It is crucial that we do this here for all nodes, since one
+        # node's metadata processor may trigger changes to any other
+        # node's metadata processor, which in turn could trigger the
+        # original node's metadata processor and so on.
+        iterations = {}
+        while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
+            modified = False
+            for node in self.nodes:
+                with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
+                    for metadata_processor in node.metadata_processors:
+                        iterations.setdefault((node.name, metadata_processor.__name__), 1)
+                        processed = metadata_processor(
+                            deepcopy_metadata(self._node_metadata[node.name]),
+                        )
+                        assert isinstance(processed, dict)
+                        if processed != self._node_metadata[node.name]:
+                            self._node_metadata[node.name] = processed
+                            iterations[(node.name, metadata_processor.__name__)] += 1
+                            modified = True
+            if not modified:
+                break
+
+        for culprit, number_of_iterations in iterations.items():
+            if number_of_iterations >= META_PROC_MAX_ITER:
+                node, metadata_processor = culprit
+                raise BundleError(_(
+                    "metadata processor '{proc}' stopped after too many iterations "
+                    "({max_iter}) for node '{node}' to prevent infinite loop".format(
+                        max_iter=META_PROC_MAX_ITER,
+                        node=node.name,
+                        proc=metadata_processor,
+                    ),
+                ))
 
     def populate_from_path(self, path):
         if not self.is_repo(path):

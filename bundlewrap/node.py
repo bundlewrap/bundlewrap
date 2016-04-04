@@ -7,6 +7,7 @@ import json
 from os import environ
 from pipes import quote
 from socket import gethostname
+from threading import Lock
 from time import time
 
 from . import operations
@@ -17,8 +18,6 @@ from .deps import (
     find_item,
 )
 from .exceptions import (
-    BundleError,
-    DontCache,
     ItemDependencyError,
     NodeAlreadyLockedException,
     NoSuchBundle,
@@ -27,7 +26,7 @@ from .exceptions import (
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .metadata import check_for_unsolvable_metadata_key_conflicts
-from .utils import cached_property, graph_for_items, merge_dict, names, tempfile
+from .utils import cached_property, graph_for_items, names, tempfile
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, wrap_question, yellow
 from .utils.text import force_text, mark_for_translation as _
@@ -35,7 +34,6 @@ from .utils.ui import io
 
 LOCK_PATH = "/tmp/bundlewrap.lock"
 LOCK_FILE = LOCK_PATH + "/info"
-META_PROC_MAX_ITER = 9999  # maximum iterations for metadata processors
 
 
 class ApplyResult(object):
@@ -117,98 +115,75 @@ def handle_apply_result(node, item, status_code, interactive, changes=None):
 
 
 def apply_items(node, autoskip_selector="", workers=1, interactive=False, profiling=False):
-    item_queue = ItemQueue(node.items)
+    with io.job(_("  {node}  processing dependencies...").format(node=node.name)):
+        item_queue = ItemQueue(node.items)
     with WorkerPool(workers=workers) as worker_pool:
-        # This whole thing is set in motion because every worker
-        # initially asks for work. He also reports back when he finished
-        # a job. Actually, all these conditions are internal to
-        # worker_pool -- it will tell us whether we must keep going:
-        while worker_pool.keep_running():
-            msg = worker_pool.get_event()
-            if msg['msg'] == 'REQUEST_WORK':
-                try:
-                    item, skipped_items = item_queue.pop()
-                except IndexError:
-                    if worker_pool.jobs_open > 0:
-                        # No work right now, but another worker might
-                        # finish and "create" a new job. Keep this
-                        # worker idle.
-                        worker_pool.mark_idle(msg['wid'])
-                    else:
-                        # No work, no outstanding jobs. We're done.
-                        # quit() decreases workers_alive.
-                        worker_pool.quit(msg['wid'])
-                else:
-                    for skipped_item in skipped_items:
-                        handle_apply_result(
-                            node,
-                            skipped_item,
-                            Item.STATUS_SKIPPED,
-                            interactive,
-                            changes=[_("no pre-trigger")],
-                        )
-                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
-
-                    # start_task() increases jobs_open.
-                    worker_pool.start_task(
-                        msg['wid'],
-                        item.apply,
-                        task_id=item.id,
-                        kwargs={
-                            'autoskip_selector': autoskip_selector,
-                            'interactive': interactive,
-                        },
+        while item_queue.items_without_deps or worker_pool.workers_are_running:
+            while item_queue.items_without_deps and worker_pool.workers_are_available:
+                item, skipped_items = item_queue.pop()
+                for skipped_item in skipped_items:
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive,
+                        changes=[_("no pre-trigger")],
                     )
+                    yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
 
-            elif msg['msg'] == 'FINISHED_WORK':
-                # worker_pool automatically decreases jobs_open when it
-                # sees a 'FINISHED_WORK' message.
+                worker_pool.start_task(
+                    item.apply,
+                    task_id="{}:{}".format(node.name, item.id),
+                    kwargs={
+                        'autoskip_selector': autoskip_selector,
+                        'interactive': interactive,
+                    },
+                )
 
-                # The task's id is the item we just processed.
-                item_id = msg['task_id']
-                item = find_item(item_id, item_queue.pending_items)
+            # now that we have filled our queue, wait until a result
+            # becomes available
+            result = worker_pool.get_result()
 
-                status_code, changes = msg['return_value']
+            item_id = result['task_id'].split(":", 1)[1]
+            item = find_item(item_id, item_queue.pending_items)
 
-                if status_code == Item.STATUS_FAILED:
-                    for skipped_item in item_queue.item_failed(item):
-                        handle_apply_result(
-                            node,
-                            skipped_item,
-                            Item.STATUS_SKIPPED,
-                            interactive,
-                            changes=[_("dep failed")],
-                        )
-                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
-                elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
-                    item_queue.item_fixed(item)
-                elif status_code == Item.STATUS_OK:
-                    item_queue.item_ok(item)
-                elif status_code == Item.STATUS_SKIPPED:
-                    for skipped_item in item_queue.item_skipped(item):
-                        handle_apply_result(
-                            node,
-                            skipped_item,
-                            Item.STATUS_SKIPPED,
-                            interactive,
-                            changes=[_("dep skipped")],
-                        )
-                        yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
-                else:
-                    raise AssertionError(_(
-                        "unknown item status returned for {item}: {status}".format(
-                            item=item.id,
-                            status=repr(status_code),
-                        ),
-                    ))
+            status_code, changes = result['return_value']
 
-                handle_apply_result(node, item, status_code, interactive, changes=changes)
-                if not isinstance(item, DummyItem):
-                    yield (item.id, status_code, msg['duration'])
+            if status_code == Item.STATUS_FAILED:
+                for skipped_item in item_queue.item_failed(item):
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive,
+                        changes=[_("dep failed")],
+                    )
+                    yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
+            elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
+                item_queue.item_fixed(item)
+            elif status_code == Item.STATUS_OK:
+                item_queue.item_ok(item)
+            elif status_code == Item.STATUS_SKIPPED:
+                for skipped_item in item_queue.item_skipped(item):
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive,
+                        changes=[_("dep skipped")],
+                    )
+                    yield(skipped_item.id, Item.STATUS_SKIPPED, timedelta(0))
+            else:
+                raise AssertionError(_(
+                    "unknown item status returned for {item}: {status}".format(
+                        item=item.id,
+                        status=repr(status_code),
+                    ),
+                ))
 
-                # Finally, we have a new job queue. Thus, tell all idle
-                # workers to ask for work again.
-                worker_pool.activate_idle_workers()
+            handle_apply_result(node, item, status_code, interactive, changes=changes)
+            if not isinstance(item, DummyItem):
+                yield (item.id, status_code, result['duration'])
 
     # we have no items without deps left and none are processing
     # there must be a loop
@@ -336,10 +311,12 @@ class Node(object):
 
         self.name = name
         self._bundles = infodict.get('bundles', [])
-        self._compiling_metadata = False
+        self._compiling_metadata = Lock()
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
         self._node_os = infodict.get('os')
+        self._ssh_conn_established = False
+        self._ssh_first_conn_lock = Lock()
         self.add_ssh_host_keys = False
         self.hostname = infodict.get('hostname', self.name)
         self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
@@ -522,63 +499,13 @@ class Node(object):
     def get_item(self, item_id):
         return find_item(item_id, self.items)
 
-    @cached_property
+    @property
     def metadata(self):
-        if self._compiling_metadata:
-            raise DontCache(self._metadata_so_far)
-
-        self._compiling_metadata = True
-        self._metadata_so_far = {}
-
-        with io.job(_("  {node}  building group metadata...").format(node=self.name)):
-            group_order = _flatten_group_hierarchy(self.groups)
-            for group_name in group_order:
-                self._metadata_so_far = merge_dict(self._metadata_so_far, self.repo.get_group(group_name).metadata)
-
-        with io.job(_("  {node}  merging node metadata...").format(node=self.name)):
-            self._metadata_so_far = merge_dict(self._metadata_so_far, self._node_metadata)
-
-        with io.job(_("  {node}  running metadata processors...").format(node=self.name)):
-            iterations = {}
-            # break_next makes sure that we provide one additional opportunity
-            # for metadata changes after all metadata processors for *this*
-            # did not return modified metadata
-            # however, the 'final' iteration of metadata for *this* might cause
-            # metadata to change on *another* node that is access while trying
-            # to compile metadata for *this* node
-            # and metadata changes on other nodes might in turn cause metadata
-            # on *this* node to change...
-            break_next = False
-            while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
-                modified = False
-                for metadata_processor in self.metadata_processors:
-                    iterations.setdefault(metadata_processor.__name__, 1)
-                    processed = metadata_processor(self._metadata_so_far.copy())
-                    assert isinstance(processed, dict)
-                    if processed != self._metadata_so_far:
-                        self._metadata_so_far = processed
-                        iterations[metadata_processor.__name__] += 1
-                        modified = True
-                        break_next = False
-                if not modified:
-                    if break_next:
-                        break
-                    else:
-                        break_next = True
-
-        for metadata_processor, number_of_iterations in iterations.items():
-            if number_of_iterations >= META_PROC_MAX_ITER:
-                raise BundleError(_(
-                    "metadata processor '{proc}' stopped after too many iterations "
-                    "({max_iter}) for node '{node}' to prevent infinite loop".format(
-                        max_iter=META_PROC_MAX_ITER,
-                        node=self.name,
-                        proc=metadata_processor,
-                    ),
-                ))
-
-        self._compiling_metadata = False
-        return self._metadata_so_far
+        """
+        Returns full metadata for a node. MUST NOT be used from inside a
+        metadata processor. Use .partial_metadata instead.
+        """
+        return self.repo._metadata_for_node(self.name, partial=False)
 
     @property
     def metadata_processors(self):
@@ -600,6 +527,19 @@ class Node(object):
 
         return self.OS_ALIASES[os.lower()]
 
+    @property
+    def partial_metadata(self):
+        """
+        Only to be used from inside metadata processors. Can't use the
+        normal .metadata there because it might deadlock when nodes
+        have interdependent metadata.
+
+        It's OK for metadata processors to work with partial metadata
+        because they will be fed all metadata updates until no more
+        changes are made by any metadata processor.
+        """
+        return self.repo._metadata_for_node(self.name, partial=True)
+
     def run(self, command, may_fail=False, log_output=False):
         if log_output:
             def log_function(msg):
@@ -610,11 +550,33 @@ class Node(object):
                 ))
         else:
             log_function = None
+
+        add_host_keys = True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False
+
+        if not self._ssh_conn_established:
+            # Sometimes we're opening SSH connections to a node too fast
+            # for OpenSSH to establish the ControlMaster socket for the
+            # second and following connections to use.
+            # To prevent this, we just wait until a first dummy command
+            # has completed on the node before trying to reuse the
+            # multiplexed connection.
+            if self._ssh_first_conn_lock.acquire(False):
+                try:
+                    operations.run(self.hostname, "true", add_host_keys=add_host_keys)
+                    self._ssh_conn_established = True
+                finally:
+                    self._ssh_first_conn_lock.release()
+            else:
+                # we didn't get the lock immediately, now we just wait
+                # until it is released before we proceed
+                with self._ssh_first_conn_lock:
+                    pass
+
         return operations.run(
             self.hostname,
             command,
             ignore_failure=may_fail,
-            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
+            add_host_keys=add_host_keys,
             log_function=log_function,
         )
 
@@ -746,43 +708,45 @@ class NodeLock(object):
 def test_items(node, workers=1):
     item_queue = ItemTestQueue(node.items)
 
-    with WorkerPool(workers=workers) as worker_pool:
-        while worker_pool.keep_running():
-            msg = worker_pool.get_event()
-            if msg['msg'] == 'REQUEST_WORK':
+    with WorkerPool(pool_id="test_items_{}".format(node.name), workers=workers) as worker_pool:
+        while item_queue.items_without_deps or worker_pool.workers_are_running:
+            while item_queue.items_without_deps and worker_pool.workers_are_available:
                 try:
                     # Get the next non-DummyItem in the queue.
                     while True:
                         item = item_queue.pop()
                         if not isinstance(item, DummyItem):
                             break
+                except IndexError:  # no more items available right now
+                    break
+                else:
                     worker_pool.start_task(
-                        msg['wid'],
                         item.test,
                         task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
                     )
-                except IndexError:
-                    worker_pool.quit(msg['wid'])
-                    if item_queue.items_with_deps:
-                        io.stderr(_(
-                            "There was a dependency problem. Look at the debug.svg generated "
-                            "by the following command and try to find a loop:\n"
-                            "printf '{}' | dot -Tsvg -odebug.svg"
-                        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
 
-                        raise ItemDependencyError(
-                            _("bad dependencies between these items: {}").format(
-                                ", ".join([i.id for i in item_queue.items_with_deps]),
-                            )
-                        )
-            elif msg['msg'] == 'FINISHED_WORK':
-                node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
+            if worker_pool.workers_are_running:
+                completed_task = worker_pool.get_result()
+                node_name, bundle_name, item_id = completed_task['task_id'].split(":", 2)
                 io.stdout("{x} {node}  {bundle}  {item}".format(
                     bundle=bold(bundle_name),
                     item=item_id,
                     node=bold(node_name),
                     x=green("✓"),
                 ))
+
+    if item_queue.items_with_deps:
+        io.stderr(_(
+            "There was a dependency problem. Look at the debug.svg generated "
+            "by the following command and try to find a loop:\n"
+            "printf '{}' | dot -Tsvg -odebug.svg"
+        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
+
+        raise ItemDependencyError(
+            _("bad dependencies between these items: {}").format(
+                ", ".join([i.id for i in item_queue.items_with_deps]),
+            )
+        )
 
 
 def verify_items(all_items, show_all=False, workers=1):
@@ -795,14 +759,12 @@ def verify_items(all_items, show_all=False, workers=1):
             items.append(item)
 
     with WorkerPool(workers=workers) as worker_pool:
-        while worker_pool.keep_running():
-            msg = worker_pool.get_event()
-            if msg['msg'] == 'REQUEST_WORK':
+        while items or worker_pool.workers_are_running:
+            while items and worker_pool.workers_are_available:
                 while True:
                     try:
                         item = items.pop()
                     except IndexError:
-                        worker_pool.quit(msg['wid'])
                         break
                     if item._faults_missing_for_attributes:
                         if item.error_on_missing_fault:
@@ -817,15 +779,15 @@ def verify_items(all_items, show_all=False, workers=1):
                             continue
                     else:
                         worker_pool.start_task(
-                            msg['wid'],
                             item.get_status,
                             task_id=item.node.name + ":" + item.bundle.name + ":" + item.id,
                         )
                         break
 
-            elif msg['msg'] == 'FINISHED_WORK':
-                node_name, bundle_name, item_id = msg['task_id'].split(":", 2)
-                item_status = msg['return_value']
+            if worker_pool.workers_are_running:
+                result = worker_pool.get_result()
+                node_name, bundle_name, item_id = result['task_id'].split(":", 2)
+                item_status = result['return_value']
                 if not item_status.correct:
                     if item_status.must_be_created:
                         changes_text = _("create")

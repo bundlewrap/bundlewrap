@@ -141,26 +141,25 @@ class UsageException(UnicodeException):
     pass
 
 
-class WorkerException(Exception):
-    """
-    Raised when a worker process has encountered an exception while
-    executing.
-    """
-    def __init__(self, task_id, wrapped_exception, traceback):
-        self.task_id = task_id
-        self.traceback = traceback
-        self.wrapped_exception = wrapped_exception
-
-    def __str__(self):
-        output = "\n\n+----- traceback from worker ------\n|\n"
-        for line in self.traceback.strip().split("\n"):
-            output += "|  {}\n".format(line)
-        output += "|\n+----------------------------------\n"
-        return output
-
-
 class NodeAlreadyLockedException(Exception):
     """
     Raised when a node is already locked during an 'apply' run.
     """
     pass
+
+
+class WorkerException(Exception):
+    """
+    Used by worker threads to wrap their exceptions with additional
+    data.
+    """
+    def __init__(self, wrapped_exception, traceback, **kwargs):
+        # avoid nesting WorkerExceptions, just store the original exception
+        if isinstance(wrapped_exception, WorkerException):
+            self.kwargs = wrapped_exception.kwargs
+            self.traceback = wrapped_exception.traceback
+            self.wrapped_exception = wrapped_exception.wrapped_exception
+        else:
+            self.kwargs = kwargs
+            self.traceback = "".join(traceback)
+            self.wrapped_exception = wrapped_exception

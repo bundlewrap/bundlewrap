@@ -3,11 +3,11 @@ from datetime import datetime
 from errno import EPIPE
 import fcntl
 from functools import wraps
-from multiprocessing import Lock, Manager
 import os
 import struct
 import sys
 import termios
+from threading import Lock
 
 from . import STDERR_WRITER, STDOUT_WRITER
 from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
@@ -77,27 +77,17 @@ class DrainableStdin(object):
 
 class IOManager(object):
     def __init__(self):
-        self.capture_mode = False
-        self.child_mode = False
-        self.parent_mode = False
-
-    def activate_as_child(self, lock, jobs, debug_mode, stdin):
-        self.parent_mode = False
-        self.child_mode = True
-        self.debug_mode = debug_mode
-        self.lock = lock
-        self.jobs = jobs
-        sys.stdin = stdin
-
-    def activate_as_parent(self, debug=False):
-        assert not self.child_mode
-        self.debug_mode = debug
-        self.jobs = Manager().list()
+        self._active = False
+        self.debug_mode = False
+        self.jobs = []
         self.lock = Lock()
-        self.parent_mode = True
+
+    def activate(self):
+        self._active = True
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
-        answers = _("[Y/n]") if default else _("[y/N]")
+        assert self._active
+        answers = _("[Y/n/q]") if default else _("[y/N/q]")
         question = question + " " + answers + " "
         with self.lock:
             self._clear_last_job()
@@ -116,24 +106,18 @@ class IOManager(object):
                 ):
                     answer = False
                     break
+                elif answer.lower() in (_("q"), _("quit")):
+                    if epilogue:
+                        write_to_stream(STDOUT_WRITER, epilogue + "\n")
+                    sys.exit(0)
                 write_to_stream(STDOUT_WRITER, _("Please answer with 'y(es)' or 'n(o)'.\n"))
             if epilogue:
                 write_to_stream(STDOUT_WRITER, epilogue + "\n")
             self._write_current_job()
         return answer
 
-    @property
-    def child_parameters(self):
-        try:
-            new_stdin = os.fdopen(os.dup(sys.stdin.fileno()))
-        except ValueError:  # with pytest: redirected Stdin is pseudofile, has no fileno()
-            new_stdin = sys.stdin
-        return (
-            self.lock,
-            self.jobs,
-            self.debug_mode,
-            new_stdin,
-        )
+    def deactivate(self):
+        self._active = False
 
     @clear_formatting
     @add_debug_timestamp
@@ -143,6 +127,8 @@ class IOManager(object):
                 self._write(msg, append_newline=append_newline)
 
     def job_add(self, msg):
+        if not self._active:
+            return
         with self.lock:
             if TTY:
                 self._clear_last_job()
@@ -150,6 +136,8 @@ class IOManager(object):
             self.jobs.append(msg)
 
     def job_del(self, msg):
+        if not self._active:
+            return
         with self.lock:
             self._clear_last_job()
             self.jobs.remove(msg)
@@ -180,6 +168,8 @@ class IOManager(object):
             write_to_stream(STDOUT_WRITER, "\r\033[K")
 
     def _write(self, msg, append_newline=True, err=False):
+        if not self._active:
+            return
         if self.jobs and TTY:
             write_to_stream(STDOUT_WRITER, "\r\033[K")
         if msg is not None:

@@ -17,31 +17,27 @@ def bw_test(repo, args):
     else:
         pending_nodes = copy(list(repo.nodes))
     with WorkerPool(workers=args['node_workers']) as worker_pool:
-        while worker_pool.keep_running():
-            try:
-                msg = worker_pool.get_event()
-            except WorkerException as e:
-                msg = "{x} {msg}\n".format(
-                    msg=bold(e.task_id),
-                    x=red("!"),
+        while pending_nodes or worker_pool.workers_are_running:
+            while pending_nodes and worker_pool.workers_are_available:
+                node = pending_nodes.pop()
+                worker_pool.start_task(
+                    node.test,
+                    task_id=node.name,
+                    kwargs={
+                        'workers': args['item_workers'],
+                    },
                 )
-                yield msg
-                yield e.traceback
-                yield 1
-                raise StopIteration()
-            if msg['msg'] == 'REQUEST_WORK':
-                if pending_nodes:
-                    node = pending_nodes.pop()
-                    worker_pool.start_task(
-                        msg['wid'],
-                        node.test,
-                        task_id=node.name,
-                        kwargs={
-                            'workers': args['item_workers'],
-                        },
-                    )
-                else:
-                    worker_pool.quit(msg['wid'])
+
+            try:
+                worker_pool.get_result()
+            except WorkerException as exc:
+                yield _("{x} {task}:").format(
+                    x=red("!"),
+                    task=exc.kwargs['task_id'],
+                )
+                yield exc.traceback
+                yield "{}: {}".format(type(exc.wrapped_exception), str(exc.wrapped_exception))
+                exit(1)
 
     checked_groups = []
     for group in repo.groups:
