@@ -1,3 +1,18 @@
+# 2.5.0
+
+2016-04-04
+
+* improved performance and memory usage
+* added metadata conflict detection to `bw test`
+* added metadata type validation
+* added `BW_VAULT_DUMMY_MODE`
+* added q(uit) option to questions
+* output disabled by default when using as a library
+* fixed `bw hash -d`
+* fixed excessive numbers of open files
+* fixed partial metadata access from metadata processors
+
+
 # 2.4.0
 
 2016-03-20
