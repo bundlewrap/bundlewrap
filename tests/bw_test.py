@@ -242,3 +242,34 @@ def test_group_metadata_collision(tmpdir):
         },
     )
     assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_group_metadata_collision_subgroups(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={"node1": {}},
+        groups={
+            "group1": {
+                'members': ["node1"],
+                'metadata': {
+                    'foo': {
+                        'baz': 1,
+                    },
+                    'bar': 2,
+                },
+            },
+            "group2": {
+                'metadata': {
+                    'foo': {
+                        'baz': 3,
+                    },
+                    'snap': 4,
+                },
+                'subgroups': ["group1", "group3"],
+            },
+            "group3": {
+                'members': ["node1"],
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 0

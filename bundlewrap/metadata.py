@@ -202,7 +202,11 @@ def find_groups_causing_metadata_conflict(node_name, chain1, chain2):
                 # same group, ignore
                 continue
             for keypath in keymap1:
-                if keypath in keymap2:
+                if (
+                    keypath in keymap2 and
+                    chain1[index1] not in chain2[index2].subgroups and
+                    chain2[index2] not in chain1[index1].subgroups
+                ):
                     bad_keypath = keypath
                     bad_group1 = chain1[index1]
                     bad_group2 = chain2[index2]
