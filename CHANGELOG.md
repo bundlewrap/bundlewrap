@@ -1,3 +1,10 @@
+# 2.5.1
+
+2016-04-07
+
+* fixed false positive on metadata collision check
+
+
 # 2.5.0
 
 2016-04-04
