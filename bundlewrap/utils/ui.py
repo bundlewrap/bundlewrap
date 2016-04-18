@@ -7,11 +7,12 @@ import os
 import struct
 import sys
 import termios
-from threading import Lock
+from threading import Event, Lock
 
 from . import STDERR_WRITER, STDOUT_WRITER
 from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
 
+QUIT_EVENT = Event()
 TTY = STDOUT_WRITER.isatty()
 
 
@@ -87,6 +88,8 @@ class IOManager(object):
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
+        if QUIT_EVENT.is_set():
+            sys.exit(0)
         answers = _("[Y/n/q]") if default else _("[y/N/q]")
         question = question + " " + answers + " "
         with self.lock:
@@ -109,6 +112,7 @@ class IOManager(object):
                 elif answer.lower() in (_("q"), _("quit")):
                     if epilogue:
                         write_to_stream(STDOUT_WRITER, epilogue + "\n")
+                    QUIT_EVENT.set()
                     sys.exit(0)
                 write_to_stream(STDOUT_WRITER, _("Please answer with 'y(es)' or 'n(o)'.\n"))
             if epilogue:

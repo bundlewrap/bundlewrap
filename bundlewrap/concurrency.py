@@ -4,11 +4,12 @@ from __future__ import unicode_literals
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from datetime import datetime
 from random import randint
+import sys
 from traceback import format_tb
 
 from .exceptions import WorkerException
 from .utils.text import mark_for_translation as _
-from .utils.ui import io
+from .utils.ui import io, QUIT_EVENT
 
 JOIN_TIMEOUT = 5  # seconds
 
@@ -94,6 +95,9 @@ class WorkerPool(object):
         args        list of positional arguments passed to target
         kwargs      dictionary of keyword arguments passed to target
         """
+        if QUIT_EVENT.is_set():
+            sys.exit(0)
+
         if args is None:
             args = []
         else:
