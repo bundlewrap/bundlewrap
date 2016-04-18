@@ -132,6 +132,7 @@ Further reading
 
 Here are some suggestions on what to do next:
 
+* set up [SSH multiplexing](https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Multiplexing) for significantly better performance
 * take a moment to think about what groups and bundles you will create
 * read up on how a [BundleWrap repository](../repo/layout.md) is laid out
 * ...especially what [types of items](../repo/bundles.md#item-types) you can add to your bundles
