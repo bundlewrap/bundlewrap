@@ -28,7 +28,7 @@ No. BundleWrap will only care about whether a package is installed or not. Updat
 
 ### Is there a probing mechanism like Ohai?
 
-No. BundleWrap is meant to be very push-focused. The node should not have any say in what configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a [hook](../repo/hooks.md) to gather the data and populate `node.metadata`.
+No. BundleWrap is meant to be very push-focused. The node should not have any say in what configuration it will receive.
 
 <br>
 
