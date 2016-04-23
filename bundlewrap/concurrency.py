@@ -7,7 +7,6 @@ from random import randint
 import sys
 from traceback import format_tb
 
-from .exceptions import WorkerException
 from .utils.text import mark_for_translation as _
 from .utils.ui import io, QUIT_EVENT
 
@@ -18,9 +17,22 @@ class WorkerPool(object):
     """
     Manages a bunch of worker threads.
     """
-    def __init__(self, pool_id=None, workers=4):
+    def __init__(
+        self,
+        tasks_available,
+        next_task,
+        handle_result=None,
+        handle_exception=None,
+        pool_id=None,
+        workers=4,
+    ):
         if workers < 1:
             raise ValueError(_("at least one worker is required"))
+
+        self.tasks_available = tasks_available
+        self.next_task = next_task
+        self.handle_result = handle_result
+        self.handle_exception = handle_exception
 
         self.number_of_workers = workers
         self.idle_workers = set(range(self.number_of_workers))
@@ -28,17 +40,7 @@ class WorkerPool(object):
         self.pool_id = "unnamed_pool_{}".format(randint(1, 99999)) if pool_id is None else pool_id
         self.pending_futures = {}
 
-    def __enter__(self):
-        io.debug(_("spinning up worker pool {pool}").format(pool=self.pool_id))
-        self.executor = ThreadPoolExecutor(max_workers=self.number_of_workers)
-        return self
-
-    def __exit__(self, type, value, traceback):
-        io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
-        self.executor.shutdown()
-        io.debug(_("worker pool {pool} has been shut down").format(pool=self.pool_id))
-
-    def get_result(self):
+    def _get_result(self):
         """
         Blocks until a result from a worker is received.
         """
@@ -65,14 +67,10 @@ class WorkerPool(object):
                 task=task_id,
                 worker=worker_id,
             ))
-            try:
-                traceback = format_tb(exception.__traceback__)
-            except AttributeError:  # Python 2
-                traceback = format_tb(future.exception_info()[1])
-            if isinstance(exception, SystemExit):
-                raise exception
-            else:
-                raise WorkerException(exception, traceback, task_id=task_id, worker_id=worker_id)
+            if not hasattr(exception, '__traceback__'):  # Python 2
+                exception.__traceback__ = format_tb(future.exception_info()[1])
+            exception.__task_id = task_id
+            raise exception
         else:
             io.debug(_(
                 "worker pool {pool} delivering result of {task} on worker #{worker}"
@@ -81,14 +79,9 @@ class WorkerPool(object):
                 task=task_id,
                 worker=worker_id,
             ))
-            return {
-                'duration': datetime.now() - start_time,
-                'return_value': future.result(),
-                'task_id': task_id,
-                'worker_id': worker_id,
-            }
+            return (task_id, future.result(), datetime.now() - start_time)
 
-    def start_task(self, target, task_id=None, args=None, kwargs=None):
+    def start_task(self, target=None, task_id=None, args=None, kwargs=None):
         """
         target      any callable (includes bound methods)
         task_id     something to remember this worker by
@@ -118,6 +111,35 @@ class WorkerPool(object):
             'task_id': task_id,
             'worker_id': worker_id,
         }
+
+    def run(self):
+        io.debug(_("spinning up worker pool {pool}").format(pool=self.pool_id))
+        processed_results = []
+        self.executor = ThreadPoolExecutor(max_workers=self.number_of_workers)
+        try:
+            while self.tasks_available() or self.workers_are_running:
+                while self.tasks_available() and self.workers_are_available:
+                    task = self.next_task()
+                    if task is not None:
+                        self.start_task(**task)
+                try:
+                    result = self._get_result()
+                except Exception as exc:
+                    traceback = "".join(format_tb(exc.__traceback__))
+                    if self.handle_exception is None:
+                        raise exc
+                    else:
+                        processed_results.append(
+                            self.handle_exception(exc.__task_id, exc, traceback)
+                        )
+                else:
+                    if self.handle_result is not None:
+                        processed_results.append(self.handle_result(*result))
+            return processed_results
+        finally:
+            io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
+            self.executor.shutdown()
+            io.debug(_("worker pool {pool} has been shut down").format(pool=self.pool_id))
 
     @property
     def workers_are_available(self):
