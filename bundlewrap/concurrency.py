@@ -117,8 +117,15 @@ class WorkerPool(object):
         processed_results = []
         self.executor = ThreadPoolExecutor(max_workers=self.number_of_workers)
         try:
-            while self.tasks_available() or self.workers_are_running:
-                while self.tasks_available() and self.workers_are_available:
+            while (
+                (self.tasks_available() and not QUIT_EVENT.is_set()) or
+                self.workers_are_running
+            ):
+                while (
+                    self.tasks_available() and
+                    self.workers_are_available and
+                    not QUIT_EVENT.is_set()
+                ):
                     task = self.next_task()
                     if task is not None:
                         self.start_task(**task)
