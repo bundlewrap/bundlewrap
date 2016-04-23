@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from copy import copy
 
 from ..concurrency import WorkerPool
-from ..exceptions import WorkerException
 from ..plugins import PluginManager
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, mark_for_translation as _, red
@@ -16,28 +15,24 @@ def bw_test(repo, args):
         pending_nodes = get_target_nodes(repo, args['target'])
     else:
         pending_nodes = copy(list(repo.nodes))
-    with WorkerPool(workers=args['node_workers']) as worker_pool:
-        while pending_nodes or worker_pool.workers_are_running:
-            while pending_nodes and worker_pool.workers_are_available:
-                node = pending_nodes.pop()
-                worker_pool.start_task(
-                    node.test,
-                    task_id=node.name,
-                    kwargs={
-                        'workers': args['item_workers'],
-                    },
-                )
 
-            try:
-                worker_pool.get_result()
-            except WorkerException as exc:
-                yield _("{x} {task}:").format(
-                    x=red("!"),
-                    task=exc.kwargs['task_id'],
-                )
-                yield exc.traceback
-                yield "{}: {}".format(type(exc.wrapped_exception), str(exc.wrapped_exception))
-                exit(1)
+    def tasks_available():
+        return bool(pending_nodes)
+
+    def next_task():
+        node = pending_nodes.pop()
+        return {
+            'target': node.test,
+            'task_id': node.name,
+            'kwargs': {'workers': args['item_workers']},
+        }
+
+    worker_pool = WorkerPool(
+        tasks_available,
+        next_task,
+        workers=args['node_workers'],
+    )
+    worker_pool.run()
 
     checked_groups = []
     for group in repo.groups:
