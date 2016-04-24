@@ -98,7 +98,7 @@ def bw_verify(repo, args):
         next_task,
         handle_result=handle_result,
         handle_exception=handle_exception,
-        pool_id="verify_nodes",
+        pool_id="verify",
         workers=args['node_workers'],
     )
     worker_pool.run()

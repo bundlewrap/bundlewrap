@@ -192,6 +192,7 @@ def apply_items(node, autoskip_selector="", workers=1, interactive=False, profil
         tasks_available,
         next_task,
         handle_result=handle_result,
+        pool_id="apply_{}".format(node.name),
         workers=workers,
     )
     worker_pool.run()
@@ -620,7 +621,7 @@ class Node(object):
         bad = 0
         good = 0
         for item_status in verify_items(
-            self.items,
+            self,
             show_all=show_all,
             workers=workers,
         ):
@@ -765,7 +766,7 @@ def test_items(node, workers=1):
         next_task,
         handle_result=handle_result,
         handle_exception=handle_exception,
-        pool_id="test_items_{}".format(node.name),
+        pool_id="test_{}".format(node.name),
         workers=workers,
     )
     worker_pool.run()
@@ -784,9 +785,9 @@ def test_items(node, workers=1):
         )
 
 
-def verify_items(all_items, show_all=False, workers=1):
+def verify_items(node, show_all=False, workers=1):
     items = []
-    for item in all_items:
+    for item in node.items:
         if (
             not item.ITEM_TYPE_NAME == 'action' and
             not item.triggered
@@ -809,12 +810,12 @@ def verify_items(all_items, show_all=False, workers=1):
                     io.stdout(_("{x} {node}  {bundle}  {item}  (unavailable)").format(
                         bundle=bold(item.bundle.name),
                         item=item.id,
-                        node=bold(item.node.name),
+                        node=bold(node.name),
                         x=yellow("»"),
                     ))
             else:
                 return {
-                    'task_id': item.node.name + ":" + item.bundle.name + ":" + item.id,
+                    'task_id': node.name + ":" + item.bundle.name + ":" + item.id,
                     'target': item.get_status,
                 }
 
@@ -849,6 +850,7 @@ def verify_items(all_items, show_all=False, workers=1):
         tasks_available,
         next_task,
         handle_result,
+        pool_id="verify_{}".format(node.name),
         workers=workers,
     )
     return worker_pool.run()

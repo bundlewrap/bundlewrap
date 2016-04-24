@@ -30,6 +30,7 @@ def bw_test(repo, args):
     worker_pool = WorkerPool(
         tasks_available,
         next_task,
+        pool_id="test",
         workers=args['node_workers'],
     )
     worker_pool.run()

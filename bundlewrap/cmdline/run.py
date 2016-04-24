@@ -95,6 +95,7 @@ def bw_run(repo, args):
         tasks_available,
         next_task,
         handle_exception=handle_exception,
+        pool_id="run",
         workers=args['node_workers'],
     )
     worker_pool.run()

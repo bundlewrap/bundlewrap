@@ -74,6 +74,7 @@ def bw_apply(repo, args):
         next_task,
         handle_result=handle_result,
         handle_exception=handle_exception,
+        pool_id="apply",
         workers=args['node_workers'],
     )
     worker_pool.run()
