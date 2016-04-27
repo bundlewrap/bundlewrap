@@ -126,19 +126,21 @@ class WorkerPool(object):
                     task = self.next_task()
                     if task is not None:
                         self.start_task(**task)
-                try:
-                    result = self._get_result()
-                except Exception as exc:
-                    traceback = "".join(format_tb(exc.__traceback__))
-                    if self.handle_exception is None:
-                        raise exc
+
+                if self.workers_are_running:
+                    try:
+                        result = self._get_result()
+                    except Exception as exc:
+                        traceback = "".join(format_tb(exc.__traceback__))
+                        if self.handle_exception is None:
+                            raise exc
+                        else:
+                            processed_results.append(
+                                self.handle_exception(exc.__task_id, exc, traceback)
+                            )
                     else:
-                        processed_results.append(
-                            self.handle_exception(exc.__task_id, exc, traceback)
-                        )
-                else:
-                    if self.handle_result is not None:
-                        processed_results.append(self.handle_result(*result))
+                        if self.handle_result is not None:
+                            processed_results.append(self.handle_result(*result))
             return processed_results
         finally:
             io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
