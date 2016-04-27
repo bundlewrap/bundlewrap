@@ -88,9 +88,6 @@ class WorkerPool(object):
         args        list of positional arguments passed to target
         kwargs      dictionary of keyword arguments passed to target
         """
-        if QUIT_EVENT.is_set():
-            sys.exit(0)
-
         if args is None:
             args = []
         else:
