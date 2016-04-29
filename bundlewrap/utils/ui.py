@@ -110,7 +110,10 @@ class IOManager(object):
                     if epilogue:
                         write_to_stream(STDOUT_WRITER, epilogue + "\n")
                     sys.exit(0)
-                write_to_stream(STDOUT_WRITER, _("Please answer with 'y(es)' or 'n(o)'.\n"))
+                write_to_stream(
+                    STDOUT_WRITER,
+                    _("Please answer with 'y(es)', 'n(o)', or q(uit).\n"),
+                )
             if epilogue:
                 write_to_stream(STDOUT_WRITER, epilogue + "\n")
             self._write_current_job()
