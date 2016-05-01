@@ -141,6 +141,10 @@ class WorkerPool(object):
                     else:
                         if self.handle_result is not None:
                             processed_results.append(self.handle_result(*result))
+            if QUIT_EVENT.is_set():
+                # we have reaped all our workers, let's stop this thread
+                # before it does anything else
+                sys.exit(0)
             return processed_results
         finally:
             io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
