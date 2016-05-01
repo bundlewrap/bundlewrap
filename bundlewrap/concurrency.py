@@ -130,6 +130,10 @@ class WorkerPool(object):
                 if self.workers_are_running:
                     try:
                         result = self._get_result()
+                    except SystemExit:
+                        # just make sure QUIT_EVENT is set and continue
+                        # waiting for pending results
+                        QUIT_EVENT.set()
                     except Exception as exc:
                         traceback = "".join(format_tb(exc.__traceback__))
                         if self.handle_exception is None:
