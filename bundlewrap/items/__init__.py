@@ -516,7 +516,7 @@ class Item(object):
         Returns an ItemStatus instance describing the current status of
         the item on the actual node.
         """
-        with io.job(_("  {node}  {bundle}  {item}  getting status...").format(
+        with io.job(_("  {node}  {bundle}  {item}  checking...").format(
             bundle=self.bundle.name,
             item=self.id,
             node=self.node.name,
