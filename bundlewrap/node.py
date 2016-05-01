@@ -7,6 +7,7 @@ import json
 from os import environ
 from pipes import quote
 from socket import gethostname
+from sys import exit
 from threading import Lock
 from time import time
 

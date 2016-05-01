@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from datetime import datetime
 from random import randint
-import sys
+from sys import exit
 from traceback import format_tb
 
 from .utils.text import mark_for_translation as _
@@ -150,7 +150,7 @@ class WorkerPool(object):
             if QUIT_EVENT.is_set():
                 # we have reaped all our workers, let's stop this thread
                 # before it does anything else
-                sys.exit(exit_code)
+                exit(exit_code)
             return processed_results
         finally:
             io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
