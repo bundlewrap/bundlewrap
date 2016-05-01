@@ -112,6 +112,7 @@ class WorkerPool(object):
     def run(self):
         io.debug(_("spinning up worker pool {pool}").format(pool=self.pool_id))
         processed_results = []
+        exit_code = 0
         self.executor = ThreadPoolExecutor(max_workers=self.number_of_workers)
         try:
             while (
@@ -130,7 +131,8 @@ class WorkerPool(object):
                 if self.workers_are_running:
                     try:
                         result = self._get_result()
-                    except SystemExit:
+                    except SystemExit as exc:
+                        exit_code = exc.code
                         # just make sure QUIT_EVENT is set and continue
                         # waiting for pending results
                         QUIT_EVENT.set()
@@ -148,7 +150,7 @@ class WorkerPool(object):
             if QUIT_EVENT.is_set():
                 # we have reaped all our workers, let's stop this thread
                 # before it does anything else
-                sys.exit(0)
+                sys.exit(exit_code)
             return processed_results
         finally:
             io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
