@@ -88,11 +88,11 @@ class IOManager(object):
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
-        if QUIT_EVENT.is_set():
-            sys.exit(0)
         answers = _("[Y/n/q]") if default else _("[y/N/q]")
         question = question + " " + answers + " "
         with self.lock:
+            if QUIT_EVENT.is_set():
+                sys.exit(0)
             self._clear_last_job()
             while True:
                 write_to_stream(STDOUT_WRITER, "\a" + question)
