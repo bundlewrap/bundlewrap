@@ -4,10 +4,10 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from ..concurrency import WorkerPool
-from ..exceptions import WorkerException
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold
 from ..utils.text import error_summary, mark_for_translation as _
+from ..utils.ui import io
 
 
 def bw_apply(repo, args):
@@ -24,55 +24,60 @@ def bw_apply(repo, args):
 
     start_time = datetime.now()
 
-    with WorkerPool(workers=args['node_workers']) as worker_pool:
-        while pending_nodes or worker_pool.workers_are_running:
-            while pending_nodes and worker_pool.workers_are_available:
-                node = pending_nodes.pop()
-                worker_pool.start_task(
-                    node.apply,
-                    task_id=node.name,
-                    kwargs={
-                        'autoskip_selector': args['autoskip'],
-                        'force': args['force'],
-                        'interactive': args['interactive'],
-                        'workers': args['item_workers'],
-                        'profiling': args['profiling'],
-                    },
-                )
+    def tasks_available():
+        return bool(pending_nodes)
 
-            try:
-                result = worker_pool.get_result()
-            except WorkerException as exc:
-                msg = "{}: {}".format(
-                    exc.kwargs['task_id'],
-                    exc.wrapped_exception,
-                )
-                if args['debug']:
-                    yield exc.traceback
-                    yield repr(exc)
-                yield msg
-                errors.append(msg)
-            else:
-                node_name = result['task_id']
-                if (
-                    result['return_value'] is not None and  # node skipped because it had no items
-                    args['profiling']
-                ):
-                    total_time = 0.0
-                    yield _("  {}").format(bold(node_name))
-                    yield _("  {} BEGIN PROFILING DATA "
-                            "(most expensive items first)").format(bold(node_name))
-                    yield _("  {}    seconds   item").format(bold(node_name))
-                    for time_elapsed, item_id in result['return_value'].profiling_info:
-                        yield "  {} {:10.3f}   {}".format(
-                            bold(node_name),
-                            time_elapsed.total_seconds(),
-                            item_id,
-                        )
-                        total_time += time_elapsed.total_seconds()
-                    yield _("  {} {:10.3f}   (total)").format(bold(node_name), total_time)
-                    yield _("  {} END PROFILING DATA").format(bold(node_name))
-                    yield _("  {}").format(bold(node_name))
+    def next_task():
+        node = pending_nodes.pop()
+        return {
+            'target': node.apply,
+            'task_id': node.name,
+            'kwargs': {
+                'autoskip_selector': args['autoskip'],
+                'force': args['force'],
+                'interactive': args['interactive'],
+                'workers': args['item_workers'],
+                'profiling': args['profiling'],
+            },
+        }
+
+    def handle_result(task_id, return_value, duration):
+        if (
+            return_value is not None and  # node skipped because it had no items
+            args['profiling']
+        ):
+            total_time = 0.0
+            io.stdout(_("  {}").format(bold(task_id)))
+            io.stdout(_("  {} BEGIN PROFILING DATA "
+                        "(most expensive items first)").format(bold(task_id)))
+            io.stdout(_("  {}    seconds   item").format(bold(task_id)))
+            for time_elapsed, item_id in return_value.profiling_info:
+                io.stdout("  {} {:10.3f}   {}".format(
+                    bold(task_id),
+                    time_elapsed.total_seconds(),
+                    item_id,
+                ))
+                total_time += time_elapsed.total_seconds()
+            io.stdout(_("  {} {:10.3f}   (total)").format(bold(task_id), total_time))
+            io.stdout(_("  {} END PROFILING DATA").format(bold(task_id)))
+            io.stdout(_("  {}").format(bold(task_id)))
+
+    def handle_exception(task_id, exception, traceback):
+        msg = "{}: {}".format(task_id, exception)
+        io.stderr(traceback)
+        io.stderr(repr(exception))
+        io.stderr(msg)
+        errors.append(msg)
+
+    worker_pool = WorkerPool(
+        tasks_available,
+        next_task,
+        handle_result=handle_result,
+        handle_exception=handle_exception,
+        pool_id="apply",
+        workers=args['node_workers'],
+    )
+    worker_pool.run()
 
     error_summary(errors)
 
