@@ -1,3 +1,12 @@
+# 2.5.2
+
+2016-05-04
+
+* fixed compatibility with some exotic node shells
+* fixed quitting at question prompts
+* fixed creating files with content_type 'any'
+
+
 # 2.5.1
 
 2016-04-07
