@@ -5,12 +5,10 @@ from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
-from os import remove
 from os.path import basename, dirname, exists, join, normpath
 from pipes import quote
 from subprocess import call
 from sys import exc_info
-from tempfile import mkstemp
 from traceback import format_exception
 
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
