@@ -135,7 +135,7 @@ def content_processor_text(item):
 
 
 CONTENT_PROCESSORS = {
-    'any': lambda item: "",
+    'any': lambda item: b"",
     'base64': content_processor_base64,
     'binary': None,
     'jinja2': content_processor_jinja2,

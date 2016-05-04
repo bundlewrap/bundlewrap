@@ -7,6 +7,60 @@ from os.path import exists, join
 from bundlewrap.utils.testing import host_os, make_repo, run
 
 
+def test_any_content_create(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'files': {
+                    join(str(tmpdir), "foo"): {
+                        'content_type': 'any',
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    run("bw apply localhost", path=str(tmpdir))
+    with open(join(str(tmpdir), "foo"), 'rb') as f:
+        content = f.read()
+    assert content == b""
+
+
+def test_any_content_exists(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'files': {
+                    join(str(tmpdir), "foo"): {
+                        'content_type': 'any',
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    with open(join(str(tmpdir), "foo"), 'wb') as f:
+        f.write(b"existing content")
+
+    run("bw apply localhost", path=str(tmpdir))
+    with open(join(str(tmpdir), "foo"), 'rb') as f:
+        content = f.read()
+    assert content == b"existing content"
+
+
 def test_binary_inline_content(tmpdir):
     make_repo(
         tmpdir,
