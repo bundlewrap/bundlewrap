@@ -24,27 +24,60 @@ def svc_stop(node, svcname):
     return node.run("systemctl stop -- {}".format(quote(svcname)))
 
 
+def svc_enable(node, svcname):
+    return node.run("systemctl enable -- {}".format(quote(svcname)))
+
+
+def svc_enabled(node, svcname):
+    result = node.run(
+        "systemctl is-enabled -- {}".format(quote(svcname)),
+        may_fail=True,
+    )
+    return result.return_code == 0
+
+
+def svc_disable(node, svcname):
+    return node.run("systemctl disable -- {}".format(quote(svcname)))
+
+
 class SvcSystemd(Item):
     """
     A service managed by systemd.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_systemd"
     ITEM_ATTRIBUTES = {
+        'enabled': None,
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_systemd"
 
     def __repr__(self):
-        return "<SvcSystemd name:{} running:{}>".format(
+        return "<SvcSystemd name:{} enabled:{} running:{}>".format(
             self.name,
+            self.attributes['enabled'],
             self.attributes['running'],
         )
 
+    # Note for bw 3.0: We're planning to make "True" the default value
+    # for "enabled". Once that's done, we can remove this custom cdict.
+    def cdict(self):
+        cdict = self.attributes.copy()
+        if 'enabled' in cdict and cdict['enabled'] is None:
+            del cdict['enabled']
+        return cdict
+
     def fix(self, status):
-        if self.attributes['running'] is False:
-            svc_stop(self.node, self.name)
-        else:
-            svc_start(self.node, self.name)
+        if 'enabled' in status.keys_to_fix:
+            if self.attributes['enabled'] is False:
+                svc_disable(self.node, self.name)
+            else:
+                svc_enable(self.node, self.name)
+
+        if 'running' in status.keys_to_fix:
+            if self.attributes['running'] is False:
+                svc_stop(self.node, self.name)
+            else:
+                svc_start(self.node, self.name)
 
     def get_canned_actions(self):
         return {
@@ -59,14 +92,19 @@ class SvcSystemd(Item):
         }
 
     def sdict(self):
-        return {'running': svc_running(self.node, self.name)}
+        return {
+            'enabled': svc_enabled(self.node, self.name),
+            'running': svc_running(self.node, self.name),
+        }
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if not isinstance(attributes.get('running', True), bool):
-            raise BundleError(_(
-                "expected boolean for 'running' on {item} in bundle '{bundle}'"
-            ).format(
-                bundle=bundle.name,
-                item=item_id,
-            ))
+        for attribute in ('enabled', 'running'):
+            if not isinstance(attributes.get(attribute, True), bool):
+                raise BundleError(_(
+                    "expected boolean for '{attribute}' on {item} in bundle '{bundle}'"
+                ).format(
+                    attribute=attribute,
+                    bundle=bundle.name,
+                    item=item_id,
+                ))
