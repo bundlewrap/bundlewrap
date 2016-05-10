@@ -106,7 +106,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
             "-o", "PasswordAuthentication=no",
             "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
             hostname,
-            "sudo bash -c " + quote("LANG=C " + command),
+            "sudo bash -c " + quote("export LANG=C; " + command),
         ],
         stdin=PIPE,
         stderr=stderr_fd_w,
