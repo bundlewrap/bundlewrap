@@ -6,17 +6,17 @@ from pipes import quote
 from socket import gethostname
 from time import time
 
-from .exceptions import NodeAlreadyLockedException
+from .exceptions import NodeHardLockedException
 from .utils import tempfile
 from .utils.text import blue, bold, mark_for_translation as _, red, wrap_question
 from .utils.ui import io
 
 
-LOCK_PATH = "/tmp/bundlewrap.lock"
-LOCK_FILE = LOCK_PATH + "/info"
+HARD_LOCK_PATH = "/tmp/bundlewrap.lock"
+HARD_LOCK_FILE = HARD_LOCK_PATH + "/info"
 
 
-class NodeLock(object):
+class HardNodeLock(object):
     def __init__(self, node, interactive, ignore=False):
         self.node = node
         self.ignore = ignore
@@ -24,10 +24,10 @@ class NodeLock(object):
 
     def __enter__(self):
         with tempfile() as local_path:
-            with io.job(_("  {node}  getting lock status...").format(node=self.node.name)):
-                result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
+            with io.job(_("  {node}  checking hard lock status...").format(node=self.node.name)):
+                result = self.node.run("mkdir " + quote(HARD_LOCK_PATH), may_fail=True)
                 if result.return_code != 0:
-                    self.node.download(LOCK_FILE, local_path, ignore_failure=True)
+                    self.node.download(HARD_LOCK_FILE, local_path, ignore_failure=True)
                     with open(local_path, 'r') as f:
                         try:
                             info = json.loads(f.read())
@@ -38,7 +38,7 @@ class NodeLock(object):
                                 "(clear it with `bw run {node} 'rm -R {path}'`)"
                             ).format(
                                 node=self.node.name,
-                                path=LOCK_FILE,
+                                path=HARD_LOCK_FILE,
                                 warning=red(_("WARNING")),
                             ))
                             info = {}
@@ -61,7 +61,7 @@ class NodeLock(object):
                     )):
                         pass
                     else:
-                        raise NodeAlreadyLockedException(info)
+                        raise NodeHardLockedException(info)
 
             with io.job(_("  {node}  uploading lock file...").format(node=self.node.name)):
                 with open(local_path, 'w') as f:
@@ -72,14 +72,14 @@ class NodeLock(object):
                             gethostname(),
                         )),
                     }))
-                self.node.upload(local_path, LOCK_FILE)
+                self.node.upload(local_path, HARD_LOCK_FILE)
 
     def __exit__(self, type, value, traceback):
-        with io.job(_("  {node}  removing lock...").format(node=self.node.name)):
-            result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
+        with io.job(_("  {node}  removing hard lock...").format(node=self.node.name)):
+            result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
 
         if result.return_code != 0:
-            io.stderr(_("Could not release lock for node '{node}'").format(
+            io.stderr(_("Could not release hard lock for node '{node}'").format(
                 node=self.node.name,
             ))
 
