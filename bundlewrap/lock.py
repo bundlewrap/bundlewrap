@@ -111,7 +111,7 @@ class HardNodeLock(object):
 def softlock_add(node, operations=None):
     if operations is None:
         operations = ["apply", "run"]
-    lock_id = randstr(length=8).upper()
+    lock_id = randstr(length=4).upper()
 
     content = json.dumps({
         'date': time(),
