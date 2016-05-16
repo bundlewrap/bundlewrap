@@ -133,7 +133,7 @@ def softlock_add(node, comment="", expiry="8h", operations=None):
         with open(local_path, 'w') as f:
             f.write(content + "\n")
         node.run("mkdir -p " + quote(SOFT_LOCK_PATH))
-        node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id))
+        node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id), mode='0644')
 
     return lock_id
 
