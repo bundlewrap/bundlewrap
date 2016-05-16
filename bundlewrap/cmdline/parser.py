@@ -11,6 +11,7 @@ from .debug import bw_debug
 from .groups import bw_groups
 from .hash import bw_hash
 from .items import bw_items
+from .lock import bw_lock_add
 from .metadata import bw_metadata
 from .nodes import bw_nodes
 from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups
@@ -218,6 +219,34 @@ def build_parser_bw():
         action='store_true',
         dest='show_repr',
         help=_("show more verbose representation of each item"),
+    )
+
+    # bw lock
+    help_lock = _("Manage locks on nodes used to prevent collisions between BundleWrap users")
+    parser_lock = subparsers.add_parser("lock", description=help_lock, help=help_lock)
+    parser_lock_subparsers = parser_lock.add_subparsers()
+
+    # bw lock add
+    help_lock_add = _("Add a new lock to one or more nodes")
+    parser_lock_add = parser_lock_subparsers.add_parser(
+        "add",
+        description=help_lock_add,
+        help=help_lock_add,
+    )
+    parser_lock_add.set_defaults(func=bw_lock_add)
+    parser_lock_add.add_argument(
+        'target',
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        type=str,
+        help=_("target nodes, groups and/or bundle selectors"),
+    )
+    parser_lock_add.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        dest='node_workers',
+        help=_("number of nodes to lock simultaneously"),
+        type=int,
     )
 
     # bw metadata

@@ -8,12 +8,21 @@ from time import time
 
 from .exceptions import NodeHardLockedException
 from .utils import tempfile
-from .utils.text import blue, bold, mark_for_translation as _, red, wrap_question
+from .utils.text import blue, bold, mark_for_translation as _, randstr, red, wrap_question
 from .utils.ui import io
 
 
 HARD_LOCK_PATH = "/tmp/bundlewrap.lock"
 HARD_LOCK_FILE = HARD_LOCK_PATH + "/info"
+SOFT_LOCK_PATH = "/tmp/bundlewrap.softlock.d"
+SOFT_LOCK_FILE = "/tmp/bundlewrap.softlock.d/{id}"
+
+
+def identity():
+    return environ.get('BW_IDENTITY', "{}@{}".format(
+        getuser(),
+        gethostname(),
+    ))
 
 
 class HardNodeLock(object):
@@ -67,10 +76,7 @@ class HardNodeLock(object):
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
-                        'user': environ.get('BW_IDENTITY', "{}@{}".format(
-                            getuser(),
-                            gethostname(),
-                        )),
+                        'user': identity(),
                     }))
                 self.node.upload(local_path, HARD_LOCK_FILE)
 
@@ -100,3 +106,22 @@ class HardNodeLock(object):
             bold(_("Override lock?")),
             prefix="{x} {node} ".format(node=bold(self.node.name), x=blue("?")),
         )
+
+
+def softlock_add(node, operations=None):
+    if operations is None:
+        operations = ["apply", "run"]
+    lock_id = randstr(length=8).upper()
+
+    content = json.dumps({
+        'date': time(),
+        'id': lock_id,
+        'ops': operations,
+        'user': identity(),
+    }, indent=None, sort_keys=True)
+
+    with tempfile() as local_path:
+        with open(local_path, 'w') as f:
+            f.write(content + "\n")
+        node.run("mkdir -p " + quote(SOFT_LOCK_PATH))
+        node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id))
