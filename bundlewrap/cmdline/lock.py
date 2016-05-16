@@ -81,8 +81,10 @@ def bw_lock_show(repo, args):
         return
 
     for lock in locks:
-        lock['formatted_date'] = datetime.fromtimestamp(lock['date']).strftime("%c")
-        lock['formatted_expiry'] = datetime.fromtimestamp(lock['expiry']).strftime("%c")
+        lock['formatted_date'] = \
+            datetime.fromtimestamp(lock['date']).strftime("%Y-%m-%d %H:%M:%S")
+        lock['formatted_expiry'] = \
+            datetime.fromtimestamp(lock['expiry']).strftime("%Y-%m-%d %H:%M:%S")
         lock['formatted_ops'] = ", ".join(sorted(lock['ops']))
 
     headers = (

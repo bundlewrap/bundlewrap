@@ -58,7 +58,7 @@ class HardNodeLock(object):
                         info['date'] = _("<unknown>")
                         info['duration'] = _("<unknown>")
                     else:
-                        info['date'] = datetime.fromtimestamp(d).strftime("%c")
+                        info['date'] = datetime.fromtimestamp(d).strftime("%Y-%m-%d %H:%M:%S")
                         info['duration'] = format_duration(
                             datetime.now() - datetime.fromtimestamp(d)
                         )
