@@ -35,7 +35,7 @@ class NodeLock(object):
                             io.stderr(_(
                                 "{warning}  corrupted lock on {node}: "
                                 "unable to read or parse lock file contents "
-                                "(clear it with `rm -R {path}`)"
+                                "(clear it with `bw run {node} 'rm -R {path}'`)"
                             ).format(
                                 node=self.node.name,
                                 path=LOCK_FILE,
