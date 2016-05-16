@@ -125,3 +125,13 @@ def softlock_add(node, operations=None):
             f.write(content + "\n")
         node.run("mkdir -p " + quote(SOFT_LOCK_PATH))
         node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id))
+
+
+def softlock_list(node):
+    cat = node.run("cat {}".format(SOFT_LOCK_FILE.format(id="*")), may_fail=True)
+    if cat.return_code != 0:
+        return []
+    result = []
+    for line in cat.stdout.decode('utf-8').strip().split("\n"):
+        result.append(json.loads(line.strip()))
+    return result

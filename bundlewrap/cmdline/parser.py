@@ -11,7 +11,7 @@ from .debug import bw_debug
 from .groups import bw_groups
 from .hash import bw_hash
 from .items import bw_items
-from .lock import bw_lock_add
+from .lock import bw_lock_add, bw_lock_show
 from .metadata import bw_metadata
 from .nodes import bw_nodes
 from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups
@@ -247,6 +247,21 @@ def build_parser_bw():
         dest='node_workers',
         help=_("number of nodes to lock simultaneously"),
         type=int,
+    )
+
+    # bw lock show
+    help_lock_show = _("Show details of locks present on a node")
+    parser_lock_show = parser_lock_subparsers.add_parser(
+        "show",
+        description=help_lock_show,
+        help=help_lock_show,
+    )
+    parser_lock_show.set_defaults(func=bw_lock_show)
+    parser_lock_show.add_argument(
+        'target',
+        metavar=_("NODE"),
+        type=str,
+        help=_("target node"),
     )
 
     # bw metadata
