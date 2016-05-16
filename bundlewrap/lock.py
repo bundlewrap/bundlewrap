@@ -139,14 +139,27 @@ def softlock_add(node, comment="", expiry="8h", operations=None):
 
 
 def softlock_list(node):
-    cat = node.run("cat {}".format(SOFT_LOCK_FILE.format(id="*")), may_fail=True)
-    if cat.return_code != 0:
-        return []
-    result = []
-    for line in cat.stdout.decode('utf-8').strip().split("\n"):
-        result.append(json.loads(line.strip()))
-    return result
+    with io.job(_("  {}  checking soft locks...").format(node.name)):
+        cat = node.run("cat {}".format(SOFT_LOCK_FILE.format(id="*")), may_fail=True)
+        if cat.return_code != 0:
+            return []
+        result = []
+        for line in cat.stdout.decode('utf-8').strip().split("\n"):
+            result.append(json.loads(line.strip()))
+        for lock in result[:]:
+            if lock['expiry'] < time():
+                io.debug(_("removing expired soft lock {id} from node {node}").format(
+                    id=lock['id'],
+                    node=node.name,
+                ))
+                softlock_remove(node, lock['id'])
+                result.remove(lock)
+        return result
 
 
 def softlock_remove(node, lock):
+    io.debug(_("removing soft lock {id} from node {node}").format(
+        id=lock,
+        node=node.name,
+    ))
     node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock)))
