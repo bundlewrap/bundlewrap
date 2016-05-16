@@ -24,13 +24,17 @@ def bw_lock_add(repo, args):
             'target': softlock_add,
             'task_id': node.name,
             'args': (node,),
+            'kwargs': {
+                'expiry': args['expiry'],
+            },
         }
 
     def handle_result(task_id, return_value, duration):
-        io.stdout(_("{x} {node}  locked with ID {id}").format(
+        io.stdout(_("{x} {node}  locked with ID {id} (expires in {exp})").format(
             x=green("✓"),
             node=bold(task_id),
             id=return_value,
+            exp=args['expiry'],
         ))
 
     def handle_exception(task_id, exception, traceback):
@@ -77,11 +81,13 @@ def bw_lock_show(repo, args):
 
     for lock in locks:
         lock['formatted_date'] = datetime.fromtimestamp(lock['date']).strftime("%c")
+        lock['formatted_expiry'] = datetime.fromtimestamp(lock['expiry']).strftime("%c")
         lock['formatted_ops'] = ", ".join(sorted(lock['ops']))
 
     headers = (
         ('id', _("ID")),
         ('formatted_date', _("Created")),
+        ('formatted_expiry', _("Expires")),
         ('user', _("User")),
         ('formatted_ops', _("Operations")),
     )

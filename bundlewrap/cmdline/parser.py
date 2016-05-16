@@ -241,6 +241,14 @@ def build_parser_bw():
         help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_lock_add.add_argument(
+        "-e",
+        "--expires-in",
+        default="8h",
+        dest='expiry',
+        help=_("how long before the lock is ignored and removed automatically (defaults to 8h)"),
+        type=str,
+    )
+    parser_lock_add.add_argument(
         "-p",
         "--parallel-nodes",
         default=int(environ.get("BW_NODE_WORKERS", "4")),

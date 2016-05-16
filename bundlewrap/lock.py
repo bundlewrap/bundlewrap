@@ -9,7 +9,7 @@ from time import time
 from .exceptions import NodeHardLockedException
 from .utils import tempfile
 from .utils.text import blue, bold, mark_for_translation as _, randstr, red, wrap_question
-from .utils.time import format_duration
+from .utils.time import format_duration, parse_duration
 from .utils.ui import io
 
 
@@ -109,13 +109,18 @@ class HardNodeLock(object):
         )
 
 
-def softlock_add(node, operations=None):
+def softlock_add(node, expiry="8h", operations=None):
     if operations is None:
         operations = ["apply", "run"]
     lock_id = randstr(length=4).upper()
 
+    expiry_timedelta = parse_duration(expiry)
+    now = time()
+    expiry_timestamp = now + expiry_timedelta.days * 86400 + expiry_timedelta.seconds
+
     content = json.dumps({
-        'date': time(),
+        'date': now,
+        'expiry': expiry_timestamp,
         'id': lock_id,
         'ops': operations,
         'user': identity(),
