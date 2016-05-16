@@ -9,6 +9,7 @@ from time import time
 from .exceptions import NodeHardLockedException
 from .utils import tempfile
 from .utils.text import blue, bold, mark_for_translation as _, randstr, red, wrap_question
+from .utils.time import format_duration
 from .utils.ui import io
 
 
@@ -58,9 +59,9 @@ class HardNodeLock(object):
                         info['duration'] = _("<unknown>")
                     else:
                         info['date'] = datetime.fromtimestamp(d).strftime("%c")
-                        info['duration'] = str(
+                        info['duration'] = format_duration(
                             datetime.now() - datetime.fromtimestamp(d)
-                        ).split(".")[0]
+                        )
                     if 'user' not in info:
                         info['user'] = _("<unknown>")
                     if self.ignore or (self.interactive and io.ask(
