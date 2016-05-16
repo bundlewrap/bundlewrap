@@ -241,6 +241,14 @@ def build_parser_bw():
         help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_lock_add.add_argument(
+        "-c",
+        "--comment",
+        default="",
+        dest='comment',
+        help=_("brief description of the purpose of the lock"),
+        type=str,
+    )
+    parser_lock_add.add_argument(
         "-e",
         "--expires-in",
         default="8h",

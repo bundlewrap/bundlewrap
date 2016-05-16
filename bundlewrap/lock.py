@@ -109,7 +109,9 @@ class HardNodeLock(object):
         )
 
 
-def softlock_add(node, expiry="8h", operations=None):
+def softlock_add(node, comment="", expiry="8h", operations=None):
+    if "\n" in comment:
+        raise ValueError(_("Lock comments must not contain any newlines"))
     if operations is None:
         operations = ["apply", "run"]
     lock_id = randstr(length=4).upper()
@@ -119,6 +121,7 @@ def softlock_add(node, expiry="8h", operations=None):
     expiry_timestamp = now + expiry_timedelta.days * 86400 + expiry_timedelta.seconds
 
     content = json.dumps({
+        'comment': comment,
         'date': now,
         'expiry': expiry_timestamp,
         'id': lock_id,

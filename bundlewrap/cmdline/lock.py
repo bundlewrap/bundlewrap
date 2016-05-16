@@ -25,6 +25,7 @@ def bw_lock_add(repo, args):
             'task_id': node.name,
             'args': (node,),
             'kwargs': {
+                'comment': args['comment'],
                 'expiry': args['expiry'],
             },
         }
@@ -90,6 +91,7 @@ def bw_lock_show(repo, args):
         ('formatted_expiry', _("Expires")),
         ('user', _("User")),
         ('formatted_ops', _("Operations")),
+        ('comment', _("Comment")),
     )
     lengths = {}
     headline = "{x} {node}  ".format(
