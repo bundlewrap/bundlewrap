@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from ..concurrency import WorkerPool
-from ..lock import softlock_add, softlock_list
+from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import blue, bold, cyan, error_summary, green, mark_for_translation as _
 from ..utils.ui import io
@@ -51,6 +51,17 @@ def bw_lock_add(repo, args):
     worker_pool.run()
 
     error_summary(errors)
+
+
+def bw_lock_remove(repo, args):
+    node = repo.get_node(args['target'])
+    lock = args['lock_id'].upper()
+    softlock_remove(node, lock)
+    io.stdout(_("{x} {node}  lock {lock} removed").format(
+        x=green("✓"),
+        node=bold(node.name),
+        lock=lock,
+    ))
 
 
 def bw_lock_show(repo, args):

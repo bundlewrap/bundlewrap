@@ -137,3 +137,7 @@ def softlock_list(node):
     for line in cat.stdout.decode('utf-8').strip().split("\n"):
         result.append(json.loads(line.strip()))
     return result
+
+
+def softlock_remove(node, lock):
+    node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock)))
