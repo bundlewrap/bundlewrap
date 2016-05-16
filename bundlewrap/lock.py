@@ -126,6 +126,8 @@ def softlock_add(node, operations=None):
         node.run("mkdir -p " + quote(SOFT_LOCK_PATH))
         node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id))
 
+    return lock_id
+
 
 def softlock_list(node):
     cat = node.run("cat {}".format(SOFT_LOCK_FILE.format(id="*")), may_fail=True)

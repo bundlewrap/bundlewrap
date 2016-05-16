@@ -27,9 +27,10 @@ def bw_lock_add(repo, args):
         }
 
     def handle_result(task_id, return_value, duration):
-        io.stdout(_("{x} {node}  locked").format(
+        io.stdout(_("{x} {node}  locked with ID {id}").format(
             x=green("✓"),
             node=bold(task_id),
+            id=return_value,
         ))
 
     def handle_exception(task_id, exception, traceback):
