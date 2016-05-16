@@ -105,7 +105,7 @@ def bw_lock_show(repo, args):
             lengths[column] = max(lengths[column], len(lock[column]))
         headline += bold(title.ljust(lengths[column] + 2))
 
-    io.stdout(headline)
+    io.stdout(headline.rstrip())
     for lock in locks:
         line = "{x} {node}  ".format(
             x=cyan("›"),
@@ -113,4 +113,4 @@ def bw_lock_show(repo, args):
         )
         for column, title in headers:
             line += lock[column].ljust(lengths[column] + 2)
-        io.stdout(line)
+        io.stdout(line.rstrip())
