@@ -271,7 +271,11 @@ class File(Item):
         group = self.attributes['group'] or ""
         if group:
             group = ":" + quote(group)
-        self.node.run("chown {}{} -- {}".format(
+        if self.node.os == "openbsd":
+            command = "chown {}{} {}"
+        else:
+            command = "chown {}{} -- {}"
+        self.node.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
             quote(self.name),
