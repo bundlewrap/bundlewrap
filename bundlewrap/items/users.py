@@ -5,7 +5,7 @@ from logging import ERROR, getLogger
 from pipes import quote
 from string import ascii_lowercase, digits
 
-from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
+from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt, bcrypt
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
@@ -35,12 +35,17 @@ _ATTRIBUTE_OPTIONS = {
 }
 
 # a random static salt if users don't provide one
-_DEFAULT_SALT = "uJzJlYdG"
+_DEFAULT_SALT = "peuFo0rieYei8oosaewah6"
+
+# bcrypt needs special salts. 22 characters long, ending in ".", "O", "e", "u"
+# see https://bitbucket.org/ecollins/passlib/issues/25
+_DEFAULT_BCRYPT_SALT = 'oo2ahgheen9Tei0IeJohTO'
 
 HASH_METHODS = {
     'md5': md5_crypt,
     'sha256': sha256_crypt,
     'sha512': sha512_crypt,
+    'bcrypt': bcrypt
 }
 
 _USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
@@ -68,13 +73,14 @@ def _groups_for_user(node, username):
     return groups
 
 
-def _parse_passwd_line(line):
+def _parse_passwd_line(line, entries):
     """
     Parses a line from /etc/passwd and returns the information as a
     dictionary.
     """
+
     result = dict(zip(
-        ('username', 'passwd_hash', 'uid', 'gid', 'gecos', 'home', 'shell'),
+        entries,
         line.strip().split(":"),
     ))
     result['full_name'] = result['gecos'].split(",")[0]
@@ -157,21 +163,30 @@ class User(Item):
 
     def sdict(self):
         # verify content of /etc/passwd
+        if self.node.os == "openbsd":
+            password_command = "grep -e '^{}:' /etc/master.passwd"
+        else:
+            password_command = "grep -e '^{}:' /etc/passwd"
         passwd_grep_result = self.node.run(
-            "grep -e '^{}:' /etc/passwd".format(self.name),
+            password_command.format(self.name),
             may_fail=True,
         )
         if passwd_grep_result.return_code != 0:
             return None
 
-        sdict = _parse_passwd_line(passwd_grep_result.stdout_text)
+        if self.node.os == "openbsd":
+            entries = ('username', 'passwd_hash', 'uid', 'gid','class', 'change', 'expire', 'gecos', 'home', 'shell')
+        else:
+            entries = ('username', 'passwd_hash', 'uid', 'gid', 'gecos', 'home', 'shell')
+
+        sdict = _parse_passwd_line(passwd_grep_result.stdout_text, entries)
 
         if self.attributes['gid'] is not None and not self.attributes['gid'].isdigit():
             sdict['gid'] = _group_name_for_gid(self.node, sdict['gid'])
 
         if self.attributes['password_hash'] is not None:
-            if self.attributes['use_shadow']:
-                # verify content of /etc/shadow
+            if self.attributes['use_shadow'] and self.node.os != "openbsd":
+                # verify content of /etc/shadow unless we are on openbsd
                 shadow_grep_result = self.node.run(
                     "grep -e '^{}:' /etc/shadow".format(self.name),
                     may_fail=True,
@@ -197,11 +212,19 @@ class User(Item):
                 self.ITEM_ATTRIBUTES['hash_method'],
             )]
             salt = attributes.get('salt', None)
-            attributes['password_hash'] = hash_method.encrypt(
-                force_text(attributes['password']),
-                rounds=5000,  # default from glibc
-                salt=_DEFAULT_SALT if salt is None else salt,
-            )
+            if self.node.os == "openbsd":
+                attributes['password_hash'] = bcrypt.encrypt(
+                    force_text(attributes['password']),
+                    rounds=8, # default rounds for openbsd accounts
+                    salt=_DEFAULT_BCRYPT_SALT if salt is None else salt,
+                )
+            else:
+                attributes['password_hash'] = hash_method.encrypt(
+                    force_text(attributes['password']),
+                    rounds=5000,  # default from glibc
+                    salt=_DEFAULT_SALT if salt is None else salt,
+                )
+
 
         if 'use_shadow' not in attributes:
             attributes['use_shadow'] = self.node.use_shadow_passwords
