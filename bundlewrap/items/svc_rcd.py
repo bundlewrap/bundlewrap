@@ -23,7 +23,7 @@ def svc_stop(node, svcname):
 
 class SvcRCd(Item):
     """
-    A service managed by Upstart.
+    A service managed by OpenBSD rc.d.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_rcd"
     ITEM_ATTRIBUTES = {
