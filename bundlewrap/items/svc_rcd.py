@@ -20,6 +20,21 @@ def svc_running(node, svcname):
 def svc_stop(node, svcname):
     return node.run("/etc/rc.d/{} stop".format(quote(svcname)))
 
+def svc_enable(node, svcname):
+    return node.run("rcctl set {} status on".format(quote(svcname)))
+
+
+def svc_enabled(node, svcname):
+    result = node.run(
+        "rcctl ls on|grep {}".format(quote(svcname)),
+        may_fail=True,
+    )
+    return result.return_code == 0
+
+
+def svc_disable(node, svcname):
+    return node.run("rcctl set {} status off".format(quote(svcname)))
+
 
 class SvcRCd(Item):
     """
@@ -28,16 +43,24 @@ class SvcRCd(Item):
     BUNDLE_ATTRIBUTE_NAME = "svc_rcd"
     ITEM_ATTRIBUTES = {
         'running': True,
+        'enabled': True
     }
     ITEM_TYPE_NAME = "svc_rcd"
 
     def __repr__(self):
-        return "<SvcRCd name:{} running:{}>".format(
+        return "<SvcRCd name:{} running:{} enabled:{}>".format(
             self.name,
             self.attributes['running'],
+            self.attributes['enabled'],
         )
 
     def fix(self, status):
+        if 'enabled' in status.keys_to_fix:
+            if self.attributes['enabled'] is False:
+                svc_disable(self.node, self.name)
+            else:
+                svc_enable(self.node, self.name)
+
         if self.attributes['running'] is False:
             svc_stop(self.node, self.name)
         else:
@@ -56,7 +79,10 @@ class SvcRCd(Item):
         }
 
     def sdict(self):
-        return {'running': svc_running(self.node, self.name)}
+        return {
+            'enabled': svc_enabled(self.node, self.name),
+            'running': svc_running(self.node, self.name),
+        }
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):

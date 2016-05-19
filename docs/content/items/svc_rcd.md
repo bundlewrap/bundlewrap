@@ -4,6 +4,7 @@ Handles services managed by rc.d, tested on OpenBSD.
 
     svc_rcd = {
         "fcron.service": {
+            "enabled": True, # default
             "running": True,  # default
         },
         "sgopherd.socket": {
@@ -16,6 +17,12 @@ Handles services managed by rc.d, tested on OpenBSD.
 ## Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+
+<br>
+
+### enabled
+
+`True` if the service shall be automatically started during system bootup; `False` otherwise. `True`, the default value, is needed on OpenBSD, as starting disabled services fails.
 
 <br>
 
