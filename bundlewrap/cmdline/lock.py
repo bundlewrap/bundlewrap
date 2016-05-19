@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import datetime
-
 from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import blue, bold, cyan, error_summary, green, mark_for_translation as _
+from ..utils.time import format_timestamp
 from ..utils.ui import io
 
 
@@ -81,10 +80,8 @@ def bw_lock_show(repo, args):
         return
 
     for lock in locks:
-        lock['formatted_date'] = \
-            datetime.fromtimestamp(lock['date']).strftime("%Y-%m-%d %H:%M:%S")
-        lock['formatted_expiry'] = \
-            datetime.fromtimestamp(lock['expiry']).strftime("%Y-%m-%d %H:%M:%S")
+        lock['formatted_date'] = format_timestamp(lock['date'])
+        lock['formatted_expiry'] = format_timestamp(lock['expiry'])
         lock['formatted_ops'] = ", ".join(sorted(lock['ops']))
 
     headers = (

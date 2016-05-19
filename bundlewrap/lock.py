@@ -9,7 +9,7 @@ from time import time
 from .exceptions import NodeHardLockedException
 from .utils import tempfile
 from .utils.text import blue, bold, mark_for_translation as _, randstr, red, wrap_question
-from .utils.time import format_duration, parse_duration
+from .utils.time import format_duration, format_timestamp, parse_duration
 from .utils.ui import io
 
 
@@ -58,7 +58,7 @@ class HardNodeLock(object):
                         info['date'] = _("<unknown>")
                         info['duration'] = _("<unknown>")
                     else:
-                        info['date'] = datetime.fromtimestamp(d).strftime("%Y-%m-%d %H:%M:%S")
+                        info['date'] = format_timestamp(d)
                         info['duration'] = format_duration(
                             datetime.now() - datetime.fromtimestamp(d)
                         )

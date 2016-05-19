@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from .text import mark_for_translation as _
 
@@ -22,6 +22,10 @@ def format_duration(duration):
     if seconds > 0 or not components:
         components.append(_("{}s").format(seconds))
     return " ".join(components)
+
+
+def format_timestamp(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def parse_duration(duration):
