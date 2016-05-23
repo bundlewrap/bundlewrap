@@ -207,7 +207,16 @@ def softlock_list(node):
             return []
         result = []
         for line in cat.stdout.decode('utf-8').strip().split("\n"):
-            result.append(json.loads(line.strip()))
+            try:
+                result.append(json.loads(line.strip()))
+            except json.decoder.JSONDecodeError:
+                io.stderr(_(
+                    "{x} {node}  unable to parse soft lock file contents, ignoring: {line}"
+                ).format(
+                    x=red("!"),
+                    node=bold(node.name),
+                    line=line.strip(),
+                ))
         for lock in result[:]:
             if lock['expiry'] < time():
                 io.debug(_("removing expired soft lock {id} from node {node}").format(
