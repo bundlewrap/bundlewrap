@@ -4,13 +4,15 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from ..concurrency import WorkerPool
+from ..exceptions import NodeLockedException
+from ..lock import NodeLock
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
 from ..utils.text import bold, error_summary, green, red
 from ..utils.ui import io
 
 
-def run_on_node(node, command, may_fail, log_output):
+def run_on_node(node, command, may_fail, ignore_locks, log_output):
     node.repo.hooks.node_run_start(
         node.repo,
         node,
@@ -18,11 +20,12 @@ def run_on_node(node, command, may_fail, log_output):
     )
 
     start = datetime.now()
-    result = node.run(
-        command,
-        may_fail=may_fail,
-        log_output=log_output,
-    )
+    with NodeLock(node, 'run', ignore=ignore_locks):
+        result = node.run(
+            command,
+            may_fail=may_fail,
+            log_output=log_output,
+        )
     end = datetime.now()
     duration = end - start
 
@@ -80,15 +83,26 @@ def bw_run(repo, args):
                 node,
                 args['command'],
                 args['may_fail'],
+                args['ignore_locks'],
                 True,
             ),
         }
 
     def handle_exception(task_id, exception, traceback):
-        msg = "{}: {}".format(task_id, exception)
-        io.stderr(traceback)
-        io.stderr(repr(exception))
-        io.stderr(msg)
+        if isinstance(exception, NodeLockedException):
+            msg = _(
+                "{node_bold}  locked by {user} "
+                "(see `bw lock show {node}` for details)"
+            ).format(
+                node_bold=bold(task_id),
+                node=task_id,
+                user=exception.args[0]['user'],
+            )
+        else:
+            msg = "{}  {}".format(bold(task_id), exception)
+            io.stderr(traceback)
+            io.stderr(repr(exception))
+        io.stderr("{} {}".format(red("!"), msg))
         errors.append(msg)
 
     worker_pool = WorkerPool(

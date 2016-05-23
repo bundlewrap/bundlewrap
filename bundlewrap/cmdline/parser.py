@@ -578,6 +578,12 @@ def build_parser_bw():
         help=_("ignore non-zero exit codes"),
     )
     parser_run.add_argument(
+        "--force",
+        action='store_true',
+        dest='ignore_locks',
+        help=_("ignore soft locks on target nodes"),
+    )
+    parser_run.add_argument(
         "-p",
         "--parallel-nodes",
         default=int(environ.get("BW_NODE_WORKERS", "1")),
