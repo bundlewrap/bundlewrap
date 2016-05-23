@@ -6,7 +6,7 @@ from pipes import quote
 from socket import gethostname
 from time import time
 
-from .exceptions import NodeHardLockedException
+from .exceptions import NodeLockedException
 from .utils import tempfile
 from .utils.text import blue, bold, mark_for_translation as _, randstr, red, wrap_question
 from .utils.time import format_duration, format_timestamp, parse_duration
@@ -26,13 +26,37 @@ def identity():
     ))
 
 
-class HardNodeLock(object):
-    def __init__(self, node, interactive, ignore=False):
+class NodeLock(object):
+    def __init__(self, node, operation, interactive=False, ignore=False):
         self.node = node
+        self.operation = operation
         self.ignore = ignore
         self.interactive = interactive
 
     def __enter__(self):
+        if not self.ignore:
+            lock_info = softlock_check(self.node, self.operation)
+            if lock_info:
+                lock_info['acquired'] = format_timestamp(lock_info['date'])
+                lock_info['acquired_duration'] = format_duration(
+                    datetime.now() -
+                    datetime.fromtimestamp(lock_info['date'])
+                )
+                lock_info['expiry_duration'] = format_duration(
+                    datetime.fromtimestamp(lock_info['expiry']) -
+                    datetime.now()
+                )
+                lock_info['expiry'] = format_timestamp(lock_info['expiry'])
+                if not self.interactive or not io.ask(
+                    self._warning_message_soft(lock_info),
+                    False,
+                    epilogue=blue("?") + " " + bold(self.node.name),
+                ):
+                    raise NodeLockedException(lock_info)
+
+        if self.operation != 'apply':
+            return
+
         with tempfile() as local_path:
             with io.job(_("  {node}  checking hard lock status...").format(node=self.node.name)):
                 result = self.node.run("mkdir " + quote(HARD_LOCK_PATH), may_fail=True)
@@ -65,13 +89,13 @@ class HardNodeLock(object):
                     if 'user' not in info:
                         info['user'] = _("<unknown>")
                     if self.ignore or (self.interactive and io.ask(
-                        self._warning_message(info),
+                        self._warning_message_hard(info),
                         False,
                         epilogue=blue("?") + " " + bold(self.node.name),
                     )):
                         pass
                     else:
-                        raise NodeHardLockedException(info)
+                        raise NodeLockedException(info)
 
             with io.job(_("  {node}  uploading lock file...").format(node=self.node.name)):
                 with open(local_path, 'w') as f:
@@ -82,29 +106,60 @@ class HardNodeLock(object):
                 self.node.upload(local_path, HARD_LOCK_FILE)
 
     def __exit__(self, type, value, traceback):
-        with io.job(_("  {node}  removing hard lock...").format(node=self.node.name)):
-            result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
+        if self.operation == 'apply':
+            with io.job(_("  {node}  removing hard lock...").format(node=self.node.name)):
+                result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
 
-        if result.return_code != 0:
-            io.stderr(_("Could not release hard lock for node '{node}'").format(
-                node=self.node.name,
-            ))
+            if result.return_code != 0:
+                io.stderr(_("Could not release hard lock for node '{node}'").format(
+                    node=self.node.name,
+                ))
 
-    def _warning_message(self, info):
+    def _warning_message_hard(self, info):
         return wrap_question(
             red(_("NODE LOCKED")),
             _(
                 "Looks like somebody is currently using BundleWrap on this node.\n"
                 "You should let them finish or override the lock if it has gone stale.\n"
                 "\n"
-                "locked by: {user}\n"
-                "lock acquired: {duration} ago ({date})"
+                "locked by  {user}\n"
+                "    since  {date} ({duration} ago)"
             ).format(
                 user=bold(info['user']),
                 date=info['date'],
-                duration=bold(info['duration']),
+                duration=info['duration'],
             ),
             bold(_("Override lock?")),
+            prefix="{x} {node} ".format(node=bold(self.node.name), x=blue("?")),
+        )
+
+    def _warning_message_soft(self, info):
+        return wrap_question(
+            red(_("NODE LOCKED")),
+            _(
+                "This node has been locked deliberately.\n"
+                "Someone probably doesn't want you to continue.\n"
+                "\n"
+                "locked by  {user}\n"
+                "  comment  {comment}\n"
+                "  blocked  {ops}\n"
+                "    since  {acquired} ({acquired_duration} ago)\n"
+                "    until  {expiry} (in {expiry_duration})\n"
+                "\n"
+                "You can either ignore the lock this one time\n"
+                "or you can exempt yourself by locking the node\n"
+                "yourself with `bw lock add {node}`."
+            ).format(
+                user=bold(info['user']),
+                ops=", ".join(info['ops']),
+                comment=bold(info['comment']),
+                acquired=info['acquired'],
+                acquired_duration=info['acquired_duration'],
+                expiry=info['expiry'],
+                expiry_duration=info['expiry_duration'],
+                node=self.node.name,
+            ),
+            bold(_("Ignore lock?")),
             prefix="{x} {node} ".format(node=bold(self.node.name), x=blue("?")),
         )
 
@@ -136,6 +191,13 @@ def softlock_add(node, comment="", expiry="8h", operations=None):
         node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id), mode='0644')
 
     return lock_id
+
+
+def softlock_check(node, operation):
+    for lock in softlock_list(node):
+        if operation in lock['ops'] and lock['user'] != identity():
+            return lock
+    return None
 
 
 def softlock_list(node):

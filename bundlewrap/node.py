@@ -15,13 +15,13 @@ from .deps import (
 )
 from .exceptions import (
     ItemDependencyError,
-    NodeHardLockedException,
+    NodeLockedException,
     NoSuchBundle,
     RepositoryError,
 )
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
-from .lock import HardNodeLock
+from .lock import NodeLock
 from .metadata import check_for_unsolvable_metadata_key_conflicts
 from .utils import cached_property, graph_for_items, names
 from .utils.statedict import hash_statedict
@@ -453,7 +453,7 @@ class Node(object):
         )
 
         try:
-            with HardNodeLock(self, interactive, ignore=force):
+            with NodeLock(self, 'apply', interactive=interactive, ignore=force):
                 item_results = apply_items(
                     self,
                     autoskip_selector=autoskip_selector,
@@ -461,7 +461,7 @@ class Node(object):
                     interactive=interactive,
                     profiling=profiling,
                 )
-        except NodeHardLockedException as e:
+        except NodeLockedException as e:
             if not interactive:
                 io.stderr(_("{x} {node} already locked by {user} at {date} ({duration} ago, `bw apply -f` to override)").format(
                     date=bold(e.args[0]['date']),

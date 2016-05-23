@@ -141,7 +141,7 @@ class UsageException(UnicodeException):
     pass
 
 
-class NodeHardLockedException(Exception):
+class NodeLockedException(Exception):
     """
     Raised when a node is already locked during an 'apply' run.
     """
