@@ -14,7 +14,7 @@ Colors are enabled by default. Setting this variable to `0` tells BundleWrap to 
 
 ## `BW_IDENTITY`
 
-When BundleWrap locks a node, it stores a short description about "you". By default, this is the string `$USER@$HOSTNAME`, e.g. `john@mymachine`. You can use `BW_IDENTITY` to specify a custom string. (No variables will be evaluated in user supplied strings.)
+When BundleWrap [locks](locks.md) a node, it stores a short description about "you". By default, this is the string `$USER@$HOSTNAME`, e.g. `john@mymachine`. You can use `BW_IDENTITY` to specify a custom string. (No variables will be evaluated in user supplied strings.)
 
 
 ## `BW_ITEM_WORKERS` and `BW_NODE_WORKERS`
