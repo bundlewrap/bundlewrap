@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import blue, bold, cyan, error_summary, green, mark_for_translation as _
+from ..utils.text import blue, bold, cyan, error_summary, green, mark_for_translation as _, randstr
 from ..utils.time import format_timestamp
 from ..utils.ui import io
 
@@ -13,6 +13,7 @@ def bw_lock_add(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'])
     pending_nodes = target_nodes[:]
+    lock_id = randstr(length=4).upper()
 
     def tasks_available():
         return bool(pending_nodes)
@@ -22,7 +23,7 @@ def bw_lock_add(repo, args):
         return {
             'target': softlock_add,
             'task_id': node.name,
-            'args': (node,),
+            'args': (node, lock_id),
             'kwargs': {
                 'comment': args['comment'],
                 'expiry': args['expiry'],

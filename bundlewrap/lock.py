@@ -8,7 +8,7 @@ from time import time
 
 from .exceptions import NodeLockedException
 from .utils import cached_property, tempfile
-from .utils.text import blue, bold, mark_for_translation as _, randstr, red, wrap_question
+from .utils.text import blue, bold, mark_for_translation as _, red, wrap_question
 from .utils.time import format_duration, format_timestamp, parse_duration
 from .utils.ui import io
 
@@ -128,12 +128,11 @@ class NodeLock(object):
                 yield lock
 
 
-def softlock_add(node, comment="", expiry="8h", item_selectors=None):
+def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
     if "\n" in comment:
         raise ValueError(_("Lock comments must not contain any newlines"))
     if not item_selectors:
         item_selectors = ["*"]
-    lock_id = randstr(length=4).upper()
 
     expiry_timedelta = parse_duration(expiry)
     now = time()
@@ -185,9 +184,9 @@ def softlock_list(node):
         return result
 
 
-def softlock_remove(node, lock):
+def softlock_remove(node, lock_id):
     io.debug(_("removing soft lock {id} from node {node}").format(
-        id=lock,
+        id=lock_id,
         node=node.name,
     ))
-    node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock)))
+    node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock_id)))
