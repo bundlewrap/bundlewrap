@@ -284,15 +284,23 @@ def build_parser_bw():
     parser_lock_remove.set_defaults(func=bw_lock_remove)
     parser_lock_remove.add_argument(
         'target',
-        metavar=_("NODE"),
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
         type=str,
-        help=_("target node"),
+        help=_("target nodes, groups and/or bundle selectors"),
     )
     parser_lock_remove.add_argument(
         'lock_id',
         metavar=_("LOCK_ID"),
         type=str,
         help=_("ID of the lock to remove (obtained with `bw lock show`)"),
+    )
+    parser_lock_remove.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        dest='node_workers',
+        help=_("number of nodes to remove lock from simultaneously"),
+        type=int,
     )
 
     # bw lock show

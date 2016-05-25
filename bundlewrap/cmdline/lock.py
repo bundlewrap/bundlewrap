@@ -60,14 +60,46 @@ def bw_lock_add(repo, args):
 
 
 def bw_lock_remove(repo, args):
-    node = repo.get_node(args['target'])
-    lock = args['lock_id'].upper()
-    softlock_remove(node, lock)
-    io.stdout(_("{x} {node}  lock {lock} removed").format(
-        x=green("✓"),
-        node=bold(node.name),
-        lock=lock,
-    ))
+    errors = []
+    target_nodes = get_target_nodes(repo, args['target'])
+    pending_nodes = target_nodes[:]
+
+    def tasks_available():
+        return bool(pending_nodes)
+
+    def next_task():
+        node = pending_nodes.pop()
+        return {
+            'target': softlock_remove,
+            'task_id': node.name,
+            'args': (node, args['lock_id'].upper()),
+        }
+
+    def handle_result(task_id, return_value, duration):
+        io.stdout(_("{x} {node}  lock {id} removed").format(
+            x=green("✓"),
+            node=bold(task_id),
+            id=args['lock_id'].upper(),
+        ))
+
+    def handle_exception(task_id, exception, traceback):
+        msg = "{}: {}".format(task_id, exception)
+        io.stderr(traceback)
+        io.stderr(repr(exception))
+        io.stderr(msg)
+        errors.append(msg)
+
+    worker_pool = WorkerPool(
+        tasks_available,
+        next_task,
+        handle_exception=handle_exception,
+        handle_result=handle_result,
+        pool_id="lock_remove",
+        workers=args['node_workers'],
+    )
+    worker_pool.run()
+
+    error_summary(errors)
 
 
 def bw_lock_show(repo, args):
