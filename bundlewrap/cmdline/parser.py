@@ -257,6 +257,15 @@ def build_parser_bw():
         type=str,
     )
     parser_lock_add.add_argument(
+        "-i",
+        "--items",
+        default="*",
+        dest='items',
+        help=_("comma-separated list of item selectors the lock applies to "
+               "(defaults to \"*\" meaning all)"),
+        type=str,
+    )
+    parser_lock_add.add_argument(
         "-p",
         "--parallel-nodes",
         default=int(environ.get("BW_NODE_WORKERS", "4")),

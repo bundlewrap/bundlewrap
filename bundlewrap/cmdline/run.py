@@ -5,7 +5,6 @@ from datetime import datetime
 
 from ..concurrency import WorkerPool
 from ..exceptions import NodeLockedException
-from ..lock import NodeLock
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
 from ..utils.text import bold, error_summary, green, red
@@ -20,12 +19,11 @@ def run_on_node(node, command, may_fail, ignore_locks, log_output):
     )
 
     start = datetime.now()
-    with NodeLock(node, 'run', ignore=ignore_locks):
-        result = node.run(
-            command,
-            may_fail=may_fail,
-            log_output=log_output,
-        )
+    result = node.run(
+        command,
+        may_fail=may_fail,
+        log_output=log_output,
+    )
     end = datetime.now()
     duration = end - start
 

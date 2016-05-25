@@ -108,7 +108,15 @@ def handle_apply_result(node, item, status_code, interactive, changes=None):
             io.stdout(formatted_result)
 
 
-def apply_items(node, autoskip_selector="", workers=1, interactive=False, profiling=False):
+def apply_items(
+    node,
+    autoskip_selector="",
+    my_soft_locks=(),
+    other_peoples_soft_locks=(),
+    workers=1,
+    interactive=False,
+    profiling=False,
+):
     with io.job(_("  {node}  processing dependencies...").format(node=node.name)):
         item_queue = ItemQueue(node.items)
 
@@ -134,6 +142,8 @@ def apply_items(node, autoskip_selector="", workers=1, interactive=False, profil
             'target': item.apply,
             'kwargs': {
                 'autoskip_selector': autoskip_selector,
+                'my_soft_locks': my_soft_locks,
+                'other_peoples_soft_locks': other_peoples_soft_locks,
                 'interactive': interactive,
             },
         }
@@ -453,10 +463,12 @@ class Node(object):
         )
 
         try:
-            with NodeLock(self, 'apply', interactive=interactive, ignore=force):
+            with NodeLock(self, interactive=interactive, ignore=force) as lock:
                 item_results = apply_items(
                     self,
                     autoskip_selector=autoskip_selector,
+                    my_soft_locks=lock.my_soft_locks,
+                    other_peoples_soft_locks=lock.other_peoples_soft_locks,
                     workers=workers,
                     interactive=interactive,
                     profiling=profiling,

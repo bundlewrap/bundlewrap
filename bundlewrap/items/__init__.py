@@ -247,6 +247,31 @@ class Item(object):
             node=self.node.name,
         ))
 
+    def _skip_with_soft_locks(self, mine, others):
+        """
+        Returns True/False depending on whether the item should be
+        skipped based on the given set of locks.
+        """
+        for lock in mine:
+            for selector in lock['items']:
+                if self.covered_by_autoskip_selector(selector):
+                    io.debug(_("{item} on {node} whitelisted by lock {lock}").format(
+                        item=self.id,
+                        lock=lock['id'],
+                        node=self.node.name,
+                    ))
+                    return False
+        for lock in others:
+            for selector in lock['items']:
+                if self.covered_by_autoskip_selector(selector):
+                    io.debug(_("{item} on {node} blacklisted by lock {lock}").format(
+                        item=self.id,
+                        lock=lock['id'],
+                        node=self.node.name,
+                    ))
+                    return True
+        return False
+
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
         invalid_attributes = set(attributes.keys()).difference(
@@ -288,7 +313,14 @@ class Item(object):
                 attrs=", ".join(missing),
             ))
 
-    def apply(self, autoskip_selector="", interactive=False, interactive_default=True):
+    def apply(
+        self,
+        autoskip_selector="",
+        my_soft_locks=(),
+        other_peoples_soft_locks=(),
+        interactive=False,
+        interactive_default=True,
+    ):
         self.node.repo.hooks.item_apply_start(
             self.node.repo,
             self.node,
@@ -306,6 +338,10 @@ class Item(object):
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             keys_to_fix = [_("cmdline")]
+
+        if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
+            status_code = self.STATUS_SKIPPED
+            keys_to_fix = [_("soft locked")]
 
         if self.triggered and not self.has_been_triggered and status_code is None:
             io.debug(_(
@@ -471,6 +507,7 @@ class Item(object):
         """
         components = [c.strip() for c in autoskip_selector.split(",")]
         if (
+            "*" in components or
             self.id in components or
             "bundle:{}".format(self.bundle.name) in components or
             "{}:".format(self.ITEM_TYPE_NAME) in components

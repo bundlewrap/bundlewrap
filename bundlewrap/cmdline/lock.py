@@ -26,6 +26,7 @@ def bw_lock_add(repo, args):
             'kwargs': {
                 'comment': args['comment'],
                 'expiry': args['expiry'],
+                'item_selectors': args['items'].split(","),
             },
         }
 
@@ -82,14 +83,13 @@ def bw_lock_show(repo, args):
     for lock in locks:
         lock['formatted_date'] = format_timestamp(lock['date'])
         lock['formatted_expiry'] = format_timestamp(lock['expiry'])
-        lock['formatted_ops'] = ", ".join(sorted(lock['ops']))
 
     headers = (
         ('id', _("ID")),
         ('formatted_date', _("Created")),
         ('formatted_expiry', _("Expires")),
         ('user', _("User")),
-        ('formatted_ops', _("Operations")),
+        ('items', _("Items")),
         ('comment', _("Comment")),
     )
     lengths = {}
@@ -101,15 +101,25 @@ def bw_lock_show(repo, args):
     for column, title in headers:
         lengths[column] = len(title)
         for lock in locks:
-            lengths[column] = max(lengths[column], len(lock[column]))
+            if column == 'items':
+                length = max([len(selector) for selector in lock[column]])
+            else:
+                length = len(lock[column])
+            lengths[column] = max(lengths[column], length)
         headline += bold(title.ljust(lengths[column] + 2))
 
     io.stdout(headline.rstrip())
     for lock in locks:
-        line = "{x} {node}  ".format(
-            x=cyan("›"),
-            node=bold(node.name),
-        )
-        for column, title in headers:
-            line += lock[column].ljust(lengths[column] + 2)
-        io.stdout(line.rstrip())
+        for lineno, item_selectors in enumerate(lock['items']):
+            line = "{x} {node}  ".format(
+                x=cyan("›"),
+                node=bold(node.name),
+            )
+            for column, title in headers:
+                if column == 'items':
+                    line += lock[column][lineno].ljust(lengths[column] + 2)
+                elif lineno == 0:
+                    line += lock[column].ljust(lengths[column] + 2)
+                else:
+                    line += " " * (lengths[column] + 2)
+            io.stdout(line.rstrip())
