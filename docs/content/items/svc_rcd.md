@@ -3,11 +3,11 @@
 Handles services managed by rc.d, tested on OpenBSD.
 
     svc_rcd = {
-        "fcron.service": {
+        "bgpd": {
             "enabled": True, # default
             "running": True,  # default
         },
-        "sgopherd.socket": {
+        "supervisord": {
             "running": False,
         },
     }
