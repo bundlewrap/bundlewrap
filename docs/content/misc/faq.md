@@ -10,7 +10,7 @@ Try running `bw apply -i nodename` to see which attribute of the item could not 
 
 ### What happens when two people start applying configuration to the same node?
 
-BundleWrap uses a [locking mechanism](../guide/locks.md) to prevent collisions like this. When BundleWrap finds a lock on a node in interactive mode, it will display information about who acquired the lock (and when) and will ask whether to ignore the lock or abort the process. In noninteractive mode, the operation is always cancelled for the node in question unless `--force` is used.
+BundleWrap uses a [locking mechanism](../guide/locks.md) to prevent collisions like this.
 
 <br>
 

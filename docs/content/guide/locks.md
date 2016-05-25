@@ -4,7 +4,7 @@ BundleWrap's decentralized nature makes it necessary to coordinate actions betwe
 
 ## Hard locks
 
-Since very early in the history of BundleWrap, what we call "hard locks" were used to prevent multiple users from using `bw apply` on the same node at the same time.
+Since very early in the history of BundleWrap, what we call "hard locks" were used to prevent multiple users from using `bw apply` on the same node at the same time. When BundleWrap finds a hard lock on a node in interactive mode, it will display information about who acquired the lock (and when) and will ask whether to ignore the lock or abort the process. In non-interactive mode, the operation is always cancelled for the node in question unless `--force` is used.
 
 ## Soft locks
 
