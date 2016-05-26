@@ -28,6 +28,11 @@ There is no single default for these values. For example, when running `bw apply
 Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.
 
 
+## `BW_SOFTLOCK_EXPIRY`
+
+[Soft locks](locks.md) are automatically removed from nodes after some time. By default, it's eight hours. You can use this variable to override that default.
+
+
 ## `BW_VAULT_DUMMY_MODE`
 
 Setting this to `1` will make `repo.vault` return dummy values for every [secret](secrets.md). This is useful for running `bw test` on a CI server that you don't want to trust with your `.secrets.cfg`.

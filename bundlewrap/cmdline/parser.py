@@ -251,7 +251,7 @@ def build_parser_bw():
     parser_lock_add.add_argument(
         "-e",
         "--expires-in",
-        default="8h",
+        default=environ.get("BW_SOFTLOCK_EXPIRY", "8h"),
         dest='expiry',
         help=_("how long before the lock is ignored and removed automatically (defaults to 8h)"),
         type=str,
