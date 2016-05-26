@@ -25,12 +25,23 @@ class Action(Item):
     ITEM_TYPE_NAME = 'action'
     REQUIRED_ATTRIBUTES = ['command']
 
-    def _get_result(self, autoskip_selector="", interactive=False, interactive_default=True):
+    def _get_result(
+        self,
+        autoskip_selector="",
+        my_soft_locks=(),
+        other_peoples_soft_locks=(),
+        interactive=False,
+        interactive_default=True,
+    ):
+
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(
                 "autoskip matches {item} on {node}"
             ).format(item=self.id, node=self.node.name))
             return (self.STATUS_SKIPPED, [_("cmdline")])
+
+        if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
+            return (self.STATUS_SKIPPED, [_("soft locked")])
 
         if interactive is False and self.attributes['interactive'] is True:
             return (self.STATUS_SKIPPED, [_("interactive only")])
