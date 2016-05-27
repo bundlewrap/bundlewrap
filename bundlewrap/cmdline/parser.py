@@ -686,10 +686,10 @@ def build_parser_bw():
     )
     parser_verify.add_argument(
         "-S",
-        "---no-summary",
+        "--no-summary",
         action='store_false',
         dest='summary',
-        help=_("show stats summary"),
+        help=_("don't show stats summary"),
     )
 
     # bw zen
