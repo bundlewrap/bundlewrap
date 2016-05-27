@@ -81,20 +81,24 @@ def build_parser_bw():
         dest='interactive',
         help=_("ask before applying each item"),
     )
+    bw_apply_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_apply.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        default=bw_apply_p_default,
         dest='node_workers',
-        help=_("number of nodes to apply to simultaneously"),
+        help=_("number of nodes to apply to simultaneously "
+               "(defaults to {})").format(bw_apply_p_default),
         type=int,
     )
+    bw_apply_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_apply.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BW_ITEM_WORKERS", "4")),
+        default=bw_apply_p_items_default,
         dest='item_workers',
-        help=_("number of items to apply to simultaneously on each node"),
+        help=_("number of items to apply to simultaneously on each node "
+               "(defaults to {})").format(bw_apply_p_items_default),
         type=int,
     )
     parser_apply.add_argument(
@@ -248,12 +252,14 @@ def build_parser_bw():
         help=_("brief description of the purpose of the lock"),
         type=str,
     )
+    bw_lock_add_e_default = environ.get("BW_SOFTLOCK_EXPIRY", "8h")
     parser_lock_add.add_argument(
         "-e",
         "--expires-in",
-        default=environ.get("BW_SOFTLOCK_EXPIRY", "8h"),
+        default=bw_lock_add_e_default,
         dest='expiry',
-        help=_("how long before the lock is ignored and removed automatically (defaults to 8h)"),
+        help=_("how long before the lock is ignored and removed automatically "
+               "(defaults to \"{}\")").format(bw_lock_add_e_default),
         type=str,
     )
     parser_lock_add.add_argument(
@@ -265,12 +271,14 @@ def build_parser_bw():
                "(defaults to \"*\" meaning all)"),
         type=str,
     )
+    bw_lock_add_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_lock_add.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        default=bw_lock_add_p_default,
         dest='node_workers',
-        help=_("number of nodes to lock simultaneously"),
+        help=_("number of nodes to lock simultaneously "
+               "(defaults to {})").format(bw_lock_add_p_default),
         type=int,
     )
 
@@ -294,12 +302,14 @@ def build_parser_bw():
         type=str,
         help=_("ID of the lock to remove (obtained with `bw lock show`)"),
     )
+    bw_lock_remove_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_lock_remove.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        default=bw_lock_remove_p_default,
         dest='node_workers',
-        help=_("number of nodes to remove lock from simultaneously"),
+        help=_("number of nodes to remove lock from simultaneously "
+               "(defaults to {})").format(bw_lock_remove_p_default),
         type=int,
     )
 
@@ -600,12 +610,14 @@ def build_parser_bw():
         dest='ignore_locks',
         help=_("ignore soft locks on target nodes"),
     )
+    bw_run_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_run.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "1")),
+        default=bw_run_p_default,
         dest='node_workers',
-        help=_("number of nodes to run command on simultaneously"),
+        help=_("number of nodes to run command on simultaneously "
+               "(defaults to {})").format(bw_run_p_default),
         type=int,
     )
 
@@ -634,20 +646,24 @@ def build_parser_bw():
         dest='plugin_conflict_error',
         help=_("check for local modifications to files installed by plugins"),
     )
+    bw_test_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_test.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "1")),
+        default=bw_test_p_default,
         dest='node_workers',
-        help=_("number of nodes to test simultaneously"),
+        help=_("number of nodes to test simultaneously "
+               "(defaults to {})").format(bw_test_p_default),
         type=int,
     )
+    bw_test_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_test.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BW_ITEM_WORKERS", "4")),
+        default=bw_test_p_items_default,
         dest='item_workers',
-        help=_("number of items to test simultaneously for each node"),
+        help=_("number of items to test simultaneously for each node "
+               "(defaults to {})").format(bw_test_p_items_default),
         type=int,
     )
 
@@ -668,20 +684,24 @@ def build_parser_bw():
         dest='show_all',
         help=_("show correct items as well as incorrect ones"),
     )
+    bw_verify_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_verify.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        default=bw_verify_p_default,
         dest='node_workers',
-        help=_("number of nodes to verify to simultaneously"),
+        help=_("number of nodes to verify simultaneously "
+               "(defaults to {})").format(bw_verify_p_default),
         type=int,
     )
+    bw_verify_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_verify.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BW_ITEM_WORKERS", "4")),
+        default=bw_verify_p_items_default,
         dest='item_workers',
-        help=_("number of items to verify to simultaneously on each node"),
+        help=_("number of items to verify simultaneously on each node "
+               "(defaults to {})").format(bw_verify_p_items_default),
         type=int,
     )
     parser_verify.add_argument(
