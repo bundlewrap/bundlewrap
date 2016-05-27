@@ -2,14 +2,9 @@
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
-from getpass import getuser
-import json
 from os import environ
-from pipes import quote
-from socket import gethostname
 from sys import exit
 from threading import Lock
-from time import time
 
 from . import operations
 from .bundle import Bundle
@@ -20,21 +15,19 @@ from .deps import (
 )
 from .exceptions import (
     ItemDependencyError,
-    NodeAlreadyLockedException,
+    NodeLockedException,
     NoSuchBundle,
     RepositoryError,
 )
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
+from .lock import NodeLock
 from .metadata import check_for_unsolvable_metadata_key_conflicts
-from .utils import cached_property, graph_for_items, names, tempfile
+from .utils import cached_property, graph_for_items, names
 from .utils.statedict import hash_statedict
-from .utils.text import blue, bold, cyan, green, red, validate_name, wrap_question, yellow
+from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
 from .utils.text import force_text, mark_for_translation as _
 from .utils.ui import io
-
-LOCK_PATH = "/tmp/bundlewrap.lock"
-LOCK_FILE = LOCK_PATH + "/info"
 
 
 class ApplyResult(object):
@@ -115,7 +108,15 @@ def handle_apply_result(node, item, status_code, interactive, changes=None):
             io.stdout(formatted_result)
 
 
-def apply_items(node, autoskip_selector="", workers=1, interactive=False, profiling=False):
+def apply_items(
+    node,
+    autoskip_selector="",
+    my_soft_locks=(),
+    other_peoples_soft_locks=(),
+    workers=1,
+    interactive=False,
+    profiling=False,
+):
     with io.job(_("  {node}  processing dependencies...").format(node=node.name)):
         item_queue = ItemQueue(node.items)
 
@@ -141,6 +142,8 @@ def apply_items(node, autoskip_selector="", workers=1, interactive=False, profil
             'target': item.apply,
             'kwargs': {
                 'autoskip_selector': autoskip_selector,
+                'my_soft_locks': my_soft_locks,
+                'other_peoples_soft_locks': other_peoples_soft_locks,
                 'interactive': interactive,
             },
         }
@@ -460,15 +463,17 @@ class Node(object):
         )
 
         try:
-            with NodeLock(self, interactive, ignore=force):
+            with NodeLock(self, interactive=interactive, ignore=force) as lock:
                 item_results = apply_items(
                     self,
                     autoskip_selector=autoskip_selector,
+                    my_soft_locks=lock.my_soft_locks,
+                    other_peoples_soft_locks=lock.other_peoples_soft_locks,
                     workers=workers,
                     interactive=interactive,
                     profiling=profiling,
                 )
-        except NodeAlreadyLockedException as e:
+        except NodeLockedException as e:
             if not interactive:
                 io.stderr(_("{x} {node} already locked by {user} at {date} ({duration} ago, `bw apply -f` to override)").format(
                     date=bold(e.args[0]['date']),
@@ -632,92 +637,6 @@ class Node(object):
                 bad += 1
 
         return {'good': good, 'bad': bad}
-
-
-class NodeLock(object):
-    def __init__(self, node, interactive, ignore=False):
-        self.node = node
-        self.ignore = ignore
-        self.interactive = interactive
-
-    def __enter__(self):
-        with tempfile() as local_path:
-            with io.job(_("  {node}  getting lock status...").format(node=self.node.name)):
-                result = self.node.run("mkdir " + quote(LOCK_PATH), may_fail=True)
-                if result.return_code != 0:
-                    self.node.download(LOCK_FILE, local_path, ignore_failure=True)
-                    with open(local_path, 'r') as f:
-                        try:
-                            info = json.loads(f.read())
-                        except:
-                            io.stderr(_(
-                                "{warning}  corrupted lock on {node}: "
-                                "unable to read or parse lock file contents "
-                                "(clear it with `rm -R {path}`)"
-                            ).format(
-                                node=self.node.name,
-                                path=LOCK_FILE,
-                                warning=red(_("WARNING")),
-                            ))
-                            info = {}
-                    try:
-                        d = info['date']
-                    except KeyError:
-                        info['date'] = _("<unknown>")
-                        info['duration'] = _("<unknown>")
-                    else:
-                        info['date'] = datetime.fromtimestamp(d).strftime("%c")
-                        info['duration'] = str(
-                            datetime.now() - datetime.fromtimestamp(d)
-                        ).split(".")[0]
-                    if 'user' not in info:
-                        info['user'] = _("<unknown>")
-                    if self.ignore or (self.interactive and io.ask(
-                        self._warning_message(info),
-                        False,
-                        epilogue=blue("?") + " " + bold(self.node.name),
-                    )):
-                        pass
-                    else:
-                        raise NodeAlreadyLockedException(info)
-
-            with io.job(_("  {node}  uploading lock file...").format(node=self.node.name)):
-                with open(local_path, 'w') as f:
-                    f.write(json.dumps({
-                        'date': time(),
-                        'user': environ.get('BW_IDENTITY', "{}@{}".format(
-                            getuser(),
-                            gethostname(),
-                        )),
-                    }))
-                self.node.upload(local_path, LOCK_FILE)
-
-    def __exit__(self, type, value, traceback):
-        with io.job(_("  {node}  removing lock...").format(node=self.node.name)):
-            result = self.node.run("rm -R {}".format(quote(LOCK_PATH)), may_fail=True)
-
-        if result.return_code != 0:
-            io.stderr(_("Could not release lock for node '{node}'").format(
-                node=self.node.name,
-            ))
-
-    def _warning_message(self, info):
-        return wrap_question(
-            red(_("NODE LOCKED")),
-            _(
-                "Looks like somebody is currently using BundleWrap on this node.\n"
-                "You should let them finish or override the lock if it has gone stale.\n"
-                "\n"
-                "locked by: {user}\n"
-                "lock acquired: {duration} ago ({date})"
-            ).format(
-                user=bold(info['user']),
-                date=info['date'],
-                duration=bold(info['duration']),
-            ),
-            bold(_("Override lock?")),
-            prefix="{x} {node} ".format(node=bold(self.node.name), x=blue("?")),
-        )
 
 
 def test_items(node, workers=1):

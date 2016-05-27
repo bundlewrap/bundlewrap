@@ -14,7 +14,7 @@ Colors are enabled by default. Setting this variable to `0` tells BundleWrap to 
 
 ## `BW_IDENTITY`
 
-When BundleWrap locks a node, it stores a short description about "you". By default, this is the string `$USER@$HOSTNAME`, e.g. `john@mymachine`. You can use `BW_IDENTITY` to specify a custom string. (No variables will be evaluated in user supplied strings.)
+When BundleWrap [locks](locks.md) a node, it stores a short description about "you". By default, this is the string `$USER@$HOSTNAME`, e.g. `john@mymachine`. You can use `BW_IDENTITY` to specify a custom string. (No variables will be evaluated in user supplied strings.)
 
 
 ## `BW_ITEM_WORKERS` and `BW_NODE_WORKERS`
@@ -26,6 +26,11 @@ You can also use the command line options `-p` and `-P`, e.g. `bw apply -p ... -
 There is no single default for these values. For example, when running `bw apply`, four nodes are being handled by default. However, when running `bw test`, only one node will be tested by default. `BW_NODE_WORKERS` and `BW_ITEM_WORKERS` apply to *all* these operations.
 
 Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.
+
+
+## `BW_SOFTLOCK_EXPIRY`
+
+[Soft locks](locks.md) are automatically removed from nodes after some time. By default, it's eight hours. You can use this variable to override that default.
 
 
 ## `BW_VAULT_DUMMY_MODE`

@@ -9,7 +9,7 @@ Development on BundleWrap started in July 2012, borrowing some ideas from [Bcfg2
 * easy to get started with
 * true item-level parallelism (in addition to working on multiple nodes simultaneously, BundleWrap will continue to fix config files while installing a package on the same node)
 * very customizable item dependencies
-* collaboration features like node locking (to prevent simultaneous applies to the same node) and hooks for chat notifications
+* collaboration features like [node locking](../guide/locks.md) (to prevent simultaneous applies to the same node) and hooks for chat notifications
 * built-in testing facility (`bw test`)
 * can be used as a library
 

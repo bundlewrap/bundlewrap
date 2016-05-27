@@ -11,6 +11,7 @@ from .debug import bw_debug
 from .groups import bw_groups
 from .hash import bw_hash
 from .items import bw_items
+from .lock import bw_lock_add, bw_lock_remove, bw_lock_show
 from .metadata import bw_metadata
 from .nodes import bw_nodes
 from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups
@@ -80,20 +81,24 @@ def build_parser_bw():
         dest='interactive',
         help=_("ask before applying each item"),
     )
+    bw_apply_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_apply.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        default=bw_apply_p_default,
         dest='node_workers',
-        help=_("number of nodes to apply to simultaneously"),
+        help=_("number of nodes to apply to simultaneously "
+               "(defaults to {})").format(bw_apply_p_default),
         type=int,
     )
+    bw_apply_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_apply.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BW_ITEM_WORKERS", "4")),
+        default=bw_apply_p_items_default,
         dest='item_workers',
-        help=_("number of items to apply to simultaneously on each node"),
+        help=_("number of items to apply to simultaneously on each node "
+               "(defaults to {})").format(bw_apply_p_items_default),
         type=int,
     )
     parser_apply.add_argument(
@@ -218,6 +223,109 @@ def build_parser_bw():
         action='store_true',
         dest='show_repr',
         help=_("show more verbose representation of each item"),
+    )
+
+    # bw lock
+    help_lock = _("Manage locks on nodes used to prevent collisions between BundleWrap users")
+    parser_lock = subparsers.add_parser("lock", description=help_lock, help=help_lock)
+    parser_lock_subparsers = parser_lock.add_subparsers()
+
+    # bw lock add
+    help_lock_add = _("Add a new lock to one or more nodes")
+    parser_lock_add = parser_lock_subparsers.add_parser(
+        "add",
+        description=help_lock_add,
+        help=help_lock_add,
+    )
+    parser_lock_add.set_defaults(func=bw_lock_add)
+    parser_lock_add.add_argument(
+        'target',
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        type=str,
+        help=_("target nodes, groups and/or bundle selectors"),
+    )
+    parser_lock_add.add_argument(
+        "-c",
+        "--comment",
+        default="",
+        dest='comment',
+        help=_("brief description of the purpose of the lock"),
+        type=str,
+    )
+    bw_lock_add_e_default = environ.get("BW_SOFTLOCK_EXPIRY", "8h")
+    parser_lock_add.add_argument(
+        "-e",
+        "--expires-in",
+        default=bw_lock_add_e_default,
+        dest='expiry',
+        help=_("how long before the lock is ignored and removed automatically "
+               "(defaults to \"{}\")").format(bw_lock_add_e_default),
+        type=str,
+    )
+    parser_lock_add.add_argument(
+        "-i",
+        "--items",
+        default="*",
+        dest='items',
+        help=_("comma-separated list of item selectors the lock applies to "
+               "(defaults to \"*\" meaning all)"),
+        type=str,
+    )
+    bw_lock_add_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
+    parser_lock_add.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=bw_lock_add_p_default,
+        dest='node_workers',
+        help=_("number of nodes to lock simultaneously "
+               "(defaults to {})").format(bw_lock_add_p_default),
+        type=int,
+    )
+
+    # bw lock remove
+    help_lock_remove = _("Remove a lock from a node")
+    parser_lock_remove = parser_lock_subparsers.add_parser(
+        "remove",
+        description=help_lock_remove,
+        help=help_lock_remove,
+    )
+    parser_lock_remove.set_defaults(func=bw_lock_remove)
+    parser_lock_remove.add_argument(
+        'target',
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        type=str,
+        help=_("target nodes, groups and/or bundle selectors"),
+    )
+    parser_lock_remove.add_argument(
+        'lock_id',
+        metavar=_("LOCK_ID"),
+        type=str,
+        help=_("ID of the lock to remove (obtained with `bw lock show`)"),
+    )
+    bw_lock_remove_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
+    parser_lock_remove.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=bw_lock_remove_p_default,
+        dest='node_workers',
+        help=_("number of nodes to remove lock from simultaneously "
+               "(defaults to {})").format(bw_lock_remove_p_default),
+        type=int,
+    )
+
+    # bw lock show
+    help_lock_show = _("Show details of locks present on a node")
+    parser_lock_show = parser_lock_subparsers.add_parser(
+        "show",
+        description=help_lock_show,
+        help=help_lock_show,
+    )
+    parser_lock_show.set_defaults(func=bw_lock_show)
+    parser_lock_show.add_argument(
+        'target',
+        metavar=_("NODE"),
+        type=str,
+        help=_("target node"),
     )
 
     # bw metadata
@@ -497,11 +605,19 @@ def build_parser_bw():
         help=_("ignore non-zero exit codes"),
     )
     parser_run.add_argument(
+        "--force",
+        action='store_true',
+        dest='ignore_locks',
+        help=_("ignore soft locks on target nodes"),
+    )
+    bw_run_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
+    parser_run.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "1")),
+        default=bw_run_p_default,
         dest='node_workers',
-        help=_("number of nodes to run command on simultaneously"),
+        help=_("number of nodes to run command on simultaneously "
+               "(defaults to {})").format(bw_run_p_default),
         type=int,
     )
 
@@ -530,20 +646,24 @@ def build_parser_bw():
         dest='plugin_conflict_error',
         help=_("check for local modifications to files installed by plugins"),
     )
+    bw_test_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_test.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "1")),
+        default=bw_test_p_default,
         dest='node_workers',
-        help=_("number of nodes to test simultaneously"),
+        help=_("number of nodes to test simultaneously "
+               "(defaults to {})").format(bw_test_p_default),
         type=int,
     )
+    bw_test_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_test.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BW_ITEM_WORKERS", "4")),
+        default=bw_test_p_items_default,
         dest='item_workers',
-        help=_("number of items to test simultaneously for each node"),
+        help=_("number of items to test simultaneously for each node "
+               "(defaults to {})").format(bw_test_p_items_default),
         type=int,
     )
 
@@ -564,28 +684,32 @@ def build_parser_bw():
         dest='show_all',
         help=_("show correct items as well as incorrect ones"),
     )
+    bw_verify_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_verify.add_argument(
         "-p",
         "--parallel-nodes",
-        default=int(environ.get("BW_NODE_WORKERS", "4")),
+        default=bw_verify_p_default,
         dest='node_workers',
-        help=_("number of nodes to verify to simultaneously"),
+        help=_("number of nodes to verify simultaneously "
+               "(defaults to {})").format(bw_verify_p_default),
         type=int,
     )
+    bw_verify_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_verify.add_argument(
         "-P",
         "--parallel-items",
-        default=int(environ.get("BW_ITEM_WORKERS", "4")),
+        default=bw_verify_p_items_default,
         dest='item_workers',
-        help=_("number of items to verify to simultaneously on each node"),
+        help=_("number of items to verify simultaneously on each node "
+               "(defaults to {})").format(bw_verify_p_items_default),
         type=int,
     )
     parser_verify.add_argument(
         "-S",
-        "---no-summary",
+        "--no-summary",
         action='store_false',
         dest='summary',
-        help=_("show stats summary"),
+        help=_("don't show stats summary"),
     )
 
     # bw zen
