@@ -1,3 +1,10 @@
+# 2.6.1
+
+2016-05-29
+
+* fixed accidentally changed default salt for user items
+
+
 # 2.6.0
 
 2016-05-29
