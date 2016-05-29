@@ -35,11 +35,11 @@ _ATTRIBUTE_OPTIONS = {
 }
 
 # a random static salt if users don't provide one
-_DEFAULT_SALT = "peuFo0rieYei8oosaewah6"
+_DEFAULT_SALT = "uJzJlYdG"
 
 # bcrypt needs special salts. 22 characters long, ending in ".", "O", "e", "u"
 # see https://bitbucket.org/ecollins/passlib/issues/25
-_DEFAULT_BCRYPT_SALT = 'oo2ahgheen9Tei0IeJohTO'
+_DEFAULT_BCRYPT_SALT = "oo2ahgheen9Tei0IeJohTO"
 
 HASH_METHODS = {
     'md5': md5_crypt,
