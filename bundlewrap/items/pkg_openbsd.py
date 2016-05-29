@@ -8,19 +8,21 @@ from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
-def pkg_install(node, pkgname):
-    return node.run("pkg_add -r -I {}".format(quote(pkgname)))
+def pkg_install(node, pkgname, version):
+    full_name = "{}-{}".format(pkgname, version) if version else pkgname
+    return node.run("pkg_add -r -I {}".format(full_name))
 
 
 def pkg_installed(node, pkgname):
     result = node.run(
-        "pkg_info | cut -f 1 -d ' ' | grep '^{}$'".format(pkgname),
+        "pkg_info | cut -f 1 -d ' '",
         may_fail=True,
     )
-    if result.return_code != 0:
-        return False
-    else:
-        return True
+    for line in result.stdout.decode('utf-8').strip().split("\n"):
+        installed_package, installed_version = line.split("-", 1)
+        if installed_package == pkgname:
+            return installed_version
+    return False
 
 
 def pkg_remove(node, pkgname):
@@ -35,6 +37,7 @@ class OpenBSDPkg(Item):
     BUNDLE_ATTRIBUTE_NAME = "pkg_openbsd"
     ITEM_ATTRIBUTES = {
         'installed': True,
+        'version': None,
     }
     ITEM_TYPE_NAME = "pkg_openbsd"
 
@@ -44,15 +47,23 @@ class OpenBSDPkg(Item):
             self.attributes['installed'],
         )
 
+    def cdict(self):
+        cdict = self.attributes.copy()
+        if cdict['version'] is None or not cdict['installed']:
+            del cdict['version']
+        return cdict
+
     def fix(self, status):
         if self.attributes['installed'] is False:
             pkg_remove(self.node, self.name)
         else:
-            pkg_install(self.node, self.name)
+            pkg_install(self.node, self.name, self.attributes['version'])
 
     def sdict(self):
+        version = pkg_installed(self.node, self.name)
         return {
-            'installed': pkg_installed(self.node, self.name),
+            'installed': bool(version),
+            'version': version if version else _("none"),
         }
 
     @classmethod
