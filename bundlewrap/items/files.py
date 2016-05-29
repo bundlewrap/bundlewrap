@@ -262,7 +262,11 @@ class File(Item):
             )
 
     def _fix_mode(self, status):
-        self.node.run("chmod {} -- {}".format(
+        if self.node.os == "openbsd":
+            command = "chmod {} {}"
+        else:
+            command = "chmod {} -- {}"
+        self.node.run(command.format(
             self.attributes['mode'],
             quote(self.name),
         ))
@@ -271,7 +275,11 @@ class File(Item):
         group = self.attributes['group'] or ""
         if group:
             group = ":" + quote(group)
-        self.node.run("chown {}{} -- {}".format(
+        if self.node.os == "openbsd":
+            command = "chown {}{} {}"
+        else:
+            command = "chown {}{} -- {}"
+        self.node.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
             quote(self.name),

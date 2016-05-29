@@ -73,7 +73,11 @@ class Directory(Item):
                 getattr(self, "_fix_" + fix_type)(status)
 
     def _fix_mode(self, status):
-        self.node.run("chmod {} -- {}".format(
+        if self.node.os == "openbsd":
+            chmod_command = "chmod {} {}"
+        else:
+            chmod_command = "chmod {} -- {}"
+        self.node.run(chmod_command.format(
             self.attributes['mode'],
             quote(self.name),
         ))
@@ -82,7 +86,11 @@ class Directory(Item):
         group = self.attributes['group'] or ""
         if group:
             group = ":" + quote(group)
-        self.node.run("chown {}{} -- {}".format(
+        if self.node.os == "openbsd":
+            command = "chown {}{} {}"
+        else:
+            command = "chown {}{} -- {}"
+        self.node.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
             quote(self.name),
