@@ -41,6 +41,7 @@ pages:
   - pkg_zypper: items/pkg_zypper.md
   - postgres_db: items/postgres_db.md
   - postgres_role: items/postgres_role.md
+  - svc_openbsd: items/svc_openbsd.md
   - svc_systemd: items/svc_systemd.md
   - svc_systemv: items/svc_systemv.md
   - svc_upstart: items/svc_upstart.md
