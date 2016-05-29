@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">   
     <link rel="shortcut icon" href="../../img/favicon.ico">
 
-    <title>directory - BundleWrap</title>
+    <title>svc_openbsd - BundleWrap</title>
 
     <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
@@ -230,8 +230,8 @@
 
                         
                             
-<li class="active">
-    <a href="./">directory</a>
+<li >
+    <a href="../directory/">directory</a>
 </li>
 
                         
@@ -290,8 +290,8 @@
 
                         
                             
-<li >
-    <a href="../svc_openbsd/">svc_openbsd</a>
+<li class="active">
+    <a href="./">svc_openbsd</a>
 </li>
 
                         
@@ -379,12 +379,12 @@
                 </li>
                 
                     <li >
-                        <a rel="next" href="../action/">
+                        <a rel="next" href="../postgres_role/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../file/">
+                        <a rel="prev" href="../svc_systemd/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -409,15 +409,20 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#directory-items">Directory items</a></li>
+        <li class="first-level active"><a href="#openbsd-service-items">OpenBSD service items</a></li>
         
             <li class="second-level"><a href="#attribute-reference">Attribute reference</a></li>
             
-                <li class="third-level"><a href="#group">group</a></li>
+                <li class="third-level"><a href="#enabled">enabled</a></li>
             
-                <li class="third-level"><a href="#mode">mode</a></li>
+                <li class="third-level"><a href="#running">running</a></li>
             
-                <li class="third-level"><a href="#owner">owner</a></li>
+        
+            <li class="second-level"><a href="#canned-actions">Canned actions</a></li>
+            
+                <li class="third-level"><a href="#restart">restart</a></li>
+            
+                <li class="third-level"><a href="#stopstart">stopstart</a></li>
             
         
     
@@ -425,26 +430,35 @@
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="directory-items">Directory items</h1>
-<pre><code>directories = {
-    "/path/to/directory": {
-        "mode": "0644",
-        "owner": "root",
-        "group": "root",
+<h1 id="openbsd-service-items">OpenBSD service items</h1>
+<p>Handles services on OpenBSD.</p>
+<pre><code>svc_openbsd = {
+    "bgpd": {
+        "enabled": True, # default
+        "running": True,  # default
+    },
+    "supervisord": {
+        "running": False,
     },
 }
 </code></pre>
+<p><br></p>
 <h2 id="attribute-reference">Attribute reference</h2>
 <p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <p><br></p>
-<h3 id="group">group</h3>
-<p>Name of the group this directory belongs to. Defaults to <code>None</code> (don't care about group).</p>
+<h3 id="enabled">enabled</h3>
+<p><code>True</code> if the service shall be automatically started during system bootup; <code>False</code> otherwise. <code>True</code>, the default value, is needed on OpenBSD, as starting disabled services fails.</p>
 <p><br></p>
-<h3 id="mode">mode</h3>
-<p>Directory mode as returned by <code>stat -c %a &lt;directory&gt;</code>. Defaults to <code>None</code> (don't care about mode).</p>
+<h3 id="running">running</h3>
+<p><code>True</code> if the service is expected to be running on the system; <code>False</code> if it should be stopped.</p>
 <p><br></p>
-<h3 id="owner">owner</h3>
-<p>Username of the directory's owner. Defaults to <code>None</code> (don't care about owner).</p></div>
+<h2 id="canned-actions">Canned actions</h2>
+<p>See also: <a href="../../repo/bundles/#canned-actions">Explanation of how canned actions work</a></p>
+<h3 id="restart">restart</h3>
+<p>Restarts the service.</p>
+<p><br></p>
+<h3 id="stopstart">stopstart</h3>
+<p>Stops and starts the service.</p></div>
         
     </div>
 

@@ -129,6 +129,12 @@
                         
                             
 <li >
+    <a href="../../guide/locks/">Locking</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../../guide/dev_item/">Custom items</a>
 </li>
 
@@ -280,6 +286,12 @@
                             
 <li >
     <a href="../../items/postgres_role/">postgres_role</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../items/svc_openbsd/">svc_openbsd</a>
 </li>
 
                         
@@ -475,7 +487,7 @@ nodes = get_my_nodes_from_ldap()
 <h2 id="use_shadow_passwords">use_shadow_passwords</h2>
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 
-<p>This setting will affect how the <a href="../../items/user/">user item</a> item operates. If set to <code>False</code>, password hashes will be written directly to <code>/etc/passwd</code> and thus be accessible to any user on the system.</p></div>
+<p>This setting will affect how the <a href="../../items/user/">user item</a> item operates. If set to <code>False</code>, password hashes will be written directly to <code>/etc/passwd</code> and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as <code>master.shadow</code> is always used.</p></div>
         
     </div>
 

@@ -129,6 +129,12 @@
                         
                             
 <li >
+    <a href="../../guide/locks/">Locking</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../../guide/dev_item/">Custom items</a>
 </li>
 
@@ -285,6 +291,12 @@
                         
                             
 <li >
+    <a href="../../items/svc_openbsd/">svc_openbsd</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../../items/svc_systemd/">svc_systemd</a>
 </li>
 
@@ -434,7 +446,7 @@
 <p>Try running <code>bw apply -i nodename</code> to see which attribute of the item could not be fixed. If that doesn't tell you enough, try <code>bw --debug apply -i nodename</code> and look for the command BundleWrap is using to fix the item in question. Then try running that command yourself and check for any errors.</p>
 <p><br></p>
 <h3 id="what-happens-when-two-people-start-applying-configuration-to-the-same-node">What happens when two people start applying configuration to the same node?</h3>
-<p>BundleWrap uses a locking mechanism to prevent collisions like this. When BundleWrap finds a lock on a node in interactive mode, it will display information about who acquired the lock (and when) and will ask whether to ignore the lock or abort the process. In noninteractive mode, the operation is always cancelled for the node in question unless <code>--force</code> is used.</p>
+<p>BundleWrap uses a <a href="../../guide/locks/">locking mechanism</a> to prevent collisions like this.</p>
 <p><br></p>
 <h3 id="how-can-i-have-bundlewrap-reload-my-services-after-config-changes">How can I have BundleWrap reload my services after config changes?</h3>
 <p>See <a href="../../repo/bundles/#canned_actions">canned actions</a> and <a href="../../repo/bundles/#triggers">triggers</a>.</p>
@@ -443,7 +455,7 @@
 <p>No. BundleWrap will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an <a href="../../items/action/">action</a> with the <code>interactive</code> attribute set to <code>True</code>). Selecting specific versions should be done through your package manager.</p>
 <p><br></p>
 <h3 id="is-there-a-probing-mechanism-like-ohai">Is there a probing mechanism like Ohai?</h3>
-<p>No. BundleWrap is meant to be very push-focused. The node should not have any say in what configuration it will receive. If you disagree with this ideology and really need data from the node beforehand, you can use a <a href="../../repo/hooks/">hook</a> to gather the data and populate <code>node.metadata</code>.</p>
+<p>No. BundleWrap is meant to be very push-focused. The node should not have any say in what configuration it will receive.</p>
 <p><br></p>
 <h3 id="is-there-a-way-to-remove-any-unmanaged-filesdirectories-in-a-directory">Is there a way to remove any unmanaged files/directories in a directory?</h3>
 <p>Not at the moment. We're tracking this topic in issue <a href="https://github.com/bundlewrap/bundlewrap/issues/56">#56</a>.</p>
