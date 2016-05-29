@@ -5,7 +5,7 @@ from logging import ERROR, getLogger
 from pipes import quote
 from string import ascii_lowercase, digits
 
-from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt, bcrypt
+from passlib.hash import bcrypt, md5_crypt, sha256_crypt, sha512_crypt
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
