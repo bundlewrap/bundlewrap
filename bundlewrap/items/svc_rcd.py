@@ -20,6 +20,7 @@ def svc_running(node, svcname):
 def svc_stop(node, svcname):
     return node.run("/etc/rc.d/{} stop".format(quote(svcname)))
 
+
 def svc_enable(node, svcname):
     return node.run("rcctl set {} status on".format(quote(svcname)))
 

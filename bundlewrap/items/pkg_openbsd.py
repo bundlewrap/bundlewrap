@@ -7,6 +7,7 @@ from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
+
 def pkg_install(node, pkgname):
     return node.run("pkg_add -r -I {}".format(quote(pkgname)))
 
@@ -62,4 +63,4 @@ class OpenBSDPkg(Item):
             ).format(
                 bundle=bundle.name,
                 item=item_id,
-        ))
+            ))
