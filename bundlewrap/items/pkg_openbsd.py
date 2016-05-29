@@ -14,7 +14,7 @@ def pkg_install(node, pkgname):
 
 def pkg_installed(node, pkgname):
     result = node.run(
-        "pkg_info|grep {}".format(quote(pkgname)),
+        "pkg_info | cut -f 1 -d ' ' | grep '^{}$'".format(pkgname),
         may_fail=True,
     )
     if result.return_code != 0:
