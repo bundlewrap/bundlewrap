@@ -37,19 +37,19 @@ def svc_disable(node, svcname):
     return node.run("rcctl set {} status off".format(quote(svcname)))
 
 
-class SvcRCd(Item):
+class SvcOpenBSD(Item):
     """
     A service managed by OpenBSD rc.d.
     """
-    BUNDLE_ATTRIBUTE_NAME = "svc_rcd"
+    BUNDLE_ATTRIBUTE_NAME = "svc_openbsd"
     ITEM_ATTRIBUTES = {
         'running': True,
         'enabled': True
     }
-    ITEM_TYPE_NAME = "svc_rcd"
+    ITEM_TYPE_NAME = "svc_openbsd"
 
     def __repr__(self):
-        return "<SvcRCd name:{} running:{} enabled:{}>".format(
+        return "<SvcOpenBSD name:{} running:{} enabled:{}>".format(
             self.name,
             self.attributes['running'],
             self.attributes['enabled'],

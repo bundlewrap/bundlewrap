@@ -1,8 +1,8 @@
-# rc.d service items
+# OpenBSD service items
 
-Handles services managed by rc.d, tested on OpenBSD.
+Handles services on OpenBSD.
 
-    svc_rcd = {
+    svc_openbsd = {
         "bgpd": {
             "enabled": True, # default
             "running": True,  # default
