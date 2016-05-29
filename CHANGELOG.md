@@ -1,3 +1,13 @@
+# 2.6.0
+
+2016-05-29
+
+* added support for OpenBSD packages and services
+* added soft locking mechanism
+* added `enabled` option for `svc_systemd`
+* fixed running compound commands
+
+
 # 2.5.2
 
 2016-05-04
