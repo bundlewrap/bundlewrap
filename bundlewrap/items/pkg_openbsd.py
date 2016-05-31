@@ -2,10 +2,14 @@
 from __future__ import unicode_literals
 
 from pipes import quote
+import re
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
+
+
+PKGSPEC_REGEX = re.compile(r"^(.+)-(\d.+)$")
 
 
 def pkg_install(node, pkgname, version):
@@ -19,7 +23,7 @@ def pkg_installed(node, pkgname):
         may_fail=True,
     )
     for line in result.stdout.decode('utf-8').strip().split("\n"):
-        installed_package, installed_version = line.split("-", 1)
+        installed_package, installed_version = PKGSPEC_REGEX.match(line).groups()
         if installed_package == pkgname:
             return installed_version
     return False
