@@ -73,7 +73,8 @@ class DrainableStdin(object):
             return input()
 
     def drain(self):
-        termios.tcflush(sys.stdin, termios.TCIFLUSH)
+        if sys.stdin.isatty():
+            termios.tcflush(sys.stdin, termios.TCIFLUSH)
 
 
 class IOManager(object):
