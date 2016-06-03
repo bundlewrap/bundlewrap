@@ -164,7 +164,7 @@ class User(Item):
     def sdict(self):
         # verify content of /etc/passwd
         if self.node.os == 'openbsd':
-            password_command = "grep -e '^{}:' /etc/master.passwd"
+            password_command = "grep -ae '^{}:' /etc/master.passwd"
         else:
             password_command = "grep -ae '^{}:' /etc/passwd"
         passwd_grep_result = self.node.run(
