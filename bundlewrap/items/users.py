@@ -166,7 +166,7 @@ class User(Item):
         if self.node.os == 'openbsd':
             password_command = "grep -e '^{}:' /etc/master.passwd"
         else:
-            password_command = "grep -e '^{}:' /etc/passwd"
+            password_command = "grep -ae '^{}:' /etc/passwd"
         passwd_grep_result = self.node.run(
             password_command.format(self.name),
             may_fail=True,
