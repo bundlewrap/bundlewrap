@@ -13,6 +13,7 @@ def bw_lock_add(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'])
     pending_nodes = target_nodes[:]
+    max_node_name_length = max([len(node.name) for node in target_nodes])
     lock_id = randstr(length=4).upper()
 
     def tasks_available():
@@ -34,7 +35,7 @@ def bw_lock_add(repo, args):
     def handle_result(task_id, return_value, duration):
         io.stdout(_("{x} {node}  locked with ID {id} (expires in {exp})").format(
             x=green("✓"),
-            node=bold(task_id),
+            node=bold(task_id.ljust(max_node_name_length)),
             id=return_value,
             exp=args['expiry'],
         ))
@@ -63,6 +64,7 @@ def bw_lock_remove(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'])
     pending_nodes = target_nodes[:]
+    max_node_name_length = max([len(node.name) for node in target_nodes])
 
     def tasks_available():
         return bool(pending_nodes)
@@ -78,7 +80,7 @@ def bw_lock_remove(repo, args):
     def handle_result(task_id, return_value, duration):
         io.stdout(_("{x} {node}  lock {id} removed").format(
             x=green("✓"),
-            node=bold(task_id),
+            node=bold(task_id.ljust(max_node_name_length)),
             id=args['lock_id'].upper(),
         ))
 
@@ -106,6 +108,7 @@ def bw_lock_show(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'])
     pending_nodes = target_nodes[:]
+    max_node_name_length = max([len(node.name) for node in target_nodes])
     locks_on_node = {}
 
     def tasks_available():
@@ -162,7 +165,7 @@ def bw_lock_show(repo, args):
         if not locks:
             io.stdout(_("{x} {node}  no soft locks present").format(
                 x=green("✓"),
-                node=bold(node_name),
+                node=bold(node_name.ljust(max_node_name_length)),
             ))
             previous_node_was_unlocked = True
 
@@ -187,7 +190,7 @@ def bw_lock_show(repo, args):
             lengths = {}
             headline = "{x} {node}  ".format(
                 x=blue("i"),
-                node=bold(node_name),
+                node=bold(node_name.ljust(max_node_name_length)),
             )
 
             for column, title in headers:
@@ -205,7 +208,7 @@ def bw_lock_show(repo, args):
                 for lineno, item_selectors in enumerate(lock['items']):
                     line = "{x} {node}  ".format(
                         x=cyan("›"),
-                        node=bold(node_name),
+                        node=bold(node_name.ljust(max_node_name_length)),
                     )
                     for column, title in headers:
                         if column == 'items':
