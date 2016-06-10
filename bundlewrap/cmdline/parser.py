@@ -323,9 +323,19 @@ def build_parser_bw():
     parser_lock_show.set_defaults(func=bw_lock_show)
     parser_lock_show.add_argument(
         'target',
-        metavar=_("NODE"),
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
         type=str,
         help=_("target node"),
+    )
+    bw_lock_show_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
+    parser_lock_show.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=bw_lock_show_p_default,
+        dest='node_workers',
+        help=_("number of nodes to retrieve locks from simultaneously "
+               "(defaults to {})").format(bw_lock_show_p_default),
+        type=int,
     )
 
     # bw metadata
