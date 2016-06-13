@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from functools import wraps
 from os import environ, getcwd
+from os.path import dirname
 from sys import argv, exit, stderr, stdout
 from traceback import print_exc
 
@@ -125,17 +126,22 @@ def main(*args, **kwargs):
         # 'bw repo create' is a special case that only takes a path
         repo = path
     else:
-        try:
-            repo = Repository(path)
-        except MissingRepoDependency as exc:
-            io.stderr(str(exc))
-            exit(1)
-        except NoSuchRepository:
-            io.stderr(_(
-                "{x} The current working directory "
-                "is not a BundleWrap repository."
-            ).format(x=red("!")))
-            exit(1)
+        while True:
+            try:
+                repo = Repository(path)
+                break
+            except NoSuchRepository:
+                if path == dirname(path):
+                    io.stderr(_(
+                        "{x} The current working directory "
+                        "is not a BundleWrap repository."
+                    ).format(x=red("!")))
+                    exit(1)
+                else:
+                    path = dirname(path)
+            except MissingRepoDependency as exc:
+                io.stderr(str(exc))
+                exit(1)
 
     # convert all string args into text
     text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}
