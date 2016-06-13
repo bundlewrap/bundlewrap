@@ -1,6 +1,4 @@
-from bundlewrap.cmdline import main
 from bundlewrap.utils.testing import make_repo, run
-from bundlewrap.utils.ui import io
 
 
 def test_empty(tmpdir):
