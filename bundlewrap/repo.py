@@ -477,6 +477,12 @@ class Repository(object):
                     ),
                 ))
 
+    def metadata_hash(self):
+        repo_dict = {}
+        for node in self.nodes:
+            repo_dict[node.name] = node.metadata_hash()
+        return hash_statedict(repo_dict)
+
     def populate_from_path(self, path):
         if not self.is_repo(path):
             raise NoSuchRepository(

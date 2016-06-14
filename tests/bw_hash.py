@@ -99,3 +99,69 @@ def test_dict(tmpdir):
         b"content_hash\tc05a36d547e2b1682472f76985018038d1feebc5\n"
         b"type\tfile\n"
     )
+
+
+def test_metadata_empty(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'metadata': {},
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"bf21a9e8fbc5a3846fb05b4fa0859e0917b2202f\n"
+
+
+def test_metadata_value(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'metadata': {
+                    'foo': 47,
+                },
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"013b3a8199695eb45c603ea4e0a910148d80e7ed\n"
+
+
+def test_metadata_repo(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'metadata': {
+                    'foo': 47,
+                },
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -m", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"c0cc160ab1b6e71155cd4f65139bc7f66304d7f3\n"
+
+
+def test_metadata_repo_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'metadata': {
+                    'foo': 47,
+                },
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -md", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"node1\t013b3a8199695eb45c603ea4e0a910148d80e7ed\n"

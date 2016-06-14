@@ -67,6 +67,12 @@ class Group(object):
     def hash(self):
         return hash_statedict(self.cdict)
 
+    def metadata_hash(self):
+        group_dict = {}
+        for node in self.nodes:
+            group_dict[node.name] = node.metadata_hash()
+        return hash_statedict(group_dict)
+
     @cached_property
     def nodes(self):
         """
