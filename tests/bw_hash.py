@@ -116,21 +116,42 @@ def test_metadata_empty(tmpdir):
     assert stdout == b"bf21a9e8fbc5a3846fb05b4fa0859e0917b2202f\n"
 
 
-def test_metadata_value(tmpdir):
+def test_metadata_nested_sort(tmpdir):
     make_repo(
         tmpdir,
         nodes={
             "node1": {
                 'metadata': {
-                    'foo': 47,
+                    'nested': {
+                        'one': True,
+                        'two': False,
+                        'three': 3,
+                        'four': "four",
+                        'five': None,
+                    },
+                },
+            },
+            "node2": {
+                'metadata': {
+                    'nested': {
+                        'five': None,
+                        'four': "four",
+                        'one': True,
+                        'three': 3,
+                        'two': False,
+                    },
                 },
             },
         },
     )
 
-    stdout, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
+    stdout1, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
     assert rcode == 0
-    assert stdout == b"013b3a8199695eb45c603ea4e0a910148d80e7ed\n"
+    assert stdout1 == b"bc403a093ca3399cd3efa7a64ec420e0afef5e70\n"
+
+    stdout2, stderr, rcode = run("bw hash -m node2", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout1 == stdout2
 
 
 def test_metadata_repo(tmpdir):
