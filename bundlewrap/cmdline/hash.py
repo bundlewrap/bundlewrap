@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from ..exceptions import NoSuchNode
-from ..utils.statedict import order_dict
 from ..utils.text import mark_for_translation as _, red
 
 
@@ -39,7 +38,7 @@ def bw_hash(repo, args):
             if cdict is None:
                 yield "REMOVE"
             else:
-                for key, value in order_dict(cdict).items():
+                for key, value in sorted(cdict.items()):
                     yield "{}\t{}".format(key, value) if args['item'] else "{}  {}".format(value, key)
     else:
         if args['metadata']:
