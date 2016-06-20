@@ -3,8 +3,9 @@ from __future__ import unicode_literals
 
 from difflib import unified_diff
 from hashlib import sha1
-from json import dumps
+from json import dumps, JSONEncoder
 
+from . import Fault
 from .text import bold, green, red
 from .text import force_text, mark_for_translation as _
 
@@ -123,6 +124,14 @@ def diff_value(title, value1, value2):
     return diff_func(title, value1, value2)
 
 
+class FaultResolvingJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Fault):
+            return obj.value
+        else:
+            return JSONEncoder.default(obj)
+
+
 def hash_statedict(sdict):
     """
     Returns a canonical SHA1 hash to describe this dict.
@@ -137,7 +146,12 @@ def statedict_to_json(sdict, pretty=False):
     if sdict is None:
         return ""
     else:
-        return dumps(sdict, indent=4 if pretty else None, sort_keys=True)
+        return dumps(
+            sdict,
+            cls=FaultResolvingJSONEncoder,
+            indent=4 if pretty else None,
+            sort_keys=True,
+        )
 
 
 def validate_statedict(sdict):

@@ -1,3 +1,5 @@
+from os.path import join
+
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -114,6 +116,44 @@ def test_metadata_empty(tmpdir):
     stdout, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
     assert rcode == 0
     assert stdout == b"bf21a9e8fbc5a3846fb05b4fa0859e0917b2202f\n"
+
+
+def test_metadata_fault(tmpdir):
+    make_repo(tmpdir)
+    with open(join(str(tmpdir), "nodes.py"), 'w') as f:
+        f.write("""
+nodes = {
+    'node1': {
+        'metadata': {'foo': vault.password_for("testing")},
+    },
+    'node2': {
+        'metadata': {'foo': vault.password_for("testing").value},
+    },
+    'node3': {
+        'metadata': {'foo': "faCTT76kagtDuZE5wnoiD1CxhGKmbgiX"},
+    },
+    'node4': {
+        'metadata': {'foo': "something else entirely"},
+    },
+}
+""")
+    print(run("bw debug -c 'print(repo.vault.password_for(\"testing\"))'", path=str(tmpdir)))
+    stdout1, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
+    assert stdout1 == b"d0c998fd17a68322a03345954bb0a75301d3a127\n"
+    assert stderr == b""
+    assert rcode == 0
+    stdout2, stderr, rcode = run("bw hash -m node2", path=str(tmpdir))
+    assert stdout2 == stdout1
+    assert stderr == b""
+    assert rcode == 0
+    stdout3, stderr, rcode = run("bw hash -m node3", path=str(tmpdir))
+    assert stdout3 == stdout1
+    assert stderr == b""
+    assert rcode == 0
+    stdout4, stderr, rcode = run("bw hash -m node4", path=str(tmpdir))
+    assert stdout4 != stdout1
+    assert stderr == b""
+    assert rcode == 0
 
 
 def test_metadata_nested_sort(tmpdir):
