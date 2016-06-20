@@ -454,6 +454,14 @@ class Repository(object):
                 with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
                     for metadata_processor in node.metadata_processors:
                         iterations.setdefault((node.name, metadata_processor.__name__), 1)
+                        io.debug(_(
+                            "running metadata processor {metaproc} for node {node}, "
+                            "iteration #{i}"
+                        ).format(
+                            metaproc=metadata_processor.__name__,
+                            node=node.name,
+                            i=iterations[(node.name, metadata_processor.__name__)],
+                        ))
                         processed = metadata_processor(
                             deepcopy_metadata(self._node_metadata[node.name]),
                         )
