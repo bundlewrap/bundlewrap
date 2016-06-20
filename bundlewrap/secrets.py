@@ -226,6 +226,23 @@ class SecretProxy(object):
             f.write(fernet.encrypt(plaintext))
         return target_file
 
+    def _format(self, format_str=None, faults=None):
+        return format_str.format(*[fault.value for fault in faults])
+
+    def format(self, format_str, *faults):
+        """
+        Returns a Fault for a string formatted with the given Faults,
+        e.g.:
+
+            vault.format("password: {}", vault.password_for("something"))
+
+        """
+        return Fault(
+            self._format,
+            format_str=format_str,
+            faults=faults,
+        )
+
     def password_for(self, identifier, key='generate', length=32, symbols=False):
         return Fault(
             self._generate_password,
