@@ -175,6 +175,14 @@ def build_parser_bw():
         help=_("instead show the data this hash is derived from"),
     )
     parser_hash.add_argument(
+        "-m",
+        "--metadata",
+        action='store_true',
+        default=False,
+        dest='metadata',
+        help=_("hash metadata instead of configuration (not available for items)"),
+    )
+    parser_hash.add_argument(
         'node_or_group',
         metavar=_("NODE|GROUP"),
         type=str,

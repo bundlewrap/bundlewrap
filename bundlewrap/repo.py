@@ -454,6 +454,14 @@ class Repository(object):
                 with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
                     for metadata_processor in node.metadata_processors:
                         iterations.setdefault((node.name, metadata_processor.__name__), 1)
+                        io.debug(_(
+                            "running metadata processor {metaproc} for node {node}, "
+                            "iteration #{i}"
+                        ).format(
+                            metaproc=metadata_processor.__name__,
+                            node=node.name,
+                            i=iterations[(node.name, metadata_processor.__name__)],
+                        ))
                         processed = metadata_processor(
                             deepcopy_metadata(self._node_metadata[node.name]),
                         )
@@ -476,6 +484,12 @@ class Repository(object):
                         proc=metadata_processor,
                     ),
                 ))
+
+    def metadata_hash(self):
+        repo_dict = {}
+        for node in self.nodes:
+            repo_dict[node.name] = node.metadata_hash()
+        return hash_statedict(repo_dict)
 
     def populate_from_path(self, path):
         if not self.is_repo(path):

@@ -527,6 +527,9 @@ class Node(object):
         """
         return self.repo._metadata_for_node(self.name, partial=False)
 
+    def metadata_hash(self):
+        return hash_statedict(self.metadata)
+
     @property
     def metadata_processors(self):
         for bundle in self.bundles:
