@@ -75,6 +75,8 @@ class NodeLock(object):
                             raise NodeLockedException(info)
 
             with io.job(_("  {node}  uploading lock file...").format(node=self.node.name)):
+                if self.ignore:
+                    self.node.run("mkdir -p " + quote(HARD_LOCK_PATH))
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
