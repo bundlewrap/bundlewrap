@@ -66,7 +66,7 @@ This can be a dictionary of arbitrary data. You can access it from your template
 
 ## os
 
-Currently, only the default value of "linux" is supported. Your mileage may vary for "macosx" or "openbsd".
+Currently, only the default value of "linux" is supported. Your mileage may vary for "macos" or "openbsd".
 
 <br>
 
