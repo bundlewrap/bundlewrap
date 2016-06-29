@@ -19,6 +19,7 @@ from .exceptions import (
     NoSuchBundle,
     RepositoryError,
 )
+from .group import GROUP_ATTR_DEFAULTS
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .lock import NodeLock
@@ -310,16 +311,6 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
 
 
 class Node(object):
-    OS_LINUX = 'linux'
-    OS_MACOSX = 'macosx'
-    OS_OPENBSD = 'openbsd'
-
-    OS_ALIASES = {
-        'linux': OS_LINUX,
-        'macosx': OS_MACOSX,
-        'openbsd': OS_OPENBSD,
-    }
-
     def __init__(self, name, infodict=None):
         if infodict is None:
             infodict = {}
@@ -332,12 +323,13 @@ class Node(object):
         self._compiling_metadata = Lock()
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
-        self._node_os = infodict.get('os')
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
         self.add_ssh_host_keys = False
         self.hostname = infodict.get('hostname', self.name)
-        self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
+
+        for attr in GROUP_ATTR_DEFAULTS:
+            setattr(self, "_{}".format(attr), infodict.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name
@@ -536,20 +528,6 @@ class Node(object):
             for metadata_processor in bundle.metadata_processors:
                 yield metadata_processor
 
-    @cached_property
-    def os(self):
-        os = None
-
-        group_order = _flatten_group_hierarchy(self.groups)
-        for group_name in group_order:
-            group = self.repo.get_group(group_name)
-            os = os if group.os is None else group.os
-
-        os = self._node_os if os is None else os
-        os = 'linux' if os is None else os
-
-        return self.OS_ALIASES[os.lower()]
-
     @property
     def partial_metadata(self):
         """
@@ -640,6 +618,31 @@ class Node(object):
                 bad += 1
 
         return {'good': good, 'bad': bad}
+
+
+def build_attr_property(attr, default):
+    def method(self):
+        attr_value = None
+        group_order = [
+            self.repo.get_group(group_name)
+            for group_name in _flatten_group_hierarchy(self.groups)
+        ]
+
+        for group in group_order:
+            if getattr(group, attr) is not None:
+                attr_value = getattr(group, attr)
+
+        if getattr(self, "_{}".format(attr)) is not None:
+            attr_value = getattr(self, "_{}".format(attr))
+
+        if attr_value is None:
+            attr_value = default
+        return attr_value
+    method.__name__ = "_group_attr_{}".format(attr)  # required for cached_property
+    return cached_property(method)
+
+for attr, default in GROUP_ATTR_DEFAULTS.items():
+    setattr(Node, attr, build_attr_property(attr, default))
 
 
 def test_items(node, workers=1):
