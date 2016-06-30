@@ -33,6 +33,11 @@ Note that you should not set these variables to very high values. First, it can 
 [Soft locks](locks.md) are automatically removed from nodes after some time. By default, it's eight hours. You can use this variable to override that default.
 
 
+## `BW_SSH_ARGS`
+
+Extra arguments to include in every call to `ssh` BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap.
+
+
 ## `BW_VAULT_DUMMY_MODE`
 
 Setting this to `1` will make `repo.vault` return dummy values for every [secret](secrets.md). This is useful for running `bw test` on a CI server that you don't want to trust with your `.secrets.cfg`.
