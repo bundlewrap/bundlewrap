@@ -66,7 +66,7 @@ A tuple or list of node names that belong to this group.
 
 ## metadata
 
-A dictionary of arbitrary data that will be accessible from each node's `node.metadata`. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.
+A dictionary that will be accessible from each node's `node.metadata`. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.
 
 Metadata is merged recursively by default, meaning nested dicts will overlay each other. Lists will be appended to each other, but not recursed into. In come cases, you want to overwrite instead of merge a piece of metadata. This is accomplished through the use of `bundlewrap.metadata.atomic()` and best illustrated as an example:
 
@@ -99,7 +99,7 @@ The nameservers however are overwritten, so that nodes what are in both the "all
 
 The NTP servers are appended: a node in both groups will have all three nameservers.
 
-<div class="alert alert-warning">BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order.</div>
+<div class="alert alert-warning">BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order. <code>bw test</code> will report conflicting metadata in independent groups as a metadata collision.</div>
 
 <br>
 
