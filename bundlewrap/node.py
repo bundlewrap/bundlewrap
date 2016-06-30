@@ -413,11 +413,12 @@ class Node(object):
                 return True
         return False
 
-    @property
+    @cached_property
     def items(self):
-        for bundle in self.bundles:
-            for item in bundle.items:
-                yield item
+        if not self.dummy:
+            for bundle in self.bundles:
+                for item in bundle.items:
+                    yield item
 
     @property
     def _static_items(self):
@@ -434,7 +435,7 @@ class Node(object):
         profiling=False,
     ):
         if not list(self.items):
-            io.debug(_("not applying to {}, it has no items").format(self.name))
+            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
             return None
 
         if self.covered_by_autoskip_selector(autoskip_selector):
@@ -588,8 +589,10 @@ class Node(object):
             x=green("✓"),
             node=bold(self.name),
         ))
-
-        test_items(self, workers=workers)
+        if self.items:
+            test_items(self, workers=workers)
+        else:
+            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
 
         self.repo.hooks.test_node(self.repo, self)
 
@@ -607,15 +610,18 @@ class Node(object):
     def verify(self, show_all=False, workers=4):
         bad = 0
         good = 0
-        for item_status in verify_items(
-            self,
-            show_all=show_all,
-            workers=workers,
-        ):
-            if item_status:
-                good += 1
-            else:
-                bad += 1
+        if not self.items:
+            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
+        else:
+            for item_status in verify_items(
+                self,
+                show_all=show_all,
+                workers=workers,
+            ):
+                if item_status:
+                    good += 1
+                else:
+                    bad += 1
 
         return {'good': good, 'bad': bad}
 

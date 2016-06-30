@@ -10,6 +10,7 @@ from .utils.text import mark_for_translation as _, validate_name
 
 
 GROUP_ATTR_DEFAULTS = {
+    'dummy': False,
     'os': 'linux',
     'use_shadow_passwords': True,
 }

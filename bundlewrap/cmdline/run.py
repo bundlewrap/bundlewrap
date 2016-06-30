@@ -7,11 +7,15 @@ from ..concurrency import WorkerPool
 from ..exceptions import NodeLockedException
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
-from ..utils.text import bold, error_summary, green, red
+from ..utils.text import bold, error_summary, green, red, yellow
 from ..utils.ui import io
 
 
 def run_on_node(node, command, may_fail, ignore_locks, log_output):
+    if node.dummy:
+        io.stdout(_("{x}  {node} is a dummy node").format(node=bold(node.name), x=yellow("!")))
+        return
+
     node.repo.hooks.node_run_start(
         node.repo,
         node,

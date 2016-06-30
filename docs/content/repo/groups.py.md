@@ -44,6 +44,12 @@ A list of [bundle names](bundles.md) to be assigned to each node in this group.
 
 <br>
 
+## dummy
+
+See [node attribute documentation](nodes.py.md#dummy). May be overridden by subgroups or individual nodes.
+
+<br>
+
 ## member_patterns
 
 A list of regular expressions. Node names matching these expressions will be added to the group members.
@@ -99,10 +105,18 @@ The NTP servers are appended: a node in both groups will have all three nameserv
 
 ## os
 
-Changes the default OS (see [nodes.py](nodes.py.md)) for nodes in this group. Subgroups can override this for their parent groups.
+See [node attribute documentation](nodes.py.md#os). May be overridden by subgroups or individual nodes.
 
 <br>
 
 ## subgroups
 
 A tuple or list of group names whose members should be recursively included in this group.
+
+<br>
+
+## use_shadow_passwords
+
+See [node attribute documentation](nodes.py.md#use_shadow_passwords). May be overridden by subgroups or individual nodes.
+
+<br>

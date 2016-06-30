@@ -51,6 +51,14 @@ A list of [bundle names](bundles.md) to be assigned to this node.
 
 <br>
 
+## dummy
+
+Set this to `True` to prevent BundleWrap from creating items for and connecting to this node. This is useful for unmanaged nodes because you can still assign them bundles and metadata like regular nodes and access that from managed nodes (e.g. for monitoring).
+
+May also be set at group level.
+
+<br>
+
 ## hostname
 
 A string used as a DNS name when connecting to this node. May also be an IP address.
@@ -68,6 +76,8 @@ This can be a dictionary of arbitrary data. You can access it from your template
 
 Currently, only the default value of "linux" is supported. Your mileage may vary for "macos" or "openbsd".
 
+May also be set at group level.
+
 <br>
 
 ## use_shadow_passwords
@@ -75,3 +85,5 @@ Currently, only the default value of "linux" is supported. Your mileage may vary
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 
 This setting will affect how the [user item](../items/user.md) item operates. If set to `False`, password hashes will be written directly to `/etc/passwd` and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as `master.shadow` is always used.
+
+May also be set at group level.
