@@ -14,22 +14,19 @@ SSH_PIDS = []
 
 def sigint_handler(*args, **kwargs):
     if not QUIT_EVENT.is_set():
-        stderr.write("\n{x} {signal}  {shutdown}\n".format(
-            shutdown=_("Asking for a soft shutdown, please stand by ..."),
+        stderr.write(_("\n{x} {signal}  stopping all tasks... (hit CTRL+C again for immediate dirty exit)\n").format(
             signal=bold(_("SIGINT")),
             x=blue("i"),
         ))
         QUIT_EVENT.set()
     else:
-        stderr.write("\n{x} {signal}  {shutdown}\n".format(
-            shutdown=_("Doing a hard shutdown"),
+        stderr.write(_("\n{x} {signal}  canceling cleanup, exiting...\n").format(
             signal=bold(_("SIGINT")),
             x=blue("i"),
         ))
         for ssh_pid in SSH_PIDS:
-            stderr.write("{x} {signal}  {sending} {pid}\n".format(
+            stderr.write(_("{x} {signal}  killing SSH session with PID {pid}\n").format(
                 pid=ssh_pid,
-                sending=_("Sending SIGINT to SSH PID"),
                 signal=bold(_("SIGINT")),
                 x=blue("i"),
             ))
