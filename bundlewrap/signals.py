@@ -14,7 +14,7 @@ SSH_PIDS = []
 def sigint_handler(*args, **kwargs):
     if not QUIT_EVENT.is_set():
         io.stderr(_(
-            "{x} {signal}  stopping all tasks... "
+            "{x} {signal}  canceling pending tasks... "
             "(hit CTRL+C again for immediate dirty exit)"
         ).format(
             signal=bold(_("SIGINT")),
@@ -22,7 +22,7 @@ def sigint_handler(*args, **kwargs):
         ))
         QUIT_EVENT.set()
     else:
-        io.stderr(_("{x} {signal}  canceling cleanup, exiting...").format(
+        io.stderr(_("{x} {signal}  cleanup interrupted, exiting...").format(
             signal=bold(_("SIGINT")),
             x=blue("i"),
         ))
