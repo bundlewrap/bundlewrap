@@ -5,8 +5,8 @@ from os import _exit, kill
 from signal import SIGINT, signal
 from sys import stderr
 
-from .utils.text import blue, bold, force_text, LineBuffer, mark_for_translation as _, randstr
-from .utils.ui import io, QUIT_EVENT
+from .utils.text import blue, bold, mark_for_translation as _
+from .utils.ui import QUIT_EVENT
 
 
 SSH_PIDS = []
