@@ -4,6 +4,7 @@ from errno import EPIPE
 import fcntl
 from functools import wraps
 import os
+from select import select
 import struct
 import sys
 import termios
@@ -67,10 +68,11 @@ def write_to_stream(stream, msg):
 
 class DrainableStdin(object):
     def get_input(self):
-        try:
-            return raw_input()
-        except NameError:  # Python 3
-            return input()
+        while True:
+            if QUIT_EVENT.is_set():
+                return None
+            if select([sys.stdin], [], [], 0.1)[0]:
+                return sys.stdin.readline().strip()
 
     def drain(self):
         if sys.stdin.isatty():
@@ -89,7 +91,7 @@ class IOManager(object):
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
-        answers = _("[Y/n/q]") if default else _("[y/N/q]")
+        answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
         with self.lock:
             if QUIT_EVENT.is_set():
@@ -100,7 +102,12 @@ class IOManager(object):
 
                 input_handler.drain()
                 answer = input_handler.get_input()
-                if answer.lower() in (_("y"), _("yes")) or (
+                if answer is None:
+                    if epilogue:
+                        write_to_stream(STDOUT_WRITER, "\n" + epilogue + "\n")
+                    QUIT_EVENT.set()
+                    sys.exit(0)
+                elif answer.lower() in (_("y"), _("yes")) or (
                     not answer and default
                 ):
                     answer = True
@@ -110,14 +117,9 @@ class IOManager(object):
                 ):
                     answer = False
                     break
-                elif answer.lower() in (_("q"), _("quit")):
-                    if epilogue:
-                        write_to_stream(STDOUT_WRITER, epilogue + "\n")
-                    QUIT_EVENT.set()
-                    sys.exit(0)
                 write_to_stream(
                     STDOUT_WRITER,
-                    _("Please answer with 'y(es)', 'n(o)', or q(uit).\n"),
+                    _("Please answer with 'y(es)' or 'n(o)'.\n"),
                 )
             if epilogue:
                 write_to_stream(STDOUT_WRITER, epilogue + "\n")
