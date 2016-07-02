@@ -8,7 +8,6 @@ from threading import Event, Thread
 from os import close, pipe, read, setpgrp
 
 from .exceptions import RemoteException
-from .signals import SSH_PIDS
 from .utils import cached_property
 from .utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
 from .utils.ui import io
@@ -114,7 +113,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )
-    SSH_PIDS.append(ssh_process.pid)
+    io._ssh_pids.append(ssh_process.pid)
 
     quit_event = Event()
     stdout_thread = Thread(
@@ -153,7 +152,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
         # Luckily stdout is a somewhat simpler affair: we can just close
         # the writing end of the pipe, causing the reader thread to
         # shut down as it sees the EOF.
-        SSH_PIDS.remove(ssh_process.pid)
+        io._ssh_pids.remove(ssh_process.pid)
         quit_event.set()
         close(stdout_fd_w)
         stdout_thread.join()
