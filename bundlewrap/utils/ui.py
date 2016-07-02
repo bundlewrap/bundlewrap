@@ -3,16 +3,20 @@ from datetime import datetime
 from errno import EPIPE
 import fcntl
 from functools import wraps
-import os
+from os import _exit, environ, kill
+from select import select
+from signal import signal, SIG_DFL, SIGINT, SIGTERM
 import struct
 import sys
 import termios
-from threading import Event, Lock
+from threading import Event, Lock, Thread
 
 from . import STDERR_WRITER, STDOUT_WRITER
-from .text import ANSI_ESCAPE, inverse, mark_for_translation as _
+from .text import ANSI_ESCAPE, blue, bold, inverse, mark_for_translation as _
 
 QUIT_EVENT = Event()
+SHUTDOWN_EVENT_HARD = Event()
+SHUTDOWN_EVENT_SOFT = Event()
 TTY = STDOUT_WRITER.isatty()
 
 
@@ -37,10 +41,23 @@ def clear_formatting(f):
     """
     @wraps(f)
     def wrapped(self, msg, **kwargs):
-        if TTY and os.environ.get("BW_COLORS", "1") != "0":
+        if TTY and environ.get("BW_COLORS", "1") != "0":
             msg = "\033[0m" + msg
         return f(self, msg, **kwargs)
     return wrapped
+
+
+def sigint_handler(*args, **kwargs):
+    """
+    This handler is kept short since it interrupts execution of the
+    main thread. It's safer to handle these events in their own thread
+    because the main thread might be holding the IO lock while it is
+    interrupted.
+    """
+    if not SHUTDOWN_EVENT_SOFT.is_set():
+        SHUTDOWN_EVENT_SOFT.set()
+    else:
+        SHUTDOWN_EVENT_HARD.set()
 
 
 def term_width():
@@ -67,10 +84,11 @@ def write_to_stream(stream, msg):
 
 class DrainableStdin(object):
     def get_input(self):
-        try:
-            return raw_input()
-        except NameError:  # Python 3
-            return input()
+        while True:
+            if QUIT_EVENT.is_set():
+                return None
+            if select([sys.stdin], [], [], 0.1)[0]:
+                return sys.stdin.readline().strip()
 
     def drain(self):
         if sys.stdin.isatty():
@@ -78,18 +96,32 @@ class DrainableStdin(object):
 
 
 class IOManager(object):
+    """
+    Threadsafe singleton class that handles all IO.
+    """
     def __init__(self):
         self._active = False
         self.debug_mode = False
         self.jobs = []
         self.lock = Lock()
+        self._signal_handler_thread = Thread(
+            target=self._signal_handler_thread_body,
+        )
+        # daemon mode is required because we need to keep the thread
+        # around until the end of a soft shutdown to wait for a hard
+        # shutdown signal, but don't have a feasible way of stopping
+        # the thread once the soft shutdown has completed
+        self._signal_handler_thread.daemon = True
+        self._ssh_pids = []
 
     def activate(self):
         self._active = True
+        self._signal_handler_thread.start()
+        signal(SIGINT, sigint_handler)
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
-        answers = _("[Y/n/q]") if default else _("[y/N/q]")
+        answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
         with self.lock:
             if QUIT_EVENT.is_set():
@@ -100,7 +132,12 @@ class IOManager(object):
 
                 input_handler.drain()
                 answer = input_handler.get_input()
-                if answer.lower() in (_("y"), _("yes")) or (
+                if answer is None:
+                    if epilogue:
+                        write_to_stream(STDOUT_WRITER, "\n" + epilogue + "\n")
+                    QUIT_EVENT.set()
+                    sys.exit(0)
+                elif answer.lower() in (_("y"), _("yes")) or (
                     not answer and default
                 ):
                     answer = True
@@ -110,14 +147,9 @@ class IOManager(object):
                 ):
                     answer = False
                     break
-                elif answer.lower() in (_("q"), _("quit")):
-                    if epilogue:
-                        write_to_stream(STDOUT_WRITER, epilogue + "\n")
-                    QUIT_EVENT.set()
-                    sys.exit(0)
                 write_to_stream(
                     STDOUT_WRITER,
-                    _("Please answer with 'y(es)', 'n(o)', or q(uit).\n"),
+                    _("Please answer with 'y(es)' or 'n(o)'.\n"),
                 )
             if epilogue:
                 write_to_stream(STDOUT_WRITER, epilogue + "\n")
@@ -126,6 +158,8 @@ class IOManager(object):
 
     def deactivate(self):
         self._active = False
+        signal(SIGINT, SIG_DFL)
+        self._signal_handler_thread.join()
 
     @clear_formatting
     @add_debug_timestamp
@@ -174,6 +208,33 @@ class IOManager(object):
     def _clear_last_job(self):
         if self.jobs and TTY:
             write_to_stream(STDOUT_WRITER, "\r\033[K")
+
+    def _signal_handler_thread_body(self):
+        while self._active:
+            if QUIT_EVENT.is_set():
+                if SHUTDOWN_EVENT_HARD.wait(0.1):
+                    self.stderr(_("{x} {signal}  cleanup interrupted, exiting...").format(
+                        signal=bold(_("SIGINT")),
+                        x=blue("i"),
+                    ))
+                    for ssh_pid in self._ssh_pids:
+                        self.debug(_("killing SSH session with PID {pid}").format(pid=ssh_pid))
+                        try:
+                            kill(ssh_pid, SIGTERM)
+                        except ProcessLookupError:
+                            pass
+                    self._clear_last_job()
+                    _exit(1)
+            else:
+                if SHUTDOWN_EVENT_SOFT.wait(0.1):
+                    QUIT_EVENT.set()
+                    self.stderr(_(
+                        "{x} {signal}  canceling pending tasks... "
+                        "(hit CTRL+C again for immediate dirty exit)"
+                    ).format(
+                        signal=bold(_("SIGINT")),
+                        x=blue("i"),
+                    ))
 
     def _write(self, msg, append_newline=True, err=False):
         if not self._active:
