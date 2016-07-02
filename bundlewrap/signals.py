@@ -32,6 +32,7 @@ def sigint_handler(*args, **kwargs):
                 kill(ssh_pid, SIGINT)
             except ProcessLookupError:
                 pass
+        io._clear_last_job()
         _exit(1)
 
 signal(SIGINT, sigint_handler)
