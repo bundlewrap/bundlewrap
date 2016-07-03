@@ -3,9 +3,10 @@ from __future__ import unicode_literals
 
 from pipes import quote
 from select import select
+from shlex import split
 from subprocess import Popen, PIPE
 from threading import Event, Thread
-from os import close, pipe, read, setpgrp
+from os import close, environ, pipe, read, setpgrp
 
 from .exceptions import RemoteException
 from .utils import cached_property
@@ -99,15 +100,19 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     # Launch OpenSSH. It's important that SSH gets a dummy stdin, i.e.
     # it must *not* read from the terminal. Otherwise, it can steal user
     # input.
+    ssh_command = [
+        "ssh",
+        "-o", "KbdInteractiveAuthentication=no",
+        "-o", "PasswordAuthentication=no",
+        "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+    ]
+    extra_args = environ.get("BW_SSH_ARGS", "").strip()
+    if extra_args:
+        ssh_command.extend(split(extra_args))
+    ssh_command.append(hostname)
+    ssh_command.append("sudo bash -c " + quote("export LANG=C; " + command))
     ssh_process = Popen(
-        [
-            "ssh",
-            "-o", "KbdInteractiveAuthentication=no",
-            "-o", "PasswordAuthentication=no",
-            "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
-            hostname,
-            "sudo bash -c " + quote("export LANG=C; " + command),
-        ],
+        ssh_command,
         preexec_fn=setpgrp,
         stdin=PIPE,
         stderr=stderr_fd_w,
