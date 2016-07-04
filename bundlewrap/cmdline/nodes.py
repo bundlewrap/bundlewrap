@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from ..utils import names
+from ..group import GROUP_ATTR_DEFAULTS
 
 
 def bw_nodes(repo, args):
@@ -15,6 +16,11 @@ def bw_nodes(repo, args):
             line += node.hostname
         else:
             line += node.name
+        if args['show_attrs']:
+            line += "\t" + " ".join([
+                "{}:{}".format(attr, getattr(node, attr))
+                for attr in sorted(list(GROUP_ATTR_DEFAULTS) + ['hostname'])
+            ])
         if args['show_bundles']:
             line += ": " + ", ".join(names(node.bundles))
         elif args['show_groups']:

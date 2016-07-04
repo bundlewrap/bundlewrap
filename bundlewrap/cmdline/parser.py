@@ -366,6 +366,13 @@ def build_parser_bw():
     parser_nodes = subparsers.add_parser("nodes", description=help_nodes, help=help_nodes)
     parser_nodes.set_defaults(func=bw_nodes)
     parser_nodes.add_argument(
+        "-a",
+        "--attrs",
+        action='store_true',
+        dest='show_attrs',
+        help=_("show attributes for each node"),
+    )
+    parser_nodes.add_argument(
         "--bundles",
         action='store_true',
         dest='show_bundles',
@@ -375,7 +382,7 @@ def build_parser_bw():
         "--hostnames",
         action='store_true',
         dest='show_hostnames',
-        help=_("show hostnames instead of node names"),
+        help=_("show hostnames instead of node names (deprecated, use --attrs)"),
     )
     parser_nodes.add_argument(
         "-g",
@@ -397,7 +404,7 @@ def build_parser_bw():
         "--os",
         action='store_true',
         dest='show_os',
-        help=_("show OS for each node"),
+        help=_("show OS for each node (deprecated, use --attrs)"),
     )
 
     # bw plot
