@@ -110,7 +110,7 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     if extra_args:
         ssh_command.extend(split(extra_args))
     ssh_command.append(hostname)
-    ssh_command.append("sudo bash -c " + quote("export LANG=C; " + command))
+    ssh_command.append("sudo sh -c " + quote("export LANG=C; " + command))
     ssh_process = Popen(
         ssh_command,
         preexec_fn=setpgrp,
