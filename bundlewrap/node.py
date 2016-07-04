@@ -628,6 +628,7 @@ class Node(object):
 
 def build_attr_property(attr, default):
     def method(self):
+        attr_source = None
         attr_value = None
         group_order = [
             self.repo.get_group(group_name)
@@ -636,13 +637,22 @@ def build_attr_property(attr, default):
 
         for group in group_order:
             if getattr(group, attr) is not None:
+                attr_source = "group:{}".format(group.name)
                 attr_value = getattr(group, attr)
 
         if getattr(self, "_{}".format(attr)) is not None:
+            attr_source = "node"
             attr_value = getattr(self, "_{}".format(attr))
 
         if attr_value is None:
+            attr_source = "default"
             attr_value = default
+
+        io.debug(_("node {node} gets its {attr} attribute from: {source}").format(
+            node=self.name,
+            attr=attr,
+            source=attr_source,
+        ))
         return attr_value
     method.__name__ = str("_group_attr_{}".format(attr))  # required for cached_property
                                                           # str() for Python 2 compatibility
