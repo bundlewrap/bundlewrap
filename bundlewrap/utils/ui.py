@@ -26,6 +26,13 @@ else:
     broken_pipe_exception = IOError
 
 
+def add_debug_indicator(f):
+    @wraps(f)
+    def wrapped(self, msg, **kwargs):
+        return f(self, "[DEBUG] " + msg, **kwargs)
+    return wrapped
+
+
 def add_debug_timestamp(f):
     @wraps(f)
     def wrapped(self, msg, **kwargs):
@@ -162,6 +169,7 @@ class IOManager(object):
         self._signal_handler_thread.join()
 
     @clear_formatting
+    @add_debug_indicator
     @add_debug_timestamp
     def debug(self, msg, append_newline=True):
         if self.debug_mode:
