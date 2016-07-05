@@ -203,11 +203,14 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
             local_path,
             "{}:{}".format(hostname, temp_filename),
         ],
+        preexec_fn=setpgrp,
         stdin=PIPE,
         stdout=PIPE,
         stderr=PIPE,
     )
+    io._ssh_pids.append(scp_process.pid)
     stdout, stderr = scp_process.communicate()
+    io._ssh_pids.remove(scp_process.pid)
 
     if scp_process.returncode != 0:
         raise RemoteException(_(
