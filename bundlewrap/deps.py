@@ -154,7 +154,12 @@ def _has_trigger_path(items, item, target_item_id):
     if target_item_id in item.triggers:
         return True
     for triggered_id in item.triggers:
-        triggered_item = find_item(triggered_id, items)
+        try:
+            triggered_item = find_item(triggered_id, items)
+        except NoSuchItem:
+            # the triggered item may already have been skipped by
+            # `bw apply -s`
+            continue
         if _has_trigger_path(items, triggered_item, target_item_id):
             return True
     return False
