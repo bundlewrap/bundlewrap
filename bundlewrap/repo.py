@@ -248,7 +248,8 @@ class Repository(object):
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
-        self._node_metadata = {}
+        self._node_metadata_complete = {}
+        self._node_metadata_partial = {}
         self._node_metadata_static_complete = set()
         self._node_metadata_lock = Lock()
 
@@ -405,33 +406,40 @@ class Repository(object):
         return self.nodes_in_all_groups([group_name])
 
     def _metadata_for_node(self, node_name, partial=False):
-        if partial:
-            self._node_metadata.setdefault(node_name, {})
         try:
-            return self._node_metadata[node_name]
+            return self._node_metadata_complete[node_name]
         except KeyError:
+            if partial:
+                self._node_metadata_partial.setdefault(node_name, {})
+                return self._node_metadata_partial[node_name]
             if self._node_metadata_lock.acquire(False):
                 # Full (non-partial) metadata has been requested and we're
                 # the lucky thread to do all the work.
-                self._node_metadata[node_name] = {}
+                self._node_metadata_partial[node_name] = {}
                 try:
                     self._build_node_metadata()
+                    # now that we have completed all metadata for this
+                    # node and all related nodes, copy that data over
+                    # to the complete dict
+                    self._node_metadata_complete.update(self._node_metadata_partial)
+                    # reset temporary vars
+                    self._node_metadata_partial = {}
+                    self._node_metadata_static_complete = set()
                 finally:
                     self._node_metadata_lock.release()
-                return self._node_metadata[node_name]
+                return self._node_metadata_complete[node_name]
             else:
                 # We didn't get the lock, so another thread is busy building
                 # the metadata for us. Wait until it's done and return the
                 # result.
                 with self._node_metadata_lock:
-                    return self._node_metadata[node_name]
+                    return self._node_metadata_complete[node_name]
 
     def _build_node_metadata(self):
         iterations = {}
         while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
-
             # First, get the static metadata out of the way
-            for node_name in list(self._node_metadata):
+            for node_name in list(self._node_metadata_partial):
                 node = self.get_node(node_name)
                 # check if static metadata for this node is already done
                 if node_name in self._node_metadata_static_complete:
@@ -442,21 +450,21 @@ class Repository(object):
                 with io.job(_("  {node}  building group metadata...").format(node=node.name)):
                     group_order = _flatten_group_hierarchy(node.groups)
                     for group_name in group_order:
-                        self._node_metadata[node.name] = merge_dict(
-                            self._node_metadata[node.name],
+                        self._node_metadata_partial[node.name] = merge_dict(
+                            self._node_metadata_partial[node.name],
                             self.get_group(group_name).metadata,
                         )
 
                 with io.job(_("  {node}  merging node metadata...").format(node=node.name)):
-                    self._node_metadata[node.name] = merge_dict(
-                        self._node_metadata[node.name],
+                    self._node_metadata_partial[node.name] = merge_dict(
+                        self._node_metadata_partial[node.name],
                         node._node_metadata,
                     )
 
             # Now for the interesting part: We run all metadata processors
             # in sequence until none of them return changed metadata.
             modified = False
-            for node_name in list(self._node_metadata):
+            for node_name in list(self._node_metadata_partial):
                 node = self.get_node(node_name)
                 with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
                     for metadata_processor in node.metadata_processors:
@@ -470,11 +478,11 @@ class Repository(object):
                             i=iterations[(node.name, metadata_processor.__name__)],
                         ))
                         processed = metadata_processor(
-                            deepcopy_metadata(self._node_metadata[node.name]),
+                            deepcopy_metadata(self._node_metadata_partial[node.name]),
                         )
                         assert isinstance(processed, dict)
-                        if processed != self._node_metadata[node.name]:
-                            self._node_metadata[node.name] = processed
+                        if processed != self._node_metadata_partial[node.name]:
+                            self._node_metadata_partial[node.name] = processed
                             iterations[(node.name, metadata_processor.__name__)] += 1
                             modified = True
             if not modified:
