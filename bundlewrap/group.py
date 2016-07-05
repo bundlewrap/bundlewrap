@@ -9,6 +9,13 @@ from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
 
 
+GROUP_ATTR_DEFAULTS = {
+    'dummy': False,
+    'os': 'linux',
+    'use_shadow_passwords': True,
+}
+
+
 def _build_error_chain(loop_node, last_node, nodes_in_between):
     """
     Used to illustrate subgroup loop paths in error messages.
@@ -44,9 +51,12 @@ class Group(object):
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.metadata = infodict.get('metadata', {})
-        self.os = infodict.get('os')
         self.patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
+
+        for attr in GROUP_ATTR_DEFAULTS:
+            # defaults are applied in node.py
+            setattr(self, attr, infodict.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name

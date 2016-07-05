@@ -6,7 +6,7 @@ from ..secrets import FILENAME_SECRETS
 
 
 HOST_OS = {
-    "Darwin": 'macosx',
+    "Darwin": 'macos',
     "Linux": 'linux',
 }
 

@@ -19,6 +19,7 @@ from .exceptions import (
     NoSuchBundle,
     RepositoryError,
 )
+from .group import GROUP_ATTR_DEFAULTS
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .lock import NodeLock
@@ -314,16 +315,6 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
 
 
 class Node(object):
-    OS_LINUX = 'linux'
-    OS_MACOSX = 'macosx'
-    OS_OPENBSD = 'openbsd'
-
-    OS_ALIASES = {
-        'linux': OS_LINUX,
-        'macosx': OS_MACOSX,
-        'openbsd': OS_OPENBSD,
-    }
-
     def __init__(self, name, infodict=None):
         if infodict is None:
             infodict = {}
@@ -336,12 +327,13 @@ class Node(object):
         self._compiling_metadata = Lock()
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
-        self._node_os = infodict.get('os')
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
         self.add_ssh_host_keys = False
         self.hostname = infodict.get('hostname', self.name)
-        self.use_shadow_passwords = infodict.get('use_shadow_passwords', True)
+
+        for attr in GROUP_ATTR_DEFAULTS:
+            setattr(self, "_{}".format(attr), infodict.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name
@@ -425,11 +417,12 @@ class Node(object):
                 return True
         return False
 
-    @property
+    @cached_property
     def items(self):
-        for bundle in self.bundles:
-            for item in bundle.items:
-                yield item
+        if not self.dummy:
+            for bundle in self.bundles:
+                for item in bundle.items:
+                    yield item
 
     @property
     def _static_items(self):
@@ -446,7 +439,7 @@ class Node(object):
         profiling=False,
     ):
         if not list(self.items):
-            io.debug(_("not applying to {}, it has no items").format(self.name))
+            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
             return None
 
         if self.covered_by_autoskip_selector(autoskip_selector):
@@ -540,20 +533,6 @@ class Node(object):
             for metadata_processor in bundle.metadata_processors:
                 yield metadata_processor
 
-    @cached_property
-    def os(self):
-        os = None
-
-        group_order = _flatten_group_hierarchy(self.groups)
-        for group_name in group_order:
-            group = self.repo.get_group(group_name)
-            os = os if group.os is None else group.os
-
-        os = self._node_os if os is None else os
-        os = 'linux' if os is None else os
-
-        return self.OS_ALIASES[os.lower()]
-
     @property
     def partial_metadata(self):
         """
@@ -614,8 +593,10 @@ class Node(object):
             x=green("✓"),
             node=bold(self.name),
         ))
-
-        test_items(self, workers=workers)
+        if self.items:
+            test_items(self, workers=workers)
+        else:
+            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
 
         self.repo.hooks.test_node(self.repo, self)
 
@@ -633,17 +614,56 @@ class Node(object):
     def verify(self, show_all=False, workers=4):
         bad = 0
         good = 0
-        for item_status in verify_items(
-            self,
-            show_all=show_all,
-            workers=workers,
-        ):
-            if item_status:
-                good += 1
-            else:
-                bad += 1
+        if not self.items:
+            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
+        else:
+            for item_status in verify_items(
+                self,
+                show_all=show_all,
+                workers=workers,
+            ):
+                if item_status:
+                    good += 1
+                else:
+                    bad += 1
 
         return {'good': good, 'bad': bad}
+
+
+def build_attr_property(attr, default):
+    def method(self):
+        attr_source = None
+        attr_value = None
+        group_order = [
+            self.repo.get_group(group_name)
+            for group_name in _flatten_group_hierarchy(self.groups)
+        ]
+
+        for group in group_order:
+            if getattr(group, attr) is not None:
+                attr_source = "group:{}".format(group.name)
+                attr_value = getattr(group, attr)
+
+        if getattr(self, "_{}".format(attr)) is not None:
+            attr_source = "node"
+            attr_value = getattr(self, "_{}".format(attr))
+
+        if attr_value is None:
+            attr_source = "default"
+            attr_value = default
+
+        io.debug(_("node {node} gets its {attr} attribute from: {source}").format(
+            node=self.name,
+            attr=attr,
+            source=attr_source,
+        ))
+        return attr_value
+    method.__name__ = str("_group_attr_{}".format(attr))  # required for cached_property
+                                                          # str() for Python 2 compatibility
+    return cached_property(method)
+
+for attr, default in GROUP_ATTR_DEFAULTS.items():
+    setattr(Node, attr, build_attr_property(attr, default))
 
 
 def test_items(node, workers=1):
