@@ -1,3 +1,27 @@
+# 2.7.0
+
+unreleased
+
+* `bw lock show` can now show entire groups
+* `bw` can now be invoked from any subdirectory of a repository
+* added `bw hash --metadata`
+* added `bw nodes --attrs`
+* added `repo.vault.format`
+* added graceful handling of SIGINT
+* added log level indicator to debug output
+* added `node.dummy` attribute
+* added `BW_SSH_ARGS` environment variable
+* `bash` is no longer required on nodes
+* `node.os` and `node.use_shadow_passwords` can now be set at the group level
+* fixed `bw apply --force` with unlocked nodes
+* fixed installation of some pkg_openbsd
+* fixed piping into `bw apply -i`
+* fixed handling user names with non-ASCII characters
+* fixed skipped and failed items sometimes being handled incorrectly
+* fixed error with autoskipped triggered items
+* fixed skip reason for some soft locked items
+
+
 # 2.6.1
 
 2016-05-29
