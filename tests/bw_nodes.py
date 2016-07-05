@@ -17,8 +17,8 @@ def test_single(tmpdir):
 
 def test_hostname(tmpdir):
     make_repo(tmpdir, nodes={"node1": {'hostname': "node1.example.com"}})
-    stdout, stderr, rcode = run("bw nodes --attrs | cut -f 2 | cut -d ' ' -f 2", path=str(tmpdir))
-    assert stdout == b"hostname:node1.example.com\n"
+    stdout, stderr, rcode = run("bw nodes --attrs | grep '\thostname' | cut -f 3", path=str(tmpdir))
+    assert stdout == b"node1.example.com\n"
     assert stderr == b""
 
 

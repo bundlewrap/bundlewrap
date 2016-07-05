@@ -14,7 +14,7 @@ def bw_nodes(repo, args):
         nodes = repo.get_group(args['filter_group']).nodes
     else:
         nodes = repo.nodes
-    max_node_name_length = max([len(name) for name in names(nodes)])
+    max_node_name_length = 0 if not nodes else max([len(name) for name in names(nodes)])
     for node in nodes:
         if args['show_attrs']:
             for attr in sorted(list(GROUP_ATTR_DEFAULTS) + ['hostname']):
