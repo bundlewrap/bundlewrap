@@ -406,6 +406,16 @@ class Repository(object):
         return self.nodes_in_all_groups([group_name])
 
     def _metadata_for_node(self, node_name, partial=False):
+        """
+        Returns full or partial metadata for this node.
+
+        Partial metadata may only be requested from inside a metadata
+        processor.
+
+        If necessary, this method will build complete metadata for this
+        node and all related nodes. Related meaning nodes that this node
+        depends on in one of its metadata processors.
+        """
         try:
             return self._node_metadata_complete[node_name]
         except KeyError:
@@ -437,6 +447,10 @@ class Repository(object):
             return self._node_metadata_complete[node_name]
 
     def _build_node_metadata(self):
+        """
+        Builds complete metadata for all nodes that appear in
+        self._node_metadata_partial.keys().
+        """
         iterations = {}
         while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
             # First, get the static metadata out of the way
