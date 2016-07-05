@@ -164,7 +164,7 @@ def apply_items(
                     changes=[_("dep failed")],
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
-                return
+            return
         elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
             item_queue.item_fixed(item)
         elif status_code == Item.STATUS_OK:
@@ -179,7 +179,7 @@ def apply_items(
                     changes=[_("dep skipped")],
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
-                return
+            return
         else:
             raise AssertionError(_(
                 "unknown item status returned for {item}: {status}".format(
