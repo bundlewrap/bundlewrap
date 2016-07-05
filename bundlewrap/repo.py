@@ -409,29 +409,32 @@ class Repository(object):
         try:
             return self._node_metadata_complete[node_name]
         except KeyError:
-            if partial:
-                self._node_metadata_partial.setdefault(node_name, {})
-                return self._node_metadata_partial[node_name]
-            with self._node_metadata_lock:
-                try:
-                    # maybe our metadata got completed while waiting for the lock
-                    return self._node_metadata_complete[node_name]
-                except KeyError:
-                    pass
+            pass
 
-                self._node_metadata_partial[node_name] = {}
-                self._build_node_metadata()
+        if partial:
+            self._node_metadata_partial.setdefault(node_name, {})
+            return self._node_metadata_partial[node_name]
 
-                # now that we have completed all metadata for this
-                # node and all related nodes, copy that data over
-                # to the complete dict
-                self._node_metadata_complete.update(self._node_metadata_partial)
-
-                # reset temporary vars
-                self._node_metadata_partial = {}
-                self._node_metadata_static_complete = set()
-
+        with self._node_metadata_lock:
+            try:
+                # maybe our metadata got completed while waiting for the lock
                 return self._node_metadata_complete[node_name]
+            except KeyError:
+                pass
+
+            self._node_metadata_partial[node_name] = {}
+            self._build_node_metadata()
+
+            # now that we have completed all metadata for this
+            # node and all related nodes, copy that data over
+            # to the complete dict
+            self._node_metadata_complete.update(self._node_metadata_partial)
+
+            # reset temporary vars
+            self._node_metadata_partial = {}
+            self._node_metadata_static_complete = set()
+
+            return self._node_metadata_complete[node_name]
 
     def _build_node_metadata(self):
         iterations = {}
