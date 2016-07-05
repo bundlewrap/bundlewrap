@@ -57,7 +57,6 @@ python setup.py develop</code></pre>
 While the following list might appear long, even very minimal systems should provide everything that's needed.
 
 * `apt-get` (only used with [pkg_apt](../items/pkg_apt.md) items)
-* `bash`
 * `cat`
 * `chmod`
 * `chown`
