@@ -170,12 +170,18 @@ def apply_items(
             item_queue.item_ok(item)
         elif status_code == Item.STATUS_SKIPPED:
             for skipped_item in item_queue.item_skipped(item):
+                skipped_reason = [_("dep skipped")]
+                for lock in other_peoples_soft_locks:
+                    for selector in lock['items']:
+                        if skipped_item.covered_by_autoskip_selector(selector):
+                            skipped_reason = [_("soft locked")]
+                            break
                 handle_apply_result(
                     node,
                     skipped_item,
                     Item.STATUS_SKIPPED,
                     interactive,
-                    changes=[_("dep skipped")],
+                    changes=skipped_reason,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         else:
