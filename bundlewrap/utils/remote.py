@@ -44,10 +44,10 @@ def get_path_type(node, path):
 
 
 def stat(node, path):
-    if node.os == 'linux':
-        result = node.run("stat -c '%U:%G:%a:%s' -- {}".format(quote(path)))
-    else:
+    if node.os in node.OS_FAMILY_BSD:
         result = node.run("stat -f '%Su:%Sg:%p:%z' -- {}".format(quote(path)))
+    else:
+        result = node.run("stat -c '%U:%G:%a:%s' -- {}".format(quote(path)))
     owner, group, mode, size = force_text(result.stdout).split(":")
     mode = mode[-4:].zfill(4)  # cut off BSD file type
     file_stat = {
@@ -122,12 +122,12 @@ class PathInfo(object):
 
     @cached_property
     def sha1(self):
-        if self.node.os == 'linux':
-            result = self.node.run("sha1sum -- {}".format(quote(self.path)))
-        elif self.node.os == 'macos':
+        if self.node.os == 'macos':
             result = self.node.run("shasum -a 1 -- {}".format(quote(self.path)))
-        else:
+        elif self.node.os in self.node.OS_FAMILY_BSD:
             result = self.node.run("sha1 -q -- {}".format(quote(self.path)))
+        else:
+            result = self.node.run("sha1sum -- {}".format(quote(self.path)))
         return force_text(result.stdout).strip().split()[0]
 
     @property

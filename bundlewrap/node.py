@@ -316,6 +316,36 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
 
 
 class Node(object):
+    OS_FAMILY_BSD = (
+        'freebsd',
+        'macos',
+        'netbsd',
+        'openbsd',
+    )
+    OS_FAMILY_DEBIAN = (
+        'debian',
+        'ubuntu',
+        'raspbian',
+    )
+    OS_FAMILY_REDHAT = (
+        'rhel',
+        'centos',
+        'fedora',
+    )
+
+    OS_FAMILY_LINUX = (
+        'amazonlinux',
+        'arch',
+        'opensuse',
+        'gentoo',
+        'linux',
+        'oraclelinux',
+    ) + \
+        OS_FAMILY_DEBIAN + \
+        OS_FAMILY_REDHAT
+
+    OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX
+
     def __init__(self, name, infodict=None):
         if infodict is None:
             infodict = {}

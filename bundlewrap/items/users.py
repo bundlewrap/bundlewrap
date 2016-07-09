@@ -163,7 +163,7 @@ class User(Item):
 
     def sdict(self):
         # verify content of /etc/passwd
-        if self.node.os == 'openbsd':
+        if self.node.os in self.node.OS_FAMILY_BSD:
             password_command = "grep -ae '^{}:' /etc/master.passwd"
         else:
             password_command = "grep -ae '^{}:' /etc/passwd"
@@ -174,7 +174,7 @@ class User(Item):
         if passwd_grep_result.return_code != 0:
             return None
 
-        if self.node.os == 'openbsd':
+        if self.node.os in self.node.OS_FAMILY_BSD:
             entries = (
                 'username',
                 'passwd_hash',
@@ -196,7 +196,7 @@ class User(Item):
             sdict['gid'] = _group_name_for_gid(self.node, sdict['gid'])
 
         if self.attributes['password_hash'] is not None:
-            if self.attributes['use_shadow'] and self.node.os != 'openbsd':
+            if self.attributes['use_shadow'] and self.node.os not in self.node.OS_FAMILY_BSD:
                 # verify content of /etc/shadow unless we are on OpenBSD
                 shadow_grep_result = self.node.run(
                     "grep -e '^{}:' /etc/shadow".format(self.name),
@@ -223,7 +223,7 @@ class User(Item):
                 self.ITEM_ATTRIBUTES['hash_method'],
             )]
             salt = attributes.get('salt', None)
-            if self.node.os == 'openbsd':
+            if self.node.os in self.node.OS_FAMILY_BSD:
                 attributes['password_hash'] = bcrypt.encrypt(
                     force_text(attributes['password']),
                     rounds=8,  # default rounds for OpenBSD accounts
