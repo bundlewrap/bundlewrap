@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from json import dumps, JSONEncoder
+from json import dumps
 
 from ..exceptions import NoSuchNode
+from ..metadata import MetadataJSONEncoder
 from ..utils.text import force_text, mark_for_translation as _, red
-
-
-class ReprJSONEncoder(JSONEncoder):
-    def default(self, obj):
-        return repr(obj)
 
 
 def bw_metadata(repo, args):
@@ -23,5 +19,5 @@ def bw_metadata(repo, args):
         yield 1
         raise StopIteration()
 
-    for line in dumps(node.metadata, cls=ReprJSONEncoder, indent=4, sort_keys=True).splitlines():
+    for line in dumps(node.metadata, cls=MetadataJSONEncoder, indent=4, sort_keys=True).splitlines():
         yield force_text(line)

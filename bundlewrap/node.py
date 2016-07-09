@@ -23,7 +23,7 @@ from .group import GROUP_ATTR_DEFAULTS
 from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .lock import NodeLock
-from .metadata import check_for_unsolvable_metadata_key_conflicts
+from .metadata import check_for_unsolvable_metadata_key_conflicts, hash_metadata
 from .utils import cached_property, graph_for_items, names
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
@@ -525,7 +525,7 @@ class Node(object):
         return self.repo._metadata_for_node(self.name, partial=False)
 
     def metadata_hash(self):
-        return hash_statedict(self.metadata)
+        return hash_metadata(self.metadata)
 
     @property
     def metadata_processors(self):

@@ -1,7 +1,9 @@
 from copy import copy
+from hashlib import sha1
+from json import dumps, JSONEncoder
 
 from .exceptions import RepositoryError
-from .utils import _Atomic, ATOMIC_TYPES, Fault, merge_dict
+from .utils import ATOMIC_TYPES, Fault, merge_dict
 from .utils.text import mark_for_translation as _
 
 
@@ -117,6 +119,13 @@ def check_for_unsolvable_metadata_key_conflicts(node):
                     continue
                 else:
                     if keypath in keymap2:
+                        if (
+                            type(value_at_key_path(chain_metadata[index1], keypath)) ==
+                            type(value_at_key_path(chain_metadata[index2], keypath)) and
+                            type(value_at_key_path(chain_metadata[index2], keypath)) in
+                            (set, dict)
+                        ):
+                            continue
                         # We now know that there is a conflict between the first
                         # and second chain we're looking at right now.
                         # That is however not a problem if the conflict is caused
@@ -128,6 +137,7 @@ def check_for_unsolvable_metadata_key_conflicts(node):
                             node.name,
                             chains[index1],
                             chains[index2],
+                            keypath,
                         )
 
 
@@ -147,6 +157,10 @@ def deepcopy_metadata(obj):
         new_obj = []
         for member in obj:
             new_obj.append(deepcopy_metadata(member))
+    elif isinstance(obj, set):
+        new_obj = set()
+        for member in obj:
+            new_obj.add(deepcopy_metadata(member))
     elif isinstance(obj, METADATA_TYPES):
         return obj
     else:
@@ -170,26 +184,23 @@ def dictionary_key_map(mapdict):
 
         [
             ("key1",),
+            ("key2",),
             ("key2", "key3"),
+            ("key2", "key4"),
         ]
 
-    Note that key4 is excluded because lists will be merged and do not
-    overwrite each other (unless wrapped in atomic()).
     """
     for key, value in mapdict.items():
         if isinstance(value, dict):
             for child_keys in dictionary_key_map(value):
                 yield (key,) + child_keys
-        elif isinstance(value, (list, set, tuple)) and not isinstance(value, _Atomic):
-            pass
-        else:
-            yield (key,)
+        yield (key,)
 
 
-def find_groups_causing_metadata_conflict(node_name, chain1, chain2):
+def find_groups_causing_metadata_conflict(node_name, chain1, chain2, keypath):
     """
     Given two chains (lists of groups), find one group in each chain
-    that has conflicting metadata with the other.
+    that has conflicting metadata with the other for the given key path.
     """
     chain1_metadata = [list(dictionary_key_map(group.metadata)) for group in chain1]
     chain2_metadata = [list(dictionary_key_map(group.metadata)) for group in chain2]
@@ -201,15 +212,15 @@ def find_groups_causing_metadata_conflict(node_name, chain1, chain2):
             if chain1[index1] == chain2[index2]:
                 # same group, ignore
                 continue
-            for keypath in keymap1:
-                if (
-                    keypath in keymap2 and
-                    chain1[index1] not in chain2[index2].subgroups and
-                    chain2[index2] not in chain1[index1].subgroups
-                ):
-                    bad_keypath = keypath
-                    bad_group1 = chain1[index1]
-                    bad_group2 = chain2[index2]
+            if (
+                keypath in keymap1 and
+                keypath in keymap2 and
+                chain1[index1] not in chain2[index2].subgroups and
+                chain2[index2] not in chain1[index1].subgroups
+            ):
+                bad_keypath = keypath
+                bad_group1 = chain1[index1]
+                bad_group2 = chain2[index2]
 
     if bad_keypath is not None:
         raise RepositoryError(_(
@@ -224,3 +235,32 @@ def find_groups_causing_metadata_conflict(node_name, chain1, chain2):
             group2=bad_group2.name,
             node=node_name,
         ))
+
+
+class MetadataJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Fault):
+            return obj.value
+        if isinstance(obj, set):
+            return sorted(obj)
+        else:
+            return repr(obj)
+
+
+def hash_metadata(sdict):
+    """
+    Returns a canonical SHA1 hash to describe this dict.
+    """
+    return sha1(dumps(
+        sdict,
+        cls=MetadataJSONEncoder,
+        indent=None,
+        sort_keys=True,
+    ).encode('utf-8')).hexdigest()
+
+
+def value_at_key_path(dict_obj, path):
+    if not path:
+        return dict_obj
+    else:
+        return value_at_key_path(dict_obj[path[0]], path[1:])
