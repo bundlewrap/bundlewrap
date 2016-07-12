@@ -4,7 +4,7 @@ from json import dumps, JSONEncoder
 
 from .exceptions import RepositoryError
 from .utils import ATOMIC_TYPES, Fault, merge_dict
-from .utils.text import mark_for_translation as _
+from .utils.text import force_text, mark_for_translation as _
 
 
 try:
@@ -243,8 +243,10 @@ class MetadataJSONEncoder(JSONEncoder):
             return obj.value
         if isinstance(obj, set):
             return sorted(obj)
+        if isinstance(obj, bytes):
+            return force_text(obj)
         else:
-            return repr(obj)
+            raise ValueError(_("illegal metadata value type: {}").format(repr(obj)))
 
 
 def hash_metadata(sdict):

@@ -35,9 +35,7 @@ def test_object(tmpdir):
     with open(join(str(tmpdir), "nodes.py"), 'w') as f:
         f.write("nodes = {'node1': {'metadata': {'foo': object}}}")
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert loads(stdout.decode())["foo"] in ("<class 'object'>", "<type 'object'>")
-    assert stderr == b""
-    assert rcode == 0
+    assert rcode == 1
 
 
 def test_merge(tmpdir):

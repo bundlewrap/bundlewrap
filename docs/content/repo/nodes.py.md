@@ -70,6 +70,19 @@ A string used as a DNS name when connecting to this node. May also be an IP addr
 
 This can be a dictionary of arbitrary data. You can access it from your templates as `node.metadata`. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the [group level](groups.py.md), but node metadata has higher priority.
 
+You are restricted to using only the following types in metadata:
+
+* `dict`
+* `list`
+* `tuple`
+* `set`
+* `bool`
+* `text` / `unicode`
+* `bytes` / `str` (only if decodable into text using UTF-8)
+* `int`
+* `None`
+* `bundlewrap.utils.Fault`
+
 <br>
 
 ## os

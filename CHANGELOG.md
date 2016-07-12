@@ -13,7 +13,10 @@ unreleased
 * added `BW_SSH_ARGS` environment variable
 * `bash` is no longer required on nodes
 * `node.os` and `node.use_shadow_passwords` can now be set at the group level
+* sets are now allowed in metadata
+* optimized execution of metadata processors
 * fixed `bw apply --force` with unlocked nodes
+* fixed `bw test` not detecting merge of lists in unrelated groups' metadata
 * fixed installation of some pkg_openbsd
 * fixed piping into `bw apply -i`
 * fixed handling user names with non-ASCII characters
