@@ -101,6 +101,8 @@ The NTP servers are appended: a node in both groups will have all three nameserv
 
 <div class="alert alert-warning">BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order. <code>bw test</code> will report conflicting metadata in independent groups as a metadata collision.</div>
 
+<div class="alert alert-info">Also see the <a href="../nodes.py#metadata">documentation for node.metadata</a> for more information.</div>
+
 <br>
 
 ## os

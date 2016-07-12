@@ -83,6 +83,8 @@ You are restricted to using only the following types in metadata:
 * `None`
 * `bundlewrap.utils.Fault`
 
+<div class="alert alert-info">Also see the <a href="../groups.py#metadata">documentation for group.metadata</a> for more information.</div>
+
 <br>
 
 ## os
