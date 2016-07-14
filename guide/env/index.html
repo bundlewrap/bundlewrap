@@ -426,6 +426,9 @@
             <li class="second-level"><a href="#bw_softlock_expiry">BW_SOFTLOCK_EXPIRY</a></li>
             
         
+            <li class="second-level"><a href="#bw_ssh_args">BW_SSH_ARGS</a></li>
+            
+        
             <li class="second-level"><a href="#bw_vault_dummy_mode">BW_VAULT_DUMMY_MODE</a></li>
             
         
@@ -449,6 +452,8 @@
 <p>Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.</p>
 <h2 id="bw_softlock_expiry"><code>BW_SOFTLOCK_EXPIRY</code></h2>
 <p><a href="../locks/">Soft locks</a> are automatically removed from nodes after some time. By default, it's eight hours. You can use this variable to override that default.</p>
+<h2 id="bw_ssh_args"><code>BW_SSH_ARGS</code></h2>
+<p>Extra arguments to include in every call to <code>ssh</code> BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap.</p>
 <h2 id="bw_vault_dummy_mode"><code>BW_VAULT_DUMMY_MODE</code></h2>
 <p>Setting this to <code>1</code> will make <code>repo.vault</code> return dummy values for every <a href="../secrets/">secret</a>. This is useful for running <code>bw test</code> on a CI server that you don't want to trust with your <code>.secrets.cfg</code>.</p></div>
         

@@ -417,6 +417,9 @@
             <li class="second-level"><a href="#bundles">bundles</a></li>
             
         
+            <li class="second-level"><a href="#dummy">dummy</a></li>
+            
+        
             <li class="second-level"><a href="#member_patterns">member_patterns</a></li>
             
         
@@ -430,6 +433,9 @@
             
         
             <li class="second-level"><a href="#subgroups">subgroups</a></li>
+            
+        
+            <li class="second-level"><a href="#use_shadow_passwords">use_shadow_passwords</a></li>
             
         
     
@@ -472,6 +478,9 @@
 <h2 id="bundles">bundles</h2>
 <p>A list of <a href="../bundles/">bundle names</a> to be assigned to each node in this group.</p>
 <p><br></p>
+<h2 id="dummy">dummy</h2>
+<p>See <a href="../nodes.py/#dummy">node attribute documentation</a>. May be overridden by subgroups or individual nodes.</p>
+<p><br></p>
 <h2 id="member_patterns">member_patterns</h2>
 <p>A list of regular expressions. Node names matching these expressions will be added to the group members.</p>
 <p>Matches are determined using <a href="http://docs.python.org/2/library/re.html#re.RegexObject.search">the search() method</a>.</p>
@@ -480,7 +489,7 @@
 <p>A tuple or list of node names that belong to this group.</p>
 <p><br></p>
 <h2 id="metadata">metadata</h2>
-<p>A dictionary of arbitrary data that will be accessible from each node's <code>node.metadata</code>. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.</p>
+<p>A dictionary that will be accessible from each node's <code>node.metadata</code>. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.</p>
 <p>Metadata is merged recursively by default, meaning nested dicts will overlay each other. Lists will be appended to each other, but not recursed into. In come cases, you want to overwrite instead of merge a piece of metadata. This is accomplished through the use of <code>bundlewrap.metadata.atomic()</code> and best illustrated as an example:</p>
 <pre><code>from bundlewrap.metadata import atomic
 
@@ -508,14 +517,20 @@ groups = {
 <p>A node in both groups will end up with <code>eth0</code> <em>and</em> <code>eth1</code>.</p>
 <p>The nameservers however are overwritten, so that nodes what are in both the "all" <em>and</em> the "internal" group will only have the <code>10.0.0.x</code> ones while nodes just in the "all" group will have the <code>8.8.x.x</code> nameservers.</p>
 <p>The NTP servers are appended: a node in both groups will have all three nameservers.</p>
-<div class="alert alert-warning">BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order.</div>
+<div class="alert alert-warning">BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order. <code>bw test</code> will report conflicting metadata in independent groups as a metadata collision.</div>
+
+<div class="alert alert-info">Also see the <a href="../nodes.py#metadata">documentation for node.metadata</a> for more information.</div>
 
 <p><br></p>
 <h2 id="os">os</h2>
-<p>Changes the default OS (see <a href="../nodes.py/">nodes.py</a>) for nodes in this group. Subgroups can override this for their parent groups.</p>
+<p>See <a href="../nodes.py/#os">node attribute documentation</a>. May be overridden by subgroups or individual nodes.</p>
 <p><br></p>
 <h2 id="subgroups">subgroups</h2>
-<p>A tuple or list of group names whose members should be recursively included in this group.</p></div>
+<p>A tuple or list of group names whose members should be recursively included in this group.</p>
+<p><br></p>
+<h2 id="use_shadow_passwords">use_shadow_passwords</h2>
+<p>See <a href="../nodes.py/#use_shadow_passwords">node attribute documentation</a>. May be overridden by subgroups or individual nodes.</p>
+<p><br></p></div>
         
     </div>
 
