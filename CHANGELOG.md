@@ -1,6 +1,6 @@
 # 2.7.0
 
-unreleased
+2016-07-15
 
 * `bw lock show` can now show entire groups
 * `bw` can now be invoked from any subdirectory of a repository
