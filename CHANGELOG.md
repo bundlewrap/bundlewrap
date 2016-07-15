@@ -1,3 +1,11 @@
+# 2.7.1
+
+2016-07-15
+
+* improved responsiveness to SIGINT during metadata generation
+* fixed SIGINT handling on Python 2.7
+
+
 # 2.7.0
 
 2016-07-15
