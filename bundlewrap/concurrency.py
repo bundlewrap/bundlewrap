@@ -47,7 +47,17 @@ class WorkerPool(object):
         io.debug(_("worker pool {pool} waiting for next task to complete").format(
             pool=self.pool_id,
         ))
-        completed, pending = wait(self.pending_futures.keys(), return_when=FIRST_COMPLETED)
+        while True:
+            # we must use a timeout here to allow Python <3.3 to call
+            # its SIGINT handler
+            # see also http://stackoverflow.com/q/25676835
+            completed, pending = wait(
+                self.pending_futures.keys(),
+                return_when=FIRST_COMPLETED,
+                timeout=0.1,
+            )
+            if completed:
+                break
         future = completed.pop()
 
         start_time = self.pending_futures[future]['start_time']
