@@ -26,7 +26,7 @@ from .utils import cached_property, merge_dict
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, red, validate_name
-from .utils.ui import io
+from .utils.ui import io, QUIT_EVENT
 
 DIRNAME_BUNDLES = "bundles"
 DIRNAME_DATA = "data"
@@ -452,9 +452,13 @@ class Repository(object):
         self._node_metadata_partial.keys().
         """
         iterations = {}
-        while not iterations or max(iterations.values()) <= META_PROC_MAX_ITER:
+        while (
+            not iterations or max(iterations.values()) <= META_PROC_MAX_ITER
+        ) and not QUIT_EVENT.is_set():
             # First, get the static metadata out of the way
             for node_name in list(self._node_metadata_partial):
+                if QUIT_EVENT.is_set():
+                    break
                 node = self.get_node(node_name)
                 # check if static metadata for this node is already done
                 if node_name in self._node_metadata_static_complete:
@@ -480,6 +484,8 @@ class Repository(object):
             # in sequence until none of them return changed metadata.
             modified = False
             for node_name in list(self._node_metadata_partial):
+                if QUIT_EVENT.is_set():
+                    break
                 node = self.get_node(node_name)
                 with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
                     for metadata_processor in node.metadata_processors:
