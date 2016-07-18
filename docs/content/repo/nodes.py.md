@@ -95,6 +95,16 @@ May also be set at group level.
 
 <br>
 
+## os_version
+
+Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should by `(16, 4)`.
+
+Tuples of integers can be used for easy comparison of versions: `(12, 4) < (16, 4)`
+
+May also be set at group level.
+
+<br>
+
 ## use_shadow_passwords
 
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>

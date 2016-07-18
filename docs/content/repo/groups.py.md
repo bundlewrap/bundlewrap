@@ -112,6 +112,12 @@ See [node attribute documentation](nodes.py.md#os). May be overridden by subgrou
 
 <br>
 
+## os_version
+
+See [node attribute documentation](nodes.py.md#os_version). May be overridden by subgroups or individual nodes.
+
+<br>
+
 ## subgroups
 
 A tuple or list of group names whose members should be recursively included in this group.
