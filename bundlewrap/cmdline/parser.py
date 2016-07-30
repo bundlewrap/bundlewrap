@@ -71,7 +71,7 @@ def build_parser_bw():
         action='store_true',
         default=False,
         dest='force',
-        help=_("ignore existing node locks"),
+        help=_("ignore existing hard node locks"),
     )
     parser_apply.add_argument(
         "-i",
