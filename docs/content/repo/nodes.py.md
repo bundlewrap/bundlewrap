@@ -94,7 +94,9 @@ You are restricted to using only the following types in metadata:
 
 ### os
 
-Currently, only the default value of "linux" is supported. Your mileage may vary for "macos" or "openbsd".
+Defaults to `"linux"`.
+
+A list of supported OSes can be obtained with `bw debug -n ANY_NODE_NAME -c "print(node.OS_KNOWN)"`.
 
 <br>
 
