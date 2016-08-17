@@ -73,7 +73,7 @@ Cannot be set at group level.
 
 ### metadata
 
-This can be a dictionary of arbitrary data. You can access it from your templates as `node.metadata`. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the [group level](groups.py.md#metadata), but node metadata has higher priority.
+This can be a dictionary of arbitrary data (some type restrictions apply). You can access it from your templates as `node.metadata`. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the [group level](groups.py.md#metadata), but node metadata has higher priority.
 
 You are restricted to using only the following types in metadata:
 
