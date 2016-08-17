@@ -100,7 +100,7 @@ Currently, only the default value of "linux" is supported. Your mileage may vary
 
 ### os_version
 
-Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should by `(16, 4)`.
+Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should be `(16, 4)`.
 
 Tuples of integers can be used for easy comparison of versions: `(12, 4) < (16, 4)`
 
