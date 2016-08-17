@@ -542,6 +542,8 @@ class Node(object):
             remote_path,
             local_path,
             add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
+            wrapper_inner=self.cmd_wrapper_inner,
+            wrapper_outer=self.cmd_wrapper_outer,
         )
 
     def get_item(self, item_id):
@@ -612,9 +614,11 @@ class Node(object):
         return operations.run(
             self.hostname,
             command,
-            ignore_failure=may_fail,
             add_host_keys=add_host_keys,
+            ignore_failure=may_fail,
             log_function=log_function,
+            wrapper_inner=self.cmd_wrapper_inner,
+            wrapper_outer=self.cmd_wrapper_outer,
         )
 
     def test(self, ignore_missing_faults=False, workers=4):
@@ -636,10 +640,12 @@ class Node(object):
             self.hostname,
             local_path,
             remote_path,
+            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
+            group=group,
             mode=mode,
             owner=owner,
-            group=group,
-            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
+            wrapper_inner=self.cmd_wrapper_inner,
+            wrapper_outer=self.cmd_wrapper_outer,
         )
 
     def verify(self, show_all=False, workers=4):

@@ -43,32 +43,37 @@ This section is a reference for all possible attributes you can define for a nod
 	        # THIS PART IS EXPLAINED HERE
 	    },
 	}
-<br>
 
-## bundles
-
-A list of [bundle names](bundles.md) to be assigned to this node.
+All attributes can also be set at the group level, unless noted otherwise.
 
 <br>
 
-## dummy
+## Regular attributes
+
+### bundles
+
+A list of [bundle names](bundles.md) to be assigned to this node. Bundles set at [group level](groups.py.md) will be added.
+
+<br>
+
+### dummy
 
 Set this to `True` to prevent BundleWrap from creating items for and connecting to this node. This is useful for unmanaged nodes because you can still assign them bundles and metadata like regular nodes and access that from managed nodes (e.g. for monitoring).
 
-May also be set at group level.
-
 <br>
 
-## hostname
+### hostname
 
 A string used as a DNS name when connecting to this node. May also be an IP address.
 
 <div class="alert">The username and SSH private key for connecting to the node cannot be configured in BundleWrap. If you need to customize those, BundleWrap will honor your <code>~/.ssh/config</code>.</div>
 
+Cannot be set at group level.
 
-## metadata
 
-This can be a dictionary of arbitrary data. You can access it from your templates as `node.metadata`. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the [group level](groups.py.md), but node metadata has higher priority.
+### metadata
+
+This can be a dictionary of arbitrary data. You can access it from your templates as `node.metadata`. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the [group level](groups.py.md#metadata), but node metadata has higher priority.
 
 You are restricted to using only the following types in metadata:
 
@@ -87,28 +92,40 @@ You are restricted to using only the following types in metadata:
 
 <br>
 
-## os
+### os
 
 Currently, only the default value of "linux" is supported. Your mileage may vary for "macos" or "openbsd".
 
-May also be set at group level.
-
 <br>
 
-## os_version
+### os_version
 
 Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should by `(16, 4)`.
 
 Tuples of integers can be used for easy comparison of versions: `(12, 4) < (16, 4)`
 
-May also be set at group level.
+<br>
+
+## OS compatibility overrides
+
+### cmd_wrapper_outer
+
+Used whenever a command needs to be run on a node. Defaults to `"sudo sh -c {}"`. `{}` will be replaced by the quoted command to be run (after `cmd_wrapper_inner` has been applied).
+
+You will need to override this if you're not using `sudo` to gain root privileges (e.g. `doas`) on the node.
 
 <br>
 
-## use_shadow_passwords
+### cmd_wrapper_inner
+
+Used whenever a command needs to be run on a node. Defaults to `"export LANG=C; {}"`. `{}` will be replaced by the command to be run.
+
+You will need to override this if the shell on your node sets environment variables differently.
+
+<br>
+
+### use_shadow_passwords
 
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 
 This setting will affect how the [user item](../items/user.md) item operates. If set to `False`, password hashes will be written directly to `/etc/passwd` and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as `master.shadow` is always used.
-
-May also be set at group level.

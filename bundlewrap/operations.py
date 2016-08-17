@@ -36,7 +36,14 @@ def output_thread_body(line_buffer, read_fd, quit_event, read_until_eof):
             return
 
 
-def download(hostname, remote_path, local_path, add_host_keys=False):
+def download(
+    hostname,
+    remote_path,
+    local_path,
+    add_host_keys=False,
+    wrapper_inner="{}",
+    wrapper_outer="{}",
+):
     """
     Download a file.
     """
@@ -47,6 +54,8 @@ def download(hostname, remote_path, local_path, add_host_keys=False):
         hostname,
         "cat {}".format(quote(remote_path)),  # See issue #39.
         add_host_keys=add_host_keys,
+        wrapper_inner=wrapper_inner,
+        wrapper_outer=wrapper_outer,
     )
 
     if result.return_code == 0:
@@ -77,7 +86,15 @@ class RunResult(object):
         return force_text(self.stdout)
 
 
-def run(hostname, command, ignore_failure=False, add_host_keys=False, log_function=None):
+def run(
+    hostname,
+    command,
+    add_host_keys=False,
+    ignore_failure=False,
+    log_function=None,
+    wrapper_inner="{}",
+    wrapper_outer="{}",
+):
     """
     Runs a command on a remote system.
     """
@@ -87,8 +104,6 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     # Does nothing when log_function is None.
     stderr_lb = LineBuffer(log_function)
     stdout_lb = LineBuffer(log_function)
-
-    io.debug("running on {host}: {command}".format(command=command, host=hostname))
 
     # Create pipes which will be used by the SSH child process. We do
     # not use subprocess.PIPE because we need to be able to continuously
@@ -110,7 +125,9 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     if extra_args:
         ssh_command.extend(split(extra_args))
     ssh_command.append(hostname)
-    ssh_command.append("sudo sh -c " + quote("export LANG=C; " + command))
+    ssh_command.append(wrapper_outer.format(quote(wrapper_inner.format(command))))
+    io.debug("running: {}".format(" ".join(ssh_command)))
+
     ssh_process = Popen(
         ssh_command,
         preexec_fn=setpgrp,
@@ -186,8 +203,17 @@ def run(hostname, command, ignore_failure=False, add_host_keys=False, log_functi
     return result
 
 
-def upload(hostname, local_path, remote_path, mode=None, owner="",
-           group="", add_host_keys=False):
+def upload(
+    hostname,
+    local_path,
+    remote_path,
+    add_host_keys=False,
+    group="",
+    mode=None,
+    owner="",
+    wrapper_inner="{}",
+    wrapper_outer="{}",
+):
     """
     Upload a file.
     """
@@ -232,6 +258,8 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
                 quote(temp_filename),
             ),
             add_host_keys=add_host_keys,
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
         )
 
     if mode:
@@ -242,6 +270,8 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
                 quote(temp_filename),
             ),
             add_host_keys=add_host_keys,
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
         )
 
     run(
@@ -251,4 +281,6 @@ def upload(hostname, local_path, remote_path, mode=None, owner="",
             quote(remote_path),
         ),
         add_host_keys=add_host_keys,
+        wrapper_inner=wrapper_inner,
+        wrapper_outer=wrapper_outer,
     )

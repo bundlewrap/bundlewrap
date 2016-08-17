@@ -10,6 +10,8 @@ from .utils.text import mark_for_translation as _, validate_name
 
 
 GROUP_ATTR_DEFAULTS = {
+    'cmd_wrapper_inner': "export LANG=C; {}",
+    'cmd_wrapper_outer': "sudo sh -c {}",
     'dummy': False,
     'os': 'linux',
     # Setting os_version to 0 by default will probably yield less
