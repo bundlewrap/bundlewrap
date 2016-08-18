@@ -53,19 +53,22 @@ class NodeLock(object):
                                     warning=red(_("WARNING")),
                                 ))
                                 info = {}
+                        expired = False
                         try:
                             d = info['date']
                         except KeyError:
                             info['date'] = _("<unknown>")
                             info['duration'] = _("<unknown>")
                         else:
+                            duration = datetime.now() - datetime.fromtimestamp(d)
                             info['date'] = format_timestamp(d)
-                            info['duration'] = format_duration(
-                                datetime.now() - datetime.fromtimestamp(d)
-                            )
+                            info['duration'] = format_duration(duration)
+                            if duration > parse_duration(environ.get('BW_HARDLOCK_EXPIRY', "8h")):
+                                expired = True
+                                io.debug("ignoring expired hard lock on {}".format(self.node.name))
                         if 'user' not in info:
                             info['user'] = _("<unknown>")
-                        if self.ignore or (self.interactive and io.ask(
+                        if expired or self.ignore or (self.interactive and io.ask(
                             self._warning_message_hard(info),
                             False,
                             epilogue=blue("?") + " " + bold(self.node.name),
