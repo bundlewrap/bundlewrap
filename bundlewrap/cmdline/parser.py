@@ -175,6 +175,14 @@ def build_parser_bw():
         help=_("instead show the data this hash is derived from"),
     )
     parser_hash.add_argument(
+        "-g",
+        "--group",
+        action='store_true',
+        default=False,
+        dest='group_membership',
+        help=_("hash group membership instead of configuration"),
+    )
+    parser_hash.add_argument(
         "-m",
         "--metadata",
         action='store_true',

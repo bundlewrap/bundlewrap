@@ -386,6 +386,9 @@ class Node(object):
                 return True
         return False
 
+    def group_membership_hash(self):
+        return hash_statedict(sorted(names(self.groups)))
+
     @cached_property
     def groups(self):
         return self.repo.groups_for_node(self)

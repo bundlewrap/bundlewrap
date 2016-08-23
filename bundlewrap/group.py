@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import re
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
-from .utils import cached_property
+from .utils import cached_property, names
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
 
@@ -73,6 +73,9 @@ class Group(object):
         for node in self.nodes:
             group_dict[node.name] = node.hash()
         return group_dict
+
+    def group_membership_hash(self):
+        return hash_statedict(sorted(names(self.nodes)))
 
     def hash(self):
         return hash_statedict(self.cdict)
