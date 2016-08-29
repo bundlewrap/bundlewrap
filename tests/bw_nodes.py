@@ -67,6 +67,15 @@ def test_groups(tmpdir):
             "group1": {
                 'members': ["node2"],
             },
+            "group2": {
+                'members': ["node1"],
+            },
+            "group3": {
+                'subgroup_patterns': ["p2"],
+            },
+            "group4": {
+                'subgroups': ["group1"],
+            },
         },
         nodes={
             "node1": {},
@@ -75,7 +84,7 @@ def test_groups(tmpdir):
     )
     stdout, stderr, rcode = run("bw nodes --groups", path=str(tmpdir))
     assert stdout.decode().strip().split("\n") == [
-        "node1: ",
-        "node2: group1",
+        "node1: group2, group3",
+        "node2: group1, group4",
     ]
     assert stderr == b""

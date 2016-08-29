@@ -50,8 +50,9 @@ class Group(object):
         self.name = group_name
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
+        self.immediate_subgroup_patterns = infodict.get('subgroup_patterns', [])
         self.metadata = infodict.get('metadata', {})
-        self.patterns = infodict.get('member_patterns', [])
+        self.node_patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
 
         for attr in GROUP_ATTR_DEFAULTS:
@@ -116,7 +117,7 @@ class Group(object):
 
     @property
     def _nodes_from_patterns(self):
-        for pattern in self.patterns:
+        for pattern in self.node_patterns:
             compiled_pattern = re.compile(pattern)
             for node in self.repo.nodes:
                 if not compiled_pattern.search(node.name) is None:
@@ -126,7 +127,14 @@ class Group(object):
         """
         Recursively finds subgroups and checks for loops.
         """
-        for name in self.immediate_subgroup_names:
+        names_from_patterns = []
+        for pattern in self.immediate_subgroup_patterns:
+            compiled_pattern = re.compile(pattern)
+            for group in self.repo.groups:
+                if compiled_pattern.search(group.name) is not None and group != self:
+                    names_from_patterns.append(group.name)
+
+        for name in list(self.immediate_subgroup_names) + names_from_patterns:
             if name not in visited_names:
                 try:
                     group = self.repo.get_group(name)

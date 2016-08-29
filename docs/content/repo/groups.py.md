@@ -33,6 +33,7 @@ This section is a reference for all possible attributes you can define for a gro
 	         'metadata': {'foo': "bar"},
 	         'os': 'linux',
 	         'subgroups': ["group2", "group3"],
+	         'subgroup_patterns': [r"^group.*pattern$"],
 	     },
 	}
 
@@ -114,6 +115,14 @@ See [node attribute documentation](nodes.py.md#os). May be overridden by subgrou
 ## subgroups
 
 A tuple or list of group names whose members should be recursively included in this group.
+
+<br>
+
+## subgroup_patterns
+
+A list of regular expressions. Nodes in with group names matching these expressions will be added to the group members.
+
+Matches are determined using [the search() method](http://docs.python.org/2/library/re.html#re.RegexObject.search).
 
 <br>
 
