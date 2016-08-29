@@ -131,7 +131,7 @@ class Group(object):
         for pattern in self.immediate_subgroup_patterns:
             compiled_pattern = re.compile(pattern)
             for group in self.repo.groups:
-                if not compiled_pattern.search(group.name) is None:
+                if compiled_pattern.search(group.name) is not None and group != self:
                     names_from_patterns.append(group.name)
 
         for name in list(self.immediate_subgroup_names) + names_from_patterns:
