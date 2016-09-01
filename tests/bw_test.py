@@ -388,3 +388,26 @@ def test_group_metadata_collision_set_ok(tmpdir):
         },
     )
     assert run("bw test", path=str(tmpdir))[2] == 0
+
+
+def test_fault_missing(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "files": {
+                    "/foo": {
+                        'content_type': 'mako',
+                        'content': "${repo.vault.decrypt('bzzt', key='unavailable')}",
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test --ignore-missing-faults", path=str(tmpdir))[2] == 0

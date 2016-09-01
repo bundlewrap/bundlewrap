@@ -24,7 +24,10 @@ def bw_test(repo, args):
         return {
             'target': node.test,
             'task_id': node.name,
-            'kwargs': {'workers': args['item_workers']},
+            'kwargs': {
+                'ignore_missing_faults': args['ignore_missing_faults'],
+                'workers': args['item_workers'],
+            },
         }
 
     worker_pool = WorkerPool(

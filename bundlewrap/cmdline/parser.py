@@ -671,6 +671,13 @@ def build_parser_bw():
         dest='plugin_conflict_error',
         help=_("check for local modifications to files installed by plugins"),
     )
+    parser_test.add_argument(
+        "-i",
+        "--ignore-missing-faults",
+        action='store_true',
+        dest='ignore_missing_faults',
+        help=_("do not fail when encountering a missing Fault"),
+    )
     bw_test_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_test.add_argument(
         "-p",

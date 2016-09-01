@@ -14,6 +14,7 @@ from .deps import (
     find_item,
 )
 from .exceptions import (
+    FaultUnavailable,
     ItemDependencyError,
     NodeLockedException,
     NoSuchBundle,
@@ -586,7 +587,7 @@ class Node(object):
             log_function=log_function,
         )
 
-    def test(self, workers=4):
+    def test(self, ignore_missing_faults=False, workers=4):
         with io.job(_("  {node}  checking for metadata collisions...").format(node=self.name)):
             check_for_unsolvable_metadata_key_conflicts(self)
         io.stdout(_("{x} {node}  has no metadata collisions").format(
@@ -594,7 +595,7 @@ class Node(object):
             node=bold(self.name),
         ))
         if self.items:
-            test_items(self, workers=workers)
+            test_items(self, ignore_missing_faults=ignore_missing_faults, workers=workers)
         else:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
 
@@ -666,7 +667,7 @@ for attr, default in GROUP_ATTR_DEFAULTS.items():
     setattr(Node, attr, build_attr_property(attr, default))
 
 
-def test_items(node, workers=1):
+def test_items(node, ignore_missing_faults=False, workers=1):
     item_queue = ItemTestQueue(node.items)
 
     def tasks_available():
@@ -698,15 +699,23 @@ def test_items(node, workers=1):
 
     def handle_exception(task_id, exception, traceback):
         node_name, bundle_name, item_id = task_id.split(":", 2)
-        io.stderr("{x} {node}  {bundle}  {item}".format(
-            bundle=bold(bundle_name),
-            item=item_id,
-            node=bold(node_name),
-            x=red("!"),
-        ))
-        io.stderr(traceback)
-        io.stderr("{}: {}".format(type(exception), str(exception)))
-        exit(1)
+        if ignore_missing_faults and isinstance(exception, FaultUnavailable):
+            io.stderr(_("{x} {node}  {bundle}  {item}  (Fault missing)").format(
+                bundle=bold(bundle_name),
+                item=item_id,
+                node=bold(node_name),
+                x=yellow("!"),
+            ))
+        else:
+            io.stderr("{x} {node}  {bundle}  {item}".format(
+                bundle=bold(bundle_name),
+                item=item_id,
+                node=bold(node_name),
+                x=red("!"),
+            ))
+            io.stderr(traceback)
+            io.stderr("{}: {}".format(type(exception), str(exception)))
+            exit(1)
 
     worker_pool = WorkerPool(
         tasks_available,
