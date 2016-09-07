@@ -452,7 +452,6 @@ class Repository(object):
         self._node_metadata_partial.keys().
         """
         iterations = {}
-        static_metadata_generated_for = set()
         while (
             not iterations or max(iterations.values()) <= META_PROC_MAX_ITER
         ) and not QUIT_EVENT.is_set():
@@ -480,7 +479,6 @@ class Repository(object):
                         self._node_metadata_partial[node.name],
                         node._node_metadata,
                     )
-                static_metadata_generated_for.add(node_name)
 
             # Now for the interesting part: We run all metadata processors
             # in sequence until none of them return changed metadata.
@@ -509,7 +507,7 @@ class Repository(object):
                             iterations[(node.name, metadata_processor.__name__)] += 1
                             modified = True
             if not modified:
-                if static_metadata_generated_for != set(self._node_metadata_partial.keys()):
+                if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
                     # During metadata processor execution, partial metadata may
                     # have been requested for nodes we did not previously
                     # consider. Since partial metadata may defaults to
