@@ -12,6 +12,11 @@ You can also use `bw -a ...` to achieve the same effect.
 Colors are enabled by default. Setting this variable to `0` tells BundleWrap to never use any ANSI color escape sequences.
 
 
+## `BW_HARDLOCK_EXPIRY`
+
+[Hard locks](locks.md) are automatically ignored after some time. By default, it's `"8h"`. You can use this variable to override that default.
+
+
 ## `BW_IDENTITY`
 
 When BundleWrap [locks](locks.md) a node, it stores a short description about "you". By default, this is the string `$USER@$HOSTNAME`, e.g. `john@mymachine`. You can use `BW_IDENTITY` to specify a custom string. (No variables will be evaluated in user supplied strings.)
@@ -30,7 +35,7 @@ Note that you should not set these variables to very high values. First, it can 
 
 ## `BW_SOFTLOCK_EXPIRY`
 
-[Soft locks](locks.md) are automatically removed from nodes after some time. By default, it's eight hours. You can use this variable to override that default.
+[Soft locks](locks.md) are automatically removed from nodes after some time. By default, it's `"8h"`. You can use this variable to override that default.
 
 
 ## `BW_SSH_ARGS`
