@@ -22,7 +22,7 @@ from .group import Group
 from .metadata import deepcopy_metadata
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
-from .utils import cached_property, merge_dict
+from .utils import cached_property, merge_dict, names
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import mark_for_translation as _, red, validate_name
@@ -358,6 +358,9 @@ class Repository(object):
             return self.node_dict[node_name]
         except KeyError:
             raise NoSuchNode(node_name)
+
+    def group_membership_hash(self):
+        return hash_statedict(sorted(names(self.groups)))
 
     @property
     def groups(self):

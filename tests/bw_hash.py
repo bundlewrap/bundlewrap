@@ -226,3 +226,107 @@ def test_metadata_repo_dict(tmpdir):
     stdout, stderr, rcode = run("bw hash -md", path=str(tmpdir))
     assert rcode == 0
     assert stdout == b"node1\t013b3a8199695eb45c603ea4e0a910148d80e7ed\n"
+
+
+def test_groups_repo(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {},
+            "group2": {},
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -g", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"479c737e191339e5fae20ac8a8903a75f6b91f4d\n"
+
+
+def test_groups_repo_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {},
+            "group2": {},
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -dg", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"group1\ngroup2\n"
+
+
+def test_groups(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {'members': ["node1", "node2"]},
+            "group2": {'members': ["node3"]},
+        },
+        nodes={
+            "node1": {},
+            "node2": {},
+            "node3": {},
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -g group1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"59f5a812acd22592b046b20e9afedc1cfcd37c77\n"
+
+
+def test_groups_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {'members': ["node1", "node2"]},
+            "group2": {'members': ["node3"]},
+        },
+        nodes={
+            "node1": {},
+            "node2": {},
+            "node3": {},
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -dg group1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"node1\nnode2\n"
+
+
+def test_groups_node(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {'members': ["node1", "node2"]},
+            "group2": {'members': ["node3"]},
+        },
+        nodes={
+            "node1": {},
+            "node2": {},
+            "node3": {},
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -g node1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"6f4615dc71426549e22df7961bd2b88ba95ad1fc\n"
+
+
+def test_groups_node_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {'members': ["node1", "node2"]},
+            "group2": {'members': ["node3"]},
+        },
+        nodes={
+            "node1": {},
+            "node2": {},
+            "node3": {},
+        },
+    )
+
+    stdout, stderr, rcode = run("bw hash -dg node1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"group1\n"
