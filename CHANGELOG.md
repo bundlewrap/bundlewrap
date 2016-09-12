@@ -1,3 +1,17 @@
+# 2.8.0
+
+2016-09-12
+
+* added `BW_HARDLOCK_EXPIRY` env var
+* added `bw hash --group`
+* added `subgroup_patterns`
+* added `bw test --ignore-missing-faults`
+* added `node.cmd_wrapper_inner` and `_outer`
+* added `node.os_version`
+* fixed exception handling under Python 2
+* fixed partial metadata not being completed in some cases
+
+
 # 2.7.1
 
 2016-07-15
