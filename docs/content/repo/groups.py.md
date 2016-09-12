@@ -37,17 +37,7 @@ This section is a reference for all possible attributes you can define for a gro
 	     },
 	}
 
-<br>
-
-## bundles
-
-A list of [bundle names](bundles.md) to be assigned to each node in this group.
-
-<br>
-
-## dummy
-
-See [node attribute documentation](nodes.py.md#dummy). May be overridden by subgroups or individual nodes.
+Note that many attributes from [nodes.py](nodes.py.md) (e.g. `bundles`) may also be set at group level, but aren't explicitly documented here again.
 
 <br>
 
@@ -103,12 +93,6 @@ The NTP servers are appended: a node in both groups will have all three nameserv
 <div class="alert alert-warning">BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order. <code>bw test</code> will report conflicting metadata in independent groups as a metadata collision.</div>
 
 <div class="alert alert-info">Also see the <a href="../nodes.py#metadata">documentation for node.metadata</a> for more information.</div>
-
-<br>
-
-## os
-
-See [node attribute documentation](nodes.py.md#os). May be overridden by subgroups or individual nodes.
 
 <br>
 

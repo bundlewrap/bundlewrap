@@ -10,8 +10,25 @@ from .utils.text import mark_for_translation as _, validate_name
 
 
 GROUP_ATTR_DEFAULTS = {
+    'cmd_wrapper_inner': "export LANG=C; {}",
+    'cmd_wrapper_outer': "sudo sh -c {}",
     'dummy': False,
     'os': 'linux',
+    # Setting os_version to 0 by default will probably yield less
+    # surprises than setting it to max_int. Users will probably
+    # start at a certain version and then gradually update their
+    # systems, adding conditions like this:
+    #
+    #   if node.os_version >= (2,):
+    #       new_behavior()
+    #   else:
+    #       old_behavior()
+    #
+    # If we set os_version to max_int, nodes without an explicit
+    # os_version would automatically adopt the new_behavior() as
+    # soon as it appears in the repo - which is probably not what
+    # people want.
+    'os_version': (0,),
     'use_shadow_passwords': True,
 }
 
