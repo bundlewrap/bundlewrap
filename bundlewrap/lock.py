@@ -94,8 +94,9 @@ class NodeLock(object):
             result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
 
         if result.return_code != 0:
-            io.stderr(_("Could not release hard lock for node '{node}'").format(
-                node=self.node.name,
+            io.stderr(_("{x} {node}  could not release hard lock").format(
+                node=bold(self.node.name),
+                x=red("!"),
             ))
 
     def _warning_message_hard(self, info):
