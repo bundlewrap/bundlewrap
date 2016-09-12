@@ -23,10 +23,6 @@ For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and
 <a href="https://pypi.python.org/pypi/bundlewrap/">
     <img src="http://img.shields.io/pypi/pyversions/bundlewrap.svg" alt="Python compatibility">
 </a>
-&nbsp;
-<a href="https://pypi.python.org/pypi/bundlewrap/">
-    <img src="http://img.shields.io/pypi/l/bundlewrap.svg" alt="License">
-</a>
 
 ------------------------------------------------------------------------
 
