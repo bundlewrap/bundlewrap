@@ -29,3 +29,9 @@ Directory mode as returned by `stat -c %a <directory>`. Defaults to `None` (don'
 ### owner
 
 Username of the directory's owner. Defaults to `None` (don't care about owner).
+
+<br>
+
+### purge
+
+Set this to `True` to remove everything from this directory that is not managed by BundleWrap. Defaults to `False`.
