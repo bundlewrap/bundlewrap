@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from os import makedirs
 from os.path import dirname, exists, join
 
+from ..utils.cmdline import get_node
 from ..utils.text import force_text, mark_for_translation as _
 from ..utils.ui import io
 
@@ -21,7 +22,7 @@ def write_preview(file_item, base_path):
 
 
 def bw_items(repo, args):
-    node = repo.get_node(args['node'])
+    node = get_node(repo, args['node'])
     if args['file_preview']:
         item = node.get_item("file:{}".format(args['file_preview']))
         if (

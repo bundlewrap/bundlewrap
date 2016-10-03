@@ -1,9 +1,45 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from sys import exit
 
-from ..exceptions import NoSuchNode, NoSuchGroup, UsageException
+from ..exceptions import NoSuchNode, NoSuchGroup
 from . import names
-from .text import mark_for_translation as _
+from .text import mark_for_translation as _, red
+from .ui import io
+
+
+def get_group(repo, group_name):
+    try:
+        return repo.get_group(group_name)
+    except NoSuchGroup:
+        io.stderr(_("{x} No such group: {group}").format(
+            group=group_name,
+            x=red("!!!"),
+        ))
+        exit(1)
+
+
+def get_item(node, item_id):
+    try:
+        return node.get_item(item_id)
+    except NoSuchGroup:
+        io.stderr(_("{x} No such item on node '{node}': {item}").format(
+            item=item_id,
+            node=node.name,
+            x=red("!!!"),
+        ))
+        exit(1)
+
+
+def get_node(repo, node_name):
+    try:
+        return repo.get_node(node_name)
+    except NoSuchNode:
+        io.stderr(_("{x} No such node: {node}").format(
+            node=node_name,
+            x=red("!!!"),
+        ))
+        exit(1)
 
 
 def get_target_nodes(repo, target_string):
@@ -40,7 +76,9 @@ def get_target_nodes(repo, target_string):
                 try:
                     targets += list(repo.get_group(name).nodes)
                 except NoSuchGroup:
-                    raise UsageException(_(
-                        "unable to find group or node named '{}'"
-                    ).format(name))
+                    io.stderr(_("{x} No such node or group: {name}").format(
+                        x=red("!!!"),
+                        name=name,
+                    ))
+                    exit(1)
     return sorted(set(targets))

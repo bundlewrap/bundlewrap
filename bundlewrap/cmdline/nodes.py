@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from ..utils import names
 from ..utils.text import bold
+from ..utils.cmdline import get_group
 from ..group import GROUP_ATTR_DEFAULTS
 
 
@@ -11,7 +12,7 @@ ATTR_MAX_LENGTH = max([len(attr) for attr in GROUP_ATTR_DEFAULTS])
 
 def bw_nodes(repo, args):
     if args['filter_group'] is not None:
-        nodes = repo.get_group(args['filter_group']).nodes
+        nodes = get_group(repo, args['filter_group']).nodes
     else:
         nodes = repo.nodes
     max_node_name_length = 0 if not nodes else max([len(name) for name in names(nodes)])

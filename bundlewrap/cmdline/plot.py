@@ -3,10 +3,12 @@ from __future__ import unicode_literals
 
 from ..deps import prepare_dependencies
 from ..utils import graph_for_items, names
+from ..utils.cmdline import get_group, get_node
 
 
 def bw_plot_group(repo, args):
-    group = repo.get_group(args['group']) if args['group'] else None
+    group = get_group(repo, args['group']) if args['group'] else None
+
     if args['show_nodes']:
         nodes = group.nodes if group else repo.nodes
     else:
@@ -54,7 +56,7 @@ def bw_plot_group(repo, args):
 
 
 def bw_plot_node(repo, args):
-    node = repo.get_node(args['node'])
+    node = get_node(repo, args['node'])
     for line in graph_for_items(
         node.name,
         prepare_dependencies(node.items),
@@ -69,7 +71,7 @@ def bw_plot_node(repo, args):
 
 
 def bw_plot_node_groups(repo, args):
-    node = repo.get_node(args['node'])
+    node = get_node(repo, args['node'])
 
     yield "digraph bundlewrap"
     yield "{"

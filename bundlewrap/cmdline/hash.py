@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from ..exceptions import NoSuchNode
+from ..utils.cmdline import get_group, get_item
 from ..utils.text import mark_for_translation as _, red
 
 
@@ -24,11 +25,11 @@ def bw_hash(repo, args):
             target = repo.get_node(args['node_or_group'])
             target_type = 'node'
         except NoSuchNode:
-            target = repo.get_group(args['node_or_group'])
+            target = get_group(repo, args['node_or_group'])
             target_type = 'group'
         else:
             if args['item']:
-                target = target.get_item(args['item'])
+                target = get_item(target, args['item'])
                 target_type = 'item'
     else:
         target = repo
