@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from sys import exit
+
 from ..exceptions import NoSuchNode
 from ..utils.cmdline import get_group, get_item
 from ..utils.text import mark_for_translation as _, red
+from ..utils.ui import io
 
 
 def bw_hash(repo, args):
     if args['group_membership'] and args['metadata']:
-        yield _("cannot hash group membership and metadata at the same  time")
-        yield 1
-        raise StopIteration()
+        io.stdout(_(
+            "{x} Cannot hash group membership and metadata at the same time").format(x=red("!!!")
+        ))
+        exit(1)
     if args['group_membership'] and args['item']:
-        yield _("cannot hash group membership for an item")
-        yield 1
-        raise StopIteration()
+        io.stdout(_("{x} Cannot hash group membership for an item").format(x=red("!!!")))
+        exit(1)
     if args['item'] and args['metadata']:
-        yield _("items don't have metadata")
-        yield 1
-        raise StopIteration()
+        io.stdout(_("{x} Items don't have metadata").format(x=red("!!!")))
+        exit(1)
 
     if args['node_or_group']:
         try:
@@ -36,36 +38,34 @@ def bw_hash(repo, args):
         target_type = 'repo'
 
     if target_type == 'node' and args['dict'] and args['metadata']:
-        yield _("cannot show a metadata dict for a single node")
-        yield 1
-        raise StopIteration()
+        io.stdout(_("{x} Cannot show a metadata dict for a single node").format(x=red("!!!")))
+        exit(1)
     if target_type == 'group' and args['item']:
-        yield _("{x} Cannot select item for group").format(x=red("!!!"))
-        yield 1
-        raise StopIteration()
+        io.stdout(_("{x} Cannot select item for group").format(x=red("!!!")))
+        exit(1)
 
     if args['dict']:
         if args['group_membership']:
             if target_type in ('node', 'repo'):
                 for group in target.groups:
-                    yield group.name
+                    io.stdout(group.name)
             else:
                 for node in target.nodes:
-                    yield node.name
+                    io.stdout(node.name)
         elif args['metadata']:
             for node in target.nodes:
-                yield "{}\t{}".format(node.name, node.metadata_hash())
+                io.stdout("{}\t{}".format(node.name, node.metadata_hash()))
         else:
             cdict = target.cached_cdict if args['item'] else target.cdict
             if cdict is None:
-                yield "REMOVE"
+                io.stdout("REMOVE")
             else:
                 for key, value in sorted(cdict.items()):
-                    yield "{}\t{}".format(key, value) if args['item'] else "{}  {}".format(value, key)
+                    io.stdout("{}\t{}".format(key, value) if args['item'] else "{}  {}".format(value, key))
     else:
         if args['group_membership']:
-            yield target.group_membership_hash()
+            io.stdout(target.group_membership_hash())
         elif args['metadata']:
-            yield target.metadata_hash()
+            io.stdout(target.metadata_hash())
         else:
-            yield target.hash()
+            io.stdout(target.hash())

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from ..utils.text import mark_for_translation as _
+from ..utils.ui import io
 
 ZEN = _("""
       ,
@@ -37,5 +38,4 @@ ZEN = _("""
 """)
 
 def bw_zen(repo, args):
-    for line in ZEN.split("\n"):
-        yield line
+    io.stdout(ZEN)

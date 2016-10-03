@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+from sys import exit
 
 from ..concurrency import WorkerPool
 from ..utils.cmdline import get_target_nodes
@@ -88,4 +89,4 @@ def bw_apply(repo, args):
         duration=datetime.now() - start_time,
     )
 
-    yield 1 if errors else 0
+    exit(1 if errors else 0)

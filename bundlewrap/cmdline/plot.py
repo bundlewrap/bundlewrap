@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from ..deps import prepare_dependencies
 from ..utils import graph_for_items, names
 from ..utils.cmdline import get_group, get_node
+from ..utils.ui import io
 
 
 def bw_plot_group(repo, args):
@@ -20,6 +21,11 @@ def bw_plot_group(repo, args):
     else:
         groups = repo.groups
 
+    for line in plot_group(groups, nodes, args['show_nodes']):
+        io.stdout(line)
+
+
+def plot_group(groups, nodes, show_nodes):
     yield "digraph bundlewrap"
     yield "{"
 
@@ -42,7 +48,7 @@ def bw_plot_group(repo, args):
         for subgroup in group.immediate_subgroup_names:
             yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
 
-    if args['show_nodes']:
+    if show_nodes:
         for group in groups:
             for node in group._nodes_from_static_members:
                 yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
@@ -67,12 +73,16 @@ def bw_plot_node(repo, args):
         reverse=args['depends_reverse'],
         auto=args['depends_auto'],
     ):
-        yield line
+        io.stdout(line)
 
 
 def bw_plot_node_groups(repo, args):
     node = get_node(repo, args['node'])
+    for line in plot_node_groups(node):
+        io.stdout(line)
 
+
+def plot_node_groups(node):
     yield "digraph bundlewrap"
     yield "{"
 

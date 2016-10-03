@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from sys import exit
+
 from ..concurrency import WorkerPool
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import error_summary, mark_for_translation as _
@@ -40,25 +42,25 @@ def stats_summary(node_stats):
         overall_health = 0
 
     if len(node_ranking) == 1:
-        yield _("node health:  {health:.1f}%  ({good}/{total} OK)").format(
+        io.stdout(_("node health:  {health:.1f}%  ({good}/{total} OK)").format(
             good=node_ranking[0][2],
             health=node_ranking[0][0],
             total=node_ranking[0][3],
-        )
+        ))
     else:
-        yield _("node health:")
+        io.stdout(_("node health:"))
         for health, node_name, good, total in node_ranking:
-            yield _("  {health}%  {node_name}  ({good}/{total} OK)").format(
+            io.stdout(_("  {health}%  {node_name}  ({good}/{total} OK)").format(
                 good=good,
                 health="{:.1f}".format(health).rjust(5, " "),
                 node_name=node_name,
                 total=total,
-            )
-        yield _("overall:  {health:.1f}%  ({good}/{total} OK)").format(
+            ))
+        io.stdout(_("overall:  {health:.1f}%  ({good}/{total} OK)").format(
             good=total_good,
             health=overall_health,
             total=total_items,
-        )
+        ))
 
 
 def bw_verify(repo, args):
@@ -105,8 +107,8 @@ def bw_verify(repo, args):
 
     if args['summary']:
         for line in stats_summary(node_stats):
-            yield line
+            io.stdout(line)
 
     error_summary(errors)
 
-    yield 1 if errors else 0
+    exit(1 if errors else 0)

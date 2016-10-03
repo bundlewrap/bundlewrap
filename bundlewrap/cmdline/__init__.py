@@ -146,18 +146,4 @@ def main(*args, **kwargs):
     # convert all string args into text
     text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}
 
-    output = pargs.func(repo, text_pargs)
-    if output is None:
-        output = ()
-
-    return_code = 0
-
-    for line in output:
-        if isinstance(line, int):
-            return_code = line
-            break
-        else:
-            io.stdout(line)
-
-    if return_code != 0:  # not raising SystemExit every time to ease testing
-        exit(return_code)
+    pargs.func(repo, text_pargs)

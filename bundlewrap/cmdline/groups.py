@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from ..utils import names
+from ..utils.ui import io
 
 
 def bw_groups(repo, args):
@@ -9,4 +10,4 @@ def bw_groups(repo, args):
         line = group.name
         if args['show_nodes']:
             line += ": " + ", ".join(names(group.nodes))
-        yield line
+        io.stdout(line)

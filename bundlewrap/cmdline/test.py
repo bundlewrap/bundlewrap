@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from copy import copy
+from sys import exit
 
 from ..concurrency import WorkerPool
 from ..plugins import PluginManager
@@ -44,10 +45,10 @@ def bw_test(repo, args):
             continue
         with io.job(_("  {group}  checking for subgroup loops...").format(group=group.name)):
             checked_groups.extend(group.subgroups)  # the subgroups property has the check built in
-        yield _("{x} {group}  has no subgroup loops").format(
+        io.stdout(_("{x} {group}  has no subgroup loops").format(
             x=green("✓"),
             group=bold(group.name),
-        )
+        ))
 
     # check for plugin inconsistencies
     if args['plugin_conflict_error']:
@@ -55,23 +56,22 @@ def bw_test(repo, args):
         for plugin, version in pm.list():
             local_changes = pm.local_modifications(plugin)
             if local_changes:
-                yield _("{x} Plugin '{plugin}' has local modifications:").format(
+                io.stderr(_("{x} Plugin '{plugin}' has local modifications:").format(
                     plugin=plugin,
                     x=red("✘"),
-                )
+                ))
                 for path, actual_checksum, should_checksum in local_changes:
-                    yield _("\t{path} ({actual_checksum}) should be {should_checksum}").format(
+                    io.stderr(_("\t{path} ({actual_checksum}) should be {should_checksum}").format(
                         actual_checksum=actual_checksum,
                         path=path,
                         should_checksum=should_checksum,
-                    )
-                yield 1
-                raise StopIteration()
+                    ))
+                exit(1)
             else:
-                yield _("{x} Plugin '{plugin}' has no local modifications.").format(
+                io.stdout(_("{x} Plugin '{plugin}' has no local modifications.").format(
                     plugin=plugin,
                     x=green("✓"),
-                )
+                ))
 
     if not args['target']:
         repo.hooks.test(repo)

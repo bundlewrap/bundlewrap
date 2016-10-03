@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from os import makedirs
 from os.path import dirname, exists, join
+from sys import exit
 
 from ..utils.cmdline import get_node
 from ..utils.text import force_text, mark_for_translation as _
@@ -32,7 +33,7 @@ def bw_items(repo, args):
             io.stderr(_(
                 "cannot preview {node} (unsuitable content_type or deleted)"
             ).format(node=node.name))
-            yield 1
+            exit(1)
         else:
             io.stdout(item.content.decode(item.attributes['encoding']), append_newline=False)
     elif args['file_preview_path']:
@@ -40,7 +41,7 @@ def bw_items(repo, args):
             io.stderr(_(
                 "not writing to existing path: {path}"
             ).format(path=args['file_preview_path']))
-            yield 1
+            exit(1)
         for item in node.items:
             if not item.id.startswith("file:"):
                 continue
@@ -59,14 +60,14 @@ def bw_items(repo, args):
                     "skipping file with 'delete' flag {filename}..."
                 ).format(filename=item.name))
                 continue
-            yield _("writing {path}...").format(path=join(
+            io.stdout(_("writing {path}...").format(path=join(
                 args['file_preview_path'],
                 item.name.lstrip("/"),
-            ))
+            )))
             write_preview(item, args['file_preview_path'])
     else:
         for item in node.items:
             if args['show_repr']:
-                yield force_text(repr(item))
+                io.stdout(force_text(repr(item)))
             else:
-                yield force_text(str(item))
+                io.stdout(force_text(str(item)))

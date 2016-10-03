@@ -2,8 +2,9 @@
 from __future__ import unicode_literals
 
 from ..utils import names
-from ..utils.text import bold
 from ..utils.cmdline import get_group
+from ..utils.text import bold
+from ..utils.ui import io
 from ..group import GROUP_ATTR_DEFAULTS
 
 
@@ -19,11 +20,11 @@ def bw_nodes(repo, args):
     for node in nodes:
         if args['show_attrs']:
             for attr in sorted(list(GROUP_ATTR_DEFAULTS) + ['hostname']):
-                yield "{}\t{}\t{}".format(
+                io.stdout("{}\t{}\t{}".format(
                     node.name.ljust(max_node_name_length),
                     bold(attr.ljust(ATTR_MAX_LENGTH)),
                     getattr(node, attr),
-                )
+                ))
             continue
         line = ""
         if args['show_hostnames']:
@@ -36,4 +37,4 @@ def bw_nodes(repo, args):
             line += ": " + ", ".join(sorted(names(node.groups)))
         elif args['show_os']:
             line += ": " + node.os
-        yield line
+        io.stdout(line)
