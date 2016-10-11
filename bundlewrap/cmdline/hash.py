@@ -24,7 +24,7 @@ def bw_hash(repo, args):
 
     if args['node_or_group']:
         try:
-            target = repo.get_node(args['node_or_group'])
+            target = repo.get_node(args['node_or_group'], adhoc_nodes=args['adhoc_nodes'])
             target_type = 'node'
         except NoSuchNode:
             target = get_group(repo, args['node_or_group'])

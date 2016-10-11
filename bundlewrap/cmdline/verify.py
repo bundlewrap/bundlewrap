@@ -66,7 +66,7 @@ def stats_summary(node_stats):
 def bw_verify(repo, args):
     errors = []
     node_stats = {}
-    pending_nodes = get_target_nodes(repo, args['target'])
+    pending_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
 
     def tasks_available():
         return bool(pending_nodes)

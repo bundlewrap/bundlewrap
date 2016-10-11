@@ -23,7 +23,7 @@ def write_preview(file_item, base_path):
 
 
 def bw_items(repo, args):
-    node = get_node(repo, args['node'])
+    node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
     if args['file_preview']:
         item = node.get_item("file:{}".format(args['file_preview']))
         if (

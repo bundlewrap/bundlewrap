@@ -347,6 +347,14 @@ class Repository(object):
 
         open(join(bundle_dir, FILENAME_BUNDLE), 'a').close()
 
+    def create_node(self, node_name):
+        """
+        Creates an adhoc node with the given name.
+        """
+        node = Node(node_name)
+        self.add_node(node)
+        return node
+
     def get_group(self, group_name):
         try:
             return self.group_dict[group_name]

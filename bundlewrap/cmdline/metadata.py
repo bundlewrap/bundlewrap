@@ -10,7 +10,7 @@ from ..utils.ui import io
 
 
 def bw_metadata(repo, args):
-    node = get_node(repo, args['node'])
+    node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
     for line in dumps(
         node.metadata,
         cls=MetadataJSONEncoder,

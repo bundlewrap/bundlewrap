@@ -13,7 +13,7 @@ from ..utils.ui import io
 
 def bw_test(repo, args):
     if args['target']:
-        pending_nodes = get_target_nodes(repo, args['target'])
+        pending_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     else:
         pending_nodes = copy(list(repo.nodes))
 

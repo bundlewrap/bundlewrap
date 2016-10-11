@@ -62,7 +62,7 @@ def run_on_node(node, command, may_fail, ignore_locks, log_output):
 
 def bw_run(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['target'])
+    target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     pending_nodes = target_nodes[:]
 
     repo.hooks.run_start(
