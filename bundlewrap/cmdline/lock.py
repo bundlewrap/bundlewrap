@@ -5,7 +5,7 @@ from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import blue, bold, cyan, error_summary, green, mark_for_translation as _, \
-    randstr, red
+    randstr
 from ..utils.time import format_timestamp
 from ..utils.ui import io
 

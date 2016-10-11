@@ -5,7 +5,7 @@ from json import dumps
 
 from ..metadata import MetadataJSONEncoder
 from ..utils.cmdline import get_node
-from ..utils.text import force_text, mark_for_translation as _, red
+from ..utils.text import force_text
 from ..utils.ui import io
 
 
