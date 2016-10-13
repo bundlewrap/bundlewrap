@@ -31,18 +31,21 @@ def get_item(node, item_id):
         exit(1)
 
 
-def get_node(repo, node_name):
+def get_node(repo, node_name, adhoc_nodes=False):
     try:
         return repo.get_node(node_name)
     except NoSuchNode:
-        io.stderr(_("{x} No such node: {node}").format(
-            node=node_name,
-            x=red("!!!"),
-        ))
-        exit(1)
+        if adhoc_nodes:
+            return repo.create_node(node_name)
+        else:
+            io.stderr(_("{x} No such node: {node}").format(
+                node=node_name,
+                x=red("!!!"),
+            ))
+            exit(1)
 
 
-def get_target_nodes(repo, target_string):
+def get_target_nodes(repo, target_string, adhoc_nodes=False):
     """
     Returns a list of nodes. The input is a string like this:
 
@@ -76,9 +79,12 @@ def get_target_nodes(repo, target_string):
                 try:
                     targets += list(repo.get_group(name).nodes)
                 except NoSuchGroup:
-                    io.stderr(_("{x} No such node or group: {name}").format(
-                        x=red("!!!"),
-                        name=name,
-                    ))
-                    exit(1)
+                    if adhoc_nodes:
+                        targets.append(repo.create_node(name))
+                    else:
+                        io.stderr(_("{x} No such node or group: {name}").format(
+                            x=red("!!!"),
+                            name=name,
+                        ))
+                        exit(1)
     return sorted(set(targets))

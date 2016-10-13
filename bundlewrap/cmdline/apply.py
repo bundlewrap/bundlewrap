@@ -13,7 +13,7 @@ from ..utils.ui import io
 
 def bw_apply(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['target'])
+    target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     pending_nodes = target_nodes[:]
 
     repo.hooks.apply_start(

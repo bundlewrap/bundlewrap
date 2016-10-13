@@ -62,7 +62,7 @@ def plot_group(groups, nodes, show_nodes):
 
 
 def bw_plot_node(repo, args):
-    node = get_node(repo, args['node'])
+    node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
     for line in graph_for_items(
         node.name,
         prepare_dependencies(node.items),
@@ -77,7 +77,7 @@ def bw_plot_node(repo, args):
 
 
 def bw_plot_node_groups(repo, args):
-    node = get_node(repo, args['node'])
+    node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
     for line in plot_node_groups(node):
         io.stdout(line)
 
