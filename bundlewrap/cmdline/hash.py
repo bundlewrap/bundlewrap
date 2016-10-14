@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 
 from sys import exit
 
-from ..exceptions import NoSuchNode
-from ..utils.cmdline import get_group, get_item
+from ..exceptions import NoSuchGroup, NoSuchNode
+from ..utils.cmdline import get_item
 from ..utils.text import mark_for_translation as _, red
 from ..utils.ui import io
 
@@ -24,11 +24,22 @@ def bw_hash(repo, args):
 
     if args['node_or_group']:
         try:
-            target = repo.get_node(args['node_or_group'], adhoc_nodes=args['adhoc_nodes'])
+            target = repo.get_node(args['node_or_group'])
             target_type = 'node'
         except NoSuchNode:
-            target = get_group(repo, args['node_or_group'])
-            target_type = 'group'
+            try:
+                target = repo.get_group(args['node_or_group'])
+                target_type = 'group'
+            except NoSuchGroup:
+                if args['adhoc_nodes']:
+                    target = repo.create_node(args['node_or_group'])
+                    target_type = 'node'
+                else:
+                    io.stderr(_("{x} No such node or group: {node_or_group}").format(
+                        node_or_group=args['node_or_group'],
+                        x=red("!!!"),
+                    ))
+                    exit(1)
         else:
             if args['item']:
                 target = get_item(target, args['item'])
