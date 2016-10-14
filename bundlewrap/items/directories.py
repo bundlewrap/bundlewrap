@@ -10,6 +10,7 @@ from bundlewrap.items import Item
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
+from bundlewrap.utils.ui import io
 
 
 def validator_mode(item_id, value):
@@ -44,6 +45,7 @@ class Directory(Item):
         'group': None,
         'mode': None,
         'owner': None,
+        'purge': False,
     }
     ITEM_TYPE_NAME = "directory"
 
@@ -53,7 +55,10 @@ class Directory(Item):
         )
 
     def cdict(self):
-        cdict = {'type': 'directory'}
+        cdict = {
+            'paths_to_purge': [],
+            'type': 'directory',
+        }
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
                 cdict[optional_attr] = self.attributes[optional_attr]
@@ -64,6 +69,9 @@ class Directory(Item):
             # fixing the type fixes everything
             self._fix_type(status)
             return
+
+        for path in status.sdict.get('paths_to_purge', []):
+            self.node.run("rm -rf -- {}".format(quote(path)))
 
         for fix_type in ('mode', 'owner', 'group'):
             if fix_type in status.keys_to_fix:
@@ -104,6 +112,35 @@ class Directory(Item):
             self._fix_mode(status)
         if self.attributes['owner'] or self.attributes['group']:
             self._fix_owner(status)
+
+    def _get_paths_to_purge(self):
+        result = self.node.run("find {} -maxdepth 1 -print0".format(quote(self.name)))
+        for line in result.stdout.split(b"\0"):
+            line = line.decode('utf-8')
+            found = False
+            for item_type in ('directory', 'file', 'symlink'):
+                if found:
+                    break
+                for item in self.node.items:
+                    if (
+                        item.id == "{}:{}".format(item_type, line) or
+                        item.id.startswith("{}:{}/".format(item_type, line))
+                    ):
+                        found = True
+                        break
+            if not found:
+                # this file or directory is not managed
+                io.debug((
+                    "found unmanaged path below {dirpath} on {node}, "
+                    "marking for removal: {path}"
+                ).format(
+                    dirpath=self.name,
+                    node=self.node.name,
+                    path=line,
+                ))
+                yield line
+
+
 
     def get_auto_deps(self, items):
         deps = []
@@ -162,11 +199,15 @@ class Directory(Item):
         if not path_info.exists:
             return None
         else:
+            paths_to_purge = []
+            if self.attributes['purge']:
+                paths_to_purge = list(self._get_paths_to_purge())
             return {
                 'type': path_info.path_type,
                 'mode': path_info.mode,
                 'owner': path_info.owner,
                 'group': path_info.group,
+                'paths_to_purge': paths_to_purge,
             }
 
     def patch_attributes(self, attributes):
