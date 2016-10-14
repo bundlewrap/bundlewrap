@@ -162,7 +162,7 @@ def build_parser_bw():
     )
 
     # bw groups
-    help_groups = _("Lists groups in this repository")
+    help_groups = _("Lists groups in this repository (deprecated, use `bw nodes -a`)")
     parser_groups = subparsers.add_parser("groups", description=help_groups, help=help_groups)
     parser_groups.set_defaults(func=bw_groups)
     parser_groups.add_argument(
@@ -395,7 +395,7 @@ def build_parser_bw():
         "--bundles",
         action='store_true',
         dest='show_bundles',
-        help=_("show bundles for each node"),
+        help=_("show bundles for each node (deprecated, use --attrs)"),
     )
     parser_nodes.add_argument(
         "--hostnames",
@@ -411,19 +411,27 @@ def build_parser_bw():
         metavar=_("GROUP"),
         required=False,
         type=str,
-        help=_("show only nodes in the given group"),
+        help=_("show only nodes in the given group (deprecated)"),
     )
     parser_nodes.add_argument(
         "--groups",
         action='store_true',
         dest='show_groups',
-        help=_("show group membership for each node"),
+        help=_("show group membership for each node (deprecated, use --attrs)"),
     )
     parser_nodes.add_argument(
         "--os",
         action='store_true',
         dest='show_os',
         help=_("show OS for each node (deprecated, use --attrs)"),
+    )
+    parser_nodes.add_argument(
+        'target',
+        default=None,
+        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        nargs='?',
+        type=str,
+        help=_("filter according to nodes, groups and/or bundle selectors"),
     )
 
     # bw plot
