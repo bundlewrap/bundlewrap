@@ -153,6 +153,12 @@
                         
                             
 <li >
+    <a href="../../guide/os_compatibility/">OS compatibility</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../../guide/migrate_12/">Migrating to 2.0</a>
 </li>
 
@@ -414,12 +420,6 @@
     
         <li class="first-level "><a href="#group-attribute-reference">Group attribute reference</a></li>
         
-            <li class="second-level"><a href="#bundles">bundles</a></li>
-            
-        
-            <li class="second-level"><a href="#dummy">dummy</a></li>
-            
-        
             <li class="second-level"><a href="#member_patterns">member_patterns</a></li>
             
         
@@ -429,10 +429,10 @@
             <li class="second-level"><a href="#metadata">metadata</a></li>
             
         
-            <li class="second-level"><a href="#os">os</a></li>
+            <li class="second-level"><a href="#subgroups">subgroups</a></li>
             
         
-            <li class="second-level"><a href="#subgroups">subgroups</a></li>
+            <li class="second-level"><a href="#subgroup_patterns">subgroup_patterns</a></li>
             
         
             <li class="second-level"><a href="#use_shadow_passwords">use_shadow_passwords</a></li>
@@ -471,15 +471,11 @@
          'metadata': {'foo': "bar"},
          'os': 'linux',
          'subgroups': ["group2", "group3"],
+         'subgroup_patterns': [r"^group.*pattern$"],
      },
 }
 </code></pre>
-<p><br></p>
-<h2 id="bundles">bundles</h2>
-<p>A list of <a href="../bundles/">bundle names</a> to be assigned to each node in this group.</p>
-<p><br></p>
-<h2 id="dummy">dummy</h2>
-<p>See <a href="../nodes.py/#dummy">node attribute documentation</a>. May be overridden by subgroups or individual nodes.</p>
+<p>Note that many attributes from <a href="../nodes.py/">nodes.py</a> (e.g. <code>bundles</code>) may also be set at group level, but aren't explicitly documented here again.</p>
 <p><br></p>
 <h2 id="member_patterns">member_patterns</h2>
 <p>A list of regular expressions. Node names matching these expressions will be added to the group members.</p>
@@ -522,11 +518,12 @@ groups = {
 <div class="alert alert-info">Also see the <a href="../nodes.py#metadata">documentation for node.metadata</a> for more information.</div>
 
 <p><br></p>
-<h2 id="os">os</h2>
-<p>See <a href="../nodes.py/#os">node attribute documentation</a>. May be overridden by subgroups or individual nodes.</p>
-<p><br></p>
 <h2 id="subgroups">subgroups</h2>
 <p>A tuple or list of group names whose members should be recursively included in this group.</p>
+<p><br></p>
+<h2 id="subgroup_patterns">subgroup_patterns</h2>
+<p>A list of regular expressions. Nodes in with group names matching these expressions will be added to the group members.</p>
+<p>Matches are determined using <a href="http://docs.python.org/2/library/re.html#re.RegexObject.search">the search() method</a>.</p>
 <p><br></p>
 <h2 id="use_shadow_passwords">use_shadow_passwords</h2>
 <p>See <a href="../nodes.py/#use_shadow_passwords">node attribute documentation</a>. May be overridden by subgroups or individual nodes.</p>

@@ -153,6 +153,12 @@
                         
                             
 <li >
+    <a href="../../guide/os_compatibility/">OS compatibility</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../../guide/migrate_12/">Migrating to 2.0</a>
 </li>
 
@@ -417,22 +423,28 @@
     
         <li class="first-level "><a href="#node-attribute-reference">Node attribute reference</a></li>
         
-            <li class="second-level"><a href="#bundles">bundles</a></li>
+            <li class="second-level"><a href="#regular-attributes">Regular attributes</a></li>
+            
+                <li class="third-level"><a href="#bundles">bundles</a></li>
+            
+                <li class="third-level"><a href="#dummy">dummy</a></li>
+            
+                <li class="third-level"><a href="#hostname">hostname</a></li>
+            
+                <li class="third-level"><a href="#metadata">metadata</a></li>
+            
+                <li class="third-level"><a href="#os">os</a></li>
+            
+                <li class="third-level"><a href="#os_version">os_version</a></li>
             
         
-            <li class="second-level"><a href="#dummy">dummy</a></li>
+            <li class="second-level"><a href="#os-compatibility-overrides">OS compatibility overrides</a></li>
             
-        
-            <li class="second-level"><a href="#hostname">hostname</a></li>
+                <li class="third-level"><a href="#cmd_wrapper_outer">cmd_wrapper_outer</a></li>
             
-        
-            <li class="second-level"><a href="#metadata">metadata</a></li>
+                <li class="third-level"><a href="#cmd_wrapper_inner">cmd_wrapper_inner</a></li>
             
-        
-            <li class="second-level"><a href="#os">os</a></li>
-            
-        
-            <li class="second-level"><a href="#use_shadow_passwords">use_shadow_passwords</a></li>
+                <li class="third-level"><a href="#use_shadow_passwords">use_shadow_passwords</a></li>
             
         
     
@@ -473,20 +485,22 @@ nodes = get_my_nodes_from_ldap()
     },
 }
 </code></pre>
+<p>All attributes can also be set at the group level, unless noted otherwise.</p>
 <p><br></p>
-<h2 id="bundles">bundles</h2>
-<p>A list of <a href="../bundles/">bundle names</a> to be assigned to this node.</p>
+<h2 id="regular-attributes">Regular attributes</h2>
+<h3 id="bundles">bundles</h3>
+<p>A list of <a href="../bundles/">bundle names</a> to be assigned to this node. Bundles set at <a href="../groups.py/">group level</a> will be added.</p>
 <p><br></p>
-<h2 id="dummy">dummy</h2>
+<h3 id="dummy">dummy</h3>
 <p>Set this to <code>True</code> to prevent BundleWrap from creating items for and connecting to this node. This is useful for unmanaged nodes because you can still assign them bundles and metadata like regular nodes and access that from managed nodes (e.g. for monitoring).</p>
-<p>May also be set at group level.</p>
 <p><br></p>
-<h2 id="hostname">hostname</h2>
+<h3 id="hostname">hostname</h3>
 <p>A string used as a DNS name when connecting to this node. May also be an IP address.</p>
 <div class="alert">The username and SSH private key for connecting to the node cannot be configured in BundleWrap. If you need to customize those, BundleWrap will honor your <code>~/.ssh/config</code>.</div>
 
-<h2 id="metadata">metadata</h2>
-<p>This can be a dictionary of arbitrary data. You can access it from your templates as <code>node.metadata</code>. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the <a href="../groups.py/">group level</a>, but node metadata has higher priority.</p>
+<p>Cannot be set at group level.</p>
+<h3 id="metadata">metadata</h3>
+<p>This can be a dictionary of arbitrary data (some type restrictions apply). You can access it from your templates as <code>node.metadata</code>. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the <a href="../groups.py/#metadata">group level</a>, but node metadata has higher priority.</p>
 <p>You are restricted to using only the following types in metadata:</p>
 <ul>
 <li><code>dict</code></li>
@@ -503,15 +517,27 @@ nodes = get_my_nodes_from_ldap()
 <div class="alert alert-info">Also see the <a href="../groups.py#metadata">documentation for group.metadata</a> for more information.</div>
 
 <p><br></p>
-<h2 id="os">os</h2>
-<p>Currently, only the default value of "linux" is supported. Your mileage may vary for "macos" or "openbsd".</p>
-<p>May also be set at group level.</p>
+<h3 id="os">os</h3>
+<p>Defaults to <code>"linux"</code>.</p>
+<p>A list of supported OSes can be obtained with <code>bw debug -n ANY_NODE_NAME -c "print(node.OS_KNOWN)"</code>.</p>
 <p><br></p>
-<h2 id="use_shadow_passwords">use_shadow_passwords</h2>
+<h3 id="os_version">os_version</h3>
+<p>Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should be <code>(16, 4)</code>.</p>
+<p>Tuples of integers can be used for easy comparison of versions: <code>(12, 4) &lt; (16, 4)</code></p>
+<p><br></p>
+<h2 id="os-compatibility-overrides">OS compatibility overrides</h2>
+<h3 id="cmd_wrapper_outer">cmd_wrapper_outer</h3>
+<p>Used whenever a command needs to be run on a node. Defaults to <code>"sudo sh -c {}"</code>. <code>{}</code> will be replaced by the quoted command to be run (after <code>cmd_wrapper_inner</code> has been applied).</p>
+<p>You will need to override this if you're not using <code>sudo</code> to gain root privileges (e.g. <code>doas</code>) on the node.</p>
+<p><br></p>
+<h3 id="cmd_wrapper_inner">cmd_wrapper_inner</h3>
+<p>Used whenever a command needs to be run on a node. Defaults to <code>"export LANG=C; {}"</code>. <code>{}</code> will be replaced by the command to be run.</p>
+<p>You will need to override this if the shell on your node sets environment variables differently.</p>
+<p><br></p>
+<h3 id="use_shadow_passwords">use_shadow_passwords</h3>
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 
-<p>This setting will affect how the <a href="../../items/user/">user item</a> item operates. If set to <code>False</code>, password hashes will be written directly to <code>/etc/passwd</code> and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as <code>master.shadow</code> is always used.</p>
-<p>May also be set at group level.</p></div>
+<p>This setting will affect how the <a href="../../items/user/">user item</a> item operates. If set to <code>False</code>, password hashes will be written directly to <code>/etc/passwd</code> and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as <code>master.shadow</code> is always used.</p></div>
         
     </div>
 

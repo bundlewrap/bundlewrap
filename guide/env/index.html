@@ -153,6 +153,12 @@
                         
                             
 <li >
+    <a href="../os_compatibility/">OS compatibility</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../migrate_12/">Migrating to 2.0</a>
 </li>
 
@@ -417,6 +423,9 @@
             <li class="second-level"><a href="#bw_colors">BW_COLORS</a></li>
             
         
+            <li class="second-level"><a href="#bw_hardlock_expiry">BW_HARDLOCK_EXPIRY</a></li>
+            
+        
             <li class="second-level"><a href="#bw_identity">BW_IDENTITY</a></li>
             
         
@@ -443,6 +452,8 @@
 <p>You can also use <code>bw -a ...</code> to achieve the same effect.</p>
 <h2 id="bw_colors"><code>BW_COLORS</code></h2>
 <p>Colors are enabled by default. Setting this variable to <code>0</code> tells BundleWrap to never use any ANSI color escape sequences.</p>
+<h2 id="bw_hardlock_expiry"><code>BW_HARDLOCK_EXPIRY</code></h2>
+<p><a href="../locks/">Hard locks</a> are automatically ignored after some time. By default, it's <code>"8h"</code>. You can use this variable to override that default.</p>
 <h2 id="bw_identity"><code>BW_IDENTITY</code></h2>
 <p>When BundleWrap <a href="../locks/">locks</a> a node, it stores a short description about "you". By default, this is the string <code>$USER@$HOSTNAME</code>, e.g. <code>john@mymachine</code>. You can use <code>BW_IDENTITY</code> to specify a custom string. (No variables will be evaluated in user supplied strings.)</p>
 <h2 id="bw_item_workers-and-bw_node_workers"><code>BW_ITEM_WORKERS</code> and <code>BW_NODE_WORKERS</code></h2>
@@ -451,7 +462,7 @@
 <p>There is no single default for these values. For example, when running <code>bw apply</code>, four nodes are being handled by default. However, when running <code>bw test</code>, only one node will be tested by default. <code>BW_NODE_WORKERS</code> and <code>BW_ITEM_WORKERS</code> apply to <em>all</em> these operations.</p>
 <p>Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.</p>
 <h2 id="bw_softlock_expiry"><code>BW_SOFTLOCK_EXPIRY</code></h2>
-<p><a href="../locks/">Soft locks</a> are automatically removed from nodes after some time. By default, it's eight hours. You can use this variable to override that default.</p>
+<p><a href="../locks/">Soft locks</a> are automatically removed from nodes after some time. By default, it's <code>"8h"</code>. You can use this variable to override that default.</p>
 <h2 id="bw_ssh_args"><code>BW_SSH_ARGS</code></h2>
 <p>Extra arguments to include in every call to <code>ssh</code> BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap.</p>
 <h2 id="bw_vault_dummy_mode"><code>BW_VAULT_DUMMY_MODE</code></h2>
