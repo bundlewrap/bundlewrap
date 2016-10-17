@@ -1,3 +1,13 @@
+# 2.9.0
+
+2016-10-17
+
+* added directory purging
+* added `bw --adhoc-nodes`
+* improve handling of unknown nodes/groups
+* improvements to `bw nodes`
+
+
 # 2.8.0
 
 2016-09-12
