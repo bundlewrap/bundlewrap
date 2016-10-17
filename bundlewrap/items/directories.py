@@ -13,6 +13,9 @@ from bundlewrap.utils.text import is_subdirectory
 from bundlewrap.utils.ui import io
 
 
+UNMANAGED_PATH_DESC = _("unmanaged subpaths")
+
+
 def validator_mode(item_id, value):
     value = str(value)
     if not value.isdigit():
@@ -63,6 +66,23 @@ class Directory(Item):
             if self.attributes[optional_attr] is not None:
                 cdict[optional_attr] = self.attributes[optional_attr]
         return cdict
+
+    def display_dicts(self, cdict, sdict, keys):
+        if UNMANAGED_PATH_DESC in keys:
+            cdict[UNMANAGED_PATH_DESC] = cdict['paths_to_purge']
+            sdict[UNMANAGED_PATH_DESC] = sdict['paths_to_purge']
+            del cdict['paths_to_purge']
+            del sdict['paths_to_purge']
+        return (cdict, sdict)
+
+    def display_keys(self, cdict, sdict, keys):
+        try:
+            keys.remove('paths_to_purge')
+        except IndexError:
+            pass
+        else:
+            keys.append(UNMANAGED_PATH_DESC)
+        return keys
 
     def fix(self, status):
         if status.must_be_created or 'type' in status.keys_to_fix:
