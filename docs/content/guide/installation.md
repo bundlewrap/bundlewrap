@@ -63,6 +63,7 @@ While the following list might appear long, even very minimal systems should pro
 * `dpkg` (only used with [pkg_apt](../items/pkg_apt.md) items)
 * `echo`
 * `file`
+* `find` (only used with [directory purging](../items/directory.md#purge))
 * `grep`
 * `groupadd`
 * `groupmod`
