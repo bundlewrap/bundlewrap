@@ -135,7 +135,7 @@ def main(*args, **kwargs):
                     io.stderr(_(
                         "{x} The current working directory "
                         "is not a BundleWrap repository."
-                    ).format(x=red("!")))
+                    ).format(x=red("!!!")))
                     exit(1)
                 else:
                     path = dirname(path)
