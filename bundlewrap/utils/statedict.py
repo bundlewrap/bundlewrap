@@ -57,6 +57,12 @@ def diff_value_int(title, value1, value2):
 
 
 def diff_value_list(title, value1, value2):
+    # make sure that *if* we have lines, the last one will also end with
+    # a newline
+    if value1:
+        value1.append("")
+    if value2:
+        value2.append("")
     return diff_value_text(
         title,
         "\n".join([str(i) for i in value1]),
