@@ -551,7 +551,7 @@ class Repository(object):
                     "metadata processor '{proc}' stopped after too many iterations "
                     "({max_iter}) for node '{node}' to prevent infinite loop".format(
                         max_iter=META_PROC_MAX_ITER,
-                        node=node.name,
+                        node=node,
                         proc=metadata_processor,
                     ),
                 ))
