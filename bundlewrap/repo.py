@@ -524,7 +524,7 @@ class Repository(object):
                         if processed != self._node_metadata_partial[node.name]:
                             io.debug(_(
                                 "metadata processor {metaproc} for node {node} changed metadata, "
-                                "rerunning all metadata processors"
+                                "rerunning all metadata processors for this node"
                             ).format(
                                 metaproc=metadata_processor_name,
                                 node=node.name,
@@ -548,8 +548,15 @@ class Repository(object):
             if number_of_iterations >= META_PROC_MAX_ITER:
                 node, metadata_processor = culprit
                 raise BundleError(_(
-                    "metadata processor '{proc}' stopped after too many iterations "
-                    "({max_iter}) for node '{node}' to prevent infinite loop".format(
+                    "Metadata processor '{proc}' stopped after too many iterations "
+                    "({max_iter}) for node '{node}' to prevent infinite loop. "
+                    "This usually means one of two things: "
+                    "1) You have two metadata processors that keep overwriting each other's "
+                    "data or 2) You have a single metadata processor that keeps changing its own "
+                    "data. "
+                    "To fix this, use `bw --debug metadata {node}` and look for repeated messages "
+                    "indicating that the same metadata processor keeps changing metadata. Then "
+                    "rewrite that metadata processor to eventually stop changing metadata.".format(
                         max_iter=META_PROC_MAX_ITER,
                         node=node,
                         proc=metadata_processor,
