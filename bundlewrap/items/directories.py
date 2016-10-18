@@ -78,7 +78,7 @@ class Directory(Item):
     def display_keys(self, cdict, sdict, keys):
         try:
             keys.remove('paths_to_purge')
-        except IndexError:
+        except ValueError:
             pass
         else:
             keys.append(UNMANAGED_PATH_DESC)
