@@ -499,23 +499,37 @@ class Repository(object):
                     break
                 node = self.get_node(node_name)
                 with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
-                    for metadata_processor in node.metadata_processors:
-                        iterations.setdefault((node.name, metadata_processor.__name__), 1)
+                    for metadata_processor_name, metadata_processor in node.metadata_processors:
+                        iterations.setdefault((node.name, metadata_processor_name), 1)
                         io.debug(_(
                             "running metadata processor {metaproc} for node {node}, "
                             "iteration #{i}"
                         ).format(
-                            metaproc=metadata_processor.__name__,
+                            metaproc=metadata_processor_name,
                             node=node.name,
-                            i=iterations[(node.name, metadata_processor.__name__)],
+                            i=iterations[(node.name, metadata_processor_name)],
                         ))
                         processed = metadata_processor(
                             deepcopy_metadata(self._node_metadata_partial[node.name]),
                         )
-                        assert isinstance(processed, dict)
+                        iterations[(node.name, metadata_processor_name)] += 1
+                        if not isinstance(processed, dict):
+                            raise ValueError(_(
+                                "metadata processor {metaproc} for node {node} did not return "
+                                "a dictionary"
+                            ).format(
+                                metaproc=metadata_processor_name,
+                                node=node.name,
+                            ))
                         if processed != self._node_metadata_partial[node.name]:
+                            io.debug(_(
+                                "metadata processor {metaproc} for node {node} changed metadata, "
+                                "rerunning all metadata processors"
+                            ).format(
+                                metaproc=metadata_processor_name,
+                                node=node.name,
+                            ))
                             self._node_metadata_partial[node.name] = processed
-                            iterations[(node.name, metadata_processor.__name__)] += 1
                             modified = True
             if not modified:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
