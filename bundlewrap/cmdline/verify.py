@@ -106,8 +106,7 @@ def bw_verify(repo, args):
     worker_pool.run()
 
     if args['summary']:
-        for line in stats_summary(node_stats):
-            io.stdout(line)
+        stats_summary(node_stats)
 
     error_summary(errors)
 
