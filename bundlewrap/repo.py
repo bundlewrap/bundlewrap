@@ -86,7 +86,7 @@ nodes = {
     FILENAME_REQUIREMENTS: "bundlewrap>={}\n".format(VERSION_STRING),
     FILENAME_SECRETS: generate_initial_secrets_cfg,
 }
-META_PROC_MAX_ITER = 9999  # maximum iterations for metadata processors
+META_PROC_MAX_ITER = 1000  # maximum iterations for metadata processors
 
 
 def groups_from_file(filepath, libs, repo_path, vault):
