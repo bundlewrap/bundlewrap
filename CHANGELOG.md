@@ -1,3 +1,11 @@
+# 2.9.1
+
+2016-10-18
+
+* fixed `bw verify` without `-S`
+* fixed asking for changes to directory items
+
+
 # 2.9.0
 
 2016-10-17
