@@ -35,7 +35,7 @@ def pkg_remove(node, pkgname):
 
 class ZypperPkg(Item):
     """
-    A package installed by yum.
+    A package installed by zypper.
     """
     BLOCK_CONCURRENT = ["pkg_zypper"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_zypper"
