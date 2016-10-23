@@ -31,7 +31,7 @@ class DnfPkg(Item):
     """
     A package installed by dnf.
     """
-    BLOCK_CONCURRENT = ["pkg_dnf"]
+    BLOCK_CONCURRENT = ["pkg_dnf", "pkg_yum"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_dnf"
     ITEM_ATTRIBUTES = {
         'installed': True,

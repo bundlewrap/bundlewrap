@@ -31,7 +31,7 @@ class YumPkg(Item):
     """
     A package installed by yum.
     """
-    BLOCK_CONCURRENT = ["pkg_yum"]
+    BLOCK_CONCURRENT = ["pkg_yum", "pkg_dnf"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_yum"
     ITEM_ATTRIBUTES = {
         'installed': True,
