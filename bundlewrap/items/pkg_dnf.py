@@ -9,12 +9,12 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def pkg_install(node, pkgname):
-    return node.run("yum -d0 -e0 -y install {}".format(quote(pkgname)))
+    return node.run("dnf -d0 -e0 -y install {}".format(quote(pkgname)))
 
 
 def pkg_installed(node, pkgname):
     result = node.run(
-        "yum -d0 -e0 list installed {}".format(quote(pkgname)),
+        "dnf -d0 -e0 list installed {}".format(quote(pkgname)),
         may_fail=True,
     )
     if result.return_code != 0:
@@ -24,22 +24,22 @@ def pkg_installed(node, pkgname):
 
 
 def pkg_remove(node, pkgname):
-    return node.run("yum -d0 -e0 -y remove {}".format(quote(pkgname)))
+    return node.run("dnf -d0 -e0 -y remove {}".format(quote(pkgname)))
 
 
-class YumPkg(Item):
+class DnfPkg(Item):
     """
-    A package installed by yum.
+    A package installed by dnf.
     """
-    BLOCK_CONCURRENT = ["pkg_yum", "pkg_dnf"]
-    BUNDLE_ATTRIBUTE_NAME = "pkg_yum"
+    BLOCK_CONCURRENT = ["pkg_dnf", "pkg_yum"]
+    BUNDLE_ATTRIBUTE_NAME = "pkg_dnf"
     ITEM_ATTRIBUTES = {
         'installed': True,
     }
-    ITEM_TYPE_NAME = "pkg_yum"
+    ITEM_TYPE_NAME = "pkg_dnf"
 
     def __repr__(self):
-        return "<YumPkg name:{} installed:{}>".format(
+        return "<DnfPkg name:{} installed:{}>".format(
             self.name,
             self.attributes['installed'],
         )
