@@ -97,6 +97,6 @@ When using `.password_for()`, `.decrypt()` etc., you can provide a `key` argumen
 
 ### Rotating keys
 
-<div class="alert alert-info">This is applicable mostly to <code>.password_for()</code>. The other methods use symmetric encryption and require manually updating the encrypted text after the keys has changed.</div>
+<div class="alert alert-info">This is applicable mostly to <code>.password_for()</code>. The other methods use symmetric encryption and require manually updating the encrypted text after the key has changed.</div>
 
 You can generate a new key by running `bw debug -c "print(repo.vault.random_key())"`. Place the result in your `.secrets.cfg`. Then you need to distribute the new key to your team and run `bw apply` for all your nodes.
