@@ -730,7 +730,7 @@ def test_items(node, ignore_missing_faults=False, workers=1):
         else:
             return {
                 'task_id': item.node.name + ":" + item.bundle.name + ":" + item.id,
-                'target': item.test,
+                'target': item._test,
             }
 
     def handle_result(task_id, return_value, duration):

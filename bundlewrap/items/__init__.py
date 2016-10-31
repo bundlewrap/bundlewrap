@@ -272,6 +272,11 @@ class Item(object):
                     return True
         return False
 
+    def _test(self):
+        if self._faults_missing_for_attributes:
+            self._raise_for_faults()
+        return self.test()
+
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
         invalid_attributes = set(attributes.keys()).difference(
