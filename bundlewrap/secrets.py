@@ -70,8 +70,10 @@ class SecretProxy(object):
             key = self.keys[key]
         except KeyError:
             raise FaultUnavailable(_(
-                "Key '{key}' not available for decryption, check your {file}"
+                "Key '{key}' not available for decryption of the following cryptotext, "
+                "check your {file}: {cryptotext}"
             ).format(
+                cryptotext=cryptotext,
                 file=FILENAME_SECRETS,
                 key=key,
             ))
@@ -89,10 +91,12 @@ class SecretProxy(object):
             key = self.keys[key]
         except KeyError:
             raise FaultUnavailable(_(
-                "Key '{key}' not available for file decryption, check your {file}"
+                "Key '{key}' not available for decryption of the following file, "
+                "check your {file}: {source_path}"
             ).format(
                 file=FILENAME_SECRETS,
                 key=key,
+                source_path=source_path,
             ))
 
         f = Fernet(key)
@@ -109,10 +113,12 @@ class SecretProxy(object):
             key = self.keys[key]
         except KeyError:
             raise FaultUnavailable(_(
-                "Key '{key}' not available for file decryption, check your {file}"
+                "Key '{key}' not available for decryption of the following file, "
+                "check your {file}: {source_path}"
             ).format(
                 file=FILENAME_SECRETS,
                 key=key,
+                source_path=source_path,
             ))
 
         f = Fernet(key)
