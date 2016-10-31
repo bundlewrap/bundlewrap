@@ -699,11 +699,31 @@ def build_parser_bw():
         help=_("check for local modifications to files installed by plugins"),
     )
     parser_test.add_argument(
+        "-d",
+        "--config-determinism",
+        default=0,
+        dest='determinism_config',
+        help=_("verify determinism of configuration by running `bw hash` N times "
+               "and checking for consistent results (with N > 1)"),
+        metavar="N",
+        type=int,
+    )
+    parser_test.add_argument(
         "-i",
         "--ignore-missing-faults",
         action='store_true',
         dest='ignore_missing_faults',
         help=_("do not fail when encountering a missing Fault"),
+    )
+    parser_test.add_argument(
+        "-m",
+        "--metadata-determinism",
+        default=0,
+        dest='determinism_metadata',
+        help=_("verify determinism of metadata by running `bw hash -m` N times "
+               "and checking for consistent results (with N > 1)"),
+        metavar="N",
+        type=int,
     )
     bw_test_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_test.add_argument(

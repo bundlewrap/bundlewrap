@@ -411,3 +411,90 @@ def test_fault_missing(tmpdir):
     )
     assert run("bw test", path=str(tmpdir))[2] == 1
     assert run("bw test --ignore-missing-faults", path=str(tmpdir))[2] == 0
+
+
+def test_metadata_determinism_ok(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write("""
+def test(metadata):
+    metadata['test'] = 1
+    return metadata
+""")
+    assert run("bw test -m 3", path=str(tmpdir))[2] == 0
+
+
+def test_metadata_determinism_broken(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write("""from random import randint as _randint
+
+def test(metadata):
+    metadata.setdefault('test', _randint(1, 99999))
+    return metadata
+""")
+    assert run("bw test -m 3", path=str(tmpdir))[2] == 1
+
+
+def test_config_determinism_ok(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "files": {
+                    "/test": {
+                        'content': "1",
+                        'content_type': 'mako',
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test -d 3", path=str(tmpdir))[2] == 0
+
+
+def test_config_determinism_broken(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "files": {
+                    "/test": {
+                        'content': "<% from random import randint %>\n${randint(1, 99999)\n}",
+                        'content_type': 'mako',
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test -d 3", path=str(tmpdir))[2] == 1

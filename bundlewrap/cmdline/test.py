@@ -6,6 +6,7 @@ from sys import exit
 
 from ..concurrency import WorkerPool
 from ..plugins import PluginManager
+from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import bold, green, mark_for_translation as _, red
 from ..utils.ui import io
@@ -72,6 +73,64 @@ def bw_test(repo, args):
                     plugin=plugin,
                     x=green("✓"),
                 ))
+
+    # generate metadata a couple of times for every node and see if
+    # anything changes between iterations
+    if args['determinism_metadata'] > 1:
+        hashes = {}
+        for i in range(args['determinism_metadata']):
+            repo = Repository(repo.path)
+            if args['target']:
+                nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+            else:
+                nodes = repo.nodes
+            for node in nodes:
+                with io.job(_("  {node}  generating metadata ({i}/{n})... ").format(
+                    i=i + 1,
+                    n=args['determinism_metadata'],
+                    node=node.name,
+                )):
+                    result = node.metadata_hash()
+                hashes.setdefault(node.name, result)
+                if hashes[node.name] != result:
+                    io.stderr(_(
+                        "{x} Metadata for node {node} changed when generated repeatedly "
+                        "(use `bw hash -d {node}` to debug)"
+                    ).format(node=node.name, x=red("✘")))
+                    exit(1)
+        io.stdout(_("{x} Metadata remained the same after being generated {n} times").format(
+            n=args['determinism_metadata'],
+            x=green("✓"),
+        ))
+
+    # generate configuration a couple of times for every node and see if
+    # anything changes between iterations
+    if args['determinism_config'] > 1:
+        hashes = {}
+        for i in range(args['determinism_config']):
+            repo = Repository(repo.path)
+            if args['target']:
+                nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+            else:
+                nodes = repo.nodes
+            for node in nodes:
+                with io.job(_("  {node}  generating configuration ({i}/{n})...").format(
+                    i=i + 1,
+                    n=args['determinism_config'],
+                    node=node.name,
+                )):
+                    result = node.hash()
+                hashes.setdefault(node.name, result)
+                if hashes[node.name] != result:
+                    io.stderr(_(
+                        "{x} Configuration for node {node} changed when generated repeatedly "
+                        "(use `bw hash -d {node}` to debug)"
+                    ).format(node=node.name, x=red("✘")))
+                    exit(1)
+        io.stdout(_("{x} Configuration remained the same after being generated {n} times").format(
+            n=args['determinism_config'],
+            x=green("✓"),
+        ))
 
     if not args['target']:
         repo.hooks.test(repo)
