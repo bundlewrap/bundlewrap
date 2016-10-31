@@ -74,7 +74,6 @@ class Item(object):
         bundle,
         name,
         attributes,
-        faults_missing_for_attributes=None,
         has_been_triggered=False,
         skip_validation=False,
         skip_name_validation=False,
@@ -86,8 +85,7 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
-        self._faults_missing_for_attributes = [] if faults_missing_for_attributes is None \
-            else faults_missing_for_attributes
+        self._faults_missing_for_attributes = set()
         self._precedes_items = []
 
         if not skip_validation:
@@ -98,7 +96,10 @@ class Item(object):
             self._validate_required_attributes(bundle, self.id, attributes)
             self.validate_attributes(bundle, self.id, attributes)
 
-        attributes = self.patch_attributes(attributes)
+        try:
+            attributes = self.patch_attributes(attributes)
+        except FaultUnavailable:
+            self._faults_missing_for_attributes.add(_("unknown"))
 
         for attribute_name, attribute_default in \
                 BUILTIN_ITEM_ATTRIBUTES.items():
@@ -116,7 +117,7 @@ class Item(object):
                         attribute_default,
                     ))
                 except FaultUnavailable:
-                    self._faults_missing_for_attributes.append(attribute_name)
+                    self._faults_missing_for_attributes.add(attribute_name)
 
         if self.cascade_skip is None:
             self.cascade_skip = not (self.unless or self.triggered)
@@ -242,7 +243,7 @@ class Item(object):
             "(most of the time this means you're missing "
             "a required key in your .secrets.cfg)"
         ).format(
-            attrs=", ".join(self._faults_missing_for_attributes),
+            attrs=", ".join(sorted(self._faults_missing_for_attributes)),
             item=self.id,
             node=self.node.name,
         ))
@@ -372,12 +373,12 @@ class Item(object):
                     "(most of the time this means you're missing "
                     "a required key in your .secrets.cfg)"
                 ).format(
-                    attrs=", ".join(self._faults_missing_for_attributes),
+                    attrs=", ".join(sorted(self._faults_missing_for_attributes)),
                     item=self.id,
                     node=self.node.name,
                 ))
                 status_code = self.STATUS_SKIPPED
-                keys_to_fix = [_("unavailable")]
+                keys_to_fix = [_("Fault unavailable")]
 
         if status_code is None:
             try:
@@ -387,8 +388,7 @@ class Item(object):
                     self._raise_for_faults()
                 else:
                     io.debug(_(
-                        "skipping {item} on {node} because it is missing faults "
-                        "in a template "
+                        "skipping {item} on {node} because it is missing Faults "
                         "(most of the time this means you're missing "
                         "a required key in your .secrets.cfg)"
                     ).format(
@@ -396,7 +396,7 @@ class Item(object):
                         node=self.node.name,
                     ))
                     status_code = self.STATUS_SKIPPED
-                    keys_to_fix = [_("unavailable")]
+                    keys_to_fix = [_("Fault unavailable")]
             else:
                 if status_before.correct:
                     status_code = self.STATUS_OK

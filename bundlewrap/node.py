@@ -745,11 +745,12 @@ def test_items(node, ignore_missing_faults=False, workers=1):
     def handle_exception(task_id, exception, traceback):
         node_name, bundle_name, item_id = task_id.split(":", 2)
         if ignore_missing_faults and isinstance(exception, FaultUnavailable):
-            io.stderr(_("{x} {node}  {bundle}  {item}  (Fault missing)").format(
+            io.stderr(_("{x} {node}  {bundle}  {item}  ({msg})").format(
                 bundle=bold(bundle_name),
                 item=item_id,
+                msg=yellow(_("Fault unavailable")),
                 node=bold(node_name),
-                x=yellow("!"),
+                x=yellow("»"),
             ))
         else:
             io.stderr("{x} {node}  {bundle}  {item}".format(
@@ -808,9 +809,10 @@ def verify_items(node, show_all=False, workers=1):
                 if item.error_on_missing_fault:
                     item._raise_for_faults()
                 else:
-                    io.stdout(_("{x} {node}  {bundle}  {item}  (unavailable)").format(
+                    io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
                         bundle=bold(item.bundle.name),
                         item=item.id,
+                        msg=yellow(_("Fault unavailable")),
                         node=bold(node.name),
                         x=yellow("»"),
                     ))
