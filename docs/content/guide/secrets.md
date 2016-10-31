@@ -2,6 +2,8 @@
 
 We strongly recommend **not** putting any sensitive information such as passwords or private keys into your repository. This page describes the helpers available in BundleWrap to manage those secrets without checking them into version control.
 
+<div class="alert alert-info">Most of the functions described here return lazy <a href="../api/#bundlewraputilsfault">Fault objects</a>.</div>
+
 <br>
 
 ## .secrets.cfg

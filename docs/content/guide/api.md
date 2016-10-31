@@ -210,3 +210,31 @@ The name of this group
 **`.nodes`**
 
 A list of all nodes in this group (instances of `bundlewrap.node.Node`, includes subgroup members)
+
+<br>
+
+### bundlewrap.utils.Fault
+
+A Fault acts as a lazy stand-in object for the result of a given callback function. These objects are returned from the "vault" attached to `Repository` objects:
+
+	>>> repo.vault.password_for("demo")
+	<bundlewrap.utils.Fault object at 0x10782b208>
+
+Only when the `value` property of a Fault is accessed or when the Fault is converted to a string, the callback function is executed. In the example above, this means that the password is only generated when it is really required (e.g. when used in a template). This is particularly useful when used in metadata in connection with [secrets](secrets.md). Users will be able to generate metadata with Faults in it, even if they lack the required keys for the decryption operation represented by the Fault. The key will only be required for files etc. that actually use it. If a Fault cannot be resolved (e.g. for lack of the required key), BundleWrap can just skip the item using the Fault, while still allowing other items on the same node to be applied.
+
+Faults also support some rudimentary string operations such as appending a string or another Fault, as well as some string methods:
+
+	>>> f = repo.vault.password_for("1") + ":" + repo.vault.password_for("2")
+	>>> f
+	<bundlewrap.utils.Fault object at 0x10782b208>
+	>>> f.value
+	'VOd5PC:JUgYUb'
+	>>> f += " "
+	>>> f.value
+	'VOd5PC:JUgYUb '
+	>>> f.strip().value
+	'VOd5PC:JUgYUb'
+	>>> repo.vault.password_for("1").format_into("Password: {}").value
+	'Password: VOd5PC'
+
+These string methods are supported on Faults: `format`, `lower`, `lstrip`, `replace`, `rstrip`, `strip`, `upper`, `zfill`

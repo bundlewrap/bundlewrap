@@ -90,11 +90,26 @@ class Fault(object):
                 self._available = False
                 self._exc = exc
 
+    def __add__(self, other):
+        if isinstance(other, Fault):
+            def callback():
+                return self.value + other.value
+            return Fault(callback)
+        else:
+            def callback():
+                return self.value + other
+            return Fault(callback)
+
     def __len__(self):
         return len(self.value)
 
     def __str__(self):
         return str(self.value)
+
+    def format_into(self, format_string):
+        def callback():
+            return format_string.format(self.value)
+        return Fault(callback)
 
     @property
     def is_available(self):
@@ -107,6 +122,27 @@ class Fault(object):
         if not self._available:
             raise self._exc
         return self._value
+
+
+def _make_method_callback(method_name):
+    def method(self, *args, **kwargs):
+        def callback():
+            return getattr(self.value, method_name)(*args, **kwargs)
+        return Fault(callback)
+    return method
+
+
+for method_name in (
+    'format',
+    'lower',
+    'lstrip',
+    'replace',
+    'rstrip',
+    'strip',
+    'upper',
+    'zfill',
+):
+    setattr(Fault, method_name, _make_method_callback(method_name))
 
 
 def get_file_contents(path):

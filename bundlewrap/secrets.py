@@ -236,6 +236,7 @@ class SecretProxy(object):
 
             vault.format("password: {}", vault.password_for("something"))
 
+        DEPRECATED, remove in 3.0, use Fault.format_into instead.
         """
         return Fault(
             self._format,
