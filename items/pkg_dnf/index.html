@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">   
     <link rel="shortcut icon" href="../../img/favicon.ico">
 
-    <title>Plugins - BundleWrap</title>
+    <title>pkg_dnf - BundleWrap</title>
 
     <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
@@ -168,55 +168,55 @@
                 
                 
                 
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Repository <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
                             
 <li >
-    <a href="../layout/">Overview</a>
+    <a href="../../repo/layout/">Overview</a>
 </li>
 
                         
                             
 <li >
-    <a href="../nodes.py/">nodes.py</a>
+    <a href="../../repo/nodes.py/">nodes.py</a>
 </li>
 
                         
                             
 <li >
-    <a href="../groups.py/">groups.py</a>
+    <a href="../../repo/groups.py/">groups.py</a>
 </li>
 
                         
                             
 <li >
-    <a href="../requirements.txt/">requirements.txt</a>
+    <a href="../../repo/requirements.txt/">requirements.txt</a>
 </li>
 
                         
                             
 <li >
-    <a href="../bundles/">bundles/</a>
+    <a href="../../repo/bundles/">bundles/</a>
 </li>
 
                         
                             
 <li >
-    <a href="../hooks/">hooks/</a>
+    <a href="../../repo/hooks/">hooks/</a>
 </li>
 
                         
                             
 <li >
-    <a href="../libs/">libs/</a>
+    <a href="../../repo/libs/">libs/</a>
 </li>
 
                         
                             
-<li class="active">
-    <a href="./">Plugins</a>
+<li >
+    <a href="../../repo/plugins/">Plugins</a>
 </li>
 
                         
@@ -225,115 +225,115 @@
                 
                 
                 
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Items <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
                             
 <li >
-    <a href="../../items/action/">action</a>
+    <a href="../action/">action</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/directory/">directory</a>
+    <a href="../directory/">directory</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/file/">file</a>
+    <a href="../file/">file</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/group/">group</a>
+    <a href="../group/">group</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/pkg_apt/">pkg_apt</a>
+    <a href="../pkg_apt/">pkg_apt</a>
+</li>
+
+                        
+                            
+<li class="active">
+    <a href="./">pkg_dnf</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/pkg_dnf/">pkg_dnf</a>
+    <a href="../pkg_pacman/">pkg_pacman</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/pkg_pacman/">pkg_pacman</a>
+    <a href="../pkg_pip/">pkg_pip</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/pkg_pip/">pkg_pip</a>
+    <a href="../pkg_yum/">pkg_yum</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/pkg_yum/">pkg_yum</a>
+    <a href="../pkg_zypper/">pkg_zypper</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/pkg_zypper/">pkg_zypper</a>
+    <a href="../postgres_db/">postgres_db</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/postgres_db/">postgres_db</a>
+    <a href="../postgres_role/">postgres_role</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/postgres_role/">postgres_role</a>
+    <a href="../svc_openbsd/">svc_openbsd</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/svc_openbsd/">svc_openbsd</a>
+    <a href="../svc_systemd/">svc_systemd</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/svc_systemd/">svc_systemd</a>
+    <a href="../svc_systemv/">svc_systemv</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/svc_systemv/">svc_systemv</a>
+    <a href="../svc_upstart/">svc_upstart</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/svc_upstart/">svc_upstart</a>
+    <a href="../symlink/">symlink</a>
 </li>
 
                         
                             
 <li >
-    <a href="../../items/symlink/">symlink</a>
-</li>
-
-                        
-                            
-<li >
-    <a href="../../items/user/">user</a>
+    <a href="../user/">user</a>
 </li>
 
                         
@@ -391,12 +391,12 @@
                 </li>
                 
                     <li >
-                        <a rel="next" href="../libs/">
+                        <a rel="next" href="../pkg_apt/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../../items/action/">
+                        <a rel="prev" href="../pkg_pacman/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -421,21 +421,11 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#plugins">Plugins</a></li>
+        <li class="first-level active"><a href="#dnf-package-items">dnf package items</a></li>
         
-            <li class="second-level"><a href="#finding-plugins">Finding plugins</a></li>
+            <li class="second-level"><a href="#attribute-reference">Attribute reference</a></li>
             
-        
-            <li class="second-level"><a href="#installing-plugins">Installing plugins</a></li>
-            
-        
-            <li class="second-level"><a href="#updating-plugins">Updating plugins</a></li>
-            
-        
-            <li class="second-level"><a href="#removing-a-plugin">Removing a plugin</a></li>
-            
-        
-            <li class="second-level"><a href="#writing-your-own">Writing your own</a></li>
+                <li class="third-level"><a href="#installed">installed</a></li>
             
         
     
@@ -443,28 +433,23 @@
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="plugins">Plugins</h1>
-<p>The plugin system in BundleWrap is an easy way of integrating third-party code into your repository.</p>
-<div class="alert alert-warning">While plugins are subject to some superficial code review by BundleWrap developers before being accepted, we cannot make any guarantees as to the quality and trustworthiness of plugins. Always do your due diligence before running third-party code.</div>
-
+<h1 id="dnf-package-items">dnf package items</h1>
+<p>Handles packages installed by <code>dnf</code> on RPM-based systems.</p>
+<pre><code>pkg_dnf = {
+    "foopkg": {
+        "installed": True,  # default
+    },
+    "bar": {
+        "installed": False,
+    },
+}
+</code></pre>
 <p><br></p>
-<h2 id="finding-plugins">Finding plugins</h2>
-<p>It's as easy as <code>bw repo plugin search &lt;term&gt;</code>. Or you can browse <a href="http://plugins.bundlewrap.org">plugins.bundlewrap.org</a>.</p>
+<h2 id="attribute-reference">Attribute reference</h2>
+<p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <p><br></p>
-<h2 id="installing-plugins">Installing plugins</h2>
-<p>You probably guessed it: <code>bw repo plugin install &lt;plugin&gt;</code></p>
-<p>Installing the first plugin in your repo will create a file called <code>plugins.json</code>. You should commit this file (and any files installed by the plugin of course) to version control.</p>
-<div class="alert alert-info">Avoid editing files provided by plugins at all costs. Local modifications will prevent future updates to the plugin.</div>
-
-<p><br></p>
-<h2 id="updating-plugins">Updating plugins</h2>
-<p>You can update all installed plugins with this command: <code>bw repo plugin update</code></p>
-<p><br></p>
-<h2 id="removing-a-plugin">Removing a plugin</h2>
-<p><code>bw repo plugin remove &lt;plugin&gt;</code></p>
-<p><br></p>
-<h2 id="writing-your-own">Writing your own</h2>
-<p>See the <a href="../../guide/dev_plugin/">guide on publishing your own plugins</a>.</p></div>
+<h3 id="installed">installed</h3>
+<p><code>True</code> when the package is expected to be present on the system; <code>False</code> if it should be removed.</p></div>
         
     </div>
 

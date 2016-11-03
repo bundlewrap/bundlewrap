@@ -261,6 +261,12 @@
                         
                             
 <li >
+    <a href="../../items/pkg_dnf/">pkg_dnf</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../../items/pkg_pacman/">pkg_pacman</a>
 </li>
 
@@ -428,6 +434,8 @@
             
                 <li class="third-level"><a href="#bundlewrapgroupgroup">bundlewrap.group.Group</a></li>
             
+                <li class="third-level"><a href="#bundlewraputilsfault">bundlewrap.utils.Fault</a></li>
+            
         
     
     </ul>
@@ -548,7 +556,29 @@ print(uptime.stdout)
 <p>The name of this group</p>
 <p><br></p>
 <p><strong><code>.nodes</code></strong></p>
-<p>A list of all nodes in this group (instances of <code>bundlewrap.node.Node</code>, includes subgroup members)</p></div>
+<p>A list of all nodes in this group (instances of <code>bundlewrap.node.Node</code>, includes subgroup members)</p>
+<p><br></p>
+<h3 id="bundlewraputilsfault">bundlewrap.utils.Fault</h3>
+<p>A Fault acts as a lazy stand-in object for the result of a given callback function. These objects are returned from the "vault" attached to <code>Repository</code> objects:</p>
+<pre><code>&gt;&gt;&gt; repo.vault.password_for("demo")
+&lt;bundlewrap.utils.Fault object at 0x10782b208&gt;
+</code></pre>
+<p>Only when the <code>value</code> property of a Fault is accessed or when the Fault is converted to a string, the callback function is executed. In the example above, this means that the password is only generated when it is really required (e.g. when used in a template). This is particularly useful when used in metadata in connection with <a href="../secrets/">secrets</a>. Users will be able to generate metadata with Faults in it, even if they lack the required keys for the decryption operation represented by the Fault. The key will only be required for files etc. that actually use it. If a Fault cannot be resolved (e.g. for lack of the required key), BundleWrap can just skip the item using the Fault, while still allowing other items on the same node to be applied.</p>
+<p>Faults also support some rudimentary string operations such as appending a string or another Fault, as well as some string methods:</p>
+<pre><code>&gt;&gt;&gt; f = repo.vault.password_for("1") + ":" + repo.vault.password_for("2")
+&gt;&gt;&gt; f
+&lt;bundlewrap.utils.Fault object at 0x10782b208&gt;
+&gt;&gt;&gt; f.value
+'VOd5PC:JUgYUb'
+&gt;&gt;&gt; f += " "
+&gt;&gt;&gt; f.value
+'VOd5PC:JUgYUb '
+&gt;&gt;&gt; f.strip().value
+'VOd5PC:JUgYUb'
+&gt;&gt;&gt; repo.vault.password_for("1").format_into("Password: {}").value
+'Password: VOd5PC'
+</code></pre>
+<p>These string methods are supported on Faults: <code>format</code>, <code>lower</code>, <code>lstrip</code>, <code>replace</code>, <code>rstrip</code>, <code>strip</code>, <code>upper</code>, <code>zfill</code></p></div>
         
     </div>
 
