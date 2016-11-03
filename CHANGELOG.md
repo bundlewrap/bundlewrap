@@ -1,3 +1,15 @@
+# 2.10.0
+
+2016-11-03
+
+* added pkg_dnf items
+* added rudimentary string operations on Faults
+* added Fault documentation
+* added `bw test --config-determinism` and `--metadata-determinism`
+* improved debugging facilities for metadata processor loops
+* improved handling and reporting of missing Faults
+
+
 # 2.9.1
 
 2016-10-18
