@@ -420,6 +420,13 @@ def build_parser_bw():
         help=_("show group membership for each node (deprecated, use --attrs)"),
     )
     parser_nodes.add_argument(
+        "-i",
+        "--inline",
+        action='store_true',
+        dest='inline',
+        help=_("show multiple values on the same line (use with --attrs)"),
+    )
+    parser_nodes.add_argument(
         "--os",
         action='store_true',
         dest='show_os',

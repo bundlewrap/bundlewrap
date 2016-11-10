@@ -25,6 +25,33 @@ def test_hostname(tmpdir):
     assert rcode == 0
 
 
+def test_inline(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1", "bundle2"],
+            },
+            "node2": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+    )
+    stdout, stderr, rcode = run("bw nodes -ai | grep '\tbundle' | grep bundle2 | cut -f 1", path=str(tmpdir))
+    assert stdout == b"node1\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -ai | grep '\tbundle' | grep -v bundle2 | cut -f 1", path=str(tmpdir))
+    assert stdout == b"node2\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_in_group(tmpdir):
     make_repo(
         tmpdir,

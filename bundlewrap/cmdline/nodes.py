@@ -27,18 +27,34 @@ def bw_nodes(repo, args):
                     bold(attr.ljust(ATTR_MAX_LENGTH)),
                     getattr(node, attr),
                 ))
-            for group in node.groups:
+
+            if args['inline']:
                 io.stdout("{}\t{}\t{}".format(
                     node.name.ljust(max_node_name_length),
                     bold("group".ljust(ATTR_MAX_LENGTH)),
-                    group.name,
+                    ", ".join([group.name for group in node.groups]),
                 ))
-            for bundle in node.bundles:
+            else:
+                for group in node.groups:
+                    io.stdout("{}\t{}\t{}".format(
+                        node.name.ljust(max_node_name_length),
+                        bold("group".ljust(ATTR_MAX_LENGTH)),
+                        group.name,
+                    ))
+
+            if args['inline']:
                 io.stdout("{}\t{}\t{}".format(
                     node.name.ljust(max_node_name_length),
                     bold("bundle".ljust(ATTR_MAX_LENGTH)),
-                    bundle.name,
+                    ", ".join([bundle.name for bundle in node.bundles]),
                 ))
+            else:
+                for bundle in node.bundles:
+                    io.stdout("{}\t{}\t{}".format(
+                        node.name.ljust(max_node_name_length),
+                        bold("bundle".ljust(ATTR_MAX_LENGTH)),
+                        bundle.name,
+                    ))
             continue
         line = ""
         if args['show_hostnames']:
