@@ -6,6 +6,7 @@ def test_empty(tmpdir):
     stdout, stderr, rcode = run("bw nodes", path=str(tmpdir))
     assert stdout == b""
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_single(tmpdir):
@@ -13,6 +14,7 @@ def test_single(tmpdir):
     stdout, stderr, rcode = run("bw nodes", path=str(tmpdir))
     assert stdout == b"node1\n"
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_hostname(tmpdir):
@@ -20,6 +22,7 @@ def test_hostname(tmpdir):
     stdout, stderr, rcode = run("bw nodes --attrs | grep '\thostname' | cut -f 3", path=str(tmpdir))
     assert stdout == b"node1.example.com\n"
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_in_group(tmpdir):
@@ -38,6 +41,7 @@ def test_in_group(tmpdir):
     stdout, stderr, rcode = run("bw nodes -g group1", path=str(tmpdir))
     assert stdout == b"node2\n"
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_bundles(tmpdir):
@@ -58,6 +62,7 @@ def test_bundles(tmpdir):
         "node2: bundle2",
     ]
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_groups(tmpdir):
@@ -88,3 +93,4 @@ def test_groups(tmpdir):
         "node2: group1, group4",
     ]
     assert stderr == b""
+    assert rcode == 0
