@@ -25,10 +25,13 @@ def test_parse_duration():
 
 
 def test_parse_format_inverse():
-    assert format_duration(parse_duration("0s")) == "0s"
-    assert format_duration(parse_duration("1s")) == "1s"
-    assert format_duration(parse_duration("1m")) == "1m"
-    assert format_duration(parse_duration("1h")) == "1h"
-    assert format_duration(parse_duration("1d")) == "1d"
-    assert format_duration(parse_duration("1d 4h")) == "1d 4h"
-    assert format_duration(parse_duration("1d 4h 7s")) == "1d 4h 7s"
+    for duration in (
+        "0s",
+        "1s",
+        "1m",
+        "1h",
+        "1d",
+        "1d 4h",
+        "1d 4h 7s",
+    ):
+        assert format_duration(parse_duration(duration)) == duration
