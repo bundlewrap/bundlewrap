@@ -374,9 +374,9 @@ class Repository(object):
     def groups(self):
         return sorted(self.group_dict.values())
 
-    def groups_for_node(self, node):
+    def _static_groups_for_node(self, node):
         for group in self.groups:
-            if node in group.nodes:
+            if node in group._static_nodes:
                 yield group
 
     def hash(self):

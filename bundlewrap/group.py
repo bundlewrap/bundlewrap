@@ -68,6 +68,8 @@ class Group(object):
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
         self.immediate_subgroup_patterns = infodict.get('subgroup_patterns', [])
+        self.members_add = infodict.get('members_add', None)
+        self.members_remove = infodict.get('members_remove', None)
         self.metadata = infodict.get('metadata', {})
         self.node_patterns = infodict.get('member_patterns', [])
         self.static_member_names = infodict.get('members', [])
@@ -106,17 +108,23 @@ class Group(object):
 
     @cached_property
     def nodes(self):
+        for node in self.repo.nodes:
+            if node.in_group(self.name):
+                yield node
+
+    @cached_property
+    def _static_nodes(self):
         """
         List of all nodes in this group.
         """
-        result = []
-        result += list(self._nodes_from_static_members)
-        result += list(self._nodes_from_subgroups)
-        result += list(self._nodes_from_patterns)
-        return sorted(set(result))
+        result = set()
+        result.update(self._nodes_from_members)
+        result.update(self._nodes_from_subgroups)
+        result.update(self._nodes_from_patterns)
+        return result
 
     @property
-    def _nodes_from_static_members(self):
+    def _nodes_from_members(self):
         for node_name in self.static_member_names:
             try:
                 yield self.repo.get_node(node_name)
@@ -132,7 +140,7 @@ class Group(object):
     @property
     def _nodes_from_subgroups(self):
         for subgroup in self.subgroups:
-            for node in subgroup.nodes:
+            for node in subgroup._static_nodes:
                 yield node
 
     @property
