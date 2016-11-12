@@ -139,7 +139,7 @@ class Symlink(Item):
             return None
         else:
             return {
-                'target': path_info.symlink_target,
+                'target': path_info.symlink_target if path_info.path_type == 'symlink' else "",
                 'type': path_info.path_type,
                 'owner': path_info.owner,
                 'group': path_info.group,
