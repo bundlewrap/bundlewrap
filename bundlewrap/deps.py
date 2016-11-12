@@ -460,7 +460,7 @@ def _inject_preceded_by_dependencies(items):
                     item1=triggered_item.id,
                     bundle1=triggered_item.bundle.name,
                     item2=item.id,
-                    bundle2=item.bundle.name,
+                    bundle2=item.bundle.name if item.bundle else "N/A",
                 ))
             triggered_item._precedes_items.append(item)
             item._deps.append(triggered_item.id)
