@@ -26,6 +26,9 @@ class DummyItem(object):
     def __lt__(self, other):
         return self.id < other.id
 
+    def _precedes_incorrect_item(self):
+        return False
+
     def apply(self, *args, **kwargs):
         return (Item.STATUS_OK, [])
 
@@ -385,10 +388,40 @@ def _inject_reverse_triggers(items):
     for item in items:
         for triggering_item_id in item.triggered_by:
             triggering_item = find_item(triggering_item_id, items)
-            triggering_item.triggers.append(item.id)
+            if triggering_item.id.startswith("bundle:"):  # bundle items
+                bundle_name = triggering_item.id.split(":")[1]
+                for actual_triggering_item in items:
+                    if triggering_item.bundle.name == bundle_name:
+                        actual_triggering_item.triggers.append(item.id)
+            elif triggering_item.id.startswith("tag:"):  # tag items
+                tag_name = triggering_item.id.split(":")[1]
+                for actual_triggering_item in items:
+                    if tag_name in triggering_item.tags:
+                        actual_triggering_item.triggers.append(item.id)
+            elif triggering_item.id.endswith(":"):  # type items
+                target_type = triggering_item.id[:-1]
+                for actual_triggering_item in _find_items_of_types([target_type], items):
+                    actual_triggering_item.triggers.append(item.id)
+            else:
+                triggering_item.triggers.append(item.id)
         for preceded_item_id in item.precedes:
             preceded_item = find_item(preceded_item_id, items)
-            preceded_item.preceded_by.append(item.id)
+            if preceded_item.id.startswith("bundle:"):  # bundle items
+                bundle_name = preceded_item.id.split(":")[1]
+                for actual_preceded_item in items:
+                    if actual_preceded_item.bundle.name == bundle_name:
+                        actual_preceded_item.preceded_by.append(item.id)
+            elif preceded_item.id.startswith("tag:"):  # tag items
+                tag_name = preceded_item.id.split(":")[1]
+                for actual_preceded_item in items:
+                    if tag_name in actual_preceded_item.tags:
+                        actual_preceded_item.preceded_by.append(item.id)
+            elif preceded_item.id.endswith(":"):  # type items
+                target_type = preceded_item.id[:-1]
+                for actual_preceded_item in _find_items_of_types([target_type], items):
+                    actual_preceded_item.preceded_by.append(item.id)
+            else:
+                preceded_item.preceded_by.append(item.id)
     return items
 
 
