@@ -1,3 +1,5 @@
+from os.path import join
+
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -119,5 +121,135 @@ def test_groups(tmpdir):
         "node1: group2, group3",
         "node2: group1, group4",
     ]
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_group_members_add(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {'os': 'centos'},
+            "node2": {'os': 'debian'},
+            "node3": {'os': 'ubuntu'},
+        },
+    )
+    with open(join(str(tmpdir), "groups.py"), 'w') as f:
+        f.write("""
+groups = {
+    "group1": {
+        'members_add': lambda node: node.os == 'centos',
+    },
+    "group2": {
+        'members': ["node2"],
+        'members_add': lambda node: node.os != 'centos',
+    },
+    "group3": {
+        'members_add': lambda node: not node.in_group("group2"),
+    },
+    "group4": {
+        'members': ["node3"],
+    },
+}
+    """)
+    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group1\ngroup3\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group2\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node3 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group2\ngroup3\ngroup4\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_group_members_remove(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {'os': 'centos'},
+            "node2": {'os': 'debian'},
+            "node3": {'os': 'ubuntu'},
+            "node4": {'os': 'ubuntu'},
+        },
+    )
+    with open(join(str(tmpdir), "groups.py"), 'w') as f:
+        f.write("""
+groups = {
+    "group1": {
+        'members_add': lambda node: node.os == 'ubuntu',
+    },
+    "group2": {
+        'members_add': lambda node: node.os == 'ubuntu',
+        'members_remove': lambda node: node.name == "node3",
+    },
+    "group3": {
+        'members_add': lambda node: not node.in_group("group3"),
+    },
+    "group4": {
+        'subgroups': ["group3"],
+        'members_remove': lambda node: node.os == 'debian',
+    },
+}
+    """)
+    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group3\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group3\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node3 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group1\ngroup3\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node4 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group1\ngroup2\ngroup3\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_group_members_remove_bundle(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+        nodes={
+            "node1": {},
+            "node2": {},
+        },
+    )
+    with open(join(str(tmpdir), "groups.py"), 'w') as f:
+        f.write("""
+groups = {
+    "group1": {
+        'bundles': ["bundle1"],
+        'members': ["node1", "node2"],
+    },
+    "group2": {
+        'bundles': ["bundle1", "bundle2"],
+        'members': ["node1", "node2"],
+        'members_remove': lambda node: node.name == "node2",
+    },
+}
+    """)
+    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tbundle | cut -f 3", path=str(tmpdir))
+    assert stdout == b"bundle1\nbundle2\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tbundle | cut -f 3", path=str(tmpdir))
+    assert stdout == b"bundle1\n"
     assert stderr == b""
     assert rcode == 0

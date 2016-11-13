@@ -14,6 +14,7 @@ from .deps import (
     find_item,
 )
 from .exceptions import (
+    DontCache,
     FaultUnavailable,
     ItemDependencyError,
     NodeLockedException,
@@ -356,6 +357,8 @@ class Node(object):
         self.name = name
         self._bundles = infodict.get('bundles', [])
         self._compiling_metadata = Lock()
+        self._dynamic_group_lock = Lock()
+        self._dynamic_groups_resolved = False
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
         self._ssh_conn_established = False
@@ -422,7 +425,21 @@ class Node(object):
 
     @cached_property
     def groups(self):
-        return self.repo.groups_for_node(self)
+        _groups = set(self.repo._static_groups_for_node(self))
+        if self._dynamic_group_lock.acquire(False):
+            for group in self.repo.groups:
+                if group.members_add is not None and group.members_add(self):
+                    _groups.add(group)
+                if group.members_remove is not None and group.members_remove(self):
+                    try:
+                        _groups.remove(group)
+                    except KeyError:
+                        pass
+            self._dynamic_groups_resolved = True
+            self._dynamic_group_lock.release()
+        else:
+            raise DontCache(sorted(_groups))
+        return sorted(_groups)
 
     def has_any_bundle(self, bundle_list):
         for bundle_name in bundle_list:
@@ -703,7 +720,10 @@ def build_attr_property(attr, default):
             attr=attr,
             source=attr_source,
         ))
-        return attr_value
+        if self._dynamic_groups_resolved:
+            return attr_value
+        else:
+            raise DontCache(attr_value)
     method.__name__ = str("_group_attr_{}".format(attr))  # required for cached_property
                                                           # str() for Python 2 compatibility
     return cached_property(method)
