@@ -432,6 +432,9 @@
             <li class="second-level"><a href="#members">members</a></li>
             
         
+            <li class="second-level"><a href="#members_add-and-members_remove">members_add and members_remove</a></li>
+            
+        
             <li class="second-level"><a href="#metadata">metadata</a></li>
             
         
@@ -473,6 +476,9 @@
      'group1': {
          # THIS PART IS EXPLAINED HERE
          'bundles': ["bundle1", "bundle2"],
+         'members': ["node1"],
+         'members_add': lambda node: node.os == 'debian',
+         'members_remove': lambda node: node.os == 'ubuntu',
          'member_patterns': [r"^cluster1\."],
          'metadata': {'foo': "bar"},
          'os': 'linux',
@@ -489,6 +495,11 @@
 <p><br></p>
 <h2 id="members">members</h2>
 <p>A tuple or list of node names that belong to this group.</p>
+<p><br></p>
+<h2 id="members_add-and-members_remove">members_add and members_remove</h2>
+<p>For these attributes you can provide a function that takes a node object as its only argument. The function must return a boolean. The function will be called once for every node in the repo. If <code>True</code>, this node will be added (<code>members_add</code>) to or removed (<code>members_remove</code>) from this group.</p>
+<div class="alert alert-warning">Inside your function you may query node attributes and groups, but you will not see groups or attributes added as a result of a different `members_add` / `members_remove` function. Only attributes and groups that have been set statically will be available. You can, however, remove a node with <code>members_remove</code> that you added with <code>members_add</code> (but not vice-versa).</div>
+
 <p><br></p>
 <h2 id="metadata">metadata</h2>
 <p>A dictionary that will be accessible from each node's <code>node.metadata</code>. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.</p>

@@ -435,12 +435,12 @@
             
                 <li class="third-level"><a href="#is-there-a-probing-mechanism-like-ohai">Is there a probing mechanism like Ohai?</a></li>
             
-                <li class="third-level"><a href="#is-there-a-way-to-remove-any-unmanaged-filesdirectories-in-a-directory">Is there a way to remove any unmanaged files/directories in a directory?</a></li>
-            
                 <li class="third-level"><a href="#is-bundlewrap-secure">Is BundleWrap secure?</a></li>
             
         
             <li class="second-level"><a href="#the-bundlewrap-project">The BundleWrap Project</a></li>
+            
+                <li class="third-level"><a href="#why-doesnt-bundlewrap-provide-pre-built-community-bundles">Why doesn't BundleWrap provide pre-built community bundles?</a></li>
             
                 <li class="third-level"><a href="#why-do-contributors-have-to-sign-a-copyright-assignment-agreement">Why do contributors have to sign a Copyright Assignment Agreement?</a></li>
             
@@ -469,13 +469,14 @@
 <h3 id="is-there-a-probing-mechanism-like-ohai">Is there a probing mechanism like Ohai?</h3>
 <p>No. BundleWrap is meant to be very push-focused. The node should not have any say in what configuration it will receive.</p>
 <p><br></p>
-<h3 id="is-there-a-way-to-remove-any-unmanaged-filesdirectories-in-a-directory">Is there a way to remove any unmanaged files/directories in a directory?</h3>
-<p>Not at the moment. We're tracking this topic in issue <a href="https://github.com/bundlewrap/bundlewrap/issues/56">#56</a>.</p>
-<p><br></p>
 <h3 id="is-bundlewrap-secure">Is BundleWrap secure?</h3>
 <p>BundleWrap is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a BundleWrap repository that could compromise your machine. You should only use trusted repositories and plugins. We also recommend following commit logs to your repos.</p>
 <p><br></p>
 <h2 id="the-bundlewrap-project">The BundleWrap Project</h2>
+<h3 id="why-doesnt-bundlewrap-provide-pre-built-community-bundles">Why doesn't BundleWrap provide pre-built community bundles?</h3>
+<p>In our experience, bundles for even the most common pieces of software always contain some opinionated bits specific to local infrastructure. Making bundles truly universal (e.g. in terms of supported Linux distributions) would mean a lot of bloat. And since local modifications are hard to reconcile with an upstream community repository, bundles would have to be very feature-complete to be useful to the majority of users, increasing bloat even more.</p>
+<p>Maintaining bundles and thus configuration for different pieces of software is therefore out of scope for the BundleWrap project. While it might seem tedious when you're getting started, with some practice, writing your own bundles will become both easy and precise in terms of infrastructure fit.</p>
+<p><br></p>
 <h3 id="why-do-contributors-have-to-sign-a-copyright-assignment-agreement">Why do contributors have to sign a Copyright Assignment Agreement?</h3>
 <p>While it sounds scary, Copyright assignment is used to improve the enforceability of the GPL. Even the FSF does it, <a href="http://www.gnu.org/licenses/why-assign.html">read their explanation why</a>. The agreement used by BundleWrap is from <a href="http://harmonyagreements.org">harmonyagreements.org</a>.</p>
 <p>If you're still concerned, please do not hesitate to contact <a href="https://twitter.com/trehn">@trehn</a>.</p>
