@@ -1,3 +1,14 @@
+# 2.11.0
+
+2016-11-14
+
+* added `bw nodes --inline`
+* added `Group.members_add` and `.members_remove`
+* fixed symlinks not overwriting other path types
+* fixed `precedes` and `triggers` for bundle, tag and type items
+* fixed diffs for sets and tuples
+
+
 # 2.10.0
 
 2016-11-03
