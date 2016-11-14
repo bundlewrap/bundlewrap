@@ -40,6 +40,14 @@ BundleWrap is more concerned with safety than security. Due to its design, it is
 
 ## The BundleWrap Project
 
+### Why doesn't BundleWrap provide pre-built community bundles?
+
+In our experience, bundles for even the most common pieces of software always contain some opinionated bits specific to local infrastructure. Making bundles truly universal (e.g. in terms of supported Linux distributions) would mean a lot of bloat. And since local modifications are hard to reconcile with an upstream community repository, bundles would have to be very feature-complete to be useful to the majority of users, increasing bloat even more.
+
+Maintaining bundles and thus configuration for different pieces of software is therefore out of scope for the BundleWrap project. While it might seem tedious when you're getting started, with some practice, writing your own bundles will become both easy and precise in terms of infrastructure fit.
+
+<br>
+
 ### Why do contributors have to sign a Copyright Assignment Agreement?
 
 While it sounds scary, Copyright assignment is used to improve the enforceability of the GPL. Even the FSF does it, [read their explanation why](http://www.gnu.org/licenses/why-assign.html). The agreement used by BundleWrap is from [harmonyagreements.org](http://harmonyagreements.org).
