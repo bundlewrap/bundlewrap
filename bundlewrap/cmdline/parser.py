@@ -108,7 +108,7 @@ def build_parser_bw():
         "--parallel-items",
         default=bw_apply_p_items_default,
         dest='item_workers',
-        help=_("number of items to apply to simultaneously on each node "
+        help=_("number of items to apply simultaneously on each node "
                "(defaults to {})").format(bw_apply_p_items_default),
         type=int,
     )
