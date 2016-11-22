@@ -63,12 +63,12 @@ def download(
             f.write(result.stdout)
     else:
         raise RemoteException(_(
-            "reading file '{path}' on {host} failed: {error}").format(
-                error=force_text(result.stderr) + force_text(result.stdout),
-                host=hostname,
-                path=remote_path,
-            )
-        )
+            "reading file '{path}' on {host} failed: {error}"
+        ).format(
+            error=force_text(result.stderr) + force_text(result.stdout),
+            host=hostname,
+            path=remote_path,
+        ))
 
 
 class RunResult(object):
