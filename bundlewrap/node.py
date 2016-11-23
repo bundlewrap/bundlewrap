@@ -361,6 +361,7 @@ class Node(object):
         self._dynamic_groups_resolved = False  # None means we're currently doing it
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
+        self._running_metadata_processors = False
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
         self.add_ssh_host_keys = False
@@ -610,6 +611,11 @@ class Node(object):
         because they will be fed all metadata updates until no more
         changes are made by any metadata processor.
         """
+        if not self._running_metadata_processors:
+            raise RuntimeError(_(
+                "node.partial_metadata must not be called from outside a metadata processor "
+                "(node was '{}')"
+            ).format(self.name))
         return self.repo._metadata_for_node(self.name, partial=True)
 
     def run(self, command, may_fail=False, log_output=False):

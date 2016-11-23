@@ -498,6 +498,7 @@ class Repository(object):
                 if QUIT_EVENT.is_set():
                     break
                 node = self.get_node(node_name)
+                node._running_metadata_processors = True
                 with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
                     for metadata_processor_name, metadata_processor in node.metadata_processors:
                         iterations.setdefault((node.name, metadata_processor_name), 1)
@@ -531,6 +532,7 @@ class Repository(object):
                             ))
                             self._node_metadata_partial[node.name] = processed
                             modified = True
+                    node._running_metadata_processors = False
             if not modified:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
                     # During metadata processor execution, partial metadata may
