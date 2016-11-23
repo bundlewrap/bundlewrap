@@ -191,15 +191,18 @@ def run(
     result.stderr = stderr_lb.record.getvalue()
     result.return_code = ssh_process.returncode
 
-    if result.return_code != 0 and (not ignore_failure or result.return_code == 255):
-        raise RemoteException(_(
-            "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}"
+    if result.return_code != 0:
+        error_msg = _(
+            "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}\n\n"
         ).format(
             command=command,
             host=hostname,
             rcode=result.return_code,
             result=force_text(result.stdout) + force_text(result.stderr),
-        ))
+        )
+        io.debug(error_msg)
+        if not ignore_failure or result.return_code == 255:
+            raise RemoteException(error_msg)
     return result
 
 

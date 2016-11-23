@@ -94,8 +94,8 @@ class Action(Item):
         try:
             self.run()
             return (self.STATUS_ACTION_SUCCEEDED, None)
-        except ActionFailure:
-            return (self.STATUS_FAILED, None)
+        except ActionFailure as exc:
+            return (self.STATUS_FAILED, [str(exc)])
 
     def apply(self, *args, **kwargs):
         return self.get_result(*args, **kwargs)
@@ -136,33 +136,15 @@ class Action(Item):
 
         if self.attributes['expected_return_code'] is not None and \
                 not result.return_code == self.attributes['expected_return_code']:
-            raise ActionFailure(_(
-                "wrong return code for action '{action}' in bundle '{bundle}': "
-                "expected {ecode}, but was {rcode}"
-            ).format(
-                action=self.name,
-                bundle=self.bundle.name,
-                ecode=self.attributes['expected_return_code'],
-                rcode=result.return_code,
-            ))
+            raise ActionFailure(_("wrong return code: {}").format(result.return_code))
 
         if self.attributes['expected_stderr'] is not None and \
                 result.stderr_text != self.attributes['expected_stderr']:
-            raise ActionFailure(_(
-                "wrong stderr for action '{action}' in bundle '{bundle}'"
-            ).format(
-                action=self.name,
-                bundle=self.bundle.name,
-            ))
+            raise ActionFailure(_("wrong stderr"))
 
         if self.attributes['expected_stdout'] is not None and \
                 result.stdout_text != self.attributes['expected_stdout']:
-            raise ActionFailure(_(
-                "wrong stdout for action '{action}' in bundle '{bundle}'"
-            ).format(
-                action=self.name,
-                bundle=self.bundle.name,
-            ))
+            raise ActionFailure(_("wrong stdout"))
 
         return result
 
