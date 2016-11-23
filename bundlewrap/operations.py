@@ -126,7 +126,8 @@ def run(
         ssh_command.extend(split(extra_args))
     ssh_command.append(hostname)
     ssh_command.append(wrapper_outer.format(quote(wrapper_inner.format(command))))
-    io.debug("running: {}".format(" ".join(ssh_command)))
+    cmd_id = randstr(length=4).upper()
+    io.debug("running command with ID {}: {}".format(cmd_id, " ".join(ssh_command)))
 
     ssh_process = Popen(
         ssh_command,
@@ -184,7 +185,10 @@ def run(
         for fd in (stdout_fd_r, stderr_fd_r, stderr_fd_w):
             close(fd)
 
-    io.debug("command finished with return code {}".format(ssh_process.returncode))
+    io.debug("command with ID {} finished with return code {}".format(
+        cmd_id,
+        ssh_process.returncode,
+    ))
 
     result = RunResult()
     result.stdout = stdout_lb.record.getvalue()
@@ -193,10 +197,12 @@ def run(
 
     if result.return_code != 0:
         error_msg = _(
-            "Non-zero return code ({rcode}) running '{command}' on '{host}':\n\n{result}\n\n"
+            "Non-zero return code ({rcode}) running '{command}' "
+            "with ID {id} on '{host}':\n\n{result}\n\n"
         ).format(
             command=command,
             host=hostname,
+            id=cmd_id,
             rcode=result.return_code,
             result=force_text(result.stdout) + force_text(result.stderr),
         )
