@@ -240,12 +240,12 @@ def upload(
 
     if scp_process.returncode != 0:
         raise RemoteException(_(
-            "Upload to {host} failed for {failed}:\n\n{result}").format(
-                failed=remote_path,
-                host=hostname,
-                result=force_text(stdout) + force_text(stderr),
-            )
-        )
+            "Upload to {host} failed for {failed}:\n\n{result}\n\n"
+        ).format(
+            failed=remote_path,
+            host=hostname,
+            result=force_text(stdout) + force_text(stderr),
+        ))
 
     if owner or group:
         if group:
