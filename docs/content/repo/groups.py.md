@@ -62,7 +62,7 @@ A tuple or list of node names that belong to this group.
 
 For these attributes you can provide a function that takes a node object as its only argument. The function must return a boolean. The function will be called once for every node in the repo. If `True`, this node will be added (`members_add`) to or removed (`members_remove`) from this group.
 
-<div class="alert alert-warning">Inside your function you may query node attributes and groups, but you will not see groups or attributes added as a result of a different `members_add` / `members_remove` function. Only attributes and groups that have been set statically will be available. You can, however, remove a node with <code>members_remove</code> that you added with <code>members_add</code> (but not vice-versa).</div>
+<div class="alert alert-warning">Inside your function you may query node attributes and groups, but you will not see groups or attributes added as a result of a different `members_add` / `members_remove` function. Only attributes and groups that have been set statically will be available. You can, however, remove a node with <code>members_remove</code> that you added with <code>members_add</code> (but not vice-versa).<br>You should also avoid using <code>node.metadata</code> here. Since metadata ultimately depends on group memberships, only metadata set in <code>nodes.py</code> will be returned here.</div>
 
 <br>
 

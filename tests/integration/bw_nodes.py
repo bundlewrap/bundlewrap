@@ -253,3 +253,36 @@ groups = {
     assert stdout == b"bundle1\n"
     assert stderr == b""
     assert rcode == 0
+
+
+def test_group_members_partial_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'metadata': {'foo': 1},
+            },
+            "node2": {},
+        },
+    )
+    with open(join(str(tmpdir), "groups.py"), 'w') as f:
+        f.write("""
+groups = {
+    "group1": {
+        'members_add': lambda node: node.metadata.get('foo') == 1,
+    },
+    "group2": {
+        'members': ["node2"],
+        'metadata': {'foo': 1},
+    },
+}
+    """)
+    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group1\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group2\n"
+    assert stderr == b""
+    assert rcode == 0

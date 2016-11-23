@@ -358,7 +358,7 @@ class Node(object):
         self._bundles = infodict.get('bundles', [])
         self._compiling_metadata = Lock()
         self._dynamic_group_lock = Lock()
-        self._dynamic_groups_resolved = False
+        self._dynamic_groups_resolved = False  # None means we're currently doing it
         self._metadata_so_far = {}
         self._node_metadata = infodict.get('metadata', {})
         self._ssh_conn_established = False
@@ -427,6 +427,7 @@ class Node(object):
     def groups(self):
         _groups = set(self.repo._static_groups_for_node(self))
         if self._dynamic_group_lock.acquire(False):
+            self._dynamic_groups_resolved = None
             for group in self.repo.groups:
                 if group.members_add is not None and group.members_add(self):
                     _groups.add(group)
@@ -575,7 +576,13 @@ class Node(object):
         Returns full metadata for a node. MUST NOT be used from inside a
         metadata processor. Use .partial_metadata instead.
         """
-        return self.repo._metadata_for_node(self.name, partial=False)
+        if self._dynamic_groups_resolved is None:
+            # return only metadata set directly at the node level if
+            # we're still in the process of figuring out which groups
+            # we belong to
+            return self._node_metadata
+        else:
+            return self.repo._metadata_for_node(self.name, partial=False)
 
     def metadata_hash(self):
         return hash_metadata(self.metadata)
