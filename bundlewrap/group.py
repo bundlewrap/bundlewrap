@@ -114,12 +114,8 @@ class Group(object):
 
     @cached_property
     def _static_nodes(self):
-        """
-        List of all nodes in this group.
-        """
         result = set()
         result.update(self._nodes_from_members)
-        result.update(self._nodes_from_subgroups)
         result.update(self._nodes_from_patterns)
         return result
 
@@ -136,12 +132,6 @@ class Group(object):
                     group=self.name,
                     node=node_name,
                 ))
-
-    @property
-    def _nodes_from_subgroups(self):
-        for subgroup in self.subgroups:
-            for node in subgroup._static_nodes:
-                yield node
 
     @property
     def _nodes_from_patterns(self):

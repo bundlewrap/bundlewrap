@@ -427,20 +427,50 @@ class Node(object):
     def groups(self):
         _groups = set(self.repo._static_groups_for_node(self))
         if self._dynamic_group_lock.acquire(False):
+            cache_result = True
             self._dynamic_groups_resolved = None
-            for group in self.repo.groups:
-                if group.members_add is not None and group.members_add(self):
-                    _groups.add(group)
+            # first we remove ourselves from all static groups whose
+            # .members_remove matches us
+            for group in _groups:
                 if group.members_remove is not None and group.members_remove(self):
                     try:
                         _groups.remove(group)
                     except KeyError:
                         pass
+            # now add all groups whose .members_add (but not .members_remove)
+            # matches us
+            _groups = _groups.union(self._groups_dynamic)
             self._dynamic_groups_resolved = True
             self._dynamic_group_lock.release()
         else:
+            cache_result = False
+
+        # we have to add parent groups at the very end, since we might
+        # have added or removed subgroups thru .members_add/remove
+        for group in list(_groups):
+            for parent_group in group.parent_groups:
+                _groups.add(parent_group)
+
+        if cache_result:
+            return sorted(_groups)
+        else:
             raise DontCache(sorted(_groups))
-        return sorted(_groups)
+
+    @property
+    def _groups_dynamic(self):
+        """
+        Returns all groups whose members_add matches this node.
+        """
+        _groups = set()
+        for group in self.repo.groups:
+            if group.members_add is not None and group.members_add(self):
+                _groups.add(group)
+            if group.members_remove is not None and group.members_remove(self):
+                try:
+                    _groups.remove(group)
+                except KeyError:
+                    pass
+        return _groups
 
     def has_any_bundle(self, bundle_list):
         for bundle_name in bundle_list:
