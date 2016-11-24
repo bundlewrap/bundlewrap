@@ -198,7 +198,7 @@ groups = {
 }
     """)
     stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
-    assert stdout == b"group3\n"
+    assert stdout == b"group3\ngroup4\n"
     assert stderr == b""
     assert rcode == 0
 
@@ -208,12 +208,12 @@ groups = {
     assert rcode == 0
 
     stdout, stderr, rcode = run("bw nodes -a node3 | grep \tgroup | cut -f 3", path=str(tmpdir))
-    assert stdout == b"group1\ngroup3\n"
+    assert stdout == b"group1\ngroup3\ngroup4\n"
     assert stderr == b""
     assert rcode == 0
 
     stdout, stderr, rcode = run("bw nodes -a node4 | grep \tgroup | cut -f 3", path=str(tmpdir))
-    assert stdout == b"group1\ngroup2\ngroup3\n"
+    assert stdout == b"group1\ngroup2\ngroup3\ngroup4\n"
     assert stderr == b""
     assert rcode == 0
 

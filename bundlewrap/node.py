@@ -426,12 +426,14 @@ class Node(object):
     @cached_property
     def groups(self):
         _groups = set(self.repo._static_groups_for_node(self))
+        # lock to avoid infinite recursion when .members_add/remove
+        # use stuff like node.in_group() that in turn calls this function
         if self._dynamic_group_lock.acquire(False):
             cache_result = True
             self._dynamic_groups_resolved = None
             # first we remove ourselves from all static groups whose
             # .members_remove matches us
-            for group in _groups:
+            for group in list(_groups):
                 if group.members_remove is not None and group.members_remove(self):
                     try:
                         _groups.remove(group)
@@ -449,7 +451,15 @@ class Node(object):
         # have added or removed subgroups thru .members_add/remove
         for group in list(_groups):
             for parent_group in group.parent_groups:
-                _groups.add(parent_group)
+                if cache_result:
+                    with self._dynamic_group_lock:
+                        if (
+                            not parent_group.members_remove or
+                            not parent_group.members_remove(self)
+                        ):
+                            _groups.add(parent_group)
+                else:
+                    _groups.add(parent_group)
 
         if cache_result:
             return sorted(_groups)
