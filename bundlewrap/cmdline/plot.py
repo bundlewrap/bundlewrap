@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import re
+
 from ..deps import prepare_dependencies
 from ..utils import graph_for_items, names
 from ..utils.cmdline import get_group, get_node
@@ -104,14 +106,21 @@ def plot_node_groups(node):
         for subgroup in group.immediate_subgroup_names:
             if subgroup in names(node.groups):
                 yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
+        for pattern in group.immediate_subgroup_patterns:
+            compiled_pattern = re.compile(pattern)
+            for group2 in node.groups:
+                if compiled_pattern.search(group2.name) is not None and group2 != group:
+                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, group2.name)
 
     for group in node.groups:
-        if node in group._nodes_from_static_members:
+        if node in group._nodes_from_members:
             yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                 group.name, node.name)
-
-        if node in group._nodes_from_patterns:
+        elif node in group._nodes_from_patterns:
             yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
+                group.name, node.name)
+        elif group in node._groups_dynamic:
+            yield "\"{}\" -> \"{}\" [color=\"#FF0000\",penwidth=2]".format(
                 group.name, node.name)
 
     yield "}"
