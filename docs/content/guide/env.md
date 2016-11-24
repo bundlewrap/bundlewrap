@@ -12,6 +12,13 @@ You can also use `bw -a ...` to achieve the same effect.
 Colors are enabled by default. Setting this variable to `0` tells BundleWrap to never use any ANSI color escape sequences.
 
 
+## `BW_DEBUG_LOG_DIR`
+
+Set this to an existing directory path to have BundleWrap write debug logs there (even when you're running `bw` without `--debug`).
+
+<div class="alert alert-info">Debug logs are verbose and BundleWrap does not rotate them for you. Putting them on a tmpfs or ramdisk will save your SSD and get rid of old logs every time you reboot your machine.</div>
+
+
 ## `BW_HARDLOCK_EXPIRY`
 
 [Hard locks](locks.md) are automatically ignored after some time. By default, it's `"8h"`. You can use this variable to override that default.

@@ -3,7 +3,8 @@ from datetime import datetime
 from errno import EPIPE
 import fcntl
 from functools import wraps
-from os import _exit, environ, kill
+from os import _exit, environ, getpid, kill
+from os.path import join
 from select import select
 from signal import signal, SIG_DFL, SIGINT, SIGTERM
 import struct
@@ -38,6 +39,18 @@ def add_debug_timestamp(f):
     def wrapped(self, msg, **kwargs):
         if self.debug_mode:
             msg = datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") + msg
+        return f(self, msg, **kwargs)
+    return wrapped
+
+
+def capture_for_debug_logfile(f):
+    @wraps(f)
+    def wrapped(self, msg, **kwargs):
+        if self.debug_log_file:
+            self.debug_log_file.write(
+                datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") +
+                ANSI_ESCAPE.sub("", msg).rstrip("\n") + "\n"
+            )
         return f(self, msg, **kwargs)
     return wrapped
 
@@ -108,6 +121,7 @@ class IOManager(object):
     """
     def __init__(self):
         self._active = False
+        self.debug_log_file = None
         self.debug_mode = False
         self.jobs = []
         self.lock = Lock()
@@ -123,6 +137,14 @@ class IOManager(object):
 
     def activate(self):
         self._active = True
+        if 'BW_DEBUG_LOG_DIR' in environ:
+            self.debug_log_file = open(join(
+                environ['BW_DEBUG_LOG_DIR'],
+                "{}_{}.log".format(
+                    datetime.now().strftime("%Y-%m-%d-%H-%M"),
+                    getpid(),
+                ),
+            ), 'a')
         self._signal_handler_thread.start()
         signal(SIGINT, sigint_handler)
 
@@ -167,9 +189,12 @@ class IOManager(object):
         self._active = False
         signal(SIGINT, SIG_DFL)
         self._signal_handler_thread.join()
+        if self.debug_log_file:
+            self.debug_log_file.close()
 
     @clear_formatting
     @add_debug_indicator
+    @capture_for_debug_logfile
     @add_debug_timestamp
     def debug(self, msg, append_newline=True):
         if self.debug_mode:
@@ -194,12 +219,14 @@ class IOManager(object):
             self._write_current_job()
 
     @clear_formatting
+    @capture_for_debug_logfile
     @add_debug_timestamp
     def stderr(self, msg, append_newline=True):
         with self.lock:
             self._write(msg, append_newline=append_newline, err=True)
 
     @clear_formatting
+    @capture_for_debug_logfile
     @add_debug_timestamp
     def stdout(self, msg, append_newline=True):
         with self.lock:
