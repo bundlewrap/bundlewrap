@@ -52,13 +52,18 @@ def plot_group(groups, nodes, show_nodes):
 
     if show_nodes:
         for group in groups:
-            for node in group._nodes_from_static_members:
+            for node in group._nodes_from_members:
                 yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                     group.name, node.name)
 
             for node in group._nodes_from_patterns:
                 yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
                     group.name, node.name)
+
+            for node in nodes:
+                if group in node._groups_dynamic:
+                    yield "\"{}\" -> \"{}\" [color=\"#FF0000\",penwidth=2]".format(
+                        group.name, node.name)
 
     yield "}"
 
