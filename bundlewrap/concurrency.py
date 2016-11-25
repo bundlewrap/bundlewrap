@@ -44,6 +44,9 @@ class WorkerPool(object):
         """
         Blocks until a result from a worker is received.
         """
+        io.debug(_("worker pool {pool} waiting for next task to complete").format(
+            pool=self.pool_id,
+        ))
         while True:
             # we must use a timeout here to allow Python <3.3 to call
             # its SIGINT handler
@@ -79,6 +82,13 @@ class WorkerPool(object):
             exception.__task_id = task_id
             raise exception
         else:
+            io.debug(_(
+                "worker pool {pool} delivering result of {task} on worker #{worker}"
+            ).format(
+                pool=self.pool_id,
+                task=task_id,
+                worker=worker_id,
+            ))
             return (task_id, future.result(), datetime.now() - start_time)
 
     def start_task(self, target=None, task_id=None, args=None, kwargs=None):
@@ -98,6 +108,11 @@ class WorkerPool(object):
         task_id = "unnamed_task_{}".format(randint(1, 99999)) if task_id is None else task_id
         worker_id = self.idle_workers.pop()
 
+        io.debug(_("worker pool {pool} is starting task {task} on worker #{worker}").format(
+            pool=self.pool_id,
+            task=task_id,
+            worker=worker_id,
+        ))
         self.pending_futures[self.executor.submit(target, *args, **kwargs)] = {
             'start_time': datetime.now(),
             'task_id': task_id,
