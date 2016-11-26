@@ -141,7 +141,7 @@ class IOManager(object):
             self.debug_log_file = open(join(
                 environ['BW_DEBUG_LOG_DIR'],
                 "{}_{}.log".format(
-                    datetime.now().strftime("%Y-%m-%d-%H-%M"),
+                    datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                     getpid(),
                 ),
             ), 'a')
