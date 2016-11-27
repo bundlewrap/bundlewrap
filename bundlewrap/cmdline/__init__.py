@@ -104,6 +104,7 @@ def main(*args, **kwargs):
 
     io.debug_mode = pargs.debug
     io.activate()
+    io.debug(_("invocation: {}").format(" ".join(argv)))
 
     if 'BWADDHOSTKEYS' in environ:  # TODO remove in 3.0.0
         environ.setdefault('BW_ADD_HOST_KEYS', environ['BWADDHOSTKEYS'])
@@ -146,4 +147,7 @@ def main(*args, **kwargs):
     # convert all string args into text
     text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}
 
-    pargs.func(repo, text_pargs)
+    try:
+        pargs.func(repo, text_pargs)
+    finally:
+        io.deactivate()
