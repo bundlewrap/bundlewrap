@@ -1,3 +1,13 @@
+# 2.12.0
+
+2016-11-28
+
+* added `BW_DEBUG_LOG_DIR`
+* improved reporting of action failures
+* fixed `bw plot groups` and `bw plot groups-for-node`
+* fixed access to partial metadata in `Group.members_add` and `_remove`
+
+
 # 2.11.0
 
 2016-11-14
