@@ -122,7 +122,7 @@ class WorkerPool(object):
     def run(self):
         io.debug(_("spinning up worker pool {pool}").format(pool=self.pool_id))
         processed_results = []
-        exit_code = 0
+        exit_code = None
         self.executor = ThreadPoolExecutor(max_workers=self.number_of_workers)
         try:
             while (
@@ -142,7 +142,12 @@ class WorkerPool(object):
                     try:
                         result = self._get_result()
                     except SystemExit as exc:
-                        exit_code = exc.code
+                        if exit_code is None:
+                            # Don't overwrite exit code if it has already been set.
+                            # This may be a worker exiting with 0 only because
+                            # a previous worker raised SystemExit with 1.
+                            # We must preserve that original exit code.
+                            exit_code = exc.code
                         # just make sure QUIT_EVENT is set and continue
                         # waiting for pending results
                         QUIT_EVENT.set()
@@ -160,7 +165,7 @@ class WorkerPool(object):
             if QUIT_EVENT.is_set():
                 # we have reaped all our workers, let's stop this thread
                 # before it does anything else
-                exit(exit_code)
+                exit(0 if exit_code is None else exit_code)
             return processed_results
         finally:
             io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
