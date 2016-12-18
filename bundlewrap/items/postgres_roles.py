@@ -79,9 +79,9 @@ class PostgresRole(Item):
         return cdict
 
     def fix(self, status):
-        if not status.cdict:
+        if status.must_be_deleted:
             delete_role(self.node, self.name)
-        elif not status.sdict:
+        elif status.must_be_created:
             fix_role(self.node, self.name, self.attributes, create=True)
         else:
             fix_role(self.node, self.name, self.attributes)
