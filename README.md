@@ -5,10 +5,6 @@ For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and
 ------------------------------------------------------------------------
 
 <a href="https://pypi.python.org/pypi/bundlewrap/">
-    <img src="http://img.shields.io/pypi/dm/bundlewrap.svg" alt="Downloads per month">
-</a>
-&nbsp;
-<a href="https://pypi.python.org/pypi/bundlewrap/">
     <img src="http://img.shields.io/pypi/v/bundlewrap.svg" alt="Latest Version">
 </a>
 &nbsp;
