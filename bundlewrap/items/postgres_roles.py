@@ -79,9 +79,9 @@ class PostgresRole(Item):
         return cdict
 
     def fix(self, status):
-        if not status.cdict:
+        if status.must_be_deleted:
             delete_role(self.node, self.name)
-        elif not status.sdict:
+        elif status.must_be_created:
             fix_role(self.node, self.name, self.attributes, create=True)
         else:
             fix_role(self.node, self.name, self.attributes)
@@ -99,13 +99,14 @@ class PostgresRole(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if attributes.get('password') is None and attributes.get('password_hash') is None:
-            raise BundleError(_(
-                "expected either 'password' or 'password_hash' on {item} in bundle '{bundle}'"
-            ).format(
-                bundle=bundle.name,
-                item=item_id,
-            ))
+        if not attributes.get('delete', False):
+            if attributes.get('password') is None and attributes.get('password_hash') is None:
+                raise BundleError(_(
+                    "expected either 'password' or 'password_hash' on {item} in bundle '{bundle}'"
+                ).format(
+                    bundle=bundle.name,
+                    item=item_id,
+                ))
         if attributes.get('password') is not None and attributes.get('password_hash') is not None:
             raise BundleError(_(
                 "can't define both 'password' and 'password_hash' on {item} in bundle '{bundle}'"

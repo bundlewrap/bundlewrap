@@ -61,11 +61,11 @@ class PostgresDB(Item):
             return {'owner': self.attributes['owner']}
 
     def fix(self, status):
-        if not status.cdict:
+        if status.must_be_deleted:
             drop_db(self.node, self.name)
-        elif not status.sdict:
+        elif status.must_be_created:
             create_db(self.node, self.name, self.attributes['owner'])
-        elif 'owner' in status.keys:
+        elif 'owner' in status.keys_to_fix:
             set_owner(self.node, self.name, self.attributes['owner'])
         else:
             raise AssertionError("this shouldn't happen")
