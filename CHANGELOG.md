@@ -1,3 +1,12 @@
+# 2.12.1
+
+2016-12-20
+
+* fixed exception when changing owner of postgres databases
+* fixed postgres roles requiring a password even when deleted
+* fixed incorrect exit codes in some situations with `bw test`
+
+
 # 2.12.0
 
 2016-11-28
