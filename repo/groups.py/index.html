@@ -498,7 +498,7 @@
 <p><br></p>
 <h2 id="members_add-and-members_remove">members_add and members_remove</h2>
 <p>For these attributes you can provide a function that takes a node object as its only argument. The function must return a boolean. The function will be called once for every node in the repo. If <code>True</code>, this node will be added (<code>members_add</code>) to or removed (<code>members_remove</code>) from this group.</p>
-<div class="alert alert-warning">Inside your function you may query node attributes and groups, but you will not see groups or attributes added as a result of a different `members_add` / `members_remove` function. Only attributes and groups that have been set statically will be available. You can, however, remove a node with <code>members_remove</code> that you added with <code>members_add</code> (but not vice-versa).</div>
+<div class="alert alert-warning">Inside your function you may query node attributes and groups, but you will not see groups or attributes added as a result of a different <code>members_add</code> / <code>members_remove</code> function. Only attributes and groups that have been set statically will be available. You can, however, remove a node with <code>members_remove</code> that you added with <code>members_add</code> (but not vice-versa).<br>You should also avoid using <code>node.metadata</code> here. Since metadata ultimately depends on group memberships, only metadata set in <code>nodes.py</code> will be returned here.</div>
 
 <p><br></p>
 <h2 id="metadata">metadata</h2>

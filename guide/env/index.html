@@ -429,6 +429,9 @@
             <li class="second-level"><a href="#bw_colors">BW_COLORS</a></li>
             
         
+            <li class="second-level"><a href="#bw_debug_log_dir">BW_DEBUG_LOG_DIR</a></li>
+            
+        
             <li class="second-level"><a href="#bw_hardlock_expiry">BW_HARDLOCK_EXPIRY</a></li>
             
         
@@ -458,6 +461,10 @@
 <p>You can also use <code>bw -a ...</code> to achieve the same effect.</p>
 <h2 id="bw_colors"><code>BW_COLORS</code></h2>
 <p>Colors are enabled by default. Setting this variable to <code>0</code> tells BundleWrap to never use any ANSI color escape sequences.</p>
+<h2 id="bw_debug_log_dir"><code>BW_DEBUG_LOG_DIR</code></h2>
+<p>Set this to an existing directory path to have BundleWrap write debug logs there (even when you're running <code>bw</code> without <code>--debug</code>).</p>
+<div class="alert alert-info">Debug logs are verbose and BundleWrap does not rotate them for you. Putting them on a tmpfs or ramdisk will save your SSD and get rid of old logs every time you reboot your machine.</div>
+
 <h2 id="bw_hardlock_expiry"><code>BW_HARDLOCK_EXPIRY</code></h2>
 <p><a href="../locks/">Hard locks</a> are automatically ignored after some time. By default, it's <code>"8h"</code>. You can use this variable to override that default.</p>
 <h2 id="bw_identity"><code>BW_IDENTITY</code></h2>
