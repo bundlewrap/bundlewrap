@@ -1,3 +1,4 @@
+from json import loads
 from os.path import join
 
 from bundlewrap.utils.testing import make_repo, run
@@ -284,5 +285,49 @@ groups = {
 
     stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group2\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_group_members_remove_based_on_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'metadata': {'remove': False},
+            },
+            "node2": {},
+        },
+    )
+    with open(join(str(tmpdir), "groups.py"), 'w') as f:
+        f.write("""
+groups = {
+    "group1": {
+        'members_add': lambda node: not node.metadata.get('remove', False),
+        'members_remove': lambda node: node.metadata.get('remove', False),
+    },
+    "group2": {
+        'members': ["node2"],
+        'metadata': {'remove': True},
+    },
+    "group3": {
+        'subgroups': ["group1"],
+        'members_remove': lambda node: node.name.endswith("1") and node.metadata.get('redherring', True),
+    },
+}
+    """)
+    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group1\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    assert stdout == b"group1\ngroup2\ngroup3\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    # make sure there is no metadata deadlock
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode('utf-8')) == {'remove': False}
     assert stderr == b""
     assert rcode == 0
