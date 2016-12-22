@@ -453,11 +453,13 @@ class Node(object):
             for parent_group in group.parent_groups:
                 if cache_result:
                     with self._dynamic_group_lock:
+                        self._dynamic_groups_resolved = None
                         if (
                             not parent_group.members_remove or
                             not parent_group.members_remove(self)
                         ):
                             _groups.add(parent_group)
+                        self._dynamic_groups_resolved = True
                 else:
                     _groups.add(parent_group)
 
