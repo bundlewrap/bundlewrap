@@ -475,3 +475,19 @@ def test_config_determinism_broken(tmpdir):
         },
     )
     assert run("bw test -d 3", path=str(tmpdir))[2] == 1
+
+
+def test_unknown_subgroup(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {},
+        },
+        groups={
+            "group1": {'subgroups': ["missing-group"]},
+            "group2": {'members': ["node1"]},
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test group1", path=str(tmpdir))[2] == 1
+    assert run("bw test group2", path=str(tmpdir))[2] == 1

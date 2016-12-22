@@ -157,7 +157,7 @@ class Group(object):
                 try:
                     group = self.repo.get_group(name)
                 except NoSuchGroup:
-                    raise NoSuchGroup(_(
+                    raise RepositoryError(_(
                         "Group '{group}' has '{subgroup}' listed as a subgroup in groups.py, "
                         "but no such group could be found."
                     ).format(
