@@ -18,7 +18,7 @@ except NameError:
     byte_type = bytes
 
 DIFF_MAX_INLINE_LENGTH = 36
-DIFF_MAX_LINE_LENGTH = 128
+DIFF_MAX_LINE_LENGTH = 1024
 
 
 def diff_keys(sdict1, sdict2):

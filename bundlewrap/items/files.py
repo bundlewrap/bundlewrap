@@ -22,7 +22,6 @@ from bundlewrap.utils.ui import io
 
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
-DIFF_MAX_LINE_LENGTH = 128
 
 
 def content_processor_base64(item):
