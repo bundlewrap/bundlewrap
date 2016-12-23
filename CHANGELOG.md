@@ -1,3 +1,13 @@
+# 2.12.2
+
+2016-12-23
+
+* added support for Python 3.6
+* changed diff line length limit from 128 to 1024 characters
+* fixed deadlock in Group.members_remove
+* fixed unknown subgroups not being detected properly
+
+
 # 2.12.1
 
 2016-12-20
