@@ -4,6 +4,7 @@ python:
 - 3.3
 - 3.4
 - 3.5
+- 3.6
 install:
 - pip install tox
 before_script:
@@ -15,6 +16,7 @@ script:
 - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then tox -e py33; fi
 - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then tox -e py34; fi
 - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then tox -e py35; fi
+- if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then tox -e py36; fi
 notifications:
   irc:
     channels:
