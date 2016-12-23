@@ -5,8 +5,6 @@ python:
 - 3.4
 - 3.5
 - 3.6
-install:
-- pip install pytest
 before_script:
 - ssh-keygen -f ~/.ssh/id_rsa -N ""
 - cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
