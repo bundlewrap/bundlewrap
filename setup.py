@@ -26,7 +26,6 @@ setup(
     license="GPLv3",
     url="http://bundlewrap.org",
     packages=find_packages(),
-    test_suite="tests",
     entry_points={
         'console_scripts': [
             "bw=bundlewrap.cmdline:main",
