@@ -120,14 +120,14 @@ def _flatten_dependencies(items):
     This will cause all dependencies - direct AND inherited - to be
     listed in item._flattened_deps.
     """
+    dep_cache = {}
     for item in items:
-        item._flattened_deps = list(set(
-            item._deps + _get_deps_for_item(item, items)
-        ))
+        deps, dep_cache = _get_deps_for_item(item, items, dep_cache)
+        item._flattened_deps = list(set(item._deps) | deps)
     return items
 
 
-def _get_deps_for_item(item, items, deps_found=None):
+def _get_deps_for_item(item, items, dep_cache, deps_found=None):
     """
     Recursively retrieves and returns a list of all inherited
     dependencies of the given item.
@@ -135,18 +135,24 @@ def _get_deps_for_item(item, items, deps_found=None):
     Note: This can handle loops, but won't detect them.
     """
     if deps_found is None:
-        deps_found = []
-    deps = []
+        deps_found = set()
+    deps = set()
     for dep in item._deps:
         if dep not in deps_found:
-            deps.append(dep)
-            deps_found.append(dep)
-            deps += _get_deps_for_item(
-                find_item(dep, items),
-                items,
-                deps_found,
-            )
-    return deps
+            deps.add(dep)
+            deps_found.add(dep)
+            try:
+                new_deps = dep_cache[dep]
+            except KeyError:
+                new_deps, dep_cache = _get_deps_for_item(
+                    find_item(dep, items),
+                    items,
+                    dep_cache,
+                    deps_found,
+                )
+                dep_cache[dep] = new_deps
+            deps |= new_deps
+    return deps, dep_cache
 
 
 def _has_trigger_path(items, item, target_item_id):
