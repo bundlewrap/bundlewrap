@@ -30,6 +30,7 @@ from .utils import cached_property, graph_for_items, names
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
 from .utils.text import force_text, mark_for_translation as _
+from .utils.time import format_duration
 from .utils.ui import io
 
 
@@ -578,9 +579,9 @@ class Node(object):
         result.start = start
         result.end = datetime.now()
 
-        io.stdout(_("{x} {node} run completed after {time}s").format(
+        io.stdout(_("{x} {node} run completed after {time}").format(
             node=bold(self.name),
-            time=(result.end - start).total_seconds(),
+            time=format_duration(result.end - start),
             x=blue("i"),
         ))
         io.stdout(_("{x} {node} stats: {stats}").format(
