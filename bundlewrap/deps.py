@@ -361,14 +361,14 @@ def _inject_reverse_dependencies(items):
             # bundle items
             if depending_item_id.startswith("bundle:"):
                 depending_bundle_name = depending_item_id.split(":")[1]
-                for depending_item in items:
+                for depending_item in items.values():
                     if depending_item.bundle.name == depending_bundle_name:
                         add_dep(depending_item, item.id)
 
             # tag items
             if depending_item_id.startswith("tag:"):
                 tag_name = depending_item_id.split(":")[1]
-                for depending_item in items:
+                for depending_item in items.values():
                     if tag_name in depending_item.tags:
                         add_dep(depending_item, item.id)
 
@@ -395,12 +395,12 @@ def _inject_reverse_triggers(items):
             triggering_item = items[triggering_item_id]
             if triggering_item.id.startswith("bundle:"):  # bundle items
                 bundle_name = triggering_item.id.split(":")[1]
-                for actual_triggering_item in items:
+                for actual_triggering_item in items.values():
                     if triggering_item.bundle.name == bundle_name:
                         actual_triggering_item.triggers.append(item.id)
             elif triggering_item.id.startswith("tag:"):  # tag items
                 tag_name = triggering_item.id.split(":")[1]
-                for actual_triggering_item in items:
+                for actual_triggering_item in items.values():
                     if tag_name in triggering_item.tags:
                         actual_triggering_item.triggers.append(item.id)
             elif triggering_item.id.endswith(":"):  # type items
@@ -413,12 +413,12 @@ def _inject_reverse_triggers(items):
             preceded_item = items[preceded_item_id]
             if preceded_item.id.startswith("bundle:"):  # bundle items
                 bundle_name = preceded_item.id.split(":")[1]
-                for actual_preceded_item in items:
+                for actual_preceded_item in items.values():
                     if actual_preceded_item.bundle.name == bundle_name:
                         actual_preceded_item.preceded_by.append(item.id)
             elif preceded_item.id.startswith("tag:"):  # tag items
                 tag_name = preceded_item.id.split(":")[1]
-                for actual_preceded_item in items:
+                for actual_preceded_item in items.values():
                     if tag_name in actual_preceded_item.tags:
                         actual_preceded_item.preceded_by.append(item.id)
             elif preceded_item.id.endswith(":"):  # type items
