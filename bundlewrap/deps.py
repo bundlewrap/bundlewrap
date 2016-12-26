@@ -593,11 +593,11 @@ def split_items_without_deps(items):
     Takes a list of items and extracts the ones that don't have any
     dependencies. The extracted deps are returned as a list.
     """
-    items = list(items)  # make sure we're not returning a generator
+    remaining_items = []
     removed_items = []
     for item in items:
-        if not item._deps:
+        if item._deps:
+            remaining_items.append(item)
+        else:
             removed_items.append(item)
-    for item in removed_items:
-        items.remove(item)
-    return (items, removed_items)
+    return (remaining_items, removed_items)
