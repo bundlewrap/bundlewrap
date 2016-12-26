@@ -543,8 +543,9 @@ class Node(object):
 
         start = datetime.now()
 
-        io.stdout(_("{x} {node} run started at {time}").format(
+        io.stdout(_("{x} {node}  {started} at {time}").format(
             node=bold(self.name),
+            started=bold(_("started")),
             time=start.strftime("%Y-%m-%d %H:%M:%S"),
             x=blue("i"),
         ))
@@ -579,14 +580,11 @@ class Node(object):
         result.start = start
         result.end = datetime.now()
 
-        io.stdout(_("{x} {node} run completed after {time}").format(
-            node=bold(self.name),
-            time=format_duration(result.end - start),
-            x=blue("i"),
-        ))
-        io.stdout(_("{x} {node} stats: {stats}").format(
+        io.stdout(_("{x} {node}  {completed} after {time}  ({stats})").format(
+            completed=bold(_("completed")),
             node=bold(self.name),
             stats=format_node_result(result),
+            time=format_duration(result.end - start),
             x=blue("i"),
         ))
 
