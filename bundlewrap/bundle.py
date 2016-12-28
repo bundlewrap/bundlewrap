@@ -34,6 +34,9 @@ class Bundle(object):
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
         self.metadata_file = join(self.bundle_dir, FILENAME_METADATA)
 
+    def __lt__(self, other):
+        return self.name < other.name
+
     @cached_property
     def bundle_attrs(self):
         if not exists(self.bundle_file):
