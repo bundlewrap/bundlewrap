@@ -32,10 +32,10 @@ def bw_nodes(repo, args):
                 io.stdout("{}\t{}\t{}".format(
                     node.name.ljust(max_node_name_length),
                     bold("group".ljust(ATTR_MAX_LENGTH)),
-                    ", ".join([group.name for group in node.groups]),
+                    ", ".join(sorted([group.name for group in node.groups])),
                 ))
             else:
-                for group in node.groups:
+                for group in sorted(node.groups):
                     io.stdout("{}\t{}\t{}".format(
                         node.name.ljust(max_node_name_length),
                         bold("group".ljust(ATTR_MAX_LENGTH)),
@@ -46,10 +46,10 @@ def bw_nodes(repo, args):
                 io.stdout("{}\t{}\t{}".format(
                     node.name.ljust(max_node_name_length),
                     bold("bundle".ljust(ATTR_MAX_LENGTH)),
-                    ", ".join([bundle.name for bundle in node.bundles]),
+                    ", ".join(sorted([bundle.name for bundle in node.bundles])),
                 ))
             else:
-                for bundle in node.bundles:
+                for bundle in sorted(node.bundles):
                     io.stdout("{}\t{}\t{}".format(
                         node.name.ljust(max_node_name_length),
                         bold("bundle".ljust(ATTR_MAX_LENGTH)),
