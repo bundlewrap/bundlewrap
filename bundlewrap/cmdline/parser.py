@@ -135,6 +135,13 @@ def build_parser_bw():
         metavar=_("SELECTOR"),
         type=str,
     )
+    parser_apply.add_argument(
+        "-S",
+        "--no-summary",
+        action='store_false',
+        dest='summary',
+        help=_("don't show stats summary"),
+    )
 
     # bw debug
     help_debug = _("Start an interactive Python shell for this repository")
