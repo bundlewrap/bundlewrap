@@ -213,6 +213,8 @@ Another common use for `unless` is with actions that perform some sort of instal
 
 If `action:download_thing` would not set `cascade_skip` to `False`, `action:run_thing` would only be executed once: directly after the thing has been downloaded. On subsequent runs, `action:download_thing` will fail the `unless` condition and be skipped. This would also cause all items that depend on it to be skipped, including `action:run_thing`.
 
+<div class="alert alert-warning">The commands you choose for <code>unless</code> should not change the state of your node. Otherwise, running <code>bw verify</code> might unexpectedly interfere with your nodes.</div>
+
 <br>
 
 ### cascade_skip
