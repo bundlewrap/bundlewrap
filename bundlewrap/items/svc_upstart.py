@@ -13,7 +13,9 @@ def svc_start(node, svcname):
 
 
 def svc_running(node, svcname):
-    result = node.run("initctl status -- {}".format(quote(svcname)))
+    result = node.run("initctl status -- {}".format(quote(svcname)), may_fail=True)
+    if result.return_code != 0:
+        return False
     return " start/" in result.stdout_text
 
 
