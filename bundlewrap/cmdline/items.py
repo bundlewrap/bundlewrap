@@ -42,7 +42,7 @@ def bw_items(repo, args):
                 "not writing to existing path: {path}"
             ).format(path=args['file_preview_path']))
             exit(1)
-        for item in node.items:
+        for item in sorted(node.items):
             if not item.id.startswith("file:"):
                 continue
             if item.attributes['content_type'] == 'any':
@@ -66,7 +66,7 @@ def bw_items(repo, args):
             )))
             write_preview(item, args['file_preview_path'])
     else:
-        for item in node.items:
+        for item in sorted(node.items):
             if args['show_repr']:
                 io.stdout(force_text(repr(item)))
             else:
