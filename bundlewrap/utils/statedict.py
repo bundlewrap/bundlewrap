@@ -139,9 +139,11 @@ def diff_value(title, value1, value2):
 class FaultResolvingJSONEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Fault):
-            return obj.value
+            return self.default(obj.value)
+        elif isinstance(obj, set):
+            return sorted(obj)
         else:
-            return JSONEncoder.default(obj)
+            return JSONEncoder.default(self, obj)
 
 
 def hash_statedict(sdict):
