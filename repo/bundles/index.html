@@ -630,6 +630,8 @@ actions = {
 }
 </code></pre>
 <p>If <code>action:download_thing</code> would not set <code>cascade_skip</code> to <code>False</code>, <code>action:run_thing</code> would only be executed once: directly after the thing has been downloaded. On subsequent runs, <code>action:download_thing</code> will fail the <code>unless</code> condition and be skipped. This would also cause all items that depend on it to be skipped, including <code>action:run_thing</code>.</p>
+<div class="alert alert-warning">The commands you choose for <code>unless</code> should not change the state of your node. Otherwise, running <code>bw verify</code> might unexpectedly interfere with your nodes.</div>
+
 <p><br></p>
 <h3 id="cascade_skip">cascade_skip</h3>
 <p>There are some situations where you don't want to default behavior of skipping everything that depends on a skipped item. That's where <code>cascade_skip</code> comes in. Set it to <code>False</code> and skipping an item won't skip those that depend on it. Note that items can be skipped</p>
