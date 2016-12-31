@@ -725,6 +725,8 @@ class Node(object):
     def verify(self, show_all=False, workers=4):
         bad = 0
         good = 0
+        start = datetime.now()
+
         if not self.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
         else:
@@ -738,7 +740,7 @@ class Node(object):
                 else:
                     bad += 1
 
-        return {'good': good, 'bad': bad}
+        return {'good': good, 'bad': bad, 'duration': datetime.now() - start}
 
 
 def build_attr_property(attr, default):

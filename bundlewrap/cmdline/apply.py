@@ -11,9 +11,12 @@ from ..utils.text import (
     bold,
     error_summary,
     green,
+    green_unless_zero,
     mark_for_translation as _,
     red,
+    red_unless_zero,
     yellow,
+    yellow_unless_zero,
 )
 from ..utils.time import format_duration
 from ..utils.ui import io
@@ -91,7 +94,7 @@ def bw_apply(repo, args):
 
     total_duration = datetime.now() - start_time
 
-    if len(results) > 1 and args['summary']:
+    if args['summary']:
         stats_summary(results, total_duration)
     error_summary(errors)
 
@@ -103,27 +106,6 @@ def bw_apply(repo, args):
     )
 
     exit(1 if errors else 0)
-
-
-def green_unless_zero(number, width):
-    if number == 0:
-        return "0".rjust(width)
-    else:
-        return green(str(number).rjust(width))
-
-
-def red_unless_zero(number, width):
-    if number == 0:
-        return "0".rjust(width)
-    else:
-        return red(str(number).rjust(width))
-
-
-def yellow_unless_zero(number, width):
-    if number == 0:
-        return "0".rjust(width)
-    else:
-        return yellow(str(number).rjust(width))
 
 
 def stats_summary(results, total_duration):
@@ -203,26 +185,27 @@ def stats_summary(results, total_duration):
             duration=format_duration(result.duration).rjust(column_width['duration']),
             x=blue("i"),
         ))
-    io.stdout("{x} ├─{node}─┼─{items}─┼─{correct}─┼─{fixed}─┼─{skipped}─┼─{failed}─┼─{duration}─┤".format(
-        node="─" * column_width['node_name'],
-        items="─" * column_width['items'],
-        correct="─" * column_width['correct'],
-        fixed="─" * column_width['fixed'],
-        skipped="─" * column_width['skipped'],
-        failed="─" * column_width['failed'],
-        duration="─" * column_width['duration'],
-        x=blue("i"),
-    ))
-    io.stdout("{x} │ {node} │ {items} │ {correct} │ {fixed} │ {skipped} │ {failed} │ {duration} │".format(
-        node=bold(headings['totals_row'].ljust(column_width['node_name'])),
-        items=str(totals['items']).rjust(column_width['items']),
-        correct=str(totals['correct']).rjust(column_width['correct']),
-        fixed=green_unless_zero(totals['fixed'], column_width['fixed']),
-        skipped=yellow_unless_zero(totals['skipped'], column_width['skipped']),
-        failed=red_unless_zero(totals['failed'], column_width['failed']),
-        duration=format_duration(total_duration).rjust(column_width['duration']),
-        x=blue("i"),
-    ))
+    if len(results) > 1:
+        io.stdout("{x} ├─{node}─┼─{items}─┼─{correct}─┼─{fixed}─┼─{skipped}─┼─{failed}─┼─{duration}─┤".format(
+            node="─" * column_width['node_name'],
+            items="─" * column_width['items'],
+            correct="─" * column_width['correct'],
+            fixed="─" * column_width['fixed'],
+            skipped="─" * column_width['skipped'],
+            failed="─" * column_width['failed'],
+            duration="─" * column_width['duration'],
+            x=blue("i"),
+        ))
+        io.stdout("{x} │ {node} │ {items} │ {correct} │ {fixed} │ {skipped} │ {failed} │ {duration} │".format(
+            node=bold(headings['totals_row'].ljust(column_width['node_name'])),
+            items=str(totals['items']).rjust(column_width['items']),
+            correct=str(totals['correct']).rjust(column_width['correct']),
+            fixed=green_unless_zero(totals['fixed'], column_width['fixed']),
+            skipped=yellow_unless_zero(totals['skipped'], column_width['skipped']),
+            failed=red_unless_zero(totals['failed'], column_width['failed']),
+            duration=format_duration(total_duration).rjust(column_width['duration']),
+            x=blue("i"),
+        ))
     io.stdout("{x} ╰─{node}─┴─{items}─┴─{correct}─┴─{fixed}─┴─{skipped}─┴─{failed}─┴─{duration}─╯".format(
         node="─" * column_width['node_name'],
         items="─" * column_width['items'],

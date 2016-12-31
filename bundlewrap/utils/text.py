@@ -57,6 +57,27 @@ def yellow(text):
     return "\033[33m{}\033[0m".format(text)
 
 
+def green_unless_zero(number, width=0):
+    if number == 0:
+        return "0".rjust(width)
+    else:
+        return green(str(number).rjust(width))
+
+
+def red_unless_zero(number, width=0):
+    if number == 0:
+        return "0".rjust(width)
+    else:
+        return red(str(number).rjust(width))
+
+
+def yellow_unless_zero(number, width=0):
+    if number == 0:
+        return "0".rjust(width)
+    else:
+        return yellow(str(number).rjust(width))
+
+
 def error_summary(errors):
     if not errors:
         return
