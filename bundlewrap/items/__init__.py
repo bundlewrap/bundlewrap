@@ -577,6 +577,9 @@ class Item(object):
             return self.name
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
+    def verify(self):
+        return self.cached_unless_result, self.cached_status
+
     def display_dicts(self, cdict, sdict, keys):
         """
         Given cdict and sdict as implemented above, modify them to

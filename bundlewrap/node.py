@@ -889,12 +889,13 @@ def verify_items(node, show_all=False, workers=1):
             else:
                 return {
                     'task_id': node.name + ":" + item.bundle.name + ":" + item.id,
-                    'target': item.get_status,
+                    'target': item.verify,
                 }
 
-    def handle_result(task_id, item_status, duration):
+    def handle_result(task_id, return_value, duration):
+        unless_result, item_status = return_value
         node_name, bundle_name, item_id = task_id.split(":", 2)
-        if not item_status.correct:
+        if not unless_result and not item_status.correct:
             if item_status.must_be_created:
                 changes_text = _("create")
             elif item_status.must_be_deleted:
