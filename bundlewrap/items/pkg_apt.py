@@ -14,17 +14,6 @@ def pkg_install(node, pkgname):
                     "install {}".format(quote(pkgname)))
 
 
-def pkg_installed(node, pkgname):
-    result = node.run(
-        "dpkg -s {} | grep '^Status: '".format(quote(pkgname)),
-        may_fail=True,
-    )
-    if result.return_code != 0 or " installed" not in result.stdout_text:
-        return False
-    else:
-        return True
-
-
 def pkg_remove(node, pkgname):
     return node.run("DEBIAN_FRONTEND=noninteractive "
                     "apt-get -qy purge {}".format(quote(pkgname)))
@@ -40,6 +29,7 @@ class AptPkg(Item):
         'installed': True,
     }
     ITEM_TYPE_NAME = "pkg_apt"
+    _pkg_apt_install_cache = set()
 
     def __repr__(self):
         return "<AptPkg name:{} installed:{}>".format(
@@ -47,7 +37,26 @@ class AptPkg(Item):
             self.attributes['installed'],
         )
 
+    def _installed(self):
+        if not self._pkg_apt_install_cache:
+            self._pkg_apt_install_cache.add(None)  # make sure we don't run into this if again
+            result = self.node.run("dpkg -l | grep '^ii'")
+            for line in result.stdout.decode('utf-8').strip().split("\n"):
+                self._pkg_apt_install_cache.add(line[4:].split()[0].split(":")[0])
+        if self.name in self._pkg_apt_install_cache:
+            return True
+
+        result = self.node.run(
+            "dpkg -s {} | grep '^Status: '".format(quote(self.name)),
+            may_fail=True,
+        )
+        return result.return_code == 0 and " installed" in result.stdout_text
+
     def fix(self, status):
+        try:
+            self._pkg_apt_install_cache.remove(self.name)
+        except KeyError:
+            pass
         if self.attributes['installed'] is False:
             pkg_remove(self.node, self.name)
         else:
@@ -55,7 +64,7 @@ class AptPkg(Item):
 
     def sdict(self):
         return {
-            'installed': pkg_installed(self.node, self.name),
+            'installed': self._installed(),
         }
 
     @classmethod
