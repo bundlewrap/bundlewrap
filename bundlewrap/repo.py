@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from imp import load_source
+from inspect import isabstract
 from os import listdir, mkdir
 from os.path import isdir, isfile, join
 from threading import Lock
@@ -191,7 +192,7 @@ def items_from_path(path):
             if obj == items.Item or name.startswith("_"):
                 continue
             try:
-                if issubclass(obj, items.Item):
+                if issubclass(obj, items.Item) and not isabstract(obj):
                     yield obj
             except TypeError:
                 pass

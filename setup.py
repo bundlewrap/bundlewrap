@@ -9,6 +9,7 @@ dependencies = [
     "Mako",
     "passlib",
     "requests >= 1.0.0",
+    "six",
 ]
 if version_info < (3, 2, 0):
     dependencies.append("futures")
