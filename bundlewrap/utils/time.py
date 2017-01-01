@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from .text import mark_for_translation as _
 
 
-def format_duration(duration):
+def format_duration(duration, msec=False):
     """
     Takes a timedelta and returns something like "1d 5h 4m 3s".
     """
@@ -20,7 +20,11 @@ def format_duration(duration):
         seconds -= minutes * 60
         components.append(_("{}m").format(minutes))
     if seconds > 0 or not components:
-        components.append(_("{}s").format(seconds))
+        if msec:
+            seconds += duration.microseconds / 1000000.0
+            components.append(_("{:.3f}s").format(seconds))
+        else:
+            components.append(_("{}s").format(seconds))
     return " ".join(components)
 
 

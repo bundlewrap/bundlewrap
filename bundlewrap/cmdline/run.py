@@ -8,6 +8,7 @@ from ..exceptions import NodeLockedException
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
 from ..utils.text import bold, error_summary, green, red, yellow
+from ..utils.time import format_duration
 from ..utils.ui import io
 
 
@@ -43,8 +44,8 @@ def run_on_node(node, command, may_fail, ignore_locks, log_output):
 
     if result.return_code == 0:
         io.stdout("{x} {node}  {msg}".format(
-            msg=_("completed successfully after {time}s").format(
-                time=duration.total_seconds(),
+            msg=_("completed successfully after {time}").format(
+                time=format_duration(duration, msec=True),
             ),
             node=bold(node.name),
             x=green("✓"),
@@ -53,7 +54,7 @@ def run_on_node(node, command, may_fail, ignore_locks, log_output):
         io.stderr("{x} {node}  {msg}".format(
             msg=_("failed after {time}s (return code {rcode})").format(
                 rcode=result.return_code,
-                time=duration.total_seconds(),
+                time=format_duration(duration, msec=True),
             ),
             node=bold(node.name),
             x=red("✘"),
