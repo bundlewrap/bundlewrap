@@ -464,6 +464,8 @@ class Repository(object):
         self._node_metadata_partial.keys().
         """
         iterations = {}
+        # these processors have indicated that they do not need to be run again
+        blacklisted_metaprocs = set()
         while (
             not iterations or max(iterations.values()) <= META_PROC_MAX_ITER
         ) and not QUIT_EVENT.is_set():
@@ -501,6 +503,8 @@ class Repository(object):
                 node = self.get_node(node_name)
                 with io.job(_("  {node}  running metadata processors...").format(node=node.name)):
                     for metadata_processor_name, metadata_processor in node.metadata_processors:
+                        if (node_name, metadata_processor_name) in blacklisted_metaprocs:
+                            continue
                         iterations.setdefault((node.name, metadata_processor_name), 1)
                         io.debug(_(
                             "running metadata processor {metaproc} for node {node}, "
@@ -514,10 +518,21 @@ class Repository(object):
                             deepcopy_metadata(self._node_metadata_partial[node.name]),
                         )
                         iterations[(node.name, metadata_processor_name)] += 1
+                        if isinstance(processed, tuple) and len(processed) == 2:
+                            if processed[1] is True:
+                                io.debug(_(
+                                    "metadata processor {metaproc} for node {node} "
+                                    "has indicated that it need not be run again"
+                                ).format(
+                                    metaproc=metadata_processor_name,
+                                    node=node.name,
+                                ))
+                                blacklisted_metaprocs.add((node_name, metadata_processor_name))
+                            processed = processed[0]
                         if not isinstance(processed, dict):
                             raise ValueError(_(
                                 "metadata processor {metaproc} for node {node} did not return "
-                                "a dictionary"
+                                "a dictionary or tuple of (dict, bool)"
                             ).format(
                                 metaproc=metadata_processor_name,
                                 node=node.name,

@@ -278,3 +278,27 @@ These functions take the metadata dictionary generated so far as their single ar
 	    return metadata
 
 <div class="alert alert-danger">To avoid deadlocks when accessing <strong>other</strong> nodes' metadata from within a metadata processor, use <code>other_node.partial_metadata</code> instead of <code>other_node.metadata</code>. For the same reason, always use the <code>metadata</code> parameter to access the current node's metadata, never <code>node.metadata</code>.</div>
+
+To improve performance, you can optionally return a tuple instead, with the first element being your metadata dict and the second one being a boolean indicating whether this metadata processor has done its work for this particular node and need not be run again:
+
+	def my_metadata_processor(metadata):
+	    metadata["foo"] = node.name
+	    return metadata, True
+
+The example above is a typical case of a metadata processor that only needs to be run once: it always does the same thing anyway. If you depend on other metadata processors, you have to return `False` (or just the dict):
+
+	def first_metadata_processor(metadata):
+	    metadata["foo"] = node.name
+	    return metadata, True
+
+
+	def second_metadata_processor(metadata):
+	    if "foo" in metadata:
+	        metadata["bar"] = metadata["foo"]
+	        # our job is done, returning True
+	        return metadata, True
+	    else:
+	        # return False, so we get called again
+	        return metadata, False
+
+In this example, `second_metadata_processor` might be called before `first_metadata_processor`. But it can't do its job without `metadata["foo"]`, so it needs to be called again until it has become available (because `first_metadata_processor` has been called in the meantime).
