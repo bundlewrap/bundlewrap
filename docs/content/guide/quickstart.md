@@ -49,7 +49,7 @@ The first thing you can do is run a command on your army of one node:
 You should see something like this:
 
 <pre><code class="nohighlight">› node-1   20:16:26 up 34 days,  4:10,  0 users,  load average: 0.00, 0.01, 0.05
-✓ node-1  completed successfully after 3.499531s</code></pre>
+✓ node-1  completed after 0.366s</code></pre>
 
 Instead of a node name ("node-1" in this case) you can also use a group name (such as "all") from your `groups.py`.
 
@@ -110,7 +110,7 @@ Now all that's left is to run `bw apply`:
 
 BundleWrap will ask to replace your previous MOTD:
 
-<pre><code class="nohighlight">i node-1 run started at 2016-02-13 21:25:45
+<pre><code class="nohighlight">i node-1  started at 2016-02-13 21:25:45
 ? node-1
 ? node-1  ╭─ file:/etc/motd
 ? node-1  │
