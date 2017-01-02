@@ -20,7 +20,7 @@ class AptPkg(Pkg):
             yield line[4:].split()[0].split(":")[0]
 
     def pkg_install(self):
-        return self.node.run(
+        self.node.run(
             "DEBIAN_FRONTEND=noninteractive "
             "apt-get -qy -o Dpkg::Options::=--force-confold --no-install-recommends "
             "install {}".format(quote(self.name))
@@ -34,7 +34,7 @@ class AptPkg(Pkg):
         return result.return_code == 0 and " installed" in result.stdout_text
 
     def pkg_remove(self):
-        return self.node.run(
+        self.node.run(
             "DEBIAN_FRONTEND=noninteractive "
             "apt-get -qy purge {}".format(quote(self.name))
         )

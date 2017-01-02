@@ -17,13 +17,10 @@ class DnfPkg(Pkg):
     def pkg_all_installed(self):
         result = self.node.run("dnf -d0 -e0 list installed")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
-            yield line[0:].split()[0].split(".")[0]
+            yield line.split()[0].split(".")[0]
 
     def pkg_install(self):
-        return self.node.run(
-            "dnf -d0 -e0 -y "
-            "install {}".format(quote(self.name))
-        )
+        self.node.run("dnf -d0 -e0 -y install {}".format(quote(self.name)))
 
     def pkg_installed(self):
         result = self.node.run(
@@ -33,6 +30,4 @@ class DnfPkg(Pkg):
         return result.return_code == 0
 
     def pkg_remove(self):
-        return self.node.run(
-            "dnf -d0 -e0 -y remove {}".format(quote(self.name))
-        )
+        self.node.run("dnf -d0 -e0 -y remove {}".format(quote(self.name)))
