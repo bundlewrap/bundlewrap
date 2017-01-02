@@ -162,8 +162,8 @@ def _has_trigger_path(items, item, target_item_id):
         return True
     for triggered_id in item.triggers:
         try:
-            triggered_item = items[triggered_id]
-        except KeyError:
+            triggered_item = find_item(triggered_id, items)
+        except NoSuchItem:
             # the triggered item may already have been skipped by
             # `bw apply -s`
             continue
