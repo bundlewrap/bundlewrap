@@ -4,39 +4,10 @@ from __future__ import unicode_literals
 from os.path import basename, join
 from pipes import quote
 
-from bundlewrap.exceptions import BundleError
-from bundlewrap.items import Item
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.items.pkg import Pkg
 
 
-def pkg_install(node, pkgname, operation='S'):
-    return node.run("pacman --noconfirm -{} {}".format(operation,
-                                                       quote(pkgname)))
-
-
-def pkg_install_tarball(node, local_file):
-    remote_file = "/tmp/{}".format(basename(local_file))
-    node.upload(local_file, remote_file)
-    pkg_install(node, remote_file, operation='U')
-    node.run("rm -- {}".format(quote(remote_file)))
-
-
-def pkg_installed(node, pkgname):
-    result = node.run(
-        "pacman -Q {}".format(quote(pkgname)),
-        may_fail=True,
-    )
-    if result.return_code != 0:
-        return False
-    else:
-        return True
-
-
-def pkg_remove(node, pkgname):
-    return node.run("pacman --noconfirm -Rs {}".format(quote(pkgname)))
-
-
-class PacmanPkg(Item):
+class PacmanPkg(Pkg):
     """
     A package installed by pacman.
     """
@@ -48,38 +19,33 @@ class PacmanPkg(Item):
     }
     ITEM_TYPE_NAME = "pkg_pacman"
 
-    def __repr__(self):
-        return "<PacmanPkg name:{} installed:{} tarball:{}>".format(
-            self.name,
-            self.attributes['installed'],
-            self.attributes['tarball'],
-        )
-
     def cdict(self):
         # TODO/FIXME: this is bad because it ignores tarball
+        # (However, that's not part of the node's state, so bw won't
+        # "fix" it anyway, so ... I guess we can live with that.)
         return {'installed': self.attributes['installed']}
 
-    def fix(self, status):
-        if self.attributes['installed'] is False:
-            pkg_remove(self.node, self.name)
+    def pkg_all_installed(self):
+        pkgs = self.node.run("pacman -Qq").stdout.decode('utf-8')
+        for line in pkgs.splitlines():
+            yield line.strip()
+
+    def pkg_install(self):
+        if self.attributes['tarball']:
+            local_file = join(self.item_dir, self.attributes['tarball'])
+            remote_file = "/tmp/{}".format(basename(local_file))
+            self.node.upload(local_file, remote_file)
+            self.node.run("pacman --noconfirm -U {}".format(quote(remote_file)))
+            self.node.run("rm -- {}".format(quote(remote_file)))
         else:
-            if self.attributes['tarball']:
-                pkg_install_tarball(self.node, join(self.item_dir,
-                                                    self.attributes['tarball']))
-            else:
-                pkg_install(self.node, self.name)
+            self.node.run("pacman --noconfirm -S {}".format(quote(self.name)))
 
-    def sdict(self):
-        return {
-            'installed': pkg_installed(self.node, self.name),
-        }
+    def pkg_installed(self):
+        result = self.node.run(
+            "pacman -Q {}".format(quote(self.name)),
+            may_fail=True,
+        )
+        return result.return_code == 0
 
-    @classmethod
-    def validate_attributes(cls, bundle, item_id, attributes):
-        if not isinstance(attributes.get('installed', True), bool):
-            raise BundleError(_(
-                "expected boolean for 'installed' on {item} in bundle '{bundle}'"
-            ).format(
-                bundle=bundle.name,
-                item=item_id,
-            ))
+    def pkg_remove(self):
+        self.node.run("pacman --noconfirm -Rs {}".format(quote(self.name)))
