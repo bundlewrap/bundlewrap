@@ -191,7 +191,7 @@ def bw_verify(repo, args):
     )
     worker_pool.run()
 
-    if args['summary']:
+    if args['summary'] and node_stats:
         stats_summary(node_stats, datetime.now() - start_time)
 
     error_summary(errors)

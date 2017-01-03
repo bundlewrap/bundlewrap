@@ -94,7 +94,7 @@ def bw_apply(repo, args):
 
     total_duration = datetime.now() - start_time
 
-    if args['summary']:
+    if args['summary'] and results:
         stats_summary(results, total_duration)
     error_summary(errors)
 
