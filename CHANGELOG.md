@@ -1,3 +1,15 @@
+# 2.13.0
+
+2017-01-05
+
+* added tuple return option to metadata processors
+* improved CLI output in various places
+* improved performance during dependency processing
+* improved performance when checking packages
+* fixed hashing of metadata containing sets
+* fixed exception with `svc_upstart` when service doesn't exist
+
+
 # 2.12.2
 
 2016-12-23
