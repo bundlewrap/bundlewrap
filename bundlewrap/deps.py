@@ -247,23 +247,55 @@ def _inject_canned_actions(items):
 
 def _inject_concurrency_blockers(items):
     """
-    Looks for items with BLOCK_CONCURRENT set to True and inserts
+    Looks for items with BLOCK_CONCURRENT set and inserts daisy-chain
     dependencies to force a sequential apply.
     """
     # find every item type that cannot be applied in parallel
     item_types = set()
     for item in items.values():
-        item._concurrency_deps = []
+        item._concurrency_deps = []  # used for DOT (graphviz) output only
         if (
             not isinstance(item, DummyItem) and
             item.BLOCK_CONCURRENT
         ):
             item_types.add(item.__class__)
 
-    # daisy-chain all items of the blocking type and all items of the
-    # blocked types while respecting existing dependencies between them
+    # Now that we have collected all types with BLOCK_CONCURRENT,
+    # we must group them together when they overlap. E.g.:
+    #
+    #     Type1.BLOCK_CONCURRENT = ["type1", "type2"]
+    #     Type2.BLOCK_CONCURRENT = ["type2, "type3"]
+    #     Type4.BLOCK_CONCURRENT = ["type4"]
+    #
+    # becomes
+    #
+    #     ["type1", "type2", "type3"]
+    #     ["type4"]
+    #
+    # because the first two types overlap in blocking type2. This is
+    # necessary because existing dependencies from type3 to type1 need
+    # to be taken into account when generating the daisy-chains
+    # connecting the three types. If we processed blockers for Type1 and
+    # Type2 independently, we might end up with two very different
+    # chains for Type2, which may cause circular dependencies.
+
+    chain_groups = []
     for item_type in item_types:
-        blocked_types = item_type.BLOCK_CONCURRENT + [item_type.ITEM_TYPE_NAME]
+        block_concurrent = list(item_type.BLOCK_CONCURRENT) + [item_type.ITEM_TYPE_NAME]
+        found = False
+        for blocked_types in chain_groups:
+            for blocked_type in block_concurrent:
+                if blocked_type in blocked_types:
+                    blocked_types.extend(block_concurrent)
+                    found = True
+                    break
+        if not found:
+            chain_groups.append(block_concurrent)
+
+    # daisy-chain all items of the chain group while respecting existing
+    # dependencies between them
+    for blocked_types in chain_groups:
+        blocked_types = set(blocked_types)
         type_items = list(_find_items_of_types(
             blocked_types,
             items,
@@ -297,6 +329,9 @@ def _inject_concurrency_blockers(items):
                     item._flattened_deps.append(previous_item.id)
             previous_item = item
             processed_items.append(item)
+            # Now remove all deps on the processed item. This frees up
+            # items depending *only* on the processed item to be
+            # eligible for the next iteration of this loop.
             for other_item in type_items:
                 try:
                     other_item.__deps.remove(item.id)
