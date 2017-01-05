@@ -1,3 +1,10 @@
+# 2.13.1
+
+unreleased
+
+* fixed intermittent circular dependencies with multiple custom items using BLOCK_CONCURRENT
+
+
 # 2.13.0
 
 2017-01-05
