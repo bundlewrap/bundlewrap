@@ -481,7 +481,7 @@ cat groups.py
 
 <p>You should see something like this:</p>
 <pre><code class="nohighlight">› node-1   20:16:26 up 34 days,  4:10,  0 users,  load average: 0.00, 0.01, 0.05
-✓ node-1  completed successfully after 3.499531s</code></pre>
+✓ node-1  completed after 0.366s</code></pre>
 
 <p>Instead of a node name ("node-1" in this case) you can also use a group name (such as "all") from your <code>groups.py</code>.</p>
 <h2 id="create-a-bundle">Create a bundle</h2>
@@ -524,7 +524,7 @@ vim bundles/mybundle/files/etc/motd</code></pre>
 <pre><code class="nohighlight">bw apply -i node-1</code></pre>
 
 <p>BundleWrap will ask to replace your previous MOTD:</p>
-<pre><code class="nohighlight">i node-1 run started at 2016-02-13 21:25:45
+<pre><code class="nohighlight">i node-1  started at 2016-02-13 21:25:45
 ? node-1
 ? node-1  ╭─ file:/etc/motd
 ? node-1  │
