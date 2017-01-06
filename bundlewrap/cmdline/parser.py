@@ -386,6 +386,14 @@ def build_parser_bw():
         type=str,
         help=_("node to print JSON-formatted metadata for"),
     )
+    parser_metadata.add_argument(
+        'keys',
+        default=[],
+        metavar=_("KEY"),
+        nargs='*',
+        type=str,
+        help=_("print only partial metadata from the given space-separated key path"),
+    )
 
     # bw nodes
     help_nodes = _("List all nodes in this repository")
