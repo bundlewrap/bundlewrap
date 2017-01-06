@@ -660,6 +660,7 @@ def build_parser_bw():
     parser_run.add_argument(
         'command',
         metavar=_("COMMAND"),
+        nargs='+',
         type=str,
         help=_("command to run"),
     )

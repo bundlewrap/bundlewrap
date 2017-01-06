@@ -84,7 +84,7 @@ def bw_run(repo, args):
             'task_id': node.name,
             'args': (
                 node,
-                args['command'],
+                " ".join(args['command']),
                 args['may_fail'],
                 args['ignore_locks'],
                 True,
