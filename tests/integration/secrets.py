@@ -83,3 +83,39 @@ def test_format_password(tmpdir):
     assert stdout == b"format: faCTT76kagtDuZE5wnoiD1CxhGKmbgiX\n"
     assert stderr == b""
     assert rcode == 0
+
+
+def test_human_password(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.human_password_for(\"hello world\"))'", path=str(tmpdir))
+    assert stdout == b"Xaint-Heep-Pier-Tikl-76\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_human_password_digits(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.human_password_for(\"hello world\", digits=4))'", path=str(tmpdir))
+    assert stdout == b"Xaint-Heep-Pier-Tikl-7608\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_human_password_per_word(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.human_password_for(\"hello world\", per_word=1))'", path=str(tmpdir))
+    assert stdout == b"X-D-F-H-42\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_human_password_words(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.human_password_for(\"hello world\", words=2))'", path=str(tmpdir))
+    assert stdout == b"Xaint-Heep-13\n"
+    assert stderr == b""
+    assert rcode == 0
