@@ -349,27 +349,28 @@ class Node(object):
 
     OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX
 
-    def __init__(self, name, infodict=None):
-        if infodict is None:
-            infodict = {}
+    def __init__(self, name, attributes=None, transport='ssh'):
+        if attributes is None:
+            attributes = {}
 
         if not validate_name(name):
             raise RepositoryError(_("'{}' is not a valid node name").format(name))
 
         self.name = name
-        self._bundles = infodict.get('bundles', [])
+        self._bundles = attributes.get('bundles', [])
         self._compiling_metadata = Lock()
         self._dynamic_group_lock = Lock()
         self._dynamic_groups_resolved = False  # None means we're currently doing it
         self._metadata_so_far = {}
-        self._node_metadata = infodict.get('metadata', {})
+        self._node_metadata = attributes.get('metadata', {})
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
         self.add_ssh_host_keys = False
-        self.hostname = infodict.get('hostname', self.name)
+        self.hostname = attributes.get('hostname', self.name)
+        self.transport = transport
 
         for attr in GROUP_ATTR_DEFAULTS:
-            setattr(self, "_{}".format(attr), infodict.get(attr))
+            setattr(self, "_{}".format(attr), attributes.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name
