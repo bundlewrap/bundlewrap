@@ -349,14 +349,15 @@ class Node(object):
 
     OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX
 
-    def __init__(self, name, attributes=None, transport='ssh'):
+    def __init__(self, name, attributes=None, transport='ssh', transport_options=None):
         if attributes is None:
             attributes = {}
+        if transport_options is None:
+            transport_options = {}
 
         if not validate_name(name):
             raise RepositoryError(_("'{}' is not a valid node name").format(name))
 
-        self.name = name
         self._bundles = attributes.get('bundles', [])
         self._compiling_metadata = Lock()
         self._dynamic_group_lock = Lock()
@@ -367,7 +368,9 @@ class Node(object):
         self._ssh_first_conn_lock = Lock()
         self.add_ssh_host_keys = False
         self.hostname = attributes.get('hostname', self.name)
+        self.name = name
         self.transport = transport
+        self.transport_options = transport_options
 
         for attr in GROUP_ATTR_DEFAULTS:
             setattr(self, "_{}".format(attr), attributes.get(attr))
