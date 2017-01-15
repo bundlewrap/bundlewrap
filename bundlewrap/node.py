@@ -6,7 +6,6 @@ from os import environ
 from sys import exit
 from threading import Lock
 
-from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
 from .deps import (
@@ -26,6 +25,7 @@ from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import check_for_unsolvable_metadata_key_conflicts, hash_metadata
+from .transports import ssh
 from .utils import cached_property, graph_for_items, names
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
@@ -600,7 +600,7 @@ class Node(object):
         return result
 
     def download(self, remote_path, local_path, ignore_failure=False):
-        return operations.download(
+        return ssh.download(
             self.hostname,
             remote_path,
             local_path,
@@ -676,7 +676,7 @@ class Node(object):
             # multiplexed connection.
             if self._ssh_first_conn_lock.acquire(False):
                 try:
-                    operations.run(self.hostname, "true", add_host_keys=add_host_keys)
+                    ssh.run(self.hostname, "true", add_host_keys=add_host_keys)
                     self._ssh_conn_established = True
                 finally:
                     self._ssh_first_conn_lock.release()
@@ -686,7 +686,7 @@ class Node(object):
                 with self._ssh_first_conn_lock:
                     pass
 
-        return operations.run(
+        return ssh.run(
             self.hostname,
             command,
             add_host_keys=add_host_keys,
@@ -711,7 +711,7 @@ class Node(object):
         self.repo.hooks.test_node(self.repo, self)
 
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
-        return operations.upload(
+        return ssh.upload(
             self.hostname,
             local_path,
             remote_path,
