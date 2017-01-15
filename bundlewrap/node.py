@@ -768,7 +768,10 @@ def build_attr_property(attr, default):
 
         if attr_value is None:
             attr_source = "default"
-            attr_value = default
+            if attr == 'cmd_wrapper_outer' and self.transport == 'docker':
+                attr_value = "sh -c {}"
+            else:
+                attr_value = default
 
         io.debug(_("node {node} gets its {attr} attribute from: {source}").format(
             node=self.name,
