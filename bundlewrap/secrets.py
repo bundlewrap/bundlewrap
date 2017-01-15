@@ -17,7 +17,20 @@ from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
 
+HUMAN_CHARS_START = list("bcdfghjklmnprstvwxz")
+HUMAN_CHARS_VOWELS = list("aeiou") + ["ai", "ao", "au", "ea", "ee", "ei",
+                                      "eu", "ia", "ie", "oo", "ou"]
+HUMAN_CHARS_CONS = HUMAN_CHARS_START + ["bb", "bl", "cc", "ch", "ck", "dd", "dr",
+                                        "ds", "dt", "ff", "gg", "gn", "kl", "ll",
+                                        "mb", "md", "mm", "mp", "mt", "nc", "nd",
+                                        "nn", "np", "nt", "pp", "rr", "rt", "sh",
+                                        "ss", "st", "tl", "ts", "tt"]
+
 FILENAME_SECRETS = ".secrets.cfg"
+
+
+def choice_prng(lst, prng):
+    return lst[next(prng) % (len(lst) - 1)]
 
 
 def generate_initial_secrets_cfg():
@@ -126,6 +139,61 @@ class SecretProxy(object):
             join(self.repo.data_dir, source_path),
         ))).decode('utf-8')
 
+    def _generate_human_password(
+        self, identifier=None, digits=2, key='generate', per_word=3, words=4,
+    ):
+        """
+        Like _generate_password(), but creates a password which can be
+        typed more easily by human beings.
+
+        A "word" consists of an upper case character (usually an actual
+        consonant), followed by an alternating pattern of "vowels" and
+        "consonants". Those lists of characters are defined at the top
+        of this file. Note that something like "tl" is considered "a
+        consonant" as well. Similarly, "au" and friends are "a vowel".
+
+        Words are separated by dashes. By default, you also get some
+        digits at the end of the password.
+        """
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            return "generatedpassword"
+
+        prng = self._get_prng(identifier, key)
+
+        pwd = ""
+        is_start = True
+        word_length = 0
+        words_done = 0
+        while words_done < words:
+            if is_start:
+                add = choice_prng(HUMAN_CHARS_START, prng).upper()
+                is_start = False
+                is_vowel = True
+            else:
+                if is_vowel:
+                    add = choice_prng(HUMAN_CHARS_VOWELS, prng)
+                else:
+                    add = choice_prng(HUMAN_CHARS_CONS, prng)
+                is_vowel = not is_vowel
+            pwd += add
+
+            word_length += 1
+            if word_length == per_word:
+                pwd += "-"
+                word_length = 0
+                words_done += 1
+                is_start = True
+
+        if digits > 0:
+            for i in range(digits):
+                pwd += str(next(prng) % 10)
+        else:
+            # Strip trailing dash which is always added by the routine
+            # above.
+            pwd = pwd[:-1]
+
+        return pwd
+
     def _generate_password(self, identifier=None, key='generate', length=32, symbols=False):
         """
         Derives a password from the given identifier and the shared key
@@ -138,6 +206,16 @@ class SecretProxy(object):
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "generatedpassword"
+
+        prng = self._get_prng(identifier, key)
+
+        alphabet = ascii_letters + digits
+        if symbols:
+            alphabet += punctuation
+
+        return "".join([choice_prng(alphabet, prng) for i in range(length)])
+
+    def _get_prng(self, identifier, key):
         try:
             key_encoded = self.keys[key]
         except KeyError:
@@ -149,14 +227,9 @@ class SecretProxy(object):
                 password=identifier,
             ))
 
-        alphabet = ascii_letters + digits
-        if symbols:
-            alphabet += punctuation
-
         h = hmac.new(urlsafe_b64decode(key_encoded), digestmod=hashlib.sha512)
         h.update(identifier.encode('utf-8'))
-        prng = random(h.digest())
-        return "".join([alphabet[next(prng) % (len(alphabet) - 1)] for i in range(length)])
+        return random(h.digest())
 
     def _load_keys(self):
         config = SafeConfigParser()
@@ -248,6 +321,18 @@ class SecretProxy(object):
             self._format,
             format_str=format_str,
             faults=faults,
+        )
+
+    def human_password_for(
+        self, identifier, digits=2, key='generate', per_word=3, words=4,
+    ):
+        return Fault(
+            self._generate_human_password,
+            identifier=identifier,
+            digits=digits,
+            key=key,
+            per_word=per_word,
+            words=words,
         )
 
     def password_for(self, identifier, key='generate', length=32, symbols=False):

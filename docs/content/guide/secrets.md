@@ -38,6 +38,10 @@ This makes it easy to change all your passwords at once (e.g. when an employee l
 
 <div class="alert alert-warning">However, it also means you have to guard your <code>.secrets.cfg</code> very closely. If it is compromised, so are <strong>all</strong> your passwords. Use your own judgement.</div>
 
+### "Human" passwords
+
+As an alternative to `password_for()`, which generates random strings, you can use `human_password_for()`.It generates strings like `Wiac-Kaobl-Teuh-Kumd-40`. They are easier to handle for human beings. You might want to use them if you have to type those passwords on a regular basis.
+
 <br>
 
 ## Static passwords
