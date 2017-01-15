@@ -58,7 +58,7 @@ def build_parser_bw():
     )
     parser.add_argument(
         "-r",
-        "--repository",
+        "--repo-path",
         default=environ.get('BW_REPO_PATH', getcwd()),
         dest='repo_path',
         help=_("Look for repository at this path (defaults to current working directory)"),
