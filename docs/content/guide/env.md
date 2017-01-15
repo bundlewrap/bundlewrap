@@ -40,6 +40,11 @@ There is no single default for these values. For example, when running `bw apply
 Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.
 
 
+## `BW_REPO_PATH`
+
+Set this to a path pointing to your BundleWrap repository. If unset, the current working directory is used. Can be overridden with `bw --repository PATH`. Keep in mind that `bw` will also look for a repository in all parent directories until it finds one.
+
+
 ## `BW_SOFTLOCK_EXPIRY`
 
 [Soft locks](locks.md) are automatically removed from nodes after some time. By default, it's `"8h"`. You can use this variable to override that default.

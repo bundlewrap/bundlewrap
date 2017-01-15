@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from argparse import ArgumentParser
-from os import environ
+from os import environ, getcwd
 
 from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
@@ -55,6 +55,15 @@ def build_parser_bw():
         default=False,
         dest='debug',
         help=_("print debugging info (implies -v)"),
+    )
+    parser.add_argument(
+        "-r",
+        "--repo-path",
+        default=environ.get('BW_REPO_PATH', getcwd()),
+        dest='repo_path',
+        help=_("Look for repository at this path (defaults to current working directory)"),
+        metavar=_("DIRECTORY"),
+        type=str,
     )
     parser.add_argument(
         "--version",

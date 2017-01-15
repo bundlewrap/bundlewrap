@@ -2,8 +2,9 @@
 from __future__ import unicode_literals
 
 from functools import wraps
-from os import environ, getcwd
-from os.path import dirname
+from os import environ
+from os.path import abspath, dirname
+from pipes import quote
 from sys import argv, exit, stderr, stdout
 from traceback import print_exc
 
@@ -92,7 +93,6 @@ def main(*args, **kwargs):
     """
     if not args:
         args = argv[1:]
-    path = kwargs.get('path', getcwd())
 
     text_args = [force_text(arg) for arg in args]
 
@@ -102,6 +102,7 @@ def main(*args, **kwargs):
         parser_bw.print_help()
         exit(2)
 
+    path = abspath(pargs.repo_path)
     io.debug_mode = pargs.debug
     io.activate()
     io.debug(_("invocation: {}").format(" ".join(argv)))
@@ -134,9 +135,9 @@ def main(*args, **kwargs):
             except NoSuchRepository:
                 if path == dirname(path):
                     io.stderr(_(
-                        "{x} The current working directory "
+                        "{x} {path} "
                         "is not a BundleWrap repository."
-                    ).format(x=red("!!!")))
+                    ).format(path=quote(abspath(pargs.repo_path)), x=red("!!!")))
                     exit(1)
                 else:
                     path = dirname(path)
