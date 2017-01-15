@@ -354,6 +354,11 @@ class Node(object):
             attributes = {}
         if transport_options is None:
             transport_options = {}
+        if transport == 'ssh':
+            transport_options.setdefault(
+                'add_host_keys',
+                environ.get('BW_ADD_HOST_KEYS', False) == "1",
+            )
 
         if not validate_name(name):
             raise RepositoryError(_("'{}' is not a valid node name").format(name))
@@ -614,7 +619,7 @@ class Node(object):
                 self.hostname,
                 remote_path,
                 local_path,
-                add_host_keys=environ.get('BW_ADD_HOST_KEYS', False) == "1",
+                add_host_keys=self.transport_options['add_host_keys'],
                 wrapper_inner=self.cmd_wrapper_inner,
                 wrapper_outer=self.cmd_wrapper_outer,
             )
@@ -686,7 +691,7 @@ class Node(object):
             else:
                 log_function = None
 
-            add_host_keys = environ.get('BW_ADD_HOST_KEYS', False) == "1"
+            add_host_keys = self.transport_options['add_host_keys']
 
             if not self._ssh_conn_established:
                 # Sometimes we're opening SSH connections to a node too
@@ -750,7 +755,7 @@ class Node(object):
                 self.hostname,
                 local_path,
                 remote_path,
-                add_host_keys=environ.get('BW_ADD_HOST_KEYS', False) == "1",
+                add_host_keys=self.transport_options['add_host_keys'],
                 group=group,
                 mode=mode,
                 owner=owner,
