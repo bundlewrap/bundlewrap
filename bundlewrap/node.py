@@ -363,7 +363,6 @@ class Node(object):
         self._node_metadata = attributes.get('metadata', {})
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
-        self.add_ssh_host_keys = False
         self.hostname = attributes.get('hostname', name)
         self.name = name
         self.transport = transport
