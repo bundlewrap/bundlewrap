@@ -336,6 +336,7 @@ class Node(object):
     )
 
     OS_FAMILY_LINUX = (
+        'alpine',
         'amazonlinux',
         'arch',
         'opensuse',
