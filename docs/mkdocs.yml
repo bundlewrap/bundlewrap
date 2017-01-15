@@ -35,6 +35,7 @@ pages:
   - directory: items/directory.md
   - file: items/file.md
   - group: items/group.md
+  - pkg_apk: items/pkg_apk.md
   - pkg_apt: items/pkg_apt.md
   - pkg_dnf: items/pkg_dnf.md
   - pkg_pacman: items/pkg_pacman.md

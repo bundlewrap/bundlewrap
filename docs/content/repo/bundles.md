@@ -44,6 +44,7 @@ This table lists all item types included in BundleWrap along with the bundle att
 <tr><td><a href="../../items/directory">directory</a></td><td><code>directories</code></td><td>Manages permissions and ownership for directories</td></tr>
 <tr><td><a href="../../items/file">file</a></td><td><code>files</code></td><td>Manages contents, permissions, and ownership for files</td></tr>
 <tr><td><a href="../../items/group">group</a></td><td><code>groups</code></td><td>Manages groups by wrapping <code>groupadd</code>, <code>groupmod</code> and <code>groupdel</code></td></tr>
+<tr><td><a href="../../items/pkg_apk">pkg_apk</a></td><td><code>pkg_apk</code></td><td>Installs and removes packages with apk</td></tr>
 <tr><td><a href="../../items/pkg_apt">pkg_apt</a></td><td><code>pkg_apt</code></td><td>Installs and removes packages with APT</td></tr>
 <tr><td><a href="../../items/pkg_dnf">pkg_dnf</a></td><td><code>pkg_dnf</code></td><td>Installs and removes packages with dnf</td></tr>
 <tr><td><a href="../../items/pkg_pacman">pkg_pacman</a></td><td><code>pkg_pacman</code></td><td>Installs and removes packages with pacman</td></tr>
