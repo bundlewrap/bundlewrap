@@ -5,7 +5,7 @@ from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import blue, bold, cyan, error_summary, green, mark_for_translation as _, \
-    randstr
+    randstr, red
 from ..utils.time import format_timestamp
 from ..utils.ui import io
 
@@ -79,11 +79,20 @@ def bw_lock_remove(repo, args):
         }
 
     def handle_result(task_id, return_value, duration):
-        io.stdout(_("{x} {node}  lock {id} removed").format(
-            x=green("✓"),
-            node=bold(task_id.ljust(max_node_name_length)),
-            id=args['lock_id'].upper(),
-        ))
+        if return_value is True:
+            io.stdout(_("{x} {node}  lock {id} removed").format(
+                x=green("✓"),
+                node=bold(task_id.ljust(max_node_name_length)),
+                id=args['lock_id'].upper(),
+            ))
+        else:
+            io.stderr(_(
+                "{x} {node}  has no lock with ID {id}"
+            ).format(
+                x=red("!"),
+                node=bold(task_id.ljust(max_node_name_length)),
+                id=args['lock_id'].upper(),
+            ))
 
     def handle_exception(task_id, exception, traceback):
         msg = "{}: {}".format(task_id, exception)

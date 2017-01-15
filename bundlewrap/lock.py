@@ -191,8 +191,12 @@ def softlock_list(node):
 
 
 def softlock_remove(node, lock_id):
-    io.debug(_("removing soft lock {id} from node {node}").format(
-        id=lock_id,
-        node=node.name,
-    ))
-    node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock_id)))
+    for lock in softlock_list(node):
+        if lock['id'] == lock_id:
+            io.debug(_("removing soft lock {id} from node {node}").format(
+                id=lock_id,
+                node=node.name,
+            ))
+            node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock_id)))
+            return True
+    return False
