@@ -87,6 +87,11 @@ def upload(
     container_id,
     local_path,
     remote_path,
+    group="",
+    mode=None,
+    owner="",
+    wrapper_inner="{}",
+    wrapper_outer="{}",
 ):
     """
     Upload a file.
@@ -104,3 +109,28 @@ def upload(
     )
     docker_process.communicate()
     assert docker_process.returncode == 0
+
+    if owner or group:
+        if group:
+            group = ":" + quote(group)
+        run(
+            container_id,
+            "chown {}{} {}".format(
+                quote(owner),
+                group,
+                quote(remote_path),
+            ),
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
+        )
+
+    if mode:
+        run(
+            container_id,
+            "chmod {} {}".format(
+                mode,
+                quote(remote_path),
+            ),
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
+        )
