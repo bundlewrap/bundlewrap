@@ -38,7 +38,7 @@ class NodeLock(object):
                 with io.job(_("  {node}  checking hard lock status...").format(node=self.node.name)):
                     result = self.node.run("mkdir " + quote(HARD_LOCK_PATH), may_fail=True)
                     if result.return_code != 0:
-                        self.node.download(HARD_LOCK_FILE, local_path, ignore_failure=True)
+                        self.node.download(HARD_LOCK_FILE, local_path)
                         with open(local_path, 'r') as f:
                             try:
                                 info = json.loads(f.read())
