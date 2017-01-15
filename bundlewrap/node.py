@@ -603,7 +603,7 @@ class Node(object):
 
         return result
 
-    def download(self, remote_path, local_path, ignore_failure=False):
+    def download(self, remote_path, local_path):
         return ssh.download(
             self.hostname,
             remote_path,
