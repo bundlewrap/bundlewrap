@@ -1,8 +1,13 @@
-# 2.13.1
+# 2.14.0
 
-unreleased
+2017-01-16
 
+* added key filtering to `bw metadata`
+* added `repo.vault.human_password_for()`
+* added `BW_REPO_PATH` and `bw --repo-path`
+* quotes are no longer required around commands with `bw run`
 * fixed intermittent circular dependencies with multiple custom items using BLOCK_CONCURRENT
+* fixed exception when removing non-existent soft lock
 
 
 # 2.13.0
