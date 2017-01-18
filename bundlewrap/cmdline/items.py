@@ -5,8 +5,9 @@ from os import makedirs
 from os.path import dirname, exists, join
 from sys import exit
 
-from ..utils.cmdline import get_node
-from ..utils.text import force_text, mark_for_translation as _
+from ..utils.cmdline import get_item, get_node
+from ..utils.statedict import statedict_to_json
+from ..utils.text import force_text, mark_for_translation as _, red
 from ..utils.ui import io
 
 
@@ -25,7 +26,7 @@ def write_preview(file_item, base_path):
 def bw_items(repo, args):
     node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
     if args['file_preview']:
-        item = node.get_item("file:{}".format(args['file_preview']))
+        item = get_item(node, "file:{}".format(args['file_preview']))
         if (
             item.attributes['content_type'] in ('any', 'base64', 'binary') or
             item.attributes['delete'] is True
@@ -65,6 +66,19 @@ def bw_items(repo, args):
                 item.name.lstrip("/"),
             )))
             write_preview(item, args['file_preview_path'])
+    elif args['item']:
+        item = get_item(node, args['item'])
+        if args['show_sdict']:
+            statedict = item.sdict()
+        else:
+            statedict = item.cdict()
+        if statedict is None:
+            io.stdout("REMOVE")
+        else:
+            if args['attr']:
+                io.stdout(repr(statedict[args['attr']]))
+            else:
+                io.stdout(statedict_to_json(statedict, pretty=True))
     else:
         for item in sorted(node.items):
             if args['show_repr']:

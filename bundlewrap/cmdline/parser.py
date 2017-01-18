@@ -243,13 +243,27 @@ def build_parser_bw():
         help=_("list items for this node"),
     )
     parser_items.add_argument(
+        'item',
+        metavar=_("ITEM"),
+        nargs='?',
+        type=str,
+        help=_("show configuration for this item"),
+    )
+    parser_items.add_argument(
+        'attr',
+        metavar=_("ATTRIBUTE"),
+        nargs='?',
+        type=str,
+        help=_("show only this item attribute"),
+    )
+    parser_items.add_argument(
         "-f",
         "--file-preview",
         dest='file_preview',
         help=_("print preview of given file"),
         metavar=_("FILE"),
         required=False,
-        type=str,
+        type=str,  # TODO 3.0 convert to bool and use ITEM arg
     )
     parser_items.add_argument(
         "-w",
@@ -266,6 +280,12 @@ def build_parser_bw():
         action='store_true',
         dest='show_repr',
         help=_("show more verbose representation of each item"),
+    )
+    parser_items.add_argument(
+        "--state",
+        action='store_true',
+        dest='show_sdict',
+        help=_("show actual item status on node instead of should-be configuration"),
     )
 
     # bw lock
