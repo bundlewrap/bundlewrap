@@ -20,6 +20,7 @@ def bw_test(repo, args):
 
         # Print warnings for unused bundles. Only do this if we are to
         # test the entire repo, though.
+        # TODO 3.0 Orphaned bundles should be errors (maybe optionally)
         orphaned_bundles = set(repo.bundle_names)
         for node in repo.nodes:
             for bundle in node.bundles:
