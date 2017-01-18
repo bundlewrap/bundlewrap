@@ -8,7 +8,7 @@ from ..concurrency import WorkerPool
 from ..plugins import PluginManager
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import bold, green, mark_for_translation as _, red
+from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io
 
 
@@ -17,6 +17,19 @@ def bw_test(repo, args):
         pending_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     else:
         pending_nodes = copy(list(repo.nodes))
+
+        # Print warnings for unused bundles. Only do this if we are to
+        # test the entire repo, though.
+        # TODO 3.0 Orphaned bundles should be errors (maybe optionally)
+        orphaned_bundles = set(repo.bundle_names)
+        for node in repo.nodes:
+            for bundle in node.bundles:
+                orphaned_bundles.discard(bundle.name)
+        for bundle in sorted(orphaned_bundles):
+            io.stdout(_("{x} {bundle}  is an unused bundle").format(
+                bundle=bold(bundle),
+                x=yellow("!"),
+            ))
 
     def tasks_available():
         return bool(pending_nodes)
