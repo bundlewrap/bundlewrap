@@ -31,8 +31,8 @@ def bw_items(repo, args):
             item.attributes['delete'] is True
         ):
             io.stderr(_(
-                "cannot preview {node} (unsuitable content_type or deleted)"
-            ).format(node=node.name))
+                "{x} cannot preview {file} on {node} (unsuitable content_type or deleted)"
+            ).format(x=red("!!!"), file=item.id, node=node.name))
             exit(1)
         else:
             io.stdout(item.content.decode(item.attributes['encoding']), append_newline=False)
