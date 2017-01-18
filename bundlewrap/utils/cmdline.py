@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from sys import exit
 
-from ..exceptions import NoSuchNode, NoSuchGroup
+from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode
 from . import names
 from .text import mark_for_translation as _, red
 from .ui import io
@@ -22,7 +22,7 @@ def get_group(repo, group_name):
 def get_item(node, item_id):
     try:
         return node.get_item(item_id)
-    except NoSuchGroup:
+    except NoSuchItem:
         io.stderr(_("{x} No such item on node '{node}': {item}").format(
             item=item_id,
             node=node.name,
