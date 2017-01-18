@@ -72,10 +72,13 @@ def bw_items(repo, args):
             statedict = item.sdict()
         else:
             statedict = item.cdict()
-        if args['attr']:
-            io.stdout(repr(statedict[args['attr']]))
+        if statedict is None:
+            io.stdout("REMOVE")
         else:
-            io.stdout(statedict_to_json(statedict, pretty=True))
+            if args['attr']:
+                io.stdout(repr(statedict[args['attr']]))
+            else:
+                io.stdout(statedict_to_json(statedict, pretty=True))
     else:
         for item in sorted(node.items):
             if args['show_repr']:
