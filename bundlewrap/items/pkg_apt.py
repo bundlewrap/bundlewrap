@@ -3,7 +3,9 @@ from __future__ import unicode_literals
 
 from pipes import quote
 
+from bundlewrap.exceptions import BundleError
 from bundlewrap.items.pkg import Pkg
+from bundlewrap.utils.text import mark_for_translation as _
 
 
 class AptPkg(Pkg):
@@ -61,3 +63,15 @@ class AptPkg(Pkg):
             "DEBIAN_FRONTEND=noninteractive "
             "apt-get -qy purge {}".format(quote(self.name))
         )
+
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
+        super(AptPkg, cls).validate_attributes(bundle, item_id, attributes)
+
+        if not isinstance(attributes.get('start_service', True), bool):
+            raise BundleError(_(
+                "expected boolean for 'start_service' on {item} in bundle '{bundle}'"
+            ).format(
+                bundle=bundle.name,
+                item=item_id,
+            ))
