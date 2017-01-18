@@ -6,7 +6,8 @@ from os.path import dirname, exists, join
 from sys import exit
 
 from ..utils.cmdline import get_node
-from ..utils.text import force_text, mark_for_translation as _
+from ..utils.statedict import statedict_to_json
+from ..utils.text import force_text, mark_for_translation as _, red
 from ..utils.ui import io
 
 
@@ -65,6 +66,16 @@ def bw_items(repo, args):
                 item.name.lstrip("/"),
             )))
             write_preview(item, args['file_preview_path'])
+    elif args['item']:
+        item = node.get_item(args['item'])
+        if args['show_sdict']:
+            statedict = item.sdict()
+        else:
+            statedict = item.cdict()
+        if args['attr']:
+            io.stdout(repr(statedict[args['attr']]))
+        else:
+            io.stdout(statedict_to_json(statedict, pretty=True))
     else:
         for item in sorted(node.items):
             if args['show_repr']:
