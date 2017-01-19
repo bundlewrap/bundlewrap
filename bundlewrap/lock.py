@@ -195,5 +195,4 @@ def softlock_remove(node, lock_id):
         id=lock_id,
         node=node.name,
     ))
-    rm = node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock_id)), may_fail=True)
-    return rm.return_code == 0
+    node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock_id)))

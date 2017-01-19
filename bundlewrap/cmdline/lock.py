@@ -10,6 +10,14 @@ from ..utils.time import format_timestamp
 from ..utils.ui import io
 
 
+def remove_lock_if_present(node, lock_id):
+    for lock in softlock_list(node):
+        if lock['id'] == lock_id:
+            softlock_remove(node, lock_id)
+            return True
+    return False
+
+
 def bw_lock_add(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
@@ -73,7 +81,7 @@ def bw_lock_remove(repo, args):
     def next_task():
         node = pending_nodes.pop()
         return {
-            'target': softlock_remove,
+            'target': remove_lock_if_present,
             'task_id': node.name,
             'args': (node, args['lock_id'].upper()),
         }
