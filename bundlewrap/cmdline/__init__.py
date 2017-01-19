@@ -105,7 +105,7 @@ def main(*args, **kwargs):
     path = abspath(pargs.repo_path)
     io.debug_mode = pargs.debug
     io.activate()
-    io.debug(_("invocation: {}").format(" ".join(argv)))
+    io.debug(_("invocation: {}").format(" ".join([force_text(arg) for arg in argv])))
 
     if 'BWADDHOSTKEYS' in environ:  # TODO remove in 3.0.0
         environ.setdefault('BW_ADD_HOST_KEYS', environ['BWADDHOSTKEYS'])
