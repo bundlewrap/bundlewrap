@@ -1,3 +1,12 @@
+# 2.15.0
+
+2017-01-19
+
+* added item and attribute arguments to `bw items`
+* added orphaned bundle warnings to `bw test`
+* fixed regression when removing soft locks
+
+
 # 2.14.0
 
 2017-01-16
