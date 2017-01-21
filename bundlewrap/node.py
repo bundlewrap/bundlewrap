@@ -333,6 +333,7 @@ class Node(object):
         'rhel',
         'centos',
         'fedora',
+        'oraclelinux',
     )
 
     OS_FAMILY_LINUX = (
@@ -341,7 +342,6 @@ class Node(object):
         'opensuse',
         'gentoo',
         'linux',
-        'oraclelinux',
     ) + \
         OS_FAMILY_DEBIAN + \
         OS_FAMILY_REDHAT
