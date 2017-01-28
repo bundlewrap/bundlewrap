@@ -110,6 +110,30 @@ class Directory(Item):
             quote(self.name),
         ))
 
+        if self.node.os not in self.node.OS_FAMILY_BSD:
+            # The bits S_ISUID and S_ISGID are special. POSIX says,
+            # if they are NOT set, the implementation of "chmod" may or
+            # may not clear them. This means that "chmod 0755 foodir"
+            # does not necessarily clear the S_ISUID and/or S_ISGID bit,
+            # while a "chmod 6755 foodir" will always set them.
+            #
+            # GNU coreutils have decided to actually behave this way.
+            # You can't clear a S_ISUID or S_ISGID bit by issuing "chmod
+            # 0755 foodir". You must explicitly do a "chmod u-s foodir"
+            # or "chmod g-s foodir".
+            #
+            # This does not apply to regular files, nor to the sticky
+            # bit (S_ISVTX). Also, FreeBSD, NetBSD, and OpenBSD do clear
+            # these bits on "chmod 0755 foodir".
+
+            # We only want to run these extra commands if we have found
+            # one of the two special bits to be set.
+            if int(status.sdict['mode'], 8) & 0o6000:
+                if not int(self.attributes['mode'], 8) & 0o4000:
+                    self.node.run("chmod u-s {}".format(quote(self.name)))
+                if not int(self.attributes['mode'], 8) & 0o2000:
+                    self.node.run("chmod g-s {}".format(quote(self.name)))
+
     def _fix_owner(self, status):
         group = self.attributes['group'] or ""
         if group:
