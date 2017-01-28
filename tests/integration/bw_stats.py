@@ -26,6 +26,8 @@ def test_nondeterministic(tmpdir):
     stdout, stderr, rcode = run("bw stats", path=str(tmpdir))
     assert stdout == b"""1 nodes
 0 groups
+1 bundles
+0 metadata processors
 2 items
   2 file
 """
