@@ -6,7 +6,6 @@ from os import environ
 from sys import exit
 from threading import Lock
 
-from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
 from .deps import (
@@ -26,6 +25,7 @@ from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import check_for_unsolvable_metadata_key_conflicts, hash_metadata
+from .transports import docker, ssh
 from .utils import cached_property, graph_for_items, names
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
@@ -337,6 +337,7 @@ class Node(object):
     )
 
     OS_FAMILY_LINUX = (
+        'alpine',
         'amazonlinux',
         'arch',
         'opensuse',
@@ -348,27 +349,35 @@ class Node(object):
 
     OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX
 
-    def __init__(self, name, infodict=None):
-        if infodict is None:
-            infodict = {}
+    def __init__(self, name, attributes=None, transport='ssh', transport_options=None):
+        if attributes is None:
+            attributes = {}
+        if transport_options is None:
+            transport_options = {}
+        if transport == 'ssh':
+            transport_options.setdefault(
+                'add_host_keys',
+                environ.get('BW_ADD_HOST_KEYS', False) == "1",
+            )
 
         if not validate_name(name):
             raise RepositoryError(_("'{}' is not a valid node name").format(name))
 
-        self.name = name
-        self._bundles = infodict.get('bundles', [])
+        self._bundles = attributes.get('bundles', [])
         self._compiling_metadata = Lock()
         self._dynamic_group_lock = Lock()
         self._dynamic_groups_resolved = False  # None means we're currently doing it
         self._metadata_so_far = {}
-        self._node_metadata = infodict.get('metadata', {})
+        self._node_metadata = attributes.get('metadata', {})
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
-        self.add_ssh_host_keys = False
-        self.hostname = infodict.get('hostname', self.name)
+        self.hostname = attributes.get('hostname', name)
+        self.name = name
+        self.transport = transport
+        self.transport_options = transport_options
 
         for attr in GROUP_ATTR_DEFAULTS:
-            setattr(self, "_{}".format(attr), infodict.get(attr))
+            setattr(self, "_{}".format(attr), attributes.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name
@@ -598,15 +607,24 @@ class Node(object):
 
         return result
 
-    def download(self, remote_path, local_path, ignore_failure=False):
-        return operations.download(
-            self.hostname,
-            remote_path,
-            local_path,
-            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
-            wrapper_inner=self.cmd_wrapper_inner,
-            wrapper_outer=self.cmd_wrapper_outer,
-        )
+    def download(self, remote_path, local_path):
+        if self.transport == 'docker':
+            return docker.download(
+                self.transport_options['container_id'],
+                remote_path,
+                local_path,
+            )
+        elif self.transport == 'ssh':
+            return ssh.download(
+                self.hostname,
+                remote_path,
+                local_path,
+                add_host_keys=self.transport_options['add_host_keys'],
+                wrapper_inner=self.cmd_wrapper_inner,
+                wrapper_outer=self.cmd_wrapper_outer,
+            )
+        else:
+            raise NotImplementedError(self.transport)
 
     def get_item(self, item_id):
         return find_item(item_id, self.items)
@@ -654,46 +672,57 @@ class Node(object):
         return self.repo._metadata_for_node(self.name, partial=True)
 
     def run(self, command, may_fail=False, log_output=False):
-        if log_output:
-            def log_function(msg):
-                io.stdout("{x} {node}  {msg}".format(
-                    node=bold(self.name),
-                    msg=force_text(msg).rstrip("\n"),
-                    x=cyan("›"),
-                ))
-        else:
-            log_function = None
-
-        add_host_keys = True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False
-
-        if not self._ssh_conn_established:
-            # Sometimes we're opening SSH connections to a node too fast
-            # for OpenSSH to establish the ControlMaster socket for the
-            # second and following connections to use.
-            # To prevent this, we just wait until a first dummy command
-            # has completed on the node before trying to reuse the
-            # multiplexed connection.
-            if self._ssh_first_conn_lock.acquire(False):
-                try:
-                    operations.run(self.hostname, "true", add_host_keys=add_host_keys)
-                    self._ssh_conn_established = True
-                finally:
-                    self._ssh_first_conn_lock.release()
+        if self.transport == 'docker':
+            return docker.run(
+                self.transport_options['container_id'],
+                command,
+                ignore_failure=may_fail,
+                wrapper_inner=self.cmd_wrapper_inner,
+                wrapper_outer=self.cmd_wrapper_outer,
+            )
+        elif self.transport == 'ssh':
+            if log_output:
+                def log_function(msg):
+                    io.stdout("{x} {node}  {msg}".format(
+                        node=bold(self.name),
+                        msg=force_text(msg).rstrip("\n"),
+                        x=cyan("›"),
+                    ))
             else:
-                # we didn't get the lock immediately, now we just wait
-                # until it is released before we proceed
-                with self._ssh_first_conn_lock:
-                    pass
+                log_function = None
 
-        return operations.run(
-            self.hostname,
-            command,
-            add_host_keys=add_host_keys,
-            ignore_failure=may_fail,
-            log_function=log_function,
-            wrapper_inner=self.cmd_wrapper_inner,
-            wrapper_outer=self.cmd_wrapper_outer,
-        )
+            add_host_keys = self.transport_options['add_host_keys']
+
+            if not self._ssh_conn_established:
+                # Sometimes we're opening SSH connections to a node too
+                # fast for OpenSSH to establish the ControlMaster socket
+                # for the second and following connections to use.
+                # To prevent this, we just wait until a first dummy
+                # command has completed on the node before trying to
+                # reuse the multiplexed connection.
+                if self._ssh_first_conn_lock.acquire(False):
+                    try:
+                        ssh.run(self.hostname, "true", add_host_keys=add_host_keys)
+                        self._ssh_conn_established = True
+                    finally:
+                        self._ssh_first_conn_lock.release()
+                else:
+                    # we didn't get the lock immediately, now we just wait
+                    # until it is released before we proceed
+                    with self._ssh_first_conn_lock:
+                        pass
+
+            return ssh.run(
+                self.hostname,
+                command,
+                add_host_keys=add_host_keys,
+                ignore_failure=may_fail,
+                log_function=log_function,
+                wrapper_inner=self.cmd_wrapper_inner,
+                wrapper_outer=self.cmd_wrapper_outer,
+            )
+        else:
+            raise NotImplementedError(self.transport)
 
     def test(self, ignore_missing_faults=False, workers=4):
         with io.job(_("  {node}  checking for metadata collisions...").format(node=self.name)):
@@ -710,17 +739,31 @@ class Node(object):
         self.repo.hooks.test_node(self.repo, self)
 
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
-        return operations.upload(
-            self.hostname,
-            local_path,
-            remote_path,
-            add_host_keys=True if environ.get('BW_ADD_HOST_KEYS', False) == "1" else False,
-            group=group,
-            mode=mode,
-            owner=owner,
-            wrapper_inner=self.cmd_wrapper_inner,
-            wrapper_outer=self.cmd_wrapper_outer,
-        )
+        if self.transport == 'docker':
+            return docker.upload(
+                self.transport_options['container_id'],
+                local_path,
+                remote_path,
+                group=group,
+                mode=mode,
+                owner=owner,
+                wrapper_inner=self.cmd_wrapper_inner,
+                wrapper_outer=self.cmd_wrapper_outer,
+            )
+        elif self.transport == 'ssh':
+            return ssh.upload(
+                self.hostname,
+                local_path,
+                remote_path,
+                add_host_keys=self.transport_options['add_host_keys'],
+                group=group,
+                mode=mode,
+                owner=owner,
+                wrapper_inner=self.cmd_wrapper_inner,
+                wrapper_outer=self.cmd_wrapper_outer,
+            )
+        else:
+            raise NotImplementedError(self.transport)
 
     def verify(self, show_all=False, workers=4):
         bad = 0
@@ -763,7 +806,10 @@ def build_attr_property(attr, default):
 
         if attr_value is None:
             attr_source = "default"
-            attr_value = default
+            if attr == 'cmd_wrapper_outer' and self.transport == 'docker':
+                attr_value = "sh -c {}"
+            else:
+                attr_value = default
 
         io.debug(_("node {node} gets its {attr} attribute from: {source}").format(
             node=self.name,

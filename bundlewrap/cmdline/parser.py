@@ -8,6 +8,7 @@ from .. import VERSION_STRING
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
+from .docker import bw_docker_apply
 from .groups import bw_groups
 from .hash import bw_hash
 from .items import bw_items
@@ -175,6 +176,26 @@ def build_parser_bw():
         required=False,
         type=str,
         help=_("name of node to inspect"),
+    )
+
+    # bw docker
+    help_docker = _("Build Docker images")
+    parser_docker = subparsers.add_parser("docker", description=help_docker, help=help_docker)
+    parser_docker_subparsers = parser_docker.add_subparsers()
+
+    # bw docker apply
+    help_docker_apply = _("create and/or update containers")
+    parser_docker_apply = parser_docker_subparsers.add_parser(
+        "apply",
+        description=help_docker_apply,
+        help=help_docker_apply,
+    )
+    parser_docker_apply.set_defaults(func=bw_docker_apply)
+    parser_docker_apply.add_argument(
+        'image',
+        metavar=_("IMAGE"),
+        type=str,
+        help=_("use this image configuration"),
     )
 
     # bw groups

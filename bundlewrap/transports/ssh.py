@@ -8,10 +8,10 @@ from subprocess import Popen, PIPE
 from threading import Event, Thread
 from os import close, environ, pipe, read, setpgrp
 
-from .exceptions import RemoteException
-from .utils import cached_property
-from .utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
-from .utils.ui import io
+from . import RunResult
+from ..exceptions import RemoteException
+from ..utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
+from ..utils.ui import io
 
 
 def output_thread_body(line_buffer, read_fd, quit_event, read_until_eof):
@@ -69,21 +69,6 @@ def download(
             host=hostname,
             path=remote_path,
         ))
-
-
-class RunResult(object):
-    def __init__(self):
-        self.return_code = None
-        self.stderr = None
-        self.stdout = None
-
-    @cached_property
-    def stderr_text(self):
-        return force_text(self.stderr)
-
-    @cached_property
-    def stdout_text(self):
-        return force_text(self.stdout)
 
 
 def run(
