@@ -120,6 +120,14 @@ class Group(object):
         return result
 
     @property
+    def _subgroup_names_from_patterns(self):
+        for pattern in self.immediate_subgroup_patterns:
+            compiled_pattern = re.compile(pattern)
+            for group in self.repo.groups:
+                if compiled_pattern.search(group.name) is not None and group != self:
+                    yield group.name
+
+    @property
     def _nodes_from_members(self):
         for node_name in self.static_member_names:
             try:
@@ -145,14 +153,10 @@ class Group(object):
         """
         Recursively finds subgroups and checks for loops.
         """
-        names_from_patterns = []
-        for pattern in self.immediate_subgroup_patterns:
-            compiled_pattern = re.compile(pattern)
-            for group in self.repo.groups:
-                if compiled_pattern.search(group.name) is not None and group != self:
-                    names_from_patterns.append(group.name)
-
-        for name in list(self.immediate_subgroup_names) + names_from_patterns:
+        for name in set(
+            list(self.immediate_subgroup_names) +
+            list(self._subgroup_names_from_patterns)
+        ):
             if name not in visited_names:
                 try:
                     group = self.repo.get_group(name)
@@ -195,5 +199,5 @@ class Group(object):
         """
         Iterator over all subgroups as group objects.
         """
-        for group_name in self._check_subgroup_names([self.name]):
+        for group_name in set(self._check_subgroup_names([self.name])):
             yield self.repo.get_group(group_name)
