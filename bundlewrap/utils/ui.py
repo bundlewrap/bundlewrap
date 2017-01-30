@@ -13,7 +13,7 @@ import termios
 from threading import Event, Lock, Thread
 
 from . import STDERR_WRITER, STDOUT_WRITER
-from .text import ANSI_ESCAPE, blue, bold, inverse, mark_for_translation as _
+from .text import ansi_clean, blue, bold, inverse, mark_for_translation as _
 
 QUIT_EVENT = Event()
 SHUTDOWN_EVENT_HARD = Event()
@@ -49,7 +49,7 @@ def capture_for_debug_logfile(f):
         if self.debug_log_file:
             self.debug_log_file.write(
                 datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") +
-                ANSI_ESCAPE.sub("", msg).rstrip("\n") + "\n"
+                ansi_clean.sub("", msg).rstrip("\n") + "\n"
             )
         return f(self, msg, **kwargs)
     return wrapped
@@ -94,7 +94,7 @@ def write_to_stream(stream, msg):
         if TTY:
             stream.write(msg)
         else:
-            stream.write(ANSI_ESCAPE.sub("", msg))
+            stream.write(ansi_clean(msg))
         stream.flush()
     except broken_pipe_exception as e:
         if broken_pipe_exception == IOError:

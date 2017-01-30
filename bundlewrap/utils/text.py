@@ -15,6 +15,10 @@ ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
 VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
 
 
+def ansi_clean(input_string):
+    return ANSI_ESCAPE.sub("", force_text(input_string))
+
+
 def ansi_wrapper(colorizer):
     if environ.get("BW_COLORS", "1") != "0":
         return colorizer
