@@ -6,6 +6,7 @@ from sys import exit
 
 from ..concurrency import WorkerPool
 from ..utils.cmdline import get_target_nodes
+from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
     bold,
@@ -56,96 +57,47 @@ def stats_summary(node_stats, total_duration):
     except ZeroDivisionError:
         totals['health'] = 0
 
-    headings = {
-        'node_name': _("node"),
-        'items': _("items"),
-        'good': _("good"),
-        'bad': _("bad"),
-        'health': _("health"),
-        'duration': _("time"),
-        'totals_row': _("total ({} nodes)").format(len(node_stats.keys())),
-    }
+    rows = [[
+        bold(_("node")),
+        _("items"),
+        green(_("good")),
+        red(_("bad")),
+        _("health"),
+        _("duration"),
+    ], ROW_SEPARATOR]
 
-    max_duration_length = max(len(headings['duration']), len(format_duration(total_duration)))
-    max_node_name_length = max(len(headings['node_name']), len(headings['totals_row']))
-
-    for node_name, stats in node_stats.items():
-        max_duration_length = max(len(format_duration(stats['duration'])), max_duration_length)
-        max_node_name_length = max(len(node_name), max_node_name_length)
-
-    column_width = {
-        'duration': max_duration_length,
-        'node_name': max_node_name_length,
-    }
-    for column, total in totals.items():
-        column_width[column] = max(len(str(total)), len(headings[column]))
-    column_width['health'] = 6
-
-    io.stdout("{x} ╭─{node}─┬─{items}─┬─{good}─┬─{bad}─┬─{health}─┬─{duration}─╮".format(
-        node="─" * column_width['node_name'],
-        items="─" * column_width['items'],
-        good="─" * column_width['good'],
-        bad="─" * column_width['bad'],
-        health="─" * column_width['health'],
-        duration="─" * column_width['duration'],
-        x=blue("i"),
-    ))
-    io.stdout("{x} │ {node} │ {items} │ {good} │ {bad} │ {health} │ {duration} │".format(
-        node=bold(headings['node_name'].ljust(column_width['node_name'])),
-        items=headings['items'].ljust(column_width['items']),
-        good=green(headings['good'].ljust(column_width['good'])),
-        bad=red(headings['bad'].ljust(column_width['bad'])),
-        health=headings['health'].ljust(column_width['health']),
-        duration=headings['duration'].ljust(column_width['duration']),
-        x=blue("i"),
-    ))
-    io.stdout("{x} ├─{node}─┼─{items}─┼─{good}─┼─{bad}─┼─{health}─┼─{duration}─┤".format(
-        node="─" * column_width['node_name'],
-        items="─" * column_width['items'],
-        good="─" * column_width['good'],
-        bad="─" * column_width['bad'],
-        health="─" * column_width['health'],
-        duration="─" * column_width['duration'],
-        x=blue("i"),
-    ))
     for health, node_name, items, good, bad, duration in node_ranking:
-        io.stdout("{x} │ {node} │ {items} │ {good} │ {bad} │ {health} │ {duration} │".format(
-            node=node_name.ljust(column_width['node_name']),
-            items=str(items).rjust(column_width['items']),
-            good=green_unless_zero(good, column_width['good']),
-            bad=red_unless_zero(bad, column_width['bad']),
-            health="{0:.1f}%".format(health).rjust(column_width['health']),
-            duration=format_duration(duration).rjust(column_width['duration']),
-            x=blue("i"),
-        ))
+        rows.append([
+            node_name,
+            str(items),
+            green_unless_zero(good),
+            red_unless_zero(bad),
+            "{0:.1f}%".format(health),
+            format_duration(duration),
+        ])
+
     if len(node_ranking) > 1:
-        io.stdout("{x} ├─{node}─┼─{items}─┼─{good}─┼─{bad}─┼─{health}─┼─{duration}─┤".format(
-            node="─" * column_width['node_name'],
-            items="─" * column_width['items'],
-            good="─" * column_width['good'],
-            bad="─" * column_width['bad'],
-            health="─" * column_width['health'],
-            duration="─" * column_width['duration'],
-            x=blue("i"),
-        ))
-        io.stdout("{x} │ {node} │ {items} │ {good} │ {bad} │ {health} │ {duration} │".format(
-            node=bold(headings['totals_row'].ljust(column_width['node_name'])),
-            items=str(totals['items']).rjust(column_width['items']),
-            good=green_unless_zero(totals['good'], column_width['good']),
-            bad=red_unless_zero(totals['bad'], column_width['bad']),
-            health="{0:.1f}%".format(totals['health']).rjust(column_width['health']),
-            duration=format_duration(total_duration).rjust(column_width['duration']),
-            x=blue("i"),
-        ))
-    io.stdout("{x} ╰─{node}─┴─{items}─┴─{good}─┴─{bad}─┴─{health}─┴─{duration}─╯".format(
-        node="─" * column_width['node_name'],
-        items="─" * column_width['items'],
-        good="─" * column_width['good'],
-        bad="─" * column_width['bad'],
-        health="─" * column_width['health'],
-        duration="─" * column_width['duration'],
-        x=blue("i"),
-    ))
+        rows.append(ROW_SEPARATOR)
+        rows.append([
+            bold(_("total ({} nodes)").format(len(node_stats.keys()))),
+            str(totals['items']),
+            green_unless_zero(totals['good']),
+            red_unless_zero(totals['bad']),
+            "{0:.1f}%".format(totals['health']),
+            format_duration(total_duration),
+        ])
+
+    alignments = {
+        1: 'right',
+        2: 'right',
+        3: 'right',
+        4: 'right',
+        5: 'right',
+        6: 'right',
+    }
+
+    for line in render_table(rows, alignments=alignments):
+        io.stdout("{x} {line}".format(x=blue("i"), line=line))
 
 
 def bw_verify(repo, args):
