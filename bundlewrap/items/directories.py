@@ -128,7 +128,7 @@ class Directory(Item):
 
             # We only want to run these extra commands if we have found
             # one of the two special bits to be set.
-            if int(status.sdict['mode'], 8) & 0o6000:
+            if status.sdict is not None and int(status.sdict['mode'], 8) & 0o6000:
                 if not int(self.attributes['mode'], 8) & 0o4000:
                     self.node.run("chmod u-s {}".format(quote(self.name)))
                 if not int(self.attributes['mode'], 8) & 0o2000:
