@@ -49,6 +49,8 @@ def plot_group(groups, nodes, show_nodes):
     for group in groups:
         for subgroup in group.immediate_subgroup_names:
             yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
+        for subgroup in group._subgroup_names_from_patterns:
+            yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
 
     if show_nodes:
         for group in groups:
