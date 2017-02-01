@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from contextlib import contextmanager
 from datetime import datetime
 from errno import EPIPE
