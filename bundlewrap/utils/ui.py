@@ -53,7 +53,7 @@ def capture_for_debug_logfile(f):
         if self.debug_log_file:
             self.debug_log_file.write(
                 datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") +
-                ansi_clean.sub("", msg).rstrip("\n") + "\n"
+                ansi_clean(msg).rstrip("\n") + "\n"
             )
         return f(self, msg, **kwargs)
     return wrapped
