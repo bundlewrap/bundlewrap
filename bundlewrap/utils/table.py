@@ -48,11 +48,17 @@ def _row(row, column_widths, alignments):
         if alignment == 'right':
             result += " " * (column_widths[i] - len(ansi_clean(column_value)))
             result += column_value
-            result += " │ "
         elif alignment == 'left':
             result += column_value
             result += " " * (column_widths[i] - len(ansi_clean(column_value)))
-            result += " │ "
+        elif alignment == 'center':
+            prefix = int((column_widths[i] - len(ansi_clean(column_value))) / 2)
+            result += " " * prefix
+            result += column_value
+            result += " " * (column_widths[i] - len(ansi_clean(column_value)) - prefix)
+        else:
+            raise NotImplementedError("no such alignment: {}".format(alignment))
+        result += " │ "
     return result[:-1]
 
 
