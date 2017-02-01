@@ -96,7 +96,7 @@ def term_width():
 def page_lines(lines):
     lines = list(lines)
     line_width = max([len(line) for line in lines])
-    if line_width > term_width():
+    if TTY and line_width > term_width():
         pager = Popen([environ.get("PAGER", "/usr/bin/less")], stdin=PIPE)
         pager.stdin.write("\n".join(lines).encode('utf-8'))
         pager.stdin.close()
