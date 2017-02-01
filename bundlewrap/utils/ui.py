@@ -11,6 +11,7 @@ from os.path import join
 from select import select
 from signal import signal, SIG_DFL, SIGINT, SIGTERM
 import struct
+from subprocess import PIPE, Popen
 import sys
 import termios
 from threading import Event, Lock, Thread
@@ -90,6 +91,19 @@ def term_width():
     fd = sys.stdout.fileno()
     _, width = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, 'aaaa'))
     return width
+
+
+def page_lines(lines):
+    lines = list(lines)
+    line_width = max([len(line) for line in lines])
+    if line_width > term_width():
+        pager = Popen([environ.get("PAGER", "/usr/bin/less")], stdin=PIPE)
+        pager.stdin.write("\n".join(lines).encode('utf-8'))
+        pager.stdin.close()
+        pager.communicate()
+    else:
+        for line in lines:
+            io.stdout(line)
 
 
 def write_to_stream(stream, msg):
