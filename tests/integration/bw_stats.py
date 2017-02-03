@@ -27,15 +27,15 @@ def test_nondeterministic(tmpdir):
     )
 
     stdout, stderr, rcode = run("bw stats", path=str(tmpdir))
-    assert stdout == """i ╭───────┬─────────────────────╮
-i │ count │ type                │
-i ├───────┼─────────────────────┤
-i │     1 │ nodes               │
-i │     0 │ groups              │
-i │     1 │ bundles             │
-i │     0 │ metadata processors │
-i │     2 │ items               │
-i ├───────┼─────────────────────┤
-i │     2 │ file                │
-i ╰───────┴─────────────────────╯
+    assert stdout == """╭───────┬─────────────────────╮
+│ count │ type                │
+├───────┼─────────────────────┤
+│     1 │ nodes               │
+│     0 │ groups              │
+│     1 │ bundles             │
+│     0 │ metadata processors │
+│     2 │ items               │
+├───────┼─────────────────────┤
+│     2 │ file                │
+╰───────┴─────────────────────╯
 """.encode('utf-8')
