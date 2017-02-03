@@ -22,7 +22,7 @@ def test_single(tmpdir):
 
 def test_hostname(tmpdir):
     make_repo(tmpdir, nodes={"node1": {'hostname': "node1.example.com"}})
-    stdout, stderr, rcode = run("bw nodes --attrs | grep '\thostname' | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes --attrs | grep '\thostname' | cut -f 3", path=str(tmpdir))
     assert stdout == b"node1.example.com\n"
     assert stderr == b""
     assert rcode == 0
@@ -44,12 +44,12 @@ def test_inline(tmpdir):
             "bundle2": {},
         },
     )
-    stdout, stderr, rcode = run("bw nodes -ai | grep '\tbundle' | grep bundle2 | cut -f 1", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -ai | grep '\tbundle' | grep bundle2 | cut -f 1", path=str(tmpdir))
     assert stdout == b"node1\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -ai | grep '\tbundle' | grep -v bundle2 | cut -f 1", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -ai | grep '\tbundle' | grep -v bundle2 | cut -f 1", path=str(tmpdir))
     assert stdout == b"node2\n"
     assert stderr == b""
     assert rcode == 0
@@ -153,17 +153,17 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group1\ngroup3\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group2\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node3 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node3 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group2\ngroup3\ngroup4\n"
     assert stderr == b""
     assert rcode == 0
@@ -198,22 +198,22 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group3\ngroup4\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group3\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node3 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node3 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group1\ngroup3\ngroup4\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node4 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node4 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group1\ngroup2\ngroup3\ngroup4\n"
     assert stderr == b""
     assert rcode == 0
@@ -245,12 +245,12 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tbundle | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node1 | grep \tbundle | cut -f 3", path=str(tmpdir))
     assert stdout == b"bundle1\nbundle2\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tbundle | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node2 | grep \tbundle | cut -f 3", path=str(tmpdir))
     assert stdout == b"bundle1\n"
     assert stderr == b""
     assert rcode == 0
@@ -278,12 +278,12 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group1\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group2\n"
     assert stderr == b""
     assert rcode == 0
@@ -316,12 +316,12 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node1 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group1\n"
     assert stderr == b""
     assert rcode == 0
 
-    stdout, stderr, rcode = run("bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes -a node2 | grep \tgroup | cut -f 3", path=str(tmpdir))
     assert stdout == b"group1\ngroup2\ngroup3\n"
     assert stderr == b""
     assert rcode == 0

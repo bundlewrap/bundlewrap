@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from os import environ
+
 from ..utils import names
 from ..utils.cmdline import get_group, get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -28,57 +30,57 @@ def bw_nodes(repo, args):
             first_attr = True
             for attr in sorted(list(GROUP_ATTR_DEFAULTS) + ['hostname']):
                 rows.append([
-                    node.name if first_attr else "",
-                    attr,
+                    bold(node.name) if first_attr else "",
+                    bold(attr),
                     str(getattr(node, attr)),
                 ])
-                first_attr = False
+                first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
 
             if args['inline']:
                 rows.append([
-                    node.name if first_attr else "",
-                    "group",
+                    bold(node.name) if first_attr else "",
+                    bold("group"),
                     ", ".join(sorted([group.name for group in node.groups])),
                 ])
-                first_attr = False
+                first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
             else:
                 rows.append([
                     "",
-                    "",
-                    "",
+                    1,
+                    1,
                 ])
                 first_group = True
                 for group in sorted(node.groups):
                     rows.append([
-                        node.name if first_attr else "",
-                        "group" if first_group else "",
+                        bold(node.name) if first_attr else "",
+                        bold("group") if first_group else "",
                         group.name,
                     ])
-                    first_group = False
-                    first_attr = False
+                    first_group = environ.get("BW_TABLE_STYLE") == 'grep'
+                    first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
                 rows.append([
                     "",
-                    "",
-                    "",
+                    1,
+                    1,
                 ])
 
             if args['inline']:
                 rows.append([
-                    node.name if first_attr else "",
-                    "bundle",
+                    bold(node.name) if first_attr else "",
+                    bold("bundle"),
                     ", ".join(sorted([bundle.name for bundle in node.bundles])),
                 ])
-                first_attr = False
+                first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
             else:
                 first_bundle = True
                 for bundle in sorted(node.bundles):
                     rows.append([
-                        node.name if first_attr else "",
-                        "bundle" if first_bundle else "",
+                        bold(node.name) if first_attr else "",
+                        bold("bundle") if first_bundle else "",
                         bundle.name,
                     ])
-                    first_bundle = False
-                    first_attr = False
+                    first_bundle = environ.get("BW_TABLE_STYLE") == 'grep'
+                    first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
             rows.append(ROW_SEPARATOR)
             continue
         line = ""
