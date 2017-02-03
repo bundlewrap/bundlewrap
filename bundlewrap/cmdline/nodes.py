@@ -46,8 +46,8 @@ def bw_nodes(repo, args):
             else:
                 rows.append([
                     "",
-                    1,
-                    1,
+                    ROW_SEPARATOR,
+                    ROW_SEPARATOR,
                 ])
                 first_group = True
                 for group in sorted(node.groups):
@@ -60,8 +60,8 @@ def bw_nodes(repo, args):
                     first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
                 rows.append([
                     "",
-                    1,
-                    1,
+                    ROW_SEPARATOR,
+                    ROW_SEPARATOR,
                 ])
 
             if args['inline']:
