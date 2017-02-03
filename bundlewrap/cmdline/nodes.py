@@ -3,12 +3,10 @@ from __future__ import unicode_literals
 
 from ..utils import names
 from ..utils.cmdline import get_group, get_target_nodes
-from ..utils.text import bold
-from ..utils.ui import io
+from ..utils.table import ROW_SEPARATOR, render_table
+from ..utils.text import bold, mark_for_translation as _
+from ..utils.ui import io, page_lines
 from ..group import GROUP_ATTR_DEFAULTS
-
-
-ATTR_MAX_LENGTH = max([len(attr) for attr in GROUP_ATTR_DEFAULTS])
 
 
 def bw_nodes(repo, args):
@@ -18,43 +16,70 @@ def bw_nodes(repo, args):
         nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     else:
         nodes = repo.nodes
-    max_node_name_length = 0 if not nodes else max([len(name) for name in names(nodes)])
+
+    rows = [[
+        bold(_("node")),
+        bold(_("attribute")),
+        bold(_("value")),
+    ], ROW_SEPARATOR]
+
     for node in nodes:
         if args['show_attrs']:
+            first_attr = True
             for attr in sorted(list(GROUP_ATTR_DEFAULTS) + ['hostname']):
-                io.stdout("{}\t{}\t{}".format(
-                    node.name.ljust(max_node_name_length),
-                    bold(attr.ljust(ATTR_MAX_LENGTH)),
-                    getattr(node, attr),
-                ))
+                rows.append([
+                    node.name if first_attr else "",
+                    attr,
+                    str(getattr(node, attr)),
+                ])
+                first_attr = False
 
             if args['inline']:
-                io.stdout("{}\t{}\t{}".format(
-                    node.name.ljust(max_node_name_length),
-                    bold("group".ljust(ATTR_MAX_LENGTH)),
+                rows.append([
+                    node.name if first_attr else "",
+                    "group",
                     ", ".join(sorted([group.name for group in node.groups])),
-                ))
+                ])
+                first_attr = False
             else:
+                rows.append([
+                    "",
+                    "",
+                    "",
+                ])
+                first_group = True
                 for group in sorted(node.groups):
-                    io.stdout("{}\t{}\t{}".format(
-                        node.name.ljust(max_node_name_length),
-                        bold("group".ljust(ATTR_MAX_LENGTH)),
+                    rows.append([
+                        node.name if first_attr else "",
+                        "group" if first_group else "",
                         group.name,
-                    ))
+                    ])
+                    first_group = False
+                    first_attr = False
+                rows.append([
+                    "",
+                    "",
+                    "",
+                ])
 
             if args['inline']:
-                io.stdout("{}\t{}\t{}".format(
-                    node.name.ljust(max_node_name_length),
-                    bold("bundle".ljust(ATTR_MAX_LENGTH)),
+                rows.append([
+                    node.name if first_attr else "",
+                    "bundle",
                     ", ".join(sorted([bundle.name for bundle in node.bundles])),
-                ))
+                ])
+                first_attr = False
             else:
+                first_bundle = True
                 for bundle in sorted(node.bundles):
-                    io.stdout("{}\t{}\t{}".format(
-                        node.name.ljust(max_node_name_length),
-                        bold("bundle".ljust(ATTR_MAX_LENGTH)),
+                    rows.append([
+                        node.name if first_attr else "",
+                        "bundle" if first_bundle else "",
                         bundle.name,
-                    ))
+                    ])
+                    first_bundle = False
+                    first_attr = False
+            rows.append(ROW_SEPARATOR)
             continue
         line = ""
         if args['show_hostnames']:
@@ -68,3 +93,8 @@ def bw_nodes(repo, args):
         elif args['show_os']:
             line += ": " + node.os
         io.stdout(line)
+
+    if len(rows) > 2:
+        page_lines(render_table(
+            rows[:-1],  # remove trailing ROW_SEPARATOR
+        ))
