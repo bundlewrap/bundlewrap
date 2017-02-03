@@ -28,7 +28,7 @@ def test_nondeterministic(tmpdir):
 
     stdout, stderr, rcode = run("bw stats", path=str(tmpdir))
     assert stdout == """i ╭───────┬─────────────────────╮
-i │ Count │ Type                │
+i │ count │ type                │
 i ├───────┼─────────────────────┤
 i │     1 │ nodes               │
 i │     0 │ groups              │
