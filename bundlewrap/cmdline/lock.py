@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from os import environ
+
 from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
@@ -191,8 +193,10 @@ def bw_lock_show(repo, args):
                         item,
                         lock['comment'] if first_item else "",
                     ])
-                    first_item = False
-                first_lock = False
+                    # always repeat for grep style
+                    first_item = environ.get("BW_TABLE_STYLE") == 'grep'
+                # always repeat for grep style
+                first_lock = environ.get("BW_TABLE_STYLE") == 'grep'
         else:
             rows.append([
                 node_name,
