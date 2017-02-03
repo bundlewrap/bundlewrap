@@ -39,7 +39,7 @@ def bw_nodes(repo, args):
             if args['inline']:
                 rows.append([
                     bold(node.name) if first_attr else "",
-                    bold("group"),
+                    bold("groups"),
                     ", ".join(sorted([group.name for group in node.groups])),
                 ])
                 first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
@@ -53,7 +53,7 @@ def bw_nodes(repo, args):
                 for group in sorted(node.groups):
                     rows.append([
                         bold(node.name) if first_attr else "",
-                        bold("group") if first_group else "",
+                        bold("groups") if first_group else "",
                         group.name,
                     ])
                     first_group = environ.get("BW_TABLE_STYLE") == 'grep'
@@ -67,7 +67,7 @@ def bw_nodes(repo, args):
             if args['inline']:
                 rows.append([
                     bold(node.name) if first_attr else "",
-                    bold("bundle"),
+                    bold("bundles"),
                     ", ".join(sorted([bundle.name for bundle in node.bundles])),
                 ])
                 first_attr = environ.get("BW_TABLE_STYLE") == 'grep'
@@ -76,7 +76,7 @@ def bw_nodes(repo, args):
                 for bundle in sorted(node.bundles):
                     rows.append([
                         bold(node.name) if first_attr else "",
-                        bold("bundle") if first_bundle else "",
+                        bold("bundles") if first_bundle else "",
                         bundle.name,
                     ])
                     first_bundle = environ.get("BW_TABLE_STYLE") == 'grep'
