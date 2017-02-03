@@ -25,6 +25,11 @@ METADATA_TYPES = (
 
 
 def atomic(obj):
+    """
+    Wraps a compatible object in a custom class to prevent it from being
+    merged with another object of the same type during metadata
+    compilation.
+    """
     try:
         cls = ATOMIC_TYPES[type(obj)]
     except KeyError:
@@ -262,6 +267,15 @@ def hash_metadata(sdict):
 
 
 def value_at_key_path(dict_obj, path):
+    """
+    Given the list of keys in `path`, recursively traverse `dict_obj`
+    and return whatever is found at the end of that path.
+
+    E.g.:
+
+    >>> value_at_key_path({'foo': {'bar': 5}}, ['foo', 'bar'])
+    5
+    """
     if not path:
         return dict_obj
     else:
