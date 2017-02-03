@@ -94,6 +94,9 @@ def term_width():
 
 
 def page_lines(lines):
+    """
+    View the given list of Unicode lines in a pager (e.g. `less`).
+    """
     lines = list(lines)
     line_width = max([len(ansi_clean(line)) for line in lines])
     if TTY and line_width > term_width():
