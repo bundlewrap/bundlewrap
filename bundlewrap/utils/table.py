@@ -159,7 +159,16 @@ def render_table(rows, alignments=None):
     Yields lines for a table.
 
     rows must be a list of lists of values, with the first row being
-    considered the heading row.
+    considered the heading row. Alternatively, an entire row or
+    individual cells can be set to ROW_SEPARATOR to turn it into a
+    separator:
+
+    rows = [
+        ["heading1", "heading2"],
+        ROW_SEPARATOR,
+        ["value1", "value2"],
+        ["value3", ROW_SEPARATOR],
+    ]
 
     alignments is a dict mapping column indexes to 'left' or 'right'.
     """
