@@ -20,8 +20,8 @@ def bw_stats(repo, args):
 
     rows = [
         [
-            bold(_("Count")),
-            bold(_("Type")),
+            bold(_("count")),
+            bold(_("type")),
         ],
         ROW_SEPARATOR,
         [str(len(repo.nodes)), _("nodes")],

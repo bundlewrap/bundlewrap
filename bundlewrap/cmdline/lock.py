@@ -165,13 +165,13 @@ def bw_lock_show(repo, args):
         return
 
     rows = [[
-        bold(_("Node")),
+        bold(_("node")),
         bold(_("ID")),
-        bold(_("Created")),
-        bold(_("Expires")),
-        bold(_("User")),
-        bold(_("Items")),
-        bold(_("Comment")),
+        bold(_("created")),
+        bold(_("expires")),
+        bold(_("user")),
+        bold(_("items")),
+        bold(_("comment")),
     ], ROW_SEPARATOR]
 
     for node_name, locks in sorted(locks_on_node.items()):
@@ -183,8 +183,8 @@ def bw_lock_show(repo, args):
                 first_item = True
                 for item in lock['items']:
                     rows.append([
-                        bold(node_name) if first_item and first_lock else "",
-                        bold(lock['id']) if first_item else "",
+                        node_name if first_item and first_lock else "",
+                        lock['id'] if first_item else "",
                         lock['formatted_date'] if first_item else "",
                         lock['formatted_expiry'] if first_item else "",
                         lock['user'] if first_item else "",
@@ -195,7 +195,7 @@ def bw_lock_show(repo, args):
                 first_lock = False
         else:
             rows.append([
-                bold(node_name),
+                node_name,
                 _("(none)"),
                 "",
                 "",
