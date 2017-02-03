@@ -209,10 +209,7 @@ def bw_lock_show(repo, args):
             ])
         rows.append(ROW_SEPARATOR)
 
-    page_lines([
-        "{x} {line}".format(x=blue("i"), line=line)
-        for line in render_table(
-            rows[:-1],
-            alignments={1: 'center'},
-        )
-    ])
+    page_lines(render_table(
+        rows[:-1],  # remove trailing ROW_SEPARATOR
+        alignments={1: 'center'},
+    ))

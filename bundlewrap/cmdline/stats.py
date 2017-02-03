@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from operator import itemgetter
 
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import blue, bold, mark_for_translation as _
-from ..utils.ui import io
+from ..utils.text import bold, mark_for_translation as _
+from ..utils.ui import page_lines
 
 
 def bw_stats(repo, args):
@@ -35,5 +35,4 @@ def bw_stats(repo, args):
     for item_type, count in sorted(items.items(), key=itemgetter(1), reverse=True):
         rows.append([str(count), item_type])
 
-    for line in render_table(rows, alignments={0: 'right'}):
-        io.stdout("{x} {line}".format(x=blue("i"), line=line))
+    page_lines(render_table(rows, alignments={0: 'right'}))
