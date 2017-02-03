@@ -1,10 +1,58 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from os import environ
+
 from .text import ansi_clean
 
 
 ROW_SEPARATOR = 1
+
+if environ.get("BW_TABLE_STYLE") == 'ascii':
+    FRAME_TOP_LEFT = "+-"
+    FRAME_TOP_COLUMN_SEPARATOR = "-+-"
+    FRAME_TOP_RIGHT = "-+"
+    FRAME_BOTTOM_LEFT = "+-"
+    FRAME_BOTTOM_COLUMN_SEPARATOR = "-+-"
+    FRAME_BOTTOM_RIGHT = "-+"
+    FRAME_CENTER_LEFT = "+-"
+    FRAME_CENTER_COLUMN_SEPARATOR = "-+-"
+    FRAME_CENTER_RIGHT = "-+"
+    FRAME_COLUMN_FILLER = "-"
+    FRAME_COLUMN_WHITESPACE = " "
+    FRAME_ROW_LEFT = "| "
+    FRAME_ROW_COLUMN_SEPARATOR = " | "
+    FRAME_ROW_RIGHT = " |"
+elif environ.get("BW_TABLE_STYLE") == 'grep':
+    FRAME_TOP_LEFT = ""
+    FRAME_TOP_COLUMN_SEPARATOR = ""
+    FRAME_TOP_RIGHT = ""
+    FRAME_BOTTOM_LEFT = ""
+    FRAME_BOTTOM_COLUMN_SEPARATOR = ""
+    FRAME_BOTTOM_RIGHT = ""
+    FRAME_CENTER_LEFT = ""
+    FRAME_CENTER_COLUMN_SEPARATOR = ""
+    FRAME_CENTER_RIGHT = ""
+    FRAME_COLUMN_FILLER = ""
+    FRAME_COLUMN_WHITESPACE = ""
+    FRAME_ROW_LEFT = ""
+    FRAME_ROW_COLUMN_SEPARATOR = "\t"
+    FRAME_ROW_RIGHT = ""
+else:
+    FRAME_TOP_LEFT = "╭─"
+    FRAME_TOP_COLUMN_SEPARATOR = "─┬─"
+    FRAME_TOP_RIGHT = "─╮"
+    FRAME_BOTTOM_LEFT = "╰─"
+    FRAME_BOTTOM_COLUMN_SEPARATOR = "─┴─"
+    FRAME_BOTTOM_RIGHT = "─╯"
+    FRAME_CENTER_LEFT = "├─"
+    FRAME_CENTER_COLUMN_SEPARATOR = "─┼─"
+    FRAME_CENTER_RIGHT = "─┤"
+    FRAME_COLUMN_FILLER = "─"
+    FRAME_COLUMN_WHITESPACE = " "
+    FRAME_ROW_LEFT = "│ "
+    FRAME_ROW_COLUMN_SEPARATOR = " │ "
+    FRAME_ROW_RIGHT = " │"
 
 
 def _column_widths_for_rows(rows):
@@ -18,48 +66,60 @@ def _column_widths_for_rows(rows):
 
 
 def _border_top(column_widths):
-    result = "╭─"
-    for column_width in column_widths:
-        result += "─" * column_width
-        result += "─┬─"
-    return result[:-3] + "─╮"
+    result = FRAME_TOP_LEFT
+    result += FRAME_TOP_COLUMN_SEPARATOR.join(
+        [FRAME_COLUMN_FILLER * width for width in column_widths]
+    )
+    result += FRAME_TOP_RIGHT
+    return result
 
 
 def _border_center(column_widths):
-    result = "├─"
-    for column_width in column_widths:
-        result += "─" * column_width
-        result += "─┼─"
-    return result[:-3] + "─┤"
+    result = FRAME_CENTER_LEFT
+    result += FRAME_CENTER_COLUMN_SEPARATOR.join(
+        [FRAME_COLUMN_FILLER * width for width in column_widths]
+    )
+    result += FRAME_CENTER_RIGHT
+    return result
 
 
 def _border_bottom(column_widths):
-    result = "╰─"
-    for column_width in column_widths:
-        result += "─" * column_width
-        result += "─┴─"
-    return result[:-3] + "─╯"
+    result = FRAME_BOTTOM_LEFT
+    result += FRAME_BOTTOM_COLUMN_SEPARATOR.join(
+        [FRAME_COLUMN_FILLER * width for width in column_widths]
+    )
+    result += FRAME_BOTTOM_RIGHT
+    return result
 
 
 def _row(row, column_widths, alignments):
-    result = "│ "
+    result = FRAME_ROW_LEFT
+    columns = []
     for i, column_value in enumerate(row):
         alignment = alignments.get(i, 'left')
         if alignment == 'right':
-            result += " " * (column_widths[i] - len(ansi_clean(column_value)))
-            result += column_value
+            columns.append(
+                FRAME_COLUMN_WHITESPACE * (column_widths[i] - len(ansi_clean(column_value))) +
+                column_value
+            )
         elif alignment == 'left':
-            result += column_value
-            result += " " * (column_widths[i] - len(ansi_clean(column_value)))
+            columns.append(
+                column_value +
+                FRAME_COLUMN_WHITESPACE * (column_widths[i] - len(ansi_clean(column_value)))
+            )
         elif alignment == 'center':
             prefix = int((column_widths[i] - len(ansi_clean(column_value))) / 2)
-            result += " " * prefix
-            result += column_value
-            result += " " * (column_widths[i] - len(ansi_clean(column_value)) - prefix)
+            suffix = (column_widths[i] - len(ansi_clean(column_value)) - prefix)
+            columns.append(
+                FRAME_COLUMN_WHITESPACE * prefix +
+                column_value +
+                FRAME_COLUMN_WHITESPACE * suffix
+            )
         else:
             raise NotImplementedError("no such alignment: {}".format(alignment))
-        result += " │ "
-    return result[:-1]
+    result += FRAME_ROW_COLUMN_SEPARATOR.join(columns)
+    result += FRAME_ROW_RIGHT
+    return result
 
 
 def render_table(rows, alignments=None):
@@ -75,14 +135,18 @@ def render_table(rows, alignments=None):
         alignments = {}
     column_widths = _column_widths_for_rows(rows)
 
-    yield _border_top(column_widths)
+    if environ.get("BW_TABLE_STYLE") != 'grep':
+        yield _border_top(column_widths)
 
     for row_index, row in enumerate(rows):
         if row == ROW_SEPARATOR:
-            yield _border_center(column_widths)
+            if environ.get("BW_TABLE_STYLE") != 'grep':
+                yield _border_center(column_widths)
         elif row_index == 0:
             # heading row ignores alignments
             yield _row(row, column_widths, {})
         else:
             yield _row(row, column_widths, alignments)
-    yield _border_bottom(column_widths)
+
+    if environ.get("BW_TABLE_STYLE") != 'grep':
+        yield _border_bottom(column_widths)
