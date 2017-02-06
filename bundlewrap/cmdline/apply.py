@@ -6,6 +6,7 @@ from sys import exit
 
 from ..concurrency import WorkerPool
 from ..utils.cmdline import get_target_nodes
+from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
     bold,
@@ -116,103 +117,51 @@ def stats_summary(results, total_duration):
         'skipped': 0,
         'failed': 0,
     }
-    headings = {
-        'node_name': _("node"),
-        'items': _("items"),
-        'correct': _("OK"),
-        'fixed': _("fixed"),
-        'skipped': _("skipped"),
-        'failed': _("failed"),
-        'duration': _("time"),
-        'totals_row': _("total ({} nodes)").format(len(results)),
-    }
 
-    max_duration_length = max(len(headings['duration']), len(format_duration(total_duration)))
-    max_node_name_length = max(len(headings['node_name']), len(headings['totals_row']))
+    rows = [[
+        bold(_("node")),
+        _("items"),
+        _("OK"),
+        green(_("fixed")),
+        yellow(_("skipped")),
+        red(_("failed")),
+        _("time"),
+    ], ROW_SEPARATOR]
 
     for result in results:
         totals['items'] += len(result.profiling_info)
-        max_duration_length = max(len(format_duration(result.duration)), max_duration_length)
-        max_node_name_length = max(len(result.node_name), max_node_name_length)
         for metric in ('correct', 'fixed', 'skipped', 'failed'):
             totals[metric] += getattr(result, metric)
+        rows.append([
+            result.node_name,
+            str(len(result.profiling_info)),
+            str(result.correct),
+            green_unless_zero(result.fixed),
+            yellow_unless_zero(result.skipped),
+            red_unless_zero(result.failed),
+            format_duration(result.duration),
+        ])
 
-    column_width = {
-        'duration': max_duration_length,
-        'node_name': max_node_name_length,
-    }
-    for column, total in totals.items():
-        column_width[column] = max(len(str(total)), len(headings[column]))
-
-    io.stdout("{x} ╭─{node}─┬─{items}─┬─{correct}─┬─{fixed}─┬─{skipped}─┬─{failed}─┬─{duration}─╮".format(
-        node="─" * column_width['node_name'],
-        items="─" * column_width['items'],
-        correct="─" * column_width['correct'],
-        fixed="─" * column_width['fixed'],
-        skipped="─" * column_width['skipped'],
-        failed="─" * column_width['failed'],
-        duration="─" * column_width['duration'],
-        x=blue("i"),
-    ))
-    io.stdout("{x} │ {node} │ {items} │ {correct} │ {fixed} │ {skipped} │ {failed} │ {duration} │".format(
-        node=bold(headings['node_name'].ljust(column_width['node_name'])),
-        items=headings['items'].ljust(column_width['items']),
-        correct=headings['correct'].ljust(column_width['correct']),
-        fixed=green(headings['fixed'].ljust(column_width['fixed'])),
-        skipped=yellow(headings['skipped'].ljust(column_width['skipped'])),
-        failed=red(headings['failed'].ljust(column_width['failed'])),
-        duration=headings['duration'].ljust(column_width['duration']),
-        x=blue("i"),
-    ))
-    io.stdout("{x} ├─{node}─┼─{items}─┼─{correct}─┼─{fixed}─┼─{skipped}─┼─{failed}─┼─{duration}─┤".format(
-        node="─" * column_width['node_name'],
-        items="─" * column_width['items'],
-        correct="─" * column_width['correct'],
-        fixed="─" * column_width['fixed'],
-        skipped="─" * column_width['skipped'],
-        failed="─" * column_width['failed'],
-        duration="─" * column_width['duration'],
-        x=blue("i"),
-    ))
-    for result in results:
-        io.stdout("{x} │ {node} │ {items} │ {correct} │ {fixed} │ {skipped} │ {failed} │ {duration} │".format(
-            node=result.node_name.ljust(column_width['node_name']),
-            items=str(len(result.profiling_info)).rjust(column_width['items']),
-            correct=str(result.correct).rjust(column_width['correct']),
-            fixed=green_unless_zero(result.fixed, column_width['fixed']),
-            skipped=yellow_unless_zero(result.skipped, column_width['skipped']),
-            failed=red_unless_zero(result.failed, column_width['failed']),
-            duration=format_duration(result.duration).rjust(column_width['duration']),
-            x=blue("i"),
-        ))
     if len(results) > 1:
-        io.stdout("{x} ├─{node}─┼─{items}─┼─{correct}─┼─{fixed}─┼─{skipped}─┼─{failed}─┼─{duration}─┤".format(
-            node="─" * column_width['node_name'],
-            items="─" * column_width['items'],
-            correct="─" * column_width['correct'],
-            fixed="─" * column_width['fixed'],
-            skipped="─" * column_width['skipped'],
-            failed="─" * column_width['failed'],
-            duration="─" * column_width['duration'],
-            x=blue("i"),
-        ))
-        io.stdout("{x} │ {node} │ {items} │ {correct} │ {fixed} │ {skipped} │ {failed} │ {duration} │".format(
-            node=bold(headings['totals_row'].ljust(column_width['node_name'])),
-            items=str(totals['items']).rjust(column_width['items']),
-            correct=str(totals['correct']).rjust(column_width['correct']),
-            fixed=green_unless_zero(totals['fixed'], column_width['fixed']),
-            skipped=yellow_unless_zero(totals['skipped'], column_width['skipped']),
-            failed=red_unless_zero(totals['failed'], column_width['failed']),
-            duration=format_duration(total_duration).rjust(column_width['duration']),
-            x=blue("i"),
-        ))
-    io.stdout("{x} ╰─{node}─┴─{items}─┴─{correct}─┴─{fixed}─┴─{skipped}─┴─{failed}─┴─{duration}─╯".format(
-        node="─" * column_width['node_name'],
-        items="─" * column_width['items'],
-        correct="─" * column_width['correct'],
-        fixed="─" * column_width['fixed'],
-        skipped="─" * column_width['skipped'],
-        failed="─" * column_width['failed'],
-        duration="─" * column_width['duration'],
-        x=blue("i"),
-    ))
+        rows.append(ROW_SEPARATOR)
+        rows.append([
+            bold(_("total ({} nodes)").format(len(results))),
+            str(totals['items']),
+            str(totals['correct']),
+            green_unless_zero(totals['fixed']),
+            yellow_unless_zero(totals['skipped']),
+            red_unless_zero(totals['failed']),
+            format_duration(total_duration),
+        ])
+
+    alignments = {
+        1: 'right',
+        2: 'right',
+        3: 'right',
+        4: 'right',
+        5: 'right',
+        6: 'right',
+    }
+
+    for line in render_table(rows, alignments=alignments):
+        io.stdout("{x} {line}".format(x=blue("i"), line=line))

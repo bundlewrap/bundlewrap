@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from os import environ
+
 from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
-from ..utils.text import blue, bold, cyan, error_summary, green, mark_for_translation as _, \
+from ..utils.table import ROW_SEPARATOR, render_table
+from ..utils.text import blue, bold, error_summary, green, mark_for_translation as _, \
     randstr, red
 from ..utils.time import format_timestamp
-from ..utils.ui import io
+from ..utils.ui import io, page_lines
 
 
 def remove_lock_if_present(node, lock_id):
@@ -126,7 +129,6 @@ def bw_lock_show(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     pending_nodes = target_nodes[:]
-    max_node_name_length = max([len(node.name) for node in target_nodes])
     locks_on_node = {}
 
     def tasks_available():
@@ -164,77 +166,50 @@ def bw_lock_show(repo, args):
         error_summary(errors)
         return
 
-    headers = (
-        ('id', _("ID")),
-        ('formatted_date', _("Created")),
-        ('formatted_expiry', _("Expires")),
-        ('user', _("User")),
-        ('items', _("Items")),
-        ('comment', _("Comment")),
-    )
+    rows = [[
+        bold(_("node")),
+        bold(_("ID")),
+        bold(_("created")),
+        bold(_("expires")),
+        bold(_("user")),
+        bold(_("items")),
+        bold(_("comment")),
+    ], ROW_SEPARATOR]
 
-    locked_nodes = 0
-    for node_name, locks in locks_on_node.items():
-        if locks:
-            locked_nodes += 1
-
-    previous_node_was_unlocked = False
-    for node_name, locks in sorted(locks_on_node.items()):
-        if not locks:
-            io.stdout(_("{x} {node}  no soft locks present").format(
-                x=green("✓"),
-                node=bold(node_name.ljust(max_node_name_length)),
-            ))
-            previous_node_was_unlocked = True
-
-    output_counter = 0
     for node_name, locks in sorted(locks_on_node.items()):
         if locks:
-            # Unlocked nodes are printed without empty lines in
-            # between them. Locked nodes can produce lengthy output,
-            # though, so we add empty lines.
-            if (
-                previous_node_was_unlocked or (
-                    output_counter > 0 and output_counter < locked_nodes
-                )
-            ):
-                previous_node_was_unlocked = False
-                io.stdout('')
-
+            first_lock = True
             for lock in locks:
                 lock['formatted_date'] = format_timestamp(lock['date'])
                 lock['formatted_expiry'] = format_timestamp(lock['expiry'])
+                first_item = True
+                for item in lock['items']:
+                    rows.append([
+                        node_name if first_item and first_lock else "",
+                        lock['id'] if first_item else "",
+                        lock['formatted_date'] if first_item else "",
+                        lock['formatted_expiry'] if first_item else "",
+                        lock['user'] if first_item else "",
+                        item,
+                        lock['comment'] if first_item else "",
+                    ])
+                    # always repeat for grep style
+                    first_item = environ.get("BW_TABLE_STYLE") == 'grep'
+                # always repeat for grep style
+                first_lock = environ.get("BW_TABLE_STYLE") == 'grep'
+        else:
+            rows.append([
+                node_name,
+                _("(none)"),
+                "",
+                "",
+                "",
+                "",
+                "",
+            ])
+        rows.append(ROW_SEPARATOR)
 
-            lengths = {}
-            headline = "{x} {node}  ".format(
-                x=blue("i"),
-                node=bold(node_name.ljust(max_node_name_length)),
-            )
-
-            for column, title in headers:
-                lengths[column] = len(title)
-                for lock in locks:
-                    if column == 'items':
-                        length = max([len(selector) for selector in lock[column]])
-                    else:
-                        length = len(lock[column])
-                    lengths[column] = max(lengths[column], length)
-                headline += bold(title.ljust(lengths[column] + 2))
-
-            io.stdout(headline.rstrip())
-            for lock in locks:
-                for lineno, item_selectors in enumerate(lock['items']):
-                    line = "{x} {node}  ".format(
-                        x=cyan("›"),
-                        node=bold(node_name.ljust(max_node_name_length)),
-                    )
-                    for column, title in headers:
-                        if column == 'items':
-                            line += lock[column][lineno].ljust(lengths[column] + 2)
-                        elif lineno == 0:
-                            line += lock[column].ljust(lengths[column] + 2)
-                        else:
-                            line += " " * (lengths[column] + 2)
-                    io.stdout(line.rstrip())
-
-            output_counter += 1
+    page_lines(render_table(
+        rows[:-1],  # remove trailing ROW_SEPARATOR
+        alignments={1: 'center'},
+    ))

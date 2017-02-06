@@ -55,6 +55,16 @@ Set this to a path pointing to your BundleWrap repository. If unset, the current
 Extra arguments to include in every call to `ssh` BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap.
 
 
+## `BW_TABLE_STYLE`
+
+By default, BundleWrap uses Unicode box-drawing characters at various points in its output. Setting this env var to one of the following values changes that behavior:
+
+<table>
+<tr><td><code>ascii</code></td><td>use only simple ASCII characters to render tables (useful if your font doesn't properly align box-drawing characters)</td></tr>
+<tr><td><code>grep</code></td><td>make output more <code>grep</code>- and <code>cut</code>-friendly</td></tr>
+</table>
+
+
 ## `BW_VAULT_DUMMY_MODE`
 
 Setting this to `1` will make `repo.vault` return dummy values for every [secret](secrets.md). This is useful for running `bw test` on a CI server that you don't want to trust with your `.secrets.cfg`.

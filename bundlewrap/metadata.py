@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from copy import copy
 from hashlib import sha1
 from json import dumps, JSONEncoder
