@@ -97,6 +97,13 @@ def _border_bottom(column_widths):
     return result
 
 
+def _empty_row(row):
+    for column_value in row:
+        if column_value != ROW_SEPARATOR and column_value.strip():
+            return False
+    return True
+
+
 def _row(row, column_widths, alignments):
     result = ""
     columns = []
@@ -186,7 +193,7 @@ def render_table(rows, alignments=None):
         elif row_index == 0:
             # heading row ignores alignments
             yield _row(row, column_widths, {})
-        else:
+        elif environ.get("BW_TABLE_STYLE") != 'grep' or not _empty_row(row):
             yield _row(row, column_widths, alignments)
 
     if environ.get("BW_TABLE_STYLE") != 'grep':
