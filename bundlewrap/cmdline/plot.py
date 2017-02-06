@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 import re
 
 from ..deps import prepare_dependencies
-from ..utils import graph_for_items, names
+from ..utils import names
+from ..utils.plot import graph_for_items
 from ..utils.cmdline import get_group, get_node
 from ..utils.ui import io
 

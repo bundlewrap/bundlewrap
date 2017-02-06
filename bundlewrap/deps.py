@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .exceptions import BundleError, NoSuchItem
+from .exceptions import BundleError, ItemDependencyLoop, NoSuchItem
 from .items import Item
 from .items.actions import Action
 from .utils.text import mark_for_translation as _
@@ -120,37 +120,30 @@ def _flatten_dependencies(items):
     """
     dep_cache = {}
     for item in items.values():
-        deps, dep_cache = _get_deps_for_item(item, items, dep_cache)
-        item._flattened_deps = list(set(item._deps) | deps)
+        item._flattened_deps = sorted(_get_deps_for_item(item, items, dep_cache, set()))
     return items
 
 
-def _get_deps_for_item(item, items, dep_cache, deps_found=None):
+def _get_deps_for_item(item, items, dep_cache, visited_items):
     """
     Recursively retrieves and returns a list of all inherited
     dependencies of the given item.
 
     Note: This can handle loops, but won't detect them.
     """
-    if deps_found is None:
-        deps_found = set()
-    deps = set()
+    if item.id in visited_items:
+        raise ItemDependencyLoop(items.values())
+    else:
+        visited_items.add(item.id)
+    deps = set(item._deps)
     for dep in item._deps:
-        if dep not in deps_found:
-            deps.add(dep)
-            deps_found.add(dep)
-            try:
-                new_deps = dep_cache[dep]
-            except KeyError:
-                new_deps, dep_cache = _get_deps_for_item(
-                    items[dep],
-                    items,
-                    dep_cache,
-                    deps_found,
-                )
-                dep_cache[dep] = new_deps
-            deps |= new_deps
-    return deps, dep_cache
+        try:
+            child_deps = dep_cache[dep]
+        except KeyError:
+            dep_cache[dep] = _get_deps_for_item(items[dep], items, dep_cache, visited_items)
+            child_deps = dep_cache[dep]
+        deps |= child_deps
+    return deps
 
 
 def _has_trigger_path(items, item, target_item_id):

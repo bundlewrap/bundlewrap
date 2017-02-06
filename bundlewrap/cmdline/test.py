@@ -4,10 +4,12 @@ from __future__ import unicode_literals
 from copy import copy
 from sys import exit
 
+from ..exceptions import ItemDependencyLoop
 from ..concurrency import WorkerPool
 from ..plugins import PluginManager
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
+from ..utils.plot import explain_item_dependency_loop
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io
 
@@ -45,9 +47,16 @@ def bw_test(repo, args):
             },
         }
 
+    def handle_exception(task_id, exception, traceback):
+        if isinstance(exception, ItemDependencyLoop):
+            for line in explain_item_dependency_loop(exception, task_id):
+                io.stderr(line)
+        raise exception
+
     worker_pool = WorkerPool(
         tasks_available,
         next_task,
+        handle_exception=handle_exception,
         pool_id="test",
         workers=args['node_workers'],
     )
