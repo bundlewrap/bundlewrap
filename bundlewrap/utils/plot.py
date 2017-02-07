@@ -68,7 +68,7 @@ def graph_for_items(
     if cluster:
         # Define which items belong to which bundle
         bundle_number = 0
-        bundles_seen = []
+        bundles_seen = set()
         for item in items:
             if item.bundle is None or item.bundle.name in bundles_seen:
                 continue
@@ -76,12 +76,13 @@ def graph_for_items(
             bundle_number += 1
             yield "{"
             yield "label = \"{}\"".format(item.bundle.name)
-            yield "\"bundle:{}\"".format(item.bundle.name)
+            if "bundle:{}".format(item.bundle.name) in item_ids:
+                yield "\"bundle:{}\"".format(item.bundle.name)
             for bitem in item.bundle.items:
                 if bitem.id in item_ids:
                     yield "\"{}\"".format(bitem.id)
             yield "}"
-            bundles_seen.append(item.bundle.name)
+            bundles_seen.add(item.bundle.name)
 
     # Define dependencies between items
     for item in items:
@@ -92,6 +93,8 @@ def graph_for_items(
 
         if auto:
             for dep in sorted(item._deps):
+                if dep not in item_ids:
+                    continue
                 if dep in getattr(item, '_concurrency_deps', []):
                     if concurrency:
                         yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)
