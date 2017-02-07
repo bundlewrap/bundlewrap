@@ -16,7 +16,7 @@ from .deps import (
 from .exceptions import (
     DontCache,
     FaultUnavailable,
-    ItemDependencyError,
+    ItemDependencyLoop,
     NodeLockedException,
     NoSuchBundle,
     RepositoryError,
@@ -26,7 +26,7 @@ from .itemqueue import ItemQueue, ItemTestQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import check_for_unsolvable_metadata_key_conflicts, hash_metadata
-from .utils import cached_property, graph_for_items, names
+from .utils import cached_property, names
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
 from .utils.text import force_text, mark_for_translation as _
@@ -212,17 +212,7 @@ def apply_items(
     # we have no items without deps left and none are processing
     # there must be a loop
     if item_queue.items_with_deps:
-        io.debug(_(
-            "There was a dependency problem. Look at the debug.svg generated "
-            "by the following command and try to find a loop:\n"
-            "printf '{}' | dot -Tsvg -odebug.svg"
-        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
-
-        raise ItemDependencyError(
-            _("bad dependencies between these items: {}").format(
-                ", ".join([i.id for i in item_queue.items_with_deps]),
-            )
-        )
+        raise ItemDependencyLoop(item_queue.items_with_deps)
 
     return results
 
@@ -853,17 +843,7 @@ def test_items(node, ignore_missing_faults=False, workers=1):
     worker_pool.run()
 
     if item_queue.items_with_deps:
-        io.stderr(_(
-            "There was a dependency problem. Look at the debug.svg generated "
-            "by the following command and try to find a loop:\n"
-            "printf '{}' | dot -Tsvg -odebug.svg"
-        ).format("\\n".join(graph_for_items(node.name, item_queue.items_with_deps))))
-
-        raise ItemDependencyError(
-            _("bad dependencies between these items: {}").format(
-                ", ".join([i.id for i in item_queue.items_with_deps]),
-            )
-        )
+        raise ItemDependencyLoop(item_queue.items_with_deps)
 
 
 def verify_items(node, show_all=False, workers=1):

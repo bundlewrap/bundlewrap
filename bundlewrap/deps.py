@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .exceptions import BundleError, NoSuchItem
+from .exceptions import BundleError, ItemDependencyLoop, NoSuchItem
 from .items import Item
 from .items.actions import Action
 from .utils.text import mark_for_translation as _
@@ -118,39 +118,32 @@ def _flatten_dependencies(items):
     This will cause all dependencies - direct AND inherited - to be
     listed in item._flattened_deps.
     """
-    dep_cache = {}
     for item in items.values():
-        deps, dep_cache = _get_deps_for_item(item, items, dep_cache)
-        item._flattened_deps = list(set(item._deps) | deps)
+        if not hasattr(item, '_flattened_deps'):
+            _flatten_deps_for_item(item, items)
     return items
 
 
-def _get_deps_for_item(item, items, dep_cache, deps_found=None):
+def _flatten_deps_for_item(item, items):
     """
     Recursively retrieves and returns a list of all inherited
     dependencies of the given item.
 
-    Note: This can handle loops, but won't detect them.
+    This can handle loops, but will ignore them.
     """
-    if deps_found is None:
-        deps_found = set()
-    deps = set()
+    item._flattened_deps = set(item._deps)
+
     for dep in item._deps:
-        if dep not in deps_found:
-            deps.add(dep)
-            deps_found.add(dep)
-            try:
-                new_deps = dep_cache[dep]
-            except KeyError:
-                new_deps, dep_cache = _get_deps_for_item(
-                    items[dep],
-                    items,
-                    dep_cache,
-                    deps_found,
-                )
-                dep_cache[dep] = new_deps
-            deps |= new_deps
-    return deps, dep_cache
+        dep_item = items[dep]
+        # Don't recurse if we have already resolved nested dependencies
+        # for this item. Also serves as a guard against infinite
+        # recursion when there are loops.
+        if not hasattr(dep_item, '_flattened_deps'):
+            _flatten_deps_for_item(dep_item, items)
+
+        item._flattened_deps |= set(dep_item._flattened_deps)
+
+    item._flattened_deps = sorted(item._flattened_deps)
 
 
 def _has_trigger_path(items, item, target_item_id):
@@ -546,6 +539,7 @@ def prepare_dependencies(items):
     """
     for item in items:
         item._check_bundle_collisions(items)
+        item._check_loopback_dependency()
         item._prepare_deps(items)
 
     # transform items into a dict to prevent repeated item.id lookups

@@ -5,7 +5,9 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
+from ..exceptions import ItemDependencyLoop
 from ..utils.cmdline import get_target_nodes
+from ..utils.plot import explain_item_dependency_loop
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -77,11 +79,16 @@ def bw_apply(repo, args):
             io.stdout(_("  {}").format(bold(task_id)))
 
     def handle_exception(task_id, exception, traceback):
-        msg = "{}: {}".format(task_id, exception)
-        io.stderr(traceback)
-        io.stderr(repr(exception))
-        io.stderr(msg)
-        errors.append(msg)
+        if isinstance(exception, ItemDependencyLoop):
+            for line in explain_item_dependency_loop(exception, task_id):
+                io.stderr(line)
+                errors.append(line)
+        else:
+            msg = "{}: {}".format(task_id, exception)
+            io.stderr(traceback)
+            io.stderr(repr(exception))
+            io.stderr(msg)
+            errors.append(msg)
 
     worker_pool = WorkerPool(
         tasks_available,

@@ -8,7 +8,7 @@ from copy import copy
 from datetime import datetime
 from os.path import join
 
-from bundlewrap.exceptions import BundleError, FaultUnavailable
+from bundlewrap.exceptions import BundleError, ItemDependencyError, FaultUnavailable
 from bundlewrap.utils import cached_property
 from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
@@ -152,6 +152,19 @@ class Item(object):
                     bundle2=self.bundle.name,
                 ))
 
+    def _check_loopback_dependency(self):
+        """
+        Alerts the user if they have an item depend on itself.
+        """
+        if self.id in self.needs or self.id in self.needed_by:
+            raise ItemDependencyError(_(
+                "'{item}' in bundle '{bundle}' on node '{node}' cannot depend on itself"
+            ).format(
+                item=self.id,
+                bundle=self.bundle.name,
+                node=self.node.name,
+            ))
+
     def _check_redundant_dependencies(self):
         """
         Alerts the user if they have defined a redundant dependency
@@ -160,7 +173,7 @@ class Item(object):
         """
         for dep in self._deps:
             if self._deps.count(dep) > 1:
-                raise BundleError(_(
+                raise ItemDependencyError(_(
                     "redundant dependency of {item1} in bundle '{bundle}' on {item2}"
                 ).format(
                     bundle=self.bundle.name,

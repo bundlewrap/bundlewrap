@@ -98,6 +98,20 @@ class ItemDependencyError(RepositoryError):
     pass
 
 
+class ItemDependencyLoop(ItemDependencyError):
+    """
+    Raised when there is a loop in item dependencies.
+    """
+    def __init__(self, items):
+        self.items = items
+
+    def __repr__(self):
+        return "<ItemDependencyLoop between {} items>".format(len(self.items))
+
+    def __str__(self):
+        return "<ItemDependencyLoop between {} items>".format(len(self.items))
+
+
 class NoSuchRepository(RepositoryError):
     """
     Raised when trying to get a Repository object from a directory that
