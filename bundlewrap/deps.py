@@ -128,13 +128,11 @@ def _get_deps_for_item(item, items, dep_cache, visited_items):
     """
     Recursively retrieves and returns a list of all inherited
     dependencies of the given item.
-
-    Note: This can handle loops, but won't detect them.
     """
-    if item.id in visited_items:
-        raise ItemDependencyLoop(items.values())
+    if item in visited_items:
+        raise ItemDependencyLoop(visited_items)
     else:
-        visited_items.add(item.id)
+        visited_items.add(item)
     deps = set(item._deps)
     for dep in item._deps:
         try:
