@@ -8,7 +8,7 @@ from copy import copy
 from datetime import datetime
 from os.path import join
 
-from bundlewrap.exceptions import BundleError, FaultUnavailable
+from bundlewrap.exceptions import BundleError, ItemDependencyError, FaultUnavailable
 from bundlewrap.utils import cached_property
 from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
@@ -160,7 +160,7 @@ class Item(object):
         """
         for dep in self._deps:
             if self._deps.count(dep) > 1:
-                raise BundleError(_(
+                raise ItemDependencyError(_(
                     "redundant dependency of {item1} in bundle '{bundle}' on {item2}"
                 ).format(
                     bundle=self.bundle.name,
