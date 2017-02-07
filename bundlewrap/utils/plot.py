@@ -200,27 +200,31 @@ def plot_node_groups(node):
 
 def remove_items_not_contributing_to_loop(items):
     """
-    We have found a loop. We have detected it by not finding any item
-    without *outgoing* dependencies (i.e. there is no item that doesn't
-    depend on at least one other item). For debugging, we want to print
-    a list of items involved in the loop. To make this list shorter and
-    the loop more apparent, we can remove all items that have no
-    *incoming* dependencies either. By definition, each item in a loop
+    We have found a loop. By definition, each item in a loop
     must have at least one incoming and one outgoing dependency.
-    """
-    items_with_no_incoming_deps = set()
-    for item in items:
-        found_incoming = False
-        for other_item in items:
-            if item == other_item:
-                continue
-            if item.id in other_item._deps:
-                found_incoming = True
-                break
-        if not found_incoming:
-            items_with_no_incoming_deps.add(item)
 
-    filtered_items = list(filter(lambda item: item not in items_with_no_incoming_deps, items))
+    We can therefore remove all items without either incoming or
+    outgoing dependencies to make the loop more apparent.
+    """
+    items_with_no_incoming_or_outgoing_deps = set()
+    for item in items:
+        if not item._deps:
+            items_with_no_incoming_or_outgoing_deps.add(item)
+        else:
+            found_incoming = False
+            for other_item in items:
+                if item == other_item:
+                    continue
+                if item.id in other_item._deps:
+                    found_incoming = True
+                    break
+            if not found_incoming:
+                items_with_no_incoming_or_outgoing_deps.add(item)
+
+    filtered_items = list(filter(
+        lambda item: item not in items_with_no_incoming_or_outgoing_deps,
+        items,
+    ))
 
     if len(filtered_items) == len(items):
         # nothing happened, end recursion
