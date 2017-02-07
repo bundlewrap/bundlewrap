@@ -27,6 +27,7 @@ def explain_item_dependency_loop(exc, node_name):
     ).format(x=red("!"))
     for item in items:
         yield "{}\t{}".format(item.id, ",".join(item._deps))
+    yield "\n\n\n"
 
 
 def graph_for_items(
