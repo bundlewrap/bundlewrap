@@ -118,33 +118,32 @@ def _flatten_dependencies(items):
     This will cause all dependencies - direct AND inherited - to be
     listed in item._flattened_deps.
     """
-    dep_cache = {}
     for item in items.values():
-        item._flattened_deps = sorted(_get_deps_for_item(item, items, dep_cache, set()))
+        if not hasattr(item, '_flattened_deps'):
+            _flatten_deps_for_item(item, items)
     return items
 
 
-def _get_deps_for_item(item, items, dep_cache, visited_items):
+def _flatten_deps_for_item(item, items):
     """
     Recursively retrieves and returns a list of all inherited
     dependencies of the given item.
 
     This can handle loops, but will ignore them.
     """
-    if item in visited_items:
-        # we encountered a loop, make sure we don't recurse any further
-        return set(item._deps)
-    else:
-        visited_items.add(item)
-    deps = set(item._deps)
+    item._flattened_deps = set(item._deps)
+
     for dep in item._deps:
-        try:
-            child_deps = dep_cache[dep]
-        except KeyError:
-            dep_cache[dep] = _get_deps_for_item(items[dep], items, dep_cache, visited_items)
-            child_deps = dep_cache[dep]
-        deps |= child_deps
-    return deps
+        dep_item = items[dep]
+        # Don't recurse if we have already resolved nested dependencies
+        # for this item. Also serves as a guard against infinite
+        # recursion when there are loops.
+        if not hasattr(dep_item, '_flattened_deps'):
+            _flatten_deps_for_item(dep_item, items)
+
+        item._flattened_deps |= set(dep_item._flattened_deps)
+
+    item._flattened_deps = sorted(item._flattened_deps)
 
 
 def _has_trigger_path(items, item, target_item_id):
