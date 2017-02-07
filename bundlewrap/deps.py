@@ -539,6 +539,7 @@ def prepare_dependencies(items):
     """
     for item in items:
         item._check_bundle_collisions(items)
+        item._check_loopback_dependency()
         item._prepare_deps(items)
 
     # transform items into a dict to prevent repeated item.id lookups

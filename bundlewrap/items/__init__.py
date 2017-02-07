@@ -152,6 +152,19 @@ class Item(object):
                     bundle2=self.bundle.name,
                 ))
 
+    def _check_loopback_dependency(self):
+        """
+        Alerts the user if they have an item depend on itself.
+        """
+        if self.id in self.needs or self.id in self.needed_by:
+            raise ItemDependencyError(_(
+                "'{item}' in bundle '{bundle}' on node '{node}' cannot depend on itself"
+            ).format(
+                item=self.id,
+                bundle=self.bundle.name,
+                node=self.node.name,
+            ))
+
     def _check_redundant_dependencies(self):
         """
         Alerts the user if they have defined a redundant dependency
