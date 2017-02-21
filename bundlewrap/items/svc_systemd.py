@@ -100,10 +100,7 @@ class SvcSystemd(Item):
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
         for attribute in ('enabled', 'running'):
-            if (
-                not isinstance(attributes.get(attribute, True), bool) and
-                not attributes.get(attribute, None) is None
-            ):
+            if attributes.get(attribute, None) not in (True, False, None):
                 raise BundleError(_(
                     "expected boolean or None for '{attribute}' on {item} in bundle '{bundle}'"
                 ).format(
