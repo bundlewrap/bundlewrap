@@ -28,7 +28,7 @@ See also: [The list of generic builtin item attributes](../repo/bundles.md#built
 
 ### running
 
-`True` if the service is expected to be running on the system; `False` if it should be stopped.
+`True` if the service is expected to be running on the system; `False` if it should be stopped. `None` makes BundleWrap ignore this setting.
 
 <br>
 

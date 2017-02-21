@@ -45,6 +45,7 @@ class SvcSystemd(Item):
     A service managed by systemd.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_systemd"
+    # bw 3.0: Both should default to True.
     ITEM_ATTRIBUTES = {
         'enabled': None,
         'running': True,
@@ -58,26 +59,25 @@ class SvcSystemd(Item):
             self.attributes['running'],
         )
 
-    # Note for bw 3.0: We're planning to make "True" the default value
-    # for "enabled". Once that's done, we can remove this custom cdict.
     def cdict(self):
-        cdict = self.attributes.copy()
-        if 'enabled' in cdict and cdict['enabled'] is None:
-            del cdict['enabled']
+        cdict = {}
+        for option, value in self.attributes.items():
+            if value is not None:
+                cdict[option] = value
         return cdict
 
     def fix(self, status):
         if 'enabled' in status.keys_to_fix:
-            if self.attributes['enabled'] is False:
-                svc_disable(self.node, self.name)
-            else:
+            if self.attributes['enabled']:
                 svc_enable(self.node, self.name)
+            else:
+                svc_disable(self.node, self.name)
 
         if 'running' in status.keys_to_fix:
-            if self.attributes['running'] is False:
-                svc_stop(self.node, self.name)
-            else:
+            if self.attributes['running']:
                 svc_start(self.node, self.name)
+            else:
+                svc_stop(self.node, self.name)
 
     def get_canned_actions(self):
         return {
@@ -100,9 +100,9 @@ class SvcSystemd(Item):
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
         for attribute in ('enabled', 'running'):
-            if not isinstance(attributes.get(attribute, True), bool):
+            if attributes.get(attribute, None) not in (True, False, None):
                 raise BundleError(_(
-                    "expected boolean for '{attribute}' on {item} in bundle '{bundle}'"
+                    "expected boolean or None for '{attribute}' on {item} in bundle '{bundle}'"
                 ).format(
                     attribute=attribute,
                     bundle=bundle.name,
