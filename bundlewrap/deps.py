@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .exceptions import BundleError, ItemDependencyLoop, NoSuchItem
+from .exceptions import BundleError, ItemDependencyError, NoSuchItem
 from .items import Item
 from .items.actions import Action
 from .utils.text import mark_for_translation as _
@@ -134,7 +134,17 @@ def _flatten_deps_for_item(item, items):
     item._flattened_deps = set(item._deps)
 
     for dep in item._deps:
-        dep_item = items[dep]
+        try:
+            dep_item = items[dep]
+        except KeyError:
+            raise ItemDependencyError(_(
+                "'{item}' in bundle '{bundle}' has a dependency (needs) "
+                "on '{dep}', which doesn't exist"
+            ).format(
+                item=item.id,
+                bundle=item.bundle.name,
+                dep=dep,
+            ))
         # Don't recurse if we have already resolved nested dependencies
         # for this item. Also serves as a guard against infinite
         # recursion when there are loops.
@@ -408,7 +418,17 @@ def _inject_reverse_dependencies(items):
 
             # single items
             else:
-                depending_item = items[depending_item_id]
+                try:
+                    depending_item = items[depending_item_id]
+                except KeyError:
+                    raise ItemDependencyError(_(
+                        "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by)"
+                        "on '{dep}', which doesn't exist"
+                    ).format(
+                        item=item.id,
+                        bundle=item.bundle.name,
+                        dep=depending_item_id,
+                    ))
                 add_dep(depending_item, item.id)
     return items
 
