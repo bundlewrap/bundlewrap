@@ -1,3 +1,21 @@
+# 2.16.0
+
+2017-02-23
+
+* added `BW_TABLE_STYLE`
+* added more Unicode tables
+* added number of bundles and metadata processors to `bw stats`
+* added oraclelinux to `OS_FAMILY_REDHAT`
+* added option to ignore running status of systemd services
+* improved circular dependency debugging
+* improved reporting of dependency errors
+* fixed avoidance of circular dependencies
+* fixed dealing with SUID and SGID on directories
+* fixed debug logging on Python 2.7
+* fixed duplicates in `Group.subgroups`
+* fixed handling of subgroup patterns in `bw plot group`
+
+
 # 2.15.0
 
 2017-01-19
