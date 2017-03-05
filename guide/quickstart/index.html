@@ -507,13 +507,13 @@ cat groups.py
 <p>Add this to your <code>bundles/mybundle/items.py</code>:</p>
 <pre><code>files = {
     '/etc/motd': {
-        'source': "etc/motd",
+        'content_type': 'mako',  # use the Mako template engine for this file
+        'source': "mymotd",  # filename of the template
     },
 }
 </code></pre>
 <p>Then write the file template::</p>
-<pre><code class="nohighlight">mkdir bundles/mybundle/files/etc
-vim bundles/mybundle/files/etc/motd</code></pre>
+<pre><code class="nohighlight">vim bundles/mybundle/files/mymotd</code></pre>
 
 <p>You can use this for example content:</p>
 <pre><code class="nohighlight">Welcome to ${node.name}!</code></pre>

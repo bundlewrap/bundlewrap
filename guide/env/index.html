@@ -441,10 +441,16 @@
             <li class="second-level"><a href="#bw_item_workers-and-bw_node_workers">BW_ITEM_WORKERS and BW_NODE_WORKERS</a></li>
             
         
+            <li class="second-level"><a href="#bw_repo_path">BW_REPO_PATH</a></li>
+            
+        
             <li class="second-level"><a href="#bw_softlock_expiry">BW_SOFTLOCK_EXPIRY</a></li>
             
         
             <li class="second-level"><a href="#bw_ssh_args">BW_SSH_ARGS</a></li>
+            
+        
+            <li class="second-level"><a href="#bw_table_style">BW_TABLE_STYLE</a></li>
             
         
             <li class="second-level"><a href="#bw_vault_dummy_mode">BW_VAULT_DUMMY_MODE</a></li>
@@ -474,10 +480,19 @@
 <p>You can also use the command line options <code>-p</code> and <code>-P</code>, e.g. <code>bw apply -p ... -P ... ...</code>, to achieve the same effect. Command line arguments override environment variables.</p>
 <p>There is no single default for these values. For example, when running <code>bw apply</code>, four nodes are being handled by default. However, when running <code>bw test</code>, only one node will be tested by default. <code>BW_NODE_WORKERS</code> and <code>BW_ITEM_WORKERS</code> apply to <em>all</em> these operations.</p>
 <p>Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.</p>
+<h2 id="bw_repo_path"><code>BW_REPO_PATH</code></h2>
+<p>Set this to a path pointing to your BundleWrap repository. If unset, the current working directory is used. Can be overridden with <code>bw --repository PATH</code>. Keep in mind that <code>bw</code> will also look for a repository in all parent directories until it finds one.</p>
 <h2 id="bw_softlock_expiry"><code>BW_SOFTLOCK_EXPIRY</code></h2>
 <p><a href="../locks/">Soft locks</a> are automatically removed from nodes after some time. By default, it's <code>"8h"</code>. You can use this variable to override that default.</p>
 <h2 id="bw_ssh_args"><code>BW_SSH_ARGS</code></h2>
 <p>Extra arguments to include in every call to <code>ssh</code> BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap.</p>
+<h2 id="bw_table_style"><code>BW_TABLE_STYLE</code></h2>
+<p>By default, BundleWrap uses Unicode box-drawing characters at various points in its output. Setting this env var to one of the following values changes that behavior:</p>
+<table>
+<tr><td><code>ascii</code></td><td>use only simple ASCII characters to render tables (useful if your font doesn't properly align box-drawing characters)</td></tr>
+<tr><td><code>grep</code></td><td>make output more <code>grep</code>- and <code>cut</code>-friendly</td></tr>
+</table>
+
 <h2 id="bw_vault_dummy_mode"><code>BW_VAULT_DUMMY_MODE</code></h2>
 <p>Setting this to <code>1</code> will make <code>repo.vault</code> return dummy values for every <a href="../secrets/">secret</a>. This is useful for running <code>bw test</code> on a CI server that you don't want to trust with your <code>.secrets.cfg</code>.</p></div>
         
