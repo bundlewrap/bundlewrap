@@ -85,14 +85,14 @@ Add this to your `bundles/mybundle/items.py`:
 
 	files = {
 	    '/etc/motd': {
-	        'source': "etc/motd",
+	        'content_type': 'mako',  # use the Mako template engine for this file
+	        'source': "mymotd",  # filename of the template
 	    },
 	}
 
 Then write the file template::
 
-<pre><code class="nohighlight">mkdir bundles/mybundle/files/etc
-vim bundles/mybundle/files/etc/motd</code></pre>
+<pre><code class="nohighlight">vim bundles/mybundle/files/mymotd</code></pre>
 
 You can use this for example content:
 
