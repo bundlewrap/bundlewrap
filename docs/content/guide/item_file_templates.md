@@ -6,7 +6,7 @@ The most basic example would be:
 
 <pre><code class="nohighlight">Hello, this is ${node.name}!</code></pre>
 
-After template rendering, it would look like this::
+After template rendering, it would look like this:
 
 <pre><code class="nohighlight">Hello, this is myexamplenodename!</code></pre>
 

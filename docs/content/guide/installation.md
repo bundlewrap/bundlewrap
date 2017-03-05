@@ -38,7 +38,7 @@ Use `pip install -e` to install in "development mode":
 
 <pre><code class="nohighlight">pip install -e /opt/bundlewrap</code></pre>
 
-You can now try running the `bw` command line utility::
+You can now try running the `bw` command line utility:
 
 <pre><code class="nohighlight">bw --help</code></pre>
 

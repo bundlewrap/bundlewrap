@@ -90,7 +90,7 @@ Add this to your `bundles/mybundle/items.py`:
 	    },
 	}
 
-Then write the file template::
+Then write the file template:
 
 <pre><code class="nohighlight">vim bundles/mybundle/files/mymotd</code></pre>
 
