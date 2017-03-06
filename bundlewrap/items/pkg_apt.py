@@ -17,7 +17,7 @@ class AptPkg(Pkg):
     def pkg_all_installed(self):
         result = self.node.run("dpkg -l | grep '^ii'")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
-            yield line[4:].split()[0].split(":")[0]
+            yield "{}:{}".format(self.ITEM_TYPE_NAME, line[4:].split()[0].split(":")[0])
 
     def pkg_install(self):
         self.node.run(
