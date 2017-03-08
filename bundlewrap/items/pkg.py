@@ -28,7 +28,7 @@ class Pkg(Item):
 
     def fix(self, status):
         try:
-            self._pkg_install_cache.get(self.node.name, {}).remove(self.id)
+            self._pkg_install_cache.get(self.node.name, set()).remove(self.id)
         except KeyError:
             pass
         if self.attributes['installed'] is False:
