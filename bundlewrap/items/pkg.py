@@ -17,7 +17,7 @@ class Pkg(Item):
     ITEM_ATTRIBUTES = {
         'installed': True,
     }
-    _pkg_install_cache = set()
+    _pkg_install_cache = {}
 
     def __repr__(self):
         return "<{} name:{} installed:{}>".format(
@@ -28,7 +28,7 @@ class Pkg(Item):
 
     def fix(self, status):
         try:
-            self._pkg_install_cache.remove(self.name)
+            self._pkg_install_cache.get(self.node.name, set()).remove(self.id)
         except KeyError:
             pass
         if self.attributes['installed'] is False:
@@ -49,11 +49,13 @@ class Pkg(Item):
         raise NotImplementedError
 
     def pkg_installed_cached(self):
-        if not self._pkg_install_cache:
-            self._pkg_install_cache.add(None)  # make sure we don't run into this if again
-            for pkgname in self.pkg_all_installed():
-                self._pkg_install_cache.add(pkgname)
-        if self.name in self._pkg_install_cache:
+        cache = self._pkg_install_cache.setdefault(self.node.name, set())
+
+        if not cache:
+            cache.add(None)  # make sure we don't run into this if again
+            for pkgid in self.pkg_all_installed():
+                cache.add(pkgid)
+        if self.id in cache:
             return True
         return self.pkg_installed()
 
