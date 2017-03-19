@@ -103,15 +103,13 @@ class Item(object):
         except FaultUnavailable:
             self._faults_missing_for_attributes.add(_("unknown"))
 
-        for attribute_name, attribute_default in \
-                BUILTIN_ITEM_ATTRIBUTES.items():
+        for attribute_name, attribute_default in BUILTIN_ITEM_ATTRIBUTES.items():
             setattr(self, attribute_name, force_text(attributes.get(
                 attribute_name,
                 copy(attribute_default),
             )))
 
-        for attribute_name, attribute_default in \
-                self.ITEM_ATTRIBUTES.items():
+        for attribute_name, attribute_default in self.ITEM_ATTRIBUTES.items():
             if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
                 try:
                     self.attributes[attribute_name] = force_text(attributes.get(
