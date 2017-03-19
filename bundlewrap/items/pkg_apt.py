@@ -19,13 +19,6 @@ class AptPkg(Pkg):
         'start_service': True,
     }
 
-    def cdict(self):
-        # Just make sure that 'start_service' is not included in the
-        # cdict, because it's never included in the sdict, either.
-        return {
-            'installed': self.attributes['installed'],
-        }
-
     def pkg_all_installed(self):
         result = self.node.run("dpkg -l | grep '^ii'")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
