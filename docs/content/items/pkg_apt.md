@@ -10,7 +10,9 @@ Handles packages installed by `apt-get` on Debian-based systems.
             "installed": False,
         },
         "awesome-daemon": {
-            "start_service": False,
+            "when_creating": {
+                "start_service": False,
+            },
         },
     }
 
@@ -26,6 +28,8 @@ See also: [The list of generic builtin item attributes](../repo/bundles.md#built
 
 `True` when the package is expected to be present on the system; `False` if it should be purged.
 
-### start\_service
+### when\_creating
+
+#### start\_service
 
 By default, daemons will be auto-started on systems like Debian or Ubuntu. This happens right after the package has been installed. You might want to set `start_service` to `False` to avoid this. This might be necessary if BundleWrap must place some more config files on the node before a daemon can actually be started.

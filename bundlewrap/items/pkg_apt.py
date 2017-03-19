@@ -14,21 +14,10 @@ class AptPkg(Pkg):
     """
     BLOCK_CONCURRENT = ["pkg_apt"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_apt"
-    ITEM_ATTRIBUTES = {
-        'installed': True,
+    ITEM_TYPE_NAME = "pkg_apt"
+    WHEN_CREATING_ATTRIBUTES = {
         'start_service': True,
     }
-    ITEM_TYPE_NAME = "pkg_apt"
-
-    def __repr__(self):
-        # We need to override this function in order to include
-        # information about 'start_service'.
-        return "<{} name:{} installed:{} start_service:{}>".format(
-            self.ITEM_TYPE_NAME,
-            self.name,
-            self.attributes['installed'],
-            self.attributes['start_service'],
-        )
 
     def cdict(self):
         # Just make sure that 'start_service' is not included in the
@@ -43,7 +32,7 @@ class AptPkg(Pkg):
             yield "{}:{}".format(self.ITEM_TYPE_NAME, line[4:].split()[0].split(":")[0])
 
     def pkg_install(self):
-        runlevel = "" if self.attributes['start_service'] else "RUNLEVEL=1 "
+        runlevel = "" if self.when_creating['start_service'] else "RUNLEVEL=1 "
         self.node.run(
             runlevel +
             "DEBIAN_FRONTEND=noninteractive "
@@ -68,7 +57,7 @@ class AptPkg(Pkg):
     def validate_attributes(cls, bundle, item_id, attributes):
         super(AptPkg, cls).validate_attributes(bundle, item_id, attributes)
 
-        if not isinstance(attributes.get('start_service', True), bool):
+        if not isinstance(attributes.get('when_creating', {}).get('start_service', True), bool):
             raise BundleError(_(
                 "expected boolean for 'start_service' on {item} in bundle '{bundle}'"
             ).format(
