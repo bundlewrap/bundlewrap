@@ -1,5 +1,4 @@
 # deps in this file are for local dev purposes only
 mkdocs
-mkdocs-cinder
 pytest
 wheel

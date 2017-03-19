@@ -1,10 +1,9 @@
 site_name: BundleWrap
 docs_dir: content
 site_dir: build
-theme: cinder
 repo_url: "https://github.com/bundlewrap/bundlewrap"
 remote_name: github
-copyright: "BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>"
+copyright: "BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>."
 google_analytics: ['UA-33891245-2', 'docs.bundlewrap.org']
 pages:
 - <i class="fa fa-home"></i>: index.md
