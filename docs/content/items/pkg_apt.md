@@ -30,6 +30,8 @@ See also: [The list of generic builtin item attributes](../repo/bundles.md#built
 
 ### when\_creating
 
+These attributes are only enforced during the creation of the item on the node (in this case this means when a package is installed). They are ignored in subsequent runs of `bw apply`.
+
 #### start\_service
 
 By default, daemons will be auto-started on systems like Debian or Ubuntu. This happens right after the package has been installed. You might want to set `start_service` to `False` to avoid this. This might be necessary if BundleWrap must place some more config files on the node before a daemon can actually be started.
