@@ -57,7 +57,6 @@ class Item(object):
     """
     A single piece of configuration (e.g. a file, a package, a service).
     """
-    BINARY_ATTRIBUTES = []
     BLOCK_CONCURRENT = []
     BUNDLE_ATTRIBUTE_NAME = None
     ITEM_ATTRIBUTES = {}
