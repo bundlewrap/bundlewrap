@@ -27,6 +27,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'triggered_by': [],
     'triggers': [],
     'unless': "",
+    'when_creating': {},
 }
 
 
@@ -67,6 +68,7 @@ class Item(object):
     STATUS_FAILED = 3
     STATUS_SKIPPED = 4
     STATUS_ACTION_SUCCEEDED = 5
+    WHEN_CREATING_ATTRIBUTES = {}
 
     def __init__(
         self,
@@ -84,6 +86,7 @@ class Item(object):
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
         self.node = bundle.node
+        self.when_creating = {}
         self._faults_missing_for_attributes = set()
         self._precedes_items = []
 
@@ -117,6 +120,10 @@ class Item(object):
                     ))
                 except FaultUnavailable:
                     self._faults_missing_for_attributes.add(attribute_name)
+
+        for attribute_name, attribute_default in self.WHEN_CREATING_ATTRIBUTES.items():
+            self.when_creating[attribute_name] = \
+                attributes.get('when_creating', {}).get(attribute_name, attribute_default)
 
         if self.cascade_skip is None:
             self.cascade_skip = not (self.unless or self.triggered)
@@ -298,13 +305,25 @@ class Item(object):
             ),
         )
         if invalid_attributes:
-            raise BundleError(
-                _("invalid attribute(s) for '{item}' in bundle '{bundle}': {attrs}").format(
-                    item=item_id,
-                    bundle=bundle.name,
-                    attrs=", ".join(invalid_attributes),
-                )
-            )
+            raise BundleError(_(
+                "invalid attribute(s) for '{item}' in bundle '{bundle}': {attrs}"
+            ).format(
+                item=item_id,
+                bundle=bundle.name,
+                attrs=", ".join(invalid_attributes),
+            ))
+
+        invalid_attributes = set(attributes.get('when_creating', {}).keys()).difference(
+            set(cls.WHEN_CREATING_ATTRIBUTES.keys())
+        )
+        if invalid_attributes:
+            raise BundleError(_(
+                "invalid when_creating attribute(s) for '{item}' in bundle '{bundle}': {attrs}"
+            ).format(
+                item=item_id,
+                bundle=bundle.name,
+                attrs=", ".join(invalid_attributes),
+            ))
 
     @classmethod
     def _validate_name(cls, bundle, name):
