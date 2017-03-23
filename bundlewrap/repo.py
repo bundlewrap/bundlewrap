@@ -514,9 +514,20 @@ class Repository(object):
                             node=node.name,
                             i=iterations[(node.name, metadata_processor_name)],
                         ))
-                        processed = metadata_processor(
-                            deepcopy_metadata(self._node_metadata_partial[node.name]),
-                        )
+                        try:
+                            processed = metadata_processor(
+                                deepcopy_metadata(self._node_metadata_partial[node.name]),
+                            )
+                        except Exception as exc:
+                            io.stderr(_(
+                                "{x} Exception while executing metadata processor "
+                                "{metaproc} for node {node}:"
+                            ).format(
+                                x=red("!!!"),
+                                metaproc=metadata_processor_name,
+                                node=node.name,
+                            ))
+                            raise exc
                         iterations[(node.name, metadata_processor_name)] += 1
                         if isinstance(processed, tuple) and len(processed) == 2:
                             if processed[1] is True:
