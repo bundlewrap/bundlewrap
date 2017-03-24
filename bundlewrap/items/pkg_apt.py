@@ -22,7 +22,8 @@ class AptPkg(Pkg):
     def pkg_all_installed(self):
         result = self.node.run("dpkg -l | grep '^ii'")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
-            yield "{}:{}".format(self.ITEM_TYPE_NAME, line[4:].split()[0].split(":")[0])
+            pkg_name = line[4:].split()[0].replace(":", "_")
+            yield "{}:{}".format(self.ITEM_TYPE_NAME, pkg_name)
 
     def pkg_install(self):
         runlevel = "" if self.when_creating['start_service'] else "RUNLEVEL=1 "
@@ -30,20 +31,33 @@ class AptPkg(Pkg):
             runlevel +
             "DEBIAN_FRONTEND=noninteractive "
             "apt-get -qy -o Dpkg::Options::=--force-confold --no-install-recommends "
-            "install {}".format(quote(self.name))
+            "install {}".format(quote(self.name.replace("_", ":")))
         )
 
     def pkg_installed(self):
         result = self.node.run(
-            "dpkg -s {} | grep '^Status: '".format(quote(self.name)),
+            "dpkg -s {} | grep '^Status: '".format(quote(self.name.replace("_", ":"))),
             may_fail=True,
         )
         return result.return_code == 0 and " installed" in result.stdout_text
 
+    @staticmethod
+    def pkg_in_cache(pkgid, cache):
+        pkgtype, pkgname = pkgid.split(":")
+        if "_" in pkgname:
+            return pkgid in cache
+        else:
+            for cached_pkgid in cache:
+                if cached_pkgid is None:
+                    continue
+                if cached_pkgid == pkgid or cached_pkgid.startswith(pkgid + ":"):
+                    return True
+            return False
+
     def pkg_remove(self):
         self.node.run(
             "DEBIAN_FRONTEND=noninteractive "
-            "apt-get -qy purge {}".format(quote(self.name))
+            "apt-get -qy purge {}".format(quote(self.name.replace("_", ":")))
         )
 
     @classmethod
