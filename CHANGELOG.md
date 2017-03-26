@@ -1,3 +1,13 @@
+# 2.17.0
+
+2017-03-26
+
+* pkg_apt: added start_service attribute
+* pkg_apt: added support for multiarch packages
+* improved reporting of exceptions in metadata processors
+* fixed package cache leaking across nodes
+
+
 # 2.16.0
 
 2017-02-23
