@@ -55,9 +55,16 @@ class Pkg(Item):
             cache.add(None)  # make sure we don't run into this if again
             for pkgid in self.pkg_all_installed():
                 cache.add(pkgid)
-        if self.id in cache:
+        if self.pkg_in_cache(self.id, cache):
             return True
         return self.pkg_installed()
+
+    @staticmethod
+    def pkg_in_cache(pkgid, cache):
+        """
+        pkg_apt needs to override this for multiarch support.
+        """
+        return pkgid in cache
 
     @abstractmethod
     def pkg_remove(self):

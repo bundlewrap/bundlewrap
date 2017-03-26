@@ -6,7 +6,7 @@ Handles packages installed by `apt-get` on Debian-based systems.
         "foopkg": {
             "installed": True,  # default
         },
-        "bar": {
+        "bar_i386": {  # i386 multiarch variant of the "bar" package
             "installed": False,
         },
         "awesome-daemon": {
