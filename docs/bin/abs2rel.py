@@ -45,6 +45,9 @@ def abs2rel(link):
         #   => '../..'
         relpath = os.path.relpath(args.path, root)
         newlink = '%s%s' % (relpath, link)
+    # convert folder to index.html
+    elif link[-1:] == '/':
+        newlink = '%sindex.html' % (link)
     else:
         newlink = link
 
