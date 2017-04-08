@@ -78,19 +78,23 @@ def parse_submenu(parent, subtree):
                 if parent != '':
                     title = "%s - %s"%(parent, title)
 
+                type = 'Guide'
+                if parent == 'Items':
+                    type = 'Builtin'
+
                 cur.execute('''
                     INSERT OR IGNORE INTO
                         searchIndex(name, type, path)
                     VALUES
                         (?, ?, ?);
-                ''', (title, 'Guide', htmlpath))
+                ''', (title, type, htmlpath))
 
                 db.commit()
 
                 if args.verbose:
                     print "Added the following entry to %s:" % args.sqlite
                     print "    name: %s" % title
-                    print "    type: %s" % 'Guide'
+                    print "    type: %s" % type
                     print "    path: %s" % htmlpath
                     print
 
