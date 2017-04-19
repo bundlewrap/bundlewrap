@@ -7,8 +7,8 @@ from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import blue, bold, error_summary, green, mark_for_translation as _, \
-    randstr, red, yellow
+from ..utils.text import bold, error_summary, green, mark_for_translation as _, randstr, red, \
+    yellow
 from ..utils.time import format_timestamp
 from ..utils.ui import io, page_lines
 
