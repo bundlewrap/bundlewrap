@@ -1,3 +1,11 @@
+# 2.17.1
+
+2017-04-19
+
+* fixed parent groups not being removed by subgroups' members_remove
+* fixed `bw lock` trying to connect to dummy nodes
+
+
 # 2.17.0
 
 2017-03-26
