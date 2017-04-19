@@ -8,9 +8,19 @@ from ..lock import softlock_add, softlock_list, softlock_remove
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import blue, bold, error_summary, green, mark_for_translation as _, \
-    randstr, red
+    randstr, red, yellow
 from ..utils.time import format_timestamp
 from ..utils.ui import io, page_lines
+
+
+def remove_dummy_nodes(targets):
+    _targets = []
+    for node in targets:
+        if list(node.items):
+            _targets.append(node)
+        else:
+            io.stdout(_("{x} {node}  has no items").format(node=bold(node.name), x=yellow("!")))
+    return _targets
 
 
 def remove_lock_if_present(node, lock_id):
@@ -24,6 +34,7 @@ def remove_lock_if_present(node, lock_id):
 def bw_lock_add(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     max_node_name_length = max([len(node.name) for node in target_nodes])
     lock_id = randstr(length=4).upper()
@@ -75,6 +86,7 @@ def bw_lock_add(repo, args):
 def bw_lock_remove(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     max_node_name_length = max([len(node.name) for node in target_nodes])
 
@@ -128,6 +140,7 @@ def bw_lock_remove(repo, args):
 def bw_lock_show(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     locks_on_node = {}
 
