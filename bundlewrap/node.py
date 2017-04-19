@@ -449,19 +449,27 @@ class Node(object):
 
         # we have to add parent groups at the very end, since we might
         # have added or removed subgroups thru .members_add/remove
-        for group in list(_groups):
-            for parent_group in group.parent_groups:
-                if cache_result:
-                    with self._dynamic_group_lock:
-                        self._dynamic_groups_resolved = None
-                        if (
-                            not parent_group.members_remove or
-                            not parent_group.members_remove(self)
-                        ):
-                            _groups.add(parent_group)
-                        self._dynamic_groups_resolved = True
-                else:
-                    _groups.add(parent_group)
+        while True:
+            # Since we're only looking at *immediate* parent groups,
+            # we have to keep doing this until we stop adding parent
+            # groups.
+            _original_groups = _groups.copy()
+            for group in list(_groups):
+                for parent_group in group.immediate_parent_groups:
+                    if cache_result:
+                        with self._dynamic_group_lock:
+                            self._dynamic_groups_resolved = None
+                            if (
+                                not parent_group.members_remove or
+                                not parent_group.members_remove(self)
+                            ):
+                                _groups.add(parent_group)
+                            self._dynamic_groups_resolved = True
+                    else:
+                        _groups.add(parent_group)
+            if _groups == _original_groups:
+                # we didn't add any new parent groups, so we can stop
+                break
 
         if cache_result:
             return sorted(_groups)

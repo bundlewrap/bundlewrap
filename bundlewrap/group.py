@@ -195,9 +195,35 @@ class Group(object):
                 yield group
 
     @cached_property
+    def immediate_parent_groups(self):
+        for group in self.repo.groups:
+            if self in group.immediate_subgroups:
+                yield group
+
+    @cached_property
     def subgroups(self):
         """
         Iterator over all subgroups as group objects.
         """
         for group_name in set(self._check_subgroup_names([self.name])):
             yield self.repo.get_group(group_name)
+
+    @cached_property
+    def immediate_subgroups(self):
+        """
+        Iterator over all immediate subgroups as group objects.
+        """
+        for group_name in set(
+            list(self.immediate_subgroup_names) +
+            list(self._subgroup_names_from_patterns)
+        ):
+            try:
+                yield self.repo.get_group(group_name)
+            except NoSuchGroup:
+                raise RepositoryError(_(
+                    "Group '{group}' has '{subgroup}' listed as a subgroup in groups.py, "
+                    "but no such group could be found."
+                ).format(
+                    group=self.name,
+                    subgroup=group_name,
+                ))
