@@ -4,10 +4,12 @@ Manages Postgres databases.
 
     postgres_dbs = {
         "mydatabase": {
-            "encoding": "LATIN1",
-            "collation": "de_DE.ISO-8859-1",
-            "ctype": "de_DE.ISO-8859-1",
             "owner": "me",
+            "when_creating": {
+                "encoding": "LATIN1",
+                "collation": "de_DE.ISO-8859-1",
+                "ctype": "de_DE.ISO-8859-1",
+            },
         },
     }
 

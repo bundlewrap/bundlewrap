@@ -8,20 +8,20 @@ from bundlewrap.items import Item
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
-def create_db(node, name, attributes):
+def create_db(node, name, owner, when_creating):
     template = None
-    cmd = "sudo -u postgres createdb -wO {} ".format(attributes['owner'])
+    cmd = "sudo -u postgres createdb -wO {} ".format(owner)
 
-    if attributes.get('collation') is not None:
-        cmd += "--lc-collate={} ".format(attributes['collation'])
+    if when_creating.get('collation') is not None:
+        cmd += "--lc-collate={} ".format(when_creating['collation'])
         template = "template0"
 
-    if attributes.get('ctype') is not None:
-        cmd += "--lc-ctype={} ".format(attributes['ctype'])
+    if when_creating.get('ctype') is not None:
+        cmd += "--lc-ctype={} ".format(when_creating['ctype'])
         template = "template0"
 
-    if attributes.get('encoding') is not None:
-        cmd += "--encoding={} ".format(attributes['encoding'])
+    if when_creating.get('encoding') is not None:
+        cmd += "--encoding={} ".format(when_creating['encoding'])
         template = "template0"
 
     if template is not None:
@@ -64,12 +64,14 @@ class PostgresDB(Item):
     BUNDLE_ATTRIBUTE_NAME = "postgres_dbs"
     ITEM_ATTRIBUTES = {
         'delete': False,
-        'collation': None,  # creation-time only
-        'ctype': None,      # creation-time only
-        'encoding': None,   # creation-time only
         'owner': "postgres",
     }
     ITEM_TYPE_NAME = "postgres_db"
+    WHEN_CREATING_ATTRIBUTES = {
+        'collation': None,
+        'ctype': None,
+        'encoding': None,
+    }
 
     def __repr__(self):
         return "<PostgresDB name:{}>".format(self.name)
@@ -84,7 +86,7 @@ class PostgresDB(Item):
         if status.must_be_deleted:
             drop_db(self.node, self.name)
         elif status.must_be_created:
-            create_db(self.node, self.name, self.attributes)
+            create_db(self.node, self.name, self.attributes['owner'], self.when_creating)
         elif 'owner' in status.keys_to_fix:
             set_owner(self.node, self.name, self.attributes['owner'])
         else:
