@@ -8,11 +8,28 @@ from bundlewrap.items import Item
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
-def create_db(node, name, owner):
-    return node.run("sudo -u postgres createdb -wO {owner} {name}".format(
-        name=name,
-        owner=owner,
-    ))
+def create_db(node, name, attributes):
+    template = None
+    cmd = "sudo -u postgres createdb -wO {} ".format(attributes['owner'])
+
+    if attributes.get('collation') is not None:
+        cmd += "--lc-collate={} ".format(attributes['collation'])
+        template = "template0"
+
+    if attributes.get('ctype') is not None:
+        cmd += "--lc-ctype={} ".format(attributes['ctype'])
+        template = "template0"
+
+    if attributes.get('encoding') is not None:
+        cmd += "--encoding={} ".format(attributes['encoding'])
+        template = "template0"
+
+    if template is not None:
+        cmd += "--template={} ".format(template)
+
+    cmd += name
+
+    return node.run(cmd)
 
 
 def drop_db(node, name):
@@ -47,6 +64,9 @@ class PostgresDB(Item):
     BUNDLE_ATTRIBUTE_NAME = "postgres_dbs"
     ITEM_ATTRIBUTES = {
         'delete': False,
+        'collation': None,  # creation-time only
+        'ctype': None,      # creation-time only
+        'encoding': None,   # creation-time only
         'owner': "postgres",
     }
     ITEM_TYPE_NAME = "postgres_db"
@@ -64,7 +84,7 @@ class PostgresDB(Item):
         if status.must_be_deleted:
             drop_db(self.node, self.name)
         elif status.must_be_created:
-            create_db(self.node, self.name, self.attributes['owner'])
+            create_db(self.node, self.name, self.attributes)
         elif 'owner' in status.keys_to_fix:
             set_owner(self.node, self.name, self.attributes['owner'])
         else:
