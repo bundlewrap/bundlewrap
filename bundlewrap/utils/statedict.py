@@ -60,7 +60,9 @@ def diff_value_list(title, value1, value2):
     if isinstance(value1, set):
         value1 = sorted(value1)
         value2 = sorted(value2)
-    elif isinstance(value1, tuple):
+    else:
+        # convert tuples and create copies of lists before possibly
+        # appending stuff later on (see below)
         value1 = list(value1)
         value2 = list(value2)
     # make sure that *if* we have lines, the last one will also end with
