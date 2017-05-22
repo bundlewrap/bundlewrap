@@ -145,9 +145,16 @@ class User(Item):
 
     def get_auto_deps(self, items):
         deps = []
+        groups = self.attributes['groups'] or []
         for item in items:
             if item.ITEM_TYPE_NAME == "group":
-                if item.attributes['delete']:
+                if not (item.name in groups or (
+                    self.attributes['gid'] in [item.attributes['gid'], item.name] and
+                    self.attributes['gid'] is not None
+                )):
+                    # we don't need to depend on this group
+                    continue
+                elif item.attributes['delete']:
                     raise BundleError(_(
                         "{item1} (from bundle '{bundle1}') depends on item "
                         "{item2} (from bundle '{bundle2}') which is set to be deleted"

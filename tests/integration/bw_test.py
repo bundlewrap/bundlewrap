@@ -491,3 +491,78 @@ def test_unknown_subgroup(tmpdir):
     assert run("bw test", path=str(tmpdir))[2] == 1
     assert run("bw test group1", path=str(tmpdir))[2] == 1
     assert run("bw test group2", path=str(tmpdir))[2] == 1
+
+
+def test_group_user_dep_deleted(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "users": {
+                    "user1": {
+                        'groups': ["group1"],
+                    },
+                },
+                "groups": {
+                    "group1": {
+                        'delete': True,
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
+
+
+def test_group_user_dep_ok(tmpdir):
+    # regression test for #341
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "users": {
+                    "user1": {},
+                },
+                "groups": {
+                    "group1": {'delete': True},
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 0
+
+
+def test_group_user_dep_deleted_gid(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "users": {
+                    "user1": {
+                        'gid': "group1",
+                    },
+                },
+                "groups": {
+                    "group1": {
+                        'delete': True,
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 1
