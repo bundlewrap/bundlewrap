@@ -1,3 +1,13 @@
+# 2.18.0
+
+2017-05-22
+
+* added encoding and collation to postgres_db items
+* added the 'comment' attribute for all items
+* fixed group deletion
+* fixed accidental modification of lists in statedicts
+
+
 # 2.17.1
 
 2017-04-19
