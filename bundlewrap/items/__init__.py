@@ -462,7 +462,7 @@ class Item(object):
                 if self.comment:
                     question_text += "\n\n"
                     for line in wrapper.wrap(self.comment):
-                        question_text += italic(line) + "\n"
+                        question_text += "# {}\n".format(italic(line))
                 question = wrap_question(
                     self.id,
                     question_text,
