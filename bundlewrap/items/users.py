@@ -146,7 +146,11 @@ class User(Item):
     def get_auto_deps(self, items):
         deps = []
         for item in items:
-            if item.ITEM_TYPE_NAME == "group":
+            if item.ITEM_TYPE_NAME == "group" and (
+                            item.name in self.attributes.get('group', []) or
+                            # instead of gid compare item.name if gid is not set
+                            item.attributes.get('gid', item.name) == self.attributes.get('gid', self.name)):
+
                 if item.attributes['delete']:
                     raise BundleError(_(
                         "{item1} (from bundle '{bundle1}') depends on item "
