@@ -6,17 +6,20 @@ Repository.item_classes loads them as files.
 from __future__ import unicode_literals
 from copy import copy
 from datetime import datetime
+from inspect import cleandoc
 from os.path import join
+from textwrap import TextWrapper
 
 from bundlewrap.exceptions import BundleError, ItemDependencyError, FaultUnavailable
 from bundlewrap.utils import cached_property
 from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
-from bundlewrap.utils.text import blue, bold, wrap_question
+from bundlewrap.utils.text import blue, bold, italic, wrap_question
 from bundlewrap.utils.ui import io
 
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': None,
+    'comment': None,
     'needed_by': [],
     'needs': [],
     'preceded_by': [],
@@ -29,6 +32,21 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'unless': "",
     'when_creating': {},
 }
+
+wrapper = TextWrapper(
+    break_long_words=False,
+    break_on_hyphens=False,
+    expand_tabs=False,
+    replace_whitespace=False,
+)
+
+
+def format_comment(comment):
+    result = "\n\n"
+    for line in wrapper.wrap(cleandoc(comment)):
+        for inlineline in line.split("\n"):
+            result += "# {}\n".format(italic(inlineline))
+    return result
 
 
 class ItemStatus(object):
@@ -455,6 +473,8 @@ class Item(object):
                         keys_to_fix,
                     )
                     question_text = self.ask(cdict, sdict, keys_to_fix)
+                if self.comment:
+                    question_text += format_comment(self.comment)
                 question = wrap_question(
                     self.id,
                     question_text,

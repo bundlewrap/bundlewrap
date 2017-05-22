@@ -70,6 +70,12 @@ There are also attributes that can be applied to any kind of item.
 
 <br>
 
+### comment
+
+This is a string that will be displayed in interactive mode (`bw apply -i`) whenever the item is to be changed in any way. You can use it to warn users before they start disruptive actions.
+
+<br>
+
 ### error_on_missing_fault
 
 This will simply skip an item instead of raising an error when a Fault used for an attribute on the item is unavailable. Faults are special objects used by `repo.vault` to [handle secrets](../guide/secrets.md). A Fault being unavailable can mean you're missing the secret key required to decrypt a secret you're trying to use as an item attribute value.
