@@ -32,7 +32,20 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'when_creating': {},
 }
 
-wrapper = TextWrapper(break_long_words=False, break_on_hyphens=False)
+wrapper = TextWrapper(
+    break_long_words=False,
+    break_on_hyphens=False,
+    expand_tabs=False,
+    replace_whitespace=False,
+)
+
+
+def format_comment(comment):
+    result = "\n\n"
+    for line in wrapper.wrap(comment.strip()):
+        for inlineline in line.split("\n"):
+            result += "# {}\n".format(italic(inlineline))
+    return result
 
 
 class ItemStatus(object):
@@ -460,9 +473,7 @@ class Item(object):
                     )
                     question_text = self.ask(cdict, sdict, keys_to_fix)
                 if self.comment:
-                    question_text += "\n\n"
-                    for line in wrapper.wrap(self.comment):
-                        question_text += "# {}\n".format(italic(line))
+                    question_text += format_comment(self.comment)
                 question = wrap_question(
                     self.id,
                     question_text,
