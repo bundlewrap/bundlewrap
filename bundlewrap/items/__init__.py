@@ -6,6 +6,7 @@ Repository.item_classes loads them as files.
 from __future__ import unicode_literals
 from copy import copy
 from datetime import datetime
+from inspect import cleandoc
 from os.path import join
 from textwrap import TextWrapper
 
@@ -42,7 +43,7 @@ wrapper = TextWrapper(
 
 def format_comment(comment):
     result = "\n\n"
-    for line in wrapper.wrap(comment.strip()):
+    for line in wrapper.wrap(cleandoc(comment)):
         for inlineline in line.split("\n"):
             result += "# {}\n".format(italic(inlineline))
     return result
