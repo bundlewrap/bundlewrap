@@ -1,3 +1,4 @@
 /dist/
 /docs/build/
+/docs/release/
 /tests/.coveralls.yml
