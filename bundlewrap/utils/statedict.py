@@ -57,6 +57,10 @@ def diff_value_int(title, value1, value2):
 
 
 def diff_value_list(title, value1, value2):
+    # make copy since we change the values
+    value1 = value1.copy()
+    value2 = value2.copy()
+
     if isinstance(value1, set):
         value1 = sorted(value1)
         value2 = sorted(value2)
