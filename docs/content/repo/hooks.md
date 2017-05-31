@@ -24,7 +24,7 @@ This is a list of all functions a hook file may implement.
 
 ---
 
-**`action_run_start(repo, node, action, **kwargs)`**
+**`action_run_start(repo, node, item, **kwargs)`**
 
 Called each time a `bw apply` command reaches a new action.
 
@@ -36,7 +36,7 @@ Called each time a `bw apply` command reaches a new action.
 
 ---
 
-**`action_run_end(repo, node, action, duration=None, status=None, **kwargs)`**
+**`action_run_end(repo, node, item, duration=None, status=None, **kwargs)`**
 
 Called each time a `bw apply` command completes processing an action.
 
