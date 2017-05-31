@@ -304,13 +304,13 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <h2 id="functions">Functions</h2>
 <p>This is a list of all functions a hook file may implement.</p>
 <hr />
-<p><strong><code>action_run_start(repo, node, action, **kwargs)</code></strong></p>
+<p><strong><code>action_run_start(repo, node, item, **kwargs)</code></strong></p>
 <p>Called each time a <code>bw apply</code> command reaches a new action.</p>
 <p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
 <p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p>
 <p><code>item</code> The current action.</p>
 <hr />
-<p><strong><code>action_run_end(repo, node, action, duration=None, status=None, **kwargs)</code></strong></p>
+<p><strong><code>action_run_end(repo, node, item, duration=None, status=None, **kwargs)</code></strong></p>
 <p>Called each time a <code>bw apply</code> command completes processing an action.</p>
 <p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
 <p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p>
