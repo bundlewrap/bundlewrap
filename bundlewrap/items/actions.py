@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from bundlewrap.exceptions import ActionFailure, BundleError
-from bundlewrap.items import Item
+from bundlewrap.items import format_comment, Item
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, wrap_question
@@ -68,13 +68,17 @@ class Action(Item):
                 ))
                 return (self.STATUS_SKIPPED, ["unless"])
 
+        question_body = self.attributes['command']
+        if self.comment:
+            question_body += format_comment(self.comment)
+
         if (
             interactive and
             self.attributes['interactive'] is not False and
             not io.ask(
                 wrap_question(
                     self.id,
-                    self.attributes['command'],
+                    question_body,
                     _("Run action {}?").format(
                         bold(self.name),
                     ),
