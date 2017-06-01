@@ -1,3 +1,10 @@
+# 2.18.1
+
+2017-06-01
+
+* fixed display of comments for actions
+
+
 # 2.18.0
 
 2017-05-22
