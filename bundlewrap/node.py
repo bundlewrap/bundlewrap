@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
+from hashlib import md5
 from os import environ
 from sys import exit
 from threading import Lock
@@ -525,6 +526,10 @@ class Node(object):
             for bundle in self.bundles:
                 for item in bundle.items:
                     yield item
+
+    @cached_property
+    def magic_number(self):
+        return int(md5(self.name.encode('UTF-8')).hexdigest(), 16)
 
     @property
     def _static_items(self):
