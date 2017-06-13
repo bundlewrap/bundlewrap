@@ -69,9 +69,10 @@ class Action(Item):
                 ))
                 return (self.STATUS_SKIPPED, ["unless"])
 
-        question_body = self.attributes['command']
+        question_body = ""
         if self.attributes['data_stdin'] is not None:
-            question_body += "\n\n<data being fed to stdin>"
+            question_body += "<" + _("data") + "> | "
+        question_body += self.attributes['command']
         if self.comment:
             question_body += format_comment(self.comment)
 
