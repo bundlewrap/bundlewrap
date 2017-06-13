@@ -139,7 +139,7 @@ class Action(Item):
             # bytes -- or Faults.
             if isinstance(data_stdin, Fault):
                 data_stdin = data_stdin.value
-            elif type(data_stdin) is not bytes:
+            if type(data_stdin) is not bytes:
                 data_stdin = data_stdin.encode('UTF-8')
         else:
             data_stdin = None
