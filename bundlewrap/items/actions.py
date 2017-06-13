@@ -5,6 +5,7 @@ from datetime import datetime
 
 from bundlewrap.exceptions import ActionFailure, BundleError
 from bundlewrap.items import format_comment, Item
+from bundlewrap.utils import Fault
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, wrap_question
@@ -135,8 +136,10 @@ class Action(Item):
         if self.attributes['data_stdin'] is not None:
             data_stdin = self.attributes['data_stdin']
             # Allow users to use either a string/unicode object or raw
-            # bytes.
-            if type(data_stdin) is not bytes:
+            # bytes -- or Faults.
+            if isinstance(data_stdin, Fault):
+                data_stdin = data_stdin.value
+            elif type(data_stdin) is not bytes:
                 data_stdin = data_stdin.encode('UTF-8')
         else:
             data_stdin = None
