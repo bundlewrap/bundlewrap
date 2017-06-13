@@ -71,6 +71,16 @@ A string used as a DNS name when connecting to this node. May also be an IP addr
 Cannot be set at group level.
 
 
+### magic_number
+
+A large number derived from the node's name. This number is very likely to be unique for your entire repository. You can, for example, use this number to easily "jitter" cronjobs:
+
+    '{} {} * * * root /my/script'.format(
+        node.magic_number % 60,
+        node.magic_number % 2 + 4,
+    )
+
+
 ### metadata
 
 This can be a dictionary of arbitrary data (some type restrictions apply). You can access it from your templates as `node.metadata`. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the [group level](groups.py.md#metadata), but node metadata has higher priority.
