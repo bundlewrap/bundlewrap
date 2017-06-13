@@ -90,6 +90,7 @@ def run(
     hostname,
     command,
     add_host_keys=False,
+    data_stdin=None,
     ignore_failure=False,
     log_function=None,
     wrapper_inner="{}",
@@ -137,6 +138,9 @@ def run(
         stdout=stdout_fd_w,
     )
     io._ssh_pids.append(ssh_process.pid)
+
+    if data_stdin is not None:
+        ssh_process.stdin.write(data_stdin)
 
     quit_event = Event()
     stdout_thread = Thread(

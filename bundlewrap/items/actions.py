@@ -17,6 +17,7 @@ class Action(Item):
     BUNDLE_ATTRIBUTE_NAME = 'actions'
     ITEM_ATTRIBUTES = {
         'command': None,
+        'data_stdin': None,
         'expected_stderr': None,
         'expected_stdout': None,
         'expected_return_code': 0,
@@ -69,6 +70,8 @@ class Action(Item):
                 return (self.STATUS_SKIPPED, ["unless"])
 
         question_body = self.attributes['command']
+        if self.attributes['data_stdin'] is not None:
+            question_body += "\n\n<data being fed to stdin>"
         if self.comment:
             question_body += format_comment(self.comment)
 
@@ -128,6 +131,15 @@ class Action(Item):
         return status_code
 
     def run(self):
+        if self.attributes['data_stdin'] is not None:
+            data_stdin = self.attributes['data_stdin']
+            # Allow users to use either a string/unicode object or raw
+            # bytes.
+            if type(data_stdin) is not bytes:
+                data_stdin = data_stdin.encode('UTF-8')
+        else:
+            data_stdin = None
+
         with io.job(_("  {node}  {bundle}  {item}  running...").format(
             bundle=self.bundle.name,
             item=self.id,
@@ -135,6 +147,7 @@ class Action(Item):
         )):
             result = self.bundle.node.run(
                 self.attributes['command'],
+                data_stdin=data_stdin,
                 may_fail=True,
             )
 
