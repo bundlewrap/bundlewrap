@@ -665,7 +665,7 @@ class Node(object):
         """
         return self.repo._metadata_for_node(self.name, partial=True)
 
-    def run(self, command, may_fail=False, log_output=False):
+    def run(self, command, data_stdin=None, may_fail=False, log_output=False):
         if log_output:
             def log_function(msg):
                 io.stdout("{x} {node}  {msg}".format(
@@ -701,6 +701,7 @@ class Node(object):
             self.hostname,
             command,
             add_host_keys=add_host_keys,
+            data_stdin=data_stdin,
             ignore_failure=may_fail,
             log_function=log_function,
             wrapper_inner=self.cmd_wrapper_inner,

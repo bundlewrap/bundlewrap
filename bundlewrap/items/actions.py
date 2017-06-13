@@ -5,6 +5,7 @@ from datetime import datetime
 
 from bundlewrap.exceptions import ActionFailure, BundleError
 from bundlewrap.items import format_comment, Item
+from bundlewrap.utils import Fault
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, wrap_question
@@ -17,6 +18,7 @@ class Action(Item):
     BUNDLE_ATTRIBUTE_NAME = 'actions'
     ITEM_ATTRIBUTES = {
         'command': None,
+        'data_stdin': None,
         'expected_stderr': None,
         'expected_stdout': None,
         'expected_return_code': 0,
@@ -68,7 +70,10 @@ class Action(Item):
                 ))
                 return (self.STATUS_SKIPPED, ["unless"])
 
-        question_body = self.attributes['command']
+        question_body = ""
+        if self.attributes['data_stdin'] is not None:
+            question_body += "<" + _("data") + "> | "
+        question_body += self.attributes['command']
         if self.comment:
             question_body += format_comment(self.comment)
 
@@ -128,6 +133,17 @@ class Action(Item):
         return status_code
 
     def run(self):
+        if self.attributes['data_stdin'] is not None:
+            data_stdin = self.attributes['data_stdin']
+            # Allow users to use either a string/unicode object or raw
+            # bytes -- or Faults.
+            if isinstance(data_stdin, Fault):
+                data_stdin = data_stdin.value
+            if type(data_stdin) is not bytes:
+                data_stdin = data_stdin.encode('UTF-8')
+        else:
+            data_stdin = None
+
         with io.job(_("  {node}  {bundle}  {item}  running...").format(
             bundle=self.bundle.name,
             item=self.id,
@@ -135,6 +151,7 @@ class Action(Item):
         )):
             result = self.bundle.node.run(
                 self.attributes['command'],
+                data_stdin=data_stdin,
                 may_fail=True,
             )
 
