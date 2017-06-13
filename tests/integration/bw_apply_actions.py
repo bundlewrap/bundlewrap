@@ -56,8 +56,8 @@ def test_action_pipe(tmpdir):
                 'actions': {
                     "pipe": {
                         'command': "cat",
-                        'data_stdin': "hello\n",
-                        'expected_stdout': "hello\n",
+                        'data_stdin': "hello 🐧\n",
+                        'expected_stdout': "hello 🐧\n",
                     },
                 },
             },
