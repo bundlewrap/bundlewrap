@@ -46,3 +46,27 @@ def test_action_fail(tmpdir):
         },
     )
     run("bw apply localhost", path=str(tmpdir))
+
+
+def test_action_pipe(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'actions': {
+                    "pipe": {
+                        'command': "cat",
+                        'data_stdin': "hello\n",
+                        'expected_stdout': "hello\n",
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    run("bw apply localhost", path=str(tmpdir))
