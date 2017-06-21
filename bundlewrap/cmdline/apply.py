@@ -6,6 +6,7 @@ from sys import exit
 
 from ..concurrency import WorkerPool
 from ..exceptions import ItemDependencyLoop
+from ..utils import SkipList
 from ..utils.cmdline import get_target_nodes
 from ..utils.plot import explain_item_dependency_loop
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -39,6 +40,7 @@ def bw_apply(repo, args):
 
     start_time = datetime.now()
     results = []
+    skip_list = SkipList(args['resume_file'])
 
     def tasks_available():
         return bool(pending_nodes)
@@ -52,14 +54,16 @@ def bw_apply(repo, args):
                 'autoskip_selector': args['autoskip'],
                 'force': args['force'],
                 'interactive': args['interactive'],
+                'skip_list': skip_list,
                 'workers': args['item_workers'],
                 'profiling': args['profiling'],
             },
         }
 
     def handle_result(task_id, return_value, duration):
-        if return_value is None:  # node skipped because it had no items
+        if return_value is None:  # node skipped
             return
+        skip_list.add(task_id)
         results.append(return_value)
         if args['profiling']:
             total_time = 0.0
@@ -95,6 +99,7 @@ def bw_apply(repo, args):
         next_task,
         handle_result=handle_result,
         handle_exception=handle_exception,
+        cleanup=skip_list.dump,
         pool_id="apply",
         workers=args['node_workers'],
     )

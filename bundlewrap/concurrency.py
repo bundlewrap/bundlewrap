@@ -23,6 +23,7 @@ class WorkerPool(object):
         next_task,
         handle_result=None,
         handle_exception=None,
+        cleanup=None,
         pool_id=None,
         workers=4,
     ):
@@ -33,6 +34,7 @@ class WorkerPool(object):
         self.next_task = next_task
         self.handle_result = handle_result
         self.handle_exception = handle_exception
+        self.cleanup = cleanup
 
         self.number_of_workers = workers
         self.idle_workers = set(range(self.number_of_workers))
@@ -169,6 +171,8 @@ class WorkerPool(object):
             return processed_results
         finally:
             io.debug(_("shutting down worker pool {pool}").format(pool=self.pool_id))
+            if self.cleanup:
+                self.cleanup()
             self.executor.shutdown()
             io.debug(_("worker pool {pool} has been shut down").format(pool=self.pool_id))
 

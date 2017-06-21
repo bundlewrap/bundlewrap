@@ -542,15 +542,20 @@ class Node(object):
         autoskip_selector="",
         interactive=False,
         force=False,
+        skip_list=tuple(),
         workers=4,
         profiling=False,
     ):
         if not list(self.items):
-            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
+            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("»")))
             return None
 
         if self.covered_by_autoskip_selector(autoskip_selector):
-            io.debug(_("skipping {}, matches autoskip selector").format(self.name))
+            io.stdout(_("{x} {node}  skipped by --skip").format(node=bold(self.name), x=yellow("»")))
+            return None
+
+        if self.name in skip_list:
+            io.stdout(_("{x} {node}  skipped by --resume-file").format(node=bold(self.name), x=yellow("»")))
             return None
 
         start = datetime.now()

@@ -300,6 +300,31 @@ def sha1(data):
     return hasher.hexdigest()
 
 
+class SkipList(object):
+    """
+    Used to maintain a list of nodes that have already been visited.
+    """
+    def __init__(self, path):
+        self.path = path
+        if path and exists(path):
+            with open(path) as f:
+                self._list_items = set(f.read().strip().split("\n"))
+        else:
+            self._list_items = set()
+
+    def __contains__(self, item):
+        return item in self._list_items
+
+    def add(self, item):
+        if self.path:
+            self._list_items.add(item)
+
+    def dump(self):
+        if self.path:
+            with open(self.path, 'w') as f:
+                f.write("\n".join(sorted(self._list_items)) + "\n")
+
+
 @contextmanager
 def tempfile():
     handle, path = mkstemp()
