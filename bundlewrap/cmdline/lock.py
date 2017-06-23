@@ -19,7 +19,7 @@ def remove_dummy_nodes(targets):
         if list(node.items):
             _targets.append(node)
         else:
-            io.stdout(_("{x} {node}  has no items").format(node=bold(node.name), x=yellow("!")))
+            io.stdout(_("{x} {node}  has no items").format(node=bold(node.name), x=yellow("»")))
     return _targets
 
 
