@@ -212,7 +212,7 @@ def _inject_canned_actions(items):
 
             try:
                 target_item = items[target_item_id]
-            except NoSuchItem:
+            except KeyError:
                 raise BundleError(_(
                     "{item} in bundle '{bundle}' triggers unknown item '{target_item}'"
                 ).format(
