@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from decimal import Decimal
 from json import dumps
 
 from ..metadata import MetadataJSONEncoder, value_at_key_path
+from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, force_text, mark_for_translation as _, red
@@ -29,7 +31,9 @@ def bw_metadata(repo, args):
                     value = ", ".join([str(item) for item in value])
                 elif isinstance(value, set):
                     value = ", ".join(sorted(value))
-                values.append(str(value))
+                elif isinstance(value, (bool, float, int, Decimal, Fault)):
+                    value = str(value)
+                values.append(value)
             table.append([bold(node.name)] + values)
         page_lines(render_table(table))
     else:
