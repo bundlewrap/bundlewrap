@@ -410,7 +410,7 @@ def build_parser_bw():
     )
     parser_metadata.set_defaults(func=bw_metadata)
     parser_metadata.add_argument(
-        'node',
+        'target',
         metavar=_("NODE"),
         type=str,
         help=_("node to print JSON-formatted metadata for"),
@@ -422,6 +422,17 @@ def build_parser_bw():
         nargs='*',
         type=str,
         help=_("print only partial metadata from the given space-separated key path"),
+    )
+    parser_metadata.add_argument(
+        "-t",
+        "--table",
+        action='store_true',
+        dest='table',
+        help=_(
+            "show a table of selected metadata values from multiple nodes instead; "
+            "allows for multiple comma-separated paths in KEY; "
+            "allows for node selectors in NODE (e.g. 'NODE1,NODE2,GROUP1,bundle:BUNDLE1...')"
+        ),
     )
 
     # bw nodes
