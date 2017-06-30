@@ -151,6 +151,18 @@ def build_parser_bw():
         dest='summary',
         help=_("don't show stats summary"),
     )
+    parser_apply.add_argument(
+        "-r",
+        "--resume-file",
+        default=None,
+        dest='resume_file',
+        help=_(
+            "path to a file that a list of completed nodes will be added to; "
+            "if the file already exists, any nodes therein will be skipped"
+        ),
+        metavar=_("PATH"),
+        type=str,
+    )
 
     # bw debug
     help_debug = _("Start an interactive Python shell for this repository")
@@ -734,6 +746,18 @@ def build_parser_bw():
         help=_("number of nodes to run command on simultaneously "
                "(defaults to {})").format(bw_run_p_default),
         type=int,
+    )
+    parser_run.add_argument(
+        "-r",
+        "--resume-file",
+        default=None,
+        dest='resume_file',
+        help=_(
+            "path to a file that a list of completed nodes will be added to; "
+            "if the file already exists, any nodes therein will be skipped"
+        ),
+        metavar=_("PATH"),
+        type=str,
     )
 
     # bw stats

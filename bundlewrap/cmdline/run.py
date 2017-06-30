@@ -5,6 +5,7 @@ from datetime import datetime
 
 from ..concurrency import WorkerPool
 from ..exceptions import NodeLockedException
+from ..utils import SkipList
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
 from ..utils.text import bold, error_summary, green, red, yellow
@@ -12,10 +13,14 @@ from ..utils.time import format_duration
 from ..utils.ui import io
 
 
-def run_on_node(node, command, may_fail, ignore_locks, log_output):
+def run_on_node(node, command, may_fail, ignore_locks, log_output, skip_list):
     if node.dummy:
-        io.stdout(_("{x}  {node} is a dummy node").format(node=bold(node.name), x=yellow("!")))
-        return
+        io.stdout(_("{x} {node}  is a dummy node").format(node=bold(node.name), x=yellow("»")))
+        return None
+
+    if node.name in skip_list:
+        io.stdout(_("{x} {node}  skipped by --resume-file").format(node=bold(node.name), x=yellow("»")))
+        return None
 
     node.repo.hooks.node_run_start(
         node.repo,
@@ -59,6 +64,7 @@ def run_on_node(node, command, may_fail, ignore_locks, log_output):
             node=bold(node.name),
             x=red("✘"),
         ))
+    return result.return_code
 
 
 def bw_run(repo, args):
@@ -74,6 +80,8 @@ def bw_run(repo, args):
     )
     start_time = datetime.now()
 
+    skip_list = SkipList(args['resume_file'])
+
     def tasks_available():
         return bool(pending_nodes)
 
@@ -88,8 +96,13 @@ def bw_run(repo, args):
                 args['may_fail'],
                 args['ignore_locks'],
                 True,
+                skip_list,
             ),
         }
+
+    def handle_result(task_id, return_value, duration):
+        if return_value == 0:
+            skip_list.add(task_id)
 
     def handle_exception(task_id, exception, traceback):
         if isinstance(exception, NodeLockedException):
@@ -111,7 +124,9 @@ def bw_run(repo, args):
     worker_pool = WorkerPool(
         tasks_available,
         next_task,
+        handle_result=handle_result,
         handle_exception=handle_exception,
+        cleanup=skip_list.dump,
         pool_id="run",
         workers=args['node_workers'],
     )
