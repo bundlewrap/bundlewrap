@@ -1,3 +1,14 @@
+# 2.19.0
+
+2017-07-05
+
+* actions can now receive data over stdin
+* added `Node.magic_number`
+* added `bw apply --resume-file`
+* added hooks for `bw lock`
+* added `bw metadata --table`
+
+
 # 2.18.1
 
 2017-06-01

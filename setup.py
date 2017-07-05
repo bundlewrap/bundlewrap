@@ -16,7 +16,7 @@ if version_info < (3, 2, 0):
 
 setup(
     name="bundlewrap",
-    version="2.18.1",
+    version="2.19.0",
     description="Config management with Python",
     long_description=(
         "By allowing for easy and low-overhead config management, BundleWrap fills the gap between complex deployments using Chef or Puppet and old school system administration over SSH.\n"
