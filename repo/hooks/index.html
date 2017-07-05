@@ -298,7 +298,7 @@
 def node_apply_start(repo, node, interactive=False, **kwargs):
     post_message("Starting apply on {}, everything is gonna be OK!".format(node.name))
 </code></pre>
-<div class="alert">Always define your hooks with `**kwargs` so we can pass in more information in future updates without breaking your hook.</div>
+<div class="alert alert-warning">Always define your hooks with <code>**kwargs</code> so we can pass in more information in future updates without breaking your hook.</div>
 
 <p><br></p>
 <h2 id="functions">Functions</h2>
@@ -347,6 +347,27 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <p><code>status_code</code> One of <code>bundlewrap.items.Item.STATUS_FAILED</code>, <code>bundlewrap.items.Item.STATUS_SKIPPED</code>, <code>bundlewrap.items.Item.STATUS_OK</code>, or <code>bundlewrap.items.Item.STATUS_FIXED</code>.</p>
 <p><code>status_before</code> An instance of <code>bundlewrap.items.ItemStatus</code>.</p>
 <p><code>status_after</code> See <code>status_before</code>.</p>
+<hr />
+<p><strong><code>lock_add(repo, node, lock_id, items, expiry, comment, **kwargs)</code></strong></p>
+<p>Called each time a soft lock is added to a node.</p>
+<p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
+<p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p>
+<p><code>lock_id</code> The random ID of the lock.</p>
+<p><code>items</code> List of item selector strings.</p>
+<p><code>expiry</code> UNIX timestamp of lock expiry time (int).</p>
+<p><code>comment</code> As entered by user.</p>
+<hr />
+<p><strong><code>lock_remove(repo, node, lock_id, **kwargs)</code></strong></p>
+<p>Called each time a soft lock is removed from a node.</p>
+<p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
+<p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p>
+<p><code>lock_id</code> The random ID of the lock.</p>
+<hr />
+<p><strong><code>lock_show(repo, node, lock_info, **kwargs)</code></strong></p>
+<p>Called each time <code>bw lock show</code> finds a lock on a node.</p>
+<p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
+<p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p>
+<p><code>lock_info</code> A dict contain the lock details.</p>
 <hr />
 <p><strong><code>node_apply_start(repo, node, interactive=False, **kwargs)</code></strong></p>
 <p>Called each time a <code>bw apply</code> command reaches a new node.</p>
