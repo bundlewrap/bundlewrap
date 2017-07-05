@@ -112,6 +112,48 @@ Called each time a `bw apply` command completes processing an item.
 
 ---
 
+**`lock_add(repo, node, lock_id, items, expiry, comment, **kwargs)`**
+
+Called each time a soft lock is added to a node.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`node` The current node (instance of `bundlewrap.node.Node`).
+
+`lock_id` The random ID of the lock.
+
+`items` List of item selector strings.
+
+`expiry` UNIX timestamp of lock expiry time (int).
+
+`comment` As entered by user.
+
+---
+
+**`lock_remove(repo, node, lock_id, **kwargs)`**
+
+Called each time a soft lock is removed from a node.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`node` The current node (instance of `bundlewrap.node.Node`).
+
+`lock_id` The random ID of the lock.
+
+---
+
+**`lock_show(repo, node, lock_info, **kwargs)`**
+
+Called each time `bw lock show` finds a lock on a node.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`node` The current node (instance of `bundlewrap.node.Node`).
+
+`lock_info` A dict contain the lock details.
+
+---
+
 **`node_apply_start(repo, node, interactive=False, **kwargs)`**
 
 Called each time a `bw apply` command reaches a new node.

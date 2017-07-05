@@ -39,18 +39,21 @@ FILENAME_NODES = "nodes.py"
 FILENAME_REQUIREMENTS = "requirements.txt"
 
 HOOK_EVENTS = (
-    'action_run_start',
     'action_run_end',
-    'apply_start',
+    'action_run_start',
     'apply_end',
-    'item_apply_start',
+    'apply_start',
     'item_apply_end',
-    'node_apply_start',
+    'item_apply_start',
+    'lock_add',
+    'lock_remove',
+    'lock_show',
     'node_apply_end',
-    'node_run_start',
+    'node_apply_start',
     'node_run_end',
-    'run_start',
+    'node_run_start',
     'run_end',
+    'run_start',
     'test',
     'test_node',
 )

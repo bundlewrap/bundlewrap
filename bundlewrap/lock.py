@@ -162,6 +162,8 @@ def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
         node.run("mkdir -p " + quote(SOFT_LOCK_PATH))
         node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id), mode='0644')
 
+    node.repo.hooks.lock_add(node.repo, node, lock_id, item_selectors, expiry_timestamp, comment)
+
     return lock_id
 
 
@@ -199,3 +201,4 @@ def softlock_remove(node, lock_id):
         node=node.name,
     ))
     node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock_id)))
+    node.repo.hooks.lock_remove(node.repo, node, lock_id)

@@ -157,6 +157,7 @@ def bw_lock_show(repo, args):
 
     def handle_result(task_id, return_value, duration):
         locks_on_node[task_id] = return_value
+        repo.hooks.lock_show(repo, repo.get_node(task_id), return_value)
 
     def handle_exception(task_id, exception, traceback):
         msg = "{}: {}".format(task_id, exception)
