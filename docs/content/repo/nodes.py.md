@@ -66,7 +66,7 @@ Set this to `True` to prevent BundleWrap from creating items for and connecting 
 
 A string used as a DNS name when connecting to this node. May also be an IP address.
 
-<div class="alert">The username and SSH private key for connecting to the node cannot be configured in BundleWrap. If you need to customize those, BundleWrap will honor your <code>~/.ssh/config</code>.</div>
+<div class="alert alert-info">The username and SSH private key for connecting to the node cannot be configured in BundleWrap. If you need to customize those, BundleWrap will honor your <code>~/.ssh/config</code>.</div>
 
 Cannot be set at group level.
 

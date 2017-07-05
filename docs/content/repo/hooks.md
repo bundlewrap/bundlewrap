@@ -14,7 +14,7 @@ To use hooks, you need to create a subdirectory in your repo called `hooks`. In 
     def node_apply_start(repo, node, interactive=False, **kwargs):
         post_message("Starting apply on {}, everything is gonna be OK!".format(node.name))
 
-<div class="alert">Always define your hooks with `**kwargs` so we can pass in more information in future updates without breaking your hook.</div>
+<div class="alert alert-warning">Always define your hooks with <code>**kwargs</code> so we can pass in more information in future updates without breaking your hook.</div>
 
 <br>
 

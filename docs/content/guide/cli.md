@@ -2,7 +2,7 @@
 
 The `bw` utility is BundleWrap's command line interface.
 
-<div class="alert">This page is not meant as a complete reference. It provides a starting point to explore the various subcommands. If you're looking for details, <code>--help</code> is your friend.</div>
+<div class="alert alert-info">This page is not meant as a complete reference. It provides a starting point to explore the various subcommands. If you're looking for details, <code>--help</code> is your friend.</div>
 
 ## bw apply
 

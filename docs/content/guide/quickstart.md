@@ -30,11 +30,11 @@ cat groups.py
 
 The contents should be fairly self-explanatory, but you can always check the [docs](../repo/layout.md) on these files if you want to go deeper.
 
-<div class="alert">It is highly recommended to use git or a similar tool to keep track of your repository. You may want to start doing that right away.</div>
+<div class="alert alert-info">It is highly recommended to use git or a similar tool to keep track of your repository. You may want to start doing that right away.</div>
 
 At this point you will want to edit `nodes.py` and maybe change "localhost" to the hostname of a system you have passwordless (including sudo) SSH access to.
 
-<div class="alert">BundleWrap will honor your <code>~/.ssh/config</code>, so if <code>ssh mynode.example.com sudo id</code> works without any password prompts in your terminal, you're good to go.</div>
+<div class="alert alert-info">BundleWrap will honor your <code>~/.ssh/config</code>, so if <code>ssh mynode.example.com sudo id</code> works without any password prompts in your terminal, you're good to go.</div>
 
 
 Run a command
@@ -44,7 +44,7 @@ The first thing you can do is run a command on your army of one node:
 
 <pre><code class="nohighlight">bw -a run node-1 "uptime"</code></pre>
 
-<div class="alert">The <code>-a</code> switch tells bw to automatically trust unknown SSH host keys (when you're connecting to a new node). By default, only known host keys will be accepted.</div>
+<div class="alert alert-info">The <code>-a</code> switch tells bw to automatically trust unknown SSH host keys (when you're connecting to a new node). By default, only known host keys will be accepted.</div>
 
 You should see something like this:
 
