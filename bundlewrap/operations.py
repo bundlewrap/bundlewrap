@@ -86,18 +86,13 @@ class RunResult(object):
         return force_text(self.stdout)
 
 
-def run(
-    hostname,
+def run_local(
     command,
-    add_host_keys=False,
     data_stdin=None,
-    ignore_failure=False,
     log_function=None,
-    wrapper_inner="{}",
-    wrapper_outer="{}",
 ):
     """
-    Runs a command on a remote system.
+    Runs a command on the local system.
     """
     # LineBuffer objects take care of always printing complete lines
     # which have been properly terminated by a newline. This is only
@@ -113,34 +108,23 @@ def run(
     stdout_fd_r, stdout_fd_w = pipe()
     stderr_fd_r, stderr_fd_w = pipe()
 
-    # Launch OpenSSH. It's important that SSH gets a dummy stdin, i.e.
-    # it must *not* read from the terminal. Otherwise, it can steal user
-    # input.
-    ssh_command = [
-        "ssh",
-        "-o", "KbdInteractiveAuthentication=no",
-        "-o", "PasswordAuthentication=no",
-        "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
-    ]
-    extra_args = environ.get("BW_SSH_ARGS", "").strip()
-    if extra_args:
-        ssh_command.extend(split(extra_args))
-    ssh_command.append(hostname)
-    ssh_command.append(wrapper_outer.format(quote(wrapper_inner.format(command))))
     cmd_id = randstr(length=4).upper()
-    io.debug("running command with ID {}: {}".format(cmd_id, " ".join(ssh_command)))
+    io.debug("running command with ID {}: {}".format(cmd_id, " ".join(command)))
 
-    ssh_process = Popen(
-        ssh_command,
+    # Launch the child process. It's important that SSH gets a dummy
+    # stdin, i.e. it must *not* read from the terminal. Otherwise, it
+    # can steal user input.
+    child_process = Popen(
+        command,
         preexec_fn=setpgrp,
         stdin=PIPE,
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )
-    io._ssh_pids.append(ssh_process.pid)
+    io._child_pids.append(child_process.pid)
 
     if data_stdin is not None:
-        ssh_process.stdin.write(data_stdin)
+        child_process.stdin.write(data_stdin)
 
     quit_event = Event()
     stdout_thread = Thread(
@@ -155,9 +139,9 @@ def run(
     stderr_thread.start()
 
     try:
-        ssh_process.communicate()
+        child_process.communicate()
     finally:
-        # Once we end up here, the OpenSSH process has terminated.
+        # Once we end up here, the child process has terminated.
         #
         # Now, the big question is: Why do we need an Event here?
         #
@@ -179,7 +163,7 @@ def run(
         # Luckily stdout is a somewhat simpler affair: we can just close
         # the writing end of the pipe, causing the reader thread to
         # shut down as it sees the EOF.
-        io._ssh_pids.remove(ssh_process.pid)
+        io._child_pids.remove(child_process.pid)
         quit_event.set()
         close(stdout_fd_w)
         stdout_thread.join()
@@ -191,22 +175,54 @@ def run(
 
     io.debug("command with ID {} finished with return code {}".format(
         cmd_id,
-        ssh_process.returncode,
+        child_process.returncode,
     ))
 
     result = RunResult()
     result.stdout = stdout_lb.record.getvalue()
     result.stderr = stderr_lb.record.getvalue()
-    result.return_code = ssh_process.returncode
+    result.return_code = child_process.returncode
+    return result
+
+
+def run(
+    hostname,
+    command,
+    add_host_keys=False,
+    data_stdin=None,
+    ignore_failure=False,
+    log_function=None,
+    wrapper_inner="{}",
+    wrapper_outer="{}",
+):
+    """
+    Runs a command on a remote system.
+    """
+    ssh_command = [
+        "ssh",
+        "-o", "KbdInteractiveAuthentication=no",
+        "-o", "PasswordAuthentication=no",
+        "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+    ]
+    extra_args = environ.get("BW_SSH_ARGS", "").strip()
+    if extra_args:
+        ssh_command.extend(split(extra_args))
+    ssh_command.append(hostname)
+    ssh_command.append(wrapper_outer.format(quote(wrapper_inner.format(command))))
+
+    result = run_local(
+        ssh_command,
+        data_stdin=data_stdin,
+        log_function=log_function,
+    )
 
     if result.return_code != 0:
         error_msg = _(
             "Non-zero return code ({rcode}) running '{command}' "
-            "with ID {id} on '{host}':\n\n{result}\n\n"
+            "on '{host}':\n\n{result}\n\n"
         ).format(
             command=command,
             host=hostname,
-            id=cmd_id,
             rcode=result.return_code,
             result=force_text(result.stdout) + force_text(result.stderr),
         )
@@ -247,9 +263,9 @@ def upload(
         stdout=PIPE,
         stderr=PIPE,
     )
-    io._ssh_pids.append(scp_process.pid)
+    io._child_pids.append(scp_process.pid)
     stdout, stderr = scp_process.communicate()
-    io._ssh_pids.remove(scp_process.pid)
+    io._child_pids.remove(scp_process.pid)
 
     if scp_process.returncode != 0:
         raise RemoteException(_(

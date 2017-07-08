@@ -153,7 +153,7 @@ class IOManager(object):
         # shutdown signal, but don't have a feasible way of stopping
         # the thread once the soft shutdown has completed
         self._signal_handler_thread.daemon = True
-        self._ssh_pids = []
+        self._child_pids = []
 
     def activate(self):
         self._active = True
@@ -272,7 +272,7 @@ class IOManager(object):
                         signal=bold(_("SIGINT")),
                         x=blue("i"),
                     ))
-                    for ssh_pid in self._ssh_pids:
+                    for ssh_pid in self._child_pids:
                         self.debug(_("killing SSH session with PID {pid}").format(pid=ssh_pid))
                         try:
                             kill(ssh_pid, SIGTERM)
