@@ -38,6 +38,7 @@ pages:
   - pkg_dnf: items/pkg_dnf.md
   - pkg_pacman: items/pkg_pacman.md
   - pkg_pip: items/pkg_pip.md
+  - pkg_snap: items/pkg_snap.md
   - pkg_yum: items/pkg_yum.md
   - pkg_zypper: items/pkg_zypper.md
   - postgres_db: items/postgres_db.md
