@@ -31,6 +31,25 @@ You are not confined to the static way of defining a node list as shown above. Y
 	    return ldap_nodes
 
 	nodes = get_my_nodes_from_ldap()
+<br>
+
+# One file per node
+
+Especially in larger installations, a single nodes.py can become inconvenient to work with. This example reads nodes from a `nodes/` directory.
+
+	from glob import glob
+
+	nodes = {}
+	for node in glob("nodes/*.py"):
+	    with open(node, 'r') as f:
+	        exec(f.read())
+
+Node files would then append `nodes`, like this:
+
+	# nodes/node-1.py
+	nodes['node-1'] = {
+		'hostname': "node-1.example.com",
+	}
 
 <br>
 
