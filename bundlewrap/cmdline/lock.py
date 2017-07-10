@@ -16,10 +16,10 @@ from ..utils.ui import io, page_lines
 def remove_dummy_nodes(targets):
     _targets = []
     for node in targets:
-        if list(node.items):
-            _targets.append(node)
+        if node.dummy:
+            io.stdout(_("{x} {node}  is a dummy node").format(node=bold(node.name), x=yellow("»")))
         else:
-            io.stdout(_("{x} {node}  has no items").format(node=bold(node.name), x=yellow("»")))
+            _targets.append(node)
     return _targets
 
 
