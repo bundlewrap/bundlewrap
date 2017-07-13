@@ -252,22 +252,14 @@ def upload(
         host=hostname, path=local_path, target=remote_path))
     temp_filename = ".bundlewrap_tmp_" + randstr()
 
-    scp_process = Popen(
-        [
-            "scp",
-            "-o",
-            "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
-            local_path,
-            "{}:{}".format(hostname, temp_filename),
-        ],
-        preexec_fn=setpgrp,
-        stdin=PIPE,
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-    io._child_pids.append(scp_process.pid)
-    stdout, stderr = scp_process.communicate()
-    io._child_pids.remove(scp_process.pid)
+    scp_command = [
+        "scp",
+        "-o",
+        "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+        local_path,
+        "{}:{}".format(hostname, temp_filename),
+    ]
+    scp_process = run_local(scp_command)
 
     if scp_process.returncode != 0:
         raise RemoteException(_(
@@ -275,7 +267,7 @@ def upload(
         ).format(
             failed=remote_path,
             host=hostname,
-            result=force_text(stdout) + force_text(stderr),
+            result=force_text(scp_process.stdout) + force_text(scp_process.stderr),
         ))
 
     if owner or group:
