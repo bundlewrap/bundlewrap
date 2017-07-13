@@ -261,7 +261,7 @@ def upload(
     ]
     scp_process = run_local(scp_command)
 
-    if scp_process.returncode != 0:
+    if scp_process.return_code != 0:
         raise RemoteException(_(
             "Upload to {host} failed for {failed}:\n\n{result}\n\n"
         ).format(
