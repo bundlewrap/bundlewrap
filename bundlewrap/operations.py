@@ -90,6 +90,7 @@ def run_local(
     command,
     data_stdin=None,
     log_function=None,
+    shell=False,
 ):
     """
     Runs a command on the local system.
@@ -117,6 +118,7 @@ def run_local(
     child_process = Popen(
         command,
         preexec_fn=setpgrp,
+        shell=shell,
         stdin=PIPE,
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
