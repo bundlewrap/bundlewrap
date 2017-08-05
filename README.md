@@ -22,4 +22,12 @@ For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and
 
 ------------------------------------------------------------------------
 
+Donations appreciated:
+
+Bitcoin `13AJYksqncZromPF8HvDUXsmHChAm3Y7W7`
+
+Ethereum `0x5Eb3037e197d3C0d2E014bcfC2e027EB0AD42812`
+
+------------------------------------------------------------------------
+
 BundleWrap is © 2013 - 2017 [Torsten Rehn](mailto:torsten@rehn.email)
