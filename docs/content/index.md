@@ -21,7 +21,7 @@ We think you will enjoy BundleWrap a lot if you:
 -   have lots of unique nodes
 -   are trying to get a lot of existing systems under management
 -   are NOT trying to handle a massive amount of nodes (let’s say more
-    than 300)
+    than 1000)
 -   like to start small
 -   don’t want yet more stuff to run on your nodes (or mess with
     appliances as little as possible)
