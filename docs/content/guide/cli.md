@@ -73,5 +73,6 @@ It offers an interesting view into the internal complexities BundleWrap has to d
 |  BundleError: file:/etc/samba/smb.conf from bundle 'samba' refers to missing file '/path/to/bundlewrap/repo/bundles/samba/files/smb.conf'
 |
 +----------------------------------
-</pre></code>
+</code></pre>
+
 This command is meant to be run automatically like a test suite after every commit. It will try to catch any errors in your bundles and file templates by initializing every item for every node (but without touching the network).
