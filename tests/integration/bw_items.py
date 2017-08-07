@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from os.path import exists
-
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -55,8 +53,8 @@ def test_multiple_file_preview(tmpdir):
 
     stdout, stderr, rcode = run("bw items -w itemprev node1", path=str(tmpdir))
     assert rcode == 0
-    assert exists(tmpdir.join("itemprev/test"))
-    assert exists(tmpdir.join("itemprev/testdir/test2"))
+    assert tmpdir.join("itemprev/test").exists()
+    assert tmpdir.join("itemprev/testdir/test2").exists()
 
 
 def test_fault_unavailable(tmpdir):
@@ -108,5 +106,5 @@ def test_fault_unavailable_multiple(tmpdir):
 
     stdout, stderr, rcode = run("bw items -w itemprev node1", path=str(tmpdir))
     assert rcode == 0
-    assert exists(tmpdir.join("itemprev/test"))
-    assert not exists(tmpdir.join("itemprev/testdir/test3"))
+    assert tmpdir.join("itemprev/test").exists()
+    assert not tmpdir.join("itemprev/testdir/test3").exists()
