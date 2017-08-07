@@ -5,9 +5,10 @@ from os import makedirs
 from os.path import dirname, exists, join
 from sys import exit
 
+from ..exceptions import FaultUnavailable
 from ..utils.cmdline import get_item, get_node
 from ..utils.statedict import statedict_to_json
-from ..utils.text import force_text, mark_for_translation as _, red
+from ..utils.text import bold, force_text, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io
 
 
@@ -36,7 +37,13 @@ def bw_items(repo, args):
             ).format(x=red("!!!"), file=item.id, node=node.name))
             exit(1)
         else:
-            io.stdout(item.content.decode(item.attributes['encoding']), append_newline=False)
+            try:
+                io.stdout(item.content.decode(item.attributes['encoding']), append_newline=False)
+            except FaultUnavailable:
+                io.stderr(_(
+                    "{x} skipped {path} (Fault unavailable)"
+                ).format(x=yellow("»"), path=bold(item.name)))
+                exit(1)
     elif args['file_preview_path']:
         if exists(args['file_preview_path']):
             io.stderr(_(
@@ -48,24 +55,35 @@ def bw_items(repo, args):
                 continue
             if item.attributes['content_type'] == 'any':
                 io.stderr(_(
-                    "skipping file with 'any' content {filename}..."
-                ).format(filename=item.name))
+                    "{x} skipped {filename} (content_type 'any')"
+                ).format(x=yellow("»"), filename=bold(item.name)))
                 continue
             if item.attributes['content_type'] == 'binary':
                 io.stderr(_(
-                    "skipping binary file {filename}..."
-                ).format(filename=item.name))
+                    "{x} skipped {filename} (content_type 'binary')"
+                ).format(x=yellow("»"), filename=bold(item.name)))
                 continue
             if item.attributes['delete']:
                 io.stderr(_(
-                    "skipping file with 'delete' flag {filename}..."
-                ).format(filename=item.name))
+                    "{x} skipped {filename} ('delete' attribute set)"
+                ).format(x=yellow("»"), filename=bold(item.name)))
                 continue
-            io.stdout(_("writing {path}...").format(path=join(
-                args['file_preview_path'],
-                item.name.lstrip("/"),
-            )))
-            write_preview(item, args['file_preview_path'])
+            try:
+                write_preview(item, args['file_preview_path'])
+            except FaultUnavailable:
+                io.stderr(_(
+                    "{x} skipped {path} (Fault unavailable)"
+                ).format(x=yellow("»"), path=bold(item.name)))
+            else:
+                io.stdout(_(
+                    "{x} wrote {path}"
+                ).format(
+                    x=green("✓"),
+                    path=bold(join(
+                        args['file_preview_path'],
+                        item.name.lstrip("/"),
+                    )),
+                ))
     elif args['item']:
         item = get_item(node, args['item'])
         if args['show_sdict']:
