@@ -16,12 +16,14 @@ def write_preview(file_item, base_path):
     """
     Writes the content of the given file item to the given path.
     """
+    # this might raise an exception, try it before creating anything
+    content = file_item.content
     file_path = join(base_path, file_item.name.lstrip("/"))
     dir_path = dirname(file_path)
     if not exists(dir_path):
         makedirs(dir_path)
     with open(file_path, 'wb') as f:
-        f.write(file_item.content)
+        f.write(content)
 
 
 def bw_items(repo, args):
