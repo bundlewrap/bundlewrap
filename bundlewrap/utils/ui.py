@@ -280,8 +280,9 @@ class IOManager(object):
             except ZeroDivisionError:
                 pass
             else:
+                if table:
+                    table.append(ROW_SEPARATOR)
                 table.extend([
-                    ROW_SEPARATOR,
                     [bold(_("Progress")), "{:.1f}%".format(progress * 100)],
                     ROW_SEPARATOR,
                     [bold(_("Elapsed")), format_duration(elapsed)],
