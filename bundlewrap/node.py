@@ -547,15 +547,24 @@ class Node(object):
         profiling=False,
     ):
         if not list(self.items):
-            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("»")))
+            io.stdout(_("{x} {node}  has no items").format(
+                node=bold(self.name),
+                x=yellow("»"),
+            ))
             return None
 
         if self.covered_by_autoskip_selector(autoskip_selector):
-            io.stdout(_("{x} {node}  skipped by --skip").format(node=bold(self.name), x=yellow("»")))
+            io.stdout(_("{x} {node}  skipped by --skip").format(
+                node=bold(self.name),
+                x=yellow("»"),
+            ))
             return None
 
         if self.name in skip_list:
-            io.stdout(_("{x} {node}  skipped by --resume-file").format(node=bold(self.name), x=yellow("»")))
+            io.stdout(_("{x} {node}  skipped by --resume-file").format(
+                node=bold(self.name),
+                x=yellow("»"),
+            ))
             return None
 
         start = datetime.now()
@@ -585,7 +594,10 @@ class Node(object):
                 )
         except NodeLockedException as e:
             if not interactive:
-                io.stderr(_("{x} {node} already locked by {user} at {date} ({duration} ago, `bw apply -f` to override)").format(
+                io.stderr(_(
+                    "{x} {node} already locked by {user} at {date} ({duration} ago, "
+                    "`bw apply -f` to override)"
+                ).format(
                     date=bold(e.args[0]['date']),
                     duration=e.args[0]['duration'],
                     node=bold(self.name),
