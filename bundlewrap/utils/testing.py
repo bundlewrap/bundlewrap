@@ -28,7 +28,7 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
         bundle_dir = bundles_dir.mkdir(bundle)
         bundle_dir.mkdir("files")
         bundlepy = bundle_dir.join(FILENAME_BUNDLE)
-        bundle_content = ""
+        bundle_content = "# -*- coding: utf-8 -*-\n"
         for itemtype, itemconfig in items.items():
             bundle_content += "{} = {}\n".format(itemtype, repr(itemconfig))
         bundlepy.write(bundle_content)
@@ -37,10 +37,10 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     tmpdir.mkdir("hooks")
 
     groupspy = tmpdir.join("groups.py")
-    groupspy.write("groups = {}\n".format(repr(groups)))
+    groupspy.write("# -*- coding: utf-8 -*-\ngroups = {}\n".format(repr(groups)))
 
     nodespy = tmpdir.join("nodes.py")
-    nodespy.write("nodes = {}\n".format(repr(nodes)))
+    nodespy.write("# -*- coding: utf-8 -*-\nnodes = {}\n".format(repr(nodes)))
 
     secrets = tmpdir.join(FILENAME_SECRETS)
     secrets.write("[generate]\nkey = {}\n\n[encrypt]\nkey = {}\n".format(
