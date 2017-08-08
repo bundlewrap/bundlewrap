@@ -8,7 +8,7 @@ from sys import exit
 from ..exceptions import FaultUnavailable
 from ..utils.cmdline import get_item, get_node
 from ..utils.statedict import statedict_to_json
-from ..utils.text import bold, force_text, green, mark_for_translation as _, red, yellow
+from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io
 
 
@@ -102,6 +102,6 @@ def bw_items(repo, args):
     else:
         for item in sorted(node.items):
             if args['show_repr']:
-                io.stdout(force_text(repr(item)))
+                io.stdout(repr(item))
             else:
-                io.stdout(force_text(str(item)))
+                io.stdout(item.id)
