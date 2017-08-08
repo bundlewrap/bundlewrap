@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from base64 import b64encode
 from os import mkdir
 from os.path import exists, join
 
