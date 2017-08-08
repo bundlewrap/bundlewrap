@@ -9,7 +9,7 @@ from functools import wraps
 from os import _exit, environ, getpid, kill
 from os.path import join
 from select import select
-from signal import signal, SIG_DFL, SIGINFO, SIGINT, SIGQUIT, SIGTERM
+from signal import signal, SIG_DFL, SIGINT, SIGQUIT, SIGTERM
 import struct
 from subprocess import PIPE, Popen
 import sys
@@ -87,7 +87,7 @@ def sigint_handler(*args, **kwargs):
         SHUTDOWN_EVENT_HARD.set()
 
 
-def siginfo_handler(*args, **kwargs):
+def sigquit_handler(*args, **kwargs):
     """
     This handler is kept short since it interrupts execution of the
     main thread. It's safer to handle these events in their own thread
@@ -182,9 +182,8 @@ class IOManager(object):
                 ),
             ), 'a')
         self._signal_handler_thread.start()
-        signal(SIGINFO, siginfo_handler)
         signal(SIGINT, sigint_handler)
-        signal(SIGQUIT, siginfo_handler)
+        signal(SIGQUIT, sigquit_handler)
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
