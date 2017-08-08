@@ -38,6 +38,7 @@ def bw_lock_add(repo, args):
     pending_nodes = target_nodes[:]
     max_node_name_length = max([len(node.name) for node in target_nodes])
     lock_id = randstr(length=4).upper()
+    io.progress_set_total(len(pending_nodes))
 
     def tasks_available():
         return bool(pending_nodes)
@@ -56,6 +57,7 @@ def bw_lock_add(repo, args):
         }
 
     def handle_result(task_id, return_value, duration):
+        io.progress_advance()
         io.stdout(_("{x} {node}  locked with ID {id} (expires in {exp})").format(
             x=green("✓"),
             node=bold(task_id.ljust(max_node_name_length)),
@@ -89,6 +91,7 @@ def bw_lock_remove(repo, args):
     target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     max_node_name_length = max([len(node.name) for node in target_nodes])
+    io.progress_set_total(len(pending_nodes))
 
     def tasks_available():
         return bool(pending_nodes)
@@ -102,6 +105,7 @@ def bw_lock_remove(repo, args):
         }
 
     def handle_result(task_id, return_value, duration):
+        io.progress_advance()
         if return_value is True:
             io.stdout(_("{x} {node}  lock {id} removed").format(
                 x=green("✓"),

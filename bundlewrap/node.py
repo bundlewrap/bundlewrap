@@ -133,6 +133,7 @@ def apply_items(
     def next_task():
         item, skipped_items = item_queue.pop()
         for skipped_item in skipped_items:
+            io.progress_advance()
             handle_apply_result(
                 node,
                 skipped_item,
@@ -199,6 +200,7 @@ def apply_items(
 
         handle_apply_result(node, item, status_code, interactive, changes=changes)
         if not isinstance(item, DummyItem):
+            io.progress_advance()
             results.append((item.id, status_code, duration))
 
     worker_pool = WorkerPool(
@@ -834,6 +836,7 @@ def test_items(node, ignore_missing_faults=False, workers=1):
             }
 
     def handle_result(task_id, return_value, duration):
+        io.progress_advance()
         node_name, bundle_name, item_id = task_id.split(":", 2)
         io.stdout("{x} {node}  {bundle}  {item}".format(
             bundle=bold(bundle_name),
@@ -885,6 +888,8 @@ def verify_items(node, show_all=False, workers=1):
             not item.triggered
         ):
             items.append(item)
+        elif not isinstance(item, DummyItem):
+            io.progress_advance()
 
     def tasks_available():
         return bool(items)
@@ -899,6 +904,7 @@ def verify_items(node, show_all=False, workers=1):
                 if item.error_on_missing_fault:
                     item._raise_for_faults()
                 else:
+                    io.progress_advance()
                     io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
                         bundle=bold(item.bundle.name),
                         item=item.id,
@@ -913,6 +919,7 @@ def verify_items(node, show_all=False, workers=1):
                 }
 
     def handle_result(task_id, return_value, duration):
+        io.progress_advance()
         unless_result, item_status = return_value
         node_name, bundle_name, item_id = task_id.split(":", 2)
         if not unless_result and not item_status.correct:

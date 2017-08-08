@@ -8,6 +8,13 @@ from .text import mark_for_translation as _, red
 from .ui import io
 
 
+def count_items(nodes):
+    count = 0
+    for node in nodes:
+        count += len(node.items)
+    return count
+
+
 def get_group(repo, group_name):
     try:
         return repo.get_group(group_name)

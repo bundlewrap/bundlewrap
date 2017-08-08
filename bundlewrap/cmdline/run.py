@@ -71,6 +71,7 @@ def bw_run(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     pending_nodes = target_nodes[:]
+    io.progress_set_total(len(pending_nodes))
 
     repo.hooks.run_start(
         repo,
@@ -101,10 +102,12 @@ def bw_run(repo, args):
         }
 
     def handle_result(task_id, return_value, duration):
+        io.progress_advance()
         if return_value == 0:
             skip_list.add(task_id)
 
     def handle_exception(task_id, exception, traceback):
+        io.progress_advance()
         if isinstance(exception, NodeLockedException):
             msg = _(
                 "{node_bold}  locked by {user} "

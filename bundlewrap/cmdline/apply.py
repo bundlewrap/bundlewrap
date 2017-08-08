@@ -7,7 +7,7 @@ from sys import exit
 from ..concurrency import WorkerPool
 from ..exceptions import ItemDependencyLoop
 from ..utils import SkipList
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes
 from ..utils.plot import explain_item_dependency_loop
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
@@ -30,6 +30,8 @@ def bw_apply(repo, args):
     errors = []
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     pending_nodes = target_nodes[:]
+
+    io.progress_set_total(count_items(pending_nodes))
 
     repo.hooks.apply_start(
         repo,

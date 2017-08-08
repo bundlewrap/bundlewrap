@@ -8,7 +8,7 @@ from ..exceptions import ItemDependencyLoop
 from ..concurrency import WorkerPool
 from ..plugins import PluginManager
 from ..repo import Repository
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes
 from ..utils.plot import explain_item_dependency_loop
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io
@@ -32,6 +32,8 @@ def bw_test(repo, args):
                 bundle=bold(bundle),
                 x=yellow("!"),
             ))
+
+    io.progress_set_total(count_items(pending_nodes))
 
     def tasks_available():
         return bool(pending_nodes)

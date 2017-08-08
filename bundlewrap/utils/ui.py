@@ -9,7 +9,7 @@ from functools import wraps
 from os import _exit, environ, getpid, kill
 from os.path import join
 from select import select
-from signal import signal, SIG_DFL, SIGINT, SIGTERM
+from signal import signal, SIG_DFL, SIGINFO, SIGINT, SIGQUIT, SIGTERM
 import struct
 from subprocess import PIPE, Popen
 import sys
@@ -17,8 +17,11 @@ import termios
 from threading import Event, Lock, Thread
 
 from . import STDERR_WRITER, STDOUT_WRITER
+from .table import render_table, ROW_SEPARATOR
 from .text import ansi_clean, blue, bold, inverse, mark_for_translation as _
+from .time import format_duration
 
+INFO_EVENT = Event()
 QUIT_EVENT = Event()
 SHUTDOWN_EVENT_HARD = Event()
 SHUTDOWN_EVENT_SOFT = Event()
@@ -84,6 +87,16 @@ def sigint_handler(*args, **kwargs):
         SHUTDOWN_EVENT_HARD.set()
 
 
+def siginfo_handler(*args, **kwargs):
+    """
+    This handler is kept short since it interrupts execution of the
+    main thread. It's safer to handle these events in their own thread
+    because the main thread might be holding the IO lock while it is
+    interrupted.
+    """
+    INFO_EVENT.set()
+
+
 def term_width():
     if not TTY:
         return 0
@@ -145,6 +158,9 @@ class IOManager(object):
         self.debug_mode = False
         self.jobs = []
         self.lock = Lock()
+        self.progress = 0
+        self.progress_start = None
+        self.progress_total = 0
         self._signal_handler_thread = Thread(
             target=self._signal_handler_thread_body,
         )
@@ -166,7 +182,9 @@ class IOManager(object):
                 ),
             ), 'a')
         self._signal_handler_thread.start()
+        signal(SIGINFO, siginfo_handler)
         signal(SIGINT, sigint_handler)
+        signal(SIGQUIT, siginfo_handler)
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
@@ -207,7 +225,9 @@ class IOManager(object):
 
     def deactivate(self):
         self._active = False
+        signal(SIGINFO, SIG_DFL)
         signal(SIGINT, SIG_DFL)
+        signal(SIGQUIT, SIG_DFL)
         self._signal_handler_thread.join()
         if self.debug_log_file:
             self.debug_log_file.close()
@@ -238,6 +258,49 @@ class IOManager(object):
             self.jobs.remove(msg)
             self._write_current_job()
 
+    def progress_advance(self, increment=1):
+        with self.lock:
+            self.progress += increment
+
+    def progress_set_total(self, total):
+        self.progress = 0
+        self.progress_start = datetime.utcnow()
+        self.progress_total = total
+
+    def progress_show(self):
+        if INFO_EVENT.is_set():
+            INFO_EVENT.clear()
+            table = []
+            if self.jobs:
+                table.append([bold(_("Running jobs")), self.jobs[0].strip()])
+                for job in self.jobs[1:]:
+                    table.append(["", job.strip()])
+            try:
+                progress = (self.progress / float(self.progress_total))
+                elapsed = datetime.utcnow() - self.progress_start
+                remaining = elapsed / progress - elapsed
+            except ZeroDivisionError:
+                pass
+            else:
+                table.extend([
+                    ROW_SEPARATOR,
+                    [bold(_("Progress")), "{:.1f}%".format(progress * 100)],
+                    ROW_SEPARATOR,
+                    [bold(_("Elapsed")), format_duration(elapsed)],
+                    ROW_SEPARATOR,
+                    [
+                        bold(_("Remaining")),
+                        _("{} (estimate based on progress)").format(format_duration(remaining))
+                    ],
+                ])
+            io.stdout(blue("i"))
+            if table:
+                for line in render_table(table):
+                    io.stdout("{x} {line}".format(x=blue("i"), line=line))
+            else:
+                io.stdout(_("{x}  No progress info available at this time.").format(x=blue("i")))
+            io.stdout(blue("i"))
+
     @clear_formatting
     @capture_for_debug_logfile
     @add_debug_timestamp
@@ -266,6 +329,7 @@ class IOManager(object):
 
     def _signal_handler_thread_body(self):
         while self._active:
+            self.progress_show()
             if QUIT_EVENT.is_set():
                 if SHUTDOWN_EVENT_HARD.wait(0.1):
                     self.stderr(_("{x} {signal}  cleanup interrupted, exiting...").format(
@@ -294,8 +358,7 @@ class IOManager(object):
     def _write(self, msg, append_newline=True, err=False):
         if not self._active:
             return
-        if self.jobs and TTY:
-            write_to_stream(STDOUT_WRITER, "\r\033[K")
+        self._clear_last_job()
         if msg is not None:
             if append_newline:
                 msg += "\n"

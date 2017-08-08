@@ -5,7 +5,7 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -105,6 +105,7 @@ def bw_verify(repo, args):
     node_stats = {}
     pending_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
     start_time = datetime.now()
+    io.progress_set_total(count_items(pending_nodes))
 
     def tasks_available():
         return bool(pending_nodes)
