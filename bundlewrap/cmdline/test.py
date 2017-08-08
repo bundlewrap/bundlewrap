@@ -64,6 +64,8 @@ def bw_test(repo, args):
     )
     worker_pool.run()
 
+    io.progress_set_total(0)
+
     checked_groups = []
     for group in repo.groups:
         if group in checked_groups:

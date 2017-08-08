@@ -836,8 +836,10 @@ def test_items(node, ignore_missing_faults=False, workers=1):
             }
 
     def handle_result(task_id, return_value, duration):
-        io.progress_advance()
         node_name, bundle_name, item_id = task_id.split(":", 2)
+        if item_id.count(":") < 2:
+            # don't count canned actions
+            io.progress_advance()
         io.stdout("{x} {node}  {bundle}  {item}".format(
             bundle=bold(bundle_name),
             item=item_id,
@@ -846,6 +848,7 @@ def test_items(node, ignore_missing_faults=False, workers=1):
         ))
 
     def handle_exception(task_id, exception, traceback):
+        io.progress_advance()
         node_name, bundle_name, item_id = task_id.split(":", 2)
         if ignore_missing_faults and isinstance(exception, FaultUnavailable):
             io.stderr(_("{x} {node}  {bundle}  {item}  ({msg})").format(
