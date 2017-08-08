@@ -224,7 +224,6 @@ class IOManager(object):
 
     def deactivate(self):
         self._active = False
-        signal(SIGINFO, SIG_DFL)
         signal(SIGINT, SIG_DFL)
         signal(SIGQUIT, SIG_DFL)
         self._signal_handler_thread.join()
