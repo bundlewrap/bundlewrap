@@ -292,13 +292,13 @@ class IOManager(object):
                         _("{} (estimate based on progress)").format(format_duration(remaining))
                     ],
                 ])
-            io.stdout(blue("i"))
+            io.stderr(blue("i"))
             if table:
                 for line in render_table(table):
-                    io.stdout("{x} {line}".format(x=blue("i"), line=line))
+                    io.stderr("{x} {line}".format(x=blue("i"), line=line))
             else:
-                io.stdout(_("{x}  No progress info available at this time.").format(x=blue("i")))
-            io.stdout(blue("i"))
+                io.stderr(_("{x}  No progress info available at this time.").format(x=blue("i")))
+            io.stderr(blue("i"))
 
     @clear_formatting
     @capture_for_debug_logfile
