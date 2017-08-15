@@ -185,6 +185,10 @@
 </li>
                             
 <li >
+    <a href="../../items/pkg_snap/">pkg_snap</a>
+</li>
+                            
+<li >
     <a href="../../items/pkg_yum/">pkg_yum</a>
 </li>
                             
@@ -283,6 +287,7 @@
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#nodespy">nodes.py</a></li>
         <li class="main "><a href="#dynamic-node-list">Dynamic node list</a></li>
+        <li class="main "><a href="#one-file-per-node">One file per node</a></li>
         <li class="main "><a href="#node-attribute-reference">Node attribute reference</a></li>
             <li><a href="#regular-attributes">Regular attributes</a></li>
             <li><a href="#os-compatibility-overrides">OS compatibility overrides</a></li>
@@ -313,6 +318,22 @@
     return ldap_nodes
 
 nodes = get_my_nodes_from_ldap()
+</code></pre>
+<p><br></p>
+<h1 id="one-file-per-node">One file per node</h1>
+<p>Especially in larger installations, a single nodes.py can become inconvenient to work with. This example reads nodes from a <code>nodes/</code> directory.</p>
+<pre><code>from glob import glob
+
+nodes = {}
+for node in glob("nodes/*.py"):
+    with open(node, 'r') as f:
+        exec(f.read())
+</code></pre>
+<p>Node files would then append <code>nodes</code>, like this:</p>
+<pre><code># nodes/node-1.py
+nodes['node-1'] = {
+    'hostname': "node-1.example.com",
+}
 </code></pre>
 <p><br></p>
 <h1 id="node-attribute-reference">Node attribute reference</h1>
@@ -387,7 +408,7 @@ nodes = get_my_nodes_from_ldap()
 
         <footer class="col-md-12">
             <hr>
-                <p>BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>.</p>
+                <p>BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>.</p><p> Donations welcome in Bitcoin <code>13AJYksqncZromPF8HvDUXsmHChAm3Y7W7</code> or Ethereum <code>0x5Eb3037e197d3C0d2E014bcfC2e027EB0AD42812</code>.</p>
             <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>var base_url = '../..';</script>

@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>pkg_apt - BundleWrap</title>
+        <title>pkg_snap - BundleWrap</title>
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.5.0.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -168,8 +168,8 @@
     <a href="../group/">group</a>
 </li>
                             
-<li class="active">
-    <a href="./">pkg_apt</a>
+<li >
+    <a href="../pkg_apt/">pkg_apt</a>
 </li>
                             
 <li >
@@ -184,8 +184,8 @@
     <a href="../pkg_pip/">pkg_pip</a>
 </li>
                             
-<li >
-    <a href="../pkg_snap/">pkg_snap</a>
+<li class="active">
+    <a href="./">pkg_snap</a>
 </li>
                             
 <li >
@@ -263,12 +263,12 @@
                     </a>
                 </li>
                     <li >
-                        <a rel="next" href="../group/">
+                        <a rel="next" href="../pkg_pip/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../pkg_dnf/">
+                        <a rel="prev" href="../pkg_yum/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -285,25 +285,20 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#apt-package-items">APT package items</a></li>
+        <li class="main active"><a href="#snap-package-items">snap package items</a></li>
             <li><a href="#attribute-reference">Attribute reference</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<h1 id="apt-package-items">APT package items</h1>
-<p>Handles packages installed by <code>apt-get</code> on Debian-based systems.</p>
-<pre><code>pkg_apt = {
+<h1 id="snap-package-items">snap package items</h1>
+<p>Handles packages installed by <code>snap</code> command.</p>
+<pre><code>pkg_snap = {
     "foopkg": {
         "installed": True,  # default
     },
-    "bar_i386": {  # i386 multiarch variant of the "bar" package
+    "bar": {
         "installed": False,
-    },
-    "awesome-daemon": {
-        "when_creating": {
-            "start_service": False,
-        },
     },
 }
 </code></pre>
@@ -312,11 +307,7 @@
 <p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <p><br></p>
 <h3 id="installed">installed</h3>
-<p><code>True</code> when the package is expected to be present on the system; <code>False</code> if it should be purged.</p>
-<h3 id="when95creating">when_creating</h3>
-<p>These attributes are only enforced during the creation of the item on the node (in this case this means when a package is installed). They are ignored in subsequent runs of <code>bw apply</code>.</p>
-<h4 id="start95service">start_service</h4>
-<p>By default, daemons will be auto-started on systems like Debian or Ubuntu. This happens right after the package has been installed. You might want to set <code>start_service</code> to <code>False</code> to avoid this. This might be necessary if BundleWrap must place some more config files on the node before a daemon can actually be started.</p></div>
+<p><code>True</code> when the package is expected to be present on the system; <code>False</code> if it should be removed.</p></div>
         </div>
 
         <footer class="col-md-12">
