@@ -1,3 +1,14 @@
+# 2.20.0
+
+2017-08-15
+
+* added progress info shown on SIGQUIT (CTRL+\\)
+* added pkg_snap items
+* fixed checking for dummy nodes during `bw lock`
+* fixed handling of missing Faults for actions
+* fixed handling of missing Faults for `bw items -w`
+
+
 # 2.19.0
 
 2017-07-05
