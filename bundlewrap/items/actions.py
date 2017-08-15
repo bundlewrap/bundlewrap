@@ -35,6 +35,21 @@ class Action(Item):
         interactive=False,
         interactive_default=True,
     ):
+        if self._faults_missing_for_attributes:
+            if self.error_on_missing_fault:
+                self._raise_for_faults()
+            else:
+                io.debug(_(
+                    "skipping {item} on {node} because it is missing faults "
+                    "for these attributes: {attrs} "
+                    "(most of the time this means you're missing "
+                    "a required key in your .secrets.cfg)"
+                ).format(
+                    attrs=", ".join(sorted(self._faults_missing_for_attributes)),
+                    item=self.id,
+                    node=self.node.name,
+                ))
+                return (self.STATUS_SKIPPED, [_("Fault unavailable")])
 
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(
