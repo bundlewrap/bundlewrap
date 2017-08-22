@@ -15,7 +15,8 @@ from requests import get
 
 from ..exceptions import DontCache, FaultUnavailable
 
-__GETATTR_CACHE = {}
+__GETATTR_CODE_CACHE = {}
+__GETATTR_RESULT_CACHE = {}
 __GETATTR_NODEFAULT = "very_unlikely_default_value"
 
 
@@ -151,39 +152,44 @@ def get_file_contents(path):
     return content
 
 
-def get_all_attrs_from_file(path, cache=True, base_env=None):
+def get_all_attrs_from_file(path, base_env=None):
     """
     Reads all 'attributes' (if it were a module) from a source file.
     """
     if base_env is None:
         base_env = {}
-    if base_env:
+
+    if not base_env and path in __GETATTR_RESULT_CACHE:
         # do not allow caching when passing in a base env because that
         # breaks repeated calls with different base envs for the same
         # file
-        cache = False
-    if path not in __GETATTR_CACHE or not cache:
+        return __GETATTR_RESULT_CACHE[path]
+
+    if path not in __GETATTR_CODE_CACHE:
         source = get_file_contents(path)
-        env = base_env.copy()
-        try:
-            exec(source, env)
-        except:
-            from .ui import io
-            io.stderr("Exception while executing {}".format(path))
-            raise
-        if cache:
-            __GETATTR_CACHE[path] = env
-    else:
-        env = __GETATTR_CACHE[path]
+        __GETATTR_CODE_CACHE[path] = compile(source, path, mode='exec')
+
+    code = __GETATTR_CODE_CACHE[path]
+    env = base_env.copy()
+    try:
+        exec(code, env)
+    except:
+        from .ui import io
+        io.stderr("Exception while executing {}".format(path))
+        raise
+
+    if not base_env:
+        __GETATTR_RESULT_CACHE[path] = env
+
     return env
 
 
-def getattr_from_file(path, attrname, base_env=None, cache=True, default=__GETATTR_NODEFAULT):
+def getattr_from_file(path, attrname, base_env=None, default=__GETATTR_NODEFAULT):
     """
     Reads a specific 'attribute' (if it were a module) from a source
     file.
     """
-    env = get_all_attrs_from_file(path, base_env=base_env, cache=cache)
+    env = get_all_attrs_from_file(path, base_env=base_env)
     if default == __GETATTR_NODEFAULT:
         return env[attrname]
     else:
