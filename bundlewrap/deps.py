@@ -422,7 +422,7 @@ def _inject_reverse_dependencies(items):
                     depending_item = items[depending_item_id]
                 except KeyError:
                     raise ItemDependencyError(_(
-                        "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by)"
+                        "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by) "
                         "on '{dep}', which doesn't exist"
                     ).format(
                         item=item.id,
