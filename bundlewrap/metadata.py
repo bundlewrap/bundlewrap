@@ -154,7 +154,9 @@ def deepcopy_metadata(obj):
     Our own version of deepcopy.copy that doesn't pickle and ensures
     a limited range of types is used in metadata.
     """
-    if isinstance(obj, dict):
+    if isinstance(obj, METADATA_TYPES):
+        return obj
+    elif isinstance(obj, dict):
         new_obj = {}
         for key, value in obj.items():
             if not isinstance(key, METADATA_TYPES):
@@ -169,8 +171,6 @@ def deepcopy_metadata(obj):
         new_obj = set()
         for member in obj:
             new_obj.add(deepcopy_metadata(member))
-    elif isinstance(obj, METADATA_TYPES):
-        return obj
     else:
         raise ValueError(_("illegal metadata value type: {}").format(repr(obj)))
     return new_obj
