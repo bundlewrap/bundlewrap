@@ -35,10 +35,10 @@ class PacmanPkg(Pkg):
             local_file = join(self.item_dir, self.attributes['tarball'])
             remote_file = "/tmp/{}".format(basename(local_file))
             self.node.upload(local_file, remote_file)
-            self.node.run("pacman --noconfirm -U {}".format(quote(remote_file)))
+            self.node.run("pacman --noconfirm -U {}".format(quote(remote_file)), may_fail=True)
             self.node.run("rm -- {}".format(quote(remote_file)))
         else:
-            self.node.run("pacman --noconfirm -S {}".format(quote(self.name)))
+            self.node.run("pacman --noconfirm -S {}".format(quote(self.name)), may_fail=True)
 
     def pkg_installed(self):
         result = self.node.run(
@@ -48,4 +48,4 @@ class PacmanPkg(Pkg):
         return result.return_code == 0
 
     def pkg_remove(self):
-        self.node.run("pacman --noconfirm -Rs {}".format(quote(self.name)))
+        self.node.run("pacman --noconfirm -Rs {}".format(quote(self.name)), may_fail=True)

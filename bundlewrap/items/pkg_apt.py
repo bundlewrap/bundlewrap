@@ -31,7 +31,8 @@ class AptPkg(Pkg):
             runlevel +
             "DEBIAN_FRONTEND=noninteractive "
             "apt-get -qy -o Dpkg::Options::=--force-confold --no-install-recommends "
-            "install {}".format(quote(self.name.replace("_", ":")))
+            "install {}".format(quote(self.name.replace("_", ":"))),
+            may_fail=True,
         )
 
     def pkg_installed(self):

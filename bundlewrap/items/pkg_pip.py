@@ -13,7 +13,7 @@ def pkg_install(node, pkgname, version=None):
     if version:
         pkgname = "{}=={}".format(pkgname, version)
     pip_path, pkgname = split_path(pkgname)
-    return node.run("{} install -U {}".format(quote(pip_path), quote(pkgname)))
+    return node.run("{} install -U {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
 
 
 def pkg_installed(node, pkgname):
@@ -30,7 +30,7 @@ def pkg_installed(node, pkgname):
 
 def pkg_remove(node, pkgname):
     pip_path, pkgname = split_path(pkgname)
-    return node.run("{} uninstall -y {}".format(quote(pip_path), quote(pkgname)))
+    return node.run("{} uninstall -y {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
 
 
 class PipPkg(Item):

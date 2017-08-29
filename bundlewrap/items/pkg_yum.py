@@ -20,7 +20,7 @@ class YumPkg(Pkg):
             yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split()[0].split(".")[0])
 
     def pkg_install(self):
-        self.node.run("yum -d0 -e0 -y install {}".format(quote(self.name)))
+        self.node.run("yum -d0 -e0 -y install {}".format(quote(self.name)), may_fail=True)
 
     def pkg_installed(self):
         result = self.node.run(
@@ -30,4 +30,4 @@ class YumPkg(Pkg):
         return result.return_code == 0
 
     def pkg_remove(self):
-        self.node.run("yum -d0 -e0 -y remove {}".format(quote(self.name)))
+        self.node.run("yum -d0 -e0 -y remove {}".format(quote(self.name)), may_fail=True)

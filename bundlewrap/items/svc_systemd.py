@@ -9,7 +9,7 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def svc_start(node, svcname):
-    return node.run("systemctl start -- {}".format(quote(svcname)))
+    return node.run("systemctl start -- {}".format(quote(svcname)), may_fail=True)
 
 
 def svc_running(node, svcname):
@@ -21,11 +21,11 @@ def svc_running(node, svcname):
 
 
 def svc_stop(node, svcname):
-    return node.run("systemctl stop -- {}".format(quote(svcname)))
+    return node.run("systemctl stop -- {}".format(quote(svcname)), may_fail=True)
 
 
 def svc_enable(node, svcname):
-    return node.run("systemctl enable -- {}".format(quote(svcname)))
+    return node.run("systemctl enable -- {}".format(quote(svcname)), may_fail=True)
 
 
 def svc_enabled(node, svcname):
@@ -37,7 +37,7 @@ def svc_enabled(node, svcname):
 
 
 def svc_disable(node, svcname):
-    return node.run("systemctl disable -- {}".format(quote(svcname)))
+    return node.run("systemctl disable -- {}".format(quote(svcname)), may_fail=True)
 
 
 class SvcSystemd(Item):

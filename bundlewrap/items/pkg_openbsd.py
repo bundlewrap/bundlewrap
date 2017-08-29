@@ -14,7 +14,7 @@ PKGSPEC_REGEX = re.compile(r"^(.+)-(\d.+)$")
 
 def pkg_install(node, pkgname, version):
     full_name = "{}-{}".format(pkgname, version) if version else pkgname
-    return node.run("pkg_add -r -I {}".format(full_name))
+    return node.run("pkg_add -r -I {}".format(full_name), may_fail=True)
 
 
 def pkg_installed(node, pkgname):
@@ -30,7 +30,7 @@ def pkg_installed(node, pkgname):
 
 
 def pkg_remove(node, pkgname):
-    return node.run("pkg_delete -I -D dependencies {}".format(quote(pkgname)))
+    return node.run("pkg_delete -I -D dependencies {}".format(quote(pkgname)), may_fail=True)
 
 
 class OpenBSDPkg(Item):

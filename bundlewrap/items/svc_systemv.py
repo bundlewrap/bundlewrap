@@ -9,7 +9,7 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def svc_start(node, svcname):
-    return node.run("/etc/init.d/{} start".format(quote(svcname)))
+    return node.run("/etc/init.d/{} start".format(quote(svcname)), may_fail=True)
 
 
 def svc_running(node, svcname):
@@ -21,7 +21,7 @@ def svc_running(node, svcname):
 
 
 def svc_stop(node, svcname):
-    return node.run("/etc/init.d/{} stop".format(quote(svcname)))
+    return node.run("/etc/init.d/{} stop".format(quote(svcname)), may_fail=True)
 
 
 class SvcSystemV(Item):

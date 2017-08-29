@@ -14,7 +14,7 @@ ZYPPER_OPTS = "--non-interactive " + \
 
 
 def pkg_install(node, pkgname):
-    return node.run("zypper {} install {}".format(ZYPPER_OPTS, quote(pkgname)))
+    return node.run("zypper {} install {}".format(ZYPPER_OPTS, quote(pkgname)), may_fail=True)
 
 
 def pkg_installed(node, pkgname):
@@ -30,7 +30,7 @@ def pkg_installed(node, pkgname):
 
 
 def pkg_remove(node, pkgname):
-    return node.run("zypper {} remove {}".format(ZYPPER_OPTS, quote(pkgname)))
+    return node.run("zypper {} remove {}".format(ZYPPER_OPTS, quote(pkgname)), may_fail=True)
 
 
 class ZypperPkg(Item):

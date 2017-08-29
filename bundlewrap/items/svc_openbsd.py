@@ -9,7 +9,7 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def svc_start(node, svcname):
-    return node.run("/etc/rc.d/{} start".format(quote(svcname)))
+    return node.run("/etc/rc.d/{} start".format(quote(svcname)), may_fail=True)
 
 
 def svc_running(node, svcname):
@@ -18,11 +18,11 @@ def svc_running(node, svcname):
 
 
 def svc_stop(node, svcname):
-    return node.run("/etc/rc.d/{} stop".format(quote(svcname)))
+    return node.run("/etc/rc.d/{} stop".format(quote(svcname)), may_fail=True)
 
 
 def svc_enable(node, svcname):
-    return node.run("rcctl set {} status on".format(quote(svcname)))
+    return node.run("rcctl set {} status on".format(quote(svcname)), may_fail=True)
 
 
 def svc_enabled(node, svcname):
@@ -34,7 +34,7 @@ def svc_enabled(node, svcname):
 
 
 def svc_disable(node, svcname):
-    return node.run("rcctl set {} status off".format(quote(svcname)))
+    return node.run("rcctl set {} status off".format(quote(svcname)), may_fail=True)
 
 
 class SvcOpenBSD(Item):
