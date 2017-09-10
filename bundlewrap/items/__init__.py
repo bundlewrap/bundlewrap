@@ -315,6 +315,13 @@ class Item(object):
 
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
+        if not isinstance(attributes, dict):
+            raise BundleError(_(
+                "invalid item '{item}' in bundle '{bundle}': not a dict"
+            ).format(
+                item=item_id,
+                bundle=bundle.name,
+            ))
         invalid_attributes = set(attributes.keys()).difference(
             set(cls.ITEM_ATTRIBUTES.keys()).union(
                 set(BUILTIN_ITEM_ATTRIBUTES.keys())
