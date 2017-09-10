@@ -94,7 +94,7 @@ def test_metadatapy(tmpdir):
 """@metadata_processor
 def foo(metadata):
     metadata["baz"] = node.name
-    return metadata
+    return metadata, DONE
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {

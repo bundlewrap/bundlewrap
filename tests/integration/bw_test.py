@@ -406,7 +406,7 @@ def test_metadata_determinism_ok(tmpdir):
         f.write("""@metadata_processor
 def test(metadata):
     metadata['test'] = 1
-    return metadata
+    return metadata, DONE
 """)
     assert run("bw test -m 3", path=str(tmpdir))[2] == 0
 
@@ -429,7 +429,7 @@ def test_metadata_determinism_broken(tmpdir):
 @metadata_processor
 def test(metadata):
     metadata.setdefault('test', randint(1, 99999))
-    return metadata
+    return metadata, DONE
 """)
     assert run("bw test -m 3", path=str(tmpdir))[2] == 1
 

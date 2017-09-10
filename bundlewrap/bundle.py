@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from os.path import exists, join
 
 from .exceptions import NoSuchBundle, RepositoryError
+from .metadata import DONE, RUN_ME_AGAIN
 from .utils import cached_property, get_all_attrs_from_file
 from .utils.text import mark_for_translation as _
 from .utils.text import validate_name
@@ -100,6 +101,8 @@ class Bundle(object):
             for name, attr in get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
+                    'DONE': DONE,
+                    'RUN_ME_AGAIN': RUN_ME_AGAIN,
                     'metadata_processor': metadata_processor,
                     'node': self.node,
                     'repo': self.repo,
