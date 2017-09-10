@@ -20,7 +20,7 @@ from .exceptions import (
     RepositoryError,
 )
 from .group import Group
-from .metadata import deepcopy_metadata
+from .metadata import check_metadata_processor_result, deepcopy_metadata, DONE
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, merge_dict, names
@@ -492,14 +492,22 @@ class Repository(object):
                         )
 
                 with io.job(_("  {node}  merging node metadata...").format(node=node.name)):
-                    self._node_metadata_partial[node.name] = merge_dict(
+                    # deepcopy_metadata is important here because up to this point
+                    # different nodes from the same group might still share objects
+                    # nested deeply in their metadata. This becomes a problem if we
+                    # start messing with these objects in metadata processors. Every
+                    # time we would edit one of these objects, the changes would be
+                    # shared amongst multiple nodes.
+                    self._node_metadata_partial[node.name] = deepcopy_metadata(merge_dict(
                         self._node_metadata_partial[node.name],
                         node._node_metadata,
-                    )
+                    ))
 
             # Now for the interesting part: We run all metadata processors
-            # in sequence until none of them return changed metadata.
-            modified = False
+            # until none of them return DONE anymore (indicating that they're
+            # just waiting for another metaproc to maybe insert new data,
+            # which isn't happening if none return DONE)
+            metaproc_returned_DONE = False
             for node_name in list(self._node_metadata_partial):
                 if QUIT_EVENT.is_set():
                     break
@@ -518,9 +526,7 @@ class Repository(object):
                             i=iterations[(node.name, metadata_processor_name)],
                         ))
                         try:
-                            processed = metadata_processor(
-                                deepcopy_metadata(self._node_metadata_partial[node.name]),
-                            )
+                            processed = metadata_processor(self._node_metadata_partial[node.name])
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata processor "
@@ -532,36 +538,32 @@ class Repository(object):
                             ))
                             raise exc
                         iterations[(node.name, metadata_processor_name)] += 1
-                        if isinstance(processed, tuple) and len(processed) == 2:
-                            if processed[1] is True:
-                                io.debug(_(
-                                    "metadata processor {metaproc} for node {node} "
-                                    "has indicated that it need not be run again"
-                                ).format(
-                                    metaproc=metadata_processor_name,
-                                    node=node.name,
-                                ))
-                                blacklisted_metaprocs.add((node_name, metadata_processor_name))
-                            processed = processed[0]
-                        if not isinstance(processed, dict):
-                            raise ValueError(_(
-                                "metadata processor {metaproc} for node {node} did not return "
-                                "a dictionary or tuple of (dict, bool)"
-                            ).format(
-                                metaproc=metadata_processor_name,
-                                node=node.name,
-                            ))
-                        if processed != self._node_metadata_partial[node.name]:
+                        processed_dict, options = check_metadata_processor_result(
+                            processed,
+                            node.name,
+                            metadata_processor_name,
+                        )
+                        if DONE in options:
                             io.debug(_(
-                                "metadata processor {metaproc} for node {node} changed metadata, "
-                                "rerunning all metadata processors for this node"
+                                "metadata processor {metaproc} for node {node} "
+                                "has indicated that it need NOT be run again"
                             ).format(
                                 metaproc=metadata_processor_name,
                                 node=node.name,
                             ))
-                            self._node_metadata_partial[node.name] = processed
-                            modified = True
-            if not modified:
+                            blacklisted_metaprocs.add((node_name, metadata_processor_name))
+                            metaproc_returned_DONE = True
+                        else:
+                            io.debug(_(
+                                "metadata processor {metaproc} for node {node} "
+                                "has indicated that it must be run again"
+                            ).format(
+                                metaproc=metadata_processor_name,
+                                node=node.name,
+                            ))
+
+                        self._node_metadata_partial[node.name] = processed_dict
+            if not metaproc_returned_DONE:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
                     # During metadata processor execution, partial metadata may
                     # have been requested for nodes we did not previously
@@ -580,13 +582,11 @@ class Repository(object):
                 raise BundleError(_(
                     "Metadata processor '{proc}' stopped after too many iterations "
                     "({max_iter}) for node '{node}' to prevent infinite loop. "
-                    "This usually means one of two things: "
-                    "1) You have two metadata processors that keep overwriting each other's "
-                    "data or 2) You have a single metadata processor that keeps changing its own "
-                    "data. "
+                    "This means one of your metadata processors never returns DONE "
+                    "(e.g. `return metadata, DONE`). "
                     "To fix this, use `bw --debug metadata {node}` and look for repeated messages "
-                    "indicating that the same metadata processor keeps changing metadata. Then "
-                    "rewrite that metadata processor to eventually stop changing metadata.".format(
+                    "indicating that the same metadata processor must be run again and again. "
+                    "Then rewrite that metadata processor to eventually return DONE.".format(
                         max_iter=META_PROC_MAX_ITER,
                         node=node,
                         proc=metadata_processor,
