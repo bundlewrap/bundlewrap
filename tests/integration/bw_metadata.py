@@ -91,7 +91,8 @@ def test_metadatapy(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""def foo(metadata):
+"""@metadata_processor
+def foo(metadata):
     metadata["baz"] = node.name
     return metadata
 """)
@@ -117,7 +118,8 @@ def test_metadatapy_loop(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""def foo(metadata):
+"""@metadata_processor
+def foo(metadata):
     metadata["foo"] += 1
     return metadata
 """)

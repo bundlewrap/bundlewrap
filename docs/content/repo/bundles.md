@@ -274,12 +274,11 @@ Canned actions always have to be triggered in order to run. In the example above
 
 # metadata.py
 
-Alongside `items.py` you may create another file called `metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before `items.py` is evaluated. To do that, you simply write any number of functions whose name doesn't start with an underscore and put them into `metadata.py`.
+Alongside `items.py` you may create another file called `metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before `items.py` is evaluated.
 
-<div class="alert alert-warning">Understand that <strong>any</strong> function will be used as a metadata processor, unless its name starts with an underscore. This is also true for imported functions, so you'll need to import them like this: <code>from module import func as _func</code>.</div>
+These functions take the metadata dictionary generated so far as their single argument. You must then return the same dictionary with any modifications you need to make. These functions are called metadata processors. Every metadata processor from every bundle is called *repeatedly* with the latest metadata dictionary until no more changes are made to the metadata. Here's an example for how a `metadata.py` could look like (note that you have access to `repo` and `node` just like in `items.py` and you can use the `metadata_processor` decorator without importing it):
 
-These functions take the metadata dictionary generated so far as their single argument. You must then return the same dictionary with any modifications you need to make. These functions are called metadata processors. Every metadata processor from every bundle is called *repeatedly* with the latest metadata dictionary until no more changes are made to the metadata. Here's an example for how a `metadata.py` could look like (note that you have access to `repo` and `node` just like in `items.py`):
-
+	@metadata_processor
 	def my_metadata_processor(metadata):
 	    metadata["foo"] = node.name
 	    return metadata
@@ -288,17 +287,20 @@ These functions take the metadata dictionary generated so far as their single ar
 
 To improve performance, you can optionally return a tuple instead, with the first element being your metadata dict and the second one being a boolean indicating whether this metadata processor has done its work for this particular node and need not be run again:
 
+	@metadata_processor
 	def my_metadata_processor(metadata):
 	    metadata["foo"] = node.name
 	    return metadata, True
 
 The example above is a typical case of a metadata processor that only needs to be run once: it always does the same thing anyway. If you depend on other metadata processors, you have to return `False` (or just the dict):
 
+	@metadata_processor
 	def first_metadata_processor(metadata):
 	    metadata["foo"] = node.name
 	    return metadata, True
 
 
+	@metadata_processor
 	def second_metadata_processor(metadata):
 	    if "foo" in metadata:
 	        metadata["bar"] = metadata["foo"]

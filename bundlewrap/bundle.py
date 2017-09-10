@@ -14,6 +14,14 @@ FILENAME_BUNDLE = "items.py"
 FILENAME_METADATA = "metadata.py"
 
 
+def metadata_processor(func):
+    """
+    Decorator that tags metadata processors.
+    """
+    func.__is_a_metadata_processor = True
+    return func
+
+
 class Bundle(object):
     """
     A collection of config items, bound to a node.
@@ -92,11 +100,11 @@ class Bundle(object):
             for name, attr in get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
+                    'metadata_processor': metadata_processor,
                     'node': self.node,
                     'repo': self.repo,
                 },
             ).items():
-                if name.startswith("_") or not callable(attr):
-                    continue
-                result.append(attr)
+                if getattr(attr, '__is_a_metadata_processor', False):
+                    result.append(attr)
             return result
