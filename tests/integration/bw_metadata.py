@@ -105,28 +105,6 @@ def foo(metadata):
     assert rcode == 0
 
 
-def test_metadatapy_loop(tmpdir):
-    make_repo(
-        tmpdir,
-        bundles={"test": {}},
-        nodes={
-            "node1": {
-                'bundles': ["test"],
-                'metadata': {"foo": 1},
-            },
-        },
-    )
-    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
-        f.write(
-"""@metadata_processor
-def foo(metadata):
-    metadata["foo"] += 1
-    return metadata
-""")
-    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert rcode == 1
-
-
 def test_table(tmpdir):
     make_repo(
         tmpdir,
