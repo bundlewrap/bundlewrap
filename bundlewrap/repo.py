@@ -90,7 +90,6 @@ nodes = {
     FILENAME_REQUIREMENTS: "bundlewrap>={}\n".format(VERSION_STRING),
     FILENAME_SECRETS: generate_initial_secrets_cfg,
 }
-META_PROC_MAX_ITER = 1000  # maximum iterations for metadata processors
 
 
 def groups_from_file(filepath, libs, repo_path, vault):
@@ -466,12 +465,9 @@ class Repository(object):
         Builds complete metadata for all nodes that appear in
         self._node_metadata_partial.keys().
         """
-        iterations = {}
         # these processors have indicated that they do not need to be run again
         blacklisted_metaprocs = set()
-        while (
-            not iterations or max(iterations.values()) <= META_PROC_MAX_ITER
-        ) and not QUIT_EVENT.is_set():
+        while not QUIT_EVENT.is_set():
             # First, get the static metadata out of the way
             for node_name in list(self._node_metadata_partial):
                 if QUIT_EVENT.is_set():
@@ -516,14 +512,11 @@ class Repository(object):
                     for metadata_processor_name, metadata_processor in node.metadata_processors:
                         if (node_name, metadata_processor_name) in blacklisted_metaprocs:
                             continue
-                        iterations.setdefault((node.name, metadata_processor_name), 1)
                         io.debug(_(
-                            "running metadata processor {metaproc} for node {node}, "
-                            "iteration #{i}"
+                            "running metadata processor {metaproc} for node {node}"
                         ).format(
                             metaproc=metadata_processor_name,
                             node=node.name,
-                            i=iterations[(node.name, metadata_processor_name)],
                         ))
                         try:
                             processed = metadata_processor(self._node_metadata_partial[node.name])
@@ -537,7 +530,6 @@ class Repository(object):
                                 node=node.name,
                             ))
                             raise exc
-                        iterations[(node.name, metadata_processor_name)] += 1
                         processed_dict, options = check_metadata_processor_result(
                             processed,
                             node.name,
@@ -575,23 +567,6 @@ class Repository(object):
                     continue
                 else:
                     break
-
-        for culprit, number_of_iterations in iterations.items():
-            if number_of_iterations >= META_PROC_MAX_ITER:
-                node, metadata_processor = culprit
-                raise BundleError(_(
-                    "Metadata processor '{proc}' stopped after too many iterations "
-                    "({max_iter}) for node '{node}' to prevent infinite loop. "
-                    "This means one of your metadata processors never returns DONE "
-                    "(e.g. `return metadata, DONE`). "
-                    "To fix this, use `bw --debug metadata {node}` and look for repeated messages "
-                    "indicating that the same metadata processor must be run again and again. "
-                    "Then rewrite that metadata processor to eventually return DONE.".format(
-                        max_iter=META_PROC_MAX_ITER,
-                        node=node,
-                        proc=metadata_processor,
-                    ),
-                ))
 
     def metadata_hash(self):
         repo_dict = {}
