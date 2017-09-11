@@ -12,7 +12,6 @@ from pkg_resources import DistributionNotFound, require, VersionConflict
 from . import items, utils, VERSION_STRING
 from .bundle import FILENAME_BUNDLE
 from .exceptions import (
-    BundleError,
     NoSuchGroup,
     NoSuchNode,
     NoSuchRepository,
@@ -20,7 +19,7 @@ from .exceptions import (
     RepositoryError,
 )
 from .group import Group
-from .metadata import check_metadata_processor_result, deepcopy_metadata, DONE
+from .metadata import check_metadata_processor_result, deepcopy_metadata, DEFAULTS, DONE, UPDATE
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, merge_dict, names
@@ -554,7 +553,19 @@ class Repository(object):
                                 node=node.name,
                             ))
 
-                        self._node_metadata_partial[node.name] = processed_dict
+                        if DEFAULTS in options:
+                            self._node_metadata_partial[node.name] = merge_dict(
+                                processed_dict,
+                                self._node_metadata_partial[node.name],
+                            )
+                        elif UPDATE in options:
+                            self._node_metadata_partial[node.name] = merge_dict(
+                                self._node_metadata_partial[node.name],
+                                processed_dict,
+                            )
+                        else:
+                            self._node_metadata_partial[node.name] = processed_dict
+
             if not metaproc_returned_DONE:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
                     # During metadata processor execution, partial metadata may

@@ -276,7 +276,7 @@ Canned actions always have to be triggered in order to run. In the example above
 
 Alongside `items.py` you may create another file called `metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before `items.py` is evaluated.
 
-These functions take the metadata dictionary generated so far as their single argument. You must then return a dictionary with any modifications you need to make plus at least one of several options. These functions are called metadata processors and they look like this:
+This is accomplished through metadata processors. Metadata processors are functions that take the metadata dictionary generated so far as their single argument. You must then return a dictionary with any modifications you need to make plus at least one of several options:
 
 	@metadata_processor
 	def my_metadata_processor(metadata):
@@ -308,6 +308,20 @@ Available options:
 <tr><th>Option</th><th>Description</th></tr>
 <tr><td><code>DONE</code></td><td>Indicates that this metadata processor has done all it can and need not be called again. Return this whenever possible.</td></tr>
 <tr><td><code>RUN_ME_AGAIN</code></td><td>Indicates that this metadata processor is still waiting for metadata from another metadata processor to become available.</td></tr>
+<tr><td><code>DEFAULTS</code></td><td>The returned metadata dictionary will only be used to provide default values. The actual metadata generated so far will be recursively merged into the returned dict.</td></tr>
+<tr><td><code>UPDATE</code></td><td>The returned metadata dictionary will be recursively merged into the actual metadata generated so far (inverse of <code>DEFAULTS</code>).</td></tr>
 </table>
+
+Here is an example of how to use `DEFAULTS`:
+
+	@metadata_processor
+	def my_metadata_processor(metadata):
+	    return {
+	        "foo": {
+	            "bar": 47,
+	        },
+	    }, DONE, DEFAULTS
+
+This means `node.metadata["foo"]["bar"]` will be 47 by default, but can also be overridden in static metadata at the node/group level.
 
 For your convenience, you can access `repo`, `node`, `metadata_processor` and all the options in `metadata.py` without importing them.

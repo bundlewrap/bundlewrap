@@ -105,6 +105,64 @@ def foo(metadata):
     assert rcode == 0
 
 
+def test_metadatapy_defaults(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return {
+        "foo": "baz",
+        "baz": "foo",
+    }, DONE, DEFAULTS
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "baz": "foo",
+        "foo": "bar",
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_metadatapy_update(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return {
+        "foo": "baz",
+        "baz": "foo",
+    }, DONE, UPDATE
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "baz": "foo",
+        "foo": "baz",
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_table(tmpdir):
     make_repo(
         tmpdir,
