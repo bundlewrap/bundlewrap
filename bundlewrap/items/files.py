@@ -351,14 +351,6 @@ class File(Item):
             }
 
     def display_dicts(self, cdict, sdict, keys):
-        if 'content' in keys:
-            del cdict['content_hash']
-            del sdict['content_hash']
-            cdict['content'] = self.content
-            sdict['content'] = get_remote_file_contents(self.node, self.name)
-        return (cdict, sdict)
-
-    def display_keys(self, cdict, sdict, keys):
         if (
             'content_hash' in keys and
             self.attributes['content_type'] not in ('base64', 'binary') and
@@ -367,7 +359,11 @@ class File(Item):
         ):
             keys.remove('content_hash')
             keys.append('content')
-        return keys
+            del cdict['content_hash']
+            del sdict['content_hash']
+            cdict['content'] = self.content
+            sdict['content'] = get_remote_file_contents(self.node, self.name)
+        return (cdict, sdict, keys)
 
     def patch_attributes(self, attributes):
         if (

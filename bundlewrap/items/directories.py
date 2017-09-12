@@ -69,21 +69,17 @@ class Directory(Item):
         return cdict
 
     def display_dicts(self, cdict, sdict, keys):
-        if UNMANAGED_PATH_DESC in keys:
-            cdict[UNMANAGED_PATH_DESC] = cdict['paths_to_purge']
-            sdict[UNMANAGED_PATH_DESC] = sdict['paths_to_purge']
-            del cdict['paths_to_purge']
-            del sdict['paths_to_purge']
-        return (cdict, sdict)
-
-    def display_keys(self, cdict, sdict, keys):
         try:
             keys.remove('paths_to_purge')
         except ValueError:
             pass
         else:
             keys.append(UNMANAGED_PATH_DESC)
-        return keys
+            cdict[UNMANAGED_PATH_DESC] = cdict['paths_to_purge']
+            sdict[UNMANAGED_PATH_DESC] = sdict['paths_to_purge']
+            del cdict['paths_to_purge']
+            del sdict['paths_to_purge']
+        return (cdict, sdict, keys)
 
     def fix(self, status):
         if status.must_be_created or 'type' in status.keys_to_fix:
@@ -184,8 +180,6 @@ class Directory(Item):
                     path=line,
                 ))
                 yield line
-
-
 
     def get_auto_deps(self, items):
         deps = []

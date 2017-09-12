@@ -64,22 +64,13 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 
         def display_dicts(self, cdict, sdict, keys):
             """
-            Given cdict and sdict as implemented above, modify them to better
-            suit interactive presentation. The keys parameter is the return
-            value of display_keys (see below) and provided for reference only.
+            Given cdict and sdict as implemented above, modify them to
+            better suit interactive presentation. The keys parameter is a
+            list of keys whose values differ between cdict and sdict.
 
             Implementing this method is optional.
             """
-            return (cdict, sdict)
-
-        def display_keys(self, cdict, sdict, keys):
-            """
-            Given a list of keys whose values differ between cdict and sdict,
-            modify them to better suit presentation to the user.
-
-            Implementing this method is optional.
-            """
-            return keys
+            return (cdict, sdict, keys)
 
         def fix(self, status):
             """
