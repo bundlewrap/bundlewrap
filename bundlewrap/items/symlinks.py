@@ -62,9 +62,9 @@ class Symlink(Item):
         if group:
             group = ":" + quote(group)
         if self.node.os in self.node.OS_FAMILY_BSD:
-            command = "chown {}{} {}"
+            command = "chown -h {}{} {}"
         else:
-            command = "chown {}{} -- {}"
+            command = "chown -h {}{} -- {}"
         self.node.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
