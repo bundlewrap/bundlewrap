@@ -67,7 +67,7 @@ def test_deterministic(tmpdir):
         hashes.add(stdout.strip())
 
     assert len(hashes) == 1
-    assert hashes.pop() == b"e383f171de850338ea08ed0ee9cc1d4afe9ad9e7"
+    assert hashes.pop() == b"2203e7acc35608bbff471c023b7b7498e5b385d9"
 
 
 def test_dict(tmpdir):
@@ -93,18 +93,17 @@ def test_dict(tmpdir):
 
     stdout, stderr, rcode = run("bw hash -d", path=str(tmpdir))
     assert rcode == 0
-    assert stdout == b"923b810a809d28b1321372cf53580e0e95f949c9  node1\n"
+    assert stdout == b"93e7a2c6e8cdc71fb4df5426bc0d0bb978d84381  node1\n"
 
     stdout, stderr, rcode = run("bw hash -d node1", path=str(tmpdir))
     assert rcode == 0
-    assert stdout == b"ef572a7fb123be8ac6778eea0dedca7c81c9ba87  file:/test\n"
+    assert stdout == b"59d1a7c79640ccdfd3700ab141698a9389fcd0b7  file:/test\n"
 
     stdout, stderr, rcode = run("bw hash -d node1 file:/test", path=str(tmpdir))
     assert rcode == 0
     assert stdout == (
         b"content_hash\tc05a36d547e2b1682472f76985018038d1feebc5\n"
-        b"group\troot\n"
-        b"mode\t644\n"
+        b"mode\t0644\n"
         b"owner\troot\n"
         b"type\tfile\n"
     )
