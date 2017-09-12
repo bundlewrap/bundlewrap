@@ -46,9 +46,9 @@ class Directory(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "directories"
     ITEM_ATTRIBUTES = {
-        'group': 'root',
-        'mode': '0755',
-        'owner': 'root',
+        'group': "root",
+        'mode': "0755",
+        'owner': "root",
         'purge': False,
     }
     ITEM_TYPE_NAME = "directory"

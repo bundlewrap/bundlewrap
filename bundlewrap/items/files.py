@@ -179,9 +179,9 @@ class File(Item):
         'context': None,
         'delete': False,
         'encoding': "utf-8",
-        'group': 'root',
-        'mode': '0644',
-        'owner': 'root',
+        'group': "root",
+        'mode': "0644",
+        'owner': "root",
         'source': None,
         'verify_with': None,
     }

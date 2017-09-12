@@ -21,8 +21,8 @@ class Symlink(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "symlinks"
     ITEM_ATTRIBUTES = {
-        'group': 'root',
-        'owner': 'root',
+        'group': "root",
+        'owner': "root",
         'target': None,
     }
     ITEM_TYPE_NAME = "symlink"
