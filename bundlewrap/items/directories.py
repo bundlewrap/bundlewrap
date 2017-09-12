@@ -33,6 +33,7 @@ def validator_mode(item_id, value):
             "mode for {item} should be three or four digits long, was: '{value}'"
         ).format(item=item_id, value=value))
 
+
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
 ATTRIBUTE_VALIDATORS.update({
     'mode': validator_mode,
@@ -45,9 +46,9 @@ class Directory(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "directories"
     ITEM_ATTRIBUTES = {
-        'group': None,
-        'mode': None,
-        'owner': None,
+        'group': 'root',
+        'mode': '0755',
+        'owner': 'root',
         'purge': False,
     }
     ITEM_TYPE_NAME = "directory"
@@ -257,6 +258,10 @@ class Directory(Item):
     def patch_attributes(self, attributes):
         if 'mode' in attributes and attributes['mode'] is not None:
             attributes['mode'] = str(attributes['mode']).zfill(4)
+        if 'group' not in attributes and self.node.os in self.node.OS_FAMILY_BSD:
+            # BSD doesn't have a root group, so we have to use a
+            # different default value here
+            attributes['group'] = 'wheel'
         return attributes
 
     @classmethod

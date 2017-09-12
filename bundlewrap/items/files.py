@@ -179,9 +179,9 @@ class File(Item):
         'context': None,
         'delete': False,
         'encoding': "utf-8",
-        'group': None,
-        'mode': None,
-        'owner': None,
+        'group': 'root',
+        'mode': '0644',
+        'owner': 'root',
         'source': None,
         'verify_with': None,
     }
@@ -381,6 +381,10 @@ class File(Item):
             attributes['context'] = {}
         if 'mode' in attributes and attributes['mode'] is not None:
             attributes['mode'] = str(attributes['mode']).zfill(4)
+        if 'group' not in attributes and self.node.os in self.node.OS_FAMILY_BSD:
+            # BSD doesn't have a root group, so we have to use a
+            # different default value here
+            attributes['group'] = 'wheel'
         return attributes
 
     def test(self):
