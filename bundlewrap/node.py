@@ -522,12 +522,6 @@ class Node(object):
     def magic_number(self):
         return int(md5(self.name.encode('UTF-8')).hexdigest(), 16)
 
-    @property
-    def _static_items(self):
-        for bundle in self.bundles:
-            for item in bundle._static_items:
-                yield item
-
     def apply(
         self,
         autoskip_selector="",
