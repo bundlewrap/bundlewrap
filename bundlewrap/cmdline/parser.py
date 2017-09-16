@@ -54,7 +54,7 @@ def build_parser_bw():
         action='store_true',
         default=False,
         dest='debug',
-        help=_("print debugging info (implies -v)"),
+        help=_("print debugging info"),
     )
     parser.add_argument(
         "-r",
