@@ -152,7 +152,7 @@ def foo(metadata):
     return {
         "foo": "baz",
         "baz": "foo",
-    }, DONE, UPDATE
+    }, DONE, OVERWRITE
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
