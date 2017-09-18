@@ -5,12 +5,14 @@ from sys import exit
 from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode
 from . import names
 from .text import mark_for_translation as _, red
-from .ui import io
+from .ui import io, QUIT_EVENT
 
 
 def count_items(nodes):
     count = 0
     for node in nodes:
+        if QUIT_EVENT.is_set():
+            return 0
         count += len(node.items)
     return count
 

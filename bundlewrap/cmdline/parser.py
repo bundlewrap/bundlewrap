@@ -767,7 +767,13 @@ def build_parser_bw():
 
     # bw test
     help_test = _("Test your repository for consistency "
-                  "(you can use this with a CI tool like Jenkins)")
+                  "(you can use this with a CI tool like Jenkins). "
+                  "If *any* options other than -i are given, *only* the "
+                  "tests selected by those options will be run. Otherwise, a "
+                  "default selection of tests will be run (that selection may "
+                  "change in future releases). Currently, the default is -IJM "
+                  "if specific nodes are given and -HIJMS if testing the "
+                  "entire repo.")
     parser_test = subparsers.add_parser("test", description=help_test, help=help_test)
     parser_test.set_defaults(func=bw_test)
     parser_test.add_argument(
@@ -776,13 +782,13 @@ def build_parser_bw():
         metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
         nargs='?',
         type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
+        help=_("target nodes, groups and/or bundle selectors (defaults to all)"),
     )
     parser_test.add_argument(
         "-c",
-        "--plugin-conflict-error",
+        "--plugin-conflicts",
         action='store_true',
-        dest='plugin_conflict_error',
+        dest='plugin_conflicts',
         help=_("check for local modifications to files installed by plugins"),
     )
     parser_test.add_argument(
@@ -796,11 +802,39 @@ def build_parser_bw():
         type=int,
     )
     parser_test.add_argument(
+        "-E",
+        "--empty-groups",
+        action='store_true',
+        dest='orphaned_groups',
+        help=_("check for empty groups"),
+    )
+    parser_test.add_argument(
+        "-H",
+        "--hooks-repo",
+        action='store_true',
+        dest='hooks_repo',
+        help=_("run repo-level test hooks"),
+    )
+    parser_test.add_argument(
         "-i",
         "--ignore-missing-faults",
         action='store_true',
         dest='ignore_missing_faults',
         help=_("do not fail when encountering a missing Fault"),
+    )
+    parser_test.add_argument(
+        "-I",
+        "--items",
+        action='store_true',
+        dest='items',
+        help=_("run item-level tests (like rendering templates)"),
+    )
+    parser_test.add_argument(
+        "-J",
+        "--hooks-node",
+        action='store_true',
+        dest='hooks_node',
+        help=_("run node-level test hooks"),
     )
     parser_test.add_argument(
         "-m",
@@ -812,25 +846,26 @@ def build_parser_bw():
         metavar="N",
         type=int,
     )
-    bw_test_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_test.add_argument(
-        "-p",
-        "--parallel-nodes",
-        default=bw_test_p_default,
-        dest='node_workers',
-        help=_("number of nodes to test simultaneously "
-               "(defaults to {})").format(bw_test_p_default),
-        type=int,
+        "-M",
+        "--metadata-collisions",
+        action='store_true',
+        dest='metadata_collisions',
+        help=_("check for conflicting metadata keys in group metadata"),
     )
-    bw_test_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_test.add_argument(
-        "-P",
-        "--parallel-items",
-        default=bw_test_p_items_default,
-        dest='item_workers',
-        help=_("number of items to test simultaneously for each node "
-               "(defaults to {})").format(bw_test_p_items_default),
-        type=int,
+        "-o",
+        "--orphaned-bundles",
+        action='store_true',
+        dest='orphaned_bundles',
+        help=_("check for bundles not assigned to any node"),
+    )
+    parser_test.add_argument(
+        "-S",
+        "--subgroup-loops",
+        action='store_true',
+        dest='subgroup_loops',
+        help=_("check for loops in subgroup hierarchies"),
     )
 
     # bw verify
