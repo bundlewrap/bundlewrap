@@ -496,6 +496,21 @@ def test_unknown_subgroup(tmpdir):
     assert run("bw test group2", path=str(tmpdir))[2] == 1
 
 
+def test_empty_group(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {},
+        },
+        groups={
+            "group1": {},
+            "group2": {'members': ["node1"]},
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 0
+    assert run("bw test -e", path=str(tmpdir))[2] == 1
+
+
 def test_group_user_dep_deleted(tmpdir):
     make_repo(
         tmpdir,

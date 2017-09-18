@@ -802,7 +802,7 @@ def build_parser_bw():
         type=int,
     )
     parser_test.add_argument(
-        "-E",
+        "-e",
         "--empty-groups",
         action='store_true',
         dest='orphaned_groups',
