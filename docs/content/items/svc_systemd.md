@@ -4,7 +4,7 @@ Handles services managed by systemd.
 
     svc_systemd = {
         "fcron.service": {
-            "enabled": True,
+            "enabled": True,  # default
             "running": True,  # default
         },
         "sgopherd.socket": {
@@ -22,7 +22,7 @@ See also: [The list of generic builtin item attributes](../repo/bundles.md#built
 
 ### enabled
 
-`True` if the service shall be automatically started during system bootup; `False` otherwise. `None`, the default value, makes BundleWrap ignore this setting.
+`True` if the service shall be automatically started during system bootup; `False` otherwise. `None` makes BundleWrap ignore this setting.
 
 <br>
 

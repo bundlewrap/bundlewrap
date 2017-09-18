@@ -45,9 +45,8 @@ class SvcSystemd(Item):
     A service managed by systemd.
     """
     BUNDLE_ATTRIBUTE_NAME = "svc_systemd"
-    # bw 3.0: Both should default to True.
     ITEM_ATTRIBUTES = {
-        'enabled': None,
+        'enabled': True,
         'running': True,
     }
     ITEM_TYPE_NAME = "svc_systemd"
