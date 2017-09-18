@@ -107,15 +107,6 @@ def main(*args, **kwargs):
     io.activate()
     io.debug(_("invocation: {}").format(" ".join([force_text(arg) for arg in argv])))
 
-    if 'BWADDHOSTKEYS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_ADD_HOST_KEYS', environ['BWADDHOSTKEYS'])
-    if 'BWCOLORS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_COLORS', environ['BWCOLORS'])
-    if 'BWITEMWORKERS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_ITEM_WORKERS', environ['BWITEMWORKERS'])
-    if 'BWNODEWORKERS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_NODE_WORKERS', environ['BWNODEWORKERS'])
-
     environ.setdefault('BW_ADD_HOST_KEYS', "1" if pargs.add_ssh_host_keys else "0")
 
     if len(text_args) >= 1 and (
