@@ -28,25 +28,13 @@ def write_preview(file_item, base_path):
 
 def bw_items(repo, args):
     node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
-    if args['file_preview']:
-        item = get_item(node, "file:{}".format(args['file_preview']))
-        if (
-            item.attributes['content_type'] in ('any', 'base64', 'binary') or
-            item.attributes['delete'] is True
-        ):
-            io.stderr(_(
-                "{x} cannot preview {file} on {node} (unsuitable content_type or deleted)"
-            ).format(x=red("!!!"), file=item.id, node=node.name))
+    if args['file_preview'] and not args['item']:
+            io.stderr(_("{x} no ITEM given for file preview").format(x=red("!!!")))
             exit(1)
-        else:
-            try:
-                io.stdout(item.content.decode(item.attributes['encoding']), append_newline=False)
-            except FaultUnavailable:
-                io.stderr(_(
-                    "{x} skipped {path} (Fault unavailable)"
-                ).format(x=yellow("»"), path=bold(item.name)))
-                exit(1)
     elif args['file_preview_path']:
+        if args['item']:
+            io.stderr(_("{x} use --file-preview to preview single files").format(x=red("!!!")))
+            exit(1)
         if exists(args['file_preview_path']):
             io.stderr(_(
                 "not writing to existing path: {path}"
@@ -88,17 +76,43 @@ def bw_items(repo, args):
                 ))
     elif args['item']:
         item = get_item(node, args['item'])
-        if args['show_sdict']:
-            statedict = item.sdict()
-        else:
-            statedict = item.cdict()
-        if statedict is None:
-            io.stdout("REMOVE")
-        else:
-            if args['attr']:
-                io.stdout(repr(statedict[args['attr']]))
+        if args['file_preview']:
+            if item.ITEM_TYPE_NAME != 'file':
+                io.stderr(_(
+                    "{x} cannot preview {item} on {node} (not a file)"
+                ).format(x=red("!!!"), item=item.id, node=node.name))
+                exit(1)
+            if (
+                item.attributes['content_type'] in ('any', 'base64', 'binary') or
+                item.attributes['delete'] is True
+            ):
+                io.stderr(_(
+                    "{x} cannot preview {file} on {node} (unsuitable content_type or deleted)"
+                ).format(x=red("!!!"), file=item.id, node=node.name))
+                exit(1)
             else:
-                io.stdout(statedict_to_json(statedict, pretty=True))
+                try:
+                    io.stdout(
+                        item.content.decode(item.attributes['encoding']),
+                        append_newline=False,
+                    )
+                except FaultUnavailable:
+                    io.stderr(_(
+                        "{x} skipped {path} (Fault unavailable)"
+                    ).format(x=yellow("»"), path=bold(item.name)))
+                    exit(1)
+        else:
+            if args['show_sdict']:
+                statedict = item.sdict()
+            else:
+                statedict = item.cdict()
+            if statedict is None:
+                io.stdout("REMOVE")
+            else:
+                if args['attr']:
+                    io.stdout(repr(statedict[args['attr']]))
+                else:
+                    io.stdout(statedict_to_json(statedict, pretty=True))
     else:
         for item in sorted(node.items):
             if args['show_repr']:

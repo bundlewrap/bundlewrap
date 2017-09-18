@@ -271,11 +271,9 @@ def build_parser_bw():
     parser_items.add_argument(
         "-f",
         "--file-preview",
+        action='store_true',
         dest='file_preview',
-        help=_("print preview of given file"),
-        metavar=_("FILE"),
-        required=False,
-        type=str,  # TODO 3.0 convert to bool and use ITEM arg
+        help=_("print preview of given file ITEM"),
     )
     parser_items.add_argument(
         "-w",

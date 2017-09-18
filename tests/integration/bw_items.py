@@ -24,7 +24,7 @@ def test_file_preview(tmpdir):
         },
     )
 
-    stdout, stderr, rcode = run("bw items -f /test node1", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw items -f node1 file:/test", path=str(tmpdir))
     assert stdout == "föö".encode('utf-8')  # our output is always utf-8
     assert rcode == 0
 
@@ -77,7 +77,7 @@ def test_fault_unavailable(tmpdir):
         },
     )
 
-    stdout, stderr, rcode = run("bw items -f /test node1", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw items -f node1 file:/test", path=str(tmpdir))
     assert rcode == 1
 
 
