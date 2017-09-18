@@ -30,7 +30,7 @@ METADATA_TYPES = (
 DONE = 1
 RUN_ME_AGAIN = 2
 DEFAULTS = 3
-UPDATE = 4
+OVERWRITE = 4
 
 
 def atomic(obj):
@@ -71,7 +71,7 @@ def check_metadata_processor_result(result, node_name, metadata_processor_name):
             node=node_name,
         ))
     for option in options:
-        if option not in (DEFAULTS, DONE, RUN_ME_AGAIN, UPDATE):
+        if option not in (DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE):
             raise ValueError(_(
                 "metadata processor {metaproc} for node {node} returned an "
                 "invalid option: {opt}"
@@ -96,10 +96,10 @@ def check_metadata_processor_result(result, node_name, metadata_processor_name):
             metaproc=metadata_processor_name,
             node=node_name,
         ))
-    if DEFAULTS in options and UPDATE in options:
+    if DEFAULTS in options and OVERWRITE in options:
         raise ValueError(_(
             "metadata processor {metaproc} for node {node} cannot return both "
-            "DEFAULTS and UPDATE"
+            "DEFAULTS and OVERWRITE"
         ).format(
             metaproc=metadata_processor_name,
             node=node_name,

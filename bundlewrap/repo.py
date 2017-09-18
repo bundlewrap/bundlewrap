@@ -19,7 +19,7 @@ from .exceptions import (
     RepositoryError,
 )
 from .group import Group
-from .metadata import check_metadata_processor_result, deepcopy_metadata, DEFAULTS, DONE, UPDATE
+from .metadata import check_metadata_processor_result, deepcopy_metadata, DEFAULTS, DONE, OVERWRITE
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, merge_dict, names
@@ -558,7 +558,7 @@ class Repository(object):
                                 processed_dict,
                                 self._node_metadata_partial[node.name],
                             )
-                        elif UPDATE in options:
+                        elif OVERWRITE in options:
                             self._node_metadata_partial[node.name] = merge_dict(
                                 self._node_metadata_partial[node.name],
                                 processed_dict,
