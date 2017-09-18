@@ -122,13 +122,6 @@ def build_parser_bw():
         type=int,
     )
     parser_apply.add_argument(
-        "--profiling",
-        action='store_true',
-        default=False,
-        dest='profiling',
-        help=_("print time elapsed for each item"),
-    )
-    parser_apply.add_argument(
         "-s",
         "--skip",
         default="",

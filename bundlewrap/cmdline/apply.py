@@ -58,7 +58,6 @@ def bw_apply(repo, args):
                 'interactive': args['interactive'],
                 'skip_list': skip_list,
                 'workers': args['item_workers'],
-                'profiling': args['profiling'],
             },
         }
 
@@ -67,22 +66,6 @@ def bw_apply(repo, args):
             return
         skip_list.add(task_id)
         results.append(return_value)
-        if args['profiling']:
-            total_time = 0.0
-            io.stdout(_("  {}").format(bold(task_id)))
-            io.stdout(_("  {} BEGIN PROFILING DATA "
-                        "(most expensive items first)").format(bold(task_id)))
-            io.stdout(_("  {}    seconds   item").format(bold(task_id)))
-            for time_elapsed, item_id in return_value.profiling_info:
-                io.stdout("  {} {:10.3f}   {}".format(
-                    bold(task_id),
-                    time_elapsed.total_seconds(),
-                    item_id,
-                ))
-                total_time += time_elapsed.total_seconds()
-            io.stdout(_("  {} {:10.3f}   (total)").format(bold(task_id), total_time))
-            io.stdout(_("  {} END PROFILING DATA").format(bold(task_id)))
-            io.stdout(_("  {}").format(bold(task_id)))
 
     def handle_exception(task_id, exception, traceback):
         if isinstance(exception, ItemDependencyLoop):
@@ -143,12 +126,12 @@ def stats_summary(results, total_duration):
     ], ROW_SEPARATOR]
 
     for result in results:
-        totals['items'] += len(result.profiling_info)
+        totals['items'] += result.total
         for metric in ('correct', 'fixed', 'skipped', 'failed'):
             totals[metric] += getattr(result, metric)
         rows.append([
             result.node_name,
-            str(len(result.profiling_info)),
+            str(result.total),
             str(result.correct),
             green_unless_zero(result.fixed),
             yellow_unless_zero(result.skipped),

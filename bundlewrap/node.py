@@ -43,10 +43,10 @@ class ApplyResult(object):
         self.fixed = 0
         self.skipped = 0
         self.failed = 0
-        self.profiling_info = []
+        self.total = 0
 
-        for item_id, result, time_elapsed in item_results:
-            self.profiling_info.append((time_elapsed, item_id))
+        for item_id, result, duration in item_results:
+            self.total += 1
             if result == Item.STATUS_ACTION_SUCCEEDED:
                 self.correct += 1
             elif result == Item.STATUS_OK:
@@ -61,9 +61,6 @@ class ApplyResult(object):
                 raise RuntimeError(_(
                     "can't make sense of results for {} on {}: {}"
                 ).format(item_id, self.node_name, result))
-
-        self.profiling_info.sort()
-        self.profiling_info.reverse()
 
         self.start = None
         self.end = None
@@ -118,7 +115,6 @@ def apply_items(
     other_peoples_soft_locks=(),
     workers=1,
     interactive=False,
-    profiling=False,
 ):
     with io.job(_("  {node}  processing dependencies...").format(node=node.name)):
         item_queue = ItemQueue(node.items)
@@ -527,7 +523,6 @@ class Node(object):
         force=False,
         skip_list=tuple(),
         workers=4,
-        profiling=False,
     ):
         if not list(self.items):
             io.stdout(_("{x} {node}  has no items").format(
@@ -573,7 +568,6 @@ class Node(object):
                     other_peoples_soft_locks=lock.other_peoples_soft_locks,
                     workers=workers,
                     interactive=interactive,
-                    profiling=profiling,
                 )
         except NodeLockedException as e:
             if not interactive:
