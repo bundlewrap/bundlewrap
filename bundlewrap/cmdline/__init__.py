@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from cProfile import Profile
 from functools import wraps
 from os import environ
 from os.path import abspath, dirname
@@ -101,6 +102,9 @@ def main(*args, **kwargs):
     if not hasattr(pargs, 'func'):
         parser_bw.print_help()
         exit(2)
+    if pargs.profile:
+        profile = Profile()
+        profile.enable()
 
     path = abspath(pargs.repo_path)
     io.debug_mode = pargs.debug
@@ -143,3 +147,6 @@ def main(*args, **kwargs):
         pargs.func(repo, text_pargs)
     finally:
         io.deactivate()
+        if pargs.profile:
+            profile.disable()
+            profile.dump_stats(pargs.profile)

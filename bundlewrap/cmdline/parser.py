@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, SUPPRESS
 from os import environ, getcwd
 
 from .. import VERSION_STRING
@@ -63,6 +63,16 @@ def build_parser_bw():
         dest='repo_path',
         help=_("Look for repository at this path (defaults to current working directory)"),
         metavar=_("DIRECTORY"),
+        type=str,
+    )
+    # hidden option to dump profiling info, can be inpected with
+    # SnakeViz or whatever
+    parser.add_argument(
+        "--profile",
+        default=None,
+        dest='profile',
+        help=SUPPRESS,
+        metavar=_("FILE"),
         type=str,
     )
     parser.add_argument(
