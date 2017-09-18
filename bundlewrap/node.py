@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from hashlib import md5
 from os import environ
-from sys import exit
 from threading import Lock
 
 from . import operations
@@ -16,17 +15,16 @@ from .deps import (
 )
 from .exceptions import (
     DontCache,
-    FaultUnavailable,
     ItemDependencyLoop,
     NodeLockedException,
     NoSuchBundle,
     RepositoryError,
 )
 from .group import GROUP_ATTR_DEFAULTS
-from .itemqueue import ItemQueue, ItemTestQueue
+from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock
-from .metadata import check_for_unsolvable_metadata_key_conflicts, hash_metadata
+from .metadata import hash_metadata
 from .utils import cached_property, names
 from .utils.statedict import hash_statedict
 from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
@@ -710,20 +708,6 @@ class Node(object):
             wrapper_outer=self.cmd_wrapper_outer,
         )
 
-    def test(self, ignore_missing_faults=False, workers=4):
-        with io.job(_("  {node}  checking for metadata collisions...").format(node=self.name)):
-            check_for_unsolvable_metadata_key_conflicts(self)
-        io.stdout(_("{x} {node}  has no metadata collisions").format(
-            x=green("✓"),
-            node=bold(self.name),
-        ))
-        if self.items:
-            test_items(self, ignore_missing_faults=ignore_missing_faults, workers=workers)
-        else:
-            io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
-
-        self.repo.hooks.test_node(self.repo, self)
-
     def upload(self, local_path, remote_path, mode=None, owner="", group=""):
         return operations.upload(
             self.hostname,
@@ -795,75 +779,6 @@ def build_attr_property(attr, default):
 
 for attr, default in GROUP_ATTR_DEFAULTS.items():
     setattr(Node, attr, build_attr_property(attr, default))
-
-
-def test_items(node, ignore_missing_faults=False, workers=1):
-    item_queue = ItemTestQueue(node.items)
-
-    def tasks_available():
-        return bool(item_queue.items_without_deps)
-
-    def next_task():
-        try:
-            # Get the next non-DummyItem in the queue.
-            while True:
-                item = item_queue.pop()
-                if not isinstance(item, DummyItem):
-                    break
-        except IndexError:  # no more items available right now
-            return None
-        else:
-            return {
-                'task_id': item.node.name + ":" + item.bundle.name + ":" + item.id,
-                'target': item._test,
-            }
-
-    def handle_result(task_id, return_value, duration):
-        node_name, bundle_name, item_id = task_id.split(":", 2)
-        if item_id.count(":") < 2:
-            # don't count canned actions
-            io.progress_advance()
-        io.stdout("{x} {node}  {bundle}  {item}".format(
-            bundle=bold(bundle_name),
-            item=item_id,
-            node=bold(node_name),
-            x=green("✓"),
-        ))
-
-    def handle_exception(task_id, exception, traceback):
-        io.progress_advance()
-        node_name, bundle_name, item_id = task_id.split(":", 2)
-        if ignore_missing_faults and isinstance(exception, FaultUnavailable):
-            io.stderr(_("{x} {node}  {bundle}  {item}  ({msg})").format(
-                bundle=bold(bundle_name),
-                item=item_id,
-                msg=yellow(_("Fault unavailable")),
-                node=bold(node_name),
-                x=yellow("»"),
-            ))
-        else:
-            io.stderr("{x} {node}  {bundle}  {item}".format(
-                bundle=bold(bundle_name),
-                item=item_id,
-                node=bold(node_name),
-                x=red("!"),
-            ))
-            io.stderr(traceback)
-            io.stderr("{}: {}".format(type(exception), str(exception)))
-            exit(1)
-
-    worker_pool = WorkerPool(
-        tasks_available,
-        next_task,
-        handle_result=handle_result,
-        handle_exception=handle_exception,
-        pool_id="test_{}".format(node.name),
-        workers=workers,
-    )
-    worker_pool.run()
-
-    if item_queue.items_with_deps:
-        raise ItemDependencyLoop(item_queue.items_with_deps)
 
 
 def verify_items(node, show_all=False, workers=1):
