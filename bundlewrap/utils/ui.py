@@ -53,7 +53,7 @@ def add_debug_timestamp(f):
 def capture_for_debug_logfile(f):
     @wraps(f)
     def wrapped(self, msg, **kwargs):
-        if self.debug_log_file:
+        if self.debug_log_file and self._active:
             self.debug_log_file.write(
                 datetime.now().strftime("[%Y-%m-%d %H:%M:%S.%f] ") +
                 ansi_clean(msg).rstrip("\n") + "\n"
