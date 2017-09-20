@@ -2,6 +2,10 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+try:
+    from itertools import zip_longest
+except ImportError:  # Python 2
+    from itertools import izip_longest as zip_longest
 from sys import exit
 
 from ..concurrency import WorkerPool
@@ -47,12 +51,17 @@ def run_on_node(node, command, skip_list):
     return result
 
 
-def stats_summary(results):
+def stats_summary(results, include_stdout, include_stderr):
     rows = [[
         bold(_("node")),
         bold(_("return code")),
         bold(_("time")),
     ], ROW_SEPARATOR]
+    if include_stdout:
+        rows[0].append(bold(_("stdout")))
+    if include_stderr:
+        rows[0].append(bold(_("stderr")))
+
     for node_name, result in sorted(results.items()):
         row = [node_name]
         if result.return_code == 0:
@@ -61,7 +70,25 @@ def stats_summary(results):
             row.append(red(str(result.return_code)))
         row.append(format_duration(result.duration, msec=True))
         rows.append(row)
+        if include_stdout or include_stderr:
+            stdout = result.stdout.decode('utf-8', errors='replace').strip().split("\n")
+            stderr = result.stderr.decode('utf-8', errors='replace').strip().split("\n")
+            if include_stdout:
+                row.append(stdout[0])
+            if include_stderr:
+                row.append(stderr[0])
+            for stdout_line, stderr_line in list(zip_longest(stdout, stderr, fillvalue=""))[1:]:
+                continuation_row = ["", "", ""]
+                if include_stdout:
+                    continuation_row.append(stdout_line)
+                if include_stderr:
+                    continuation_row.append(stderr_line)
+                rows.append(continuation_row)
+            rows.append(ROW_SEPARATOR)
 
+    if include_stdout or include_stderr:
+        # remove last ROW_SEPARATOR
+        rows = rows[:-1]
     for line in render_table(rows, alignments={1: 'right', 2: 'right'}):
         io.stdout("{x} {line}".format(x=blue("i"), line=line))
 
@@ -123,7 +150,7 @@ def bw_run(repo, args):
     worker_pool.run()
 
     if args['summary']:
-        stats_summary(results)
+        stats_summary(results, args['stdout_table'], args['stderr_table'])
     error_summary(errors)
 
     repo.hooks.run_end(

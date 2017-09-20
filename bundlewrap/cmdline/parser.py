@@ -725,6 +725,18 @@ def build_parser_bw():
         type=str,
         help=_("command to run"),
     )
+    parser_run.add_argument(
+        "--stderr-table",
+        action='store_true',
+        dest='stderr_table',
+        help=_("include command stderr in stats table"),
+    )
+    parser_run.add_argument(
+        "--stdout-table",
+        action='store_true',
+        dest='stdout_table',
+        help=_("include command stdout in stats table"),
+    )
     bw_run_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_run.add_argument(
         "-p",
