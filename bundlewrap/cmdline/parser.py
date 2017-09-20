@@ -747,6 +747,13 @@ def build_parser_bw():
         metavar=_("PATH"),
         type=str,
     )
+    parser_run.add_argument(
+        "-S",
+        "--no-summary",
+        action='store_false',
+        dest='summary',
+        help=_("don't show stats summary"),
+    )
 
     # bw stats
     help_stats = _("Show some statistics about your repository")

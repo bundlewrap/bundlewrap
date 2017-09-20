@@ -2,12 +2,14 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+from sys import exit
 
 from ..concurrency import WorkerPool
 from ..utils import SkipList
 from ..utils.cmdline import get_target_nodes
+from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import mark_for_translation as _
-from ..utils.text import bold, error_summary, green, red, yellow
+from ..utils.text import blue, bold, error_summary, green, red, yellow
 from ..utils.time import format_duration
 from ..utils.ui import io
 
@@ -27,43 +29,41 @@ def run_on_node(node, command, skip_list):
         command,
     )
 
-    start = datetime.now()
     result = node.run(
         command,
         may_fail=True,
         log_output=True,
     )
-    end = datetime.now()
-    duration = end - start
 
     node.repo.hooks.node_run_end(
         node.repo,
         node,
         command,
-        duration=duration,
+        duration=result.duration,
         return_code=result.return_code,
         stdout=result.stdout,
         stderr=result.stderr,
     )
+    return result
 
-    if result.return_code == 0:
-        io.stdout("{x} {node}  {msg}".format(
-            msg=_("completed successfully after {time}").format(
-                time=format_duration(duration, msec=True),
-            ),
-            node=bold(node.name),
-            x=green("✓"),
-        ))
-    else:
-        io.stderr("{x} {node}  {msg}".format(
-            msg=_("failed after {time}s (return code {rcode})").format(
-                rcode=result.return_code,
-                time=format_duration(duration, msec=True),
-            ),
-            node=bold(node.name),
-            x=red("✘"),
-        ))
-    return result.return_code
+
+def stats_summary(results):
+    rows = [[
+        bold(_("node")),
+        bold(_("return code")),
+        bold(_("time")),
+    ], ROW_SEPARATOR]
+    for node_name, result in sorted(results.items()):
+        row = [node_name]
+        if result.return_code == 0:
+            row.append(green(str(result.return_code)))
+        else:
+            row.append(red(str(result.return_code)))
+        row.append(format_duration(result.duration, msec=True))
+        rows.append(row)
+
+    for line in render_table(rows, alignments={1: 'right', 2: 'right'}):
+        io.stdout("{x} {line}".format(x=blue("i"), line=line))
 
 
 def bw_run(repo, args):
@@ -79,7 +79,7 @@ def bw_run(repo, args):
         args['command'],
     )
     start_time = datetime.now()
-
+    results = {}
     skip_list = SkipList(args['resume_file'])
 
     def tasks_available():
@@ -99,6 +99,7 @@ def bw_run(repo, args):
 
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
+        results[task_id] = return_value
         if return_value == 0:
             skip_list.add(task_id)
 
@@ -121,6 +122,8 @@ def bw_run(repo, args):
     )
     worker_pool.run()
 
+    if args['summary']:
+        stats_summary(results)
     error_summary(errors)
 
     repo.hooks.run_end(
@@ -130,3 +133,5 @@ def bw_run(repo, args):
         args['command'],
         duration=datetime.now() - start_time,
     )
+
+    exit(1 if errors else 0)
