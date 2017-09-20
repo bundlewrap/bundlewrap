@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from datetime import datetime
 from pipes import quote
 from select import select
 from shlex import split
@@ -73,6 +74,7 @@ def download(
 
 class RunResult(object):
     def __init__(self):
+        self.duration = None
         self.return_code = None
         self.stderr = None
         self.stdout = None
@@ -111,6 +113,7 @@ def run_local(
 
     cmd_id = randstr(length=4).upper()
     io.debug("running command with ID {}: {}".format(cmd_id, " ".join(command)))
+    start = datetime.utcnow()
 
     # Launch the child process. It's important that SSH gets a dummy
     # stdin, i.e. it must *not* read from the terminal. Otherwise, it
@@ -181,6 +184,7 @@ def run_local(
     ))
 
     result = RunResult()
+    result.duration = datetime.utcnow() - start
     result.stdout = stdout_lb.record.getvalue()
     result.stderr = stderr_lb.record.getvalue()
     result.return_code = child_process.returncode
