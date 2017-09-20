@@ -725,19 +725,6 @@ def build_parser_bw():
         type=str,
         help=_("command to run"),
     )
-    parser_run.add_argument(
-        "-f",
-        "--may-fail",
-        action='store_true',
-        dest='may_fail',
-        help=_("ignore non-zero exit codes"),
-    )
-    parser_run.add_argument(
-        "--force",
-        action='store_true',
-        dest='ignore_locks',
-        help=_("ignore soft locks on target nodes"),
-    )
     bw_run_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_run.add_argument(
         "-p",

@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from ..concurrency import WorkerPool
-from ..exceptions import NodeLockedException
 from ..utils import SkipList
 from ..utils.cmdline import get_target_nodes
 from ..utils.text import mark_for_translation as _
@@ -13,7 +12,7 @@ from ..utils.time import format_duration
 from ..utils.ui import io
 
 
-def run_on_node(node, command, may_fail, ignore_locks, log_output, skip_list):
+def run_on_node(node, command, skip_list):
     if node.dummy:
         io.stdout(_("{x} {node}  is a dummy node").format(node=bold(node.name), x=yellow("»")))
         return None
@@ -31,8 +30,8 @@ def run_on_node(node, command, may_fail, ignore_locks, log_output, skip_list):
     start = datetime.now()
     result = node.run(
         command,
-        may_fail=may_fail,
-        log_output=log_output,
+        may_fail=True,
+        log_output=True,
     )
     end = datetime.now()
     duration = end - start
@@ -94,9 +93,6 @@ def bw_run(repo, args):
             'args': (
                 node,
                 " ".join(args['command']),
-                args['may_fail'],
-                args['ignore_locks'],
-                True,
                 skip_list,
             ),
         }
@@ -108,19 +104,9 @@ def bw_run(repo, args):
 
     def handle_exception(task_id, exception, traceback):
         io.progress_advance()
-        if isinstance(exception, NodeLockedException):
-            msg = _(
-                "{node_bold}  locked by {user} "
-                "(see `bw lock show {node}` for details)"
-            ).format(
-                node_bold=bold(task_id),
-                node=task_id,
-                user=exception.args[0]['user'],
-            )
-        else:
-            msg = "{}  {}".format(bold(task_id), exception)
-            io.stderr(traceback)
-            io.stderr(repr(exception))
+        msg = "{}  {}".format(bold(task_id), exception)
+        io.stderr(traceback)
+        io.stderr(repr(exception))
         io.stderr("{} {}".format(red("!"), msg))
         errors.append(msg)
 
