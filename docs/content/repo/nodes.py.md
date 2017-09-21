@@ -89,16 +89,7 @@ A string used as a DNS name when connecting to this node. May also be an IP addr
 
 Cannot be set at group level.
 
-
-### magic_number
-
-A large number derived from the node's name. This number is very likely to be unique for your entire repository. You can, for example, use this number to easily "jitter" cronjobs:
-
-    '{} {} * * * root /my/script'.format(
-        node.magic_number % 60,
-        node.magic_number % 2 + 4,
-    )
-
+<br>
 
 ### metadata
 

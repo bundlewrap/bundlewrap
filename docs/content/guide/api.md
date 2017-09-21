@@ -123,6 +123,17 @@ A list of items on this node (instances of subclasses of `bundlewrap.items.Item`
 
 <br>
 
+**`.magic_number`**
+
+A large number derived from the node's name. This number is very likely to be unique for your entire repository. You can, for example, use this number to easily "jitter" cronjobs:
+
+    '{} {} * * * root /my/script'.format(
+        node.magic_number % 60,
+        node.magic_number % 2 + 4,
+    )
+
+<br>
+
 **`.metadata`**
 
 A dictionary of custom metadata, merged from information in [nodes.py](../repo/nodes.py.md) and [groups.py](../repo/groups.py.md)
