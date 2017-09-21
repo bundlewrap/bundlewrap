@@ -29,8 +29,8 @@ def write_preview(file_item, base_path):
 def bw_items(repo, args):
     node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
     if args['file_preview'] and not args['item']:
-            io.stderr(_("{x} no ITEM given for file preview").format(x=red("!!!")))
-            exit(1)
+        io.stderr(_("{x} no ITEM given for file preview").format(x=red("!!!")))
+        exit(1)
     elif args['file_preview_path']:
         if args['item']:
             io.stderr(_("{x} use --file-preview to preview single files").format(x=red("!!!")))
