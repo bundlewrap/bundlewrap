@@ -65,7 +65,7 @@ class Action(Item):
 
         if self.triggered and not self.has_been_triggered:
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return (self.STATUS_SKIPPED, [_("no trigger")])
+            return (self.STATUS_SKIPPED, [_("not triggered")])
 
         if self.unless:
             with io.job(_("  {node}  {bundle}  {item}  checking 'unless' condition...").format(
