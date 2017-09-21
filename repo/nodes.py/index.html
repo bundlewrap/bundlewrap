@@ -358,13 +358,7 @@ nodes['node-1'] = {
 <div class="alert alert-info">The username and SSH private key for connecting to the node cannot be configured in BundleWrap. If you need to customize those, BundleWrap will honor your <code>~/.ssh/config</code>.</div>
 
 <p>Cannot be set at group level.</p>
-<h3 id="magic_number">magic_number</h3>
-<p>A large number derived from the node's name. This number is very likely to be unique for your entire repository. You can, for example, use this number to easily "jitter" cronjobs:</p>
-<pre><code>'{} {} * * * root /my/script'.format(
-    node.magic_number % 60,
-    node.magic_number % 2 + 4,
-)
-</code></pre>
+<p><br></p>
 <h3 id="metadata">metadata</h3>
 <p>This can be a dictionary of arbitrary data (some type restrictions apply). You can access it from your templates as <code>node.metadata</code>. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the <a href="../groups.py/#metadata">group level</a>, but node metadata has higher priority.</p>
 <p>You are restricted to using only the following types in metadata:</p>

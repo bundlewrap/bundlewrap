@@ -360,6 +360,14 @@ print(uptime.stdout)
 <p><strong><code>.items</code></strong></p>
 <p>A list of items on this node (instances of subclasses of <code>bundlewrap.items.Item</code>)</p>
 <p><br></p>
+<p><strong><code>.magic_number</code></strong></p>
+<p>A large number derived from the node's name. This number is very likely to be unique for your entire repository. You can, for example, use this number to easily "jitter" cronjobs:</p>
+<pre><code>'{} {} * * * root /my/script'.format(
+    node.magic_number % 60,
+    node.magic_number % 2 + 4,
+)
+</code></pre>
+<p><br></p>
 <p><strong><code>.metadata</code></strong></p>
 <p>A dictionary of custom metadata, merged from information in <a href="../../repo/nodes.py/">nodes.py</a> and <a href="../../repo/groups.py/">groups.py</a></p>
 <p><br></p>
