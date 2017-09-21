@@ -1,3 +1,13 @@
+# 2.20.1
+
+2017-09-21
+
+* improved performance of metadata processors
+* pkg_* and svc_* items no longer throw exceptions when their commands fail
+* fixed BW_DEBUG_LOG_DIR with `bw debug`
+* fixed 'precedes' attribute for actions
+
+
 # 2.20.0
 
 2017-08-15
