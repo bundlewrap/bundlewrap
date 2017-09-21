@@ -449,57 +449,9 @@ def build_parser_bw():
     )
 
     # bw nodes
-    help_nodes = _("List all nodes in this repository")
+    help_nodes = _("List nodes in this repository")
     parser_nodes = subparsers.add_parser("nodes", description=help_nodes, help=help_nodes)
     parser_nodes.set_defaults(func=bw_nodes)
-    parser_nodes.add_argument(
-        "-a",
-        "--attrs",
-        action='store_true',
-        dest='show_attrs',
-        help=_("show attributes for each node"),
-    )
-    parser_nodes.add_argument(
-        "--bundles",
-        action='store_true',
-        dest='show_bundles',
-        help=_("show bundles for each node (deprecated, use --attrs)"),
-    )
-    parser_nodes.add_argument(
-        "--hostnames",
-        action='store_true',
-        dest='show_hostnames',
-        help=_("show hostnames instead of node names (deprecated, use --attrs)"),
-    )
-    parser_nodes.add_argument(
-        "-g",
-        "--filter-group",
-        default=None,
-        dest='filter_group',
-        metavar=_("GROUP"),
-        required=False,
-        type=str,
-        help=_("show only nodes in the given group (deprecated)"),
-    )
-    parser_nodes.add_argument(
-        "--groups",
-        action='store_true',
-        dest='show_groups',
-        help=_("show group membership for each node (deprecated, use --attrs)"),
-    )
-    parser_nodes.add_argument(
-        "-i",
-        "--inline",
-        action='store_true',
-        dest='inline',
-        help=_("show multiple values on the same line (use with --attrs)"),
-    )
-    parser_nodes.add_argument(
-        "--os",
-        action='store_true',
-        dest='show_os',
-        help=_("show OS for each node (deprecated, use --attrs)"),
-    )
     parser_nodes.add_argument(
         'target',
         default=None,
@@ -507,6 +459,15 @@ def build_parser_bw():
         nargs='?',
         type=str,
         help=_("filter according to nodes, groups and/or bundle selectors"),
+    )
+    parser_nodes.add_argument(
+        'attrs',
+        default=None,
+        metavar=_("ATTR1,ATTR2..."),
+        nargs='?',
+        type=str,
+        help=_("show table with the given attributes for each node "
+               "(e.g. 'all', 'groups', 'bundles', 'hostname', 'os', ...)"),
     )
 
     # bw plot
