@@ -86,45 +86,18 @@ class ItemQueue(BaseQueue):
             )
         self._split()
 
-    def pop(self, interactive=False):
+    def pop(self):
         """
         Gets the next item available for processing and moves it into
         self.pending_items. Will raise IndexError if no item is
-        available. Otherwise, it will return the item and a list of
-        items that have been skipped while looking for the item.
+        available.
         """
-        skipped_items = []
-
         if not self.items_without_deps:
             raise IndexError
 
-        while self.items_without_deps:
-            item = self.items_without_deps.pop()
-
-            if item._precedes_items:
-                if item._precedes_incorrect_item(interactive=interactive):
-                    item.has_been_triggered = True
-                else:
-                    # we do not have to cascade here at all because
-                    # all chained preceding items will be skipped by
-                    # this same mechanism
-                    io.debug(
-                        _("skipping {node}:{bundle}:{item} because its precede trigger "
-                          "did not fire").format(
-                            bundle=item.bundle.name,
-                            item=item.id,
-                            node=item.node.name,
-                        ),
-                    )
-                    self.items_with_deps = remove_dep_from_items(self.items_with_deps, item.id)
-                    self._split()
-                    skipped_items.append(item)
-                    item = None
-                    continue
-            break
-        assert item is not None
+        item = self.items_without_deps.pop()
         self.pending_items.append(item)
-        return (item, skipped_items)
+        return item
 
     def _fire_triggers_for_item(self, item):
         for triggered_item_id in item.triggers:

@@ -63,6 +63,18 @@ class Action(Item):
         if interactive is False and self.attributes['interactive'] is True:
             return (self.STATUS_SKIPPED, [_("interactive only")])
 
+        for item in self._precedes_items:
+            if item._triggers_preceding_items(interactive=interactive):
+                io.debug(_(
+                    "preceding item {item} on {node} has been triggered by {other_item}"
+                ).format(item=self.id, node=self.node.name, other_item=item.id))
+                self.has_been_triggered = True
+                break
+            else:
+                io.debug(_(
+                    "preceding item {item} on {node} has NOT been triggered by {other_item}"
+                ).format(item=self.id, node=self.node.name, other_item=item.id))
+
         if self.triggered and not self.has_been_triggered:
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
             return (self.STATUS_SKIPPED, [_("not triggered")])

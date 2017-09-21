@@ -131,18 +131,7 @@ def apply_items(
         return bool(item_queue.items_without_deps)
 
     def next_task():
-        item, skipped_items = item_queue.pop()
-        for skipped_item in skipped_items:
-            io.progress_advance()
-            handle_apply_result(
-                node,
-                skipped_item,
-                Item.STATUS_SKIPPED,
-                interactive,
-                changes=[_("no pre-trigger")],
-            )
-            results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
-
+        item = item_queue.pop()
         return {
             'task_id': "{}:{}".format(node.name, item.id),
             'target': item.apply,

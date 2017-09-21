@@ -242,29 +242,31 @@ class Item(object):
 
     @cached_property
     def cached_unless_result(self):
-        if self.unless and not self.cached_status.correct:
+        """
+        Returns True if 'unless' wants to skip this item.
+        """
+        if self.unless and (self.ITEM_TYPE_NAME == 'action' or not self.cached_status.correct):
             unless_result = self.node.run(self.unless, may_fail=True)
             return unless_result.return_code == 0
         else:
             return False
 
-    def _precedes_incorrect_item(self, interactive=False):
+    def _triggers_preceding_items(self, interactive=False):
         """
-        Returns True if this item precedes another and the triggering
-        item is in need of fixing.
+        Preceding items will execute this to figure out if they're
+        triggered.
         """
-        for item in self._precedes_items:
-            if item._precedes_incorrect_item():
-                return True
         if self.cached_unless_result:
-            # triggering item failed unless, so there is nothing to do
+            # 'unless' says we don't need to run
             return False
         if self.ITEM_TYPE_NAME == 'action':
+            # so we have an action where 'unless' says it must be run
+            # but the 'interactive' attribute might still override that
             if self.attributes['interactive'] != interactive or \
                     self.attributes['interactive'] is None:
-                return False
-            else:
                 return True
+            else:
+                return False
         return not self.cached_status.correct
 
     def _prepare_deps(self, items):
@@ -402,6 +404,18 @@ class Item(object):
         if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
             status_code = self.STATUS_SKIPPED
             keys_to_fix = [_("soft locked")]
+
+        for item in self._precedes_items:
+            if item._triggers_preceding_items(interactive=interactive):
+                io.debug(_(
+                    "preceding item {item} on {node} has been triggered by {other_item}"
+                ).format(item=self.id, node=self.node.name, other_item=item.id))
+                self.has_been_triggered = True
+                break
+            else:
+                io.debug(_(
+                    "preceding item {item} on {node} has NOT been triggered by {other_item}"
+                ).format(item=self.id, node=self.node.name, other_item=item.id))
 
         if self.triggered and not self.has_been_triggered and status_code is None:
             io.debug(_(
