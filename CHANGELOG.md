@@ -4,15 +4,15 @@ unreleased
 
 * new metadata processor API and options (BACKWARDS INCOMPATIBLE)
 * files, directories, and symlinks now have defaults for owner, group, and mode (BACKWARDS INCOMPATIBLE)
-* completely overhauled options to `bw test` (BACKWARDS INCOMPATIBLE)
+* overhauled options and output of `bw run` (BACKWARDS INCOMPATIBLE)
+* overhauled options of `bw test` (BACKWARDS INCOMPATIBLE)
 * svc_systemd services are now 'enabled' by default (BACKWARDS INCOMPATIBLE)
 * `bw items --file-preview` no longer uses a separate file path argument (BACKWARDS INCOMPATIBLE)
-* pkg_* and svc_* items no longer throw exceptions when their commands fail (BACKWARDS INCOMPATIBLE)
+* removed `bw apply --profiling` (BACKWARDS INCOMPATIBLE)
 * removed `Item.display_keys()` (BACKWARDS INCOMPATIBLE)
 * removed `repo.vault.format()` (BACKWARDS INCOMPATIBLE)
 * removed env vars: BWADDHOSTKEYS, BWCOLORS, BWITEMWORKERS, BWNODEWORKERS (BACKWARDS INCOMPATIBLE)
-* removed `bw apply --profiling` (BACKWARDS INCOMPATIBLE)
-* improved performance when generating metadata
+
 
 # 2.20.1
 
