@@ -22,7 +22,7 @@ def pkg_installed(node, pkgname):
         "pkg_info | cut -f 1 -d ' '",
         may_fail=True,
     )
-    for line in result.stdout.decode('utf-8').strip().split("\n"):
+    for line in result.stdout.decode('utf-8').strip().splitlines():
         installed_package, installed_version = PKGSPEC_REGEX.match(line).groups()
         if installed_package == pkgname:
             return installed_version
