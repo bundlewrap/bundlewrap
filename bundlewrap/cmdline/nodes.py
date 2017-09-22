@@ -33,6 +33,7 @@ def _attribute_table(
             io.stderr(_("{x} unknown attribute: {attr}").format(x=red("!!!"), attr=attr))
             exit(1)
         rows[0].append(bold(attr))
+    has_list_attrs = False
     for entity in entities:
         attr_values = [[entity.name]]
         for attr in selected_attrs:
@@ -40,6 +41,7 @@ def _attribute_table(
                 if inline:
                     attr_values.append([",".join(names(getattr(entity, attr)))])
                 else:
+                    has_list_attrs = True
                     attr_values.append(list(names(getattr(entity, attr))))
             else:
                 attr_values.append([str(getattr(entity, attr))])
@@ -55,11 +57,12 @@ def _attribute_table(
                 except IndexError:
                     row.append("")
             rows.append(row)
-        rows.append(ROW_SEPARATOR)
+        if has_list_attrs:
+            rows.append(ROW_SEPARATOR)
     if environ.get("BW_TABLE_STYLE") == 'grep':
         rows = rows[2:]
     page_lines(render_table(
-        rows[:-1],  # remove trailing ROW_SEPARATOR
+        rows[:-1] if has_list_attrs else rows,  # remove trailing ROW_SEPARATOR
     ))
 
 
