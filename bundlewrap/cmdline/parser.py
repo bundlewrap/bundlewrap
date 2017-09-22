@@ -193,15 +193,32 @@ def build_parser_bw():
     )
 
     # bw groups
-    help_groups = _("Lists groups in this repository (deprecated, use `bw nodes -a`)")
+    help_groups = _("Lists groups in this repository")
     parser_groups = subparsers.add_parser("groups", description=help_groups, help=help_groups)
     parser_groups.set_defaults(func=bw_groups)
     parser_groups.add_argument(
-        "-n",
-        "--nodes",
+        "-i",
+        "--inline",
         action='store_true',
-        dest='show_nodes',
-        help=_("show nodes for each group"),
+        dest='inline',
+        help=_("keep lists on a single line (for grep)"),
+    )
+    parser_groups.add_argument(
+        'groups',
+        default=None,
+        metavar=_("GROUP1,GROUP2..."),
+        nargs='?',
+        type=str,
+        help=_("show nodes in given groups instead"),
+    )
+    parser_groups.add_argument(
+        'attrs',
+        default=None,
+        metavar=_("ATTR1,ATTR2..."),
+        nargs='?',
+        type=str,
+        help=_("show table with the given attributes for each group "
+               "(e.g. 'all', 'members', 'os', ...)"),
     )
 
     # bw hash
@@ -452,6 +469,13 @@ def build_parser_bw():
     help_nodes = _("List nodes in this repository")
     parser_nodes = subparsers.add_parser("nodes", description=help_nodes, help=help_nodes)
     parser_nodes.set_defaults(func=bw_nodes)
+    parser_nodes.add_argument(
+        "-i",
+        "--inline",
+        action='store_true',
+        dest='inline',
+        help=_("keep lists on a single line (for grep)"),
+    )
     parser_nodes.add_argument(
         'target',
         default=None,

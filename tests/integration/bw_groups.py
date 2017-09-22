@@ -31,11 +31,11 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw groups -n", path=str(tmpdir))
-    assert stdout == b"""group1: node1
-group2: node2, node3
-group3: node1, node3
-group4: node3
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups -i group1,group2,group3,group4 nodes", path=str(tmpdir))
+    assert stdout == b"""group1\tnode1
+group2\tnode2,node3
+group3\tnode1,node3
+group4\tnode3
 """
     assert stderr == b""
     assert rcode == 0
@@ -70,11 +70,11 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw groups -n", path=str(tmpdir))
-    assert stdout == b"""group1: node3, node4
-group2: node4
-group3: node1, node2, node3, node4
-group4: node1, node3, node4
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups -i group1,group2,group3,group4 nodes", path=str(tmpdir))
+    assert stdout == b"""group1\tnode3,node4
+group2\tnode4
+group3\tnode1,node2,node3,node4
+group4\tnode1,node3,node4
 """
     assert stderr == b""
     assert rcode == 0
@@ -102,9 +102,9 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw groups -n", path=str(tmpdir))
-    assert stdout == b"""group1: node1
-group2: node2
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups -i group1,group2 nodes", path=str(tmpdir))
+    assert stdout == b"""group1\tnode1
+group2\tnode2
 """
     assert stderr == b""
     assert rcode == 0
@@ -137,10 +137,10 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw groups -n", path=str(tmpdir))
-    assert stdout == b"""group1: node1, node2
-group2: node2
-group3: node2
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups -i group1,group2,group3 nodes", path=str(tmpdir))
+    assert stdout == b"""group1\tnode1,node2
+group2\tnode2
+group3\tnode2
 """
     assert stderr == b""
     assert rcode == 0
@@ -184,10 +184,10 @@ groups = {
     },
 }
     """)
-    stdout, stderr, rcode = run("bw groups -n", path=str(tmpdir))
-    assert stdout == b"""inner_group: node_NOT_in_group, node_in_group
-intermediate_group: node_in_group
-super_group: node_in_group
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups -i inner_group,intermediate_group,intermediate_group nodes", path=str(tmpdir))
+    assert stdout == b"""inner_group\tnode_NOT_in_group,node_in_group
+intermediate_group\tnode_in_group
+intermediate_group\tnode_in_group
 """
     assert stderr == b""
     assert rcode == 0

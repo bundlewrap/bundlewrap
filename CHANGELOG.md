@@ -4,6 +4,8 @@ unreleased
 
 * new metadata processor API and options (BACKWARDS INCOMPATIBLE)
 * files, directories, and symlinks now have defaults for owner, group, and mode (BACKWARDS INCOMPATIBLE)
+* overhauled options and output of `bw groups` (BACKWARDS INCOMPATIBLE)
+* overhauled options and output of `bw nodes` (BACKWARDS INCOMPATIBLE)
 * overhauled options and output of `bw run` (BACKWARDS INCOMPATIBLE)
 * overhauled options of `bw test` (BACKWARDS INCOMPATIBLE)
 * svc_systemd services are now 'enabled' by default (BACKWARDS INCOMPATIBLE)
