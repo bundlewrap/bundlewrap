@@ -451,7 +451,7 @@ def build_parser_bw():
         metavar=_("KEY"),
         nargs='*',
         type=str,
-        help=_("print only partial metadata from the given space-separated key path"),
+        help=_("print only partial metadata from the given space-separated key path (e.g. `bw metadata mynode users jdoe` to show `mynode.metadata['users']['jdoe']`)"),
     )
     parser_metadata.add_argument(
         "-t",
