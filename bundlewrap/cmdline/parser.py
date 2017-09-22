@@ -209,7 +209,7 @@ def build_parser_bw():
         metavar=_("GROUP1,GROUP2..."),
         nargs='?',
         type=str,
-        help=_("show nodes in given groups instead"),
+        help=_("show the given groups and their subgroups"),
     )
     parser_groups.add_argument(
         'attrs',

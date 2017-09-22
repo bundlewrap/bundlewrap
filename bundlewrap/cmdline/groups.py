@@ -18,11 +18,11 @@ def bw_groups(repo, args):
     else:
         groups = [repo.get_group(group.strip()) for group in args['groups'].split(",")]
         if not args['attrs']:
-            nodes = set()
+            subgroups = set(groups)
             for group in groups:
-                nodes = nodes.union(group.nodes)
-            for node in sorted(nodes):
-                io.stdout(node.name)
+                subgroups = subgroups.union(group.subgroups)
+            for subgroup in sorted(subgroups):
+                io.stdout(subgroup.name)
         else:
             _attribute_table(
                 groups,
