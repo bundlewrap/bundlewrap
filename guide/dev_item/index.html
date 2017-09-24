@@ -109,6 +109,10 @@
 <li >
     <a href="../migrate_12/">Migrating to 2.0</a>
 </li>
+                            
+<li >
+    <a href="../migrate_23/">Migrating to 3.0</a>
+</li>
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -246,10 +250,6 @@
 </li>
                             
 <li >
-    <a href="../../misc/alternatives/">Alternatives</a>
-</li>
-                            
-<li >
     <a href="../../misc/contributing/">Contributing</a>
 </li>
                         </ul>
@@ -320,13 +320,20 @@ class Foo(Item):
     """
     A foo.
     """
-    BLOCK_CONCURRENT = []
     BUNDLE_ATTRIBUTE_NAME = "foo"
     ITEM_ATTRIBUTES = {
         'attribute': "default value",
     }
     ITEM_TYPE_NAME = "foo"
     REQUIRED_ATTRIBUTES = ['attribute']
+
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        """
+        Return a list of item types that cannot be applied in parallel
+        with this item type.
+        """
+        return []
 
     def __repr__(self):
         return "&lt;Foo attribute:{}&gt;".format(self.attributes['attribute'])
@@ -355,22 +362,13 @@ class Foo(Item):
 
     def display_dicts(self, cdict, sdict, keys):
         """
-        Given cdict and sdict as implemented above, modify them to better
-        suit interactive presentation. The keys parameter is the return
-        value of display_keys (see below) and provided for reference only.
+        Given cdict and sdict as implemented above, modify them to
+        better suit interactive presentation. The keys parameter is a
+        list of keys whose values differ between cdict and sdict.
 
         Implementing this method is optional.
         """
-        return (cdict, sdict)
-
-    def display_keys(self, cdict, sdict, keys):
-        """
-        Given a list of keys whose values differ between cdict and sdict,
-        modify them to better suit presentation to the user.
-
-        Implementing this method is optional.
-        """
-        return keys
+        return (cdict, sdict, keys)
 
     def fix(self, status):
         """
@@ -395,9 +393,6 @@ class Foo(Item):
 <p><code>ITEM_TYPE_NAME</code> sets the first part of an items ID. For the file items, this is "file". Therefore, file ID look this this: <code>file:/path</code>. The second part is the name a user assigns to your item in a bundle. Example:</p>
 <pre><code>ITEM_TYPE_NAME = "foo"
 </code></pre>
-<p><code>BLOCK_CONCURRENT</code> is a list of item types (e.g. <code>pkg_apt</code>), that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time):</p>
-<pre><code>BLOCK_CONCURRENT = ["pkg_apt"]
-</code></pre>
 <p><code>REQUIRED_ATTRIBUTES</code> is a list of attribute names that must be set on each item of this type. If BundleWrap encounters an item without all these attributes during bundle inspection, an exception will be raised. Example:</p>
 <pre><code>REQUIRED_ATTRIBUTES = ['attr1', 'attr2']
 </code></pre>
@@ -405,6 +400,7 @@ class Foo(Item):
 <h2 id="step-3-implement-methods">Step 3: Implement methods</h2>
 <p>You should probably start with <code>sdict()</code>. Use <code>self.node.run("command")</code> to run shell commands on the current node and check the <code>stdout</code> property of the returned object.</p>
 <p>The only other method you have to implement is <code>fix</code>. It doesn't have to return anything and just uses <code>self.node.run()</code> to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.</p>
+<p><code>block_concurrent()</code> must return a list of item types (e.g. <code>['pkg_apt']</code>) that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time).</p>
 <p>If you're having trouble, try looking at the <a href="https://github.com/bundlewrap/bundlewrap/tree/master/bundlewrap/items">source code for the items that come with BundleWrap</a>. The <code>pkg_*</code> items are pretty simple and easy to understand while <code>files</code> is the most complex to date. Or just drop by on <a href="irc://chat.freenode.net/bundlewrap">IRC</a>, we're glad to help.</p></div>
         </div>
 

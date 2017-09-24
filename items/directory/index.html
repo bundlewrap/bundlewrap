@@ -109,6 +109,10 @@
 <li >
     <a href="../../guide/migrate_12/">Migrating to 2.0</a>
 </li>
+                            
+<li >
+    <a href="../../guide/migrate_23/">Migrating to 3.0</a>
+</li>
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -246,10 +250,6 @@
 </li>
                             
 <li >
-    <a href="../../misc/alternatives/">Alternatives</a>
-</li>
-                            
-<li >
     <a href="../../misc/contributing/">Contributing</a>
 </li>
                         </ul>
@@ -294,7 +294,7 @@
 <h1 id="directory-items">Directory items</h1>
 <pre><code>directories = {
     "/path/to/directory": {
-        "mode": "0644",
+        "mode": "0755",
         "owner": "root",
         "group": "root",
     },
@@ -304,13 +304,13 @@
 <p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <p><br></p>
 <h3 id="group">group</h3>
-<p>Name of the group this directory belongs to. Defaults to <code>None</code> (don't care about group).</p>
+<p>Name of the group this directory belongs to. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
 <p><br></p>
 <h3 id="mode">mode</h3>
-<p>Directory mode as returned by <code>stat -c %a &lt;directory&gt;</code>. Defaults to <code>None</code> (don't care about mode).</p>
+<p>Directory mode as returned by <code>stat -c %a &lt;directory&gt;</code>. Defaults to <code>755</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
 <p><br></p>
 <h3 id="owner">owner</h3>
-<p>Username of the directory's owner. Defaults to <code>None</code> (don't care about owner).</p>
+<p>Username of the directory's owner. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
 <p><br></p>
 <h3 id="purge">purge</h3>
 <p>Set this to <code>True</code> to remove everything from this directory that is not managed by BundleWrap. Defaults to <code>False</code>.</p></div>

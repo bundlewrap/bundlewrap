@@ -109,6 +109,10 @@
 <li >
     <a href="../../guide/migrate_12/">Migrating to 2.0</a>
 </li>
+                            
+<li >
+    <a href="../../guide/migrate_23/">Migrating to 3.0</a>
+</li>
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -246,10 +250,6 @@
 </li>
                             
 <li >
-    <a href="../../misc/alternatives/">Alternatives</a>
-</li>
-                            
-<li >
     <a href="../../misc/contributing/">Contributing</a>
 </li>
                         </ul>
@@ -308,10 +308,10 @@
 <p>File or directory this symlink points to. <strong>This attribute is required.</strong></p>
 <p><br></p>
 <h3 id="group">group</h3>
-<p>Name of the group this symlink belongs to. Defaults to <code>root</code>. Defaults to <code>None</code> (don't care about group).</p>
+<p>Name of the group this symlink belongs to. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
 <p><br></p>
 <h3 id="owner">owner</h3>
-<p>Username of the symlink's owner. Defaults to <code>root</code>. Defaults to <code>None</code> (don't care about owner).</p></div>
+<p>Username of the symlink's owner. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p></div>
         </div>
 
         <footer class="col-md-12">

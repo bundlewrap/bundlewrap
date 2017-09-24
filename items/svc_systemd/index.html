@@ -109,6 +109,10 @@
 <li >
     <a href="../../guide/migrate_12/">Migrating to 2.0</a>
 </li>
+                            
+<li >
+    <a href="../../guide/migrate_23/">Migrating to 3.0</a>
+</li>
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -246,10 +250,6 @@
 </li>
                             
 <li >
-    <a href="../../misc/alternatives/">Alternatives</a>
-</li>
-                            
-<li >
     <a href="../../misc/contributing/">Contributing</a>
 </li>
                         </ul>
@@ -296,7 +296,7 @@
 <p>Handles services managed by systemd.</p>
 <pre><code>svc_systemd = {
     "fcron.service": {
-        "enabled": True,
+        "enabled": True,  # default
         "running": True,  # default
     },
     "sgopherd.socket": {
@@ -309,7 +309,7 @@
 <p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <p><br></p>
 <h3 id="enabled">enabled</h3>
-<p><code>True</code> if the service shall be automatically started during system bootup; <code>False</code> otherwise. <code>None</code>, the default value, makes BundleWrap ignore this setting.</p>
+<p><code>True</code> if the service shall be automatically started during system bootup; <code>False</code> otherwise. <code>None</code> makes BundleWrap ignore this setting.</p>
 <p><br></p>
 <h3 id="running">running</h3>
 <p><code>True</code> if the service is expected to be running on the system; <code>False</code> if it should be stopped. <code>None</code> makes BundleWrap ignore this setting.</p>

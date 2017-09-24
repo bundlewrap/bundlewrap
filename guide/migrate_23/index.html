@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>Alternatives - BundleWrap</title>
+        <title>Migrating to 3.0 - BundleWrap</title>
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.5.0.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -58,56 +58,60 @@
                     <li >
                         <a href="../.."><i class="fa fa-home"></i></a>
                     </li>
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             
 <li >
-    <a href="../../guide/quickstart/">Quickstart</a>
+    <a href="../quickstart/">Quickstart</a>
 </li>
                             
 <li >
-    <a href="../../guide/installation/">Installation</a>
+    <a href="../installation/">Installation</a>
 </li>
                             
 <li >
-    <a href="../../guide/cli/">CLI</a>
+    <a href="../cli/">CLI</a>
 </li>
                             
 <li >
-    <a href="../../guide/env/">Environment Variables</a>
+    <a href="../env/">Environment Variables</a>
 </li>
                             
 <li >
-    <a href="../../guide/item_file_templates/">File templates</a>
+    <a href="../item_file_templates/">File templates</a>
 </li>
                             
 <li >
-    <a href="../../guide/secrets/">Handling secrets</a>
+    <a href="../secrets/">Handling secrets</a>
 </li>
                             
 <li >
-    <a href="../../guide/locks/">Locking</a>
+    <a href="../locks/">Locking</a>
 </li>
                             
 <li >
-    <a href="../../guide/dev_item/">Custom items</a>
+    <a href="../dev_item/">Custom items</a>
 </li>
                             
 <li >
-    <a href="../../guide/dev_plugin/">Writing plugins</a>
+    <a href="../dev_plugin/">Writing plugins</a>
 </li>
                             
 <li >
-    <a href="../../guide/api/">Python API</a>
+    <a href="../api/">Python API</a>
 </li>
                             
 <li >
-    <a href="../../guide/os_compatibility/">OS compatibility</a>
+    <a href="../os_compatibility/">OS compatibility</a>
 </li>
                             
 <li >
-    <a href="../../guide/migrate_12/">Migrating to 2.0</a>
+    <a href="../migrate_12/">Migrating to 2.0</a>
+</li>
+                            
+<li class="active">
+    <a href="./">Migrating to 3.0</a>
 </li>
                         </ul>
                     </li>
@@ -229,28 +233,24 @@
 </li>
                         </ul>
                     </li>
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Misc <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             
 <li >
-    <a href="../about/">About</a>
+    <a href="../../misc/about/">About</a>
 </li>
                             
 <li >
-    <a href="../glossary/">Glossary</a>
+    <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
 <li >
-    <a href="../faq/">FAQ</a>
-</li>
-                            
-<li class="active">
-    <a href="./">Alternatives</a>
+    <a href="../../misc/faq/">FAQ</a>
 </li>
                             
 <li >
-    <a href="../contributing/">Contributing</a>
+    <a href="../../misc/contributing/">Contributing</a>
 </li>
                         </ul>
                     </li>
@@ -263,12 +263,12 @@
                     </a>
                 </li>
                     <li >
-                        <a rel="next" href="../faq/">
+                        <a rel="next" href="../migrate_12/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../contributing/">
+                        <a rel="prev" href="../../repo/layout/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -285,51 +285,48 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#alternatives">Alternatives</a></li>
-            <li><a href="#ansible">Ansible</a></li>
-            <li><a href="#bcfg2">BCFG2</a></li>
-            <li><a href="#chef">Chef</a></li>
+        <li class="main active"><a href="#migrating-from-bundlewrap-2x-to-3x">Migrating from BundleWrap 2.x to 3.x</a></li>
+            <li><a href="#metadatapy">metadata.py</a></li>
+            <li><a href="#file-and-directory-ownership-defaults">File and directory ownership defaults</a></li>
+            <li><a href="#systemd-services-enabled-by-default">systemd services enabled by default</a></li>
+            <li><a href="#environment-variables">Environment variables</a></li>
+            <li><a href="#itemdisplay_keys-and-itemdisplay_dicts">Item.display_keys and Item.display_dicts</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<h1 id="alternatives">Alternatives</h1>
-<div class="alert alert-info">This page is an effort to compare BundleWrap to other config management systems. It very hard to keep this information complete and up to date, so please feel free to raise issues or create pull requests if something is amiss.</div>
+<h1 id="migrating-from-bundlewrap-2x-to-3x">Migrating from BundleWrap 2.x to 3.x</h1>
+<p>As per <a href="http://semver.org">semver</a>, BundleWrap 3.0 breaks compatibility with repositories created for BundleWrap 2.x. This document provides a guide on how to upgrade your repositories to BundleWrap 3.x. Please read the entire document before proceeding.</p>
+<p><br></p>
+<h2 id="metadatapy">metadata.py</h2>
+<p>BundleWrap 2.x simply used all functions in <code>metadata.py</code> whose names don't start with an underscore as metadata processors. This led to awkward imports like <code>from foo import bar as _bar</code>. BundleWrap 3.x requires a decorator for explicitly designating functions as metadata processors:</p>
+<pre><code>@metadata_processor
+def myproc(metadata):
+    return metadata, DONE
+</code></pre>
+<p>You will have to add <code>@metadata_processor</code> to each metadata processor function. There is no need to import it; it is provided automatically, just like <code>node</code> and <code>repo</code>.</p>
+<p>The accepted return values of metadata processors have changed as well. Metadata processors now always have to return a tuple with the first element being a dictionary of metadata and the remaining elements made up of various options to tell BundleWrap what to do with the dictionary. In most cases, you will want to return the <code>DONE</code> options as in the example above. There is no need to import options, they're always available.</p>
+<p>When you previously returned <code>metadata, False</code> from a metadata processor, you will now have to return <code>metadata, RUN_ME_AGAIN</code>. For a more detailed description of the available options, see <a href="../../repo/bundles/#metadatapy">the documentation</a>.</p>
+<p><br></p>
+<h2 id="file-and-directory-ownership-defaults">File and directory ownership defaults</h2>
+<p><a href="../../items/file/">Files</a>, <a href="../../items/directory/">directories</a>, and <a href="../../items/symlink/">symlinks</a> now have default values for the ownership and mode attributes. Previously the default was to ignore them. It's very likely that you won't have to do anything here, just be aware.</p>
+<p><br></p>
+<h2 id="systemd-services-enabled-by-default">systemd services enabled by default</h2>
+<p>Again, just be <a href="../../items/svc_systemd/">aware</a>, it's probably what you intended anyway.</p>
+<p><br></p>
+<h2 id="environment-variables">Environment variables</h2>
+<p>The following <a href="../env/">env vars</a> have been renamed (though the new names have already been available for a while, so chances are you're already using them):</p>
+<table>
+<tr><th>Old</th><th>New</th></tr>
+<tr><td><code>BWADDHOSTKEYS</code></td><td><code>BW_ADD_HOST_KEYS</code></td></tr>
+<tr><td><code>BWCOLORS</code></td><td><code>BW_COLORS</code></td></tr>
+<tr><td><code>BWITEMWORKERS</code></td><td><code>BW_ITEM_WORKERS</code></td></tr>
+<tr><td><code>BWNODEWORKERS</code></td><td><code>BW_NODE_WORKERS</code></td></tr>
+</table>
 
-<p>BundleWrap has the following properties that are unique to it or at least not common among other solutions:</p>
-<ul>
-<li>server- and agent-less architecture</li>
-<li>item-level parallelism to speed up convergence of complex nodes</li>
-<li>interactive mode to review configuration as it it being applied</li>
-<li><a href="../../items/file_templates">Mako file templates</a></li>
-<li>verifies that each action taken actually fixed the item in question</li>
-<li>verify mode to assess the state of your configuration without mutating it</li>
-<li>useful and actionable error messages</li>
-<li>can apply actions (and other items) prior to fixing an item (and only then)</li>
-<li>built-in visualization of node configuration</li>
-<li>nice <a href="../../guide/api/">Python API</a></li>
-<li>designed to be mastered quickly and easily remembered</li>
-<li>for better or worse: no commercial agenda/support</li>
-<li>no support for non-Linux target nodes (BundleWrap itself can be run from Mac OS as well)</li>
-</ul>
-<h2 id="ansible">Ansible</h2>
-<p><a href="http://ansible.com&gt;">Ansible</a> is very similar to BundleWrap in how it communicates with nodes. Both systems do not use server or agent processes, but SSH. Ansible can optionally use OpenSSH instead of a Python SSH implementation to speed up performance. On the other hand, BundleWrap will always use the Python implementation, but with multiple connections to each node. This should give BundleWrap a performance advantage on very complex systems with many items, since each connection can work on a different item simultaneously.</p>
-<p>To apply configuration, Ansible uploads pieces of code called modules to each node and runs them there. Many Ansible modules depend on the node having a Python 2.x interpreter installed. In some cases, third-party Python libraries are needed as well, increasing the footprint on the node. BundleWrap runs commands on the target node just as you would in an interactive SSH session. Most of the <a href="../../guide/installation/#requirements-for-managed-systems">commands needed</a> by BundleWrap are provided by coreutils and should be present on all standard Linux systems.</p>
-<p>Ansible ships with loads of modules while BundleWrap will only give you the most needed primitives to work with. For example, we will not add an item type for remote downloads because you can easily build that yourself using an <a href="../../items/action/">action</a> with <code>wget</code>.</p>
-<p>Ansible's playbooks roughly correspond to BundleWrap's bundles, but are written in YAML using a special playbook language. BundleWrap uses Python for this purpose, so if you know some basic Python you only need to learn the schema of the dictionaries you're building. This also means that you will never run into a problem the playbook language cannot solve. Anything you can do in Python, you can do in BundleWrap.</p>
-<p>While you can automate application deployments in BundleWrap, Ansible is much more capable in that regard as it combines config management and sophisticated deployment mechanisms (multi-stage, rolling updates).</p>
-<p>File templates in Ansible are <a href="http://jinja2.pocoo.org">Jinja2</a>, while BundleWrap offers both <a href="http://makotemplates.org&gt;">Mako</a> and Jinja2.</p>
-<p>Ansible, Inc. offers paid support for Ansible and an optional web-based addon called <a href="http://ansible.com/tower">Ansible Tower</a>. No such offerings are available for BundleWrap.</p>
-<h2 id="bcfg2">BCFG2</h2>
-<p>BCFG2's bundles obviously were an inspiration for BundleWrap. One important difference is that BundleWrap's bundles are usually completely isolated and self-contained within their directory while BCFG2 bundles may need resources (e.g. file templates) from elsewhere in the repository.</p>
-<p>On a practical level BundleWrap prefers pure Python and Mako over the XML- and text-variants of Genshi used for bundle and file templating in BCFG2.</p>
-<p>And of course BCFG2 has a very traditional client/server model while BundleWrap runs only on the operators computer.</p>
-<h2 id="chef">Chef</h2>
-<p><a href="http://www.getchef.com">Chef</a> has basically two modes of operation: The most widely used one involves a server component and the <code>chef-client</code> agent. The second option is <code>chef-solo</code>, which will apply configuration from a local repository to the node the repository is located on. BundleWrap supports neither of these modes and always applies configuration over SSH.</p>
-<p>Overall, Chef is harder to get into, but will scale to thousands of nodes.</p>
-<p>The community around Chef is quite large and probably the largest of all config management systems. This means lots of community-maintained cookbooks to choose from. BundleWrap does have a <a href="../../repo/plugins/">plugin system</a> to provide almost anything in a repository, but there aren't many plugins to choose from yet.</p>
-<p>Chef is written in Ruby and uses the popular <a href="http://www.kuwata-lab.com/erubis/">ERB</a> template language. BundleWrap is heavily invested in Python and offers support for Mako and Jinja2 templates.</p>
-<p>OpsCode offers paid support for Chef and SaaS hosting for the server component. <a href="http://aws.amazon.com/opsworks/">AWS OpsWorks</a> also integrates Chef cookbooks.</p></div>
+<p><br></p>
+<h2 id="itemdisplay_keys-and-itemdisplay_dicts">Item.display_keys and Item.display_dicts</h2>
+<p>If you've written your own items and used the <code>display_keys()</code> or <code>display_dicts()</code> methods or the <code>BLOCK_CONCURRENT</code> attribute, you will have to update them to the <a href="../dev_item/">new API</a>.</p></div>
         </div>
 
         <footer class="col-md-12">
