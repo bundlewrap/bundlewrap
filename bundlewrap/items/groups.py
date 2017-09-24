@@ -33,6 +33,14 @@ class Group(Item):
     ITEM_TYPE_NAME = "group"
     REQUIRED_ATTRIBUTES = []
 
+    @classmethod
+    def block_concurrent(self, node_os, node_os_version):
+        # https://github.com/bundlewrap/bundlewrap/issues/367
+        if node_os == 'openbsd':
+            return [self.ITEM_TYPE_NAME]
+        else:
+            return []
+
     def __repr__(self):
         return "<Group name:{}>".format(self.name)
 

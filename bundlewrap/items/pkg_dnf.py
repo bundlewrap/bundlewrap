@@ -10,9 +10,11 @@ class DnfPkg(Pkg):
     """
     A package installed by dnf.
     """
-    BLOCK_CONCURRENT = ["pkg_dnf", "pkg_yum"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_dnf"
     ITEM_TYPE_NAME = "pkg_dnf"
+
+    def block_concurrent(self):
+        return ["pkg_dnf", "pkg_yum"]
 
     def pkg_all_installed(self):
         result = self.node.run("dnf -d0 -e0 list installed")

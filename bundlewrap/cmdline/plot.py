@@ -29,7 +29,7 @@ def bw_plot_node(repo, args):
     node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
     for line in graph_for_items(
         node.name,
-        prepare_dependencies(node.items),
+        prepare_dependencies(node.items, node.os, node.os_version),
         cluster=args['cluster'],
         concurrency=args['depends_concurrency'],
         static=args['depends_static'],

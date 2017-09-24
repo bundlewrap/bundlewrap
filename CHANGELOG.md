@@ -13,6 +13,7 @@ unreleased
 * removed `bw apply --profiling` (BACKWARDS INCOMPATIBLE)
 * removed `Item.display_keys()` (BACKWARDS INCOMPATIBLE)
 * changed return value of `Item.display_dicts()` (BACKWARDS INCOMPATIBLE)
+* changed `Item.BLOCK_CONCURRENT` into a class method (BACKWARDS INCOMPATIBLE)
 * removed `repo.vault.format()` (BACKWARDS INCOMPATIBLE)
 * removed env vars: BWADDHOSTKEYS, BWCOLORS, BWITEMWORKERS, BWNODEWORKERS (BACKWARDS INCOMPATIBLE)
 

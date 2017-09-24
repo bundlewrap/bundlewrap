@@ -48,4 +48,4 @@ The following [env vars](env.md) have been renamed (though the new names have al
 
 ## Item.display_keys and Item.display_dicts
 
-If you've written your own items and used the `display_keys()` or `display_dicts()` methods, you will have to update them to the [new API](dev_item.md).
+If you've written your own items and used the `display_keys()` or `display_dicts()` methods or the `BLOCK_CONCURRENT` attribute, you will have to update them to the [new API](dev_item.md).

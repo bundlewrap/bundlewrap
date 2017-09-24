@@ -37,7 +37,6 @@ class OpenBSDPkg(Item):
     """
     A package installed by pkg_add/pkg_delete.
     """
-    BLOCK_CONCURRENT = ["pkg_openbsd"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_openbsd"
     ITEM_ATTRIBUTES = {
         'installed': True,

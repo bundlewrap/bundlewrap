@@ -12,7 +12,6 @@ class AptPkg(Pkg):
     """
     A package installed by apt.
     """
-    BLOCK_CONCURRENT = ["pkg_apt"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_apt"
     ITEM_TYPE_NAME = "pkg_apt"
     WHEN_CREATING_ATTRIBUTES = {

@@ -117,7 +117,7 @@ def apply_items(
     interactive=False,
 ):
     with io.job(_("  {node}  processing dependencies...").format(node=node.name)):
-        item_queue = ItemQueue(node.items)
+        item_queue = ItemQueue(node.items, node.os, node.os_version)
 
     results = []
 
