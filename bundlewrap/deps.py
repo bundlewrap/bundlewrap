@@ -267,7 +267,7 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
     # we must group them together when they overlap. E.g.:
     #
     #     Type1.block_concurrent(...) == ["type1", "type2"]
-    #     Type2.block_concurrent(...) == ["type2, "type3"]
+    #     Type2.block_concurrent(...) == ["type2", "type3"]
     #     Type4.block_concurrent(...) == ["type4"]
     #
     # becomes
