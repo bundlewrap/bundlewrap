@@ -7,6 +7,8 @@ def test_empty(tmpdir):
     make_repo(tmpdir)
     stdout, stderr, rcode = run("bw test", path=str(tmpdir))
     assert stdout == b""
+    assert stderr == b""
+    assert rcode == 0
 
 
 def test_bundle_not_found(tmpdir):
@@ -37,8 +39,8 @@ def test(repo, **kwargs):
 def test_node(repo, node, **kwargs):
     io.stdout("BBB")
 """)
-    assert b"AAA" in run("bw test", path=str(tmpdir))[0]
-    assert b"BBB" in run("bw test", path=str(tmpdir))[0]
+    assert b"AAA" in run("bw test -H", path=str(tmpdir))[0]
+    assert b"BBB" in run("bw test -J", path=str(tmpdir))[0]
 
 
 def test_circular_dep_direct(tmpdir):
@@ -62,7 +64,7 @@ def test_circular_dep_direct(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
 def test_circular_dep_indirect(tmpdir):
@@ -89,7 +91,7 @@ def test_circular_dep_indirect(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
 def test_circular_dep_self(tmpdir):
@@ -110,7 +112,7 @@ def test_circular_dep_self(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
 def test_circular_trigger_self(tmpdir):
@@ -131,7 +133,7 @@ def test_circular_trigger_self(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
 def test_file_invalid_attribute(tmpdir):
@@ -152,7 +154,7 @@ def test_file_invalid_attribute(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
 def test_file_template_error(tmpdir):
@@ -174,7 +176,7 @@ def test_file_template_error(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
 def test_group_loop(tmpdir):
@@ -192,7 +194,7 @@ def test_group_loop(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -S", path=str(tmpdir))[2] == 1
 
 
 def test_group_metadata_collision(tmpdir):
@@ -223,7 +225,7 @@ def test_group_metadata_collision(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -M", path=str(tmpdir))[2] == 1
 
 
 def test_group_metadata_collision_subgroups(tmpdir):
@@ -254,7 +256,7 @@ def test_group_metadata_collision_subgroups(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 0
+    assert run("bw test -M", path=str(tmpdir))[2] == 0
 
 
 def test_group_metadata_collision_list(tmpdir):
@@ -276,7 +278,7 @@ def test_group_metadata_collision_list(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -M", path=str(tmpdir))[2] == 1
 
 
 def test_group_metadata_collision_dict(tmpdir):
@@ -298,7 +300,7 @@ def test_group_metadata_collision_dict(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -M", path=str(tmpdir))[2] == 1
 
 
 def test_group_metadata_collision_dict_ok(tmpdir):
@@ -320,7 +322,7 @@ def test_group_metadata_collision_dict_ok(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 0
+    assert run("bw test -M", path=str(tmpdir))[2] == 0
 
 
 def test_group_metadata_collision_set(tmpdir):
@@ -342,7 +344,7 @@ def test_group_metadata_collision_set(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -M", path=str(tmpdir))[2] == 1
 
 
 def test_group_metadata_collision_set_ok(tmpdir):
@@ -364,7 +366,7 @@ def test_group_metadata_collision_set_ok(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 0
+    assert run("bw test -M", path=str(tmpdir))[2] == 0
 
 
 def test_fault_missing(tmpdir):
@@ -386,8 +388,8 @@ def test_fault_missing(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
-    assert run("bw test --ignore-missing-faults", path=str(tmpdir))[2] == 0
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
+    assert run("bw test -iI", path=str(tmpdir))[2] == 0
 
 
 def test_metadata_determinism_ok(tmpdir):
@@ -403,10 +405,10 @@ def test_metadata_determinism_ok(tmpdir):
         },
     )
     with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
-        f.write("""
+        f.write("""@metadata_processor
 def test(metadata):
     metadata['test'] = 1
-    return metadata
+    return metadata, DONE
 """)
     assert run("bw test -m 3", path=str(tmpdir))[2] == 0
 
@@ -424,11 +426,12 @@ def test_metadata_determinism_broken(tmpdir):
         },
     )
     with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
-        f.write("""from random import randint as _randint
+        f.write("""from random import randint
 
+@metadata_processor
 def test(metadata):
-    metadata.setdefault('test', _randint(1, 99999))
-    return metadata
+    metadata.setdefault('test', randint(1, 99999))
+    return metadata, DONE
 """)
     assert run("bw test -m 3", path=str(tmpdir))[2] == 1
 
@@ -493,6 +496,21 @@ def test_unknown_subgroup(tmpdir):
     assert run("bw test group2", path=str(tmpdir))[2] == 1
 
 
+def test_empty_group(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {},
+        },
+        groups={
+            "group1": {},
+            "group2": {'members': ["node1"]},
+        },
+    )
+    assert run("bw test", path=str(tmpdir))[2] == 0
+    assert run("bw test -e", path=str(tmpdir))[2] == 1
+
+
 def test_group_user_dep_deleted(tmpdir):
     make_repo(
         tmpdir,
@@ -516,7 +534,7 @@ def test_group_user_dep_deleted(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
 def test_group_user_dep_ok(tmpdir):
@@ -539,7 +557,7 @@ def test_group_user_dep_ok(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 0
+    assert run("bw test -I", path=str(tmpdir))[2] == 0
 
 
 def test_group_user_dep_deleted_gid(tmpdir):
@@ -565,4 +583,4 @@ def test_group_user_dep_deleted_gid(tmpdir):
             },
         },
     )
-    assert run("bw test", path=str(tmpdir))[2] == 1
+    assert run("bw test -I", path=str(tmpdir))[2] == 1

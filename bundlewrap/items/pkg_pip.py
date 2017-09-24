@@ -37,7 +37,6 @@ class PipPkg(Item):
     """
     A package installed by pip.
     """
-    BLOCK_CONCURRENT = ["pkg_pip"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_pip"
     ITEM_ATTRIBUTES = {
         'installed': True,

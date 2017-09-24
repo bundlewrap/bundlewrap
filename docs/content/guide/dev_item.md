@@ -29,13 +29,20 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
         """
         A foo.
         """
-        BLOCK_CONCURRENT = []
         BUNDLE_ATTRIBUTE_NAME = "foo"
         ITEM_ATTRIBUTES = {
             'attribute': "default value",
         }
         ITEM_TYPE_NAME = "foo"
         REQUIRED_ATTRIBUTES = ['attribute']
+
+        @classmethod
+        def block_concurrent(cls, node_os, node_os_version):
+            """
+            Return a list of item types that cannot be applied in parallel
+            with this item type.
+            """
+            return []
 
         def __repr__(self):
             return "<Foo attribute:{}>".format(self.attributes['attribute'])
@@ -64,22 +71,13 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 
         def display_dicts(self, cdict, sdict, keys):
             """
-            Given cdict and sdict as implemented above, modify them to better
-            suit interactive presentation. The keys parameter is the return
-            value of display_keys (see below) and provided for reference only.
+            Given cdict and sdict as implemented above, modify them to
+            better suit interactive presentation. The keys parameter is a
+            list of keys whose values differ between cdict and sdict.
 
             Implementing this method is optional.
             """
-            return (cdict, sdict)
-
-        def display_keys(self, cdict, sdict, keys):
-            """
-            Given a list of keys whose values differ between cdict and sdict,
-            modify them to better suit presentation to the user.
-
-            Implementing this method is optional.
-            """
-            return keys
+            return (cdict, sdict, keys)
 
         def fix(self, status):
             """
@@ -113,11 +111,6 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
     ITEM_TYPE_NAME = "foo"
 
 
-`BLOCK_CONCURRENT` is a list of item types (e.g. `pkg_apt`), that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time):
-
-    BLOCK_CONCURRENT = ["pkg_apt"]
-
-
 `REQUIRED_ATTRIBUTES` is a list of attribute names that must be set on each item of this type. If BundleWrap encounters an item without all these attributes during bundle inspection, an exception will be raised. Example:
 
     REQUIRED_ATTRIBUTES = ['attr1', 'attr2']
@@ -130,5 +123,7 @@ Step 3: Implement methods
 You should probably start with `sdict()`. Use `self.node.run("command")` to run shell commands on the current node and check the `stdout` property of the returned object.
 
 The only other method you have to implement is `fix`. It doesn't have to return anything and just uses `self.node.run()` to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.
+
+`block_concurrent()` must return a list of item types (e.g. `['pkg_apt']`) that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time).
 
 If you're having trouble, try looking at the [source code for the items that come with BundleWrap](https://github.com/bundlewrap/bundlewrap/tree/master/bundlewrap/items). The `pkg_*` items are pretty simple and easy to understand while `files` is the most complex to date. Or just drop by on [IRC](irc://chat.freenode.net/bundlewrap), we're glad to help.

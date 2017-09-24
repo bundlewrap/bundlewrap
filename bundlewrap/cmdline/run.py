@@ -2,18 +2,23 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+try:
+    from itertools import zip_longest
+except ImportError:  # Python 2
+    from itertools import izip_longest as zip_longest
+from sys import exit
 
 from ..concurrency import WorkerPool
-from ..exceptions import NodeLockedException
 from ..utils import SkipList
 from ..utils.cmdline import get_target_nodes
+from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import mark_for_translation as _
-from ..utils.text import bold, error_summary, green, red, yellow
+from ..utils.text import blue, bold, error_summary, green, red, yellow
 from ..utils.time import format_duration
 from ..utils.ui import io
 
 
-def run_on_node(node, command, may_fail, ignore_locks, log_output, skip_list):
+def run_on_node(node, command, skip_list):
     if node.dummy:
         io.stdout(_("{x} {node}  is a dummy node").format(node=bold(node.name), x=yellow("»")))
         return None
@@ -28,43 +33,64 @@ def run_on_node(node, command, may_fail, ignore_locks, log_output, skip_list):
         command,
     )
 
-    start = datetime.now()
     result = node.run(
         command,
-        may_fail=may_fail,
-        log_output=log_output,
+        may_fail=True,
+        log_output=True,
     )
-    end = datetime.now()
-    duration = end - start
 
     node.repo.hooks.node_run_end(
         node.repo,
         node,
         command,
-        duration=duration,
+        duration=result.duration,
         return_code=result.return_code,
         stdout=result.stdout,
         stderr=result.stderr,
     )
+    return result
 
-    if result.return_code == 0:
-        io.stdout("{x} {node}  {msg}".format(
-            msg=_("completed successfully after {time}").format(
-                time=format_duration(duration, msec=True),
-            ),
-            node=bold(node.name),
-            x=green("✓"),
-        ))
-    else:
-        io.stderr("{x} {node}  {msg}".format(
-            msg=_("failed after {time}s (return code {rcode})").format(
-                rcode=result.return_code,
-                time=format_duration(duration, msec=True),
-            ),
-            node=bold(node.name),
-            x=red("✘"),
-        ))
-    return result.return_code
+
+def stats_summary(results, include_stdout, include_stderr):
+    rows = [[
+        bold(_("node")),
+        bold(_("return code")),
+        bold(_("time")),
+    ], ROW_SEPARATOR]
+    if include_stdout:
+        rows[0].append(bold(_("stdout")))
+    if include_stderr:
+        rows[0].append(bold(_("stderr")))
+
+    for node_name, result in sorted(results.items()):
+        row = [node_name]
+        if result.return_code == 0:
+            row.append(green(str(result.return_code)))
+        else:
+            row.append(red(str(result.return_code)))
+        row.append(format_duration(result.duration, msec=True))
+        rows.append(row)
+        if include_stdout or include_stderr:
+            stdout = result.stdout.decode('utf-8', errors='replace').strip().split("\n")
+            stderr = result.stderr.decode('utf-8', errors='replace').strip().split("\n")
+            if include_stdout:
+                row.append(stdout[0])
+            if include_stderr:
+                row.append(stderr[0])
+            for stdout_line, stderr_line in list(zip_longest(stdout, stderr, fillvalue=""))[1:]:
+                continuation_row = ["", "", ""]
+                if include_stdout:
+                    continuation_row.append(stdout_line)
+                if include_stderr:
+                    continuation_row.append(stderr_line)
+                rows.append(continuation_row)
+            rows.append(ROW_SEPARATOR)
+
+    if include_stdout or include_stderr:
+        # remove last ROW_SEPARATOR
+        rows = rows[:-1]
+    for line in render_table(rows, alignments={1: 'right', 2: 'right'}):
+        io.stdout("{x} {line}".format(x=blue("i"), line=line))
 
 
 def bw_run(repo, args):
@@ -80,7 +106,7 @@ def bw_run(repo, args):
         args['command'],
     )
     start_time = datetime.now()
-
+    results = {}
     skip_list = SkipList(args['resume_file'])
 
     def tasks_available():
@@ -94,33 +120,21 @@ def bw_run(repo, args):
             'args': (
                 node,
                 " ".join(args['command']),
-                args['may_fail'],
-                args['ignore_locks'],
-                True,
                 skip_list,
             ),
         }
 
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
+        results[task_id] = return_value
         if return_value == 0:
             skip_list.add(task_id)
 
     def handle_exception(task_id, exception, traceback):
         io.progress_advance()
-        if isinstance(exception, NodeLockedException):
-            msg = _(
-                "{node_bold}  locked by {user} "
-                "(see `bw lock show {node}` for details)"
-            ).format(
-                node_bold=bold(task_id),
-                node=task_id,
-                user=exception.args[0]['user'],
-            )
-        else:
-            msg = "{}  {}".format(bold(task_id), exception)
-            io.stderr(traceback)
-            io.stderr(repr(exception))
+        msg = "{}  {}".format(bold(task_id), exception)
+        io.stderr(traceback)
+        io.stderr(repr(exception))
         io.stderr("{} {}".format(red("!"), msg))
         errors.append(msg)
 
@@ -135,6 +149,8 @@ def bw_run(repo, args):
     )
     worker_pool.run()
 
+    if args['summary']:
+        stats_summary(results, args['stdout_table'], args['stderr_table'])
     error_summary(errors)
 
     repo.hooks.run_end(
@@ -144,3 +160,5 @@ def bw_run(repo, args):
         args['command'],
         duration=datetime.now() - start_time,
     )
+
+    exit(1 if errors else 0)

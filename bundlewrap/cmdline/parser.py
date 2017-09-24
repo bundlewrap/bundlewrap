@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, SUPPRESS
 from os import environ, getcwd
 
 from .. import VERSION_STRING
@@ -65,6 +65,16 @@ def build_parser_bw():
         metavar=_("DIRECTORY"),
         type=str,
     )
+    # hidden option to dump profiling info, can be inpected with
+    # SnakeViz or whatever
+    parser.add_argument(
+        "--profile",
+        default=None,
+        dest='profile',
+        help=SUPPRESS,
+        metavar=_("FILE"),
+        type=str,
+    )
     parser.add_argument(
         "--version",
         action='version',
@@ -120,13 +130,6 @@ def build_parser_bw():
         help=_("number of items to apply simultaneously on each node "
                "(defaults to {})").format(bw_apply_p_items_default),
         type=int,
-    )
-    parser_apply.add_argument(
-        "--profiling",
-        action='store_true',
-        default=False,
-        dest='profiling',
-        help=_("print time elapsed for each item"),
     )
     parser_apply.add_argument(
         "-s",
@@ -190,15 +193,32 @@ def build_parser_bw():
     )
 
     # bw groups
-    help_groups = _("Lists groups in this repository (deprecated, use `bw nodes -a`)")
+    help_groups = _("Lists groups in this repository")
     parser_groups = subparsers.add_parser("groups", description=help_groups, help=help_groups)
     parser_groups.set_defaults(func=bw_groups)
     parser_groups.add_argument(
-        "-n",
-        "--nodes",
+        "-i",
+        "--inline",
         action='store_true',
-        dest='show_nodes',
-        help=_("show nodes for each group"),
+        dest='inline',
+        help=_("keep lists on a single line (for grep)"),
+    )
+    parser_groups.add_argument(
+        'groups',
+        default=None,
+        metavar=_("GROUP1,GROUP2..."),
+        nargs='?',
+        type=str,
+        help=_("show the given groups and their subgroups"),
+    )
+    parser_groups.add_argument(
+        'attrs',
+        default=None,
+        metavar=_("ATTR1,ATTR2..."),
+        nargs='?',
+        type=str,
+        help=_("show table with the given attributes for each group "
+               "(e.g. 'all', 'members', 'os', ...)"),
     )
 
     # bw hash
@@ -271,11 +291,9 @@ def build_parser_bw():
     parser_items.add_argument(
         "-f",
         "--file-preview",
+        action='store_true',
         dest='file_preview',
-        help=_("print preview of given file"),
-        metavar=_("FILE"),
-        required=False,
-        type=str,  # TODO 3.0 convert to bool and use ITEM arg
+        help=_("print preview of given file ITEM"),
     )
     parser_items.add_argument(
         "-w",
@@ -433,7 +451,7 @@ def build_parser_bw():
         metavar=_("KEY"),
         nargs='*',
         type=str,
-        help=_("print only partial metadata from the given space-separated key path"),
+        help=_("print only partial metadata from the given space-separated key path (e.g. `bw metadata mynode users jdoe` to show `mynode.metadata['users']['jdoe']`)"),
     )
     parser_metadata.add_argument(
         "-t",
@@ -448,56 +466,15 @@ def build_parser_bw():
     )
 
     # bw nodes
-    help_nodes = _("List all nodes in this repository")
+    help_nodes = _("List nodes in this repository")
     parser_nodes = subparsers.add_parser("nodes", description=help_nodes, help=help_nodes)
     parser_nodes.set_defaults(func=bw_nodes)
-    parser_nodes.add_argument(
-        "-a",
-        "--attrs",
-        action='store_true',
-        dest='show_attrs',
-        help=_("show attributes for each node"),
-    )
-    parser_nodes.add_argument(
-        "--bundles",
-        action='store_true',
-        dest='show_bundles',
-        help=_("show bundles for each node (deprecated, use --attrs)"),
-    )
-    parser_nodes.add_argument(
-        "--hostnames",
-        action='store_true',
-        dest='show_hostnames',
-        help=_("show hostnames instead of node names (deprecated, use --attrs)"),
-    )
-    parser_nodes.add_argument(
-        "-g",
-        "--filter-group",
-        default=None,
-        dest='filter_group',
-        metavar=_("GROUP"),
-        required=False,
-        type=str,
-        help=_("show only nodes in the given group (deprecated)"),
-    )
-    parser_nodes.add_argument(
-        "--groups",
-        action='store_true',
-        dest='show_groups',
-        help=_("show group membership for each node (deprecated, use --attrs)"),
-    )
     parser_nodes.add_argument(
         "-i",
         "--inline",
         action='store_true',
         dest='inline',
-        help=_("show multiple values on the same line (use with --attrs)"),
-    )
-    parser_nodes.add_argument(
-        "--os",
-        action='store_true',
-        dest='show_os',
-        help=_("show OS for each node (deprecated, use --attrs)"),
+        help=_("keep lists on a single line (for grep)"),
     )
     parser_nodes.add_argument(
         'target',
@@ -506,6 +483,15 @@ def build_parser_bw():
         nargs='?',
         type=str,
         help=_("filter according to nodes, groups and/or bundle selectors"),
+    )
+    parser_nodes.add_argument(
+        'attrs',
+        default=None,
+        metavar=_("ATTR1,ATTR2..."),
+        nargs='?',
+        type=str,
+        help=_("show table with the given attributes for each node "
+               "(e.g. 'all', 'groups', 'bundles', 'hostname', 'os', ...)"),
     )
 
     # bw plot
@@ -720,22 +706,20 @@ def build_parser_bw():
     parser_run.add_argument(
         'command',
         metavar=_("COMMAND"),
-        nargs='+',
         type=str,
         help=_("command to run"),
     )
     parser_run.add_argument(
-        "-f",
-        "--may-fail",
+        "--stderr-table",
         action='store_true',
-        dest='may_fail',
-        help=_("ignore non-zero exit codes"),
+        dest='stderr_table',
+        help=_("include command stderr in stats table"),
     )
     parser_run.add_argument(
-        "--force",
+        "--stdout-table",
         action='store_true',
-        dest='ignore_locks',
-        help=_("ignore soft locks on target nodes"),
+        dest='stdout_table',
+        help=_("include command stdout in stats table"),
     )
     bw_run_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_run.add_argument(
@@ -759,6 +743,13 @@ def build_parser_bw():
         metavar=_("PATH"),
         type=str,
     )
+    parser_run.add_argument(
+        "-S",
+        "--no-summary",
+        action='store_false',
+        dest='summary',
+        help=_("don't show stats summary"),
+    )
 
     # bw stats
     help_stats = _("Show some statistics about your repository")
@@ -767,7 +758,13 @@ def build_parser_bw():
 
     # bw test
     help_test = _("Test your repository for consistency "
-                  "(you can use this with a CI tool like Jenkins)")
+                  "(you can use this with a CI tool like Jenkins). "
+                  "If *any* options other than -i are given, *only* the "
+                  "tests selected by those options will be run. Otherwise, a "
+                  "default selection of tests will be run (that selection may "
+                  "change in future releases). Currently, the default is -IJM "
+                  "if specific nodes are given and -HIJMS if testing the "
+                  "entire repo.")
     parser_test = subparsers.add_parser("test", description=help_test, help=help_test)
     parser_test.set_defaults(func=bw_test)
     parser_test.add_argument(
@@ -776,13 +773,13 @@ def build_parser_bw():
         metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
         nargs='?',
         type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
+        help=_("target nodes, groups and/or bundle selectors (defaults to all)"),
     )
     parser_test.add_argument(
         "-c",
-        "--plugin-conflict-error",
+        "--plugin-conflicts",
         action='store_true',
-        dest='plugin_conflict_error',
+        dest='plugin_conflicts',
         help=_("check for local modifications to files installed by plugins"),
     )
     parser_test.add_argument(
@@ -796,11 +793,39 @@ def build_parser_bw():
         type=int,
     )
     parser_test.add_argument(
+        "-e",
+        "--empty-groups",
+        action='store_true',
+        dest='orphaned_groups',
+        help=_("check for empty groups"),
+    )
+    parser_test.add_argument(
+        "-H",
+        "--hooks-repo",
+        action='store_true',
+        dest='hooks_repo',
+        help=_("run repo-level test hooks"),
+    )
+    parser_test.add_argument(
         "-i",
         "--ignore-missing-faults",
         action='store_true',
         dest='ignore_missing_faults',
         help=_("do not fail when encountering a missing Fault"),
+    )
+    parser_test.add_argument(
+        "-I",
+        "--items",
+        action='store_true',
+        dest='items',
+        help=_("run item-level tests (like rendering templates)"),
+    )
+    parser_test.add_argument(
+        "-J",
+        "--hooks-node",
+        action='store_true',
+        dest='hooks_node',
+        help=_("run node-level test hooks"),
     )
     parser_test.add_argument(
         "-m",
@@ -812,25 +837,26 @@ def build_parser_bw():
         metavar="N",
         type=int,
     )
-    bw_test_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_test.add_argument(
-        "-p",
-        "--parallel-nodes",
-        default=bw_test_p_default,
-        dest='node_workers',
-        help=_("number of nodes to test simultaneously "
-               "(defaults to {})").format(bw_test_p_default),
-        type=int,
+        "-M",
+        "--metadata-collisions",
+        action='store_true',
+        dest='metadata_collisions',
+        help=_("check for conflicting metadata keys in group metadata"),
     )
-    bw_test_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_test.add_argument(
-        "-P",
-        "--parallel-items",
-        default=bw_test_p_items_default,
-        dest='item_workers',
-        help=_("number of items to test simultaneously for each node "
-               "(defaults to {})").format(bw_test_p_items_default),
-        type=int,
+        "-o",
+        "--orphaned-bundles",
+        action='store_true',
+        dest='orphaned_bundles',
+        help=_("check for bundles not assigned to any node"),
+    )
+    parser_test.add_argument(
+        "-S",
+        "--subgroup-loops",
+        action='store_true',
+        dest='subgroup_loops',
+        help=_("check for loops in subgroup hierarchies"),
     )
 
     # bw verify

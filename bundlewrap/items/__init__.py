@@ -88,6 +88,14 @@ class Item(object):
     STATUS_ACTION_SUCCEEDED = 5
     WHEN_CREATING_ATTRIBUTES = {}
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        """
+        Return a list of item types that cannot be applied in parallel
+        with this item type.
+        """
+        return []
+
     def __init__(
         self,
         bundle,
@@ -470,11 +478,7 @@ class Item(object):
                     status_code = self.STATUS_OK
 
         if status_code is None:
-            keys_to_fix = self.display_keys(
-                copy(self.cached_cdict),
-                copy(status_before.sdict),
-                status_before.keys_to_fix[:],
-            )
+            keys_to_fix = status_before.keys_to_fix
             if not interactive:
                 with io.job(_("  {node}  {bundle}  {item}  fixing...").format(
                     bundle=self.bundle.name,
@@ -488,12 +492,12 @@ class Item(object):
                 elif status_before.must_be_deleted:
                     question_text = _("Found on node. Will be removed.")
                 else:
-                    cdict, sdict = self.display_dicts(
+                    cdict, sdict, display_keys_to_fix = self.display_dicts(
                         copy(self.cached_cdict),
                         copy(status_before.sdict),
-                        keys_to_fix,
+                        copy(keys_to_fix),
                     )
-                    question_text = self.ask(cdict, sdict, keys_to_fix)
+                    question_text = self.ask(cdict, sdict, display_keys_to_fix)
                 if self.comment:
                     question_text += format_comment(self.comment)
                 question = wrap_question(
@@ -536,11 +540,11 @@ class Item(object):
         elif status_before.must_be_deleted:
             changes = False
         elif status_code == self.STATUS_FAILED:
-            changes = self.display_keys(
+            changes = self.display_dicts(
                 self.cached_cdict.copy(),
                 status_after.sdict.copy(),
                 status_after.keys_to_fix[:],
-            )
+            )[2]
         else:
             changes = keys_to_fix
 
@@ -653,22 +657,12 @@ class Item(object):
     def display_dicts(self, cdict, sdict, keys):
         """
         Given cdict and sdict as implemented above, modify them to
-        better suit interactive presentation. The keys parameter is the
-        return value of display_keys (see below) and provided for
-        reference only.
+        better suit interactive presentation. The keys parameter is a
+        list of keys whose values differ between cdict and sdict.
 
         MAY be overridden by subclasses.
         """
-        return (cdict, sdict)
-
-    def display_keys(self, cdict, sdict, keys):
-        """
-        Given a list of keys whose values differ between cdict and
-        sdict, modify them to better suit presentation to the user.
-
-        MAY be overridden by subclasses.
-        """
-        return keys
+        return (cdict, sdict, keys)
 
     def patch_attributes(self, attributes):
         """

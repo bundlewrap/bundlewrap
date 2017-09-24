@@ -52,6 +52,8 @@ def test_deterministic(tmpdir):
                 'files': {
                     "/test": {
                         'content': "${node.name}",
+                        'group': None,  # BSD has a different default and we don't want to
+                                        # deal with that here
                     },
                 },
             },
@@ -65,7 +67,7 @@ def test_deterministic(tmpdir):
         hashes.add(stdout.strip())
 
     assert len(hashes) == 1
-    assert hashes.pop() == b"8c155b4e7056463eb2c8a8345f4f316f6d7359f6"
+    assert hashes.pop() == b"2203e7acc35608bbff471c023b7b7498e5b385d9"
 
 
 def test_dict(tmpdir):
@@ -81,6 +83,8 @@ def test_dict(tmpdir):
                 'files': {
                     "/test": {
                         'content': "yes please",
+                        'group': None,  # BSD has a different default and we don't want to
+                                        # deal with that here
                     },
                 },
             },
@@ -89,16 +93,18 @@ def test_dict(tmpdir):
 
     stdout, stderr, rcode = run("bw hash -d", path=str(tmpdir))
     assert rcode == 0
-    assert stdout == b"8ab35c696b63a853ccf568b27a50e24a69964487  node1\n"
+    assert stdout == b"93e7a2c6e8cdc71fb4df5426bc0d0bb978d84381  node1\n"
 
     stdout, stderr, rcode = run("bw hash -d node1", path=str(tmpdir))
     assert rcode == 0
-    assert stdout == b"503583964eadabacb18fda32cc9fb1e9f66e424b  file:/test\n"
+    assert stdout == b"59d1a7c79640ccdfd3700ab141698a9389fcd0b7  file:/test\n"
 
     stdout, stderr, rcode = run("bw hash -d node1 file:/test", path=str(tmpdir))
     assert rcode == 0
     assert stdout == (
         b"content_hash\tc05a36d547e2b1682472f76985018038d1feebc5\n"
+        b"mode\t0644\n"
+        b"owner\troot\n"
         b"type\tfile\n"
     )
 

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from os.path import exists, join
 
 from .exceptions import NoSuchBundle, RepositoryError
+from .metadata import DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE
 from .utils import cached_property, get_all_attrs_from_file
 from .utils.text import mark_for_translation as _
 from .utils.text import validate_name
@@ -12,6 +13,14 @@ from .utils.ui import io
 
 FILENAME_BUNDLE = "items.py"
 FILENAME_METADATA = "metadata.py"
+
+
+def metadata_processor(func):
+    """
+    Decorator that tags metadata processors.
+    """
+    func.__is_a_metadata_processor = True
+    return func
 
 
 class Bundle(object):
@@ -92,11 +101,15 @@ class Bundle(object):
             for name, attr in get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
+                    'DEFAULTS': DEFAULTS,
+                    'DONE': DONE,
+                    'RUN_ME_AGAIN': RUN_ME_AGAIN,
+                    'OVERWRITE': OVERWRITE,
+                    'metadata_processor': metadata_processor,
                     'node': self.node,
                     'repo': self.repo,
                 },
             ).items():
-                if name.startswith("_") or not callable(attr):
-                    continue
-                result.append(attr)
+                if getattr(attr, '__is_a_metadata_processor', False):
+                    result.append(attr)
             return result

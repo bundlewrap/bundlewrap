@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from cProfile import Profile
 from functools import wraps
 from os import environ
 from os.path import abspath, dirname
@@ -101,20 +102,14 @@ def main(*args, **kwargs):
     if not hasattr(pargs, 'func'):
         parser_bw.print_help()
         exit(2)
+    if pargs.profile:
+        profile = Profile()
+        profile.enable()
 
     path = abspath(pargs.repo_path)
     io.debug_mode = pargs.debug
     io.activate()
     io.debug(_("invocation: {}").format(" ".join([force_text(arg) for arg in argv])))
-
-    if 'BWADDHOSTKEYS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_ADD_HOST_KEYS', environ['BWADDHOSTKEYS'])
-    if 'BWCOLORS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_COLORS', environ['BWCOLORS'])
-    if 'BWITEMWORKERS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_ITEM_WORKERS', environ['BWITEMWORKERS'])
-    if 'BWNODEWORKERS' in environ:  # TODO remove in 3.0.0
-        environ.setdefault('BW_NODE_WORKERS', environ['BWNODEWORKERS'])
 
     environ.setdefault('BW_ADD_HOST_KEYS', "1" if pargs.add_ssh_host_keys else "0")
 
@@ -152,3 +147,6 @@ def main(*args, **kwargs):
         pargs.func(repo, text_pargs)
     finally:
         io.deactivate()
+        if pargs.profile:
+            profile.disable()
+            profile.dump_stats(pargs.profile)

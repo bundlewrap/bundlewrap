@@ -91,9 +91,10 @@ def test_metadatapy(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""def foo(metadata):
+"""@metadata_processor
+def foo(metadata):
     metadata["baz"] = node.name
-    return metadata
+    return metadata, DONE
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
@@ -104,25 +105,62 @@ def test_metadatapy(tmpdir):
     assert rcode == 0
 
 
-def test_metadatapy_loop(tmpdir):
+def test_metadatapy_defaults(tmpdir):
     make_repo(
         tmpdir,
         bundles={"test": {}},
         nodes={
             "node1": {
                 'bundles': ["test"],
-                'metadata': {"foo": 1},
+                'metadata': {"foo": "bar"},
             },
         },
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""def foo(metadata):
-    metadata["foo"] += 1
-    return metadata
+"""@metadata_processor
+def foo(metadata):
+    return {
+        "foo": "baz",
+        "baz": "foo",
+    }, DONE, DEFAULTS
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert rcode == 1
+    assert loads(stdout.decode()) == {
+        "baz": "foo",
+        "foo": "bar",
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_metadatapy_update(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return {
+        "foo": "baz",
+        "baz": "foo",
+    }, DONE, OVERWRITE
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "baz": "foo",
+        "foo": "baz",
+    }
+    assert stderr == b""
+    assert rcode == 0
 
 
 def test_table(tmpdir):

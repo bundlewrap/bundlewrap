@@ -64,19 +64,19 @@ Encoding of the target file. Note that this applies to the remote file only, you
 
 ### group
 
-Name of the group this file belongs to. Defaults to `None` (don't care about group).
+Name of the group this file belongs to. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
 <br>
 
 ### mode
 
-File mode as returned by `stat -c %a <file>`. Defaults to `None` (don't care about mode).
+File mode as returned by `stat -c %a <file>`. Defaults to `644`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
 <br>
 
 ### owner
 
-Username of the file's owner. Defaults to `None` (don't care about owner).
+Username of the file's owner. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
 <br>
 

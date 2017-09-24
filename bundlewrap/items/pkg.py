@@ -19,6 +19,10 @@ class Pkg(Item):
     }
     _pkg_install_cache = {}
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        return [cls.ITEM_TYPE_NAME]
+
     def __repr__(self):
         return "<{} name:{} installed:{}>".format(
             self.ITEM_TYPE_NAME,

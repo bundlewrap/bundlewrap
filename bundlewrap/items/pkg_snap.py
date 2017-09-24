@@ -10,7 +10,6 @@ class SnapPkg(Pkg):
     """
     A package installed by snap.
     """
-    BLOCK_CONCURRENT = ["pkg_snap"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_snap"
     ITEM_TYPE_NAME = "pkg_snap"
 

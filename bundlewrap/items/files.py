@@ -179,9 +179,9 @@ class File(Item):
         'context': None,
         'delete': False,
         'encoding': "utf-8",
-        'group': None,
-        'mode': None,
-        'owner': None,
+        'group': "root",
+        'mode': "0644",
+        'owner': "root",
         'source': None,
         'verify_with': None,
     }
@@ -351,14 +351,6 @@ class File(Item):
             }
 
     def display_dicts(self, cdict, sdict, keys):
-        if 'content' in keys:
-            del cdict['content_hash']
-            del sdict['content_hash']
-            cdict['content'] = self.content
-            sdict['content'] = get_remote_file_contents(self.node, self.name)
-        return (cdict, sdict)
-
-    def display_keys(self, cdict, sdict, keys):
         if (
             'content_hash' in keys and
             self.attributes['content_type'] not in ('base64', 'binary') and
@@ -367,7 +359,11 @@ class File(Item):
         ):
             keys.remove('content_hash')
             keys.append('content')
-        return keys
+            del cdict['content_hash']
+            del sdict['content_hash']
+            cdict['content'] = self.content
+            sdict['content'] = get_remote_file_contents(self.node, self.name)
+        return (cdict, sdict, keys)
 
     def patch_attributes(self, attributes):
         if (
@@ -381,6 +377,10 @@ class File(Item):
             attributes['context'] = {}
         if 'mode' in attributes and attributes['mode'] is not None:
             attributes['mode'] = str(attributes['mode']).zfill(4)
+        if 'group' not in attributes and self.node.os in self.node.OS_FAMILY_BSD:
+            # BSD doesn't have a root group, so we have to use a
+            # different default value here
+            attributes['group'] = 'wheel'
         return attributes
 
     def test(self):

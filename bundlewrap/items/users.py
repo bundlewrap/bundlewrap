@@ -108,6 +108,14 @@ class User(Item):
     }
     ITEM_TYPE_NAME = "user"
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        # https://github.com/bundlewrap/bundlewrap/issues/367
+        if node_os == 'openbsd':
+            return [cls.ITEM_TYPE_NAME]
+        else:
+            return []
+
     def __repr__(self):
         return "<User name:{}>".format(self.name)
 

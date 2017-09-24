@@ -33,6 +33,7 @@ def validator_mode(item_id, value):
             "mode for {item} should be three or four digits long, was: '{value}'"
         ).format(item=item_id, value=value))
 
+
 ATTRIBUTE_VALIDATORS = defaultdict(lambda: lambda id, value: None)
 ATTRIBUTE_VALIDATORS.update({
     'mode': validator_mode,
@@ -45,9 +46,9 @@ class Directory(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "directories"
     ITEM_ATTRIBUTES = {
-        'group': None,
-        'mode': None,
-        'owner': None,
+        'group': "root",
+        'mode': "0755",
+        'owner': "root",
         'purge': False,
     }
     ITEM_TYPE_NAME = "directory"
@@ -68,21 +69,17 @@ class Directory(Item):
         return cdict
 
     def display_dicts(self, cdict, sdict, keys):
-        if UNMANAGED_PATH_DESC in keys:
-            cdict[UNMANAGED_PATH_DESC] = cdict['paths_to_purge']
-            sdict[UNMANAGED_PATH_DESC] = sdict['paths_to_purge']
-            del cdict['paths_to_purge']
-            del sdict['paths_to_purge']
-        return (cdict, sdict)
-
-    def display_keys(self, cdict, sdict, keys):
         try:
             keys.remove('paths_to_purge')
         except ValueError:
             pass
         else:
             keys.append(UNMANAGED_PATH_DESC)
-        return keys
+            cdict[UNMANAGED_PATH_DESC] = cdict['paths_to_purge']
+            sdict[UNMANAGED_PATH_DESC] = sdict['paths_to_purge']
+            del cdict['paths_to_purge']
+            del sdict['paths_to_purge']
+        return (cdict, sdict, keys)
 
     def fix(self, status):
         if status.must_be_created or 'type' in status.keys_to_fix:
@@ -184,8 +181,6 @@ class Directory(Item):
                 ))
                 yield line
 
-
-
     def get_auto_deps(self, items):
         deps = []
         for item in items:
@@ -257,6 +252,10 @@ class Directory(Item):
     def patch_attributes(self, attributes):
         if 'mode' in attributes and attributes['mode'] is not None:
             attributes['mode'] = str(attributes['mode']).zfill(4)
+        if 'group' not in attributes and self.node.os in self.node.OS_FAMILY_BSD:
+            # BSD doesn't have a root group, so we have to use a
+            # different default value here
+            attributes['group'] = 'wheel'
         return attributes
 
     @classmethod

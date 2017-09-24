@@ -26,6 +26,12 @@ METADATA_TYPES = (
     type(None),
 )
 
+# constants returned as options by metadata processors
+DONE = 1
+RUN_ME_AGAIN = 2
+DEFAULTS = 3
+OVERWRITE = 4
+
 
 def atomic(obj):
     """
@@ -40,6 +46,65 @@ def atomic(obj):
                          "(not: {})".format(repr(obj)))
     else:
         return cls(obj)
+
+
+def check_metadata_processor_result(result, node_name, metadata_processor_name):
+    """
+    Validates the return value of a metadata processor and splits it
+    into metadata and options.
+    """
+    if not isinstance(result, tuple) or not len(result) >= 2:
+        raise ValueError(_(
+            "metadata processor {metaproc} for node {node} did not return "
+            "a tuple of length 2 or greater"
+        ).format(
+            metaproc=metadata_processor_name,
+            node=node_name,
+        ))
+    result_dict, options = result[0], result[1:]
+    if not isinstance(result_dict, dict):
+        raise ValueError(_(
+            "metadata processor {metaproc} for node {node} did not return "
+            "a dict as the first element"
+        ).format(
+            metaproc=metadata_processor_name,
+            node=node_name,
+        ))
+    for option in options:
+        if option not in (DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE):
+            raise ValueError(_(
+                "metadata processor {metaproc} for node {node} returned an "
+                "invalid option: {opt}"
+            ).format(
+                metaproc=metadata_processor_name,
+                node=node_name,
+                opt=repr(option),
+            ))
+    if DONE in options and RUN_ME_AGAIN in options:
+        raise ValueError(_(
+            "metadata processor {metaproc} for node {node} cannot return both "
+            "DONE and RUN_ME_AGAIN"
+        ).format(
+            metaproc=metadata_processor_name,
+            node=node_name,
+        ))
+    if DONE not in options and RUN_ME_AGAIN not in options:
+        raise ValueError(_(
+            "metadata processor {metaproc} for node {node} must return either "
+            "DONE or RUN_ME_AGAIN"
+        ).format(
+            metaproc=metadata_processor_name,
+            node=node_name,
+        ))
+    if DEFAULTS in options and OVERWRITE in options:
+        raise ValueError(_(
+            "metadata processor {metaproc} for node {node} cannot return both "
+            "DEFAULTS and OVERWRITE"
+        ).format(
+            metaproc=metadata_processor_name,
+            node=node_name,
+        ))
+    return result_dict, options
 
 
 def check_for_unsolvable_metadata_key_conflicts(node):

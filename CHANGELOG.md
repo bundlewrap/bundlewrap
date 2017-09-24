@@ -1,3 +1,23 @@
+# 3.0.0
+
+unreleased
+
+* new metadata processor API and options (BACKWARDS INCOMPATIBLE)
+* files, directories, and symlinks now have defaults for owner, group, and mode (BACKWARDS INCOMPATIBLE)
+* overhauled options and output of `bw groups` (BACKWARDS INCOMPATIBLE)
+* overhauled options and output of `bw nodes` (BACKWARDS INCOMPATIBLE)
+* overhauled options and output of `bw run` (BACKWARDS INCOMPATIBLE)
+* overhauled options of `bw test` (BACKWARDS INCOMPATIBLE)
+* svc_systemd services are now 'enabled' by default (BACKWARDS INCOMPATIBLE)
+* `bw items --file-preview` no longer uses a separate file path argument (BACKWARDS INCOMPATIBLE)
+* removed `bw apply --profiling` (BACKWARDS INCOMPATIBLE)
+* removed `Item.display_keys()` (BACKWARDS INCOMPATIBLE)
+* changed return value of `Item.display_dicts()` (BACKWARDS INCOMPATIBLE)
+* changed `Item.BLOCK_CONCURRENT` into a class method (BACKWARDS INCOMPATIBLE)
+* removed `repo.vault.format()` (BACKWARDS INCOMPATIBLE)
+* removed env vars: BWADDHOSTKEYS, BWCOLORS, BWITEMWORKERS, BWNODEWORKERS (BACKWARDS INCOMPATIBLE)
+
+
 # 2.20.1
 
 2017-09-21

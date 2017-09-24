@@ -21,8 +21,8 @@ class Symlink(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "symlinks"
     ITEM_ATTRIBUTES = {
-        'group': None,
-        'owner': None,
+        'group': "root",
+        'owner': "root",
         'target': None,
     }
     ITEM_TYPE_NAME = "symlink"
@@ -61,7 +61,11 @@ class Symlink(Item):
         group = self.attributes['group'] or ""
         if group:
             group = ":" + quote(group)
-        self.node.run("chown -h {}{} -- {}".format(
+        if self.node.os in self.node.OS_FAMILY_BSD:
+            command = "chown -h {}{} {}"
+        else:
+            command = "chown -h {}{} -- {}"
+        self.node.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
             quote(self.name),
@@ -132,6 +136,13 @@ class Symlink(Item):
                 if is_subdirectory(item.name, self.name):
                     deps.append(item.id)
         return deps
+
+    def patch_attributes(self, attributes):
+        if 'group' not in attributes and self.node.os in self.node.OS_FAMILY_BSD:
+            # BSD doesn't have a root group, so we have to use a
+            # different default value here
+            attributes['group'] = 'wheel'
+        return attributes
 
     def sdict(self):
         path_info = PathInfo(self.node, self.name)
