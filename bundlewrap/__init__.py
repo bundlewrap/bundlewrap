@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-VERSION = (2, 20, 1)
+VERSION = (3, 0, 0)
 VERSION_STRING = ".".join([str(v) for v in VERSION])

@@ -1,6 +1,6 @@
 # 3.0.0
 
-unreleased
+2017-09-24
 
 * new metadata processor API and options (BACKWARDS INCOMPATIBLE)
 * files, directories, and symlinks now have defaults for owner, group, and mode (BACKWARDS INCOMPATIBLE)
