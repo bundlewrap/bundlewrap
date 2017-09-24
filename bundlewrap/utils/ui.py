@@ -324,7 +324,7 @@ class IOManager(object):
 
     def _clear_last_job(self):
         if self.jobs and TTY:
-            write_to_stream(STDOUT_WRITER, "\r\033[K")
+            write_to_stream(STDOUT_WRITER, "\r\033[K\033[F\033[K")
 
     def _signal_handler_thread_body(self):
         while self._active:
@@ -366,6 +366,7 @@ class IOManager(object):
 
     def _write_current_job(self):
         if self.jobs and TTY:
-            write_to_stream(STDOUT_WRITER, inverse("{} ".format(self.jobs[-1])[:term_width() - 1]))
+            write_to_stream(STDOUT_WRITER, inverse("{} \n".format(self.jobs[-1])[:term_width() - 1]))
+            write_to_stream(STDOUT_WRITER, "{} ".format(self.jobs[-1])[:term_width() - 1])
 
 io = IOManager()
