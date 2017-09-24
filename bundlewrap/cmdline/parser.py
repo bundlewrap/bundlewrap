@@ -796,7 +796,7 @@ def build_parser_bw():
         "-e",
         "--empty-groups",
         action='store_true',
-        dest='orphaned_groups',
+        dest='empty_groups',
         help=_("check for empty groups"),
     )
     parser_test.add_argument(

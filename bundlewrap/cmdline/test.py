@@ -114,17 +114,17 @@ def test_orphaned_bundles(repo):
         exit(1)
 
 
-def test_orphaned_groups(repo):
-    orphaned_groups = set()
+def test_empty_groups(repo):
+    empty_groups = set()
     for group in repo.groups:
         if not group.nodes:
-            orphaned_groups.append(group)
-    for bundle in sorted(orphaned_groups):
+            empty_groups.add(group)
+    for group in sorted(empty_groups):
         io.stderr(_("{x} {group}  is an empty group").format(
             group=bold(group),
             x=red("✘"),
         ))
-    if orphaned_groups:
+    if empty_groups:
         exit(1)
 
 
@@ -232,7 +232,7 @@ def bw_test(repo, args):
         args['items'] or
         args['metadata_collisions'] or
         args['orphaned_bundles'] or
-        args['orphaned_groups'] or
+        args['empty_groups'] or
         args['plugin_conflicts'] or
         args['subgroup_loops']
     )
@@ -257,8 +257,8 @@ def bw_test(repo, args):
     if args['subgroup_loops'] and not QUIT_EVENT.is_set():
         test_subgroup_loops(repo)
 
-    if args['orphaned_groups'] and not QUIT_EVENT.is_set():
-        test_orphaned_groups(repo)
+    if args['empty_groups'] and not QUIT_EVENT.is_set():
+        test_empty_groups(repo)
 
     if args['orphaned_bundles'] and not QUIT_EVENT.is_set():
         test_orphaned_bundles(repo)
