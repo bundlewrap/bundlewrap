@@ -88,6 +88,14 @@ class Item(object):
     STATUS_ACTION_SUCCEEDED = 5
     WHEN_CREATING_ATTRIBUTES = {}
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        """
+        Return a list of item types that cannot be applied in parallel
+        with this item type.
+        """
+        return []
+
     def __init__(
         self,
         bundle,

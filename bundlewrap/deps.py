@@ -248,7 +248,7 @@ def _inject_canned_actions(items):
     return items
 
 
-def _inject_concurrency_blockers(items):
+def _inject_concurrency_blockers(items, node_os, node_os_version):
     """
     Looks for items with BLOCK_CONCURRENT set and inserts daisy-chain
     dependencies to force a sequential apply.
@@ -259,16 +259,16 @@ def _inject_concurrency_blockers(items):
         item._concurrency_deps = []  # used for DOT (graphviz) output only
         if (
             not isinstance(item, DummyItem) and
-            item.BLOCK_CONCURRENT
+            item.block_concurrent(node_os, node_os_version)
         ):
             item_types.add(item.__class__)
 
-    # Now that we have collected all types with BLOCK_CONCURRENT,
+    # Now that we have collected all relevant types,
     # we must group them together when they overlap. E.g.:
     #
-    #     Type1.BLOCK_CONCURRENT = ["type1", "type2"]
-    #     Type2.BLOCK_CONCURRENT = ["type2, "type3"]
-    #     Type4.BLOCK_CONCURRENT = ["type4"]
+    #     Type1.block_concurrent(...) == ["type1", "type2"]
+    #     Type2.block_concurrent(...) == ["type2", "type3"]
+    #     Type4.block_concurrent(...) == ["type4"]
     #
     # becomes
     #
@@ -284,7 +284,8 @@ def _inject_concurrency_blockers(items):
 
     chain_groups = []
     for item_type in item_types:
-        block_concurrent = list(item_type.BLOCK_CONCURRENT) + [item_type.ITEM_TYPE_NAME]
+        block_concurrent = [item_type.ITEM_TYPE_NAME]
+        block_concurrent.extend(item_type.block_concurrent(node_os, node_os_version))
         found = False
         for blocked_types in chain_groups:
             for blocked_type in block_concurrent:
@@ -553,7 +554,7 @@ def _inject_preceded_by_dependencies(items):
     return items
 
 
-def prepare_dependencies(items):
+def prepare_dependencies(items, node_os, node_os_version):
     """
     Performs all dependency preprocessing on a list of items.
     """
@@ -574,7 +575,7 @@ def prepare_dependencies(items):
     items = _inject_trigger_dependencies(items)
     items = _inject_preceded_by_dependencies(items)
     items = _flatten_dependencies(items)
-    items = _inject_concurrency_blockers(items)
+    items = _inject_concurrency_blockers(items, node_os, node_os_version)
 
     for item in items.values():
         if not isinstance(item, DummyItem):

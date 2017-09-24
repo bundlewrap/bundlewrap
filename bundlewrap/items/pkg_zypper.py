@@ -37,12 +37,15 @@ class ZypperPkg(Item):
     """
     A package installed by zypper.
     """
-    BLOCK_CONCURRENT = ["pkg_zypper"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_zypper"
     ITEM_ATTRIBUTES = {
         'installed': True,
     }
     ITEM_TYPE_NAME = "pkg_zypper"
+
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        return [cls.ITEM_TYPE_NAME]
 
     def __repr__(self):
         return "<ZypperPkg name:{} installed:{}>".format(

@@ -11,7 +11,6 @@ class PacmanPkg(Pkg):
     """
     A package installed by pacman.
     """
-    BLOCK_CONCURRENT = ["pkg_pacman"]
     BUNDLE_ATTRIBUTE_NAME = "pkg_pacman"
     ITEM_ATTRIBUTES = {
         'installed': True,
