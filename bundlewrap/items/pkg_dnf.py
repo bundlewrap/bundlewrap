@@ -13,7 +13,8 @@ class DnfPkg(Pkg):
     BUNDLE_ATTRIBUTE_NAME = "pkg_dnf"
     ITEM_TYPE_NAME = "pkg_dnf"
 
-    def block_concurrent(self):
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
         return ["pkg_dnf", "pkg_yum"]
 
     def pkg_all_installed(self):
