@@ -44,8 +44,8 @@ class ZypperPkg(Item):
     ITEM_TYPE_NAME = "pkg_zypper"
 
     @classmethod
-    def block_concurrent(self, node_os, node_os_version):
-        return [self.ITEM_TYPE_NAME]
+    def block_concurrent(cls, node_os, node_os_version):
+        return [cls.ITEM_TYPE_NAME]
 
     def __repr__(self):
         return "<ZypperPkg name:{} installed:{}>".format(
