@@ -53,11 +53,3 @@ Maintaining bundles and thus configuration for different pieces of software is t
 While it sounds scary, Copyright assignment is used to improve the enforceability of the GPL. Even the FSF does it, [read their explanation why](http://www.gnu.org/licenses/why-assign.html). The agreement used by BundleWrap is from [harmonyagreements.org](http://harmonyagreements.org).
 
 If you're still concerned, please do not hesitate to contact [@trehn](https://twitter.com/trehn).
-
-<br>
-
-### Isn't this all very similar to Ansible?
-
-Some parts are, but there are significant differences as well. Check out the [alternatives page](alternatives.md#ansible) for a writeup of the details.
-
-<br>

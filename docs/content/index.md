@@ -37,7 +37,4 @@ you:
 -   hate Python and/or JSON
 -   like to use community-maintained configuration templates
 -   need unattended bootstrapping of nodes
--   need to manage non-Linux systems
 -   don’t trust your coworkers
-
-We have also prepared a [comparison with other popular config management systems](misc/alternatives.md).
