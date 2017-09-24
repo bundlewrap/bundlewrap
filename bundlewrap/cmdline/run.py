@@ -119,7 +119,7 @@ def bw_run(repo, args):
             'task_id': node.name,
             'args': (
                 node,
-                " ".join(args['command']),
+                args['command'],
                 skip_list,
             ),
         }
