@@ -138,13 +138,7 @@ class PathInfo(object):
     def symlink_target(self):
         if not self.is_symlink:
             raise ValueError("{} is not a symlink".format(quote(self.path)))
-        if self.desc.startswith("symbolic link to `"):
-            return self.desc[18:-1]
-        elif self.desc.startswith("broken symbolic link to `"):
-            return self.desc[25:-1]
-        elif self.desc.startswith("symbolic link to "):
-            return self.desc[17:]
-        elif self.desc.startswith("broken symbolic link to "):
-            return self.desc[24:]
-        else:
-            raise ValueError("unable to find target for {}".format(quote(self.path)))
+
+        return force_text(self.node.run(
+            "readlink -- {}".format(quote(self.path)), may_fail=True,
+        ).stdout.strip())
