@@ -50,7 +50,7 @@ class Symlink(Item):
             self._fix_type(status)
             return
 
-        for fix_type in ('owner', 'group', 'target'):
+        for fix_type in ('target', 'owner', 'group'):
             if fix_type in status.keys_to_fix:
                 if fix_type == 'group' and 'owner' in status.keys_to_fix:
                     # owner and group are fixed with a single chown
