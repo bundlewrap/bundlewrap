@@ -64,7 +64,10 @@ def stats_summary(results, include_stdout, include_stderr):
 
     for node_name, result in sorted(results.items()):
         row = [node_name]
-        if result.return_code == 0:
+        if result is None:
+            # node has been skipped
+            continue
+        elif result.return_code == 0:
             row.append(green(str(result.return_code)))
         else:
             row.append(red(str(result.return_code)))
@@ -89,8 +92,9 @@ def stats_summary(results, include_stdout, include_stderr):
     if include_stdout or include_stderr:
         # remove last ROW_SEPARATOR
         rows = rows[:-1]
-    for line in render_table(rows, alignments={1: 'right', 2: 'right'}):
-        io.stdout("{x} {line}".format(x=blue("i"), line=line))
+    if len(rows) > 2:  # table might be empty if all nodes have been skipped
+        for line in render_table(rows, alignments={1: 'right', 2: 'right'}):
+            io.stdout("{x} {line}".format(x=blue("i"), line=line))
 
 
 def bw_run(repo, args):
@@ -127,7 +131,7 @@ def bw_run(repo, args):
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
         results[task_id] = return_value
-        if return_value == 0:
+        if return_value is None or return_value.return_code == 0:
             skip_list.add(task_id)
 
     def handle_exception(task_id, exception, traceback):
