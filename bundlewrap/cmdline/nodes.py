@@ -42,7 +42,7 @@ def _attribute_table(
                     attr_values.append([",".join(names(getattr(entity, attr)))])
                 else:
                     has_list_attrs = True
-                    attr_values.append(list(names(getattr(entity, attr))))
+                    attr_values.append(sorted(names(getattr(entity, attr))))
             else:
                 attr_values.append([str(getattr(entity, attr))])
         number_of_lines = max([len(value) for value in attr_values])
