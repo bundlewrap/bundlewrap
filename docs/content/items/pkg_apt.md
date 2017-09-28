@@ -16,21 +16,25 @@ Handles packages installed by `apt-get` on Debian-based systems.
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
-<br>
+<hr>
 
 ## installed
 
 `True` when the package is expected to be present on the system; `False` if it should be purged.
 
+<hr>
+
 ## when\_creating
 
 These attributes are only enforced during the creation of the item on the node (in this case this means when a package is installed). They are ignored in subsequent runs of `bw apply`.
+
+<hr>
 
 ### start\_service
 

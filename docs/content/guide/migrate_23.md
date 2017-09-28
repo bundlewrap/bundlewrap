@@ -16,7 +16,7 @@ You will have to add `@metadata_processor` to each metadata processor function. 
 
 The accepted return values of metadata processors have changed as well. Metadata processors now always have to return a tuple with the first element being a dictionary of metadata and the remaining elements made up of various options to tell BundleWrap what to do with the dictionary. In most cases, you will want to return the `DONE` options as in the example above. There is no need to import options, they're always available.
 
-When you previously returned `metadata, False` from a metadata processor, you will now have to return `metadata, RUN_ME_AGAIN`. For a more detailed description of the available options, see [the documentation](../repo/bundles.md#metadatapy).
+When you previously returned `metadata, False` from a metadata processor, you will now have to return `metadata, RUN_ME_AGAIN`. For a more detailed description of the available options, see [the documentation](../repo/metadata.py.md).
 
 <br>
 

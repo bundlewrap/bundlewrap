@@ -19,8 +19,8 @@ This page describes the various subdirectories and files than can exist inside a
 <td>This file allows you to organize your nodes into groups.</td>
 </tr>
 <tr>
-<td><a href="/repo/bundles">bundles/</a></td>
-<td>This required subdirectory contains the bulk of your configuration, organized into bundles of related items.</td>
+<td>bundles/</td>
+<td>This required subdirectory contains the bulk of your configuration, organized into bundles of related items. Each bundle is a subdirectory of bundles/ with an <a href="/repo/items.py">items.py</a> or <a href="/repo/metadata.py">metadata.py</a> in it (or both).</td>
 </tr>
 <tr>
 <td>data/</td>

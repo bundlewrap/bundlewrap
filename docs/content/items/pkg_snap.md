@@ -11,13 +11,13 @@ Handles packages installed by `snap` command.
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
-<br>
+<hr>
 
 ## installed
 

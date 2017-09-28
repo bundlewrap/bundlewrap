@@ -8,25 +8,25 @@
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
-<br>
+<hr>
 
 ## target
 
 File or directory this symlink points to. **This attribute is required.**
 
-<br>
+<hr>
 
 ## group
 
 Name of the group this symlink belongs to. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
-<br>
+<hr>
 
 ## owner
 

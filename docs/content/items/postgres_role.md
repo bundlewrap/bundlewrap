@@ -9,19 +9,19 @@ Manages Postgres roles.
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
-<br>
+<hr>
 
 ## superuser
 
 `True` if the role should be given superuser privileges (defaults to `False`).
 
-<br>
+<hr>
 
 ## password
 
@@ -29,7 +29,7 @@ Plaintext password to set for this role (will be hashed using MD5).
 
 <div class="alert alert-warning">Please do not write any passwords into your bundles. This attribute is intended to be used with an external source of passwords and filled dynamically. If you don't have or want such an elaborate setup, specify passwords using the <code>password_hash</code> attribute instead.</div>
 
-<br>
+<hr>
 
 ## password_hash
 

@@ -11,35 +11,35 @@ Handles services managed by Upstart.
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
-<br>
+<hr>
 
 ## running
 
 `True` if the service is expected to be running on the system; `False` if it should be stopped.
 
-<br>
+<hr>
 
 ## Canned actions
 
-See also: [Explanation of how canned actions work](../repo/bundles.md#canned-actions)
+See also: [Explanation of how canned actions work](../repo/items.py.md#canned-actions)
 
 ## reload
 
 Reloads the service.
 
-<br>
+<hr>
 
 ## restart
 
 Restarts the service.
 
-<br>
+<hr>
 
 ## stopstart
 

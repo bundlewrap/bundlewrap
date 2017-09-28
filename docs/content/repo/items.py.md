@@ -1,12 +1,8 @@
-<h1>Bundles</h1>
-
-Bundles are subdirectories of the `bundles/` directory of your BundleWrap repository.
-
-# items.py
+<h1>items.py</h1>
 
 Within each bundle, there may be a file called `items.py`. It defines any number of magic attributes that are automatically processed by BundleWrap. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).
 
-A typical bundle might look like this:
+A typical `items.py` might look like this:
 
 	files = {
 	    '/etc/hosts': {
@@ -34,7 +30,7 @@ This bundle defines the attributes `files` and `users`. Within the `users` attri
 
 <br>
 
-## Item types
+# Item types
 
 This table lists all item types included in BundleWrap along with the bundle attributes they understand.
 
@@ -65,19 +61,19 @@ This table lists all item types included in BundleWrap along with the bundle att
 
 <br>
 
-## Builtin item attributes
+# Builtin item attributes
 
 There are also attributes that can be applied to any kind of item.
 
 <br>
 
-### comment
+## comment
 
 This is a string that will be displayed in interactive mode (`bw apply -i`) whenever the item is to be changed in any way. You can use it to warn users before they start disruptive actions.
 
 <br>
 
-### error_on_missing_fault
+## error_on_missing_fault
 
 This will simply skip an item instead of raising an error when a Fault used for an attribute on the item is unavailable. Faults are special objects used by `repo.vault` to [handle secrets](../guide/secrets.md). A Fault being unavailable can mean you're missing the secret key required to decrypt a secret you're trying to use as an item attribute value.
 
@@ -85,7 +81,7 @@ Defaults to `False`.
 
 <br>
 
-### needs
+## needs
 
 One such attribute is `needs`. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on the users owning them). Here are two examples:
 
@@ -109,7 +105,7 @@ The first item (`item1`, specific attributes have been omitted) depends on a fil
 
 <br>
 
-### needed_by
+## needed_by
 
 This attribute is an alternative way of defining dependencies. It works just like `needs`, but in the other direction. There are only three scenarios where you should use `needed_by` over `needs`:
 
@@ -119,7 +115,7 @@ This attribute is an alternative way of defining dependencies. It works just lik
 
 <br>
 
-### tags
+## tags
 
 A list of strings to tag an item with. Tagging has no immediate effect in itself, but can be useful in a number of places. For example, you can add dependencies on all items with a given tag:
 
@@ -139,7 +135,7 @@ In this simplified example we save ourselves from duplicating the logic that get
 
 <br>
 
-### triggers and triggered
+## triggers and triggered
 
 In some scenarios, you may want to execute an [action](../items/action.md) only when an item is fixed (e.g. restart a daemon after a config file has changed or run `postmap` after updating an alias file). To do this, BundleWrap has the builtin atttribute `triggers`. You can use it to point to any item that has its `triggered` attribute set to `True`. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).
 
@@ -165,7 +161,7 @@ Similar to `needed_by`, `triggered_by` can be used to define a `triggers` relati
 
 <br>
 
-### preceded_by
+## preceded_by
 
 Operates like `triggers`, but will apply the triggered item *before* the triggering item. Let's look at an example:
 
@@ -191,7 +187,7 @@ Similar to `needed_by`, `precedes` can be used to define a `preceded_by` relatio
 
 <br>
 
-### unless
+## unless
 
 Another builtin item attribute is `unless`. For example, it can be used to construct a one-off file item where BundleWrap will only create the file once, but won't check or modify its contents once it exists.
 
@@ -224,7 +220,7 @@ If `action:download_thing` would not set `cascade_skip` to `False`, `action:run_
 
 <br>
 
-### cascade_skip
+## cascade_skip
 
 There are some situations where you don't want to default behavior of skipping everything that depends on a skipped item. That's where `cascade_skip` comes in. Set it to `False` and skipping an item won't skip those that depend on it. Note that items can be skipped
 
@@ -253,7 +249,7 @@ The following example will offer to run an `apt-get update` before installing a 
 
 <br>
 
-## Canned actions
+# Canned actions
 
 Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:
 
@@ -269,59 +265,3 @@ Some item types have what we call "canned actions". Those are pre-defined action
 	}
 
 Canned actions always have to be triggered in order to run. In the example above, a change in the file `/etc/mysql/my.cnf` will trigger the `reload` action defined by the [svc_upstart item type](../items/svc_upstart.md) for the mysql service.
-
-<br>
-
-# metadata.py
-
-Alongside `items.py` you may create another file called `metadata.py`. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before `items.py` is evaluated.
-
-This is accomplished through metadata processors. Metadata processors are functions that take the metadata dictionary generated so far as their single argument. You must then return a dictionary with any modifications you need to make plus at least one of several options:
-
-	@metadata_processor
-	def my_metadata_processor(metadata):
-	    metadata["foo"] = node.name
-	    return metadata, DONE
-
-You must always return the modified metadata dictionary as the first element. After that, there are a few options you can return. Every metadata processor from every bundle is called *repeatedly* with the latest metadata dictionary until it indicates that it is done by returning the `DONE` option or until *all* remaining metadata processors return `RUN_ME_AGAIN`. You must always return one of `DONE` or `RUN_ME_AGAIN`. Use the latter if your metadata processor depends on metadata that is generated by another metadata processor (which may be called after yours). Here is another example:
-
-	@metadata_processor
-	def first_metadata_processor(metadata):
-	    metadata["foo"] = node.name
-	    return metadata, DONE
-
-	@metadata_processor
-	def second_metadata_processor(metadata):
-	    if "foo" in metadata:
-	        metadata["bar"] = metadata["foo"]
-	        return metadata, DONE
-	    else:
-	        return metadata, RUN_ME_AGAIN
-
-In this example, `"bar"` can only be set once `"foo"` is available and thus the `second_metadata_processor` has to wait and request to `RUN_ME_AGAIN` until `first_metadata_processor` ran. This is necessary because the running order of metadata processors is undefined.
-
-<div class="alert alert-danger">To avoid deadlocks when accessing <strong>other</strong> nodes' metadata from within a metadata processor, use <code>other_node.partial_metadata</code> instead of <code>other_node.metadata</code>. For the same reason, always use the <code>metadata</code> parameter to access the current node's metadata, never <code>node.metadata</code>.</div>
-
-Available options:
-
-<table>
-<tr><th>Option</th><th>Description</th></tr>
-<tr><td><code>DONE</code></td><td>Indicates that this metadata processor has done all it can and need not be called again. Return this whenever possible.</td></tr>
-<tr><td><code>RUN_ME_AGAIN</code></td><td>Indicates that this metadata processor is still waiting for metadata from another metadata processor to become available.</td></tr>
-<tr><td><code>DEFAULTS</code></td><td>The returned metadata dictionary will only be used to provide default values. The actual metadata generated so far will be recursively merged into the returned dict.</td></tr>
-<tr><td><code>OVERWRITE</code></td><td>The returned metadata dictionary will be recursively merged into the actual metadata generated so far (inverse of <code>DEFAULTS</code>).</td></tr>
-</table>
-
-Here is an example of how to use `DEFAULTS`:
-
-	@metadata_processor
-	def my_metadata_processor(metadata):
-	    return {
-	        "foo": {
-	            "bar": 47,
-	        },
-	    }, DONE, DEFAULTS
-
-This means `node.metadata["foo"]["bar"]` will be 47 by default, but can also be overridden in static metadata at the node/group level.
-
-For your convenience, you can access `repo`, `node`, `metadata_processor` and all the options in `metadata.py` without importing them.

@@ -13,19 +13,19 @@ Manage regular files.
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
-<br>
+<hr>
 
 ## content
 
 May be used instead of `source` to provide file content without a template file.
 
-<br>
+<hr>
 
 ## content_type
 
@@ -41,43 +41,43 @@ How the file pointed to by `source` or the string given to `content` should be i
 <tr><td><code>text</code> (default)</td><td>like <code>binary</code>, but will be diffed in interactive mode</td></tr>
 </table>
 
-<br>
+<hr>
 
 ## context
 
 Only used with Mako and Jinja2 templates. The values of this dictionary will be available from within the template as variables named after the respective keys.
 
-<br>
+<hr>
 
 ## delete
 
 When set to `True`, the path of this file will be removed. It doesn't matter if there is not a file but a directory or something else at this path. When using `delete`, no other attributes are allowed.
 
-<br>
+<hr>
 
 ## encoding
 
 Encoding of the target file. Note that this applies to the remote file only, your template is still conveniently written in UTF-8 and will be converted by BundleWrap. Defaults to "utf-8". Other possible values (e.g. "latin-1") can be found [here](http://docs.python.org/2/library/codecs.html#standard-encodings).
 
-<br>
+<hr>
 
 ## group
 
 Name of the group this file belongs to. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
-<br>
+<hr>
 
 ## mode
 
 File mode as returned by `stat -c %a <file>`. Defaults to `644`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
-<br>
+<hr>
 
 ## owner
 
 Username of the file's owner. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
-<br>
+<hr>
 
 ## source
 
@@ -85,7 +85,7 @@ File name of the file template. If this says `my_template`, BundleWrap will look
 
 See also: [Writing file templates](../guide/item_file_templates.md)
 
-<br>
+<hr>
 
 ## verify_with
 

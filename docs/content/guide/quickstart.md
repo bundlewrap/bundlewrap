@@ -57,7 +57,7 @@ Instead of a node name ("node-1" in this case) you can also use a group name (su
 Create a bundle
 ---------------
 
-BundleWrap stores node configuration in [bundles](../repo/bundles.md). A bundle is a collection of *items* such as files, system packages or users. To create your first bundle, type:
+BundleWrap stores node configuration in bundles. A bundle is a collection of *items* such as files, system packages or users. To create your first bundle, type:
 
 <pre><code class="nohighlight">bw repo bundle create mybundle</code></pre>
 
@@ -135,7 +135,7 @@ Here are some suggestions on what to do next:
 * set up [SSH multiplexing](https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Multiplexing) for significantly better performance
 * take a moment to think about what groups and bundles you will create
 * read up on how a [BundleWrap repository](../repo/layout.md) is laid out
-* ...especially what [types of items](../repo/bundles.md#item-types) you can add to your bundles
+* ...especially what [types of items](../repo/items.py.md#item-types) you can add to your bundles
 * familiarize yourself with [the Mako template language](http://www.makotemplates.org/)
 * explore the [command line interface](cli.md)
 * follow [@bundlewrap](https://twitter.com/bundlewrap) on Twitter

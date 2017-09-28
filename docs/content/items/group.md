@@ -8,19 +8,19 @@ Manages system groups. Group members are managed through the [user item](user.md
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
-<br>
+<hr>
 
 ## delete
 
 When set to `True`, this group will be removed from the system. When using `delete`, no other attributes are allowed.
 
-<br>
+<hr>
 
 ## gid
 

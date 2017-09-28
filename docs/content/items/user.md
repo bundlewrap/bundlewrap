@@ -14,27 +14,27 @@ Manages system user accounts.
         },
     }
 
-<br>
+<br><br>
 
 # Attribute reference
 
-See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
 
 All attributes are optional.
 
-<br>
+<hr>
 
 ## delete
 
 When set to `True`, this user will be removed from the system. Note that because of how `userdel` works, the primary group of the user will be removed if it contains no other users. When using `delete`, no other attributes are allowed.
 
-<br>
+<hr>
 
 ## full_name
 
 Full name of the user.
 
-<br>
+<hr>
 
 ## gid
 
@@ -42,13 +42,13 @@ Primary group of the user as numerical ID or group name.
 
 <div class="alert alert-info">Due to how <code>useradd</code> works, this attribute is required whenever you <strong>don't</strong> want the default behavior of <code>useradd</code> (usually that means automatically creating a group with the same name as the user). If you want to use an unmanaged group already on the node, you need this attribute. If you want to use a group managed by BundleWrap, you need this attribute. This is true even if the groups mentioned are in fact named like the user.</div>
 
-<br>
+<hr>
 
 ## groups
 
 List of groups (names, not GIDs) the user should belong to. Must NOT include the group referenced by `gid`.
 
-<br>
+<hr>
 
 ## hash_method
 
@@ -60,13 +60,13 @@ One of:
 
 Defaults to `sha512`.
 
-<br>
+<hr>
 
 ## home
 
 Path to home directory. Defaults to `/home/USERNAME`.
 
-<br>
+<hr>
 
 ## password
 
@@ -76,25 +76,25 @@ The user's password in plaintext.
 
 <div class="alert alert-info">If you don't specify a <code>salt</code> along with the password, BundleWrap will use a static salt. Be aware that this is basically the same as using no salt at all.</div>
 
-<br>
+<hr>
 
 ## password_hash
 
 Hashed password as it would be returned by `crypt()` and written to `/etc/shadow`.
 
-<br>
+<hr>
 
 ## salt
 
 Recommended for use with the `password` attribute. BundleWrap will use 5000 rounds of SHA-512 on this salt and the provided password.
 
-<br>
+<hr>
 
 ## shell
 
 Path to login shell executable.
 
-<br>
+<hr>
 
 ## uid
 

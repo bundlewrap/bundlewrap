@@ -71,7 +71,7 @@ All attributes can also be set at the group level, unless noted otherwise.
 
 ### bundles
 
-A list of [bundle names](bundles.md) to be assigned to this node. Bundles set at [group level](groups.py.md) will be added.
+A list of bundle names to be assigned to this node. Bundles set at [group level](groups.py.md) will be added.
 
 <br>
 

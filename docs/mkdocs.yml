@@ -1,6 +1,8 @@
 site_name: BundleWrap
 docs_dir: content
 site_dir: build
+extra_css:
+- bundlewrap.css
 repo_url: "https://github.com/bundlewrap/bundlewrap"
 remote_name: github
 copyright: "BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>.</p><p> Donations welcome in Bitcoin <code>13AJYksqncZromPF8HvDUXsmHChAm3Y7W7</code> or Ethereum <code>0x5Eb3037e197d3C0d2E014bcfC2e027EB0AD42812</code>."
@@ -26,7 +28,8 @@ pages:
   - nodes.py: repo/nodes.py.md
   - groups.py: repo/groups.py.md
   - requirements.txt: repo/requirements.txt.md
-  - bundles/: repo/bundles.md
+  - bundles/.../items.py: repo/items.py.md
+  - bundles/.../metadata.py: repo/metadata.py.md
   - hooks/: repo/hooks.md
   - libs/: repo/libs.md
   - Plugins: repo/plugins.md
@@ -52,6 +55,7 @@ pages:
   - user: items/user.md
 - Misc:
   - About: misc/about.md
+  - Why BundleWrap: misc/deciding.md
   - Glossary: misc/glossary.md
   - FAQ: misc/faq.md
   - Contributing: misc/contributing.md

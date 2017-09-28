@@ -26,7 +26,7 @@ The merging behavior for node and group metadata has changed. Instead of a simpl
 
 ## Metadata processors and item generators
 
-These two advanced features have been replaced by a single new mechanism: [metadata.py](../repo/bundles.md#metadatapy) You will need to rethink and rewrite them.
+These two advanced features have been replaced by a single new mechanism: [metadata.py](../repo/metadata.py.md) You will need to rethink and rewrite them.
 
 BundleWrap 1.6.0 will print warnings for every group that uses metadata processors and any item generators when running `bw test`.
 
