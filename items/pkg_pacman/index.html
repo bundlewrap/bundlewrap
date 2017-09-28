@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -286,7 +294,9 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#pacman-package-items">Pacman package items</a></li>
-            <li><a href="#attribute-reference">Attribute reference</a></li>
+        <li class="main "><a href="#attribute-reference">Attribute reference</a></li>
+            <li><a href="#installed">installed</a></li>
+            <li><a href="#tarball">tarball</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -307,14 +317,16 @@
 </code></pre>
 <div class="alert alert-warning">System updates on Arch Linux should <strong>always</strong> be performed manually and with great care. Thus, this item type installs packages with a simple <code>pacman -S $pkgname</code> instead of the commonly recommended <code>pacman -Syu $pkgname</code>. You should <strong>manually</strong> do a full system update before installing new packages via BundleWrap!</div>
 
-<p><br></p>
-<h2 id="attribute-reference">Attribute reference</h2>
-<p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
-<p><br></p>
-<h3 id="installed">installed</h3>
+<p><br><br></p>
+<h1 id="attribute-reference">Attribute reference</h1>
+<p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
+
+<h2 id="installed">installed</h2>
 <p><code>True</code> when the package is expected to be present on the system; <code>False</code> if this package and all dependencies that are no longer needed should be removed.</p>
-<p><br></p>
-<h3 id="tarball">tarball</h3>
+<hr>
+
+<h2 id="tarball">tarball</h2>
 <p>Upload a local file to the node and install it using <code>pacman -U</code>. The value of <code>tarball</code> must point to a file relative to the <code>pkg_pacman</code> subdirectory of the current bundle.</p></div>
         </div>
 

@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>Overview - BundleWrap</title>
+        <title>Why BundleWrap - BundleWrap</title>
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.5.0.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -115,44 +115,44 @@
 </li>
                         </ul>
                     </li>
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Repository <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             
-<li class="active">
-    <a href="./">Overview</a>
+<li >
+    <a href="../../repo/layout/">Overview</a>
 </li>
                             
 <li >
-    <a href="../nodes.py/">nodes.py</a>
+    <a href="../../repo/nodes.py/">nodes.py</a>
 </li>
                             
 <li >
-    <a href="../groups.py/">groups.py</a>
+    <a href="../../repo/groups.py/">groups.py</a>
 </li>
                             
 <li >
-    <a href="../requirements.txt/">requirements.txt</a>
+    <a href="../../repo/requirements.txt/">requirements.txt</a>
 </li>
                             
 <li >
-    <a href="../items.py/">bundles/.../items.py</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
 </li>
                             
 <li >
-    <a href="../metadata.py/">bundles/.../metadata.py</a>
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
-    <a href="../hooks/">hooks/</a>
+    <a href="../../repo/hooks/">hooks/</a>
 </li>
                             
 <li >
-    <a href="../libs/">libs/</a>
+    <a href="../../repo/libs/">libs/</a>
 </li>
                             
 <li >
-    <a href="../plugins/">Plugins</a>
+    <a href="../../repo/plugins/">Plugins</a>
 </li>
                         </ul>
                     </li>
@@ -237,28 +237,28 @@
 </li>
                         </ul>
                     </li>
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Misc <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             
 <li >
-    <a href="../../misc/about/">About</a>
+    <a href="../about/">About</a>
+</li>
+                            
+<li class="active">
+    <a href="./">Why BundleWrap</a>
 </li>
                             
 <li >
-    <a href="../../misc/deciding/">Why BundleWrap</a>
+    <a href="../glossary/">Glossary</a>
 </li>
                             
 <li >
-    <a href="../../misc/glossary/">Glossary</a>
+    <a href="../faq/">FAQ</a>
 </li>
                             
 <li >
-    <a href="../../misc/faq/">FAQ</a>
-</li>
-                            
-<li >
-    <a href="../../misc/contributing/">Contributing</a>
+    <a href="../contributing/">Contributing</a>
 </li>
                         </ul>
                     </li>
@@ -271,12 +271,12 @@
                     </a>
                 </li>
                     <li >
-                        <a rel="next" href="../../guide/migrate_23/">
+                        <a rel="next" href="../about/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../nodes.py/">
+                        <a rel="prev" href="../glossary/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -293,47 +293,40 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#repository-layout">Repository layout</a></li>
+        <li class="main active"><a href="#is-bundlewrap-the-right-tool-for-you">Is BundleWrap the right tool for you?</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
 <style>.bs-sidebar { display: none; }</style>
 
-<h1 id="repository-layout">Repository layout</h1>
-<p>A BundleWrap repository contains everything you need to contruct the configuration for your systems.</p>
-<p>This page describes the various subdirectories and files than can exist inside a repo.</p>
-<p><br></p>
-<table>
-<tr>
-<td><a href="/repo/nodes.py">nodes.py</a></td>
-<td>This file tells BundleWrap what nodes (servers, VMs, ...) there are in your environment and lets you configure options such as hostnames.</td>
-</tr>
-<tr>
-<td><a href="/repo/groups.py">groups.py</a></td>
-<td>This file allows you to organize your nodes into groups.</td>
-</tr>
-<tr>
-<td>bundles/</td>
-<td>This required subdirectory contains the bulk of your configuration, organized into bundles of related items. Each bundle is a subdirectory of bundles/ with an <a href="/repo/items.py">items.py</a> or <a href="/repo/metadata.py">metadata.py</a> in it (or both).</td>
-</tr>
-<tr>
-<td>data/</td>
-<td>This optional subdirectory contains data files that are not generic enough to be included in bundles (which are meant to be shareable).</td>
-</tr>
-<tr>
-<td><a href="/repo/hooks">hooks/</a></td>
-<td>This optional subdirectory contains hooks you can use to act on certain events when using BundleWrap.</td>
-</tr>
-<tr>
-<td><a href="/repo/dev_item">items/</a></td>
-<td>This optional subdirectory contains the code for your custom item types.</td>
-</tr>
-<tr>
-<td><a href="/repo/libs">libs/</a></td>
-<td>This optional subdirectory contains reusable custom code for your bundles.</td>
-</tr>
-</table></div>
+<h2 id="is-bundlewrap-the-right-tool-for-you">Is BundleWrap the right tool for you?</h2>
+<p>We think you will enjoy BundleWrap a lot if you:</p>
+<ul>
+<li>know some Python</li>
+<li>like to write your configuration from scratch and control every bit
+    of it</li>
+<li>have lots of unique nodes</li>
+<li>are trying to get a lot of existing systems under management</li>
+<li>are NOT trying to handle a massive amount of nodes (let’s say more
+    than 1000)</li>
+<li>like to start small</li>
+<li>don’t want yet more stuff to run on your nodes (or mess with
+    appliances as little as possible)</li>
+<li>prefer a simple tool to a fancy one</li>
+<li>want as much as possible in git/hg/bzr</li>
+<li>have strongly segmented internal networks</li>
+</ul>
+<p>You might be better served with a different config management system if
+you:</p>
+<ul>
+<li>are already using a config management system and don’t have any
+    major issues</li>
+<li>hate Python and/or JSON</li>
+<li>like to use community-maintained configuration templates</li>
+<li>need unattended bootstrapping of nodes</li>
+<li>don’t trust your coworkers</li>
+</ul></div>
         </div>
 
         <footer class="col-md-12">

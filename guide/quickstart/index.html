@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -333,7 +341,7 @@ cat groups.py
 
 <p>Instead of a node name ("node-1" in this case) you can also use a group name (such as "all") from your <code>groups.py</code>.</p>
 <h2 id="create-a-bundle">Create a bundle</h2>
-<p>BundleWrap stores node configuration in <a href="../../repo/bundles/">bundles</a>. A bundle is a collection of <em>items</em> such as files, system packages or users. To create your first bundle, type:</p>
+<p>BundleWrap stores node configuration in bundles. A bundle is a collection of <em>items</em> such as files, system packages or users. To create your first bundle, type:</p>
 <pre><code class="nohighlight">bw repo bundle create mybundle</code></pre>
 
 <p>Now that you have created your bundle, it's important to tell BundleWrap which nodes will have this bundle. You can assign bundles to nodes using either <code>groups.py</code> or <code>nodes.py</code>, here we'll use the latter:</p>
@@ -393,7 +401,7 @@ cat groups.py
 <li>set up <a href="https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Multiplexing">SSH multiplexing</a> for significantly better performance</li>
 <li>take a moment to think about what groups and bundles you will create</li>
 <li>read up on how a <a href="../../repo/layout/">BundleWrap repository</a> is laid out</li>
-<li>...especially what <a href="../../repo/bundles/#item-types">types of items</a> you can add to your bundles</li>
+<li>...especially what <a href="../../repo/items.py/#item-types">types of items</a> you can add to your bundles</li>
 <li>familiarize yourself with <a href="http://www.makotemplates.org/">the Mako template language</a></li>
 <li>explore the <a href="../cli/">command line interface</a></li>
 <li>follow <a href="https://twitter.com/bundlewrap">@bundlewrap</a> on Twitter</li>

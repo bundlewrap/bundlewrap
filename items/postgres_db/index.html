@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -286,7 +294,9 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#postgres-database-items">Postgres database items</a></li>
-            <li><a href="#attribute-reference">Attribute reference</a></li>
+        <li class="main "><a href="#attribute-reference">Attribute reference</a></li>
+            <li><a href="#owner">owner</a></li>
+            <li><a href="#when95creating">when_creating</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -304,12 +314,16 @@
     },
 }
 </code></pre>
-<p><br></p>
-<h2 id="attribute-reference">Attribute reference</h2>
-<p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
-<p><br></p>
-<h3 id="owner">owner</h3>
+<p><br><br></p>
+<h1 id="attribute-reference">Attribute reference</h1>
+<p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
+
+<h2 id="owner">owner</h2>
 <p>Name of the role which owns this database (defaults to <code>"postgres"</code>).</p>
+<hr>
+
+<h2 id="when95creating">when_creating</h2>
 <h3 id="encoding-collation-and-ctype">encoding, collation, and ctype</h3>
 <p>By default, BundleWrap will only create a database using your default PostgreSQL template, which most likely is <code>template1</code>. This means it will use the same encoding and collation that <code>template1</code> uses. By specifying any of the attributes <code>encoding</code>, <code>collation</code>, or <code>ctype</code>, BundleWrap will instead create a new database from <code>template0</code>, thus allowing you to override said database attributes.</p>
 <p>These options are creation-time only.</p></div>

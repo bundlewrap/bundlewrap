@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -286,7 +294,13 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#actions">Actions</a></li>
-            <li><a href="#attribute-reference">Attribute reference</a></li>
+        <li class="main "><a href="#attribute-reference">Attribute reference</a></li>
+            <li><a href="#command">command</a></li>
+            <li><a href="#data_stdin">data_stdin</a></li>
+            <li><a href="#expected_return_code">expected_return_code</a></li>
+            <li><a href="#expected_stdout">expected_stdout</a></li>
+            <li><a href="#expected_stderr">expected_stderr</a></li>
+            <li><a href="#interactive">interactive</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -301,26 +315,32 @@
     },
 }
 </code></pre>
-<p><br></p>
-<h2 id="attribute-reference">Attribute reference</h2>
-<p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
-<p><br></p>
-<h3 id="command">command</h3>
+<p><br><br></p>
+<h1 id="attribute-reference">Attribute reference</h1>
+<p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
+
+<h2 id="command">command</h2>
 <p>The only required attribute. This is the command that will be run on the node with root privileges.</p>
-<p><br></p>
-<h3 id="data_stdin">data_stdin</h3>
+<hr>
+
+<h2 id="data_stdin">data_stdin</h2>
 <p>You can pipe data directly to the command running on the node. To do so, use this attribute. If it's a string or unicode object, it will always be encoded as UTF-8. Alternatively, you can use raw bytes.</p>
-<p><br></p>
-<h3 id="expected_return_code">expected_return_code</h3>
+<hr>
+
+<h2 id="expected_return_code">expected_return_code</h2>
 <p>Defaults to <code>0</code>. If the return code of your command is anything else, the action is considered failed. You can also set this to <code>None</code> and any return code will be accepted.</p>
-<p><br></p>
-<h3 id="expected_stdout">expected_stdout</h3>
+<hr>
+
+<h2 id="expected_stdout">expected_stdout</h2>
 <p>If this is given, the stdout output of the command must match the given string or the action is considered failed.</p>
-<p><br></p>
-<h3 id="expected_stderr">expected_stderr</h3>
+<hr>
+
+<h2 id="expected_stderr">expected_stderr</h2>
 <p>Same as <code>expected_stdout</code>, but with stderr.</p>
-<p><br></p>
-<h3 id="interactive">interactive</h3>
+<hr>
+
+<h2 id="interactive">interactive</h2>
 <p>If set to <code>True</code>, this action will be skipped in non-interactive mode. If set to <code>False</code>, this action will always be executed without asking (even in interactive mode). Defaults to <code>None</code>.</p>
 <div class="alert alert-warning">Think hard before setting this to <code>False</code>. People might assume that interactive mode won't do anything without their consent.</div></div>
         </div>

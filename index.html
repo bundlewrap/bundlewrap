@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="repo/bundles/">bundles/</a>
+    <a href="repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="misc/glossary/">Glossary</a>
 </li>
                             
@@ -285,46 +293,43 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#bundlewrap-documentation">BundleWrap documentation</a></li>
-            <li><a href="#is-bundlewrap-the-right-tool-for-you">Is BundleWrap the right tool for you?</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
 <style>.bs-sidebar { display: none; }</style>
 
-<h1 id="bundlewrap-documentation">BundleWrap documentation</h1>
-<p>Check out the <a href="guide/quickstart/">quickstart tutorial</a> to get started.</p>
+<script>
+    $("div.col-md-3").remove();
+    $("div.col-md-9").attr("class", "col-md-12");
+</script>
+
+<h1 class="text-center">BundleWrap documentation</h1>
+
+<div class="text-center well" style="line-height: 75px;">
+    <a class="btn btn-lg btn-blue" href="/guide/quickstart">I want to learn BundleWrap!</a>
+    &nbsp;
+    <a class="btn btn-lg btn-blueoutline" href="/misc/deciding">Should I use BundleWrap?</a>
+</div>
+
 <p>If you run into a problem that is not answered in these docs, please
 find us on <a href="irc://chat.freenode.net/bundlewrap">IRC</a> or <a href="https://twitter.com/bundlewrap">Twitter</a>. We’re happy to help!</p>
-<p><br></p>
-<h2 id="is-bundlewrap-the-right-tool-for-you">Is BundleWrap the right tool for you?</h2>
-<p>We think you will enjoy BundleWrap a lot if you:</p>
-<ul>
-<li>know some Python</li>
-<li>like to write your configuration from scratch and control every bit
-    of it</li>
-<li>have lots of unique nodes</li>
-<li>are trying to get a lot of existing systems under management</li>
-<li>are NOT trying to handle a massive amount of nodes (let’s say more
-    than 1000)</li>
-<li>like to start small</li>
-<li>don’t want yet more stuff to run on your nodes (or mess with
-    appliances as little as possible)</li>
-<li>prefer a simple tool to a fancy one</li>
-<li>want as much as possible in git/hg/bzr</li>
-<li>have strongly segmented internal networks</li>
-</ul>
-<p>You might be better served with a different config management system if
-you:</p>
-<ul>
-<li>are already using a config management system and don’t have any
-    major issues</li>
-<li>hate Python and/or JSON</li>
-<li>like to use community-maintained configuration templates</li>
-<li>need unattended bootstrapping of nodes</li>
-<li>don’t trust your coworkers</li>
-</ul></div>
+<p>Should you already know your way around, just click on the part of your repo that you need help with:</p>
+<div class="terminal">bundles/
+    mybundle/
+        <a href="/repo/items.py">items.py</a>
+        <a href="/repo/metadata.py">metadata.py</a>
+        files/
+            <a href="/guide/item_file_templates">template</a>
+<a href="/items/file/#source">data/</a>
+<a href="/repo/hooks">hooks/</a>
+<a href="/guide/dev_item">items/</a>
+<a href="/guide/secrets">.secrets.cfg</a>
+<a href="/repo/groups.py">groups.py</a>
+<a href="/repo/nodes.py">nodes.py</a>
+<a href="/repo/plugins">plugins.json</a>
+<a href="/repo/requirements.txt">requirements.txt</a>
+</div></div>
         </div>
 
         <footer class="col-md-12">
@@ -364,5 +369,5 @@ you:</p>
 
 <!--
 MkDocs version : 0.16.3
-Build Date UTC : 2017-09-24 21:48:07
+Build Date UTC : 2017-09-28 16:47:05
 -->

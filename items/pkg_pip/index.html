@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -286,7 +294,9 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#pip-package-items">pip package items</a></li>
-            <li><a href="#attribute-reference">Attribute reference</a></li>
+        <li class="main "><a href="#attribute-reference">Attribute reference</a></li>
+            <li><a href="#installed">installed</a></li>
+            <li><a href="#version">version</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -306,14 +316,16 @@
     },
 }
 </code></pre>
-<p><br></p>
-<h2 id="attribute-reference">Attribute reference</h2>
-<p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
-<p><br></p>
-<h3 id="installed">installed</h3>
+<p><br><br></p>
+<h1 id="attribute-reference">Attribute reference</h1>
+<p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
+
+<h2 id="installed">installed</h2>
 <p><code>True</code> when the package is expected to be present on the system; <code>False</code> if it should be removed.</p>
-<p><br></p>
-<h3 id="version">version</h3>
+<hr>
+
+<h2 id="version">version</h2>
 <p>Force the given exact version to be installed. You can only specify a single version here, selectors like <code>&gt;=1.0</code> are NOT supported.</p>
 <p>If it's not given, the latest version will be installed initially, but (like the other package items) upgrades will NOT be installed.</p></div>
         </div>

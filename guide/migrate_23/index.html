@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -306,7 +314,7 @@ def myproc(metadata):
 </code></pre>
 <p>You will have to add <code>@metadata_processor</code> to each metadata processor function. There is no need to import it; it is provided automatically, just like <code>node</code> and <code>repo</code>.</p>
 <p>The accepted return values of metadata processors have changed as well. Metadata processors now always have to return a tuple with the first element being a dictionary of metadata and the remaining elements made up of various options to tell BundleWrap what to do with the dictionary. In most cases, you will want to return the <code>DONE</code> options as in the example above. There is no need to import options, they're always available.</p>
-<p>When you previously returned <code>metadata, False</code> from a metadata processor, you will now have to return <code>metadata, RUN_ME_AGAIN</code>. For a more detailed description of the available options, see <a href="../../repo/bundles/#metadatapy">the documentation</a>.</p>
+<p>When you previously returned <code>metadata, False</code> from a metadata processor, you will now have to return <code>metadata, RUN_ME_AGAIN</code>. For a more detailed description of the available options, see <a href="../../repo/metadata.py/">the documentation</a>.</p>
 <p><br></p>
 <h2 id="file-and-directory-ownership-defaults">File and directory ownership defaults</h2>
 <p><a href="../../items/file/">Files</a>, <a href="../../items/directory/">directories</a>, and <a href="../../items/symlink/">symlinks</a> now have default values for the ownership and mode attributes. Previously the default was to ignore them. It's very likely that you won't have to do anything here, just be aware.</p>

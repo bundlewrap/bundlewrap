@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>bundles/ - BundleWrap</title>
+        <title>bundles/.../items.py - BundleWrap</title>
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.5.0.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -136,7 +136,11 @@
 </li>
                             
 <li class="active">
-    <a href="./">bundles/</a>
+    <a href="./">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -268,7 +276,7 @@
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../hooks/">
+                        <a rel="prev" href="../metadata.py/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -285,21 +293,26 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#itemspy">items.py</a></li>
-            <li><a href="#item-types">Item types</a></li>
-            <li><a href="#builtin-item-attributes">Builtin item attributes</a></li>
-            <li><a href="#canned-actions">Canned actions</a></li>
-        <li class="main "><a href="#metadatapy">metadata.py</a></li>
+        <li class="main active"><a href="#item-types">Item types</a></li>
+        <li class="main "><a href="#builtin-item-attributes">Builtin item attributes</a></li>
+            <li><a href="#comment">comment</a></li>
+            <li><a href="#error_on_missing_fault">error_on_missing_fault</a></li>
+            <li><a href="#needs">needs</a></li>
+            <li><a href="#needed_by">needed_by</a></li>
+            <li><a href="#tags">tags</a></li>
+            <li><a href="#triggers-and-triggered">triggers and triggered</a></li>
+            <li><a href="#preceded_by">preceded_by</a></li>
+            <li><a href="#unless">unless</a></li>
+            <li><a href="#cascade_skip">cascade_skip</a></li>
+        <li class="main "><a href="#canned-actions">Canned actions</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<h1>Bundles</h1>
+<h1>items.py</h1>
 
-<p>Bundles are subdirectories of the <code>bundles/</code> directory of your BundleWrap repository.</p>
-<h1 id="itemspy">items.py</h1>
 <p>Within each bundle, there may be a file called <code>items.py</code>. It defines any number of magic attributes that are automatically processed by BundleWrap. Each attribute is a dictionary mapping an item name (such as a file name) to a dictionary of attributes (e.g. file ownership information).</p>
-<p>A typical bundle might look like this:</p>
+<p>A typical <code>items.py</code> might look like this:</p>
 <pre><code>files = {
     '/etc/hosts': {
          'owner': "root",
@@ -324,7 +337,7 @@ users = {
 </code></pre>
 <p>This bundle defines the attributes <code>files</code> and <code>users</code>. Within the <code>users</code> attribute, there are two <code>user</code> items. Each item maps its name to a dictionary that is understood by the specific kind of item. Below you will find a reference of all builtin item types and the attributes they understand. You can also <a href="../../guide/dev_item/">define your own item types</a>.</p>
 <p><br></p>
-<h2 id="item-types">Item types</h2>
+<h1 id="item-types">Item types</h1>
 <p>This table lists all item types included in BundleWrap along with the bundle attributes they understand.</p>
 <table>
 <tr><th>Type</th><th>Bundle attribute</th><th>Description</th></tr>
@@ -352,17 +365,17 @@ users = {
 </table>
 
 <p><br></p>
-<h2 id="builtin-item-attributes">Builtin item attributes</h2>
+<h1 id="builtin-item-attributes">Builtin item attributes</h1>
 <p>There are also attributes that can be applied to any kind of item.</p>
 <p><br></p>
-<h3 id="comment">comment</h3>
+<h2 id="comment">comment</h2>
 <p>This is a string that will be displayed in interactive mode (<code>bw apply -i</code>) whenever the item is to be changed in any way. You can use it to warn users before they start disruptive actions.</p>
 <p><br></p>
-<h3 id="error_on_missing_fault">error_on_missing_fault</h3>
+<h2 id="error_on_missing_fault">error_on_missing_fault</h2>
 <p>This will simply skip an item instead of raising an error when a Fault used for an attribute on the item is unavailable. Faults are special objects used by <code>repo.vault</code> to <a href="../../guide/secrets/">handle secrets</a>. A Fault being unavailable can mean you're missing the secret key required to decrypt a secret you're trying to use as an item attribute value.</p>
 <p>Defaults to <code>False</code>.</p>
 <p><br></p>
-<h3 id="needs">needs</h3>
+<h2 id="needs">needs</h2>
 <p>One such attribute is <code>needs</code>. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on the users owning them). Here are two examples:</p>
 <pre><code>my_items = {
     'item1': {
@@ -382,7 +395,7 @@ users = {
 </code></pre>
 <p>The first item (<code>item1</code>, specific attributes have been omitted) depends on a file called <code>/etc/foo.conf</code>, while <code>item2</code> depends on all APT packages being installed and every item in the foo bundle.</p>
 <p><br></p>
-<h3 id="needed_by">needed_by</h3>
+<h2 id="needed_by">needed_by</h2>
 <p>This attribute is an alternative way of defining dependencies. It works just like <code>needs</code>, but in the other direction. There are only three scenarios where you should use <code>needed_by</code> over <code>needs</code>:</p>
 <ul>
 <li>if you need all items of a certain type to depend on something or</li>
@@ -390,7 +403,7 @@ users = {
 <li>if you need an item in a bundle you can't edit (e.g. because it's provided by a community-maintained <a href="../plugins/">plugin</a>) to depend on something in your bundles</li>
 </ul>
 <p><br></p>
-<h3 id="tags">tags</h3>
+<h2 id="tags">tags</h2>
 <p>A list of strings to tag an item with. Tagging has no immediate effect in itself, but can be useful in a number of places. For example, you can add dependencies on all items with a given tag:</p>
 <pre><code>pkg_apt = {
     "mysql-server-{}".format(node.metadata.get('mysql_version', "5.5")): {
@@ -406,7 +419,7 @@ svc_systemd = {
 </code></pre>
 <p>In this simplified example we save ourselves from duplicating the logic that gets the current MySQL version from metadata (which is probably overkill here, but you might encounter more complex situations).</p>
 <p><br></p>
-<h3 id="triggers-and-triggered">triggers and triggered</h3>
+<h2 id="triggers-and-triggered">triggers and triggered</h2>
 <p>In some scenarios, you may want to execute an <a href="../../items/action/">action</a> only when an item is fixed (e.g. restart a daemon after a config file has changed or run <code>postmap</code> after updating an alias file). To do this, BundleWrap has the builtin atttribute <code>triggers</code>. You can use it to point to any item that has its <code>triggered</code> attribute set to <code>True</code>. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).</p>
 <pre><code>files = {
     '/etc/daemon.conf': {
@@ -427,7 +440,7 @@ actions = {
 <p>The above example will run <code>service daemon restart</code> every time BundleWrap successfully applies a change to <code>/etc/daemon.conf</code>. If an action is triggered multiple times, it will only be run once.</p>
 <p>Similar to <code>needed_by</code>, <code>triggered_by</code> can be used to define a <code>triggers</code> relationship from the opposite direction.</p>
 <p><br></p>
-<h3 id="preceded_by">preceded_by</h3>
+<h2 id="preceded_by">preceded_by</h2>
 <p>Operates like <code>triggers</code>, but will apply the triggered item <em>before</em> the triggering item. Let's look at an example:</p>
 <pre><code>files = {
     '/etc/example.conf': {
@@ -448,7 +461,7 @@ actions = {
 <p>In this configuration, <code>/etc/example.conf</code> will always be copied before and only if it is changed. You would probably also want to set <code>cascade_skip</code> to <code>False</code> on the action so you can skip it in interactive mode when you're sure you don't need the backup copy.</p>
 <p>Similar to <code>needed_by</code>, <code>precedes</code> can be used to define a <code>preceded_by</code> relationship from the opposite direction.</p>
 <p><br></p>
-<h3 id="unless">unless</h3>
+<h2 id="unless">unless</h2>
 <p>Another builtin item attribute is <code>unless</code>. For example, it can be used to construct a one-off file item where BundleWrap will only create the file once, but won't check or modify its contents once it exists.</p>
 <pre><code>files = {
     "/path/to/file": {
@@ -475,7 +488,7 @@ actions = {
 <div class="alert alert-warning">The commands you choose for <code>unless</code> should not change the state of your node. Otherwise, running <code>bw verify</code> might unexpectedly interfere with your nodes.</div>
 
 <p><br></p>
-<h3 id="cascade_skip">cascade_skip</h3>
+<h2 id="cascade_skip">cascade_skip</h2>
 <p>There are some situations where you don't want to default behavior of skipping everything that depends on a skipped item. That's where <code>cascade_skip</code> comes in. Set it to <code>False</code> and skipping an item won't skip those that depend on it. Note that items can be skipped</p>
 <ul>
 <li>interactively or</li>
@@ -500,7 +513,7 @@ pkg_apt = {
 </code></pre>
 <p><code>cascade_skip</code> defaults to <code>True</code>. However, if the item uses the <code>unless</code> attribute or is triggered, the default changes to <code>False</code>. Most of the time, this is what you'll want.</p>
 <p><br></p>
-<h2 id="canned-actions">Canned actions</h2>
+<h1 id="canned-actions">Canned actions</h1>
 <p>Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:</p>
 <pre><code>svc_upstart = {'mysql': {'running': True}}
 
@@ -513,53 +526,7 @@ files = {
     },
 }
 </code></pre>
-<p>Canned actions always have to be triggered in order to run. In the example above, a change in the file <code>/etc/mysql/my.cnf</code> will trigger the <code>reload</code> action defined by the <a href="../../items/svc_upstart/">svc_upstart item type</a> for the mysql service.</p>
-<p><br></p>
-<h1 id="metadatapy">metadata.py</h1>
-<p>Alongside <code>items.py</code> you may create another file called <code>metadata.py</code>. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before <code>items.py</code> is evaluated.</p>
-<p>This is accomplished through metadata processors. Metadata processors are functions that take the metadata dictionary generated so far as their single argument. You must then return a dictionary with any modifications you need to make plus at least one of several options:</p>
-<pre><code>@metadata_processor
-def my_metadata_processor(metadata):
-    metadata["foo"] = node.name
-    return metadata, DONE
-</code></pre>
-<p>You must always return the modified metadata dictionary as the first element. After that, there are a few options you can return. Every metadata processor from every bundle is called <em>repeatedly</em> with the latest metadata dictionary until it indicates that it is done by returning the <code>DONE</code> option or until <em>all</em> remaining metadata processors return <code>RUN_ME_AGAIN</code>. You must always return one of <code>DONE</code> or <code>RUN_ME_AGAIN</code>. Use the latter if your metadata processor depends on metadata that is generated by another metadata processor (which may be called after yours). Here is another example:</p>
-<pre><code>@metadata_processor
-def first_metadata_processor(metadata):
-    metadata["foo"] = node.name
-    return metadata, DONE
-
-@metadata_processor
-def second_metadata_processor(metadata):
-    if "foo" in metadata:
-        metadata["bar"] = metadata["foo"]
-        return metadata, DONE
-    else:
-        return metadata, RUN_ME_AGAIN
-</code></pre>
-<p>In this example, <code>"bar"</code> can only be set once <code>"foo"</code> is available and thus the <code>second_metadata_processor</code> has to wait and request to <code>RUN_ME_AGAIN</code> until <code>first_metadata_processor</code> ran. This is necessary because the running order of metadata processors is undefined.</p>
-<div class="alert alert-danger">To avoid deadlocks when accessing <strong>other</strong> nodes' metadata from within a metadata processor, use <code>other_node.partial_metadata</code> instead of <code>other_node.metadata</code>. For the same reason, always use the <code>metadata</code> parameter to access the current node's metadata, never <code>node.metadata</code>.</div>
-
-<p>Available options:</p>
-<table>
-<tr><th>Option</th><th>Description</th></tr>
-<tr><td><code>DONE</code></td><td>Indicates that this metadata processor has done all it can and need not be called again. Return this whenever possible.</td></tr>
-<tr><td><code>RUN_ME_AGAIN</code></td><td>Indicates that this metadata processor is still waiting for metadata from another metadata processor to become available.</td></tr>
-<tr><td><code>DEFAULTS</code></td><td>The returned metadata dictionary will only be used to provide default values. The actual metadata generated so far will be recursively merged into the returned dict.</td></tr>
-<tr><td><code>OVERWRITE</code></td><td>The returned metadata dictionary will be recursively merged into the actual metadata generated so far (inverse of <code>DEFAULTS</code>).</td></tr>
-</table>
-
-<p>Here is an example of how to use <code>DEFAULTS</code>:</p>
-<pre><code>@metadata_processor
-def my_metadata_processor(metadata):
-    return {
-        "foo": {
-            "bar": 47,
-        },
-    }, DONE, DEFAULTS
-</code></pre>
-<p>This means <code>node.metadata["foo"]["bar"]</code> will be 47 by default, but can also be overridden in static metadata at the node/group level.</p>
-<p>For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_processor</code> and all the options in <code>metadata.py</code> without importing them.</p></div>
+<p>Canned actions always have to be triggered in order to run. In the example above, a change in the file <code>/etc/mysql/my.cnf</code> will trigger the <code>reload</code> action defined by the <a href="../../items/svc_upstart/">svc_upstart item type</a> for the mysql service.</p></div>
         </div>
 
         <footer class="col-md-12">

@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -286,7 +294,11 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#directory-items">Directory items</a></li>
-            <li><a href="#attribute-reference">Attribute reference</a></li>
+        <li class="main "><a href="#attribute-reference">Attribute reference</a></li>
+            <li><a href="#group">group</a></li>
+            <li><a href="#mode">mode</a></li>
+            <li><a href="#owner">owner</a></li>
+            <li><a href="#purge">purge</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -300,19 +312,24 @@
     },
 }
 </code></pre>
-<h2 id="attribute-reference">Attribute reference</h2>
-<p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
-<p><br></p>
-<h3 id="group">group</h3>
+<p><br><br></p>
+<h1 id="attribute-reference">Attribute reference</h1>
+<p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
+
+<h2 id="group">group</h2>
 <p>Name of the group this directory belongs to. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<p><br></p>
-<h3 id="mode">mode</h3>
+<hr>
+
+<h2 id="mode">mode</h2>
 <p>Directory mode as returned by <code>stat -c %a &lt;directory&gt;</code>. Defaults to <code>755</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<p><br></p>
-<h3 id="owner">owner</h3>
+<hr>
+
+<h2 id="owner">owner</h2>
 <p>Username of the directory's owner. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<p><br></p>
-<h3 id="purge">purge</h3>
+<hr>
+
+<h2 id="purge">purge</h2>
 <p>Set this to <code>True</code> to remove everything from this directory that is not managed by BundleWrap. Defaults to <code>False</code>.</p></div>
         </div>
 

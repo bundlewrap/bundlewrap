@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../glossary/">Glossary</a>
 </li>
                             
@@ -301,7 +309,7 @@
 <p>BundleWrap uses a <a href="../../guide/locks/">locking mechanism</a> to prevent collisions like this.</p>
 <p><br></p>
 <h3 id="how-can-i-have-bundlewrap-reload-my-services-after-config-changes">How can I have BundleWrap reload my services after config changes?</h3>
-<p>See <a href="../../repo/bundles/#canned_actions">canned actions</a> and <a href="../../repo/bundles/#triggers">triggers</a>.</p>
+<p>See <a href="../../repo/items.py/#canned_actions">canned actions</a> and <a href="../../repo/items.py/#triggers">triggers</a>.</p>
 <p><br></p>
 <h3 id="will-bundlewrap-keep-track-of-package-updates">Will BundleWrap keep track of package updates?</h3>
 <p>No. BundleWrap will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an <a href="../../items/action/">action</a> with the <code>interactive</code> attribute set to <code>True</code>). Selecting specific versions should be done through your package manager.</p>

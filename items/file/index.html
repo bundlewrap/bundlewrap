@@ -136,7 +136,11 @@
 </li>
                             
 <li >
-    <a href="../../repo/bundles/">bundles/</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
+</li>
+                            
+<li >
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
@@ -242,6 +246,10 @@
 </li>
                             
 <li >
+    <a href="../../misc/deciding/">Why BundleWrap</a>
+</li>
+                            
+<li >
     <a href="../../misc/glossary/">Glossary</a>
 </li>
                             
@@ -286,7 +294,17 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#file-items">File items</a></li>
-            <li><a href="#attribute-reference">Attribute reference</a></li>
+        <li class="main "><a href="#attribute-reference">Attribute reference</a></li>
+            <li><a href="#content">content</a></li>
+            <li><a href="#content_type">content_type</a></li>
+            <li><a href="#context">context</a></li>
+            <li><a href="#delete">delete</a></li>
+            <li><a href="#encoding">encoding</a></li>
+            <li><a href="#group">group</a></li>
+            <li><a href="#mode">mode</a></li>
+            <li><a href="#owner">owner</a></li>
+            <li><a href="#source">source</a></li>
+            <li><a href="#verify_with">verify_with</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -304,14 +322,16 @@
     },
 }
 </code></pre>
-<p><br></p>
-<h2 id="attribute-reference">Attribute reference</h2>
-<p>See also: <a href="../../repo/bundles/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
-<p><br></p>
-<h3 id="content">content</h3>
+<p><br><br></p>
+<h1 id="attribute-reference">Attribute reference</h1>
+<p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
+
+<h2 id="content">content</h2>
 <p>May be used instead of <code>source</code> to provide file content without a template file.</p>
-<p><br></p>
-<h3 id="content_type">content_type</h3>
+<hr>
+
+<h2 id="content_type">content_type</h2>
 <p>How the file pointed to by <code>source</code> or the string given to <code>content</code> should be interpreted.</p>
 <table>
 <tr><th>Value</th><th>Effect</th></tr>
@@ -323,30 +343,38 @@
 <tr><td><code>text</code> (default)</td><td>like <code>binary</code>, but will be diffed in interactive mode</td></tr>
 </table>
 
-<p><br></p>
-<h3 id="context">context</h3>
+<hr>
+
+<h2 id="context">context</h2>
 <p>Only used with Mako and Jinja2 templates. The values of this dictionary will be available from within the template as variables named after the respective keys.</p>
-<p><br></p>
-<h3 id="delete">delete</h3>
+<hr>
+
+<h2 id="delete">delete</h2>
 <p>When set to <code>True</code>, the path of this file will be removed. It doesn't matter if there is not a file but a directory or something else at this path. When using <code>delete</code>, no other attributes are allowed.</p>
-<p><br></p>
-<h3 id="encoding">encoding</h3>
+<hr>
+
+<h2 id="encoding">encoding</h2>
 <p>Encoding of the target file. Note that this applies to the remote file only, your template is still conveniently written in UTF-8 and will be converted by BundleWrap. Defaults to "utf-8". Other possible values (e.g. "latin-1") can be found <a href="http://docs.python.org/2/library/codecs.html#standard-encodings">here</a>.</p>
-<p><br></p>
-<h3 id="group">group</h3>
+<hr>
+
+<h2 id="group">group</h2>
 <p>Name of the group this file belongs to. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<p><br></p>
-<h3 id="mode">mode</h3>
+<hr>
+
+<h2 id="mode">mode</h2>
 <p>File mode as returned by <code>stat -c %a &lt;file&gt;</code>. Defaults to <code>644</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<p><br></p>
-<h3 id="owner">owner</h3>
+<hr>
+
+<h2 id="owner">owner</h2>
 <p>Username of the file's owner. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<p><br></p>
-<h3 id="source">source</h3>
+<hr>
+
+<h2 id="source">source</h2>
 <p>File name of the file template. If this says <code>my_template</code>, BundleWrap will look in <code>data/my_bundle/files/my_template</code> and then <code>bundles/my_bundle/files/my_template</code>. Most of the time, you will want to put config templates into the latter directory. The <code>data/</code> subdirectory is meant for files that are very specific to your infrastructure (e.g. DNS zone files). This separation allows you to write your bundles in a generic way so that they could be open-sourced and shared with other people. Defaults to the filename of this item (e.g. <code>foo.conf</code> when this item is <code>/etc/foo.conf</code>).</p>
 <p>See also: <a href="../../guide/item_file_templates/">Writing file templates</a></p>
-<p><br></p>
-<h3 id="verify_with">verify_with</h3>
+<hr>
+
+<h2 id="verify_with">verify_with</h2>
 <p>This can be used to run external validation commands on a file before it is applied to a node. The file is verified locally on the machine running BundleWrap. Verification is considered successful when the exit code of the verification command is 0. Use <code>{}</code> as a placeholder for the shell-quoted path to the temporary file. Here is an example for verifying sudoers files:</p>
 <pre><code class="nohighlight">visudo -cf {}</code></pre>
 
