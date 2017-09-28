@@ -14,19 +14,19 @@ Handles services on OpenBSD.
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### enabled
+## enabled
 
 `True` if the service shall be automatically started during system bootup; `False` otherwise. `True`, the default value, is needed on OpenBSD, as starting disabled services fails.
 
 <br>
 
-### running
+## running
 
 `True` if the service is expected to be running on the system; `False` if it should be stopped.
 
@@ -36,12 +36,12 @@ See also: [The list of generic builtin item attributes](../repo/bundles.md#built
 
 See also: [Explanation of how canned actions work](../repo/bundles.md#canned-actions)
 
-### restart
+## restart
 
 Restarts the service.
 
 <br>
 
-### stopstart
+## stopstart
 
 Stops and starts the service.

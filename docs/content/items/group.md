@@ -10,18 +10,18 @@ Manages system groups. Group members are managed through the [user item](user.md
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### delete
+## delete
 
 When set to `True`, this group will be removed from the system. When using `delete`, no other attributes are allowed.
 
 <br>
 
-### gid
+## gid
 
 Numerical ID of the group.

@@ -18,18 +18,18 @@ Handles packages installed by `pacman` (e.g. Arch Linux).
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### installed
+## installed
 
 `True` when the package is expected to be present on the system; `False` if this package and all dependencies that are no longer needed should be removed.
 
 <br>
 
-### tarball
+## tarball
 
 Upload a local file to the node and install it using `pacman -U`. The value of `tarball` must point to a file relative to the `pkg_pacman` subdirectory of the current bundle.

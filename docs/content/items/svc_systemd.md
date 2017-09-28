@@ -14,19 +14,19 @@ Handles services managed by systemd.
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### enabled
+## enabled
 
 `True` if the service shall be automatically started during system bootup; `False` otherwise. `None` makes BundleWrap ignore this setting.
 
 <br>
 
-### running
+## running
 
 `True` if the service is expected to be running on the system; `False` if it should be stopped. `None` makes BundleWrap ignore this setting.
 
@@ -36,12 +36,12 @@ See also: [The list of generic builtin item attributes](../repo/bundles.md#built
 
 See also: [Explanation of how canned actions work](../repo/bundles.md#canned-actions)
 
-### reload
+## reload
 
 Reloads the service.
 
 <br>
 
-### restart
+## restart
 
 Restarts the service.

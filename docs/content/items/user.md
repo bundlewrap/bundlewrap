@@ -16,7 +16,7 @@ Manages system user accounts.
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
@@ -24,19 +24,19 @@ All attributes are optional.
 
 <br>
 
-### delete
+## delete
 
 When set to `True`, this user will be removed from the system. Note that because of how `userdel` works, the primary group of the user will be removed if it contains no other users. When using `delete`, no other attributes are allowed.
 
 <br>
 
-### full_name
+## full_name
 
 Full name of the user.
 
 <br>
 
-### gid
+## gid
 
 Primary group of the user as numerical ID or group name.
 
@@ -44,13 +44,13 @@ Primary group of the user as numerical ID or group name.
 
 <br>
 
-### groups
+## groups
 
 List of groups (names, not GIDs) the user should belong to. Must NOT include the group referenced by `gid`.
 
 <br>
 
-### hash_method
+## hash_method
 
 One of:
 
@@ -62,13 +62,13 @@ Defaults to `sha512`.
 
 <br>
 
-### home
+## home
 
 Path to home directory. Defaults to `/home/USERNAME`.
 
 <br>
 
-### password
+## password
 
 The user's password in plaintext.
 
@@ -78,24 +78,24 @@ The user's password in plaintext.
 
 <br>
 
-### password_hash
+## password_hash
 
 Hashed password as it would be returned by `crypt()` and written to `/etc/shadow`.
 
 <br>
 
-### salt
+## salt
 
 Recommended for use with the `password` attribute. BundleWrap will use 5000 rounds of SHA-512 on this salt and the provided password.
 
 <br>
 
-### shell
+## shell
 
 Path to login shell executable.
 
 <br>
 
-### uid
+## uid
 
 Numerical user ID. It's your job to make sure it's unique.

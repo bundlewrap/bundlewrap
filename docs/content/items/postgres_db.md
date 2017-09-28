@@ -15,17 +15,17 @@ Manages Postgres databases.
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### owner
+## owner
 
 Name of the role which owns this database (defaults to `"postgres"`).
 
-### encoding, collation, and ctype
+## encoding, collation, and ctype
 
 By default, BundleWrap will only create a database using your default PostgreSQL template, which most likely is `template1`. This means it will use the same encoding and collation that `template1` uses. By specifying any of the attributes `encoding`, `collation`, or `ctype`, BundleWrap will instead create a new database from `template0`, thus allowing you to override said database attributes.
 

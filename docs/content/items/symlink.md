@@ -10,24 +10,24 @@
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### target
+## target
 
 File or directory this symlink points to. **This attribute is required.**
 
 <br>
 
-### group
+## group
 
 Name of the group this symlink belongs to. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.
 
 <br>
 
-### owner
+## owner
 
 Username of the symlink's owner. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.

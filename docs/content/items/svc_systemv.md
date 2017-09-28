@@ -13,13 +13,13 @@ Handles services managed by traditional System V init scripts.
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### running
+## running
 
 `True` if the service is expected to be running on the system; `False` if it should be stopped.
 
@@ -29,12 +29,12 @@ See also: [The list of generic builtin item attributes](../repo/bundles.md#built
 
 See also: [Explanation of how canned actions work](../repo/bundles.md#canned-actions)
 
-### reload
+## reload
 
 Reloads the service.
 
 <br>
 
-### restart
+## restart
 
 Restarts the service.

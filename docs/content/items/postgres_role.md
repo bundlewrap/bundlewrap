@@ -11,19 +11,19 @@ Manages Postgres roles.
 
 <br>
 
-## Attribute reference
+# Attribute reference
 
 See also: [The list of generic builtin item attributes](../repo/bundles.md#builtin-item-attributes)
 
 <br>
 
-### superuser
+## superuser
 
 `True` if the role should be given superuser privileges (defaults to `False`).
 
 <br>
 
-### password
+## password
 
 Plaintext password to set for this role (will be hashed using MD5).
 
@@ -31,6 +31,6 @@ Plaintext password to set for this role (will be hashed using MD5).
 
 <br>
 
-### password_hash
+## password_hash
 
 As an alternative to `password`, this allows setting the raw hash as it will be stored in Postgres' internal database. Should start with "md5".
