@@ -81,6 +81,8 @@ def test_items(nodes, ignore_missing_faults):
 def test_subgroup_loops(repo):
     checked_groups = []
     for group in repo.groups:
+        if QUIT_EVENT.is_set():
+            break
         if group in checked_groups:
             continue
         with io.job(_("  {group}  checking for subgroup loops...").format(group=group.name)):
@@ -103,7 +105,11 @@ def test_metadata_collisions(node):
 def test_orphaned_bundles(repo):
     orphaned_bundles = set(repo.bundle_names)
     for node in repo.nodes:
+        if QUIT_EVENT.is_set():
+            break
         for bundle in node.bundles:
+            if QUIT_EVENT.is_set():
+                break
             orphaned_bundles.discard(bundle.name)
     for bundle in sorted(orphaned_bundles):
         io.stderr(_("{x} {bundle}  is an unused bundle").format(
@@ -117,6 +123,8 @@ def test_orphaned_bundles(repo):
 def test_empty_groups(repo):
     empty_groups = set()
     for group in repo.groups:
+        if QUIT_EVENT.is_set():
+            break
         if not group.nodes:
             empty_groups.add(group)
     for group in sorted(empty_groups):
@@ -131,6 +139,8 @@ def test_empty_groups(repo):
 def test_plugin_conflicts(repo):
     pm = PluginManager(repo.path)
     for plugin, version in pm.list():
+        if QUIT_EVENT.is_set():
+            break
         local_changes = pm.local_modifications(plugin)
         if local_changes:
             io.stderr(_("{x}  Plugin '{plugin}' has local modifications:").format(
@@ -159,6 +169,8 @@ def test_determinism_config(repo, nodes, iterations):
     hashes = {}
     io.progress_set_total(len(nodes) * iterations)
     for i in range(iterations):
+        if QUIT_EVENT.is_set():
+            break
         if i == 0:
             # optimization: for the first iteration, just use the repo
             # we already have
@@ -167,7 +179,9 @@ def test_determinism_config(repo, nodes, iterations):
             iteration_repo = Repository(repo.path)
         iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
         for node in iteration_nodes:
-            with io.job(_("  {node}  generating configuration ({i}/{n})...").format(
+            if QUIT_EVENT.is_set():
+                break
+            with io.job(_("{node}  generating configuration ({i}/{n})").format(
                 i=i + 1,
                 n=iterations,
                 node=node.name,
@@ -181,6 +195,7 @@ def test_determinism_config(repo, nodes, iterations):
                 ).format(node=node.name, x=red("✘")))
                 exit(1)
             io.progress_advance()
+    io.progress_set_total(0)
     io.stdout(_("{x} Configuration remained the same after being generated {n} times").format(
         n=iterations,
         x=green("✓"),
@@ -195,6 +210,8 @@ def test_determinism_metadata(repo, nodes, iterations):
     hashes = {}
     io.progress_set_total(len(nodes) * iterations)
     for i in range(iterations):
+        if QUIT_EVENT.is_set():
+            break
         if i == 0:
             # optimization: for the first iteration, just use the repo
             # we already have
@@ -204,6 +221,8 @@ def test_determinism_metadata(repo, nodes, iterations):
         iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
         for node in iteration_nodes:
             with io.job(_("  {node}  generating metadata ({i}/{n})... ").format(
+            if QUIT_EVENT.is_set():
+                break
                 i=i + 1,
                 n=iterations,
                 node=node.name,
@@ -266,6 +285,8 @@ def bw_test(repo, args):
     if args['metadata_collisions'] and not QUIT_EVENT.is_set():
         io.progress_set_total(len(nodes))
         for node in nodes:
+            if QUIT_EVENT.is_set():
+                break
             test_metadata_collisions(node)
             io.progress_advance()
 
@@ -281,6 +302,8 @@ def bw_test(repo, args):
     if args['hooks_node'] and not QUIT_EVENT.is_set():
         io.progress_set_total(len(nodes))
         for node in nodes:
+            if QUIT_EVENT.is_set():
+                break
             repo.hooks.test_node(repo, node)
             io.progress_advance()
 
