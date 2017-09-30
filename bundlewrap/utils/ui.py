@@ -243,10 +243,9 @@ class IOManager(object):
         if not self._active:
             return
         with self.lock:
-            if TTY:
-                self._clear_last_job()
-                write_to_stream(STDOUT_WRITER, inverse("{} ".format(msg)[:term_width() - 1]))
+            self._clear_last_job()
             self.jobs.append(msg)
+            self._write_current_job()
 
     def job_del(self, msg):
         if not self._active:
