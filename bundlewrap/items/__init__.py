@@ -319,9 +319,14 @@ class Item(object):
         return False
 
     def _test(self):
-        if self._faults_missing_for_attributes:
-            self._raise_for_faults()
-        return self.test()
+        with io.job(_("{node}  {bundle}  {item}").format(
+            bundle=self.bundle.name,
+            item=self.id,
+            node=self.node.name,
+        )):
+            if self._faults_missing_for_attributes:
+                self._raise_for_faults()
+            return self.test()
 
     @classmethod
     def _validate_attribute_names(cls, bundle, item_id, attributes):
@@ -480,7 +485,7 @@ class Item(object):
         if status_code is None:
             keys_to_fix = status_before.keys_to_fix
             if not interactive:
-                with io.job(_("  {node}  {bundle}  {item}  fixing...").format(
+                with io.job(_("{node}  {bundle}  {item}").format(
                     bundle=self.bundle.name,
                     item=self.id,
                     node=self.node.name,
@@ -518,7 +523,7 @@ class Item(object):
                     ),
                 )
                 if answer:
-                    with io.job(_("  {node}  {bundle}  {item}  fixing...").format(
+                    with io.job(_("{node}  {bundle}  {item}").format(
                         bundle=self.bundle.name,
                         item=self.id,
                         node=self.node.name,
@@ -632,7 +637,7 @@ class Item(object):
         Returns an ItemStatus instance describing the current status of
         the item on the actual node.
         """
-        with io.job(_("  {node}  {bundle}  {item}  checking...").format(
+        with io.job(_("{node}  {bundle}  {item}").format(
             bundle=self.bundle.name,
             item=self.id,
             node=self.node.name,

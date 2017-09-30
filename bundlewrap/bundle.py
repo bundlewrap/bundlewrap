@@ -47,23 +47,21 @@ class Bundle(object):
         return self.name < other.name
 
     @cached_property
+    @io.job_wrapper(_("{0.node.name}  {0.name}  parsing bundle"))
     def bundle_attrs(self):
         if not exists(self.bundle_file):
             return {}
         else:
-            with io.job(_("  {node}  {bundle}  collecting items...").format(
-                node=self.node.name,
-                bundle=self.name,
-            )):
-                return get_all_attrs_from_file(
-                    self.bundle_file,
-                    base_env={
-                        'node': self.node,
-                        'repo': self.repo,
-                    },
-                )
+            return get_all_attrs_from_file(
+                self.bundle_file,
+                base_env={
+                    'node': self.node,
+                    'repo': self.repo,
+                },
+            )
 
     @cached_property
+    @io.job_wrapper(_("{0.node.name}  {0.name}  creating items"))
     def items(self):
         for item_class in self.repo.item_classes:
             for item_name, item_attrs in self.bundle_attrs.get(
@@ -91,7 +89,7 @@ class Bundle(object):
 
     @cached_property
     def metadata_processors(self):
-        with io.job(_("  {node}  {bundle}  collecting metadata processors...").format(
+        with io.job(_("{node}  {bundle}  collecting metadata processors").format(
             node=self.node.name,
             bundle=self.name,
         )):

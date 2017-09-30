@@ -38,7 +38,7 @@ class NodeLock(object):
     def __enter__(self):
         with tempfile() as local_path:
             if not self.ignore:
-                with io.job(_("  {node}  checking hard lock status...").format(node=self.node.name)):
+                with io.job(_("{node}  checking hard lock status").format(node=self.node.name)):
                     result = self.node.run("mkdir " + quote(HARD_LOCK_PATH), may_fail=True)
                     if result.return_code != 0:
                         self.node.download(HARD_LOCK_FILE, local_path)
@@ -80,7 +80,7 @@ class NodeLock(object):
                         else:
                             raise NodeLockedException(info)
 
-            with io.job(_("  {node}  uploading lock file...").format(node=self.node.name)):
+            with io.job(_("{node}  uploading lock file").format(node=self.node.name)):
                 if self.ignore:
                     self.node.run("mkdir -p " + quote(HARD_LOCK_PATH))
                 with open(local_path, 'w') as f:
@@ -93,7 +93,7 @@ class NodeLock(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        with io.job(_("  {node}  removing hard lock...").format(node=self.node.name)):
+        with io.job(_("{node}  removing hard lock").format(node=self.node.name)):
             result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
 
         if result.return_code != 0:
@@ -168,7 +168,7 @@ def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
 
 
 def softlock_list(node):
-    with io.job(_("  {}  checking soft locks...").format(node.name)):
+    with io.job(_("{}  checking soft locks").format(node.name)):
         cat = node.run("cat {}".format(SOFT_LOCK_FILE.format(id="*")), may_fail=True)
         if cat.return_code != 0:
             return []

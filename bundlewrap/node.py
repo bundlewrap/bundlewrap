@@ -116,9 +116,7 @@ def apply_items(
     workers=1,
     interactive=False,
 ):
-    with io.job(_("  {node}  processing dependencies...").format(node=node.name)):
-        item_queue = ItemQueue(node.items, node.os, node.os_version)
-
+    item_queue = ItemQueue(node.items, node.name, node.os, node.os_version)
     results = []
 
     def tasks_available():
@@ -363,7 +361,7 @@ class Node(object):
 
     @cached_property
     def bundles(self):
-        with io.job(_("  {node}  loading bundles...").format(node=self.name)):
+        with io.job(_("{node}  loading bundles").format(node=self.name)):
             added_bundles = []
             found_bundles = []
             for group in self.groups:
@@ -410,6 +408,7 @@ class Node(object):
         return hash_statedict(sorted(names(self.groups)))
 
     @cached_property
+    @io.job_wrapper(_("{0.name}  determining groups"))
     def groups(self):
         _groups = set(self.repo._static_groups_for_node(self))
         # lock to avoid infinite recursion when .members_add/remove

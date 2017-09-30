@@ -17,15 +17,14 @@ from ..utils.ui import io, QUIT_EVENT
 
 
 def test_items(nodes, ignore_missing_faults):
-    with io.job(_("  counting items...")):
-        io.progress_set_total(count_items(nodes))
+    io.progress_set_total(count_items(nodes))
     for node in nodes:
         if QUIT_EVENT.is_set():
             break
         if not node.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(node.name), x=yellow("!")))
             continue
-        item_queue = ItemTestQueue(node.items, node.os, node.os_version)
+        item_queue = ItemTestQueue(node.items, node.name, node.os, node.os_version)
         while not QUIT_EVENT.is_set():
             try:
                 item = item_queue.pop()
@@ -86,7 +85,7 @@ def test_subgroup_loops(repo):
             break
         if group in checked_groups:
             continue
-        with io.job(_("  {group}  checking for subgroup loops...").format(group=group.name)):
+        with io.job(_("{group}  checking for subgroup loops").format(group=group.name)):
             checked_groups.extend(group.subgroups)  # the subgroups property has the check built in
         io.stdout(_("{x} {group}  has no subgroup loops").format(
             x=green("✓"),
@@ -95,7 +94,7 @@ def test_subgroup_loops(repo):
 
 
 def test_metadata_collisions(node):
-    with io.job(_("  {node}  checking for metadata collisions...").format(node=node.name)):
+    with io.job(_("{node}  checking for metadata collisions").format(node=node.name)):
         check_for_unsolvable_metadata_key_conflicts(node)
     io.stdout(_("{x} {node}  has no metadata collisions").format(
         x=green("✓"),
@@ -221,9 +220,9 @@ def test_determinism_metadata(repo, nodes, iterations):
             iteration_repo = Repository(repo.path)
         iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
         for node in iteration_nodes:
-            with io.job(_("  {node}  generating metadata ({i}/{n})... ").format(
             if QUIT_EVENT.is_set():
                 break
+            with io.job(_("{node}  generating metadata ({i}/{n})").format(
                 i=i + 1,
                 n=iterations,
                 node=node.name,

@@ -321,6 +321,14 @@ class IOManager(object):
         finally:
             self.job_del(job_text)
 
+    def job_wrapper(self, job_text):
+        def outer_wrapper(wrapped_function):
+            def inner_wrapper(*args, **kwargs):
+                with self.job(job_text.format(*args, **kwargs)):
+                    return wrapped_function(*args, **kwargs)
+            return inner_wrapper
+        return outer_wrapper
+
     def _clear_last_job(self):
         if self.jobs and TTY:
             write_to_stream(STDOUT_WRITER, "\r\033[K")
@@ -365,6 +373,15 @@ class IOManager(object):
 
     def _write_current_job(self):
         if self.jobs and TTY:
-            write_to_stream(STDOUT_WRITER, inverse("{} ".format(self.jobs[-1])[:term_width() - 1]))
+            line = "  "
+            try:
+                progress = (self.progress / float(self.progress_total))
+            except ZeroDivisionError:
+                pass
+            else:
+                line += "{:.1f}%  ".format(progress * 100)
+            line += self.jobs[-1]
+            line += "  "
+            write_to_stream(STDOUT_WRITER, inverse(line[:term_width() - 1]))
 
 io = IOManager()
