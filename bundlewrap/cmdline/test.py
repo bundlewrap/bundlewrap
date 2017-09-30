@@ -76,6 +76,7 @@ def test_items(nodes, ignore_missing_faults):
             for line in explain_item_dependency_loop(exception, node.name):
                 io.stderr(line)
             exit(1)
+    io.progress_set_total(0)
 
 
 def test_subgroup_loops(repo):
@@ -236,6 +237,7 @@ def test_determinism_metadata(repo, nodes, iterations):
                 ).format(node=node.name, x=red("✘")))
                 exit(1)
             io.progress_advance()
+    io.progress_set_total(0)
     io.stdout(_("{x} Metadata remained the same after being generated {n} times").format(
         n=iterations,
         x=green("✓"),
@@ -289,6 +291,7 @@ def bw_test(repo, args):
                 break
             test_metadata_collisions(node)
             io.progress_advance()
+        io.progress_set_total(0)
 
     if args['items']:
         test_items(nodes, args['ignore_missing_faults'])
@@ -306,6 +309,7 @@ def bw_test(repo, args):
                 break
             repo.hooks.test_node(repo, node)
             io.progress_advance()
+        io.progress_set_total(0)
 
     if args['hooks_repo'] and not QUIT_EVENT.is_set():
         repo.hooks.test(repo)
