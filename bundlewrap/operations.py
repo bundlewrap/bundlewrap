@@ -246,6 +246,7 @@ def upload(
     group="",
     mode=None,
     owner="",
+    ignore_failure=False,
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
@@ -266,6 +267,8 @@ def upload(
     scp_process = run_local(scp_command)
 
     if scp_process.return_code != 0:
+        if ignore_failure:
+            return False
         raise RemoteException(_(
             "Upload to {host} failed for {failed}:\n\n{result}\n\n"
         ).format(
@@ -277,7 +280,7 @@ def upload(
     if owner or group:
         if group:
             group = ":" + quote(group)
-        run(
+        result = run(
             hostname,
             "chown {}{} {}".format(
                 quote(owner),
@@ -285,29 +288,37 @@ def upload(
                 quote(temp_filename),
             ),
             add_host_keys=add_host_keys,
+            ignore_failure=ignore_failure,
             wrapper_inner=wrapper_inner,
             wrapper_outer=wrapper_outer,
         )
+        if result.return_code != 0:
+            return False
 
     if mode:
-        run(
+        result = run(
             hostname,
             "chmod {} {}".format(
                 mode,
                 quote(temp_filename),
             ),
             add_host_keys=add_host_keys,
+            ignore_failure=ignore_failure,
             wrapper_inner=wrapper_inner,
             wrapper_outer=wrapper_outer,
         )
+        if result.return_code != 0:
+            return False
 
-    run(
+    result = run(
         hostname,
         "mv -f {} {}".format(
             quote(temp_filename),
             quote(remote_path),
         ),
         add_host_keys=add_host_keys,
+        ignore_failure=ignore_failure,
         wrapper_inner=wrapper_inner,
         wrapper_outer=wrapper_outer,
     )
+    return result.return_code == 0

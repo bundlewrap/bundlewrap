@@ -258,6 +258,7 @@ class File(Item):
                 mode=self.attributes['mode'],
                 owner=self.attributes['owner'] or "",
                 group=self.attributes['group'] or "",
+                may_fail=True,
             )
 
     def _fix_mode(self, status):

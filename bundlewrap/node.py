@@ -701,7 +701,7 @@ class Node(object):
             wrapper_outer=self.cmd_wrapper_outer,
         )
 
-    def upload(self, local_path, remote_path, mode=None, owner="", group=""):
+    def upload(self, local_path, remote_path, mode=None, owner="", group="", may_fail=False):
         return operations.upload(
             self.hostname,
             local_path,
@@ -710,6 +710,7 @@ class Node(object):
             group=group,
             mode=mode,
             owner=owner,
+            ignore_failure=may_fail,
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
