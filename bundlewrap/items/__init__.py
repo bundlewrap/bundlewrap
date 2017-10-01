@@ -537,21 +537,20 @@ class Item(object):
             status_after = self.get_status(cached=False)
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
-        if status_code == self.STATUS_SKIPPED:
+        if status_code in (self.STATUS_OK, self.STATUS_SKIPPED):
             # can't use else for this because status_before is None
             changes = keys_to_fix
         elif status_before.must_be_created:
             changes = True
         elif status_before.must_be_deleted:
             changes = False
-        elif status_code == self.STATUS_FAILED:
+        else:
             changes = self.display_dicts(
                 self.cached_cdict.copy(),
                 status_after.sdict.copy(),
-                status_after.keys_to_fix[:],
+                status_after.keys_to_fix[:] if status_after.keys_to_fix
+                                            else status_before.keys_to_fix,
             )[2]
-        else:
-            changes = keys_to_fix
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
