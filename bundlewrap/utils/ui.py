@@ -275,6 +275,10 @@ class IOManager(object):
         with self.lock:
             self.progress += increment
 
+    def progress_increase_total(self, increment=1):
+        with self.lock:
+            self.progress_total += increment
+
     def progress_set_total(self, total):
         self.progress = 0
         self.progress_start = datetime.utcnow()

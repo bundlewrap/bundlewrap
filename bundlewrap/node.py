@@ -117,6 +117,11 @@ def apply_items(
     interactive=False,
 ):
     item_queue = ItemQueue(node.items, node.name, node.os, node.os_version)
+    # the item queue might contain new generated items (canned actions,
+    # dummy items); adjust progress total accordingly
+    extra_items = len(item_queue.all_items) - len(node.items)
+    io.progress_increase_total(increment=extra_items)
+
     results = []
 
     def tasks_available():
@@ -180,8 +185,8 @@ def apply_items(
             ))
 
         handle_apply_result(node, item, status_code, interactive, changes=changes)
+        io.progress_advance()
         if not isinstance(item, DummyItem):
-            io.progress_advance()
             results.append((item.id, status_code, duration))
 
     worker_pool = WorkerPool(
