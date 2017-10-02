@@ -81,9 +81,9 @@ class Action(Item):
 
         if self.unless:
             with io.job(_("{node}  {bundle}  {item}  checking 'unless' condition").format(
-                bundle=self.bundle.name,
+                bundle=bold(self.bundle.name),
                 item=self.id,
-                node=self.node.name,
+                node=bold(self.node.name),
             )):
                 unless_result = self.bundle.node.run(
                     self.unless,
@@ -171,10 +171,10 @@ class Action(Item):
         else:
             data_stdin = None
 
-        with io.job(_("{node}  {bundle}  RUN  {item}").format(
-            bundle=self.bundle.name,
+        with io.job(_("{node}  {bundle}  {item}").format(
+            bundle=bold(self.bundle.name),
             item=self.id,
-            node=self.node.name,
+            node=bold(self.node.name),
         )):
             result = self.bundle.node.run(
                 self.attributes['command'],

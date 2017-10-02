@@ -361,7 +361,7 @@ class Node(object):
 
     @cached_property
     def bundles(self):
-        with io.job(_("{node}  loading bundles").format(node=self.name)):
+        with io.job(_("{node}  loading bundles").format(node=bold(self.name))):
             added_bundles = []
             found_bundles = []
             for group in self.groups:
@@ -408,7 +408,7 @@ class Node(object):
         return hash_statedict(sorted(names(self.groups)))
 
     @cached_property
-    @io.job_wrapper(_("{0.name}  determining groups"))
+    @io.job_wrapper(_("{}  determining groups").format(bold("{0.name}")))
     def groups(self):
         _groups = set(self.repo._static_groups_for_node(self))
         # lock to avoid infinite recursion when .members_add/remove

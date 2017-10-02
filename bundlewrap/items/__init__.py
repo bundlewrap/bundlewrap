@@ -320,9 +320,9 @@ class Item(object):
 
     def _test(self):
         with io.job(_("{node}  {bundle}  {item}").format(
-            bundle=self.bundle.name,
+            bundle=bold(self.bundle.name),
             item=self.id,
-            node=self.node.name,
+            node=bold(self.node.name),
         )):
             if self._faults_missing_for_attributes:
                 self._raise_for_faults()
@@ -486,9 +486,9 @@ class Item(object):
             keys_to_fix = status_before.keys_to_fix
             if not interactive:
                 with io.job(_("{node}  {bundle}  {item}").format(
-                    bundle=self.bundle.name,
+                    bundle=bold(self.bundle.name),
                     item=self.id,
-                    node=self.node.name,
+                    node=bold(self.node.name),
                 )):
                     self.fix(status_before)
             else:
@@ -524,9 +524,9 @@ class Item(object):
                 )
                 if answer:
                     with io.job(_("{node}  {bundle}  {item}").format(
-                        bundle=self.bundle.name,
+                        bundle=bold(self.bundle.name),
                         item=self.id,
-                        node=self.node.name,
+                        node=bold(self.node.name),
                     )):
                         self.fix(status_before)
                 else:
@@ -637,9 +637,9 @@ class Item(object):
         the item on the actual node.
         """
         with io.job(_("{node}  {bundle}  {item}").format(
-            bundle=self.bundle.name,
+            bundle=bold(self.bundle.name),
             item=self.id,
-            node=self.node.name,
+            node=bold(self.node.name),
         )):
             if not cached:
                 del self._cache['cached_sdict']

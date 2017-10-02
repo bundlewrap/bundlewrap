@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
 from .items import Item
 from .items.actions import Action
-from .utils.text import mark_for_translation as _
+from .utils.text import bold, mark_for_translation as _
 from .utils.ui import io
 
 
@@ -554,7 +554,7 @@ def _inject_preceded_by_dependencies(items):
     return items
 
 
-@io.job_wrapper(_("{1}  processing dependencies"))
+@io.job_wrapper(_("{}  processing dependencies").format(bold("{1}")))
 def prepare_dependencies(items, node_name, node_os, node_os_version):
     """
     Performs all dependency preprocessing on a list of items.

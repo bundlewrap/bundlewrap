@@ -25,7 +25,7 @@ from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, merge_dict, names
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
-from .utils.text import mark_for_translation as _, red, validate_name
+from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io, QUIT_EVENT
 
 DIRNAME_BUNDLES = "bundles"
@@ -478,7 +478,7 @@ class Repository(object):
                 else:
                     self._node_metadata_static_complete.add(node_name)
 
-                with io.job(_("{node}  building group metadata").format(node=node.name)):
+                with io.job(_("{node}  building group metadata").format(node=bold(node.name))):
                     group_order = _flatten_group_hierarchy(node.groups)
                     for group_name in group_order:
                         self._node_metadata_partial[node.name] = merge_dict(
@@ -486,7 +486,7 @@ class Repository(object):
                             self.get_group(group_name).metadata,
                         )
 
-                with io.job(_("{node}  merging node metadata").format(node=node.name)):
+                with io.job(_("{node}  merging node metadata").format(node=bold(node.name))):
                     # deepcopy_metadata is important here because up to this point
                     # different nodes from the same group might still share objects
                     # nested deeply in their metadata. This becomes a problem if we
@@ -507,7 +507,7 @@ class Repository(object):
                 if QUIT_EVENT.is_set():
                     break
                 node = self.get_node(node_name)
-                with io.job(_("{node}  running metadata processors").format(node=node.name)):
+                with io.job(_("{node}  running metadata processors").format(node=bold(node.name))):
                     for metadata_processor_name, metadata_processor in node.metadata_processors:
                         if (node_name, metadata_processor_name) in blacklisted_metaprocs:
                             continue

@@ -14,11 +14,12 @@ import struct
 from subprocess import PIPE, Popen
 import sys
 import termios
+from time import time
 from threading import Event, Lock, Thread
 
 from . import STDERR_WRITER, STDOUT_WRITER
 from .table import render_table, ROW_SEPARATOR
-from .text import ansi_clean, blue, bold, inverse, mark_for_translation as _
+from .text import HIDE_CURSOR, SHOW_CURSOR, ansi_clean, blue, bold, mark_for_translation as _
 from .time import format_duration
 
 INFO_EVENT = Event()
@@ -97,6 +98,12 @@ def sigquit_handler(*args, **kwargs):
     INFO_EVENT.set()
 
 
+def spinner():
+    while True:
+        for c in "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏":
+            yield c
+
+
 def term_width():
     if not TTY:
         return 0
@@ -161,6 +168,9 @@ class IOManager(object):
         self.progress = 0
         self.progress_start = None
         self.progress_total = 0
+        self._spinner = spinner()
+        self._last_spinner_character = next(self._spinner)
+        self._last_spinner_update = 0
         self._signal_handler_thread = Thread(
             target=self._signal_handler_thread_body,
         )
@@ -170,6 +180,8 @@ class IOManager(object):
         # the thread once the soft shutdown has completed
         self._signal_handler_thread.daemon = True
         self._child_pids = []
+        self._status_line_present = False
+        self._waiting_for_input = False
 
     def activate(self):
         self._active = True
@@ -184,17 +196,19 @@ class IOManager(object):
         self._signal_handler_thread.start()
         signal(SIGINT, sigint_handler)
         signal(SIGQUIT, sigquit_handler)
+        write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
         answers = _("[Y/n]") if default else _("[y/N]")
         question = question + " " + answers + " "
+        self._waiting_for_input = True
         with self.lock:
             if QUIT_EVENT.is_set():
                 sys.exit(0)
             self._clear_last_job()
             while True:
-                write_to_stream(STDOUT_WRITER, "\a" + question)
+                write_to_stream(STDOUT_WRITER, "\a" + question + SHOW_CURSOR)
 
                 input_handler.drain()
                 answer = input_handler.get_input()
@@ -219,11 +233,13 @@ class IOManager(object):
                 )
             if epilogue:
                 write_to_stream(STDOUT_WRITER, epilogue + "\n")
-            self._write_current_job()
+            write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
+        self._waiting_for_input = False
         return answer
 
     def deactivate(self):
         self._active = False
+        write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
         signal(SIGINT, SIG_DFL)
         signal(SIGQUIT, SIG_DFL)
         self._signal_handler_thread.join()
@@ -330,12 +346,17 @@ class IOManager(object):
         return outer_wrapper
 
     def _clear_last_job(self):
-        if self.jobs and TTY:
+        if self._status_line_present and TTY:
             write_to_stream(STDOUT_WRITER, "\r\033[K")
+            self._status_line_present = False
 
     def _signal_handler_thread_body(self):
         while self._active:
             self.progress_show()
+            if not self._waiting_for_input:  # do not block and ignore SIGINT while .ask()ing
+                with self.lock:
+                    self._clear_last_job()
+                    self._write_current_job()
             if QUIT_EVENT.is_set():
                 if SHUTDOWN_EVENT_HARD.wait(0.1):
                     self.stderr(_("{x} {signal}  cleanup interrupted, exiting...").format(
@@ -361,6 +382,12 @@ class IOManager(object):
                         x=blue("i"),
                     ))
 
+    def _spinner_character(self):
+        if time() - self._last_spinner_update > 0.2:
+            self._last_spinner_update = time()
+            self._last_spinner_character = next(self._spinner)
+        return self._last_spinner_character
+
     def _write(self, msg, append_newline=True, err=False):
         if not self._active:
             return
@@ -373,15 +400,17 @@ class IOManager(object):
 
     def _write_current_job(self):
         if self.jobs and TTY:
-            line = "  "
+            line = "{} ".format(blue(self._spinner_character()))
             try:
                 progress = (self.progress / float(self.progress_total))
             except ZeroDivisionError:
                 pass
             else:
-                line += "{:.1f}%  ".format(progress * 100)
+                line += bold("{:.1f}%  ".format(progress * 100))
             line += self.jobs[-1]
             line += "  "
-            write_to_stream(STDOUT_WRITER, inverse(line[:term_width() - 1]))
+            write_to_stream(STDOUT_WRITER, line[:term_width() - 1])
+            self._status_line_present = True
+
 
 io = IOManager()

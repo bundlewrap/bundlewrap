@@ -6,7 +6,7 @@ from os.path import exists, join
 from .exceptions import NoSuchBundle, RepositoryError
 from .metadata import DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE
 from .utils import cached_property, get_all_attrs_from_file
-from .utils.text import mark_for_translation as _
+from .utils.text import bold, mark_for_translation as _
 from .utils.text import validate_name
 from .utils.ui import io
 
@@ -47,7 +47,7 @@ class Bundle(object):
         return self.name < other.name
 
     @cached_property
-    @io.job_wrapper(_("{0.node.name}  {0.name}  parsing bundle"))
+    @io.job_wrapper(_("{}  {}  parsing bundle").format(bold("{0.node.name}"), bold("{0.name}")))
     def bundle_attrs(self):
         if not exists(self.bundle_file):
             return {}
@@ -61,7 +61,7 @@ class Bundle(object):
             )
 
     @cached_property
-    @io.job_wrapper(_("{0.node.name}  {0.name}  creating items"))
+    @io.job_wrapper(_("{}  {}  creating items").format(bold("{0.node.name}"), bold("{0.name}")))
     def items(self):
         for item_class in self.repo.item_classes:
             for item_name, item_attrs in self.bundle_attrs.get(
@@ -90,8 +90,8 @@ class Bundle(object):
     @cached_property
     def metadata_processors(self):
         with io.job(_("{node}  {bundle}  collecting metadata processors").format(
-            node=self.node.name,
-            bundle=self.name,
+            node=bold(self.node.name),
+            bundle=bold(self.name),
         )):
             if not exists(self.metadata_file):
                 return []

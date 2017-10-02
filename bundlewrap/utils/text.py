@@ -12,6 +12,8 @@ from . import Fault, STDERR_WRITER
 
 
 ANSI_ESCAPE = re.compile(r'\x1b[^m]*m')
+HIDE_CURSOR = "\033[?25l"
+SHOW_CURSOR = "\033[?25h"
 VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
 
 

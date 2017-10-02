@@ -85,7 +85,7 @@ def test_subgroup_loops(repo):
             break
         if group in checked_groups:
             continue
-        with io.job(_("{group}  checking for subgroup loops").format(group=group.name)):
+        with io.job(_("{group}  checking for subgroup loops").format(group=bold(group.name))):
             checked_groups.extend(group.subgroups)  # the subgroups property has the check built in
         io.stdout(_("{x} {group}  has no subgroup loops").format(
             x=green("✓"),
@@ -94,7 +94,7 @@ def test_subgroup_loops(repo):
 
 
 def test_metadata_collisions(node):
-    with io.job(_("{node}  checking for metadata collisions").format(node=node.name)):
+    with io.job(_("{node}  checking for metadata collisions").format(node=bold(node.name))):
         check_for_unsolvable_metadata_key_conflicts(node)
     io.stdout(_("{x} {node}  has no metadata collisions").format(
         x=green("✓"),
@@ -184,7 +184,7 @@ def test_determinism_config(repo, nodes, iterations):
             with io.job(_("{node}  generating configuration ({i}/{n})").format(
                 i=i + 1,
                 n=iterations,
-                node=node.name,
+                node=bold(node.name),
             )):
                 result = node.hash()
             hashes.setdefault(node.name, result)
@@ -225,7 +225,7 @@ def test_determinism_metadata(repo, nodes, iterations):
             with io.job(_("{node}  generating metadata ({i}/{n})").format(
                 i=i + 1,
                 n=iterations,
-                node=node.name,
+                node=bold(node.name),
             )):
                 result = node.metadata_hash()
             hashes.setdefault(node.name, result)
