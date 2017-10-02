@@ -23,8 +23,9 @@ def bw_metadata(repo, args):
         for node in target_nodes:
             values = []
             for key_path in key_paths:
+                metadata = node.metadata
                 try:
-                    value = value_at_key_path(node.metadata, key_path)
+                    value = value_at_key_path(metadata, key_path)
                 except KeyError:
                     value = red(_("<missing>"))
                 if isinstance(value, (dict, list, tuple)):
