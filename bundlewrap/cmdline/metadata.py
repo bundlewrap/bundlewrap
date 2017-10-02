@@ -31,7 +31,7 @@ def bw_metadata(repo, args):
                     value = ", ".join([str(item) for item in value])
                 elif isinstance(value, set):
                     value = ", ".join(sorted(value))
-                elif isinstance(value, (bool, float, int, Decimal, Fault)):
+                elif isinstance(value, (bool, float, int, Decimal, Fault)) or value is None:
                     value = str(value)
                 values.append(value)
             table.append([bold(node.name)] + values)
