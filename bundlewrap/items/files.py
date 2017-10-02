@@ -11,6 +11,10 @@ from subprocess import call
 from sys import exc_info
 from traceback import format_exception
 
+from jinja2 import Environment, FileSystemLoader
+from mako.lookup import TemplateLookup
+from mako.template import Template
+
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
@@ -30,14 +34,6 @@ def content_processor_base64(item):
 
 
 def content_processor_jinja2(item):
-    try:
-        from jinja2 import Environment, FileSystemLoader
-    except ImportError:
-        raise TemplateError(_(
-            "Unable to load Jinja2 (required to render {item}). "
-            "You probably have to install it using `pip install Jinja2`."
-        ).format(item=item.id))
-
     loader = FileSystemLoader(searchpath=[item.item_data_dir, item.item_dir])
     env = Environment(loader=loader)
 
@@ -80,8 +76,6 @@ def content_processor_jinja2(item):
 
 
 def content_processor_mako(item):
-    from mako.lookup import TemplateLookup
-    from mako.template import Template
     template = Template(
         item._template_content.encode('utf-8'),
         input_encoding='utf-8',
