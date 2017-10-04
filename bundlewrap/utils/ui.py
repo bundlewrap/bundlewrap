@@ -196,7 +196,8 @@ class IOManager(object):
         self._signal_handler_thread.start()
         signal(SIGINT, sigint_handler)
         signal(SIGQUIT, sigquit_handler)
-        write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
+        if TTY:
+            write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
 
     def ask(self, question, default, epilogue=None, input_handler=DrainableStdin()):
         assert self._active
@@ -239,7 +240,8 @@ class IOManager(object):
 
     def deactivate(self):
         self._active = False
-        write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
+        if TTY:
+            write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
         signal(SIGINT, SIG_DFL)
         signal(SIGQUIT, SIG_DFL)
         self._signal_handler_thread.join()
