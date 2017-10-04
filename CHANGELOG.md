@@ -1,3 +1,19 @@
+# 3.0.2
+
+2017-10-04
+
+* improved status line
+* `bw test` is now more responsive to SIGINT
+* sorted bundle and group lists in `bw nodes` output
+* fixed an issue with symlinks failing if fixing both target and ownership
+* fixed `bw run` with dummy nodes
+* fixed progress exceeding 100% during `bw apply`
+* fixed progress intermittently being stuck at 100% during `bw test`
+* fixed incorrent display of fixed item properties
+* fixed `bw metadata --table` being unable to show None
+* fixed `bw metadata` hiding KeyErrors
+
+
 # 3.0.1
 
 2017-09-25
