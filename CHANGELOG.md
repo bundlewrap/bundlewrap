@@ -1,3 +1,12 @@
+# 3.0.3
+
+2017-10-04
+
+* dropped support for Python 3.3
+* fixed `bw` trying to hide the cursor without a TTY present
+* fixed `ImportError` with Python 2.7
+
+
 # 3.0.2
 
 2017-10-04
