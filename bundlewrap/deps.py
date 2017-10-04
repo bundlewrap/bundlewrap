@@ -441,7 +441,17 @@ def _inject_reverse_triggers(items):
     """
     for item in items.values():
         for triggering_item_id in item.triggered_by:
-            triggering_item = items[triggering_item_id]
+            try:
+                triggering_item = items[triggering_item_id]
+            except KeyError:
+                raise ItemDependencyError(_(
+                    "'{item}' in bundle '{bundle}' has a reverse trigger (triggered_by) "
+                    "on '{dep}', which doesn't exist"
+                ).format(
+                    item=item.id,
+                    bundle=item.bundle.name,
+                    dep=triggering_item_id,
+                ))
             if triggering_item.id.startswith("bundle:"):  # bundle items
                 bundle_name = triggering_item.id.split(":")[1]
                 for actual_triggering_item in items.values():
@@ -459,7 +469,17 @@ def _inject_reverse_triggers(items):
             else:
                 triggering_item.triggers.append(item.id)
         for preceded_item_id in item.precedes:
-            preceded_item = items[preceded_item_id]
+            try:
+                preceded_item = items[preceded_item_id]
+            except KeyError:
+                raise ItemDependencyError(_(
+                    "'{item}' in bundle '{bundle}' has a reverse trigger (precedes) "
+                    "on '{dep}', which doesn't exist"
+                ).format(
+                    item=item.id,
+                    bundle=item.bundle.name,
+                    dep=preceded_item_id,
+                ))
             if preceded_item.id.startswith("bundle:"):  # bundle items
                 bundle_name = preceded_item.id.split(":")[1]
                 for actual_preceded_item in items.values():
