@@ -27,9 +27,18 @@ from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, names
 from .utils.statedict import hash_statedict
-from .utils.text import blue, bold, cyan, green, red, validate_name, yellow
-from .utils.text import force_text, mark_for_translation as _
-from .utils.time import format_duration
+from .utils.text import (
+    blue,
+    bold,
+    cyan,
+    force_text,
+    format_duration,
+    green,
+    mark_for_translation as _,
+    red,
+    validate_name,
+    yellow,
+)
 from .utils.ui import io
 
 

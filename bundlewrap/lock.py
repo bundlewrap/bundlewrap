@@ -11,8 +11,16 @@ from time import time
 
 from .exceptions import NodeLockedException
 from .utils import cached_property, tempfile
-from .utils.text import blue, bold, mark_for_translation as _, red, wrap_question
-from .utils.time import format_duration, format_timestamp, parse_duration
+from .utils.text import (
+    blue,
+    bold,
+    format_duration,
+    format_timestamp,
+    mark_for_translation as _,
+    parse_duration,
+    red,
+    wrap_question,
+)
 from .utils.ui import io
 
 

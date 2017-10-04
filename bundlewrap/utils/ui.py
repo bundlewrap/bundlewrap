@@ -19,8 +19,16 @@ from threading import Event, Lock, Thread
 
 from . import STDERR_WRITER, STDOUT_WRITER
 from .table import render_table, ROW_SEPARATOR
-from .text import HIDE_CURSOR, SHOW_CURSOR, ansi_clean, blue, bold, mark_for_translation as _
-from .time import format_duration
+from .text import (
+    HIDE_CURSOR,
+    SHOW_CURSOR,
+    ansi_clean,
+    blue,
+    bold,
+    format_duration,
+    mark_for_translation as _,
+)
+
 
 INFO_EVENT = Event()
 QUIT_EVENT = Event()

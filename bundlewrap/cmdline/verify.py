@@ -11,13 +11,13 @@ from ..utils.text import (
     blue,
     bold,
     error_summary,
+    format_duration,
     green,
     green_unless_zero,
     mark_for_translation as _,
     red,
     red_unless_zero,
 )
-from ..utils.time import format_duration
 from ..utils.ui import io
 
 

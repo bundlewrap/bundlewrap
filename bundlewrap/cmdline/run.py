@@ -12,9 +12,16 @@ from ..concurrency import WorkerPool
 from ..utils import SkipList
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import mark_for_translation as _
-from ..utils.text import blue, bold, error_summary, green, red, yellow
-from ..utils.time import format_duration
+from ..utils.text import (
+    blue,
+    bold,
+    error_summary,
+    format_duration,
+    green,
+    mark_for_translation as _,
+    red,
+    yellow,
+)
 from ..utils.ui import io
 
 
