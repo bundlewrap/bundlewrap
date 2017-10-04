@@ -244,6 +244,11 @@ class User(Item):
                     rounds=8,  # default rounds for OpenBSD accounts
                     salt=_DEFAULT_BCRYPT_SALT if salt is None else salt,
                 )
+            elif attributes.get('hash_method') == 'md5':
+                attributes['password_hash'] = hash_method.encrypt(
+                    force_text(attributes['password']),
+                    salt=_DEFAULT_SALT if salt is None else salt,
+                )
             else:
                 attributes['password_hash'] = hash_method.encrypt(
                     force_text(attributes['password']),
