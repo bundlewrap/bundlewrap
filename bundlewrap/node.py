@@ -328,6 +328,7 @@ class Node(object):
         'amazonlinux',
         'arch',
         'opensuse',
+        'openwrt',
         'gentoo',
         'linux',
     ) + \
