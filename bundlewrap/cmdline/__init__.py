@@ -7,7 +7,7 @@ from os import environ
 from os.path import abspath, dirname
 from pipes import quote
 from sys import argv, exit, stderr, stdout
-from traceback import print_exc
+from traceback import format_exc, print_exc
 
 
 from ..exceptions import NoSuchRepository, MissingRepoDependency
@@ -133,11 +133,17 @@ def main(*args, **kwargs):
                         "{x} {path} "
                         "is not a BundleWrap repository."
                     ).format(path=quote(abspath(pargs.repo_path)), x=red("!!!")))
+                    io.deactivate()
                     exit(1)
                 else:
                     path = dirname(path)
             except MissingRepoDependency as exc:
                 io.stderr(str(exc))
+                io.deactivate()
+                exit(1)
+            except Exception:
+                io.stderr(format_exc())
+                io.deactivate()
                 exit(1)
 
     # convert all string args into text
