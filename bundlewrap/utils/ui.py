@@ -384,6 +384,8 @@ class IOManager(object):
                         except ProcessLookupError:
                             pass
                     self._clear_last_job()
+                    if TTY:
+                        write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
                     _exit(1)
             else:
                 if SHUTDOWN_EVENT_SOFT.wait(0.1):
