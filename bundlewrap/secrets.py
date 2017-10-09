@@ -75,6 +75,7 @@ class SecretProxy(object):
     def __init__(self, repo):
         self.repo = repo
         self.keys = self._load_keys()
+        self._call_log = {}
 
     def _decrypt(self, cryptotext=None, key='encrypt'):
         """
@@ -311,6 +312,8 @@ class SecretProxy(object):
     def human_password_for(
         self, identifier, digits=2, key='generate', per_word=3, words=4,
     ):
+        self._call_log.setdefault(identifier, 0)
+        self._call_log[identifier] += 1
         return Fault(
             self._generate_human_password,
             identifier=identifier,
@@ -321,6 +324,8 @@ class SecretProxy(object):
         )
 
     def password_for(self, identifier, key='generate', length=32, symbols=False):
+        self._call_log.setdefault(identifier, 0)
+        self._call_log[identifier] += 1
         return Fault(
             self._generate_password,
             identifier=identifier,

@@ -584,3 +584,54 @@ def test_group_user_dep_deleted_gid(tmpdir):
         },
     )
     assert run("bw test -I", path=str(tmpdir))[2] == 1
+
+
+def test_secret_identifier_only_once(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'files': {
+                    "/test": {
+                        'content': "${repo.vault.password_for('testing')}",
+                        'content_type': 'mako',
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test -s ''", path=str(tmpdir))[2] == 1
+    assert run("bw test -s 'test'", path=str(tmpdir))[2] == 0
+    assert run("bw test -s 'test,foo'", path=str(tmpdir))[2] == 0
+
+
+def test_secret_identifier_twice(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+            "node2": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'files': {
+                    "/test": {
+                        'content': "${repo.vault.password_for('testing')}",
+                        'content_type': 'mako',
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test -s ''", path=str(tmpdir))[2] == 0
+    assert run("bw test -s 'test'", path=str(tmpdir))[2] == 0
+    assert run("bw test -s 'test,foo'", path=str(tmpdir))[2] == 0
