@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>bundles/.../metadata.py - BundleWrap</title>
+        <title>pkg_opkg - BundleWrap</title>
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.5.0.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -115,129 +115,129 @@
 </li>
                         </ul>
                     </li>
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Repository <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             
 <li >
-    <a href="../layout/">Overview</a>
+    <a href="../../repo/layout/">Overview</a>
 </li>
                             
 <li >
-    <a href="../nodes.py/">nodes.py</a>
+    <a href="../../repo/nodes.py/">nodes.py</a>
 </li>
                             
 <li >
-    <a href="../groups.py/">groups.py</a>
+    <a href="../../repo/groups.py/">groups.py</a>
 </li>
                             
 <li >
-    <a href="../requirements.txt/">requirements.txt</a>
+    <a href="../../repo/requirements.txt/">requirements.txt</a>
 </li>
                             
 <li >
-    <a href="../items.py/">bundles/.../items.py</a>
-</li>
-                            
-<li class="active">
-    <a href="./">bundles/.../metadata.py</a>
+    <a href="../../repo/items.py/">bundles/.../items.py</a>
 </li>
                             
 <li >
-    <a href="../hooks/">hooks/</a>
+    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
 </li>
                             
 <li >
-    <a href="../libs/">libs/</a>
+    <a href="../../repo/hooks/">hooks/</a>
 </li>
                             
 <li >
-    <a href="../plugins/">Plugins</a>
+    <a href="../../repo/libs/">libs/</a>
+</li>
+                            
+<li >
+    <a href="../../repo/plugins/">Plugins</a>
 </li>
                         </ul>
                     </li>
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Items <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             
 <li >
-    <a href="../../items/action/">action</a>
+    <a href="../action/">action</a>
 </li>
                             
 <li >
-    <a href="../../items/directory/">directory</a>
+    <a href="../directory/">directory</a>
 </li>
                             
 <li >
-    <a href="../../items/file/">file</a>
+    <a href="../file/">file</a>
 </li>
                             
 <li >
-    <a href="../../items/group/">group</a>
+    <a href="../group/">group</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_apt/">pkg_apt</a>
+    <a href="../pkg_apt/">pkg_apt</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_dnf/">pkg_dnf</a>
+    <a href="../pkg_dnf/">pkg_dnf</a>
+</li>
+                            
+<li class="active">
+    <a href="./">pkg_opkg</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_opkg/">pkg_opkg</a>
+    <a href="../pkg_pacman/">pkg_pacman</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_pacman/">pkg_pacman</a>
+    <a href="../pkg_pip/">pkg_pip</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_pip/">pkg_pip</a>
+    <a href="../pkg_snap/">pkg_snap</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_snap/">pkg_snap</a>
+    <a href="../pkg_yum/">pkg_yum</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_yum/">pkg_yum</a>
+    <a href="../pkg_zypper/">pkg_zypper</a>
 </li>
                             
 <li >
-    <a href="../../items/pkg_zypper/">pkg_zypper</a>
+    <a href="../postgres_db/">postgres_db</a>
 </li>
                             
 <li >
-    <a href="../../items/postgres_db/">postgres_db</a>
+    <a href="../postgres_role/">postgres_role</a>
 </li>
                             
 <li >
-    <a href="../../items/postgres_role/">postgres_role</a>
+    <a href="../svc_openbsd/">svc_openbsd</a>
 </li>
                             
 <li >
-    <a href="../../items/svc_openbsd/">svc_openbsd</a>
+    <a href="../svc_systemd/">svc_systemd</a>
 </li>
                             
 <li >
-    <a href="../../items/svc_systemd/">svc_systemd</a>
+    <a href="../svc_systemv/">svc_systemv</a>
 </li>
                             
 <li >
-    <a href="../../items/svc_systemv/">svc_systemv</a>
+    <a href="../svc_upstart/">svc_upstart</a>
 </li>
                             
 <li >
-    <a href="../../items/svc_upstart/">svc_upstart</a>
+    <a href="../symlink/">symlink</a>
 </li>
                             
 <li >
-    <a href="../../items/symlink/">symlink</a>
-</li>
-                            
-<li >
-    <a href="../../items/user/">user</a>
+    <a href="../user/">user</a>
 </li>
                         </ul>
                     </li>
@@ -275,12 +275,12 @@
                     </a>
                 </li>
                     <li >
-                        <a rel="next" href="../items.py/">
+                        <a rel="next" href="../pkg_dnf/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../hooks/">
+                        <a rel="prev" href="../pkg_pacman/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -297,59 +297,31 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#metadatapy">metadata.py</a></li>
-            <li><a href="#available-options">Available options</a></li>
+        <li class="main active"><a href="#opkg-package-items">opkg package items</a></li>
+        <li class="main "><a href="#attribute-reference">Attribute reference</a></li>
+            <li><a href="#installed">installed</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<h1 id="metadatapy">metadata.py</h1>
-<p>Alongside <code>items.py</code> you may create another file called <code>metadata.py</code>. It can be used to do advanced processing of the metadata you configured for your nodes and groups. Specifically, it allows each bundle to modify metadata before <code>items.py</code> is evaluated.</p>
-<p>This is accomplished through metadata processors. Metadata processors are functions that take the metadata dictionary generated so far as their single argument. You must then return a dictionary with any modifications you need to make plus at least one of several options:</p>
-<pre><code>@metadata_processor
-def my_metadata_processor(metadata):
-    metadata["foo"] = node.name
-    return metadata, DONE
+<h1 id="opkg-package-items">opkg package items</h1>
+<p>Handles packages installed by <code>opkg</code> on OpenWRT/LEDE.</p>
+<pre><code>pkg_opkg = {
+    "foopkg": {
+        "installed": True,  # default
+    },
+    "bar": {
+        "installed": False,
+    },
+}
 </code></pre>
-<p>You must always return the modified metadata dictionary as the first element. After that, there are a few options you can return. Every metadata processor from every bundle is called <em>repeatedly</em> with the latest metadata dictionary until it indicates that it is done by returning the <code>DONE</code> option or until <em>all</em> remaining metadata processors return <code>RUN_ME_AGAIN</code>. You must always return one of <code>DONE</code> or <code>RUN_ME_AGAIN</code>. Use the latter if your metadata processor depends on metadata that is generated by another metadata processor (which may be called after yours). Here is another example:</p>
-<pre><code>@metadata_processor
-def first_metadata_processor(metadata):
-    metadata["foo"] = node.name
-    return metadata, DONE
+<p><br><br></p>
+<h1 id="attribute-reference">Attribute reference</h1>
+<p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
 
-@metadata_processor
-def second_metadata_processor(metadata):
-    if "foo" in metadata:
-        metadata["bar"] = metadata["foo"]
-        return metadata, DONE
-    else:
-        return metadata, RUN_ME_AGAIN
-</code></pre>
-<p>In this example, <code>"bar"</code> can only be set once <code>"foo"</code> is available and thus the <code>second_metadata_processor</code> has to wait and request to <code>RUN_ME_AGAIN</code> until <code>first_metadata_processor</code> ran. This is necessary because the running order of metadata processors is undefined.</p>
-<div class="alert alert-danger">To avoid deadlocks when accessing <strong>other</strong> nodes' metadata from within a metadata processor, use <code>other_node.partial_metadata</code> instead of <code>other_node.metadata</code>. For the same reason, always use the <code>metadata</code> parameter to access the current node's metadata, never <code>node.metadata</code>.</div>
-
-<p><br></p>
-<h2 id="available-options">Available options</h2>
-<table>
-<tr><th>Option</th><th>Description</th></tr>
-<tr><td><code>DONE</code></td><td>Indicates that this metadata processor has done all it can and need not be called again. Return this whenever possible.</td></tr>
-<tr><td><code>RUN_ME_AGAIN</code></td><td>Indicates that this metadata processor is still waiting for metadata from another metadata processor to become available.</td></tr>
-<tr><td><code>DEFAULTS</code></td><td>The returned metadata dictionary will only be used to provide default values. The actual metadata generated so far will be recursively merged into the returned dict.</td></tr>
-<tr><td><code>OVERWRITE</code></td><td>The returned metadata dictionary will be recursively merged into the actual metadata generated so far (inverse of <code>DEFAULTS</code>).</td></tr>
-</table>
-
-<p>Here is an example of how to use <code>DEFAULTS</code>:</p>
-<pre><code>@metadata_processor
-def my_metadata_processor(metadata):
-    return {
-        "foo": {
-            "bar": 47,
-        },
-    }, DONE, DEFAULTS
-</code></pre>
-<p>This means <code>node.metadata["foo"]["bar"]</code> will be 47 by default, but can also be overridden in static metadata at the node/group level.</p>
-<p><br></p>
-<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_processor</code> and all the options in <code>metadata.py</code> without importing them.</div></div>
+<h2 id="installed">installed</h2>
+<p><code>True</code> when the package is expected to be present on the system; <code>False</code> if it should be removed.</p></div>
         </div>
 
         <footer class="col-md-12">
