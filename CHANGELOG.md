@@ -1,3 +1,14 @@
+# 3.1.0
+
+2017-10-10
+
+* added pkg_opkg items
+* added `bw test -s`
+* improved error messages for unknown reverse triggers
+* fixed hash_method md5 on user items
+* fixed cursor sometimes not being restored
+
+
 # 3.0.3
 
 2017-10-04
