@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from os.path import exists, join
 
-from .exceptions import NoSuchBundle, RepositoryError
+from .exceptions import BundleError, NoSuchBundle, RepositoryError
 from .metadata import DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE
 from .utils import cached_property, get_all_attrs_from_file
 from .utils.text import bold, mark_for_translation as _
@@ -96,6 +96,7 @@ class Bundle(object):
             if not exists(self.metadata_file):
                 return []
             result = []
+            internal_names = set()
             for name, attr in get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
@@ -109,5 +110,21 @@ class Bundle(object):
                 },
             ).items():
                 if getattr(attr, '__is_a_metadata_processor', False):
+                    internal_name = getattr(attr, '__name__', name)
+                    if internal_name in internal_names:
+                        raise BundleError(_(
+                            "Metadata processor '{name}' in bundle {bundle} for node {node} has "
+                            "__name__ '{internal_name}', which was previously used by another "
+                            "metadata processor in the same metadata.py. BundleWrap uses __name__ "
+                            "internally to tell metadata processors apart, so this is a problem. "
+                            "Perhaps you used a decorator on your metadata processors that "
+                            "doesn't use functools.wraps? You should use that."
+                        ).format(
+                            bundle=self.name,
+                            node=self.node.name,
+                            internal_name=internal_name,
+                            name=name,
+                        ))
+                    internal_names.add(internal_name)
                     result.append(attr)
             return result
