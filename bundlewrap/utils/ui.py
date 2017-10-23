@@ -417,15 +417,18 @@ class IOManager(object):
     def _write_current_job(self):
         if self.jobs and TTY:
             line = "{} ".format(blue(self._spinner_character()))
+            # must track line length manually as len() will count ANSI escape codes
+            visible_length = 2
             try:
                 progress = (self.progress / float(self.progress_total))
             except ZeroDivisionError:
                 pass
             else:
-                line += bold("{:.1f}%  ".format(progress * 100))
-            line += self.jobs[-1]
-            line += "  "
-            write_to_stream(STDOUT_WRITER, line[:term_width() - 1])
+                progress_text = "{:.1f}%  ".format(progress * 100)
+                line += bold(progress_text)
+                visible_length += len(progress_text)
+            line += self.jobs[-1][:term_width() - 1 - visible_length]
+            write_to_stream(STDOUT_WRITER, line)
             self._status_line_present = True
 
 
