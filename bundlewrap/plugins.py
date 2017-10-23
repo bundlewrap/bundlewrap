@@ -186,3 +186,4 @@ class PluginManager(object):
     def write_db(self):
         with open(join(self.path, "plugins.json"), 'w') as f:
             f.write(dumps(self.plugin_db, indent=4, sort_keys=True))
+            f.write("\n")
