@@ -1,3 +1,12 @@
+# 3.1.1
+
+2017-10-24
+
+* will now detect bad wrappers around metadata processors
+* fixed crash in `bw plot`
+* fixed cut off status lines
+
+
 # 3.1.0
 
 2017-10-10
