@@ -9,11 +9,14 @@ from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
-PKGSPEC_REGEX = re.compile(r"^(.+)-(\d.+)$")
+PKGSPEC_REGEX = re.compile(r"^([^-]+)-(\d[^-]+)(-(.+))?$")
 
 
-def pkg_install(node, pkgname, version):
-    full_name = "{}-{}".format(pkgname, version) if version else pkgname
+def pkg_install(node, pkgname, flavor, version):
+    if version:
+        full_name = "{}-{}".format(pkgname, version)
+    else:
+        full_name = "{}--{}".format(pkgname, flavor)
     return node.run("pkg_add -r -I {}".format(full_name), may_fail=True)
 
 
@@ -23,10 +26,15 @@ def pkg_installed(node, pkgname):
         may_fail=True,
     )
     for line in result.stdout.decode('utf-8').strip().splitlines():
-        installed_package, installed_version = PKGSPEC_REGEX.match(line).groups()
+        installed_package, installed_version, _, installed_flavor = \
+            PKGSPEC_REGEX.match(line).groups()
         if installed_package == pkgname:
-            return installed_version
-    return False
+            # If our regex didn't match a flavor, then this is
+            # equivalent to using the "normal" flavor.
+            if installed_flavor is None:
+                installed_flavor = ""
+            return installed_version, installed_flavor
+    return False, None
 
 
 def pkg_remove(node, pkgname):
@@ -40,6 +48,7 @@ class OpenBSDPkg(Item):
     BUNDLE_ATTRIBUTE_NAME = "pkg_openbsd"
     ITEM_ATTRIBUTES = {
         'installed': True,
+        'flavor': "",
         'version': None,
     }
     ITEM_TYPE_NAME = "pkg_openbsd"
@@ -52,6 +61,8 @@ class OpenBSDPkg(Item):
 
     def cdict(self):
         cdict = self.attributes.copy()
+        if not cdict['installed']:
+            del cdict['flavor']
         if cdict['version'] is None or not cdict['installed']:
             del cdict['version']
         return cdict
@@ -60,12 +71,18 @@ class OpenBSDPkg(Item):
         if self.attributes['installed'] is False:
             pkg_remove(self.node, self.name)
         else:
-            pkg_install(self.node, self.name, self.attributes['version'])
+            pkg_install(
+                self.node,
+                self.name,
+                self.attributes['flavor'],
+                self.attributes['version']
+            )
 
     def sdict(self):
-        version = pkg_installed(self.node, self.name)
+        version, flavor = pkg_installed(self.node, self.name)
         return {
             'installed': bool(version),
+            'flavor': flavor if version else _("none"),
             'version': version if version else _("none"),
         }
 
