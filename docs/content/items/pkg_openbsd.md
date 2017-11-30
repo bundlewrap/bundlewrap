@@ -36,12 +36,12 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 
 Optional, defaults to the "normal" flavor.
 
-Ignored when `version` is set or when `installed` is `False`.
+Can be used together with `version`. Ignored when `installed` is `False`.
 
 <hr>
 
 ## version
 
-Optional version string. Can be used to select one specific version of a package, including its flavor. For example, set this to `1.0.4p0-socks` for the package `irssi` to run `pkg_add irssi-1.0.4p0-socks`.
+Optional version string. Can be used to select one specific version of a package.
 
-Ignored when `flavor` is set or when `installed` is `False`.
+Can be used together with `flavor`. Ignored when `installed` is `False`.

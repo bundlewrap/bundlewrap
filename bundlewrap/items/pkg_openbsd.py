@@ -13,10 +13,27 @@ PKGSPEC_REGEX = re.compile(r"^([^-]+)-(\d[^-]+)(-(.+))?$")
 
 
 def pkg_install(node, pkgname, flavor, version):
-    if version:
+    # Setting either flavor or version to None means "don't specify this
+    # component". Setting flavor to the empty string means choosing the
+    # "normal" flavor.
+    #
+    # flavor = "",     version = None:    "pkgname--"
+    # flavor = "foo",  version = None:    "pkgname--foo"
+    # flavor = None,   version = None:    "pkgname"          (a)
+    # flavor = "",     version = "1.0":   "pkgname-1.0"      (b)
+    # flavor = "foo",  version = "1.0":   "pkgname-1.0-foo"
+    # flavor = None,   version = "1.0":   "pkgname-1.0"
+    # flavor = None,   version = "-foo":  "pkgname--foo"  (backwards compat)
+    if flavor is None and version is None:
+        # Case "(a)"
+        full_name = pkgname
+    elif flavor == "" and version is not None:
+        # Case "(b)"
         full_name = "{}-{}".format(pkgname, version)
     else:
-        full_name = "{}--{}".format(pkgname, flavor)
+        version_part = "-" if version is None else "-{}".format(version)
+        flavor_part = "" if flavor is None else "-{}".format(flavor)
+        full_name = "{}{}{}".format(pkgname, version_part, flavor_part)
     return node.run("pkg_add -r -I {}".format(full_name), may_fail=True)
 
 
