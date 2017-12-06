@@ -73,7 +73,7 @@ class Symlink(Item):
     _fix_group = _fix_owner
 
     def _fix_target(self, status):
-        self.node.run("ln -sf -- {} {}".format(
+        self.node.run("ln -sfT -- {} {}".format(
             quote(self.attributes['target']),
             quote(self.name),
         ))
