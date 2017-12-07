@@ -99,7 +99,7 @@ class OpenBSDPkg(Item):
         version, flavor = pkg_installed(self.node, self.name)
         return {
             'installed': bool(version),
-            'flavor': flavor if version else _("none"),
+            'flavor': flavor if flavor else _("none"),
             'version': version if version else _("none"),
         }
 
