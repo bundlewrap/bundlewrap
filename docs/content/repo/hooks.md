@@ -178,7 +178,7 @@ Called each time a `bw apply` command finishes processing a node.
 
 `interactive` `True` if this was an interactive apply run.
 
-`result: An instance of `bundlewrap.node.ApplyResult`.
+`result` An instance of `bundlewrap.node.ApplyResult`.
 
 ---
 
