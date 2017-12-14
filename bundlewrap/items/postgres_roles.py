@@ -22,7 +22,7 @@ def delete_role(node, role):
 def fix_role(node, role, attrs, create=False):
     password = " PASSWORD '{}'".format(attrs['password_hash'])
     node.run(
-        "echo \"{operation} ROLE {role} WITH LOGIN {superuser}SUPERUSER{password}\" "
+        "echo \"{operation} ROLE \\\"{role}\\\" WITH LOGIN {superuser}SUPERUSER{password}\" "
         "| sudo -u postgres psql -nqw".format(
             operation="CREATE" if create else "ALTER",
             password="" if attrs['password_hash'] is None else password,

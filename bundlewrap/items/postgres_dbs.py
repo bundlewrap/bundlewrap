@@ -49,7 +49,7 @@ def get_databases(node):
 
 def set_owner(node, name, owner):
     return node.run(
-        "echo 'ALTER DATABASE {name} OWNER TO {owner}' | "
+        "echo 'ALTER DATABASE \"{name}\" OWNER TO \"{owner}\"' | "
         "sudo -u postgres psql -nqw".format(
             name=name,
             owner=owner,
