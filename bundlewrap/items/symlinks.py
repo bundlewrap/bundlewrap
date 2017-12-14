@@ -73,10 +73,16 @@ class Symlink(Item):
     _fix_group = _fix_owner
 
     def _fix_target(self, status):
-        self.node.run("ln -sfT -- {} {}".format(
-            quote(self.attributes['target']),
-            quote(self.name),
-        ))
+        if self.node.os in self.node.OS_FAMILY_BSD:
+            self.node.run("ln -sfh -- {} {}".format(
+                quote(self.attributes['target']),
+                quote(self.name),
+            ))
+        else:
+            self.node.run("ln -sfT -- {} {}".format(
+                quote(self.attributes['target']),
+                quote(self.name),
+            ))
 
     def _fix_type(self, status):
         self.node.run("rm -rf -- {}".format(quote(self.name)))
