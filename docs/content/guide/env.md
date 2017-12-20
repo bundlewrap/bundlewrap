@@ -60,7 +60,13 @@ Set this to a path pointing to your BundleWrap repository. If unset, the current
 
 ## `BW_SSH_ARGS`
 
-Extra arguments to include in every call to `ssh` BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap.
+Extra arguments to include in every call to `ssh` BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap. Defaults to `""`.
+
+<br>
+
+## `BW_SCP_ARGS`
+
+Extra arguments to include in every call to `scp` BundleWrap makes. Defaults to the value of `BW_SSH_ARGS`.
 
 <br>
 

@@ -262,7 +262,7 @@ def upload(
         "-o",
         "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
     ]
-    extra_args = environ.get("BW_SSH_ARGS", "").strip()
+    extra_args = environ.get("BW_SCP_ARGS", environ.get("BW_SSH_ARGS", "")).strip()
     if extra_args:
         scp_command.extend(split(extra_args))
     scp_command.append(local_path)
