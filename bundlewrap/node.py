@@ -101,14 +101,21 @@ def format_node_result(result):
     return ", ".join(output)
 
 
-def handle_apply_result(node, item, status_code, interactive, changes=None):
+def handle_apply_result(node, item, status_code, interactive, details=None):
+    if status_code == Item.STATUS_SKIPPED and details in (
+        Item.SKIP_REASON_CMDLINE,
+        Item.SKIP_REASON_NO_TRIGGER,
+        Item.SKIP_REASON_UNLESS,
+    ):
+        # skipped for "unless" or "not triggered", don't output those
+        return
     formatted_result = format_item_result(
         status_code,
         node.name,
         item.bundle.name if item.bundle else "",  # dummy items don't have bundles
         item.id,
         interactive=interactive,
-        changes=changes,
+        details=details,
     )
     if formatted_result is not None:
         if status_code == Item.STATUS_FAILED:
@@ -153,7 +160,7 @@ def apply_items(
         item_id = task_id.split(":", 1)[1]
         item = find_item(item_id, item_queue.pending_items)
 
-        status_code, changes = return_value
+        status_code, details = return_value
 
         if status_code == Item.STATUS_FAILED:
             for skipped_item in item_queue.item_failed(item):
@@ -162,7 +169,7 @@ def apply_items(
                     skipped_item,
                     Item.STATUS_SKIPPED,
                     interactive,
-                    changes=[_("dep failed")],
+                    details=[_("dep failed")],
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
@@ -171,18 +178,18 @@ def apply_items(
             item_queue.item_ok(item)
         elif status_code == Item.STATUS_SKIPPED:
             for skipped_item in item_queue.item_skipped(item):
-                skipped_reason = [_("dep skipped")]
+                skip_reason = Item.SKIP_REASON_DEP_FAILED
                 for lock in other_peoples_soft_locks:
                     for selector in lock['items']:
                         if skipped_item.covered_by_autoskip_selector(selector):
-                            skipped_reason = [_("soft locked")]
+                            skip_reason = Item.SKIP_REASON_SOFTLOCK
                             break
                 handle_apply_result(
                     node,
                     skipped_item,
                     Item.STATUS_SKIPPED,
                     interactive,
-                    changes=skipped_reason,
+                    details=skip_reason,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         else:
@@ -193,7 +200,7 @@ def apply_items(
                 ),
             ))
 
-        handle_apply_result(node, item, status_code, interactive, changes=changes)
+        handle_apply_result(node, item, status_code, interactive, details=details)
         io.progress_advance()
         if not isinstance(item, DummyItem):
             results.append((item.id, status_code, duration))
@@ -259,19 +266,21 @@ def _flatten_group_hierarchy(groups):
     return order
 
 
-def format_item_result(result, node, bundle, item, interactive=False, changes=None):
-    if changes is True:
-        changes_text = "({})".format(_("create"))
-    elif changes is False:
-        changes_text = "({})".format(_("remove"))
-    elif changes is None:
-        changes_text = ""
+def format_item_result(result, node, bundle, item, interactive=False, details=None):
+    if details is True:
+        details_text = "({})".format(_("create"))
+    elif details is False:
+        details_text = "({})".format(_("remove"))
+    elif details is None:
+        details_text = ""
+    elif result == Item.STATUS_SKIPPED:
+        details_text = "({})".format(Item.SKIP_REASON_DESC[details])
     else:
-        changes_text = "({})".format(", ".join(sorted(changes)))
+        details_text = "({})".format(", ".join(sorted(details)))
     if result == Item.STATUS_FAILED:
-        return "{x} {node}  {bundle}  {item} {status} {changes}".format(
+        return "{x} {node}  {bundle}  {item} {status} {details}".format(
             bundle=bold(bundle),
-            changes=changes_text,
+            details=details_text,
             item=item,
             node=bold(node),
             status=red(_("failed")),
@@ -286,18 +295,18 @@ def format_item_result(result, node, bundle, item, interactive=False, changes=No
             x=bold(green("✓")),
         )
     elif result == Item.STATUS_SKIPPED:
-        return "{x} {node}  {bundle}  {item} {status} {changes}".format(
+        return "{x} {node}  {bundle}  {item} {status} {details}".format(
             bundle=bold(bundle),
-            changes=changes_text,
+            details=details_text,
             item=item,
             node=bold(node),
             x=bold(yellow("»")),
             status=yellow(_("skipped")),
         )
     elif result == Item.STATUS_FIXED:
-        return "{x} {node}  {bundle}  {item} {status} {changes}".format(
+        return "{x} {node}  {bundle}  {item} {status} {details}".format(
             bundle=bold(bundle),
-            changes=changes_text,
+            details=details_text,
             item=item,
             node=bold(node),
             x=bold(green("✓")),
@@ -834,14 +843,14 @@ def verify_items(node, show_all=False, workers=1):
         node_name, bundle_name, item_id = task_id.split(":", 2)
         if not unless_result and not item_status.correct:
             if item_status.must_be_created:
-                changes_text = _("create")
+                details_text = _("create")
             elif item_status.must_be_deleted:
-                changes_text = _("remove")
+                details_text = _("remove")
             else:
-                changes_text = ", ".join(sorted(item_status.display_keys_to_fix))
-            io.stderr("{x} {node}  {bundle}  {item} ({changes})".format(
+                details_text = ", ".join(sorted(item_status.display_keys_to_fix))
+            io.stderr("{x} {node}  {bundle}  {item} ({details})".format(
                 bundle=bold(bundle_name),
-                changes=changes_text,
+                details=details_text,
                 item=item_id,
                 node=bold(node_name),
                 x=red("✘"),

@@ -17,6 +17,7 @@ from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, italic, wrap_question
 from bundlewrap.utils.ui import io
 
+
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': None,
     'comment': None,
@@ -87,6 +88,24 @@ class Item(object):
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
     REQUIRED_ATTRIBUTES = []
+    SKIP_REASON_CMDLINE = 1
+    SKIP_REASON_DEP_FAILED = 2
+    SKIP_REASON_FAULT_UNAVAILABLE = 3
+    SKIP_REASON_INTERACTIVE = 4
+    SKIP_REASON_INTERACTIVE_ONLY = 5
+    SKIP_REASON_NO_TRIGGER = 6
+    SKIP_REASON_SOFTLOCK = 7
+    SKIP_REASON_UNLESS = 8
+    SKIP_REASON_DESC = {
+        SKIP_REASON_CMDLINE: _("cmdline"),
+        SKIP_REASON_DEP_FAILED: _("dependency failed"),
+        SKIP_REASON_FAULT_UNAVAILABLE: _("Fault unavailable"),
+        SKIP_REASON_INTERACTIVE: _("declined interactively"),
+        SKIP_REASON_INTERACTIVE_ONLY: _("interactive only"),
+        SKIP_REASON_NO_TRIGGER: _("not triggered"),
+        SKIP_REASON_SOFTLOCK: _("soft locked"),
+        SKIP_REASON_UNLESS: _("unless"),
+    }
     STATUS_OK = 1
     STATUS_FIXED = 2
     STATUS_FAILED = 3
@@ -407,7 +426,6 @@ class Item(object):
             self.node,
             self,
         )
-        keys_to_fix = None
         status_code = None
         status_before = None
         status_after = None
@@ -418,11 +436,11 @@ class Item(object):
                 "autoskip matches {item} on {node}"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
-            keys_to_fix = [_("cmdline")]
+            skip_reason = self.SKIP_REASON_CMDLINE
 
         if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
             status_code = self.STATUS_SKIPPED
-            keys_to_fix = [_("soft locked")]
+            skip_reason = self.SKIP_REASON_SOFTLOCK
 
         for item in self._precedes_items:
             if item._triggers_preceding_items(interactive=interactive):
@@ -441,14 +459,14 @@ class Item(object):
                 "skipping {item} on {node} because it wasn't triggered"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
-            keys_to_fix = [_("not triggered")]
+            skip_reason = self.SKIP_REASON_NO_TRIGGER
 
         if status_code is None and self.cached_unless_result and status_code is None:
             io.debug(_(
                 "'unless' for {item} on {node} succeeded, not fixing"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
-            keys_to_fix = ["unless"]
+            skip_reason = self.SKIP_REASON_UNLESS
 
         if self._faults_missing_for_attributes and status_code is None:
             if self.error_on_missing_fault:
@@ -465,7 +483,7 @@ class Item(object):
                     node=self.node.name,
                 ))
                 status_code = self.STATUS_SKIPPED
-                keys_to_fix = [_("Fault unavailable")]
+                skip_reason = self.SKIP_REASON_FAULT_UNAVAILABLE
 
         if status_code is None:
             try:
@@ -483,13 +501,12 @@ class Item(object):
                         node=self.node.name,
                     ))
                     status_code = self.STATUS_SKIPPED
-                    keys_to_fix = [_("Fault unavailable")]
+                    skip_reason = self.SKIP_REASON_FAULT_UNAVAILABLE
             else:
                 if status_before.correct:
                     status_code = self.STATUS_OK
 
         if status_code is None:
-            keys_to_fix = status_before.keys_to_fix
             if not interactive:
                 with io.job(_("{node}  {bundle}  {item}").format(
                     bundle=bold(self.bundle.name),
@@ -536,26 +553,24 @@ class Item(object):
                         self.fix(status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
-                    keys_to_fix = [_("interactive")]
+                    skip_reason = self.SKIP_REASON_INTERACTIVE
 
         if status_code is None:
             status_after = self.get_status(cached=False)
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
-        if status_code in (self.STATUS_OK, self.STATUS_SKIPPED):
-            # can't use else for this because status_before is None
-            changes = keys_to_fix
+        if status_code == self.STATUS_OK:
+            details = None
+        elif status_code == self.STATUS_SKIPPED:
+            details = skip_reason
         elif status_before.must_be_created:
-            changes = True
+            details = True
         elif status_before.must_be_deleted:
-            changes = False
+            details = False
+        elif status_code == self.STATUS_FAILED:
+            details = status_after.display_keys_to_fix
         else:
-            changes = self.display_dicts(
-                self.cached_cdict.copy(),
-                status_after.sdict.copy(),
-                status_after.keys_to_fix[:] if status_after.keys_to_fix
-                                            else status_before.keys_to_fix,
-            )[2]
+            details = status_before.display_keys_to_fix
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
@@ -566,7 +581,7 @@ class Item(object):
             status_before=status_before,
             status_after=status_after,
         )
-        return (status_code, changes)
+        return (status_code, details)
 
     def ask(self, status_should, status_actual, relevant_keys):
         """

@@ -49,19 +49,19 @@ class Action(Item):
                     item=self.id,
                     node=self.node.name,
                 ))
-                return (self.STATUS_SKIPPED, [_("Fault unavailable")])
+                return (self.STATUS_SKIPPED, self.SKIP_REASON_FAULT_UNAVAILABLE)
 
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(
                 "autoskip matches {item} on {node}"
             ).format(item=self.id, node=self.node.name))
-            return (self.STATUS_SKIPPED, [_("cmdline")])
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE)
 
         if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
-            return (self.STATUS_SKIPPED, [_("soft locked")])
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_SOFTLOCK)
 
         if interactive is False and self.attributes['interactive'] is True:
-            return (self.STATUS_SKIPPED, [_("interactive only")])
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE_ONLY)
 
         for item in self._precedes_items:
             if item._triggers_preceding_items(interactive=interactive):
@@ -77,7 +77,7 @@ class Action(Item):
 
         if self.triggered and not self.has_been_triggered:
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return (self.STATUS_SKIPPED, [_("not triggered")])
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_NO_TRIGGER)
 
         if self.unless:
             with io.job(_("{node}  {bundle}  {item}  checking 'unless' condition").format(
@@ -95,7 +95,7 @@ class Action(Item):
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
-                return (self.STATUS_SKIPPED, ["unless"])
+                return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS)
 
         question_body = ""
         if self.attributes['data_stdin'] is not None:
