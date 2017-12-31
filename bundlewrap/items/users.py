@@ -151,6 +151,20 @@ class User(Item):
             command += self.name
             self.node.run(command, may_fail=True)
 
+    def display_dicts(self, cdict, sdict, keys):
+        for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
+            try:
+                keys.remove(attr_name)
+            except ValueError:
+                pass
+            else:
+                keys.append(attr_display_name)
+                cdict[attr_display_name] = cdict[attr_name]
+                sdict[attr_display_name] = sdict[attr_name]
+                del cdict[attr_name]
+                del sdict[attr_name]
+        return (cdict, sdict, keys)
+
     def get_auto_deps(self, items):
         deps = []
         groups = self.attributes['groups'] or []
