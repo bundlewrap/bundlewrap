@@ -55,7 +55,7 @@ class ItemStatus(object):
     fixing and what's broken.
     """
 
-    def __init__(self, cdict, sdict):
+    def __init__(self, cdict, sdict, display_dicts):
         self.cdict = cdict
         self.sdict = sdict
         self.keys_to_fix = []
@@ -63,6 +63,12 @@ class ItemStatus(object):
         self.must_be_created = (self.cdict is not None and self.sdict is None)
         if not self.must_be_deleted and not self.must_be_created:
             self.keys_to_fix = diff_keys(cdict, sdict)
+
+        self.display_cdict, self.display_sdict, self.display_keys_to_fix = display_dicts(
+            copy(cdict),
+            copy(sdict),
+            copy(self.keys_to_fix),
+        )
 
     def __repr__(self):
         return "<ItemStatus correct:{}>".format(self.correct)
@@ -497,12 +503,11 @@ class Item(object):
                 elif status_before.must_be_deleted:
                     question_text = _("Found on node. Will be removed.")
                 else:
-                    cdict, sdict, display_keys_to_fix = self.display_dicts(
-                        copy(self.cached_cdict),
-                        copy(status_before.sdict),
-                        copy(keys_to_fix),
+                    question_text = self.ask(
+                        status_before.display_cdict,
+                        status_before.display_sdict,
+                        status_before.display_keys_to_fix,
                     )
-                    question_text = self.ask(cdict, sdict, display_keys_to_fix)
                 if self.comment:
                     question_text += format_comment(self.comment)
                 question = wrap_question(
@@ -643,7 +648,7 @@ class Item(object):
         )):
             if not cached:
                 del self._cache['cached_sdict']
-            return ItemStatus(self.cached_cdict, self.cached_sdict)
+            return ItemStatus(self.cached_cdict, self.cached_sdict, self.display_dicts)
 
     def hash(self):
         return hash_statedict(self.cached_cdict)

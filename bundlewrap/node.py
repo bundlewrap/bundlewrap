@@ -838,7 +838,7 @@ def verify_items(node, show_all=False, workers=1):
             elif item_status.must_be_deleted:
                 changes_text = _("remove")
             else:
-                changes_text = ", ".join(sorted(item_status.keys_to_fix))
+                changes_text = ", ".join(sorted(item_status.display_keys_to_fix))
             io.stderr("{x} {node}  {bundle}  {item} ({changes})".format(
                 bundle=bold(bundle_name),
                 changes=changes_text,
