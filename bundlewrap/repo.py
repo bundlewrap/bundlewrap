@@ -22,7 +22,7 @@ from .group import Group
 from .metadata import check_metadata_processor_result, deepcopy_metadata, DEFAULTS, DONE, OVERWRITE
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
-from .utils import cached_property, merge_dict, names
+from .utils import blame_changed_paths, cached_property, merge_dict, names
 from .utils.scm import get_rev
 from .utils.statedict import hash_statedict
 from .utils.text import bold, mark_for_translation as _, red, validate_name
@@ -250,6 +250,7 @@ class Repository(object):
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
+        self._node_metadata_blame = {}
         self._node_metadata_complete = {}
         self._node_metadata_partial = {}
         self._node_metadata_static_complete = set()
@@ -418,7 +419,7 @@ class Repository(object):
         """
         return self.nodes_in_all_groups([group_name])
 
-    def _metadata_for_node(self, node_name, partial=False):
+    def _metadata_for_node(self, node_name, partial=False, blame=False):
         """
         Returns full or partial metadata for this node.
 
@@ -446,7 +447,7 @@ class Repository(object):
                 pass
 
             self._node_metadata_partial[node_name] = {}
-            self._build_node_metadata()
+            self._build_node_metadata(blame=blame)
 
             # now that we have completed all metadata for this
             # node and all related nodes, copy that data over
@@ -457,9 +458,12 @@ class Repository(object):
             self._node_metadata_partial = {}
             self._node_metadata_static_complete = set()
 
-            return self._node_metadata_complete[node_name]
+            if blame:
+                return self._node_metadata_blame[node_name]
+            else:
+                return self._node_metadata_complete[node_name]
 
-    def _build_node_metadata(self):
+    def _build_node_metadata(self, blame=False):
         """
         Builds complete metadata for all nodes that appear in
         self._node_metadata_partial.keys().
@@ -472,6 +476,7 @@ class Repository(object):
                 if QUIT_EVENT.is_set():
                     break
                 node = self.get_node(node_name)
+                node_blame = self._node_metadata_blame.setdefault(node_name, {})
                 # check if static metadata for this node is already done
                 if node_name in self._node_metadata_static_complete:
                     continue
@@ -481,10 +486,18 @@ class Repository(object):
                 with io.job(_("{node}  building group metadata").format(node=bold(node.name))):
                     group_order = _flatten_group_hierarchy(node.groups)
                     for group_name in group_order:
-                        self._node_metadata_partial[node.name] = merge_dict(
+                        new_metadata = merge_dict(
                             self._node_metadata_partial[node.name],
                             self.get_group(group_name).metadata,
                         )
+                        if blame:
+                            blame_changed_paths(
+                                self._node_metadata_partial[node.name],
+                                new_metadata,
+                                node_blame,
+                                "group:{}".format(group_name),
+                            )
+                        self._node_metadata_partial[node.name] = new_metadata
 
                 with io.job(_("{node}  merging node metadata").format(node=bold(node.name))):
                     # deepcopy_metadata is important here because up to this point
@@ -493,10 +506,18 @@ class Repository(object):
                     # start messing with these objects in metadata processors. Every
                     # time we would edit one of these objects, the changes would be
                     # shared amongst multiple nodes.
-                    self._node_metadata_partial[node.name] = deepcopy_metadata(merge_dict(
+                    new_metadata = deepcopy_metadata(merge_dict(
                         self._node_metadata_partial[node.name],
                         node._node_metadata,
                     ))
+                    if blame:
+                        blame_changed_paths(
+                            self._node_metadata_partial[node.name],
+                            new_metadata,
+                            node_blame,
+                            "node:{}".format(node.name),
+                        )
+                    self._node_metadata_partial[node.name] = new_metadata
 
             # Now for the interesting part: We run all metadata processors
             # until none of them return DONE anymore (indicating that they're
@@ -507,6 +528,7 @@ class Repository(object):
                 if QUIT_EVENT.is_set():
                     break
                 node = self.get_node(node_name)
+                node_blame = self._node_metadata_blame[node_name]
                 with io.job(_("{node}  running metadata processors").format(node=bold(node.name))):
                     for metadata_processor_name, metadata_processor in node.metadata_processors:
                         if (node_name, metadata_processor_name) in blacklisted_metaprocs:
@@ -517,8 +539,15 @@ class Repository(object):
                             metaproc=metadata_processor_name,
                             node=node.name,
                         ))
+                        if blame:
+                            # We need to deepcopy here because otherwise we have no chance of
+                            # figuring out what changed...
+                            input_metadata = deepcopy_metadata(self._node_metadata_partial[node.name])
+                        else:
+                            # ...but we can't always do it for performance reasons.
+                            input_metadata = self._node_metadata_partial[node.name]
                         try:
-                            processed = metadata_processor(self._node_metadata_partial[node.name])
+                            processed = metadata_processor(input_metadata)
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata processor "
@@ -553,18 +582,29 @@ class Repository(object):
                                 node=node.name,
                             ))
 
+                        blame_defaults = False
                         if DEFAULTS in options:
-                            self._node_metadata_partial[node.name] = merge_dict(
+                            processed_dict = merge_dict(
                                 processed_dict,
                                 self._node_metadata_partial[node.name],
                             )
+                            blame_defaults = True
                         elif OVERWRITE in options:
-                            self._node_metadata_partial[node.name] = merge_dict(
+                            processed_dict = merge_dict(
                                 self._node_metadata_partial[node.name],
                                 processed_dict,
                             )
-                        else:
-                            self._node_metadata_partial[node.name] = processed_dict
+
+                        if blame:
+                            blame_changed_paths(
+                                self._node_metadata_partial[node.name],
+                                processed_dict,
+                                node_blame,
+                                "metadata_processor:{}".format(metadata_processor_name),
+                                defaults=blame_defaults,
+                            )
+
+                        self._node_metadata_partial[node.name] = processed_dict
 
             if not metaproc_returned_DONE:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):

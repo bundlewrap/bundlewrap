@@ -654,6 +654,10 @@ class Node(object):
         else:
             return self.repo._metadata_for_node(self.name, partial=False)
 
+    @property
+    def metadata_blame(self):
+        return self.repo._metadata_for_node(self.name, partial=False, blame=True)
+
     def metadata_hash(self):
         return hash_metadata(self.metadata)
 
