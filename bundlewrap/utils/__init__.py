@@ -203,45 +203,6 @@ def hash_local_file(path):
     return sha1(get_file_contents(path))
 
 
-def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=False):
-    def is_mergeable(value1, value2):
-        if isinstance(value1, (list, set, tuple)) and isinstance(value2, (list, set, tuple)):
-            return True
-        elif isinstance(value1, dict) and isinstance(value2, dict):
-            return True
-        return False
-
-    def map_dict_keys(d, base=None):
-        if base is None:
-            base = tuple()
-        keys = set([base + (key,) for key in d.keys()])
-        for key, value in d.items():
-            if isinstance(value, dict):
-                keys.update(map_dict_keys(value, base=base + (key,)))
-        return keys
-
-    new_paths = map_dict_keys(new_dict)
-
-    # clean up removed paths from blame_dict
-    for path in list(blame_dict.keys()):
-        if path not in new_paths:
-            del blame_dict[path]
-
-    for path in new_paths:
-        new_value = value_at_key_path(new_dict, path)
-        try:
-            old_value = value_at_key_path(old_dict, path)
-        except KeyError:
-            blame_dict[path] = (blame_name,)
-        else:
-            if old_value != new_value:
-                if defaults or is_mergeable(old_value, new_value):
-                    blame_dict[path] += (blame_name,)
-                else:
-                    blame_dict[path] = (blame_name,)
-    return blame_dict
-
-
 def names(obj_list):
     """
     Iterator over the name properties of a given list of objects.
@@ -293,19 +254,3 @@ def tempfile():
     close(handle)
     yield path
     remove(path)
-
-
-def value_at_key_path(dict_obj, path):
-    """
-    Given the list of keys in `path`, recursively traverse `dict_obj`
-    and return whatever is found at the end of that path.
-
-    E.g.:
-
-    >>> value_at_key_path({'foo': {'bar': 5}}, ['foo', 'bar'])
-    5
-    """
-    if not path:
-        return dict_obj
-    else:
-        return value_at_key_path(dict_obj[path[0]], path[1:])

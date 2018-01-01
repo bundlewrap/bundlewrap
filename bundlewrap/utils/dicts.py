@@ -187,6 +187,22 @@ def hash_statedict(sdict):
     return sha1(statedict_to_json(sdict).encode('utf-8')).hexdigest()
 
 
+def map_dict_keys(dict_obj, _base=None):
+    """
+    Return a set of key paths for the given dict. E.g.:
+
+        >>> map_dict_keys({'foo': {'bar': 1}, 'baz': 2})
+        set([('foo', 'bar'), ('baz',)])
+    """
+    if _base is None:
+        _base = tuple()
+    keys = set([_base + (key,) for key in dict_obj.keys()])
+    for key, value in dict_obj.items():
+        if isinstance(value, dict):
+            keys.update(map_dict_keys(value, _base=_base + (key,)))
+    return keys
+
+
 def merge_dict(base, update):
     """
     Recursively merges the base dict into the update dict.
@@ -278,3 +294,19 @@ def validate_statedict(sdict):
                         i=index,
                         k=key,
                     ))
+
+
+def value_at_key_path(dict_obj, path):
+    """
+    Given the list of keys in `path`, recursively traverse `dict_obj`
+    and return whatever is found at the end of that path.
+
+    E.g.:
+
+    >>> value_at_key_path({'foo': {'bar': 5}}, ['foo', 'bar'])
+    5
+    """
+    if not path:
+        return dict_obj
+    else:
+        return value_at_key_path(dict_obj[path[0]], path[1:])
