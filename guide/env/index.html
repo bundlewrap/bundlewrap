@@ -19,8 +19,8 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
-	
-	<script src="../../js/jquery-1.10.2.min.js"></script>
+
+        <script src="../../js/jquery-1.10.2.min.js"></script>
         <script src="../../js/bootstrap-3.0.3.min.js"></script>
         <script src="../../js/highlight.pack.js"></script>
         <script>
@@ -185,6 +185,10 @@
 </li>
                             
 <li >
+    <a href="../../items/pkg_openbsd/">pkg_openbsd</a>
+</li>
+                            
+<li >
     <a href="../../items/pkg_opkg/">pkg_opkg</a>
 </li>
                             
@@ -285,9 +289,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="https://github.com/bundlewrap/bundlewrap">
-                                <i class="fa fa-github"></i>GitHub
-                        </a>
+                        <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/env.md"><i class="fa fa-github"></i> Edit on GitHub</a>
                     </li>
             </ul>
         </div>
@@ -307,6 +309,7 @@
             <li><a href="#bw_repo_path">BW_REPO_PATH</a></li>
             <li><a href="#bw_softlock_expiry">BW_SOFTLOCK_EXPIRY</a></li>
             <li><a href="#bw_ssh_args">BW_SSH_ARGS</a></li>
+            <li><a href="#bw_scp_args">BW_SCP_ARGS</a></li>
             <li><a href="#bw_table_style">BW_TABLE_STYLE</a></li>
             <li><a href="#bw_vault_dummy_mode">BW_VAULT_DUMMY_MODE</a></li>
     </ul>
@@ -345,7 +348,10 @@
 <p><a href="../locks/">Soft locks</a> are automatically removed from nodes after some time. By default, it's <code>"8h"</code>. You can use this variable to override that default.</p>
 <p><br></p>
 <h2 id="bw_ssh_args"><code>BW_SSH_ARGS</code></h2>
-<p>Extra arguments to include in every call to <code>ssh</code> BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap.</p>
+<p>Extra arguments to include in every call to <code>ssh</code> BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap. Defaults to <code>""</code>.</p>
+<p><br></p>
+<h2 id="bw_scp_args"><code>BW_SCP_ARGS</code></h2>
+<p>Extra arguments to include in every call to <code>scp</code> BundleWrap makes. Defaults to the value of <code>BW_SSH_ARGS</code>.</p>
 <p><br></p>
 <h2 id="bw_table_style"><code>BW_TABLE_STYLE</code></h2>
 <p>By default, BundleWrap uses Unicode box-drawing characters at various points in its output. Setting this env var to one of the following values changes that behavior:</p>
@@ -365,8 +371,11 @@
             <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>var base_url = '../..';</script>
-        <script data-main="../../mkdocs/js/search.js" src="../../mkdocs/js/require.js"></script>
-        <script src="../../js/base.js"></script><div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+        <script src="../../js/base.js"></script>
+        <script src="../../search/require.js"></script>
+        <script src="../../search/search.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -389,7 +398,47 @@
             </div>
         </div>
     </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&larr;</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&rarr;</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
 </div>
+
 
     </body>
 </html>

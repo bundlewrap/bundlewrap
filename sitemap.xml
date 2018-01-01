@@ -4,7 +4,7 @@
     
     <url>
      <loc>/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -13,79 +13,79 @@
         
     <url>
      <loc>/guide/quickstart/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/installation/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/cli/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/env/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/item_file_templates/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/secrets/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/locks/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/dev_item/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/dev_plugin/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/api/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/os_compatibility/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/migrate_12/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/guide/migrate_23/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -95,55 +95,55 @@
         
     <url>
      <loc>/repo/layout/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/nodes.py/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/groups.py/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/requirements.txt/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/items.py/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/metadata.py/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/hooks/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/libs/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/repo/plugins/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -153,121 +153,127 @@
         
     <url>
      <loc>/items/action/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/directory/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/file/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/group/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_apt/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_dnf/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/items/pkg_openbsd/</loc>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_opkg/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_pacman/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_pip/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_snap/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_yum/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/pkg_zypper/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/postgres_db/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/postgres_role/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/svc_openbsd/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/svc_systemd/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/svc_systemv/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/svc_upstart/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/symlink/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/items/user/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -277,31 +283,31 @@
         
     <url>
      <loc>/misc/about/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/misc/deciding/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/misc/glossary/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/misc/faq/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>/misc/contributing/</loc>
-     <lastmod>2017-10-10</lastmod>
+     <lastmod>2018-01-02</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
