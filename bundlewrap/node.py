@@ -169,7 +169,7 @@ def apply_items(
                     skipped_item,
                     Item.STATUS_SKIPPED,
                     interactive,
-                    details=[_("dep failed")],
+                    details=Item.SKIP_REASON_DEP_FAILED,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
