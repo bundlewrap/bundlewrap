@@ -22,9 +22,9 @@ from .group import Group
 from .metadata import check_metadata_processor_result, deepcopy_metadata, DEFAULTS, DONE, OVERWRITE
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
-from .utils import blame_changed_paths, cached_property, merge_dict, names
+from .utils import blame_changed_paths, cached_property, names
 from .utils.scm import get_rev
-from .utils.statedict import hash_statedict
+from .utils.dicts import hash_statedict, merge_dict
 from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io, QUIT_EVENT
 

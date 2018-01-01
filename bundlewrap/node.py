@@ -26,7 +26,7 @@ from .items import Item
 from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, names
-from .utils.statedict import hash_statedict
+from .utils.dicts import hash_statedict
 from .utils.text import (
     blue,
     bold,

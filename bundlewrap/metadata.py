@@ -6,7 +6,8 @@ from hashlib import sha1
 from json import dumps, JSONEncoder
 
 from .exceptions import RepositoryError
-from .utils import ATOMIC_TYPES, Fault, merge_dict, value_at_key_path
+from .utils import Fault
+from .utils.dicts import ATOMIC_TYPES, merge_dict, value_at_key_path
 from .utils.text import force_text, mark_for_translation as _
 
 
