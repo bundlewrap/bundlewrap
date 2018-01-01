@@ -6,7 +6,7 @@ from hashlib import sha1
 from json import dumps, JSONEncoder
 
 from .exceptions import RepositoryError
-from .utils import ATOMIC_TYPES, Fault, merge_dict
+from .utils import ATOMIC_TYPES, Fault, merge_dict, value_at_key_path
 from .utils.text import force_text, mark_for_translation as _
 
 
@@ -332,19 +332,3 @@ def hash_metadata(sdict):
         indent=None,
         sort_keys=True,
     ).encode('utf-8')).hexdigest()
-
-
-def value_at_key_path(dict_obj, path):
-    """
-    Given the list of keys in `path`, recursively traverse `dict_obj`
-    and return whatever is found at the end of that path.
-
-    E.g.:
-
-    >>> value_at_key_path({'foo': {'bar': 5}}, ['foo', 'bar'])
-    5
-    """
-    if not path:
-        return dict_obj
-    else:
-        return value_at_key_path(dict_obj[path[0]], path[1:])

@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from decimal import Decimal
 from json import dumps
 
-from ..metadata import MetadataJSONEncoder, value_at_key_path
-from ..utils import Fault
+from ..metadata import MetadataJSONEncoder
+from ..utils import Fault, value_at_key_path
 from ..utils.cmdline import get_node, get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, force_text, mark_for_translation as _, red

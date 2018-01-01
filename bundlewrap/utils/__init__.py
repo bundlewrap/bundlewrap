@@ -302,13 +302,6 @@ def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=Fal
                 keys.update(map_dict_keys(value, base=base + (key,)))
         return keys
 
-    def value_at_path(d, path):
-        while path:
-            key = path[0]
-            path = path[1:]
-            d = d[key]
-        return d
-
     new_paths = map_dict_keys(new_dict)
 
     # clean up removed paths from blame_dict
@@ -317,9 +310,9 @@ def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=Fal
             del blame_dict[path]
 
     for path in new_paths:
-        new_value = value_at_path(new_dict, path)
+        new_value = value_at_key_path(new_dict, path)
         try:
-            old_value = value_at_path(old_dict, path)
+            old_value = value_at_key_path(old_dict, path)
         except KeyError:
             blame_dict[path] = (blame_name,)
         else:
@@ -382,3 +375,19 @@ def tempfile():
     close(handle)
     yield path
     remove(path)
+
+
+def value_at_key_path(dict_obj, path):
+    """
+    Given the list of keys in `path`, recursively traverse `dict_obj`
+    and return whatever is found at the end of that path.
+
+    E.g.:
+
+    >>> value_at_key_path({'foo': {'bar': 5}}, ['foo', 'bar'])
+    5
+    """
+    if not path:
+        return dict_obj
+    else:
+        return value_at_key_path(dict_obj[path[0]], path[1:])
