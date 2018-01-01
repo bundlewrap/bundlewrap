@@ -1,3 +1,17 @@
+# 3.2.0
+
+2018-01-01
+
+* items skipped because of "unless" or "not triggered" are no longer shown during `bw apply`
+* added `BW_SCP_ARGS`
+* added `bw metadata --blame`
+* added `bw test --metadata-keys`
+* added flavor support to pkg_openbsd
+* fixed changing symlink targets if previous target is a dir
+* fixed display of some item attributes during `bw apply` and `bw verify`
+* fixed handling of postgres DBs/roles with hyphens in them
+
+
 # 3.1.1
 
 2017-10-24
