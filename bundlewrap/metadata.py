@@ -79,6 +79,20 @@ def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=Fal
     return blame_dict
 
 
+def check_metadata_keys(node):
+    try:
+        basestring
+    except NameError:  # Python 2
+        basestring = str
+    for path in map_dict_keys(node.metadata):
+        value = path[-1]
+        if not isinstance(value, basestring):
+            raise TypeError(_("metadata key for {node} at path '{path}' is not a string").format(
+                node=node.name,
+                path="'->'".join(path[:-1]),
+            ))
+
+
 def check_metadata_processor_result(result, node_name, metadata_processor_name):
     """
     Validates the return value of a metadata processor and splits it

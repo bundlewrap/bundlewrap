@@ -8,7 +8,7 @@ from sys import exit
 from ..deps import DummyItem
 from ..exceptions import FaultUnavailable, ItemDependencyLoop
 from ..itemqueue import ItemTestQueue
-from ..metadata import check_for_unsolvable_metadata_key_conflicts
+from ..metadata import check_for_unsolvable_metadata_key_conflicts, check_metadata_keys
 from ..plugins import PluginManager
 from ..repo import Repository
 from ..utils.cmdline import count_items, get_target_nodes
@@ -98,6 +98,15 @@ def test_metadata_collisions(node):
     with io.job(_("{node}  checking for metadata collisions").format(node=bold(node.name))):
         check_for_unsolvable_metadata_key_conflicts(node)
     io.stdout(_("{x} {node}  has no metadata collisions").format(
+        x=green("✓"),
+        node=bold(node.name),
+    ))
+
+
+def test_metadata_keys(node):
+    with io.job(_("{node}  checking metadata keys").format(node=bold(node.name))):
+        check_metadata_keys(node)
+    io.stdout(_("{x} {node}  has valid metadata keys").format(
         x=green("✓"),
         node=bold(node.name),
     ))
@@ -285,6 +294,7 @@ def bw_test(repo, args):
         args['hooks_repo'] or
         args['ignore_secret_identifiers'] is not None or
         args['items'] or
+        args['metadata_keys'] or
         args['metadata_collisions'] or
         args['orphaned_bundles'] or
         args['empty_groups'] or
@@ -297,6 +307,7 @@ def bw_test(repo, args):
             args['hooks_node'] = True
             args['items'] = True
             args['metadata_collisions'] = True
+            args['metadata_keys'] = True
     else:
         nodes = copy(list(repo.nodes))
         if not options_selected:
@@ -304,6 +315,7 @@ def bw_test(repo, args):
             args['hooks_repo'] = True
             args['items'] = True
             args['metadata_collisions'] = True
+            args['metadata_keys'] = True
             args['subgroup_loops'] = True
 
     if args['ignore_secret_identifiers'] is not None and not QUIT_EVENT.is_set():
@@ -320,6 +332,15 @@ def bw_test(repo, args):
 
     if args['orphaned_bundles'] and not QUIT_EVENT.is_set():
         test_orphaned_bundles(repo)
+
+    if args['metadata_keys'] and not QUIT_EVENT.is_set():
+        io.progress_set_total(len(nodes))
+        for node in nodes:
+            if QUIT_EVENT.is_set():
+                break
+            test_metadata_keys(node)
+            io.progress_advance()
+        io.progress_set_total(0)
 
     if args['metadata_collisions'] and not QUIT_EVENT.is_set():
         io.progress_set_total(len(nodes))
