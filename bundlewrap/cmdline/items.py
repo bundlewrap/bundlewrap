@@ -7,7 +7,7 @@ from sys import exit
 
 from ..exceptions import FaultUnavailable
 from ..utils.cmdline import get_item, get_node
-from ..utils.statedict import statedict_to_json
+from ..utils.dicts import statedict_to_json
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io
 

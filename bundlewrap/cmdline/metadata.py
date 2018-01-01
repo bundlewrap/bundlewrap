@@ -4,9 +4,10 @@ from __future__ import unicode_literals
 from decimal import Decimal
 from json import dumps
 
-from ..metadata import MetadataJSONEncoder, value_at_key_path
+from ..metadata import MetadataJSONEncoder
 from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
+from ..utils.dicts import value_at_key_path
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, force_text, mark_for_translation as _, red
 from ..utils.ui import io, page_lines
@@ -39,10 +40,16 @@ def bw_metadata(repo, args):
         page_lines(render_table(table))
     else:
         node = get_node(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
-        for line in dumps(
-            value_at_key_path(node.metadata, args['keys']),
-            cls=MetadataJSONEncoder,
-            indent=4,
-            sort_keys=True,
-        ).splitlines():
-            io.stdout(force_text(line))
+        if args['blame']:
+            table = [[bold(_("path")), bold(_("source"))], ROW_SEPARATOR]
+            for path, blamed in sorted(node.metadata_blame.items()):
+                table.append([" ".join(path), ", ".join(blamed)])
+            page_lines(render_table(table))
+        else:
+            for line in dumps(
+                value_at_key_path(node.metadata, args['keys']),
+                cls=MetadataJSONEncoder,
+                indent=4,
+                sort_keys=True,
+            ).splitlines():
+                io.stdout(force_text(line))

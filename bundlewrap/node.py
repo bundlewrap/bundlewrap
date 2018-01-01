@@ -26,7 +26,7 @@ from .items import Item
 from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, names
-from .utils.statedict import hash_statedict
+from .utils.dicts import hash_statedict
 from .utils.text import (
     blue,
     bold,
@@ -653,6 +653,10 @@ class Node(object):
             return self._node_metadata
         else:
             return self.repo._metadata_for_node(self.name, partial=False)
+
+    @property
+    def metadata_blame(self):
+        return self.repo._metadata_for_node(self.name, partial=False, blame=True)
 
     def metadata_hash(self):
         return hash_metadata(self.metadata)

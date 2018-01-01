@@ -454,6 +454,12 @@ def build_parser_bw():
         help=_("print only partial metadata from the given space-separated key path (e.g. `bw metadata mynode users jdoe` to show `mynode.metadata['users']['jdoe']`)"),
     )
     parser_metadata.add_argument(
+        "--blame",
+        action='store_true',
+        dest='blame',
+        help=_("show where each piece of metadata comes from"),
+    )
+    parser_metadata.add_argument(
         "-t",
         "--table",
         action='store_true',
@@ -762,8 +768,8 @@ def build_parser_bw():
                   "If *any* options other than -i are given, *only* the "
                   "tests selected by those options will be run. Otherwise, a "
                   "default selection of tests will be run (that selection may "
-                  "change in future releases). Currently, the default is -IJM "
-                  "if specific nodes are given and -HIJMS if testing the "
+                  "change in future releases). Currently, the default is -IJKM "
+                  "if specific nodes are given and -HIJKMS if testing the "
                   "entire repo.")
     parser_test = subparsers.add_parser("test", description=help_test, help=help_test)
     parser_test.set_defaults(func=bw_test)
@@ -826,6 +832,13 @@ def build_parser_bw():
         action='store_true',
         dest='hooks_node',
         help=_("run node-level test hooks"),
+    )
+    parser_test.add_argument(
+        "-K",
+        "--metadata-keys",
+        action='store_true',
+        dest='metadata_keys',
+        help=_("validate metadata keys"),
     )
     parser_test.add_argument(
         "-m",

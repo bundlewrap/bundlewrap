@@ -1,23 +1,85 @@
-from bundlewrap.metadata import atomic, dictionary_key_map
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from bundlewrap.utils.dicts import merge_dict
+from bundlewrap.metadata import blame_changed_paths
 
 
-def test_dictmap():
-    assert set(dictionary_key_map({
-        'key1': 1,
+def test_blame_and_merge():
+    dict1 = {
+        'key1': 11,
         'key2': {
-            'key3': [3, 3, 3],
-            'key4': atomic([4, 4, 4]),
-            'key5': {
-                'key6': "6",
-            },
-            'key7': set((7, 7, 7)),
+            'key21': 121,
+            'key22': 122,
         },
-    })) == set([
-        ("key1",),
-        ("key2",),
-        ("key2", "key3"),
-        ("key2", "key4"),
-        ("key2", "key5"),
-        ("key2", "key5", "key6"),
-        ("key2", "key7"),
-    ])
+        'key3': {
+            'key31': {
+                'key311': [1311],
+            },
+        },
+    }
+    dict2 = {
+        'key2': {
+            'key21': 221,
+        },
+        'key3': {
+            'key31': {
+                'key311': [2311],
+                'key312': 2312,
+            },
+        },
+        'key4': 24,
+    }
+    from pprint import pprint
+    blame = {}
+    merged = merge_dict(
+        {},
+        dict1,
+    )
+    blame_changed_paths(
+        {},
+        merged,
+        blame,
+        "dict1",
+    )
+    pprint(blame)
+    merged2 = merge_dict(
+        merged,
+        dict2,
+    )
+    blame_changed_paths(
+        merged,
+        merged2,
+        blame,
+        "dict2",
+    )
+    pprint(blame)
+
+    should = {
+        ('key1',): ("dict1",),
+        ('key2',): ("dict1", "dict2"),
+        ('key2', 'key21'): ("dict2",),
+        ('key2', 'key22'): ("dict1",),
+        ('key3',): ("dict1", "dict2"),
+        ('key3', 'key31',): ("dict1", "dict2"),
+        ('key3', 'key31', 'key311'): ("dict1", "dict2"),
+        ('key3', 'key31', 'key312'): ("dict2",),
+        ('key4',): ("dict2",),
+    }
+    pprint(should)
+    assert blame == should
+
+    assert merged2 == {
+        'key1': 11,
+        'key2': {
+            'key21': 221,
+            'key22': 122,
+        },
+        'key3': {
+            'key31': {
+                'key311': [1311, 2311],
+                'key312': 2312,
+            },
+        },
+        'key4': 24,
+    }

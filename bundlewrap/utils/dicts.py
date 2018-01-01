@@ -21,6 +21,38 @@ DIFF_MAX_INLINE_LENGTH = 36
 DIFF_MAX_LINE_LENGTH = 1024
 
 
+class _Atomic(object):
+    """
+    This and the following related classes are used to mark objects as
+    non-mergeable for the purposes of merge_dict().
+    """
+    pass
+
+
+class _AtomicDict(dict, _Atomic):
+    pass
+
+
+class _AtomicList(list, _Atomic):
+    pass
+
+
+class _AtomicSet(set, _Atomic):
+    pass
+
+
+class _AtomicTuple(tuple, _Atomic):
+    pass
+
+
+ATOMIC_TYPES = {
+    dict: _AtomicDict,
+    list: _AtomicList,
+    set: _AtomicSet,
+    tuple: _AtomicTuple,
+}
+
+
 def diff_keys(sdict1, sdict2):
     """
     Compares the keys of two statedicts and returns the keys with
@@ -155,6 +187,73 @@ def hash_statedict(sdict):
     return sha1(statedict_to_json(sdict).encode('utf-8')).hexdigest()
 
 
+def map_dict_keys(dict_obj, _base=None):
+    """
+    Return a set of key paths for the given dict. E.g.:
+
+        >>> map_dict_keys({'foo': {'bar': 1}, 'baz': 2})
+        set([('foo', 'bar'), ('baz',)])
+    """
+    if _base is None:
+        _base = tuple()
+    keys = set([_base + (key,) for key in dict_obj.keys()])
+    for key, value in dict_obj.items():
+        if isinstance(value, dict):
+            keys.update(map_dict_keys(value, _base=_base + (key,)))
+    return keys
+
+
+def merge_dict(base, update):
+    """
+    Recursively merges the base dict into the update dict.
+    """
+    if not isinstance(update, dict):
+        return update
+
+    merged = base.copy()
+
+    for key, value in update.items():
+        merge = key in base and not isinstance(value, _Atomic)
+        if merge and isinstance(base[key], dict):
+            merged[key] = merge_dict(base[key], value)
+        elif (
+            merge and
+            isinstance(base[key], list) and
+            (
+                isinstance(value, list) or
+                isinstance(value, set) or
+                isinstance(value, tuple)
+            )
+        ):
+            extended = base[key][:]
+            extended.extend(value)
+            merged[key] = extended
+        elif (
+            merge and
+            isinstance(base[key], tuple) and
+            (
+                isinstance(value, list) or
+                isinstance(value, set) or
+                isinstance(value, tuple)
+            )
+        ):
+            merged[key] = base[key] + tuple(value)
+        elif (
+            merge and
+            isinstance(base[key], set) and
+            (
+                isinstance(value, list) or
+                isinstance(value, set) or
+                isinstance(value, tuple)
+            )
+        ):
+            merged[key] = base[key].union(set(value))
+        else:
+            merged[key] = value
+
+    return merged
+
+
 def statedict_to_json(sdict, pretty=False):
     """
     Returns a canonical JSON representation of the given statedict.
@@ -195,3 +294,19 @@ def validate_statedict(sdict):
                         i=index,
                         k=key,
                     ))
+
+
+def value_at_key_path(dict_obj, path):
+    """
+    Given the list of keys in `path`, recursively traverse `dict_obj`
+    and return whatever is found at the end of that path.
+
+    E.g.:
+
+    >>> value_at_key_path({'foo': {'bar': 5}}, ['foo', 'bar'])
+    5
+    """
+    if not path:
+        return dict_obj
+    else:
+        return value_at_key_path(dict_obj[path[0]], path[1:])

@@ -6,7 +6,8 @@ from hashlib import sha1
 from json import dumps, JSONEncoder
 
 from .exceptions import RepositoryError
-from .utils import ATOMIC_TYPES, Fault, merge_dict
+from .utils import Fault
+from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_path
 from .utils.text import force_text, mark_for_translation as _
 
 
@@ -46,6 +47,50 @@ def atomic(obj):
                          "(not: {})".format(repr(obj)))
     else:
         return cls(obj)
+
+
+def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=False):
+    def is_mergeable(value1, value2):
+        if isinstance(value1, (list, set, tuple)) and isinstance(value2, (list, set, tuple)):
+            return True
+        elif isinstance(value1, dict) and isinstance(value2, dict):
+            return True
+        return False
+
+    new_paths = map_dict_keys(new_dict)
+
+    # clean up removed paths from blame_dict
+    for path in list(blame_dict.keys()):
+        if path not in new_paths:
+            del blame_dict[path]
+
+    for path in new_paths:
+        new_value = value_at_key_path(new_dict, path)
+        try:
+            old_value = value_at_key_path(old_dict, path)
+        except KeyError:
+            blame_dict[path] = (blame_name,)
+        else:
+            if old_value != new_value:
+                if defaults or is_mergeable(old_value, new_value):
+                    blame_dict[path] += (blame_name,)
+                else:
+                    blame_dict[path] = (blame_name,)
+    return blame_dict
+
+
+def check_metadata_keys(node):
+    try:
+        basestring
+    except NameError:  # Python 2
+        basestring = str
+    for path in map_dict_keys(node.metadata):
+        value = path[-1]
+        if not isinstance(value, basestring):
+            raise TypeError(_("metadata key for {node} at path '{path}' is not a string").format(
+                node=node.name,
+                path="'->'".join(path[:-1]),
+            ))
 
 
 def check_metadata_processor_result(result, node_name, metadata_processor_name):
@@ -181,7 +226,7 @@ def check_for_unsolvable_metadata_key_conflicts(node):
         chain_metadata.append(metadata)
 
     # create a "key path map" for each chain's metadata
-    chain_metadata_keys = [list(dictionary_key_map(metadata)) for metadata in chain_metadata]
+    chain_metadata_keys = [list(map_dict_keys(metadata)) for metadata in chain_metadata]
 
     # compare all metadata keys with other chains and find matches
     for index1, keymap1 in enumerate(chain_metadata_keys):
@@ -241,42 +286,13 @@ def deepcopy_metadata(obj):
     return new_obj
 
 
-def dictionary_key_map(mapdict):
-    """
-    For the dict
-
-        {
-            "key1": 1,
-            "key2": {
-                "key3": 3,
-                "key4": ["foo"],
-             },
-        }
-
-    the key map would look like this:
-
-        [
-            ("key1",),
-            ("key2",),
-            ("key2", "key3"),
-            ("key2", "key4"),
-        ]
-
-    """
-    for key, value in mapdict.items():
-        if isinstance(value, dict):
-            for child_keys in dictionary_key_map(value):
-                yield (key,) + child_keys
-        yield (key,)
-
-
 def find_groups_causing_metadata_conflict(node_name, chain1, chain2, keypath):
     """
     Given two chains (lists of groups), find one group in each chain
     that has conflicting metadata with the other for the given key path.
     """
-    chain1_metadata = [list(dictionary_key_map(group.metadata)) for group in chain1]
-    chain2_metadata = [list(dictionary_key_map(group.metadata)) for group in chain2]
+    chain1_metadata = [list(map_dict_keys(group.metadata)) for group in chain1]
+    chain2_metadata = [list(map_dict_keys(group.metadata)) for group in chain2]
 
     bad_keypath = None
 
@@ -332,19 +348,3 @@ def hash_metadata(sdict):
         indent=None,
         sort_keys=True,
     ).encode('utf-8')).hexdigest()
-
-
-def value_at_key_path(dict_obj, path):
-    """
-    Given the list of keys in `path`, recursively traverse `dict_obj`
-    and return whatever is found at the end of that path.
-
-    E.g.:
-
-    >>> value_at_key_path({'foo': {'bar': 5}}, ['foo', 'bar'])
-    5
-    """
-    if not path:
-        return dict_obj
-    else:
-        return value_at_key_path(dict_obj[path[0]], path[1:])

@@ -5,7 +5,7 @@ import re
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .utils import cached_property, names
-from .utils.statedict import hash_statedict
+from .utils.dicts import hash_statedict
 from .utils.text import mark_for_translation as _, validate_name
 
 

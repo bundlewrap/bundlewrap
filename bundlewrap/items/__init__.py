@@ -12,7 +12,7 @@ from textwrap import TextWrapper
 
 from bundlewrap.exceptions import BundleError, ItemDependencyError, FaultUnavailable
 from bundlewrap.utils import cached_property
-from bundlewrap.utils.statedict import diff_keys, diff_value, hash_statedict, validate_statedict
+from bundlewrap.utils.dicts import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, italic, wrap_question
 from bundlewrap.utils.ui import io
