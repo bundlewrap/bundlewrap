@@ -30,4 +30,4 @@ Ethereum `0x5Eb3037e197d3C0d2E014bcfC2e027EB0AD42812`
 
 ------------------------------------------------------------------------
 
-BundleWrap is © 2013 - 2017 [Torsten Rehn](mailto:torsten@rehn.email)
+BundleWrap is © 2013 - 2018 [Torsten Rehn](mailto:torsten@rehn.email)
