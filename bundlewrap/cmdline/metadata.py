@@ -41,9 +41,14 @@ def bw_metadata(repo, args):
     else:
         node = get_node(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
         if args['blame']:
+            key_paths = [path.strip() for path in " ".join(args['keys']).split(",")]
             table = [[bold(_("path")), bold(_("source"))], ROW_SEPARATOR]
             for path, blamed in sorted(node.metadata_blame.items()):
-                table.append([" ".join(path), ", ".join(blamed)])
+                joined_path = " ".join(path)
+                for key_path in key_paths:
+                    if joined_path.startswith(key_path):
+                        table.append([joined_path, ", ".join(blamed)])
+                        break
             page_lines(render_table(table))
         else:
             for line in dumps(
