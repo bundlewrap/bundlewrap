@@ -126,7 +126,7 @@ class Action(Item):
                 ),
             )
         ):
-            return (self.STATUS_SKIPPED, [_("interactive")])
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE)
         try:
             self.run()
             return (self.STATUS_ACTION_SUCCEEDED, None)
