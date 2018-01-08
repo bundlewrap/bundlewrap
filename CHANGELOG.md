@@ -1,3 +1,12 @@
+# 3.2.1
+
+2018-01-08
+
+* fixed metadata key filter for `bw metadata --blame`
+* fixed pkg_openbsd reported incorrectly as having having wrong flavor installed
+* fixed crash when declining actions interactively
+
+
 # 3.2.0
 
 2018-01-01
