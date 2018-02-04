@@ -130,6 +130,16 @@ class PathInfo(object):
             result = self.node.run("sha1sum -- {}".format(quote(self.path)))
         return force_text(result.stdout).strip().split()[0]
 
+    @cached_property
+    def sha256(self):
+        if self.node.os == 'macos':
+            result = self.node.run("shasum -a 256 -- {}".format(quote(self.path)))
+        elif self.node.os in self.node.OS_FAMILY_BSD:
+            result = self.node.run("sha256 -q -- {}".format(quote(self.path)))
+        else:
+            result = self.node.run("sha256sum -- {}".format(quote(self.path)))
+        return force_text(result.stdout).strip().split()[0]
+
     @property
     def size(self):
         return self.stat['size']
