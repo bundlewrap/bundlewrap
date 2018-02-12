@@ -344,7 +344,7 @@ class Node(object):
         OS_FAMILY_DEBIAN + \
         OS_FAMILY_REDHAT
 
-    OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX
+    OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX + ('kubernetes',)
 
     def __init__(self, name, attributes=None):
         if attributes is None:
@@ -678,6 +678,8 @@ class Node(object):
         return self.repo._metadata_for_node(self.name, partial=True)
 
     def run(self, command, data_stdin=None, may_fail=False, log_output=False):
+        assert self.os != 'kubernetes'
+
         if log_output:
             def log_function(msg):
                 io.stdout("{x} {node}  {msg}".format(
@@ -719,6 +721,7 @@ class Node(object):
         )
 
     def upload(self, local_path, remote_path, mode=None, owner="", group="", may_fail=False):
+        assert self.os != 'kubernetes'
         return operations.upload(
             self.hostname,
             local_path,
