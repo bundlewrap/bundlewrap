@@ -305,25 +305,6 @@ def reduce_dict(full_dict, template_dict):
         return full_dict
 
 
-def set_value_at_key_path(dict_obj, path, value):
-    """
-    Given the list of keys in `path`, recursively traverse `dict_obj`
-    and set the given value.
-
-    E.g.:
-
-    >>> d = {'foo': {'bar': 5}}
-    >>> set_value_at_key_path(d, ['foo', 'bar'], 6)
-    >>> d
-    {'foo': {'bar': 6}}
-    """
-    if len(path) == 1:
-        dict_obj[path[0]] = value
-        return None
-    else:
-        return set_value_at_key_path(dict_obj[path[0]], path[1:], value)
-
-
 def statedict_to_json(sdict, pretty=False):
     """
     Returns a canonical JSON representation of the given statedict.
