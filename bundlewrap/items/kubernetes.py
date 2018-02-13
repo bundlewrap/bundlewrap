@@ -205,6 +205,30 @@ class KubernetesItem(Item):
             ))
 
 
+class KubernetesConfigMap(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_configmaps"
+    KIND = "ConfigMap"
+    KUBECTL_RESOURCE_TYPE = "configmaps"
+    KUBERNETES_APIVERSION = "v1"
+    ITEM_TYPE_NAME = "k8s_configmap"
+
+
+class KubernetesCronJob(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_cronjobs"
+    KIND = "CronJob"
+    KUBECTL_RESOURCE_TYPE = "cronjobs"
+    KUBERNETES_APIVERSION = "batch/v1beta1"
+    ITEM_TYPE_NAME = "k8s_cronjob"
+
+
+class KubernetesDaemonSet(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_daemonsets"
+    KIND = "DaemonSet"
+    KUBECTL_RESOURCE_TYPE = "daemonsets"
+    KUBERNETES_APIVERSION = "v1"
+    ITEM_TYPE_NAME = "k8s_daemonset"
+
+
 class KubernetesDeployment(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_deployments"
     KIND = "Deployment"

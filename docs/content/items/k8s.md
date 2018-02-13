@@ -27,6 +27,9 @@ Note that all item names (except namespaces themselves) must be prefixed with th
 
 <table>
 <tr><th>Resource type</th><th>Bundle attribute</th><th>apiVersion</th></tr>
+<tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
+<tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
+<tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>v1</td></tr>
 <tr><td>Deployment</td><td>k8s_deployments</td><td>extensions/v1beta1</td></tr>
 <tr><td>Ingress</td><td>k8s_ingresses</td><td>extensions/v1beta1</td></tr>
 <tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
