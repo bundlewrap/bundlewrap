@@ -34,9 +34,9 @@ You can then proceed to write bundles as with regular nodes, but using the [k8s_
     k8s_deployments = {
         "my-app/my-deployment": {
             'manifest': {
-                'spec': {
-                    'selector': {
-                        'matchLabels': {
+                "spec": {
+                    "selector": {
+                        "matchLabels": {
                             "app": "nginx",
                         },
                     },
