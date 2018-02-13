@@ -106,7 +106,7 @@ class NodeLock(object):
     def __exit__(self, type, value, traceback):
         if self.node.os == 'kubernetes':
             # no locking required
-            return self
+            return
         with io.job(_("{node}  removing hard lock").format(node=bold(self.node.name))):
             result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
 
