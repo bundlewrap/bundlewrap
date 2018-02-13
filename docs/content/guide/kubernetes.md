@@ -64,4 +64,18 @@ You can then proceed to write bundles as with regular nodes, but using the [k8s_
         },
     }
 
-Note that all item names (except namespaces themselves) must be prefixed with the name of a namespace and a forward slash `/`.
+All item names (except namespaces themselves) must be prefixed with the name of a namespace and a forward slash `/`. Note that BundleWrap will include defaults for the `apiVersion`, `Kind`, and `metadata/name` keys, but you can override them if you must.
+
+Alternatively, you can keep your resource definitions in manifest files:
+
+    k8s_namespaces = {
+         "my-app": {},
+    }
+
+    k8s_deployments = {
+        "my-app/my-deployment": {
+            'manifest_file': "my_deployment.yaml",
+        },
+    }
+
+BundleWrap will then look for `my_deployment.yaml` in `bundles/<bundle>/manifests/`. You can also use [templating](../items/k8s.md#manifest_processor) in these files.

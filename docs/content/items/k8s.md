@@ -43,6 +43,12 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 
 <hr>
 
+## context
+
+Only used with Mako and Jinja2 manifests (see `manifest_processing` below). The values of this dictionary will be available from within the template as variables named after the respective keys.
+
+<hr>
+
 ## delete
 
 Set this to `True` to have the resource removed.
@@ -51,4 +57,16 @@ Set this to `True` to have the resource removed.
 
 ## manifest
 
-The resource definition (as defined in the [Kubernetes API](https://kubernetes.io/docs/reference/)) formatted as a Python dictionary (will be converted to JSON and passed to `kubectl apply`).
+The resource definition (as defined in the [Kubernetes API](https://kubernetes.io/docs/reference/)) formatted as a Python dictionary (will be converted to JSON and passed to `kubectl apply`). Mutually exclusive with `manifest_file`.
+
+<hr>
+
+## manifest_file
+
+Filename of the resource definition relative to the `manifests` subdirectory of your bundle. Filenames must end in `.yaml`, `.yml`, or `.json` to indicate file format. Mutually exclusive with `manifest`.
+
+<br>
+
+## manifest_processor
+
+Set this to `jinja2` or `mako` if you want to use a template engine to process your `manifest_file`. Defaults to `None`.

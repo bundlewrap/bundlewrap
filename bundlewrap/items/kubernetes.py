@@ -2,16 +2,20 @@
 from __future__ import unicode_literals
 
 from abc import ABCMeta
-from json import dumps, loads
+import json
+from os.path import exists, join
 import re
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.operations import run_local
-from bundlewrap.items import Item
+from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
+from bundlewrap.items.files import content_processor_jinja2, content_processor_mako
 from bundlewrap.utils.dicts import merge_dict, reduce_dict
 from bundlewrap.utils.ui import io
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 from six import add_metaclass
+import yaml
+
 
 NAME_REGEX = r"[a-z0-9-]+/[a-z0-9-]{1,253}"
 NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -30,11 +34,28 @@ class KubernetesItem(Item):
     """
     ITEM_ATTRIBUTES = {
         'delete': False,
+        'encoding': "utf-8",  # required by content processors
         'manifest': None,
+        'manifest_file': None,
+        'manifest_processor': None,
+        'context': None,
     }
     KIND = None
     KUBECTL_RESOURCE_TYPE = None
     KUBERNETES_APIVERSION = "v1"
+
+    def __init__(self, *args, **kwargs):
+        super(KubernetesItem, self).__init__(*args, **kwargs)
+        self.item_data_dir = join(self.bundle.bundle_data_dir, "manifests")
+        self.item_dir = join(self.bundle.bundle_dir, "manifests")
+
+    @property
+    def _template_content(self):  # required by content processors
+        filename = join(self.item_data_dir, self.attributes['manifest_file'])
+        if not exists(filename):
+            filename = join(self.item_dir, self.attributes['manifest_file'])
+        with open(filename, 'rb') as f:
+            return force_text(f.read())
 
     def cdict(self):
         if self.attributes['delete']:
@@ -82,7 +103,24 @@ class KubernetesItem(Item):
 
     @property
     def manifest(self):
-        return dumps(merge_dict(
+        if self.attributes['manifest_processor'] == 'jinja2':
+            content_processor = content_processor_jinja2
+        elif self.attributes['manifest_processor'] == 'mako':
+            content_processor = content_processor_mako
+        else:
+            content_processor = lambda item: item._template_content.encode('utf-8')
+
+        if self.attributes['manifest'] is not None or self.attributes['manifest_file'] is None:
+            user_manifest = self.attributes['manifest'] or {}
+        elif (
+            self.attributes['manifest_file'].endswith(".yaml") or
+            self.attributes['manifest_file'].endswith(".yml")
+        ):
+            user_manifest = yaml.load(content_processor(self))
+        elif self.attributes['manifest_file'].endswith(".json"):
+            user_manifest = json.loads(content_processor(self))
+
+        return json.dumps(merge_dict(
             {
                 'apiVersion': self.KUBERNETES_APIVERSION,
                 'kind': self.KIND,
@@ -90,12 +128,17 @@ class KubernetesItem(Item):
                     'name': self.resource_name,
                 },
             },
-            self.attributes['manifest'] or {},
+            user_manifest,
         ), indent=4, sort_keys=True)
 
     @property
     def namespace(self):
         return self.name.split("/", 1)[0]
+
+    def patch_attributes(self, attributes):
+        if 'context' not in attributes:
+            attributes['context'] = {}
+        return attributes
 
     @property
     def resource_name(self):
@@ -113,13 +156,13 @@ class KubernetesItem(Item):
             self.resource_name,
         ])
         if result.return_code == 0:
-            full_json_response = loads(result.stdout)
+            full_json_response = json.loads(result.stdout)
             if full_json_response.get("status", {}).get("phase") == "Terminating":
                 # this resource is currently being deleted, consider it gone
                 return None
-            return {'manifest': dumps(reduce_dict(
+            return {'manifest': json.dumps(reduce_dict(
                 full_json_response,
-                loads(self.manifest),
+                json.loads(self.manifest),
             ), indent=4, sort_keys=True)}
         elif result.return_code == 1 and "NotFound" in result.stderr.decode('utf-8'):
             return None
@@ -127,6 +170,25 @@ class KubernetesItem(Item):
             io.debug(result.stdout.decode('utf-8'))
             io.debug(result.stderr.decode('utf-8'))
             raise RuntimeError(_("error getting state of {}, check `bw --debug`".format(self.id)))
+
+    @classmethod
+    def validate_attributes(cls, bundle, item_id, attributes):
+        if attributes.get('delete', False):
+            for attr in attributes.keys():
+                if attr not in ['delete'] + list(BUILTIN_ITEM_ATTRIBUTES.keys()):
+                    raise BundleError(_(
+                        "{item} from bundle '{bundle}' cannot have other "
+                        "attributes besides 'delete'"
+                    ).format(item=item_id, bundle=bundle.name))
+        if attributes.get('manifest') and attributes.get('manifest_file'):
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' cannot have both 'manifest' and 'manifest_file'"
+            ).format(item=item_id, bundle=bundle.name))
+        if attributes.get('manifest_processor') not in (None, 'jinja2', 'mako'):
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' has invalid manifest_processor "
+                "(must be 'jinja2' or 'mako')"
+            ).format(item=item_id, bundle=bundle.name))
 
     @classmethod
     def validate_name(cls, bundle, name):

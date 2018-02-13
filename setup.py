@@ -8,6 +8,7 @@ dependencies = [
     "Jinja2",
     "Mako",
     "passlib",
+    "pyyaml",
     "requests >= 1.0.0",
     "six",
 ]
