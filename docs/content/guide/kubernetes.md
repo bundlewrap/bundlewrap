@@ -7,6 +7,7 @@ To manage a Kubernetes cluster with BundleWrap, you first need to set up a kubec
 
 You also need to make sure context names are the same on your teammates' machines.
 
+<br>
 
 ## Setting up a node
 
@@ -20,9 +21,11 @@ Each Kubernetes cluster you manage becomes a node. Here is an example `nodes.py`
 	     },
 	}
 
+<br>
+
 ## Kubernetes bundles
 
-You can then proceed to write bundles as with regular nodes, but using the `k8s_` items:
+You can then proceed to write bundles as with regular nodes, but using the [k8s_ items](../items/k8s.md):
 
     k8s_namespaces = {
          "my-app": {},

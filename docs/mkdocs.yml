@@ -39,6 +39,7 @@ pages:
   - directory: items/directory.md
   - file: items/file.md
   - group: items/group.md
+  - k8s_*: items/k8s.md
   - pkg_apt: items/pkg_apt.md
   - pkg_dnf: items/pkg_dnf.md
   - pkg_openbsd: items/pkg_openbsd.md
