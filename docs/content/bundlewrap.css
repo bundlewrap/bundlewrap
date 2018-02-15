@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css?family=Maven+Pro');
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,400i,700');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700');
 @import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:400,700');
 body, h1, h2, h3, h4, h5, h6 {
 	background: white;
-	font-family: Roboto, Helvetica, sans-serif;
+	font-family: "Open Sans", Helvetica, sans-serif;
 }
 h1, h2, h3, h4, h5, h6 {
 	margin-top: 0;
