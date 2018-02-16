@@ -9,7 +9,29 @@ from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
-PKGSPEC_REGEX = re.compile(r"^([^-]+)-(\d[^-]+)(-(.+))?$")
+PKGSPEC_REGEX = re.compile(r"^(.+)-(\d.*)$")
+
+
+def parse_pkg_name(pkgname, line):
+    matches = PKGSPEC_REGEX.match(line)
+    assert matches != None, _("Unexpected OpenBSD package name: {line}").format(line=line)
+
+    installed_package, installed_version_and_more = matches.groups()
+    assert not installed_version_and_more.endswith("-"), \
+        _("Unexpected OpenBSD package name (ends in dash): {line}").format(line=line)
+
+    if installed_package == pkgname:
+        if "-" in installed_version_and_more:
+            tokens = installed_version_and_more.split("-")
+            installed_version = tokens[0]
+            installed_flavor = "-".join(tokens[1:])
+        else:
+            installed_version = installed_version_and_more
+            installed_flavor = ""
+
+        return True, installed_version, installed_flavor
+    else:
+        return False, None, None
 
 
 def pkg_install(node, pkgname, flavor, version):
@@ -43,14 +65,10 @@ def pkg_installed(node, pkgname):
         may_fail=True,
     )
     for line in result.stdout.decode('utf-8').strip().splitlines():
-        installed_package, installed_version, _, installed_flavor = \
-            PKGSPEC_REGEX.match(line).groups()
-        if installed_package == pkgname:
-            # If our regex didn't match a flavor, then this is
-            # equivalent to using the "normal" flavor.
-            if installed_flavor is None:
-                installed_flavor = ""
+        found, installed_version, installed_flavor = parse_pkg_name(pkgname, line)
+        if found:
             return installed_version, installed_flavor
+
     return False, None
 
 
