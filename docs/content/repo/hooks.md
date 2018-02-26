@@ -164,6 +164,13 @@ Called each time a `bw apply` command reaches a new node.
 
 `interactive` `True` if this is an interactive apply run.
 
+To skip a node:
+
+```
+from bundlewrap.exceptions import SkipNode
+raise SkipNode("reason goes here")
+```
+
 ---
 
 **`node_apply_end(repo, node, duration=None, interactive=False, result=None, **kwargs)`**
@@ -191,6 +198,13 @@ Called each time a `bw run` command reaches a new node.
 `node` The current node (instance of `bundlewrap.node.Node`).
 
 `command` The command that will be run on the node.
+
+To skip a node:
+
+```
+from bundlewrap.exceptions import SkipNode
+raise SkipNode("reason goes here")
+```
 
 ---
 

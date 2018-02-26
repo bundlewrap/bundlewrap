@@ -141,6 +141,13 @@ class PluginLocalConflict(PluginError):
     pass
 
 
+class SkipNode(UnicodeException):
+    """
+    Can be raised by hooks to skip a node.
+    """
+    pass
+
+
 class TemplateError(RepositoryError):
     """
     Raised when an error occurs while rendering a template.

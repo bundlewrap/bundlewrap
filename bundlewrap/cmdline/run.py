@@ -9,6 +9,7 @@ except ImportError:  # Python 2
 from sys import exit
 
 from ..concurrency import WorkerPool
+from ..exceptions import SkipNode
 from ..utils import SkipList
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -34,11 +35,19 @@ def run_on_node(node, command, skip_list):
         io.stdout(_("{x} {node}  skipped by --resume-file").format(node=bold(node.name), x=yellow("»")))
         return None
 
-    node.repo.hooks.node_run_start(
-        node.repo,
-        node,
-        command,
-    )
+    try:
+        node.repo.hooks.node_run_start(
+            node.repo,
+            node,
+            command,
+        )
+    except SkipNode as exc:
+        io.stdout(_("{x} {node}  skipped by hook ({reason})").format(
+            node=bold(node.name),
+            reason=str(exc) or _("no reason given"),
+            x=yellow("»"),
+        ))
+        return None
 
     result = node.run(
         command,

@@ -19,6 +19,7 @@ from .exceptions import (
     NodeLockedException,
     NoSuchBundle,
     RepositoryError,
+    SkipNode,
 )
 from .group import GROUP_ATTR_DEFAULTS
 from .itemqueue import ItemQueue
@@ -568,19 +569,27 @@ class Node(object):
             ))
             return None
 
-        start = datetime.now()
+        try:
+            self.repo.hooks.node_apply_start(
+                self.repo,
+                self,
+                interactive=interactive,
+            )
+        except SkipNode as exc:
+            io.stdout(_("{x} {node}  skipped by hook ({reason})").format(
+                node=bold(self.name),
+                reason=str(exc) or _("no reason given"),
+                x=yellow("»"),
+            ))
+            return None
 
+        start = datetime.now()
         io.stdout(_("{x} {node}  {started} at {time}").format(
             node=bold(self.name),
             started=bold(_("started")),
             time=start.strftime("%Y-%m-%d %H:%M:%S"),
             x=blue("i"),
         ))
-        self.repo.hooks.node_apply_start(
-            self.repo,
-            self,
-            interactive=interactive,
-        )
 
         try:
             with NodeLock(self, interactive=interactive, ignore=force) as lock:
