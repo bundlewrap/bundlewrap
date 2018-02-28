@@ -153,6 +153,10 @@ class User(Item):
 
     def display_dicts(self, cdict, sdict, keys):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
+            if attr_name == attr_display_name:
+                # Don't change anything; the `del`s below would
+                # always remove the key entirely!
+                continue
             try:
                 keys.remove(attr_name)
             except ValueError:
