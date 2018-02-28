@@ -1,5 +1,7 @@
 # Kubernetes
 
+<div class="alert alert-warning">Support for Kubernetes is experimental at this time. Backwards-incompatible changes may happen at any time.</div>
+
 To manage a Kubernetes cluster with BundleWrap, you first need to set up a kubectl context that works with the cluster. If you're running on Google Kubernetes Engine for example, this can be accomplished with:
 
 	gcloud auth login

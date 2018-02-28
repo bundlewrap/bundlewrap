@@ -1,5 +1,7 @@
 # Kubernetes items
 
+<div class="alert alert-warning">Support for Kubernetes is experimental at this time. Backwards-incompatible changes may happen at any time.</div>
+
 See also: [Guide to Kubernetes](../guide/kubernetes.md)
 
 <br>
