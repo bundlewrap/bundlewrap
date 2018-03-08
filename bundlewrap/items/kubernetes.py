@@ -332,3 +332,21 @@ class KubernetesService(KubernetesItem):
     KUBECTL_RESOURCE_TYPE = "services"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_service"
+
+
+class KubernetesStatefulSet(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_statefulsets"
+    KIND = "StatefulSet"
+    KUBECTL_RESOURCE_TYPE = "statefulsets"
+    KUBERNETES_APIVERSION = "apps/v1"
+    ITEM_TYPE_NAME = "k8s_statefulset"
+
+    def get_auto_deps(self, items):
+        deps = super(KubernetesStatefulSet, self).get_auto_deps(items)
+        for item in items:
+            if (
+                item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
+                item.namespace == self.namespace
+            ):
+                deps.append(item.id)
+        return deps

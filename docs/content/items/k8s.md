@@ -38,6 +38,7 @@ Note that all item names (except namespaces themselves) must be prefixed with th
 <tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
 <tr><td>Service</td><td>k8s_services</td><td>v1</td></tr>
 <tr><td>Secret</td><td>k8s_secrets</td><td>v1</td></tr>
+<tr><td>StatefulSet</td><td>k8s_statefulsets</td><td>apps/v1</td></tr>
 </table>
 
 <br>
