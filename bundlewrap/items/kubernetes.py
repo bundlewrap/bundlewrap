@@ -85,10 +85,13 @@ class KubernetesItem(Item):
             ], data_stdin=self.manifest.encode('utf-8'))
             log_error(result)
 
-    def get_auto_deps(self, items):
+    def get_auto_deps(self, items, _secrets=True):
         deps = []
         for item in items:
-            if item.ITEM_TYPE_NAME == 'k8s_namespace' and item.name == self.namespace:
+            if (
+                item.ITEM_TYPE_NAME == 'k8s_namespace' and
+                item.name == self.namespace
+            ):
                 if item.attributes['delete'] and not self.attributes['delete']:
                     raise BundleError(_(
                         "{item} (bundle '{bundle}' on {node}) "
@@ -98,6 +101,12 @@ class KubernetesItem(Item):
                         bundle=self.bundle.name,
                         node=self.node.name,
                     ))
+                deps.append(item.id)
+            elif (
+                _secrets and
+                item.ITEM_TYPE_NAME == 'k8s_secret' and
+                item.namespace == self.namespace
+            ):
                 deps.append(item.id)
         return deps
 
@@ -228,6 +237,16 @@ class KubernetesDaemonSet(KubernetesItem):
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_daemonset"
 
+    def get_auto_deps(self, items):
+        deps = super(KubernetesDaemonSet, self).get_auto_deps(items)
+        for item in items:
+            if (
+                item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
+                item.namespace == self.namespace
+            ):
+                deps.append(item.id)
+        return deps
+
 
 class KubernetesDeployment(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_deployments"
@@ -236,6 +255,16 @@ class KubernetesDeployment(KubernetesItem):
     KUBERNETES_APIVERSION = "extensions/v1beta1"
     ITEM_TYPE_NAME = "k8s_deployment"
 
+    def get_auto_deps(self, items):
+        deps = super(KubernetesDeployment, self).get_auto_deps(items)
+        for item in items:
+            if (
+                item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
+                item.namespace == self.namespace
+            ):
+                deps.append(item.id)
+        return deps
+
 
 class KubernetesIngress(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_ingresses"
@@ -243,6 +272,16 @@ class KubernetesIngress(KubernetesItem):
     KUBECTL_RESOURCE_TYPE = "ingresses"
     KUBERNETES_APIVERSION = "extensions/v1beta1"
     ITEM_TYPE_NAME = "k8s_ingress"
+
+    def get_auto_deps(self, items):
+        deps = super(KubernetesIngress, self).get_auto_deps(items)
+        for item in items:
+            if (
+                item.ITEM_TYPE_NAME == 'k8s_service' and
+                item.namespace == self.namespace
+            ):
+                deps.append(item.id)
+        return deps
 
 
 class KubernetesNamespace(KubernetesItem):
@@ -282,6 +321,9 @@ class KubernetesSecret(KubernetesItem):
     KUBECTL_RESOURCE_TYPE = "secrets"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_secret"
+
+    def get_auto_deps(self, items):
+        return super(KubernetesSecret, self).get_auto_deps(items, _secrets=False)
 
 
 class KubernetesService(KubernetesItem):
