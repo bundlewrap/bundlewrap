@@ -44,6 +44,9 @@ class NodeLock(object):
         self.interactive = interactive
 
     def __enter__(self):
+        if self.node.os == 'kubernetes':
+            # no locking required
+            return self
         with tempfile() as local_path:
             if not self.ignore:
                 with io.job(_("{node}  checking hard lock status").format(node=bold(self.node.name))):
@@ -101,6 +104,9 @@ class NodeLock(object):
         return self
 
     def __exit__(self, type, value, traceback):
+        if self.node.os == 'kubernetes':
+            # no locking required
+            return
         with io.job(_("{node}  removing hard lock").format(node=bold(self.node.name))):
             result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
 
@@ -146,6 +152,7 @@ class NodeLock(object):
 
 
 def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
+    assert node.os != 'kubernetes'
     if "\n" in comment:
         raise ValueError(_("Lock comments must not contain any newlines"))
     if not item_selectors:
@@ -176,6 +183,8 @@ def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
 
 
 def softlock_list(node):
+    if node.os == 'kubernetes':
+        return []
     with io.job(_("{}  checking soft locks").format(bold(node.name))):
         cat = node.run("cat {}".format(SOFT_LOCK_FILE.format(id="*")), may_fail=True)
         if cat.return_code != 0:
@@ -204,6 +213,7 @@ def softlock_list(node):
 
 
 def softlock_remove(node, lock_id):
+    assert node.os != 'kubernetes'
     io.debug(_("removing soft lock {id} from node {node}").format(
         id=lock_id,
         node=node.name,

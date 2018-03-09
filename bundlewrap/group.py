@@ -13,6 +13,7 @@ GROUP_ATTR_DEFAULTS = {
     'cmd_wrapper_inner': "export LANG=C; {}",
     'cmd_wrapper_outer': "sudo sh -c {}",
     'dummy': False,
+    'kubectl_context': None,
     'os': 'linux',
     # Setting os_version to 0 by default will probably yield less
     # surprises than setting it to max_int. Users will probably

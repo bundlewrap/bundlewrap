@@ -40,6 +40,7 @@ This table lists all item types included in BundleWrap along with the bundle att
 <tr><td><a href="../../items/directory">directory</a></td><td><code>directories</code></td><td>Manages permissions and ownership for directories</td></tr>
 <tr><td><a href="../../items/file">file</a></td><td><code>files</code></td><td>Manages contents, permissions, and ownership for files</td></tr>
 <tr><td><a href="../../items/group">group</a></td><td><code>groups</code></td><td>Manages groups by wrapping <code>groupadd</code>, <code>groupmod</code> and <code>groupdel</code></td></tr>
+<tr><td><a href="../../items/k8s">k8s_*</a></td><td><code>k8s_*</code></td><td>Manages resources in Kubernetes clusters by wrapping <code>kuebctl</code></td></tr>
 <tr><td><a href="../../items/pkg_apt">pkg_apt</a></td><td><code>pkg_apt</code></td><td>Installs and removes packages with APT</td></tr>
 <tr><td><a href="../../items/pkg_dnf">pkg_dnf</a></td><td><code>pkg_dnf</code></td><td>Installs and removes packages with dnf</td></tr>
 <tr><td><a href="../../items/pkg_opkg">pkg_opkg</a></td><td><code>pkg_opkg</code></td><td>Installs and removes packages with opkg</td></tr>

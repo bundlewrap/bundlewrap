@@ -254,6 +254,57 @@ def merge_dict(base, update):
     return merged
 
 
+def reduce_dict(full_dict, template_dict):
+    """
+    Take a large dict and recursively remove all keys that are not
+    present in the template dict. Also descends into lists.
+
+    >>> full_dict = {
+        'a': [{
+            'b': 1,
+            'c': 2,  # this will be removed from final result
+        }],
+        'd': 3,
+    }
+    >>> template_dict = {
+        'a': [{
+            'b': None,
+        }],
+        'd': None,
+        'e': None,
+    }
+    >>> reduce_dict(full_dict, template_dict)
+    {
+        'a': [{
+            'b': 1,
+        }],
+        'd': 3,
+    }
+    """
+    if isinstance(full_dict, list):
+        if not isinstance(template_dict, list):
+            return full_dict
+        result = []
+        for index in range(len(full_dict)):
+            full_dict_element = full_dict[index]
+            try:
+                template_dict_element = template_dict[index]
+            except IndexError:
+                template_dict_element = full_dict_element
+            result.append(reduce_dict(full_dict_element, template_dict_element))
+        return result
+    elif isinstance(full_dict, dict):
+        if not isinstance(template_dict, dict):
+            return full_dict
+        result = {}
+        for key, value in full_dict.items():
+            if key in template_dict:
+                result[key] = reduce_dict(value, template_dict[key])
+        return result
+    else:
+        return full_dict
+
+
 def statedict_to_json(sdict, pretty=False):
     """
     Returns a canonical JSON representation of the given statedict.

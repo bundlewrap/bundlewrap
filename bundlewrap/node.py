@@ -345,23 +345,16 @@ class Node(object):
         OS_FAMILY_DEBIAN + \
         OS_FAMILY_REDHAT
 
-    OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX
+    OS_KNOWN = OS_FAMILY_BSD + OS_FAMILY_LINUX + ('kubernetes',)
 
-    def __init__(self, name, attributes=None, transport='ssh', transport_options=None):
+    def __init__(self, name, attributes=None):
         if attributes is None:
             attributes = {}
-        if transport_options is None:
-            transport_options = {}
-
-        if transport == 'ssh':
-            transport_options.setdefault(
-                'add_host_keys',
-                environ.get('BW_ADD_HOST_KEYS', False) == "1",
-            )
 
         if not validate_name(name):
             raise RepositoryError(_("'{}' is not a valid node name").format(name))
 
+        self._add_host_keys = environ.get('BW_ADD_HOST_KEYS', False) == "1"
         self._bundles = attributes.get('bundles', [])
         self._compiling_metadata = Lock()
         self._dynamic_group_lock = Lock()
@@ -372,8 +365,6 @@ class Node(object):
         self._ssh_first_conn_lock = Lock()
         self.hostname = attributes.get('hostname', name)
         self.name = name
-        self.transport = transport
-        self.transport_options = transport_options
 
         for attr in GROUP_ATTR_DEFAULTS:
             setattr(self, "_{}".format(attr), attributes.get(attr))
@@ -641,7 +632,7 @@ class Node(object):
             self.hostname,
             remote_path,
             local_path,
-            add_host_keys=self.transport_options['add_host_keys'],
+            add_host_keys=self._add_host_keys,
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
@@ -696,6 +687,8 @@ class Node(object):
         return self.repo._metadata_for_node(self.name, partial=True)
 
     def run(self, command, data_stdin=None, may_fail=False, log_output=False):
+        assert self.os != 'kubernetes'
+
         if log_output:
             def log_function(msg):
                 io.stdout("{x} {node}  {msg}".format(
@@ -706,8 +699,6 @@ class Node(object):
         else:
             log_function = None
 
-        add_host_keys = self.transport_options['add_host_keys']
-
         if not self._ssh_conn_established:
             # Sometimes we're opening SSH connections to a node too fast
             # for OpenSSH to establish the ControlMaster socket for the
@@ -717,7 +708,7 @@ class Node(object):
             # multiplexed connection.
             if self._ssh_first_conn_lock.acquire(False):
                 try:
-                    operations.run(self.hostname, "true", add_host_keys=add_host_keys)
+                    operations.run(self.hostname, "true", add_host_keys=self._add_host_keys)
                     self._ssh_conn_established = True
                 finally:
                     self._ssh_first_conn_lock.release()
@@ -730,7 +721,7 @@ class Node(object):
         return operations.run(
             self.hostname,
             command,
-            add_host_keys=add_host_keys,
+            add_host_keys=self._add_host_keys,
             data_stdin=data_stdin,
             ignore_failure=may_fail,
             log_function=log_function,
@@ -739,11 +730,12 @@ class Node(object):
         )
 
     def upload(self, local_path, remote_path, mode=None, owner="", group="", may_fail=False):
+        assert self.os != 'kubernetes'
         return operations.upload(
             self.hostname,
             local_path,
             remote_path,
-            add_host_keys=self.transport_options['add_host_keys'],
+            add_host_keys=self._add_host_keys,
             group=group,
             mode=mode,
             owner=owner,
