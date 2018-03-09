@@ -1,3 +1,14 @@
+# 3.3.0
+
+2018-03-09
+
+* added experimental support for Kubernetes
+* some hooks can now raise an exception to skip nodes
+* fixed ED25519 public keys not being recognized as text files
+* fixed package names with hyphens for pkg_openbsd
+* fixed diff for user groups
+
+
 # 3.2.1
 
 2018-01-08
