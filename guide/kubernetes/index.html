@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>Migrating to 2.0 - BundleWrap</title>
+        <title>Kubernetes - BundleWrap</title>
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.5.0.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -90,8 +90,8 @@
     <a href="../locks/">Locking</a>
 </li>
                             
-<li >
-    <a href="../kubernetes/">Kubernetes</a>
+<li class="active">
+    <a href="./">Kubernetes</a>
 </li>
                             
 <li >
@@ -110,8 +110,8 @@
     <a href="../os_compatibility/">OS compatibility</a>
 </li>
                             
-<li class="active">
-    <a href="./">Migrating to 2.0</a>
+<li >
+    <a href="../migrate_12/">Migrating to 2.0</a>
 </li>
                             
 <li >
@@ -287,17 +287,17 @@
                     </a>
                 </li>
                     <li >
-                        <a rel="next" href="../os_compatibility/">
+                        <a rel="next" href="../locks/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../migrate_23/">
+                        <a rel="prev" href="../dev_item/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
                     <li>
-                        <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/migrate_12.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                        <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/kubernetes.md"><i class="fa fa-github"></i> Edit on GitHub</a>
                     </li>
             </ul>
         </div>
@@ -307,53 +307,85 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#migrating-from-bundlewrap-1x-to-2x">Migrating from BundleWrap 1.x to 2.x</a></li>
-            <li><a href="#itemspy">items.py</a></li>
-            <li><a href="#default-file-content-type">Default file content type</a></li>
-            <li><a href="#metadata-merging">Metadata merging</a></li>
-            <li><a href="#metadata-processors-and-item-generators">Metadata processors and item generators</a></li>
-            <li><a href="#custom-item-types">Custom item types</a></li>
-            <li><a href="#deterministic-templates">Deterministic templates</a></li>
-            <li><a href="#hook-arguments">Hook arguments</a></li>
+        <li class="main active"><a href="#kubernetes">Kubernetes</a></li>
+            <li><a href="#setting-up-a-node">Setting up a node</a></li>
+            <li><a href="#kubernetes-bundles">Kubernetes bundles</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-<h1 id="migrating-from-bundlewrap-1x-to-2x">Migrating from BundleWrap 1.x to 2.x</h1>
-<p>As per <a href="http://semver.org">semver</a>, BundleWrap 2.0 breaks compatibility with repositories created for BundleWrap 1.x. This document provides a guide on how to upgrade your repositories to BundleWrap 2.x. Please read the entire document before proceeding. To aid with the transition, BundleWrap 1.6.0 has been released along with 2.0.0. It contains no new features over 1.5.x, but has builtin helpers to aid your migration to 2.0.</p>
-<p><br></p>
-<h2 id="itemspy">items.py</h2>
-<p>In every bundle, rename <code>bundle.py</code> to <code>items.py</code>. BundleWrap 1.6.0 can do this for you by running <code>bw migrate</code>.</p>
-<p><br></p>
-<h2 id="default-file-content-type">Default file content type</h2>
-<p>The default <code>content_type</code> for <a href="../../items/file/">file items</a> has changed from "mako" to "text". This means that you need to check all file items that do not define an explicit content type of "mako". Some of them might be fine because you didn't really need templating, while others may need to have their <code>content_type</code> set to "mako" explicitly.</p>
-<p>BundleWrap 1.6.0 will print warnings for every file item affected when running <code>bw test</code>.</p>
-<p><br></p>
-<h2 id="metadata-merging">Metadata merging</h2>
-<p>The merging behavior for node and group metadata has changed. Instead of a simple <code>dict.update()</code>, metadata dicts are now merged recursively. See <a href="../../repo/groups.py/#metadata">the docs</a> for details.</p>
-<p><br></p>
-<h2 id="metadata-processors-and-item-generators">Metadata processors and item generators</h2>
-<p>These two advanced features have been replaced by a single new mechanism: <a href="../../repo/metadata.py/">metadata.py</a> You will need to rethink and rewrite them.</p>
-<p>BundleWrap 1.6.0 will print warnings for every group that uses metadata processors and any item generators when running <code>bw test</code>.</p>
-<p><br></p>
-<h2 id="custom-item-types">Custom item types</h2>
-<p>The API for defining your own items has changed. Generally, you should be able to upgrade your items with relatively little effort. Refer to <a href="../dev_item/">the docs</a> for details.</p>
-<p><br></p>
-<h2 id="deterministic-templates">Deterministic templates</h2>
-<p>While not a strict requirement, it is highly recommended to ensure your entire configuration can be created deterministically (i.e. remains exactly the same no matter how often you generate it). Otherwise, you won't be able to take advantage of the new functionality provided by <code>bw hash</code>.</p>
-<p>A common pitfall here is iteration over dictionaries in templates:</p>
-<pre><code>% for key, value in my_dict.items():
-${value}
-% endfor
+<h1 id="kubernetes">Kubernetes</h1>
+<div class="alert alert-warning">Support for Kubernetes is experimental at this time. Backwards-incompatible changes may happen at any time.</div>
+
+<p>To manage a Kubernetes cluster with BundleWrap, you first need to set up a kubectl context that works with the cluster. If you're running on Google Kubernetes Engine for example, this can be accomplished with:</p>
+<pre><code>gcloud auth login
+gcloud container clusters get-credentials your-cluster --zone your-zone --project your-project
 </code></pre>
-<p>Standard dictionaries in Python have no defined order. This may result in lines occasionally changing their position. To solve this, you can simply use <code>sorted()</code>:</p>
-<pre><code>% for key, value in sorted(my_dict.items()):
-${value}
-% endfor
+<p>You also need to make sure context names are the same on your teammates' machines.</p>
+<p><br></p>
+<h2 id="setting-up-a-node">Setting up a node</h2>
+<p>Each Kubernetes cluster you manage becomes a node. Here is an example <code>nodes.py</code>:</p>
+<pre><code>nodes = {
+     "my-cluster": {
+         'os': 'kubernetes',
+         'bundles': ["my-app"],
+         'kubectl_context': "my-context",
+     },
+}
 </code></pre>
 <p><br></p>
-<h2 id="hook-arguments">Hook arguments</h2>
-<p>Some <a href="../../repo/hooks/">hooks</a> had their arguments adjusted slightly.</p></div>
+<h2 id="kubernetes-bundles">Kubernetes bundles</h2>
+<p>You can then proceed to write bundles as with regular nodes, but using the <a href="../../items/k8s/">k8s_ items</a>:</p>
+<pre><code>k8s_namespaces = {
+     "my-app": {},
+}
+
+k8s_deployments = {
+    "my-app/my-deployment": {
+        'manifest': {
+            "spec": {
+                "selector": {
+                    "matchLabels": {
+                        "app": "nginx",
+                    },
+                },
+                "replicas": 2,
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "nginx",
+                        },
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "nginx",
+                                "image": "nginx:latest",
+                                "ports": [
+                                    {"containerPort": 80},
+                                ]
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    },
+}
+</code></pre>
+<p>All item names (except namespaces themselves) must be prefixed with the name of a namespace and a forward slash <code>/</code>. Note that BundleWrap will include defaults for the <code>apiVersion</code>, <code>Kind</code>, and <code>metadata/name</code> keys, but you can override them if you must.</p>
+<p>Alternatively, you can keep your resource definitions in manifest files:</p>
+<pre><code>k8s_namespaces = {
+     "my-app": {},
+}
+
+k8s_deployments = {
+    "my-app/my-deployment": {
+        'manifest_file': "my_deployment.yaml",
+    },
+}
+</code></pre>
+<p>BundleWrap will then look for <code>my_deployment.yaml</code> in <code>bundles/&lt;bundle&gt;/manifests/</code>. You can also use <a href="../../items/k8s/#manifest_processor">templating</a> in these files.</p></div>
         </div>
 
         <footer class="col-md-12">

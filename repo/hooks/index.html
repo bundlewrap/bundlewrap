@@ -91,6 +91,10 @@
 </li>
                             
 <li >
+    <a href="../../guide/kubernetes/">Kubernetes</a>
+</li>
+                            
+<li >
     <a href="../../guide/dev_item/">Custom items</a>
 </li>
                             
@@ -174,6 +178,10 @@
                             
 <li >
     <a href="../../items/group/">group</a>
+</li>
+                            
+<li >
+    <a href="../../items/k8s/">k8s_*</a>
 </li>
                             
 <li >
@@ -392,6 +400,11 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
 <p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p>
 <p><code>interactive</code> <code>True</code> if this is an interactive apply run.</p>
+<p>To skip a node:</p>
+<pre><code>from bundlewrap.exceptions import SkipNode
+raise SkipNode(&quot;reason goes here&quot;)
+</code></pre>
+
 <hr />
 <p><strong><code>node_apply_end(repo, node, duration=None, interactive=False, result=None, **kwargs)</code></strong></p>
 <p>Called each time a <code>bw apply</code> command finishes processing a node.</p>
@@ -406,6 +419,11 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <p><code>repo</code> The current repository (instance of <code>bundlewrap.repo.Repository</code>).</p>
 <p><code>node</code> The current node (instance of <code>bundlewrap.node.Node</code>).</p>
 <p><code>command</code> The command that will be run on the node.</p>
+<p>To skip a node:</p>
+<pre><code>from bundlewrap.exceptions import SkipNode
+raise SkipNode(&quot;reason goes here&quot;)
+</code></pre>
+
 <hr />
 <p><strong><code>node_run_end(repo, node, command, duration=None, return_code=None, stdout="", stderr="", **kwargs)</code></strong></p>
 <p>Called each time a <code>bw run</code> command finishes on a node.</p>
