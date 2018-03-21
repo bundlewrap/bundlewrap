@@ -29,25 +29,22 @@ def create_db(node, name, owner, when_creating):
 
     cmd += name
 
-    return node.run(cmd, may_fail=True)
+    return node.run(cmd)
 
 
 def drop_db(node, name):
-    return node.run("sudo -u postgres dropdb -w {}".format(quote(name)), may_fail=True)
+    return node.run("sudo -u postgres dropdb -w {}".format(quote(name)))
 
 
 def get_databases(node):
-    result = node.run("echo '\\l' | sudo -u postgres psql -Anqt -F '|' | grep '|'", may_fail=True)
-    if result.return_code != 0:
-        return {}
-
-    databases = {}
-    for line in force_text(result.stdout).strip().split("\n"):
+    output = node.run("echo '\\l' | sudo -u postgres psql -Anqt -F '|' | grep '|'").stdout
+    result = {}
+    for line in force_text(output).strip().split("\n"):
         db, owner = line.strip().split("|", 2)[:2]
-        databases[db] = {
+        result[db] = {
             'owner': owner,
         }
-    return databases
+    return result
 
 
 def set_owner(node, name, owner):
@@ -57,7 +54,6 @@ def set_owner(node, name, owner):
             name=name,
             owner=owner,
         ),
-        may_fail=True,
     )
 
 

@@ -16,7 +16,7 @@ AUTHID_COLUMNS = {
 
 
 def delete_role(node, role):
-    node.run("sudo -u postgres dropuser -w {}".format(role), may_fail=True)
+    node.run("sudo -u postgres dropuser -w {}".format(role))
 
 
 def fix_role(node, role, attrs, create=False):
@@ -28,18 +28,14 @@ def fix_role(node, role, attrs, create=False):
             password="" if attrs['password_hash'] is None else password,
             role=role,
             superuser="" if attrs['superuser'] is True else "NO",
-        ),
-        may_fail=True,
+        )
     )
 
 
 def get_role(node, role):
     result = node.run("echo \"SELECT rolcanlogin, rolsuper, rolpassword from pg_authid "
                       "WHERE rolname='{}'\" "
-                      "| sudo -u postgres psql -Anqwx -F '|'".format(role),
-                      may_fail=True)
-    if result.return_code != 0:
-        return None
+                      "| sudo -u postgres psql -Anqwx -F '|'".format(role))
 
     role_attrs = {}
     for line in force_text(result.stdout).strip().split("\n"):
