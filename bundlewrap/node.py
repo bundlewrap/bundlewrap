@@ -745,24 +745,20 @@ class Node(object):
         )
 
     def verify(self, show_all=False, workers=4):
-        bad = 0
-        good = 0
+        result = []
         start = datetime.now()
 
         if not self.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
         else:
-            for item_status in verify_items(
-                self,
-                show_all=show_all,
-                workers=workers,
-            ):
-                if item_status:
-                    good += 1
-                else:
-                    bad += 1
+            result = verify_items(self, show_all=show_all, workers=workers)
 
-        return {'good': good, 'bad': bad, 'duration': datetime.now() - start}
+        return {
+            'good': result.count(True),
+            'bad': result.count(False),
+            'unknown': result.count(None),
+            'duration': datetime.now() - start,
+        }
 
 
 def build_attr_property(attr, default):
@@ -842,6 +838,25 @@ def verify_items(node, show_all=False, workers=1):
                     'target': item.verify,
                 }
 
+    def handle_exception(task_id, exception, traceback):
+        # Unlike with `bw apply`, it is OK for `bw verify` to encounter
+        # exceptions when getting an item's status. `bw verify` doesn't
+        # care about dependencies and therefore cannot know that looking
+        # up a database user requires the database to be installed in
+        # the first place.
+        io.progress_advance()
+        io.debug("exception while verifying {}:".format(task_id))
+        io.debug(traceback)
+        io.debug(repr(exception))
+        node_name, bundle_name, item_id = task_id.split(":", 2)
+        io.stdout(_("{x} {node}  {bundle}  {item}  (unable to get status, check --debug for details)").format(
+            bundle=bold(bundle_name),
+            item=item_id,
+            node=bold(node_name),
+            x=cyan("?"),
+        ))
+        return None  # count this result as "unknown"
+
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
         unless_result, item_status = return_value
@@ -875,6 +890,7 @@ def verify_items(node, show_all=False, workers=1):
         tasks_available,
         next_task,
         handle_result,
+        handle_exception=handle_exception,
         pool_id="verify_{}".format(node.name),
         workers=workers,
     )

@@ -10,6 +10,8 @@ from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
     bold,
+    cyan,
+    cyan_unless_zero,
     error_summary,
     format_duration,
     green,
@@ -34,6 +36,7 @@ def stats_summary(node_stats, total_duration):
         'items': 0,
         'good': 0,
         'bad': 0,
+        'unknown': 0,
     }
     node_ranking = []
 
@@ -41,12 +44,14 @@ def stats_summary(node_stats, total_duration):
         totals['items'] += stats['total']
         totals['good'] += stats['good']
         totals['bad'] += stats['bad']
+        totals['unknown'] += stats['unknown']
         node_ranking.append((
             stats['health'],
             node_name,
             stats['total'],
             stats['good'],
             stats['bad'],
+            stats['unknown'],
             stats['duration'],
         ))
 
@@ -62,16 +67,18 @@ def stats_summary(node_stats, total_duration):
         _("items"),
         green(_("good")),
         red(_("bad")),
+        cyan(_("unknown")),
         _("health"),
         _("duration"),
     ], ROW_SEPARATOR]
 
-    for health, node_name, items, good, bad, duration in node_ranking:
+    for health, node_name, items, good, bad, unknown, duration in node_ranking:
         rows.append([
             node_name,
             str(items),
             green_unless_zero(good),
             red_unless_zero(bad),
+            cyan_unless_zero(unknown),
             "{0:.1f}%".format(health),
             format_duration(duration),
         ])
@@ -83,6 +90,7 @@ def stats_summary(node_stats, total_duration):
             str(totals['items']),
             green_unless_zero(totals['good']),
             red_unless_zero(totals['bad']),
+            cyan_unless_zero(totals['unknown']),
             "{0:.1f}%".format(totals['health']),
             format_duration(total_duration),
         ])
@@ -94,6 +102,7 @@ def stats_summary(node_stats, total_duration):
         4: 'right',
         5: 'right',
         6: 'right',
+        7: 'right',
     }
 
     for line in render_table(rows, alignments=alignments):

@@ -69,6 +69,13 @@ def yellow(text):
     return "\033[33m{}\033[0m".format(text)
 
 
+def cyan_unless_zero(number):
+    if number == 0:
+        return "0"
+    else:
+        return cyan(str(number))
+
+
 def green_unless_zero(number):
     if number == 0:
         return "0"
