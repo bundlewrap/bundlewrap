@@ -197,6 +197,11 @@ def run(
     add_host_keys=False,
     data_stdin=None,
     ignore_failure=False,
+    raise_for_return_codes=(
+        126,  # command not executable
+        127,  # command not found
+        255,  # SSH error
+    ),
     log_function=None,
     wrapper_inner="{}",
     wrapper_outer="{}",
@@ -233,7 +238,7 @@ def run(
             result=force_text(result.stdout) + force_text(result.stderr),
         )
         io.debug(error_msg)
-        if not ignore_failure or result.return_code == 255:
+        if not ignore_failure or result.return_code in raise_for_return_codes:
             raise RemoteException(error_msg)
     return result
 
