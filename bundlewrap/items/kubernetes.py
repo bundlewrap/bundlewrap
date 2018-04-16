@@ -214,6 +214,22 @@ class KubernetesItem(Item):
             ))
 
 
+class KubernetesClusterRole(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_clusterroles"
+    KIND = "ClusterRole"
+    KUBECTL_RESOURCE_TYPE = "clusterroles"
+    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
+    ITEM_TYPE_NAME = "k8s_clusterrole"
+
+
+class KubernetesClusterRoleBinding(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_clusterrolebindings"
+    KIND = "ClusterRoleBinding"
+    KUBECTL_RESOURCE_TYPE = "clusterrolebindings"
+    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
+    ITEM_TYPE_NAME = "k8s_clusterrolebinding"
+
+
 class KubernetesConfigMap(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_configmaps"
     KIND = "ConfigMap"
@@ -332,6 +348,14 @@ class KubernetesService(KubernetesItem):
     KUBECTL_RESOURCE_TYPE = "services"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_service"
+
+
+class KubernetesServiceAccount(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_serviceaccounts"
+    KIND = "ServiceAccount"
+    KUBECTL_RESOURCE_TYPE = "serviceaccounts"
+    KUBERNETES_APIVERSION = "v1"
+    ITEM_TYPE_NAME = "k8s_serviceaccount"
 
 
 class KubernetesStatefulSet(KubernetesItem):
