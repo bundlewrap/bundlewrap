@@ -246,6 +246,14 @@ class KubernetesCronJob(KubernetesItem):
     ITEM_TYPE_NAME = "k8s_cronjob"
 
 
+class KubernetesCustomResourceDefinition(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_crd"
+    KIND = "CustomResourceDefinition"
+    KUBECTL_RESOURCE_TYPE = "customresourcedefinition"
+    KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1beta1"
+    ITEM_TYPE_NAME = "k8s_crd"
+
+
 class KubernetesDaemonSet(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_daemonsets"
     KIND = "DaemonSet"

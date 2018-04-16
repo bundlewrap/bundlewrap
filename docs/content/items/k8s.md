@@ -33,6 +33,7 @@ Note that all item names (except namespaces themselves) must be prefixed with th
 <tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindingss</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
 <tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
+<tr><td>Custom Resource Definition</td><td>k8s_crd</td><td>apiextensions.k8s.io/v1beta1</td></tr>
 <tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>v1</td></tr>
 <tr><td>Deployment</td><td>k8s_deployments</td><td>extensions/v1beta1</td></tr>
 <tr><td>Ingress</td><td>k8s_ingresses</td><td>extensions/v1beta1</td></tr>
