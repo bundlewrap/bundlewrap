@@ -697,6 +697,15 @@ class Item(object):
         """
         return attributes
 
+    def preview(self):
+        """
+        Can return a preview of this item as a Unicode string.
+        BundleWrap will NOT add a trailing newline.
+
+        MAY be overridden by subclasses.
+        """
+        raise NotImplementedError()
+
     def sdict(self):
         """
         Return a statedict that describes the actual state of this item

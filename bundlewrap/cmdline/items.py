@@ -28,8 +28,8 @@ def write_preview(file_item, base_path):
 
 def bw_items(repo, args):
     node = get_node(repo, args['node'], adhoc_nodes=args['adhoc_nodes'])
-    if args['file_preview'] and not args['item']:
-        io.stderr(_("{x} no ITEM given for file preview").format(x=red("!!!")))
+    if args['preview'] and not args['item']:
+        io.stderr(_("{x} no ITEM given for preview").format(x=red("!!!")))
         exit(1)
     elif args['file_preview_path']:
         if args['item']:
@@ -76,31 +76,27 @@ def bw_items(repo, args):
                 ))
     elif args['item']:
         item = get_item(node, args['item'])
-        if args['file_preview']:
-            if item.ITEM_TYPE_NAME != 'file':
+        if args['preview']:
+            try:
+                io.stdout(
+                    item.preview(),
+                    append_newline=False,
+                )
+            except NotImplementedError:
                 io.stderr(_(
-                    "{x} cannot preview {item} on {node} (not a file)"
+                    "{x} cannot preview {item} on {node} (doesn't support previews)"
                 ).format(x=red("!!!"), item=item.id, node=node.name))
                 exit(1)
-            if (
-                item.attributes['content_type'] in ('any', 'base64', 'binary') or
-                item.attributes['delete'] is True
-            ):
+            except ValueError:
                 io.stderr(_(
-                    "{x} cannot preview {file} on {node} (unsuitable content_type or deleted)"
-                ).format(x=red("!!!"), file=item.id, node=node.name))
+                    "{x} cannot preview {item} on {node} (not available for this item config)"
+                ).format(x=red("!!!"), item=item.id, node=node.name))
                 exit(1)
-            else:
-                try:
-                    io.stdout(
-                        item.content.decode(item.attributes['encoding']),
-                        append_newline=False,
-                    )
-                except FaultUnavailable:
-                    io.stderr(_(
-                        "{x} skipped {path} (Fault unavailable)"
-                    ).format(x=yellow("»"), path=bold(item.name)))
-                    exit(1)
+            except FaultUnavailable:
+                io.stderr(_(
+                    "{x} cannot preview {item} on {node} (Fault unavailable)"
+                ).format(x=red("!!!"), item=item.id, node=node.name))
+                exit(1)
         else:
             if args['show_sdict']:
                 statedict = item.sdict()

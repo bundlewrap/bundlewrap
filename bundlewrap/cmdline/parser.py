@@ -290,10 +290,11 @@ def build_parser_bw():
     )
     parser_items.add_argument(
         "-f",
-        "--file-preview",
+        "--preview",
+        "--file-preview",  # TODO 4.0 remove
         action='store_true',
-        dest='file_preview',
-        help=_("print preview of given file ITEM"),
+        dest='preview',
+        help=_("print preview of given ITEM"),
     )
     parser_items.add_argument(
         "-w",

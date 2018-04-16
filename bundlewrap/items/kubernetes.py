@@ -148,6 +148,11 @@ class KubernetesItem(Item):
             attributes['context'] = {}
         return attributes
 
+    def preview(self):
+        if self.attributes['delete'] is True:
+            raise ValueError
+        return yaml.dump(json.loads(self.manifest), default_flow_style=False)
+
     @property
     def resource_name(self):
         return self.name.split("/", 1)[1]

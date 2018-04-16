@@ -374,6 +374,14 @@ class File(Item):
             attributes['group'] = 'wheel'
         return attributes
 
+    def preview(self):
+        if (
+            self.attributes['content_type'] in ('any', 'base64', 'binary') or
+            self.attributes['delete'] is True
+        ):
+            raise ValueError
+        return self.content.decode(self.attributes['encoding'])
+
     def test(self):
         if self.attributes['source'] and not exists(self.template):
             raise BundleError(_(
