@@ -41,7 +41,6 @@ class KubernetesItem(Item):
         'context': None,
     }
     KIND = None
-    KUBECTL_RESOURCE_TYPE = None
     KUBERNETES_APIVERSION = "v1"
 
     def __init__(self, *args, **kwargs):
@@ -70,7 +69,7 @@ class KubernetesItem(Item):
                 "--context={}".format(self.node.kubectl_context),
                 "--namespace={}".format(self.namespace),
                 "delete",
-                self.KUBECTL_RESOURCE_TYPE,
+                self.KIND,
                 self.resource_name,
             ])
             log_error(result)
@@ -161,7 +160,7 @@ class KubernetesItem(Item):
             "get",
             "-o",
             "json",
-            self.KUBECTL_RESOURCE_TYPE,
+            self.KIND,
             self.resource_name,
         ])
         if result.return_code == 0:
@@ -217,7 +216,6 @@ class KubernetesItem(Item):
 class KubernetesClusterRole(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_clusterroles"
     KIND = "ClusterRole"
-    KUBECTL_RESOURCE_TYPE = "clusterroles"
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrole"
 
@@ -225,7 +223,6 @@ class KubernetesClusterRole(KubernetesItem):
 class KubernetesClusterRoleBinding(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_clusterrolebindings"
     KIND = "ClusterRoleBinding"
-    KUBECTL_RESOURCE_TYPE = "clusterrolebindings"
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrolebinding"
 
@@ -233,7 +230,6 @@ class KubernetesClusterRoleBinding(KubernetesItem):
 class KubernetesConfigMap(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_configmaps"
     KIND = "ConfigMap"
-    KUBECTL_RESOURCE_TYPE = "configmaps"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_configmap"
 
@@ -241,7 +237,6 @@ class KubernetesConfigMap(KubernetesItem):
 class KubernetesCronJob(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_cronjobs"
     KIND = "CronJob"
-    KUBECTL_RESOURCE_TYPE = "cronjobs"
     KUBERNETES_APIVERSION = "batch/v1beta1"
     ITEM_TYPE_NAME = "k8s_cronjob"
 
@@ -249,7 +244,6 @@ class KubernetesCronJob(KubernetesItem):
 class KubernetesCustomResourceDefinition(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_crd"
     KIND = "CustomResourceDefinition"
-    KUBECTL_RESOURCE_TYPE = "customresourcedefinition"
     KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1beta1"
     ITEM_TYPE_NAME = "k8s_crd"
 
@@ -257,7 +251,6 @@ class KubernetesCustomResourceDefinition(KubernetesItem):
 class KubernetesDaemonSet(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_daemonsets"
     KIND = "DaemonSet"
-    KUBECTL_RESOURCE_TYPE = "daemonsets"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_daemonset"
 
@@ -275,7 +268,6 @@ class KubernetesDaemonSet(KubernetesItem):
 class KubernetesDeployment(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_deployments"
     KIND = "Deployment"
-    KUBECTL_RESOURCE_TYPE = "deployments"
     KUBERNETES_APIVERSION = "extensions/v1beta1"
     ITEM_TYPE_NAME = "k8s_deployment"
 
@@ -293,7 +285,6 @@ class KubernetesDeployment(KubernetesItem):
 class KubernetesIngress(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_ingresses"
     KIND = "Ingress"
-    KUBECTL_RESOURCE_TYPE = "ingresses"
     KUBERNETES_APIVERSION = "extensions/v1beta1"
     ITEM_TYPE_NAME = "k8s_ingress"
 
@@ -311,7 +302,6 @@ class KubernetesIngress(KubernetesItem):
 class KubernetesNamespace(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_namespaces"
     KIND = "Namespace"
-    KUBECTL_RESOURCE_TYPE = "namespaces"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_namespace"
 
@@ -334,7 +324,6 @@ class KubernetesNamespace(KubernetesItem):
 class KubernetesPersistentVolumeClain(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_pvc"
     KIND = "PersistentVolumeClaim"
-    KUBECTL_RESOURCE_TYPE = "persistentvolumeclaims"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_pvc"
 
@@ -342,7 +331,6 @@ class KubernetesPersistentVolumeClain(KubernetesItem):
 class KubernetesSecret(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_secrets"
     KIND = "Secret"
-    KUBECTL_RESOURCE_TYPE = "secrets"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_secret"
 
@@ -353,7 +341,6 @@ class KubernetesSecret(KubernetesItem):
 class KubernetesService(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_services"
     KIND = "Service"
-    KUBECTL_RESOURCE_TYPE = "services"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_service"
 
@@ -361,7 +348,6 @@ class KubernetesService(KubernetesItem):
 class KubernetesServiceAccount(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_serviceaccounts"
     KIND = "ServiceAccount"
-    KUBECTL_RESOURCE_TYPE = "serviceaccounts"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_serviceaccount"
 
@@ -369,7 +355,6 @@ class KubernetesServiceAccount(KubernetesItem):
 class KubernetesStatefulSet(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_statefulsets"
     KIND = "StatefulSet"
-    KUBECTL_RESOURCE_TYPE = "statefulsets"
     KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_statefulset"
 
