@@ -29,6 +29,8 @@ Note that all item names (except namespaces themselves) must be prefixed with th
 
 <table>
 <tr><th>Resource type</th><th>Bundle attribute</th><th>apiVersion</th></tr>
+<tr><td>Cluster Role</td><td>k8s_clusterroles</td><td>rbac.authorization.k8s.io/v1</td></tr>
+<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindingss</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
 <tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
 <tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>v1</td></tr>
@@ -37,6 +39,7 @@ Note that all item names (except namespaces themselves) must be prefixed with th
 <tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
 <tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
 <tr><td>Service</td><td>k8s_services</td><td>v1</td></tr>
+<tr><td>Service Account</td><td>k8s_serviceaccounts</td><td>v1</td></tr>
 <tr><td>Secret</td><td>k8s_secrets</td><td>v1</td></tr>
 <tr><td>StatefulSet</td><td>k8s_statefulsets</td><td>apps/v1</td></tr>
 </table>
