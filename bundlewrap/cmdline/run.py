@@ -49,11 +49,12 @@ def run_on_node(node, command, skip_list):
         ))
         return None
 
-    result = node.run(
-        command,
-        may_fail=True,
-        log_output=True,
-    )
+    with io.job(_("{}  running command...").format(bold(node.name))):
+        result = node.run(
+            command,
+            may_fail=True,
+            log_output=True,
+        )
 
     node.repo.hooks.node_run_end(
         node.repo,

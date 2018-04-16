@@ -708,7 +708,8 @@ class Node(object):
             # multiplexed connection.
             if self._ssh_first_conn_lock.acquire(False):
                 try:
-                    operations.run(self.hostname, "true", add_host_keys=self._add_host_keys)
+                    with io.job(_("{}  establishing connection...").format(bold(self.name))):
+                        operations.run(self.hostname, "true", add_host_keys=self._add_host_keys)
                     self._ssh_conn_established = True
                 finally:
                     self._ssh_first_conn_lock.release()
