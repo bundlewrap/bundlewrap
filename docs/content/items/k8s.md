@@ -21,7 +21,7 @@ Manage resources in Kubernetes clusters.
         },
     }
 
-Note that all item names (except namespaces themselves) must be prefixed with the name of a namespace and a forward slash `/`. Resource items will automatically depend on their namespace if you defined it.
+Note that the names of all items in a namespace must be prefixed with the name of their namespace and a forward slash `/`. Resource items will automatically depend on their namespace if you defined it.
 
 <br>
 
@@ -43,7 +43,42 @@ Note that all item names (except namespaces themselves) must be prefixed with th
 <tr><td>Service Account</td><td>k8s_serviceaccounts</td><td>v1</td></tr>
 <tr><td>Secret</td><td>k8s_secrets</td><td>v1</td></tr>
 <tr><td>StatefulSet</td><td>k8s_statefulsets</td><td>apps/v1</td></tr>
+<tr><td>(any)</td><td>k8s_raw</td><td>(any)</td></tr>
 </table>
+
+You can define [Custom Resources](https://kubernetes.io/docs/concepts/api-extension/custom-resources/) like this:
+
+    k8s_crd = {
+        "custom-thing": {
+            'manifest': {
+                'spec': {
+                    'names': {
+                        'kind': "CustomThing",
+                    },
+                },
+            },
+        },
+    }
+
+    k8s_raw = {
+        "foo/CustomThing/baz": {
+            'manifest': {
+                'apiVersion': "example.com/v1",
+            },
+        },
+    }
+
+The special `k8s_raw` items can also be used to create resources that BundleWrap does not support natively:
+
+    k8s_raw = {
+        "foo/HorizontalPodAutoscaler/baz": {
+            'manifest': {
+                'apiVersion': "autoscaling/v2beta1",
+            },
+        },
+    }
+
+Resources outside any namespace can be created with `k8s_raw` by omitting the namespace in the item name (so that the name starts with `/`).
 
 <br>
 

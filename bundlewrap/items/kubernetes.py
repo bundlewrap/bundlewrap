@@ -17,10 +17,6 @@ from six import add_metaclass
 import yaml
 
 
-NAME_REGEX = r"[a-z0-9-]+/[a-z0-9-]{1,253}"
-NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
-
-
 def log_error(run_result):
     if run_result.return_code != 0:
         io.debug(run_result.stdout.decode('utf-8'))
@@ -42,6 +38,8 @@ class KubernetesItem(Item):
     }
     KIND = None
     KUBERNETES_APIVERSION = "v1"
+    NAME_REGEX = r"^[a-z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
+    NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
     def __init__(self, *args, **kwargs):
         super(KubernetesItem, self).__init__(*args, **kwargs)
@@ -110,7 +108,7 @@ class KubernetesItem(Item):
         return deps
 
     @property
-    def manifest(self):
+    def _manifest_dict(self):
         if self.attributes['manifest_processor'] == 'jinja2':
             content_processor = content_processor_jinja2
         elif self.attributes['manifest_processor'] == 'mako':
@@ -128,7 +126,7 @@ class KubernetesItem(Item):
         elif self.attributes['manifest_file'].endswith(".json"):
             user_manifest = json.loads(content_processor(self))
 
-        return json.dumps(merge_dict(
+        merged_manifest = merge_dict(
             {
                 'apiVersion': self.KUBERNETES_APIVERSION,
                 'kind': self.KIND,
@@ -137,11 +135,22 @@ class KubernetesItem(Item):
                 },
             },
             user_manifest,
-        ), indent=4, sort_keys=True)
+        )
+
+        if merged_manifest['apiVersion'] is None:
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' needs an apiVersion in its manifest"
+            ).format(item=self.id, bundle=self.bundle.name))
+
+        return merged_manifest
+
+    @property
+    def manifest(self):
+        return json.dumps(self._manifest_dict, indent=4, sort_keys=True)
 
     @property
     def namespace(self):
-        return self.name.split("/", 1)[0]
+        return self.name.split("/", 1)[0] or None
 
     def patch_attributes(self, attributes):
         if 'context' not in attributes:
@@ -151,11 +160,11 @@ class KubernetesItem(Item):
     def preview(self):
         if self.attributes['delete'] is True:
             raise ValueError
-        return yaml.dump(json.loads(self.manifest), default_flow_style=False)
+        return yaml.dump(self._manifest_dict, default_flow_style=False)
 
     @property
     def resource_name(self):
-        return self.name.split("/", 1)[1]
+        return self.name.split("/", 1)[-1]
 
     def sdict(self):
         result = run_local([
@@ -205,7 +214,7 @@ class KubernetesItem(Item):
 
     @classmethod
     def validate_name(cls, bundle, name):
-        if not NAME_REGEX_COMPILED.match(name):
+        if not cls.NAME_REGEX_COMPILED.match(name):
             raise BundleError(_(
                 "name for {item_type}:{name} (bundle '{bundle}') "
                 "on {node} doesn't match {regex}"
@@ -214,8 +223,61 @@ class KubernetesItem(Item):
                 name=name,
                 bundle=bundle.name,
                 node=bundle.node.name,
-                refex=NAME_REGEX,
+                regex=cls.NAME_REGEX,
             ))
+
+
+class KubernetesRawItem(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_raw"
+    ITEM_TYPE_NAME = "k8s_raw"
+    KUBERNETES_APIVERSION = None
+    NAME_REGEX = r"^([a-z0-9-\.]{1,253}/)?[a-zA-Z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
+    NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
+
+    def get_auto_deps(self, items):
+        deps = super(KubernetesRawItem, self).get_auto_deps(items)
+        for item in items:
+            if (
+                item.ITEM_TYPE_NAME == 'k8s_crd' and
+                item._manifest_dict.get('spec', {}).get('names', {}).get('kind') == self.KIND
+            ):
+                deps.append(item.id)
+        return deps
+
+    @property
+    def KIND(self):
+        name = self.name.split("/", 2)[1]
+        if name.lower() in (
+            "clusterrole",
+            "clusterrolebinding",
+            "configmap",
+            "cronjob",
+            "customresourcedefinition",
+            "daemonset",
+            "deployment",
+            "ingress",
+            "namespace",
+            "persistentvolumeclaim",
+            "service",
+            "secret",
+            "statefulset",
+        ):
+            raise BundleError(_(
+                "Kind of {item_type}:{name} (bundle '{bundle}') "
+                "on {node} clashes with builtin k8s_* item"
+            ).format(
+                item_type=self.ITEM_TYPE_NAME,
+                name=self.name,
+                bundle=self.bundle.name,
+                node=self.bundle.node.name,
+                regex=self.NAME_REGEX,
+            ))
+        else:
+            return name
+
+    @property
+    def resource_name(self):
+        return self.name.split("/", 2)[2]
 
 
 class KubernetesClusterRole(KubernetesItem):
@@ -251,6 +313,16 @@ class KubernetesCustomResourceDefinition(KubernetesItem):
     KIND = "CustomResourceDefinition"
     KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1beta1"
     ITEM_TYPE_NAME = "k8s_crd"
+    NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
+    NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
+
+    def get_auto_deps(self, items):
+        return []
+
+    @property
+    def namespace(self):
+        return None
+
 
 
 class KubernetesDaemonSet(KubernetesItem):
@@ -309,21 +381,11 @@ class KubernetesNamespace(KubernetesItem):
     KIND = "Namespace"
     KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_namespace"
+    NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
+    NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
     def get_auto_deps(self, items):
         return []
-
-    @property
-    def namespace(self):
-        return self.name
-
-    @property
-    def resource_name(self):
-        return self.name
-
-    @classmethod
-    def validate_name(cls, bundle, name):
-        pass
 
 
 class KubernetesPersistentVolumeClain(KubernetesItem):
