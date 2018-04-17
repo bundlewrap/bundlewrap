@@ -25,7 +25,11 @@ from ..utils.ui import io
 
 def stats_summary(node_stats, total_duration):
     for node in node_stats.keys():
-        node_stats[node]['total'] = node_stats[node]['good'] + node_stats[node]['bad']
+        node_stats[node]['total'] = sum([
+            node_stats[node]['good'],
+            node_stats[node]['bad'],
+            node_stats[node]['unknown'],
+        ])
         try:
             node_stats[node]['health'] = \
                 (node_stats[node]['good'] / float(node_stats[node]['total'])) * 100.0
