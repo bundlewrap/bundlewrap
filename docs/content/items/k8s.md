@@ -30,7 +30,7 @@ Note that the names of all items in a namespace must be prefixed with the name o
 <table>
 <tr><th>Resource type</th><th>Bundle attribute</th><th>apiVersion</th></tr>
 <tr><td>Cluster Role</td><td>k8s_clusterroles</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindingss</td><td>rbac.authorization.k8s.io/v1</td></tr>
+<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
 <tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
 <tr><td>Custom Resource Definition</td><td>k8s_crd</td><td>apiextensions.k8s.io/v1beta1</td></tr>
@@ -39,6 +39,8 @@ Note that the names of all items in a namespace must be prefixed with the name o
 <tr><td>Ingress</td><td>k8s_ingresses</td><td>extensions/v1beta1</td></tr>
 <tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
 <tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
+<tr><td>Role</td><td>k8s_roles</td><td>rbac.authorization.k8s.io/v1</td></tr>
+<tr><td>Role Binding</td><td>k8s_rolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Service</td><td>k8s_services</td><td>v1</td></tr>
 <tr><td>Service Account</td><td>k8s_serviceaccounts</td><td>v1</td></tr>
 <tr><td>Secret</td><td>k8s_secrets</td><td>v1</td></tr>

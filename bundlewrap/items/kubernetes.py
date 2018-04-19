@@ -395,6 +395,20 @@ class KubernetesPersistentVolumeClain(KubernetesItem):
     ITEM_TYPE_NAME = "k8s_pvc"
 
 
+class KubernetesRole(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_roles"
+    KIND = "Role"
+    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
+    ITEM_TYPE_NAME = "k8s_role"
+
+
+class KubernetesRoleBinding(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_rolebindings"
+    KIND = "RoleBinding"
+    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
+    ITEM_TYPE_NAME = "k8s_rolebinding"
+
+
 class KubernetesSecret(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_secrets"
     KIND = "Secret"
