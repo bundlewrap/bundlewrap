@@ -275,6 +275,8 @@ class KubernetesClusterRole(KubernetesItem):
     KIND = "ClusterRole"
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrole"
+    NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
+    NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
     @property
     def namespace(self):
@@ -286,6 +288,8 @@ class KubernetesClusterRoleBinding(KubernetesItem):
     KIND = "ClusterRoleBinding"
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrolebinding"
+    NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
+    NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
     def get_auto_deps(self, items):
         deps = super(KubernetesStatefulSet, self).get_auto_deps(items)
