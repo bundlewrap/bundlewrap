@@ -62,24 +62,28 @@ class KubernetesItem(Item):
 
     def fix(self, status):
         if status.must_be_deleted:
-            result = run_local([
+            cmdline = [
                 "kubectl",
                 "--context={}".format(self.node.kubectl_context),
-                "--namespace={}".format(self.namespace),
                 "delete",
                 self.KIND,
                 self.resource_name,
-            ])
+            ]
+            if self.namespace:
+                cmdline.append("--namespace={}".format(self.namespace))
+            result = run_local(cmdline)
             log_error(result)
         else:
-            result = run_local([
+            cmdline = [
                 "kubectl",
                 "--context={}".format(self.node.kubectl_context),
-                "--namespace={}".format(self.namespace),
                 "apply",
                 "-f",
                 "-",
-            ], data_stdin=self.manifest.encode('utf-8'))
+            ]
+            if self.namespace:
+                cmdline.append("--namespace={}".format(self.namespace))
+            result = run_local(cmdline, data_stdin=self.manifest.encode('utf-8'))
             log_error(result)
 
     def get_auto_deps(self, items, _secrets=True):
