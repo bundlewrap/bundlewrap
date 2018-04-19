@@ -287,6 +287,11 @@ class KubernetesClusterRoleBinding(KubernetesItem):
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrolebinding"
 
+    def get_auto_deps(self, items):
+        deps = super(KubernetesStatefulSet, self).get_auto_deps(items)
+        deps.append("k8s_clusterrole:")
+        return deps
+
     @property
     def namespace(self):
         return None
@@ -320,7 +325,6 @@ class KubernetesCustomResourceDefinition(KubernetesItem):
     @property
     def namespace(self):
         return None
-
 
 
 class KubernetesDaemonSet(KubernetesItem):
@@ -405,6 +409,11 @@ class KubernetesRoleBinding(KubernetesItem):
     KIND = "RoleBinding"
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_rolebinding"
+
+    def get_auto_deps(self, items):
+        deps = super(KubernetesStatefulSet, self).get_auto_deps(items)
+        deps.append("k8s_role:")
+        return deps
 
 
 class KubernetesSecret(KubernetesItem):
