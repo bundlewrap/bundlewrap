@@ -292,7 +292,7 @@ class KubernetesClusterRoleBinding(KubernetesItem):
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
     def get_auto_deps(self, items):
-        deps = super(KubernetesStatefulSet, self).get_auto_deps(items)
+        deps = super(KubernetesClusterRoleBinding, self).get_auto_deps(items)
         deps.append("k8s_clusterrole:")
         return deps
 
@@ -415,7 +415,7 @@ class KubernetesRoleBinding(KubernetesItem):
     ITEM_TYPE_NAME = "k8s_rolebinding"
 
     def get_auto_deps(self, items):
-        deps = super(KubernetesStatefulSet, self).get_auto_deps(items)
+        deps = super(KubernetesRoleBinding, self).get_auto_deps(items)
         deps.append("k8s_role:")
         return deps
 
