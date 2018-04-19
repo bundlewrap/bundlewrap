@@ -286,12 +286,20 @@ class KubernetesClusterRole(KubernetesItem):
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrole"
 
+    @property
+    def namespace(self):
+        return None
+
 
 class KubernetesClusterRoleBinding(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_clusterrolebindings"
     KIND = "ClusterRoleBinding"
     KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrolebinding"
+
+    @property
+    def namespace(self):
+        return None
 
 
 class KubernetesConfigMap(KubernetesItem):
