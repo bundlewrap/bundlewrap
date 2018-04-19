@@ -62,28 +62,13 @@ class KubernetesItem(Item):
 
     def fix(self, status):
         if status.must_be_deleted:
-            cmdline = [
-                "kubectl",
-                "--context={}".format(self.node.kubectl_context),
-                "delete",
-                self.KIND,
-                self.resource_name,
-            ]
-            if self.namespace:
-                cmdline.append("--namespace={}".format(self.namespace))
-            result = run_local(cmdline)
+            result = run_local(self._kubectl + ["delete", self.KIND, self.resource_name])
             log_error(result)
         else:
-            cmdline = [
-                "kubectl",
-                "--context={}".format(self.node.kubectl_context),
-                "apply",
-                "-f",
-                "-",
-            ]
-            if self.namespace:
-                cmdline.append("--namespace={}".format(self.namespace))
-            result = run_local(cmdline, data_stdin=self.manifest.encode('utf-8'))
+            result = run_local(
+                self._kubectl + ["apply", "-f", "-"],
+                data_stdin=self.manifest.encode('utf-8'),
+            )
             log_error(result)
 
     def get_auto_deps(self, items, _secrets=True):
@@ -110,6 +95,16 @@ class KubernetesItem(Item):
             ):
                 deps.append(item.id)
         return deps
+
+    @property
+    def _kubectl(self):
+        cmdline = [
+            "kubectl",
+            "--context={}".format(self.node.kubectl_context),
+        ]
+        if self.namespace:
+            cmdline.append("--namespace={}".format(self.namespace))
+        return cmdline
 
     @property
     def _manifest_dict(self):
@@ -171,16 +166,7 @@ class KubernetesItem(Item):
         return self.name.split("/", 1)[-1]
 
     def sdict(self):
-        result = run_local([
-            "kubectl",
-            "--context={}".format(self.node.kubectl_context),
-            "--namespace={}".format(self.namespace),
-            "get",
-            "-o",
-            "json",
-            self.KIND,
-            self.resource_name,
-        ])
+        result = run_local(self._kubectl + ["get", "-o", "json", self.KIND, self.resource_name])
         if result.return_code == 0:
             full_json_response = json.loads(result.stdout)
             if full_json_response.get("status", {}).get("phase") == "Terminating":
