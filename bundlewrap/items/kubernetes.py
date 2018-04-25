@@ -394,6 +394,22 @@ class KubernetesNamespace(KubernetesItem):
         return []
 
 
+class KubernetesNetworkPolicy(KubernetesItem):
+    BUNDLE_ATTRIBUTE_NAME = "k8s_networkpolicies"
+    KIND = "NetworkPolicy"
+    KUBERNETES_APIVERSION = "networking.k8s.io/v1"
+    ITEM_TYPE_NAME = "k8s_networkpolicy"
+    NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
+    NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
+
+    def get_auto_deps(self, items):
+        return []
+
+    @property
+    def namespace(self):
+        return None
+
+
 class KubernetesPersistentVolumeClain(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_pvc"
     KIND = "PersistentVolumeClaim"

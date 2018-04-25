@@ -38,6 +38,7 @@ Note that the names of all items in a namespace must be prefixed with the name o
 <tr><td>Deployment</td><td>k8s_deployments</td><td>extensions/v1beta1</td></tr>
 <tr><td>Ingress</td><td>k8s_ingresses</td><td>extensions/v1beta1</td></tr>
 <tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
+<tr><td>Network Policy</td><td>k8s_networkpolicies</td><td>networking.k8s.io/v1</td></tr>
 <tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
 <tr><td>Role</td><td>k8s_roles</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Role Binding</td><td>k8s_rolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
