@@ -1,3 +1,19 @@
+# 3.4.0
+
+2018-05-02
+
+* added k8s_clusterrole items
+* added k8s_clusterrolebinding items
+* added k8s_crd items
+* added k8s_networkpolicy items
+* added k8s_raw items
+* added k8s_role items
+* added k8s_rolebinding items
+* added Kubernetes item preview with `bw items -f`
+* improved handling of exceptions during `bw verify` and `bw apply`
+* improved progress display during `bw run`
+
+
 # 3.3.0
 
 2018-03-09
