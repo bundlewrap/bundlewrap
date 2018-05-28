@@ -44,7 +44,7 @@ class NodeLock(object):
         self.interactive = interactive
 
     def __enter__(self):
-        if self.node.os not in OS_FAMILY_UNIX:
+        if self.node.os not in self.node.OS_FAMILY_UNIX:
             # no locking required/possible
             return self
         with tempfile() as local_path:
@@ -104,7 +104,7 @@ class NodeLock(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        if self.node.os not in OS_FAMILY_UNIX:
+        if self.node.os not in self.node.OS_FAMILY_UNIX:
             # no locking required/possible
             return
         with io.job(_("{node}  removing hard lock").format(node=bold(self.node.name))):
