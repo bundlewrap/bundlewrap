@@ -165,7 +165,10 @@ TYPE_DIFFS = {
 
 def diff_value(title, value1, value2):
     value_type = type(value1)
-    assert value_type == type(value2)
+    assert value_type == type(value2), "cannot compare {} with {}".format(
+        repr(value1),
+        repr(value2),
+    )
     diff_func = TYPE_DIFFS[value_type]
     return diff_func(title, value1, value2)
 
