@@ -24,14 +24,6 @@ Negation is also possible for bundles and groups. `!bundle:foo` will add all nod
 
 <br>
 
-## bw nodes and bw groups
-
-<pre><code class="nohighlight">$ bw nodes --hostnames | xargs -n 1 ping -c 1</code></pre>
-
-With these commands you can quickly get a list of all nodes and groups in your [repository](../repo/layout.md). The example above uses `--hostnames` to get a list of all DNS names for your nodes and send a ping to each one.
-
-<br>
-
 ## bw debug
 
 	$ bw debug
