@@ -364,6 +364,7 @@ class Node(object):
         self._node_metadata = attributes.get('metadata', {})
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
+        self._template_node_name = attributes.get('template_node')
         self.hostname = attributes.get('hostname', name)
         self.name = name
 
@@ -731,6 +732,20 @@ class Node(object):
             wrapper_outer=self.cmd_wrapper_outer,
         )
 
+    @property
+    def template_node(self):
+        if not self._template_node_name:
+            return None
+        else:
+            target_node = self.repo.get_node(self._template_node_name)
+            if target_node._template_node_name:
+                raise RepositoryError(_(
+                    "{template_node} cannot use template_node because {node} uses {template_node} "
+                    "as template_node"
+                ).format(node=self.name, template_node=target_node.name))
+            else:
+                return target_node
+
     def upload(self, local_path, remote_path, mode=None, owner="", group="", may_fail=False):
         assert self.os in self.OS_FAMILY_UNIX
         return operations.upload(
@@ -776,6 +791,10 @@ def build_attr_property(attr, default):
             if getattr(group, attr) is not None:
                 attr_source = "group:{}".format(group.name)
                 attr_value = getattr(group, attr)
+
+        if self.template_node:
+            attr_source = "template_node"
+            attr_value = getattr(self.template_node, attr)
 
         if getattr(self, "_{}".format(attr)) is not None:
             attr_source = "node"

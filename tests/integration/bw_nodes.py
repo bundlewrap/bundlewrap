@@ -46,3 +46,29 @@ def test_bundles(tmpdir):
     assert stdout.decode().strip().split("\n") == ["bundle1", "bundle2"]
     assert stderr == b""
     assert rcode == 0
+
+
+def test_template_node(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {'template_node': "node2"},
+            "node2": {'dummy': True},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes node1 dummy | grep node1 | cut -f 2", path=str(tmpdir))
+    assert stdout.decode().strip() == "True"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_template_node_cascade(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {'template_node': "node2"},
+            "node2": {'template_node': "node1"},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes node1 dummy", path=str(tmpdir))
+    assert rcode == 1

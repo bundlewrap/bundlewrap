@@ -128,6 +128,14 @@ Tuples of integers can be used for easy comparison of versions: `(12, 4) < (16, 
 
 <br>
 
+### template_node
+
+Copy all attributes and merge all metadata from this node. This is useful for temporary clones of single specific nodes, where you don't want to create a group to deduplicate all the node-level configuration.
+
+Cannot be set at group level.
+
+<br>
+
 ## OS compatibility overrides
 
 ### cmd_wrapper_outer
