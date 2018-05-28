@@ -805,10 +805,7 @@ for attr, default in GROUP_ATTR_DEFAULTS.items():
 def verify_items(node, show_all=False, workers=1):
     items = []
     for item in node.items:
-        if (
-            not item.ITEM_TYPE_NAME == 'action' and
-            not item.triggered
-        ):
+        if not item.triggered:
             items.append(item)
         elif not isinstance(item, DummyItem):
             io.progress_advance()
@@ -841,22 +838,30 @@ def verify_items(node, show_all=False, workers=1):
                 }
 
     def handle_exception(task_id, exception, traceback):
-        # Unlike with `bw apply`, it is OK for `bw verify` to encounter
-        # exceptions when getting an item's status. `bw verify` doesn't
-        # care about dependencies and therefore cannot know that looking
-        # up a database user requires the database to be installed in
-        # the first place.
-        io.progress_advance()
-        io.debug("exception while verifying {}:".format(task_id))
-        io.debug(traceback)
-        io.debug(repr(exception))
         node_name, bundle_name, item_id = task_id.split(":", 2)
-        io.stdout(_("{x} {node}  {bundle}  {item}  (unable to get status, check --debug for details)").format(
-            bundle=bold(bundle_name),
-            item=item_id,
-            node=bold(node_name),
-            x=cyan("?"),
-        ))
+        io.progress_advance()
+        if isinstance(exception, NotImplementedError):
+            io.stdout(_("{x} {node}  {bundle}  {item}  (does not support verify)").format(
+                bundle=bold(bundle_name),
+                item=item_id,
+                node=bold(node_name),
+                x=cyan("?"),
+            ))
+        else:
+            # Unlike with `bw apply`, it is OK for `bw verify` to encounter
+            # exceptions when getting an item's status. `bw verify` doesn't
+            # care about dependencies and therefore cannot know that looking
+            # up a database user requires the database to be installed in
+            # the first place.
+            io.debug("exception while verifying {}:".format(task_id))
+            io.debug(traceback)
+            io.debug(repr(exception))
+            io.stdout(_("{x} {node}  {bundle}  {item}  (unable to get status, check --debug for details)").format(
+                bundle=bold(bundle_name),
+                item=item_id,
+                node=bold(node_name),
+                x=cyan("?"),
+            ))
         return None  # count this result as "unknown"
 
     def handle_result(task_id, return_value, duration):

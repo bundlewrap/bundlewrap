@@ -202,3 +202,9 @@ class Action(Item):
             raise BundleError(_(
                 "invalid interactive setting for action '{item}' in bundle '{bundle}'"
             ).format(item=item_id, bundle=bundle.name))
+
+    def verify(self):
+        if self.unless and self.cached_unless_result:
+            return self.cached_unless_result, None
+        else:
+            raise NotImplementedError
