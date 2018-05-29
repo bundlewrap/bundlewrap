@@ -105,6 +105,8 @@ def content_processor_mako(item):
             # error message - even though we can't pinpoint the excat
             # location of the error. :/
             e = _("Undefined variable (look for '${...}')")
+        elif isinstance(e, KeyError):
+            e = _("KeyError: {}").format(str(e))
         raise TemplateError(_(
             "Error while rendering template for {node}:{bundle}:{item}: {error}"
         ).format(
