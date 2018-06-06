@@ -33,6 +33,18 @@ The starting point of any interaction with BundleWrap. An object of this class r
 
 <br>
 
+**`.branch`**
+
+The current git branch of this repo. `None` if not in a git repo.
+
+<br>
+
+**`.clean`**
+
+Boolean indicating if there are uncommitted changes in git. `None` if not in a git repo.
+
+<br>
+
 **`.groups`**
 
 A list of all groups in the repo (instances of `bundlewrap.group.Group`)

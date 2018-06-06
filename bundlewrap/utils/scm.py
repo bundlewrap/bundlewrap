@@ -4,6 +4,28 @@ from __future__ import unicode_literals
 from subprocess import CalledProcessError, check_output, STDOUT
 
 
+def get_git_branch():
+    try:
+        return check_output(
+            "git rev-parse --abbrev-ref HEAD",
+            shell=True,
+            stderr=STDOUT,
+        ).strip()
+    except CalledProcessError:
+        return None
+
+
+def get_git_clean():
+    try:
+        return not bool(check_output(
+            "git status --porcelain",
+            shell=True,
+            stderr=STDOUT,
+        ).strip())
+    except CalledProcessError:
+        return None
+
+
 def get_bzr_rev():
     try:
         return check_output(

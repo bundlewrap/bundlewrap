@@ -30,7 +30,7 @@ from .metadata import (
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, names
-from .utils.scm import get_rev
+from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.dicts import hash_statedict, merge_dict
 from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io, QUIT_EVENT
@@ -318,11 +318,19 @@ class Repository(object):
         self.node_dict[node.name] = node
 
     @cached_property
+    def branch(self):
+        return get_git_branch()
+
+    @cached_property
     def cdict(self):
         repo_dict = {}
         for node in self.nodes:
             repo_dict[node.name] = node.hash()
         return repo_dict
+
+    @cached_property
+    def clean(self):
+        return get_git_clean()
 
     @classmethod
     def create(cls, path):
