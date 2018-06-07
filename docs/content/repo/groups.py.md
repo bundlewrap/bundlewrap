@@ -97,7 +97,7 @@ Metadata is merged recursively by default, meaning nested dicts will overlay eac
 
 A node in both groups will end up with `eth0` *and* `eth1`.
 
-The nameservers however are overwritten, so that nodes what are in both the "all" *and* the "internal" group will only have the `10.0.0.x` ones while nodes just in the "all" group will have the `8.8.x.x` nameservers.
+The nameservers however are overwritten, so that nodes that are in both the "all" *and* the "internal" group will only have the `10.0.0.x` ones while nodes just in the "all" group will have the `8.8.x.x` nameservers.
 
 The NTP servers are appended: a node in both groups will have all three nameservers.
 
