@@ -635,3 +635,34 @@ def test_secret_identifier_twice(tmpdir):
     assert run("bw test -s ''", path=str(tmpdir))[2] == 0
     assert run("bw test -s 'test'", path=str(tmpdir))[2] == 0
     assert run("bw test -s 'test,foo'", path=str(tmpdir))[2] == 0
+
+
+def test_reverse_dummy_dep(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1", "bundle2"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'files': {
+                    "/test": {
+                        'content': "test",
+                    },
+                },
+            },
+            "bundle2": {
+                'files': {
+                    "/test2": {
+                        'content': "test",
+                        'needed_by': ["bundle:bundle1"],
+                    },
+                },
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw test", path=str(tmpdir))
+    assert rcode == 0

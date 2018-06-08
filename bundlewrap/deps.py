@@ -401,6 +401,9 @@ def _inject_reverse_dependencies(items):
             if depending_item_id.startswith("bundle:"):
                 depending_bundle_name = depending_item_id.split(":")[1]
                 for depending_item in items.values():
+                    if isinstance(depending_item, DummyItem):
+                        # Type and TagItems don't have bundles
+                        continue
                     if depending_item.bundle.name == depending_bundle_name:
                         add_dep(depending_item, item.id)
 
