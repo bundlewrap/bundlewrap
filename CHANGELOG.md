@@ -1,3 +1,14 @@
+# 3.5.0
+
+2018-06-12
+
+* added `template_node` node attribute
+* actions are now included in `bw verify`
+* improved error message for KeyErrors in Mako templates
+* fixed hashing for filenames with escaped characters
+* fixed AttributeError when reverse-depending on `bundle:` items
+
+
 # 3.4.0
 
 2018-05-02
