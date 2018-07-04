@@ -216,7 +216,11 @@ def merge_dict(base, update):
     merged = base.copy()
 
     for key, value in update.items():
-        merge = key in base and not isinstance(value, _Atomic)
+        merge = (
+            key in base and
+            not isinstance(value, _Atomic) and
+            not isinstance(base[key], _Atomic)
+        )
         if merge and isinstance(base[key], dict):
             merged[key] = merge_dict(base[key], value)
         elif (
