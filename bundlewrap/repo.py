@@ -188,7 +188,7 @@ def items_from_path(path):
     item classes globally.
     """
     if not isdir(path):
-        raise StopIteration()
+        return
     for filename in listdir(path):
         filepath = join(path, filename)
         if not filename.endswith(".py") or \
