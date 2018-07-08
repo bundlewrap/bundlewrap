@@ -1,10 +1,16 @@
 language: python
 python:
 - 2.7
-- 3.4
 - 3.5
 - 3.6
 - 3.7
+matrix:  # 3.4 is only available on trusty
+  include:
+    - python: 3.4
+      dist: trusty
+  exclude:
+    - python: 3.4
+      dist: xenial
 dist: xenial  # required for Python 3.7 https://github.com/travis-ci/travis-ci/issues/9815
 services:
 - postgresql
