@@ -1,3 +1,11 @@
+# 3.5.1
+
+2018-07-08
+
+* added support for Python 3.7
+* fixed merged metadata not overwriting atomic() values
+
+
 # 3.5.0
 
 2018-06-12
