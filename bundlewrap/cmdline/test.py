@@ -139,28 +139,22 @@ def test_secret_identifiers(repo, ignore_patterns):
     for raw_pattern in ignore_patterns.split(","):
         if raw_pattern:
             patterns.add(compile_regex(raw_pattern))
-    found_something = False
     for identifier, call_count in pristine_repo.vault._call_log.items():
         if call_count == 1:
-            ignore = False
             for pattern in patterns:
                 if pattern.search(identifier):
-                    ignore = True
                     break
-            if not ignore:
+            else:
                 io.stderr(_(
                     "{x} identifier passed only once to repo.vault.[human_]password_for(): {i}"
                 ).format(
                     i=bold(identifier),
                     x=red("✘"),
                 ))
-                found_something = True
-    if found_something:
-        exit(1)
-    else:
-        io.stdout(_(
-            "{x} all arguments to repo.vault.[human_]password_for() used at least twice"
-        ).format(x=green("✓")))
+                exit(1)
+    io.stdout(_(
+        "{x} all arguments to repo.vault.[human_]password_for() used at least twice"
+    ).format(x=green("✓")))
 
 
 def test_empty_groups(repo):

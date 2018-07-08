@@ -211,14 +211,12 @@ def remove_items_not_contributing_to_loop(items):
         if not item._deps:
             items_with_no_incoming_or_outgoing_deps.add(item)
         else:
-            found_incoming = False
             for other_item in items:
                 if item == other_item:
                     continue
                 if item.id in other_item._deps:
-                    found_incoming = True
                     break
-            if not found_incoming:
+            else:
                 items_with_no_incoming_or_outgoing_deps.add(item)
 
     filtered_items = list(filter(

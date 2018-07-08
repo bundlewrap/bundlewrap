@@ -158,18 +158,17 @@ class Directory(Item):
         result = self.node.run("find {} -maxdepth 1 -print0".format(quote(self.name)))
         for line in result.stdout.split(b"\0"):
             line = line.decode('utf-8')
-            found = False
             for item_type in ('directory', 'file', 'symlink'):
-                if found:
-                    break
                 for item in self.node.items:
                     if (
                         item.id == "{}:{}".format(item_type, line) or
                         item.id.startswith("{}:{}/".format(item_type, line))
                     ):
-                        found = True
                         break
-            if not found:
+                else:
+                    continue
+                break
+            else:
                 # this file or directory is not managed
                 io.debug((
                     "found unmanaged path below {dirpath} on {node}, "

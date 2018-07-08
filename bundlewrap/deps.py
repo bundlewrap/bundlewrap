@@ -286,14 +286,12 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
     for item_type in item_types:
         block_concurrent = [item_type.ITEM_TYPE_NAME]
         block_concurrent.extend(item_type.block_concurrent(node_os, node_os_version))
-        found = False
         for blocked_types in chain_groups:
             for blocked_type in block_concurrent:
                 if blocked_type in blocked_types:
                     blocked_types.extend(block_concurrent)
-                    found = True
                     break
-        if not found:
+        else:
             chain_groups.append(block_concurrent)
 
     # daisy-chain all items of the chain group while respecting existing
