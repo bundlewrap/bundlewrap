@@ -338,23 +338,62 @@ k8s_deployments = {
     },
 }
 </code></pre>
-<p>Note that all item names (except namespaces themselves) must be prefixed with the name of a namespace and a forward slash <code>/</code>. Resource items will automatically depend on their namespace if you defined it.</p>
+<p>Note that the names of all items in a namespace must be prefixed with the name of their namespace and a forward slash <code>/</code>. Resource items will automatically depend on their namespace if you defined it.</p>
 <p><br></p>
 <h2 id="resource-types">Resource types</h2>
 <table>
 <tr><th>Resource type</th><th>Bundle attribute</th><th>apiVersion</th></tr>
+<tr><td>Cluster Role</td><td>k8s_clusterroles</td><td>rbac.authorization.k8s.io/v1</td></tr>
+<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
 <tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
+<tr><td>Custom Resource Definition</td><td>k8s_crd</td><td>apiextensions.k8s.io/v1beta1</td></tr>
 <tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>v1</td></tr>
 <tr><td>Deployment</td><td>k8s_deployments</td><td>extensions/v1beta1</td></tr>
 <tr><td>Ingress</td><td>k8s_ingresses</td><td>extensions/v1beta1</td></tr>
 <tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
+<tr><td>Network Policy</td><td>k8s_networkpolicies</td><td>networking.k8s.io/v1</td></tr>
 <tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
+<tr><td>Role</td><td>k8s_roles</td><td>rbac.authorization.k8s.io/v1</td></tr>
+<tr><td>Role Binding</td><td>k8s_rolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Service</td><td>k8s_services</td><td>v1</td></tr>
+<tr><td>Service Account</td><td>k8s_serviceaccounts</td><td>v1</td></tr>
 <tr><td>Secret</td><td>k8s_secrets</td><td>v1</td></tr>
 <tr><td>StatefulSet</td><td>k8s_statefulsets</td><td>apps/v1</td></tr>
+<tr><td>(any)</td><td>k8s_raw</td><td>(any)</td></tr>
 </table>
 
+<p>You can define <a href="https://kubernetes.io/docs/concepts/api-extension/custom-resources/">Custom Resources</a> like this:</p>
+<pre><code>k8s_crd = {
+    "custom-thing": {
+        'manifest': {
+            'spec': {
+                'names': {
+                    'kind': "CustomThing",
+                },
+            },
+        },
+    },
+}
+
+k8s_raw = {
+    "foo/CustomThing/baz": {
+        'manifest': {
+            'apiVersion': "example.com/v1",
+        },
+    },
+}
+</code></pre>
+<p>The special <code>k8s_raw</code> items can also be used to create resources that BundleWrap does not support natively:</p>
+<pre><code>k8s_raw = {
+    "foo/HorizontalPodAutoscaler/baz": {
+        'manifest': {
+            'apiVersion': "autoscaling/v2beta1",
+        },
+    },
+}
+</code></pre>
+<p>Resources outside any namespace can be created with <code>k8s_raw</code> by omitting the namespace in the item name (so that the name starts with <code>/</code>).</p>
 <p><br></p>
 <h1 id="attribute-reference">Attribute reference</h1>
 <p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>

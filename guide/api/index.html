@@ -337,6 +337,12 @@ print(uptime.stdout)
 <h3 id="bundlewrapreporepositorypath">bundlewrap.repo.Repository(path)</h3>
 <p>The starting point of any interaction with BundleWrap. An object of this class represents the repository at the given path.</p>
 <p><br></p>
+<p><strong><code>.branch</code></strong></p>
+<p>The current git branch of this repo. <code>None</code> if not in a git repo.</p>
+<p><br></p>
+<p><strong><code>.clean</code></strong></p>
+<p>Boolean indicating if there are uncommitted changes in git. <code>None</code> if not in a git repo.</p>
+<p><br></p>
 <p><strong><code>.groups</code></strong></p>
 <p>A list of all groups in the repo (instances of <code>bundlewrap.group.Group</code>)</p>
 <p><br></p>

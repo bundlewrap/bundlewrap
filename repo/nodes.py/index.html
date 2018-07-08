@@ -407,6 +407,10 @@ nodes['node-1'] = {
 <p>Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should be <code>(16, 4)</code>.</p>
 <p>Tuples of integers can be used for easy comparison of versions: <code>(12, 4) &lt; (16, 4)</code></p>
 <p><br></p>
+<h3 id="template_node">template_node</h3>
+<p>Copy all attributes and merge all metadata from this node. This is useful for temporary clones of single specific nodes, where you don't want to create a group to deduplicate all the node-level configuration.</p>
+<p>Cannot be set at group level.</p>
+<p><br></p>
 <h2 id="os-compatibility-overrides">OS compatibility overrides</h2>
 <h3 id="cmd_wrapper_outer">cmd_wrapper_outer</h3>
 <p>Used whenever a command needs to be run on a node. Defaults to <code>"sudo sh -c {}"</code>. <code>{}</code> will be replaced by the quoted command to be run (after <code>cmd_wrapper_inner</code> has been applied).</p>

@@ -310,7 +310,6 @@
         <li class="main active"><a href="#command-line-interface">Command Line Interface</a></li>
             <li><a href="#bw-apply">bw apply</a></li>
             <li><a href="#bw-run">bw run</a></li>
-            <li><a href="#bw-nodes-and-bw-groups">bw nodes and bw groups</a></li>
             <li><a href="#bw-debug">bw debug</a></li>
             <li><a href="#bw-plot">bw plot</a></li>
             <li><a href="#bw-test">bw test</a></li>
@@ -333,11 +332,6 @@
 <p>Unsurprisingly, the <code>run</code> subcommand is used to run commands on nodes.</p>
 <p>As with most commands that accept node names, you can also give a <code>group</code> name or any combination of node and group names, separated by commas (without spaces, e.g. <code>node1,group2,node3</code>). A third option is to use a bundle selector like <code>bundle:my_bundle</code>. It will select all nodes with the named <code>bundle</code>. You can freely mix and match node names, group names, and bundle selectors.</p>
 <p>Negation is also possible for bundles and groups. <code>!bundle:foo</code> will add all nodes without the foo bundle, while <code>!group:foo</code> will add all nodes that aren't in the foo group.</p>
-<p><br></p>
-<h2 id="bw-nodes-and-bw-groups">bw nodes and bw groups</h2>
-<pre><code class="nohighlight">$ bw nodes --hostnames | xargs -n 1 ping -c 1</code></pre>
-
-<p>With these commands you can quickly get a list of all nodes and groups in your <a href="../../repo/layout/">repository</a>. The example above uses <code>--hostnames</code> to get a list of all DNS names for your nodes and send a ping to each one.</p>
 <p><br></p>
 <h2 id="bw-debug">bw debug</h2>
 <pre><code>$ bw debug
