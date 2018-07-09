@@ -9,7 +9,7 @@ from pipes import quote
 from socket import gethostname
 from time import time
 
-from .exceptions import NodeLockedException
+from .exceptions import NodeLockedException, RemoteException
 from .utils import cached_property, tempfile
 from .utils.text import (
     blue,
@@ -20,6 +20,7 @@ from .utils.text import (
     parse_duration,
     red,
     wrap_question,
+    yellow,
 )
 from .utils.ui import io
 
@@ -28,6 +29,24 @@ HARD_LOCK_PATH = "/tmp/bundlewrap.lock"
 HARD_LOCK_FILE = HARD_LOCK_PATH + "/info"
 SOFT_LOCK_PATH = "/tmp/bundlewrap.softlock.d"
 SOFT_LOCK_FILE = "/tmp/bundlewrap.softlock.d/{id}"
+
+
+def get_hard_lock_info(node, local_path):
+    try:
+        node.download(HARD_LOCK_FILE, local_path)
+        with open(local_path, 'r') as fp:
+            return json.load(fp)
+    except (RemoteException, ValueError):
+            io.stderr(_(
+                "{x}  {node}  corrupted hard lock: "
+                "unable to read or parse lock file contents "
+                "(clear it with `bw run {node} 'rm -Rf {path}'`)"
+            ).format(
+                node=bold(node.name),
+                path=HARD_LOCK_PATH,
+                warning=yellow("!"),
+            ))
+            return {}
 
 
 def identity():
@@ -52,21 +71,7 @@ class NodeLock(object):
                 with io.job(_("{node}  checking hard lock status").format(node=bold(self.node.name))):
                     result = self.node.run("mkdir " + quote(HARD_LOCK_PATH), may_fail=True)
                     if result.return_code != 0:
-                        self.node.download(HARD_LOCK_FILE, local_path)
-                        with open(local_path, 'r') as f:
-                            try:
-                                info = json.loads(f.read())
-                            except:
-                                io.stderr(_(
-                                    "{warning}  corrupted lock on {node}: "
-                                    "unable to read or parse lock file contents "
-                                    "(clear it with `bw run {node} 'rm -R {path}'`)"
-                                ).format(
-                                    node=self.node.name,
-                                    path=HARD_LOCK_FILE,
-                                    warning=red(_("WARNING")),
-                                ))
-                                info = {}
+                        info = get_hard_lock_info(self.node, local_path)
                         expired = False
                         try:
                             d = info['date']
