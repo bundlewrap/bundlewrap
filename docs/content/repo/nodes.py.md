@@ -38,9 +38,10 @@ You are not confined to the static way of defining a node list as shown above. Y
 Especially in larger installations, a single nodes.py can become inconvenient to work with. This example reads nodes from a `nodes/` directory.
 
 	from glob import glob
+	from os.path import join
 
 	nodes = {}
-	for node in glob("nodes/*.py"):
+	for node in glob(join(repo_path, "nodes", "*.py")):
 	    with open(node, 'r') as f:
 	        exec(f.read())
 
