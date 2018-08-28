@@ -67,15 +67,15 @@ HOOK_EVENTS = (
 INITIAL_CONTENT = {
     FILENAME_GROUPS: _("""
 groups = {
-    #'group1': {
+    #'group-1': {
     #    'bundles': (
-    #        'bundle1',
+    #        'bundle-1',
     #    ),
     #    'members': (
-    #        'node1',
+    #        'node-1',
     #    ),
     #    'subgroups': (
-    #        'group2',
+    #        'group-2',
     #    ),
     #},
     'all': {
@@ -88,7 +88,7 @@ groups = {
 
     FILENAME_NODES: _("""
 nodes = {
-    'node1': {
+    'node-1': {
         'hostname': "localhost",
     },
 }
