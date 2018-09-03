@@ -168,7 +168,7 @@ class KubernetesItem(Item):
     def sdict(self):
         result = run_local(self._kubectl + ["get", "-o", "json", self.KIND, self.resource_name])
         if result.return_code == 0:
-            full_json_response = json.loads(result.stdout)
+            full_json_response = json.loads(result.stdout.decode('utf-8'))
             if full_json_response.get("status", {}).get("phase") == "Terminating":
                 # this resource is currently being deleted, consider it gone
                 return None
