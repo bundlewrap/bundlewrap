@@ -17,6 +17,7 @@ from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, italic, wrap_question
 from bundlewrap.utils.ui import io
 
+
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': None,
     'comment': None,
