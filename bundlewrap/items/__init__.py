@@ -17,7 +17,6 @@ from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, italic, wrap_question
 from bundlewrap.utils.ui import io
 
-
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': None,
     'comment': None,
@@ -196,7 +195,8 @@ class Item(object):
 
     def _check_bundle_collisions(self, items):
         for item in items:
-            if item == self:
+            if item == self or (hasattr(item, 'pkg_manager') or isinstance(item, pkg.Pkg)):
+                # Ignore pkg_*-Items
                 continue
             if item.id == self.id:
                 raise BundleError(_(

@@ -605,7 +605,6 @@ def prepare_dependencies(items, node_name, node_os, node_os_version):
 
     return list(items.values())
 
-
 def remove_dep_from_items(items, dep):
     """
     Removes the given item id (dep) from the temporary list of
