@@ -64,7 +64,7 @@ database_password = "${repo.vault.decrypt("gAAAA[...]mrVMA==")}"
 
 You can also encrypt entire files:
 
-<pre><code class="nohighlight">$ bw debug -c "repo.vault.encrypt_file('/my/secret.file', 'encrypted.file'))"</code></pre>
+<pre><code class="nohighlight">$ bw debug -c "repo.vault.encrypt_file('/my/secret.file', 'encrypted.file')"</code></pre>
 
 <div class="alert alert-info">Encrypted files are always read and written relative to the <code>data/</code> subdirectory of your repo.</div>
 
