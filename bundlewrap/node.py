@@ -379,6 +379,12 @@ class Node(object):
 
     @cached_property
     def bundles(self):
+        if self._dynamic_group_lock.acquire(False):
+            self._dynamic_group_lock.release()
+        else:
+            raise RepositoryError(_(
+                "node bundles cannot be queried with members_add/remove"
+            ))
         with io.job(_("{node}  loading bundles").format(node=bold(self.name))):
             added_bundles = []
             found_bundles = []
