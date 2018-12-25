@@ -12,14 +12,14 @@ def _parse_file_output(file_output):
     if file_output.startswith("cannot open "):
         # required for Mac OS X, OpenBSD, and CentOS/RHEL
         return ('nonexistent', "")
+    elif file_output.startswith("symbolic link to ") or \
+            file_output.startswith("broken symbolic link to "):
+        return ('symlink', file_output)
     elif file_output.endswith("directory"):
         return ('directory', file_output)
     elif file_output.startswith("block special") or \
             file_output.startswith("character special"):
         return ('other', file_output)
-    elif file_output.startswith("symbolic link to ") or \
-            file_output.startswith("broken symbolic link to "):
-        return ('symlink', file_output)
     else:
         return ('file', file_output)
 
