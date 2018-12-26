@@ -156,8 +156,8 @@ class Symlink(Item):
             return None
         else:
             return {
-                'target': path_info.symlink_target if path_info.path_type == 'symlink' else "",
-                'type': path_info.path_type,
+                'target': path_info.symlink_target if path_info.is_symlink else "",
+                'type': 'symlink' if path_info.is_symlink else path_info.stat['type'],
                 'owner': path_info.owner,
                 'group': path_info.group,
             }
