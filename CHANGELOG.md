@@ -1,3 +1,12 @@
+# 3.5.3
+
+2018-12-27
+
+* added error message when trying to access node bundles from `members_add/remove`
+* improved performance for file verification
+* fixed symlinks being mistaken for directories in some circumstances
+
+
 # 3.5.2
 
 2018-12-11
