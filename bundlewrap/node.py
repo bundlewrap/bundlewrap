@@ -18,6 +18,7 @@ from .exceptions import (
     ItemDependencyLoop,
     NodeLockedException,
     NoSuchBundle,
+    RemoteException,
     RepositoryError,
     SkipNode,
 )
@@ -834,6 +835,18 @@ def verify_items(node, show_all=False, workers=1):
             items.append(item)
         elif not isinstance(item, DummyItem):
             io.progress_advance()
+
+    try:
+        node.run("true")
+    except RemoteException as exc:
+        io.stdout(_("{x} {node}  Connection error: {msg}").format(
+            msg=exc,
+            node=bold(node.name),
+            x=red("!"),
+        ))
+        for item in items:
+            io.progress_advance()
+        return [None for item in items]
 
     def tasks_available():
         return bool(items)
