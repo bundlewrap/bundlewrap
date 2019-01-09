@@ -35,6 +35,14 @@ class FaultUnavailable(UnicodeException):
     pass
 
 
+class GracefulApplyException(UnicodeException):
+    """
+    Raised when a problem has been encountered in `bw apply`, but a more
+    verbose error has already been printed.
+    """
+    pass
+
+
 class NoSuchBundle(UnicodeException):
     """
     Raised when a bundle of unknown name is requested.
