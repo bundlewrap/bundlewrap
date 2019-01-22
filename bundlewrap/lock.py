@@ -37,11 +37,12 @@ def get_hard_lock_info(node, local_path):
             return json.load(fp)
     except (RemoteException, ValueError):
             io.stderr(_(
-                "{x} {node}  corrupted hard lock: "
+                "{x} {node_bold}  corrupted hard lock: "
                 "unable to read or parse lock file contents "
                 "(clear it with `bw run {node} 'rm -Rf {path}'`)"
             ).format(
-                node=bold(node.name),
+                node_bold=bold(node.name),
+                node=node.name,
                 path=HARD_LOCK_PATH,
                 x=red("!"),
             ))
