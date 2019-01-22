@@ -20,7 +20,6 @@ from .utils.text import (
     parse_duration,
     red,
     wrap_question,
-    yellow,
 )
 from .utils.ui import io
 
@@ -38,13 +37,13 @@ def get_hard_lock_info(node, local_path):
             return json.load(fp)
     except (RemoteException, ValueError):
             io.stderr(_(
-                "{x}  {node}  corrupted hard lock: "
+                "{x} {node}  corrupted hard lock: "
                 "unable to read or parse lock file contents "
                 "(clear it with `bw run {node} 'rm -Rf {path}'`)"
             ).format(
                 node=bold(node.name),
                 path=HARD_LOCK_PATH,
-                warning=yellow("!"),
+                x=red("!"),
             ))
             return {}
 
