@@ -179,14 +179,7 @@ class IOManager(object):
         self._spinner = spinner()
         self._last_spinner_character = next(self._spinner)
         self._last_spinner_update = 0
-        self._signal_handler_thread = Thread(
-            target=self._signal_handler_thread_body,
-        )
-        # daemon mode is required because we need to keep the thread
-        # around until the end of a soft shutdown to wait for a hard
-        # shutdown signal, but don't have a feasible way of stopping
-        # the thread once the soft shutdown has completed
-        self._signal_handler_thread.daemon = True
+        self._signal_handler_thread = None
         self._child_pids = []
         self._status_line_present = False
         self._waiting_for_input = False
@@ -201,6 +194,14 @@ class IOManager(object):
                     getpid(),
                 ),
             ), 'a')
+        self._signal_handler_thread = Thread(
+            target=self._signal_handler_thread_body,
+        )
+        # daemon mode is required because we need to keep the thread
+        # around until the end of a soft shutdown to wait for a hard
+        # shutdown signal, but don't have a feasible way of stopping
+        # the thread once the soft shutdown has completed
+        self._signal_handler_thread.daemon = True
         self._signal_handler_thread.start()
         signal(SIGINT, sigint_handler)
         signal(SIGQUIT, sigquit_handler)

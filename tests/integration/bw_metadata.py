@@ -193,6 +193,42 @@ def foo(metadata):
     assert rcode == 0
 
 
+def test_metadatapy_defaults_atomic(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+    )
+    with open(join(str(tmpdir), "nodes.py"), 'w') as f:
+        f.write(
+"""
+from bundlewrap.metadata import atomic
+
+nodes = {
+    "node1": {
+        'bundles': ["test"],
+        'metadata': {"foo": atomic({"bar": "baz"})},
+    },
+}
+""")
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return {
+        "foo": {
+            "bar": "frob",
+            "baz": "gobble",
+        },
+    }, DONE, DEFAULTS
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "foo": {"bar": "baz"},
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_metadatapy_update(tmpdir):
     make_repo(
         tmpdir,

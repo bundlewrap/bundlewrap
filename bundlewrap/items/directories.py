@@ -241,7 +241,7 @@ class Directory(Item):
             if self.attributes['purge']:
                 paths_to_purge = list(self._get_paths_to_purge())
             return {
-                'type': path_info.path_type,
+                'type': 'directory' if path_info.is_directory else path_info.stat['type'],
                 'mode': path_info.mode,
                 'owner': path_info.owner,
                 'group': path_info.group,

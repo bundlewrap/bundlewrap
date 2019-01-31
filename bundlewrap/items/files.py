@@ -335,8 +335,8 @@ class File(Item):
             return None
         else:
             return {
-                'type': path_info.path_type,
-                'content_hash': path_info.sha1 if path_info.path_type == 'file' else None,
+                'type': 'file' if path_info.is_file else path_info.stat['type'],
+                'content_hash': path_info.sha1 if path_info.is_file else None,
                 'mode': path_info.mode,
                 'owner': path_info.owner,
                 'group': path_info.group,
@@ -348,7 +348,8 @@ class File(Item):
             'content_hash' in keys and
             self.attributes['content_type'] not in ('base64', 'binary') and
             sdict['size'] < DIFF_MAX_FILE_SIZE and
-            len(self.content) < DIFF_MAX_FILE_SIZE
+            len(self.content) < DIFF_MAX_FILE_SIZE and
+            PathInfo(self.node, self.name).is_text_file
         ):
             keys.remove('content_hash')
             keys.append('content')

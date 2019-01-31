@@ -15,9 +15,11 @@ from .deps import (
 )
 from .exceptions import (
     DontCache,
+    GracefulApplyException,
     ItemDependencyLoop,
     NodeLockedException,
     NoSuchBundle,
+    RemoteException,
     RepositoryError,
     SkipNode,
 )
@@ -379,6 +381,12 @@ class Node(object):
 
     @cached_property
     def bundles(self):
+        if self._dynamic_group_lock.acquire(False):
+            self._dynamic_group_lock.release()
+        else:
+            raise RepositoryError(_(
+                "node bundles cannot be queried with members_add/remove"
+            ))
         with io.job(_("{node}  loading bundles").format(node=bold(self.name))):
             added_bundles = []
             found_bundles = []
@@ -584,29 +592,43 @@ class Node(object):
             x=blue("i"),
         ))
 
+        error = False
+
         try:
-            with NodeLock(self, interactive=interactive, ignore=force) as lock:
-                item_results = apply_items(
-                    self,
-                    autoskip_selector=autoskip_selector,
-                    my_soft_locks=lock.my_soft_locks,
-                    other_peoples_soft_locks=lock.other_peoples_soft_locks,
-                    workers=workers,
-                    interactive=interactive,
-                )
-        except NodeLockedException as e:
-            if not interactive:
-                io.stderr(_(
-                    "{x} {node} already locked by {user} at {date} ({duration} ago, "
-                    "`bw apply -f` to override)"
-                ).format(
-                    date=bold(e.args[0]['date']),
-                    duration=e.args[0]['duration'],
-                    node=bold(self.name),
-                    user=bold(e.args[0]['user']),
-                    x=red("!"),
-                ))
+            self.run("true")
+        except RemoteException as exc:
+            io.stdout(_("{x} {node}  Connection error: {msg}").format(
+                msg=exc,
+                node=bold(self.name),
+                x=red("!"),
+            ))
+            error = _("Connection error (details above)")
             item_results = []
+        else:
+            try:
+                with NodeLock(self, interactive=interactive, ignore=force) as lock:
+                    item_results = apply_items(
+                        self,
+                        autoskip_selector=autoskip_selector,
+                        my_soft_locks=lock.my_soft_locks,
+                        other_peoples_soft_locks=lock.other_peoples_soft_locks,
+                        workers=workers,
+                        interactive=interactive,
+                    )
+            except NodeLockedException as e:
+                if not interactive:
+                    io.stderr(_(
+                        "{x} {node} already locked by {user} at {date} ({duration} ago, "
+                        "`bw apply -f` to override)"
+                    ).format(
+                        date=bold(e.args[0]['date']),
+                        duration=e.args[0]['duration'],
+                        node=bold(self.name),
+                        user=bold(e.args[0]['user']),
+                        x=red("!"),
+                    ))
+                error = _("Node locked (details above)")
+                item_results = []
         result = ApplyResult(self, item_results)
         result.start = start
         result.end = datetime.now()
@@ -627,7 +649,10 @@ class Node(object):
             result=result,
         )
 
-        return result
+        if error:
+            raise GracefulApplyException(error)
+        else:
+            return result
 
     def download(self, remote_path, local_path):
         return operations.download(
@@ -828,6 +853,18 @@ def verify_items(node, show_all=False, workers=1):
             items.append(item)
         elif not isinstance(item, DummyItem):
             io.progress_advance()
+
+    try:
+        node.run("true")
+    except RemoteException as exc:
+        io.stdout(_("{x} {node}  Connection error: {msg}").format(
+            msg=exc,
+            node=bold(node.name),
+            x=red("!"),
+        ))
+        for item in items:
+            io.progress_advance()
+        return [None for item in items]
 
     def tasks_available():
         return bool(items)

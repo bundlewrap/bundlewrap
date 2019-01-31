@@ -267,18 +267,27 @@ def deepcopy_metadata(obj):
     if isinstance(obj, METADATA_TYPES):
         return obj
     elif isinstance(obj, dict):
-        new_obj = {}
+        if isinstance(obj, ATOMIC_TYPES[dict]):
+            new_obj = atomic({})
+        else:
+            new_obj = {}
         for key, value in obj.items():
             if not isinstance(key, METADATA_TYPES):
                 raise ValueError(_("illegal metadata key type: {}").format(repr(key)))
             new_key = copy(key)
             new_obj[new_key] = deepcopy_metadata(value)
     elif isinstance(obj, (list, tuple)):
-        new_obj = []
+        if isinstance(obj, (ATOMIC_TYPES[list], ATOMIC_TYPES[tuple])):
+            new_obj = atomic([])
+        else:
+            new_obj = []
         for member in obj:
             new_obj.append(deepcopy_metadata(member))
     elif isinstance(obj, set):
-        new_obj = set()
+        if isinstance(obj, ATOMIC_TYPES[set]):
+            new_obj = atomic(set())
+        else:
+            new_obj = set()
         for member in obj:
             new_obj.add(deepcopy_metadata(member))
     else:
