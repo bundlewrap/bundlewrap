@@ -106,7 +106,6 @@ def format_node_result(result):
 
 def handle_apply_result(node, item, status_code, interactive, details=None):
     if status_code == Item.STATUS_SKIPPED and details in (
-        Item.SKIP_REASON_CMDLINE,
         Item.SKIP_REASON_NO_TRIGGER,
         Item.SKIP_REASON_UNLESS,
     ):
@@ -181,7 +180,7 @@ def apply_items(
             item_queue.item_ok(item)
         elif status_code == Item.STATUS_SKIPPED:
             for skipped_item in item_queue.item_skipped(item):
-                skip_reason = Item.SKIP_REASON_DEP_FAILED
+                skip_reason = Item.SKIP_REASON_DEP_SKIPPED
                 for lock in other_peoples_soft_locks:
                     for selector in lock['items']:
                         if skipped_item.covered_by_autoskip_selector(selector):

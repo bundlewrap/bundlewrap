@@ -96,6 +96,7 @@ class Item(object):
     SKIP_REASON_NO_TRIGGER = 6
     SKIP_REASON_SOFTLOCK = 7
     SKIP_REASON_UNLESS = 8
+    SKIP_REASON_DEP_SKIPPED = 9
     SKIP_REASON_DESC = {
         SKIP_REASON_CMDLINE: _("cmdline"),
         SKIP_REASON_DEP_FAILED: _("dependency failed"),
@@ -105,6 +106,7 @@ class Item(object):
         SKIP_REASON_NO_TRIGGER: _("not triggered"),
         SKIP_REASON_SOFTLOCK: _("soft locked"),
         SKIP_REASON_UNLESS: _("unless"),
+        SKIP_REASON_DEP_SKIPPED: _("dependency skipped"),
     }
     STATUS_OK = 1
     STATUS_FIXED = 2
