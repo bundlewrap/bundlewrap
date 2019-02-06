@@ -49,23 +49,12 @@ Boolean indicating if there are uncommitted changes in git. `None` if not in a g
 
 A list of all groups in the repo (instances of `bundlewrap.group.Group`)
 
-<br>
-
-**`.group_names`**
-
-A list of all group names in this repo.
 
 <br>
 
 **`.nodes`**
 
 A list of all nodes in the repo (instances of `bundlewrap.node.Node`)
-
-<br>
-
-**`.node_names`**
-
-A list of all node names in this repo
 
 <br>
 
