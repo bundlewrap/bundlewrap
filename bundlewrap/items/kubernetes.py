@@ -20,7 +20,7 @@ import yaml
 def log_error(run_result):
     if run_result.return_code != 0:
         io.debug(run_result.stdout.decode('utf-8'))
-        io.debug(run_result.stderr.decode('utf-8'))
+        io.error(run_result.stderr.decode('utf-8'))
 
 
 @add_metaclass(ABCMeta)

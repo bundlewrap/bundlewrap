@@ -330,6 +330,9 @@ class IOManager(object):
                 output += _("{x}  No progress info available at this time.\n").format(x=blue("i"))
             io.stderr(output + blue("i"))
 
+    def error(self, msg, append_newline=True):
+        self.stderr("[ERROR] " + msg, append_newline=append_newline)
+
     @clear_formatting
     @capture_for_debug_logfile
     @add_debug_timestamp
