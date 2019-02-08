@@ -357,6 +357,11 @@ class File(Item):
             del sdict['content_hash']
             cdict['content'] = self.content
             sdict['content'] = get_remote_file_contents(self.node, self.name)
+        if 'type' in keys:
+            try:
+                keys.remove('content_hash')
+            except ValueError:
+                pass
         return (cdict, sdict, keys)
 
     def patch_attributes(self, attributes):
