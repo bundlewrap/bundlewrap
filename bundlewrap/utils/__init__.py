@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from base64 import b64encode
 from codecs import getwriter
 from contextlib import contextmanager
 import hashlib
@@ -106,6 +107,11 @@ class Fault(object):
 
     def __str__(self):
         return str(self.value)
+
+    def b64encode(self):
+        def callback():
+            return b64encode(self.value.encode('UTF-8')).decode('UTF-8')
+        return Fault(callback)
 
     def format_into(self, format_string):
         def callback():

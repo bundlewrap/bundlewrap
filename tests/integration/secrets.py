@@ -7,6 +7,15 @@ from os.path import join
 from bundlewrap.utils.testing import make_repo, run
 
 
+def test_b64encode_fault(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.password_for(\"testing\").b64encode())'", path=str(tmpdir))
+    assert stdout == b"ZmFDVFQ3NmthZ3REdVpFNXdub2lEMUN4aEdLbWJnaVg=\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_encrypt(tmpdir):
     make_repo(tmpdir)
 
