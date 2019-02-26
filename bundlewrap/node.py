@@ -594,7 +594,10 @@ class Node(object):
         error = False
 
         try:
-            self.run("true")
+            # Running "true" is meant to catch connection errors early,
+            # but this only works on UNIX-y systems (i.e., not k8s).
+            if self.os in self.OS_FAMILY_UNIX:
+                self.run("true")
         except RemoteException as exc:
             io.stdout(_("{x} {node}  Connection error: {msg}").format(
                 msg=exc,
@@ -854,7 +857,9 @@ def verify_items(node, show_all=False, workers=1):
             io.progress_advance()
 
     try:
-        node.run("true")
+        # See comment in node.apply().
+        if node.os in node.OS_FAMILY_UNIX:
+            node.run("true")
     except RemoteException as exc:
         io.stdout(_("{x} {node}  Connection error: {msg}").format(
             msg=exc,
