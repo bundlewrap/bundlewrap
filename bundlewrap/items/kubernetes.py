@@ -165,7 +165,7 @@ class KubernetesItem(Item):
     def preview(self):
         if self.attributes['delete'] is True:
             raise ValueError
-        return yaml.dump(self._manifest_dict, default_flow_style=False)
+        return yaml.dump(json.loads(self.manifest), default_flow_style=False)
 
     @property
     def resource_name(self):
