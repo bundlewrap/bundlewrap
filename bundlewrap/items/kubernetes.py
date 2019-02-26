@@ -7,6 +7,7 @@ from os.path import exists, join
 import re
 
 from bundlewrap.exceptions import BundleError
+from bundlewrap.metadata import MetadataJSONEncoder
 from bundlewrap.operations import run_local
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.files import content_processor_jinja2, content_processor_mako
@@ -145,7 +146,12 @@ class KubernetesItem(Item):
 
     @property
     def manifest(self):
-        return json.dumps(self._manifest_dict, indent=4, sort_keys=True)
+        return json.dumps(
+            self._manifest_dict,
+            cls=MetadataJSONEncoder,
+            indent=4,
+            sort_keys=True,
+        )
 
     @property
     def namespace(self):
@@ -159,7 +165,7 @@ class KubernetesItem(Item):
     def preview(self):
         if self.attributes['delete'] is True:
             raise ValueError
-        return yaml.dump(self._manifest_dict, default_flow_style=False)
+        return yaml.dump(json.loads(self.manifest), default_flow_style=False)
 
     @property
     def resource_name(self):
