@@ -1,258 +1,328 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+    
+
+    
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/quickstart/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/installation/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/cli/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/env/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/item_file_templates/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/secrets/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/locks/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/kubernetes/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/dev_item/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/dev_plugin/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/api/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/os_compatibility/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/migrate_12/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/guide/migrate_23/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    
+
+    
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/layout/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/nodes.py/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/groups.py/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/requirements.txt/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/items.py/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/metadata.py/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/hooks/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/libs/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/repo/plugins/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    
+
+    
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/action/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/directory/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/file/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/group/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/k8s/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_apt/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_dnf/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_openbsd/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_opkg/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_pacman/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_pip/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_snap/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_yum/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/pkg_zypper/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/postgres_db/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/postgres_role/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/svc_openbsd/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/svc_systemd/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/svc_systemv/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/svc_upstart/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/symlink/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/items/user/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    
+
+    
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/misc/about/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/misc/deciding/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/misc/glossary/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/misc/faq/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
     <url>
-     <loc>None</loc>
-     <lastmod>2019-02-06</lastmod>
+     <loc>/misc/contributing/</loc>
+     <lastmod>2019-02-27</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    
+
 </urlset>
