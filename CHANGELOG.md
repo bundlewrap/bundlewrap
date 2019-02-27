@@ -1,3 +1,17 @@
+# 3.6.0
+
+2019-02-27
+
+* added `bw apply --only`
+* added `Fault.b64encode()`
+* added support for using Faults in k8s manifests
+* improved display of some skipped items
+* improved error handling during `bw apply`
+* improved handling of offline nodes in `bw verify`
+* fixed corrupted hard lock warning
+* fix interactively overwriting symlinks/dirs
+
+
 # 3.5.3
 
 2018-12-27
