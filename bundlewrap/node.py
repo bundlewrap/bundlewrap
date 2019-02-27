@@ -129,6 +129,7 @@ def handle_apply_result(node, item, status_code, interactive, details=None):
 def apply_items(
     node,
     autoskip_selector="",
+    autoonly_selector="",
     my_soft_locks=(),
     other_peoples_soft_locks=(),
     workers=1,
@@ -152,6 +153,7 @@ def apply_items(
             'target': item.apply,
             'kwargs': {
                 'autoskip_selector': autoskip_selector,
+                'autoonly_selector': autoonly_selector,
                 'my_soft_locks': my_soft_locks,
                 'other_peoples_soft_locks': other_peoples_soft_locks,
                 'interactive': interactive,
@@ -543,6 +545,7 @@ class Node(object):
     def apply(
         self,
         autoskip_selector="",
+        autoonly_selector="",
         interactive=False,
         force=False,
         skip_list=tuple(),
@@ -612,6 +615,7 @@ class Node(object):
                     item_results = apply_items(
                         self,
                         autoskip_selector=autoskip_selector,
+                        autoonly_selector=autoonly_selector,
                         my_soft_locks=lock.my_soft_locks,
                         other_peoples_soft_locks=lock.other_peoples_soft_locks,
                         workers=workers,

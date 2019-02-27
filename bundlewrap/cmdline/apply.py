@@ -54,6 +54,7 @@ def bw_apply(repo, args):
             'task_id': node.name,
             'kwargs': {
                 'autoskip_selector': args['autoskip'],
+                'autoonly_selector': args['autoonly'],
                 'force': args['force'],
                 'interactive': args['interactive'],
                 'skip_list': skip_list,

@@ -29,6 +29,7 @@ class Action(Item):
 
     def _get_result(
         self,
+        autoonly_selector="",
         autoskip_selector="",
         my_soft_locks=(),
         other_peoples_soft_locks=(),
@@ -50,6 +51,12 @@ class Action(Item):
                     node=self.node.name,
                 ))
                 return (self.STATUS_SKIPPED, self.SKIP_REASON_FAULT_UNAVAILABLE)
+
+        if not self.covered_by_autoonly_selector(autoonly_selector):
+            io.debug(_(
+                "autoonly does not match {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE)
 
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(

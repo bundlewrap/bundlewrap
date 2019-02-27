@@ -111,6 +111,21 @@ def build_parser_bw():
         dest='interactive',
         help=_("ask before applying each item"),
     )
+    parser_apply.add_argument(
+        "-o",
+        "--only",
+        default="",
+        dest='autoonly',
+        help=_(
+            "e.g. 'file:/foo,tag:foo,bundle:bar' "
+            "to skip EVERYTHING BUT all instances of file:/foo "
+            "and items with tag 'foo', "
+            "or in bundle 'bar', "
+            "or a dependency of any of these"
+        ),
+        metavar=_("SELECTOR"),
+        type=str,
+    )
     bw_apply_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_apply.add_argument(
         "-p",
@@ -137,12 +152,10 @@ def build_parser_bw():
         default="",
         dest='autoskip',
         help=_(
-            "e.g. 'file:/foo,tag:foo,bundle:bar,node:baz,group:frob' "
+            "e.g. 'file:/foo,tag:foo,bundle:bar' "
             "to skip all instances of file:/foo "
             "and items with tag 'foo', "
-            "or in bundle 'bar', "
-            "or on node 'baz', "
-            "or on a node in group 'frob'"
+            "or in bundle 'bar'"
         ),
         metavar=_("SELECTOR"),
         type=str,

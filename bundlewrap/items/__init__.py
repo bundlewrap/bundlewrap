@@ -418,6 +418,7 @@ class Item(object):
     def apply(
         self,
         autoskip_selector="",
+        autoonly_selector="",
         my_soft_locks=(),
         other_peoples_soft_locks=(),
         interactive=False,
@@ -432,6 +433,13 @@ class Item(object):
         status_before = None
         status_after = None
         start_time = datetime.now()
+
+        if not self.covered_by_autoonly_selector(autoonly_selector):
+            io.debug(_(
+                "autoonly does not match {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            status_code = self.STATUS_SKIPPED
+            skip_reason = self.SKIP_REASON_CMDLINE
 
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(
@@ -621,6 +629,35 @@ class Item(object):
         for tag in self.tags:
             if "tag:{}".format(tag) in components:
                 return True
+        return False
+
+    def covered_by_autoonly_selector(self, autoonly_selector):
+        """
+        True if this item should be NOT skipped based on the given selector
+        string (e.g. "tag:foo,bundle:bar").
+        """
+        if not autoonly_selector:
+            return True
+        components = [c.strip() for c in autoonly_selector.split(",")]
+        if (
+            self.id in components or
+            "bundle:{}".format(self.bundle.name) in components or
+            "{}:".format(self.ITEM_TYPE_NAME) in components
+        ):
+            return True
+        for tag in self.tags:
+            if "tag:{}".format(tag) in components:
+                return True
+        for depending_item in self._incoming_deps:
+            if (
+                depending_item.id in components or
+                "bundle:{}".format(depending_item.bundle.name) in components or
+                "{}:".format(depending_item.ITEM_TYPE_NAME) in components
+            ):
+                return True
+            for tag in depending_item.tags:
+                if "tag:{}".format(tag) in components:
+                    return True
         return False
 
     def fix(self, status):

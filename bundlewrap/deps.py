@@ -121,6 +121,14 @@ def _flatten_dependencies(items):
     for item in items.values():
         if not hasattr(item, '_flattened_deps'):
             _flatten_deps_for_item(item, items)
+
+    for item in list(items.values()):
+        item._incoming_deps = set()
+        for other_item in list(items.values()):
+            if isinstance(other_item, DummyItem):
+                continue
+            if item.id in other_item._flattened_deps:
+                item._incoming_deps.add(other_item)
     return items
 
 
