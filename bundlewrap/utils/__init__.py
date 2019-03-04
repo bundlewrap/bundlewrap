@@ -87,6 +87,8 @@ class Fault(object):
         if self._available is None:
             try:
                 self._value = self.callback(**self.kwargs)
+                if isinstance(self._value, Fault):
+                    self._value = self._value.value
                 self._available = True
             except FaultUnavailable as exc:
                 self._available = False
