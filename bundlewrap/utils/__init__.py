@@ -107,6 +107,9 @@ class Fault(object):
     def __len__(self):
         return len(self.value)
 
+    def __lt__(self, other):
+        return self.value < other.value
+
     def __str__(self):
         return str(self.value)
 
