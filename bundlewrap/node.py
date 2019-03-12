@@ -135,7 +135,7 @@ def apply_items(
     workers=1,
     interactive=False,
 ):
-    item_queue = ItemQueue(node.items, node.name, node.os, node.os_version)
+    item_queue = ItemQueue(node.items, node.os, node.os_version)
     # the item queue might contain new generated items (canned actions,
     # dummy items); adjust progress total accordingly
     extra_items = len(item_queue.all_items) - len(node.items)

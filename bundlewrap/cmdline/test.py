@@ -25,7 +25,7 @@ def test_items(nodes, ignore_missing_faults):
         if not node.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(node.name), x=yellow("!")))
             continue
-        item_queue = ItemTestQueue(node.items, node.name, node.os, node.os_version)
+        item_queue = ItemTestQueue(node.items, node.os, node.os_version)
         while not QUIT_EVENT.is_set():
             try:
                 item = item_queue.pop()

@@ -584,7 +584,7 @@ def _inject_preceded_by_dependencies(items):
 
 
 @io.job_wrapper(_("{}  processing dependencies").format(bold("{1}")))
-def prepare_dependencies(items, node_name, node_os, node_os_version):
+def prepare_dependencies(items, node_os, node_os_version):
     """
     Performs all dependency preprocessing on a list of items.
     """
