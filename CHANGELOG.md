@@ -1,3 +1,12 @@
+# 3.6.1
+
+2019-03-12
+
+* Faults can now be sorted
+* fixed detection of runtime-enabled `svc_systemd`
+* fixed resolving nested Faults
+
+
 # 3.6.0
 
 2019-02-27
