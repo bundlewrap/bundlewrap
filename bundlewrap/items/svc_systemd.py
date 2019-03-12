@@ -5,7 +5,7 @@ from pipes import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
 def svc_start(node, svcname):
@@ -33,7 +33,10 @@ def svc_enabled(node, svcname):
         "systemctl is-enabled -- {}".format(quote(svcname)),
         may_fail=True,
     )
-    return result.return_code == 0
+    return (
+        result.return_code == 0 and
+        force_text(result.stdout).strip() != "runtime-enabled"
+    )
 
 
 def svc_disable(node, svcname):
