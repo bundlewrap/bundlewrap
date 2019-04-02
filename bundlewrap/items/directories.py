@@ -17,6 +17,9 @@ UNMANAGED_PATH_DESC = _("unmanaged subpaths")
 
 
 def validator_mode(item_id, value):
+    if value is None:
+        return
+
     value = str(value)
     if not value.isdigit():
         raise BundleError(
