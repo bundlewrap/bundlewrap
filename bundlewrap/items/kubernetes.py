@@ -131,7 +131,7 @@ class KubernetesItem(Item):
                 'apiVersion': self.KUBERNETES_APIVERSION,
                 'kind': self.KIND,
                 'metadata': {
-                    'name': self.resource_name,
+                    'name': self.name.split("/", 1)[-1],
                 },
             },
             user_manifest,
@@ -169,7 +169,7 @@ class KubernetesItem(Item):
 
     @property
     def resource_name(self):
-        return self.name.split("/", 1)[-1]
+        return self._manifest_dict['metadata']['name']
 
     def sdict(self):
         result = run_local(self._kubectl + ["get", "-o", "json", self.KIND, self.resource_name])
