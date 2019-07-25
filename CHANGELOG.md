@@ -1,3 +1,11 @@
+# 3.6.2
+
+2019-07-25
+
+* fixed `None` not being accepted as a file/directory mode
+* fixed overriding resource name in k8s manifests
+
+
 # 3.6.1
 
 2019-03-12
