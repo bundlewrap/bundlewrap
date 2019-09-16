@@ -82,18 +82,19 @@ class SecretProxy(object):
         Decrypts a given encrypted password.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return "decrypted text"
-        try:
-            key = self.keys[key]
-        except KeyError:
-            raise FaultUnavailable(_(
-                "Key '{key}' not available for decryption of the following cryptotext, "
-                "check your {file}: {cryptotext}"
-            ).format(
-                cryptotext=cryptotext,
-                file=FILENAME_SECRETS,
-                key=key,
-            ))
+            key = "a"
+        else:
+            try:
+                key = self.keys[key]
+            except KeyError:
+                raise FaultUnavailable(_(
+                    "Key '{key}' not available for decryption of the following cryptotext, "
+                    "check your {file}: {cryptotext}"
+                ).format(
+                    cryptotext=cryptotext,
+                    file=FILENAME_SECRETS,
+                    key=key,
+                ))
 
         return Fernet(key).decrypt(cryptotext.encode('utf-8')).decode('utf-8')
 
@@ -103,18 +104,19 @@ class SecretProxy(object):
         returns the plaintext as unicode.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return "decrypted file"
-        try:
-            key = self.keys[key]
-        except KeyError:
-            raise FaultUnavailable(_(
-                "Key '{key}' not available for decryption of the following file, "
-                "check your {file}: {source_path}"
-            ).format(
-                file=FILENAME_SECRETS,
-                key=key,
-                source_path=source_path,
-            ))
+            key = "a"
+        else:
+            try:
+                key = self.keys[key]
+            except KeyError:
+                raise FaultUnavailable(_(
+                    "Key '{key}' not available for decryption of the following file, "
+                    "check your {file}: {source_path}"
+                ).format(
+                    file=FILENAME_SECRETS,
+                    key=key,
+                    source_path=source_path,
+                ))
 
         f = Fernet(key)
         return f.decrypt(get_file_contents(join(self.repo.data_dir, source_path))).decode('utf-8')
@@ -125,18 +127,19 @@ class SecretProxy(object):
         returns the plaintext as base64.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return b64encode("decrypted file as base64").decode('utf-8')
-        try:
-            key = self.keys[key]
-        except KeyError:
-            raise FaultUnavailable(_(
-                "Key '{key}' not available for decryption of the following file, "
-                "check your {file}: {source_path}"
-            ).format(
-                file=FILENAME_SECRETS,
-                key=key,
-                source_path=source_path,
-            ))
+            key = "a"
+        else:
+            try:
+                key = self.keys[key]
+            except KeyError:
+                raise FaultUnavailable(_(
+                    "Key '{key}' not available for decryption of the following file, "
+                    "check your {file}: {source_path}"
+                ).format(
+                    file=FILENAME_SECRETS,
+                    key=key,
+                    source_path=source_path,
+                ))
 
         f = Fernet(key)
         return b64encode(f.decrypt(get_file_contents(
@@ -159,9 +162,6 @@ class SecretProxy(object):
         Words are separated by dashes. By default, you also get some
         digits at the end of the password.
         """
-        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return "generatedpassword"
-
         prng = self._get_prng(identifier, key)
 
         pwd = ""
@@ -208,9 +208,6 @@ class SecretProxy(object):
         One could just use the HMAC digest itself as a password, but the
         PRNG allows for more control over password length and complexity.
         """
-        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return "generatedpassword"
-
         prng = self._get_prng(identifier, key)
 
         alphabet = ascii_letters + digits
@@ -220,16 +217,19 @@ class SecretProxy(object):
         return "".join([choice_prng(alphabet, prng) for i in range(length)])
 
     def _get_prng(self, identifier, key):
-        try:
-            key_encoded = self.keys[key]
-        except KeyError:
-            raise FaultUnavailable(_(
-                "Key '{key}' not available to generate password '{password}', check your {file}"
-            ).format(
-                file=FILENAME_SECRETS,
-                key=key,
-                password=identifier,
-            ))
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            key_encoded = "aaaa"
+        else:
+            try:
+                key_encoded = self.keys[key]
+            except KeyError:
+                raise FaultUnavailable(_(
+                    "Key '{key}' not available to generate password '{password}', check your {file}"
+                ).format(
+                    file=FILENAME_SECRETS,
+                    key=key,
+                    password=identifier,
+                ))
 
         h = hmac.new(urlsafe_b64decode(key_encoded), digestmod=hashlib.sha512)
         h.update(identifier.encode('utf-8'))
