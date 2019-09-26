@@ -128,3 +128,21 @@ def test_human_password_words(tmpdir):
     assert stdout == b"Xaint-Heep-13\n"
     assert stderr == b""
     assert rcode == 0
+
+
+def test_random_bytes_as_base64(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.random_bytes_as_base64_for(\"foo\"))'", path=str(tmpdir))
+    assert stdout == b"rt+Dgv0yA10DS3ux94mmtEg+isChTJvgkfklzmWkvyg=\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_random_bytes_as_base64_length(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.random_bytes_as_base64_for(\"foo\", length=1))'", path=str(tmpdir))
+    assert stdout == b"rg==\n"
+    assert stderr == b""
+    assert rcode == 0
