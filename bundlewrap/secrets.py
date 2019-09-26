@@ -209,7 +209,7 @@ class SecretProxy(object):
         PRNG allows for more control over password length and complexity.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return "generatedpassword"
+            return ("generatedpassword"*length)[:length]
 
         prng = self._get_prng(identifier, key)
 
