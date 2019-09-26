@@ -157,10 +157,14 @@ class Item(object):
             self._faults_missing_for_attributes.add(_("unknown"))
 
         for attribute_name, attribute_default in BUILTIN_ITEM_ATTRIBUTES.items():
-            setattr(self, attribute_name, force_text(attributes.get(
-                attribute_name,
-                copy(attribute_default),
-            )))
+            try:
+                setattr(self, attribute_name, force_text(attributes.get(
+                    attribute_name,
+                    copy(attribute_default),
+                )))
+            except FaultUnavailable:
+                self._faults_missing_for_attributes.add(attribute_name)
+                setattr(self, attribute_name, BUILTIN_ITEM_ATTRIBUTES[attribute_name])
 
         for attribute_name, attribute_default in self.ITEM_ATTRIBUTES.items():
             if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
