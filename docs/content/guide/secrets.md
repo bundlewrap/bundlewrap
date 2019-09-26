@@ -42,6 +42,16 @@ This makes it easy to change all your passwords at once (e.g. when an employee l
 
 As an alternative to `password_for()`, which generates random strings, you can use `human_password_for()`.It generates strings like `Wiac-Kaobl-Teuh-Kumd-40`. They are easier to handle for human beings. You might want to use them if you have to type those passwords on a regular basis.
 
+### Random bytes
+
+`password_for()` and `human_password_for()` are meant for passwords. If you need plain random bytes, you can use `random_bytes_as_base64_for()`. As the name implies, it will return the data base64 encoded. Some examples:
+
+<pre><code class="nohighlight">$ bw debug -c 'print(repo.vault.random_bytes_as_base64_for("foo"))'
+qczM0GUKW7YlXEuW8HGPYkjCGaX4Vu9Fja5SIZWga7w=
+$ bw debug -c 'print(repo.vault.random_bytes_as_base64_for("foo", length=1))'
+qQ==
+</code></pre>
+
 <br>
 
 ## Static passwords
