@@ -322,11 +322,10 @@ class Item(object):
         if self.ITEM_TYPE_NAME == 'action':
             # so we have an action where 'unless' says it must be run
             # but the 'interactive' attribute might still override that
-            if self.attributes['interactive'] != interactive or \
-                    self.attributes['interactive'] is None:
-                return True
-            else:
+            if self.attributes['interactive'] and not interactive:
                 return False
+            else:
+                return True
         return not self.cached_status.correct
 
     def _prepare_deps(self, items):
