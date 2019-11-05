@@ -30,6 +30,8 @@ GROUP_ATTR_DEFAULTS = {
     # soon as it appears in the repo - which is probably not what
     # people want.
     'os_version': (0,),
+    'scp_args': "",
+    'ssh_args': "",
     'use_shadow_passwords': True,
 }
 

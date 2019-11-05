@@ -155,6 +155,12 @@ You will need to override this if the shell on your node sets environment variab
 
 <br>
 
+### scp_args and ssh_args
+
+Use these extra command line arguments to `ssh`/`scp` when connecting to the node. `ssh_args` defaults to `""` and `scp_args` defaults to the value of `ssh_args`. Note that you can also pass extra arguments through [environment variables](../guide/env.md).
+
+<br>
+
 ### use_shadow_passwords
 
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>

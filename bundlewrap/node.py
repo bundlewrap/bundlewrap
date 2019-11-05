@@ -666,6 +666,7 @@ class Node(object):
             remote_path,
             local_path,
             add_host_keys=self._add_host_keys,
+            ssh_args=self.ssh_args,
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
@@ -759,6 +760,7 @@ class Node(object):
             data_stdin=data_stdin,
             ignore_failure=may_fail,
             log_function=log_function,
+            ssh_args=self.ssh_args,
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
@@ -788,6 +790,8 @@ class Node(object):
             mode=mode,
             owner=owner,
             ignore_failure=may_fail,
+            scp_args=self.scp_args,
+            ssh_args=self.ssh_args,
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )

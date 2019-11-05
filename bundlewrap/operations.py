@@ -42,6 +42,7 @@ def download(
     remote_path,
     local_path,
     add_host_keys=False,
+    ssh_args="",
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
@@ -203,6 +204,7 @@ def run(
         255,  # SSH error
     ),
     log_function=None,
+    ssh_args="",
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
@@ -215,9 +217,11 @@ def run(
         "-o", "PasswordAuthentication=no",
         "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
     ]
-    extra_args = environ.get("BW_SSH_ARGS", "").strip()
-    if extra_args:
-        ssh_command.extend(split(extra_args))
+    extra_args_from_env = environ.get("BW_SSH_ARGS", "").strip()
+    if extra_args_from_env:
+        ssh_command.extend(split(extra_args_from_env))
+    if ssh_args:
+        ssh_command.extend(split(ssh_args))
     ssh_command.append(hostname)
     ssh_command.append(wrapper_outer.format(quote(wrapper_inner.format(command))))
 
@@ -252,6 +256,8 @@ def upload(
     mode=None,
     owner="",
     ignore_failure=False,
+    scp_args="",
+    ssh_args="",
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
@@ -267,9 +273,11 @@ def upload(
         "-o",
         "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
     ]
-    extra_args = environ.get("BW_SCP_ARGS", environ.get("BW_SSH_ARGS", "")).strip()
-    if extra_args:
-        scp_command.extend(split(extra_args))
+    extra_args_from_env = environ.get("BW_SCP_ARGS", environ.get("BW_SSH_ARGS", "")).strip()
+    if extra_args_from_env:
+        scp_command.extend(split(extra_args_from_env))
+    if scp_args or ssh_args:
+        scp_command.extend(split(scp_args or ssh_args))
     scp_command.append(local_path)
     scp_command.append("{}:{}".format(hostname, temp_filename))
 
