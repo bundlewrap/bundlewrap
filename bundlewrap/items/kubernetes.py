@@ -122,7 +122,7 @@ class KubernetesItem(Item):
             self.attributes['manifest_file'].endswith(".yaml") or
             self.attributes['manifest_file'].endswith(".yml")
         ):
-            user_manifest = yaml.load(content_processor(self))
+            user_manifest = yaml.load(content_processor(self), Loader=yaml.SafeLoader)
         elif self.attributes['manifest_file'].endswith(".json"):
             user_manifest = json.loads(content_processor(self))
 
