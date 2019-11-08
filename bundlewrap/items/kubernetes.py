@@ -131,7 +131,7 @@ class KubernetesItem(Item):
                 'apiVersion': self.KUBERNETES_APIVERSION,
                 'kind': self.KIND,
                 'metadata': {
-                    'name': self.name.split("/", 1)[-1],
+                    'name': self.name.split("/")[-1],
                 },
             },
             user_manifest,
