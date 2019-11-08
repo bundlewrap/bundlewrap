@@ -227,7 +227,7 @@ class KubernetesRawItem(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_raw"
     ITEM_TYPE_NAME = "k8s_raw"
     KUBERNETES_APIVERSION = None
-    NAME_REGEX = r"^([a-z0-9-\.]{1,253}/)?[a-zA-Z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
+    NAME_REGEX = r"^([a-z0-9-\.]{1,253})?/[a-zA-Z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
     def get_auto_deps(self, items):
