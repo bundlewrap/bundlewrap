@@ -401,7 +401,7 @@ class KubernetesNetworkPolicy(KubernetesItem):
     KIND = "NetworkPolicy"
     KUBERNETES_APIVERSION = "networking.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_networkpolicy"
-    NAME_REGEX = r"^([a-z0-9-\.]{1,253}/)?[a-z0-9-\.]{1,253}$"
+    NAME_REGEX = r"^([a-z0-9-\.]{1,253})?/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
 
