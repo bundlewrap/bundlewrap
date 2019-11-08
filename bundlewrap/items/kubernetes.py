@@ -271,10 +271,6 @@ class KubernetesRawItem(KubernetesItem):
         else:
             return name
 
-    @property
-    def resource_name(self):
-        return self.name.split("/", 2)[2]
-
 
 class KubernetesClusterRole(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_clusterroles"
