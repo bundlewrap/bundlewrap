@@ -122,7 +122,7 @@ class KubernetesItem(Item):
             self.attributes['manifest_file'].endswith(".yaml") or
             self.attributes['manifest_file'].endswith(".yml")
         ):
-            user_manifest = yaml.load(content_processor(self))
+            user_manifest = yaml.load(content_processor(self), Loader=yaml.SafeLoader)
         elif self.attributes['manifest_file'].endswith(".json"):
             user_manifest = json.loads(content_processor(self))
 
@@ -131,7 +131,7 @@ class KubernetesItem(Item):
                 'apiVersion': self.KUBERNETES_APIVERSION,
                 'kind': self.KIND,
                 'metadata': {
-                    'name': self.name.split("/", 1)[-1],
+                    'name': self.name.split("/")[-1],
                 },
             },
             user_manifest,
@@ -227,7 +227,7 @@ class KubernetesRawItem(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_raw"
     ITEM_TYPE_NAME = "k8s_raw"
     KUBERNETES_APIVERSION = None
-    NAME_REGEX = r"^([a-z0-9-\.]{1,253}/)?[a-zA-Z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
+    NAME_REGEX = r"^([a-z0-9-\.]{1,253})?/[a-zA-Z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
     def get_auto_deps(self, items):
@@ -270,10 +270,6 @@ class KubernetesRawItem(KubernetesItem):
             ))
         else:
             return name
-
-    @property
-    def resource_name(self):
-        return self.name.split("/", 2)[2]
 
 
 class KubernetesClusterRole(KubernetesItem):
@@ -405,7 +401,7 @@ class KubernetesNetworkPolicy(KubernetesItem):
     KIND = "NetworkPolicy"
     KUBERNETES_APIVERSION = "networking.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_networkpolicy"
-    NAME_REGEX = r"^([a-z0-9-\.]{1,253}/)?[a-z0-9-\.]{1,253}$"
+    NAME_REGEX = r"^([a-z0-9-\.]{1,253})?/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
 
