@@ -6,7 +6,7 @@ from hashlib import md5
 from os import environ
 from threading import Lock
 
-from . import operations
+from . import Metadata, NoMetadata
 from .bundle import Bundle
 from .concurrency import WorkerPool
 from .deps import (
@@ -683,9 +683,11 @@ class Node(object):
             # return only metadata set directly at the node level if
             # we're still in the process of figuring out which groups
             # we belong to
-            return self._node_metadata
+            return Metadata(self._node_metadata)
         else:
-            return self.repo._metadata_for_node(self.name, partial=False)
+            return Metadata(
+                self.repo._metadata_for_node(self.name, partial=False)
+            )
 
     @property
     def metadata_blame(self):

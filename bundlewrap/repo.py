@@ -9,6 +9,8 @@ from threading import Lock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 
+from . import Metadata, NoMetadata
+
 from . import items, utils, VERSION_STRING
 from .bundle import FILENAME_BUNDLE
 from .exceptions import (
@@ -609,7 +611,7 @@ class Repository(object):
                     # ...but we can't always do it for performance reasons.
                     input_metadata = self._node_metadata_partial[node.name]
                 try:
-                    processed = metadata_processor(input_metadata)
+                    processed = metadata_processor(Metadata(input_metadata))
                 except Exception as exc:
                     io.stderr(_(
                         "{x} Exception while executing metadata processor "
