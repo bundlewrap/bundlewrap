@@ -541,88 +541,132 @@ class Repository(object):
             # until none of them return DONE anymore (indicating that they're
             # just waiting for another metaproc to maybe insert new data,
             # which isn't happening if none return DONE)
-            metaproc_returned_DONE = False
+
+
+            print('populate_dependencies')
+            
+            # collect all metaprocs
+            metaprocs = {}
             for node_name in list(self._node_metadata_partial):
+                node = self.get_node(node_name)
+                for name, func in node.metadata_processors:
+                    func.__setattr__('__node', node)
+                    metaprocs[name] = func
+            
+            # dependecy assignment helper
+            import re
+            def populate_dependency(name, after):
+                for metadata_processor_name, metadata_processor in metaprocs.items():
+                    if re.match(name, metadata_processor_name):
+                        metadata_processor.__setattr__('__after', [
+                            after, 
+                            *getattr(metadata_processor, '__after')
+                        ])
+            
+            # assign dependencies
+            for metadata_processor_name, metadata_processor in metaprocs.items():
+                for name in getattr(metadata_processor, '__before'):
+                    # populate `before`-dependencies
+                    populate_dependency(name=name, after=metadata_processor_name)
+            
+            # run metaprocs
+            metaproc_returned_DONE = False
+            for metadata_processor_name, metadata_processor in metaprocs.items():
                 if QUIT_EVENT.is_set():
                     break
-                node = self.get_node(node_name)
+
+                node = getattr(metadata_processor, '__node')
+                node_name = node.name
                 node_blame = self._node_metadata_blame[node_name]
-                with io.job(_("{node}  running metadata processors").format(node=bold(node.name))):
-                    for metadata_processor_name, metadata_processor in node.metadata_processors:
-                        if (node_name, metadata_processor_name) in blacklisted_metaprocs:
-                            continue
-                        io.debug(_(
-                            "running metadata processor {metaproc} for node {node}"
-                        ).format(
-                            metaproc=metadata_processor_name,
-                            node=node.name,
-                        ))
-                        if blame:
-                            # We need to deepcopy here because otherwise we have no chance of
-                            # figuring out what changed...
-                            input_metadata = deepcopy_metadata(self._node_metadata_partial[node.name])
-                        else:
-                            # ...but we can't always do it for performance reasons.
-                            input_metadata = self._node_metadata_partial[node.name]
-                        try:
-                            processed = metadata_processor(input_metadata)
-                        except Exception as exc:
-                            io.stderr(_(
-                                "{x} Exception while executing metadata processor "
-                                "{metaproc} for node {node}:"
-                            ).format(
-                                x=red("!!!"),
-                                metaproc=metadata_processor_name,
-                                node=node.name,
-                            ))
-                            raise exc
-                        processed_dict, options = check_metadata_processor_result(
-                            processed,
-                            node.name,
-                            metadata_processor_name,
-                        )
-                        if DONE in options:
-                            io.debug(_(
-                                "metadata processor {metaproc} for node {node} "
-                                "has indicated that it need NOT be run again"
-                            ).format(
-                                metaproc=metadata_processor_name,
-                                node=node.name,
-                            ))
-                            blacklisted_metaprocs.add((node_name, metadata_processor_name))
-                            metaproc_returned_DONE = True
-                        else:
-                            io.debug(_(
-                                "metadata processor {metaproc} for node {node} "
-                                "has indicated that it must be run again"
-                            ).format(
-                                metaproc=metadata_processor_name,
-                                node=node.name,
-                            ))
+                
+                
+                # check dependencies
+                dependency_missing = False
+                after = getattr(metadata_processor, '__after')
+                if after:
+                    print('####### {} after {}'.format(metadata_processor_name, after))
+                    for dependency in after:
+                        for name, func in metaprocs.items():
+                            if re.match(name, dependency):
+                                dependency_missing = True
+                if dependency_missing:
+                    continue
 
-                        blame_defaults = False
-                        if DEFAULTS in options:
-                            processed_dict = merge_dict(
-                                processed_dict,
-                                self._node_metadata_partial[node.name],
-                            )
-                            blame_defaults = True
-                        elif OVERWRITE in options:
-                            processed_dict = merge_dict(
-                                self._node_metadata_partial[node.name],
-                                processed_dict,
-                            )
+                
+                if (node_name, metadata_processor_name) in blacklisted_metaprocs:
+                    continue
+                io.debug(_(
+                    "running metadata processor {metaproc} for node {node}"
+                ).format(
+                    metaproc=metadata_processor_name,
+                    node=node.name,
+                ))
+                if blame:
+                    # We need to deepcopy here because otherwise we have no chance of
+                    # figuring out what changed...
+                    input_metadata = deepcopy_metadata(self._node_metadata_partial[node.name])
+                else:
+                    # ...but we can't always do it for performance reasons.
+                    input_metadata = self._node_metadata_partial[node.name]
+                try:
+                    processed = metadata_processor(input_metadata)
+                except Exception as exc:
+                    io.stderr(_(
+                        "{x} Exception while executing metadata processor "
+                        "{metaproc} for node {node}:"
+                    ).format(
+                        x=red("!!!"),
+                        metaproc=metadata_processor_name,
+                        node=node.name,
+                    ))
+                    raise exc
+                processed_dict, options = check_metadata_processor_result(
+                    processed,
+                    node.name,
+                    metadata_processor_name,
+                )
+                if DONE in options:
+                    io.debug(_(
+                        "metadata processor {metaproc} for node {node} "
+                        "has indicated that it need NOT be run again"
+                    ).format(
+                        metaproc=metadata_processor_name,
+                        node=node.name,
+                    ))
+                    blacklisted_metaprocs.add((node_name, metadata_processor_name))
+                    metaproc_returned_DONE = True
+                else:
+                    io.debug(_(
+                        "metadata processor {metaproc} for node {node} "
+                        "has indicated that it must be run again"
+                    ).format(
+                        metaproc=metadata_processor_name,
+                        node=node.name,
+                    ))
 
-                        if blame:
-                            blame_changed_paths(
-                                self._node_metadata_partial[node.name],
-                                processed_dict,
-                                node_blame,
-                                "metadata_processor:{}".format(metadata_processor_name),
-                                defaults=blame_defaults,
-                            )
+                blame_defaults = False
+                if DEFAULTS in options:
+                    processed_dict = merge_dict(
+                        processed_dict,
+                        self._node_metadata_partial[node.name],
+                    )
+                    blame_defaults = True
+                elif OVERWRITE in options:
+                    processed_dict = merge_dict(
+                        self._node_metadata_partial[node.name],
+                        processed_dict,
+                    )
 
-                        self._node_metadata_partial[node.name] = processed_dict
+                if blame:
+                    blame_changed_paths(
+                        self._node_metadata_partial[node.name],
+                        processed_dict,
+                        node_blame,
+                        "metadata_processor:{}".format(metadata_processor_name),
+                        defaults=blame_defaults,
+                    )
+
+                self._node_metadata_partial[node.name] = processed_dict
 
             if not metaproc_returned_DONE:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):

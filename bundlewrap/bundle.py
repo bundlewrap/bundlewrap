@@ -15,13 +15,25 @@ FILENAME_BUNDLE = "items.py"
 FILENAME_METADATA = "metadata.py"
 
 
-def metadata_processor(func):
+def metadata_processor(func=False, **kwargs):
     """
     Decorator that tags metadata processors.
     """
+    
+    def inner(func):
+        func.__before = kwargs.setdefault('before', [])
+        func.__after = kwargs.setdefault('after', [])
+        func.__is_a_metadata_processor = True
+        return func
+        
+    if not func:
+        func = inner
+
+    func.__before = kwargs.setdefault('before', [])
+    func.__after = kwargs.setdefault('after', [])
     func.__is_a_metadata_processor = True
     return func
-
+    
 
 class Bundle(object):
     """
