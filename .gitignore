@@ -1,2 +1,7 @@
 /dist/
 /docs/build/
+
+bundlewrap/__pycache__/
+bundlewrap/cmdline/__pycache__/
+bundlewrap/items/__pycache__/
+bundlewrap/utils/__pycache__/
