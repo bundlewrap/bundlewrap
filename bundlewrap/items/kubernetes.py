@@ -230,6 +230,22 @@ class KubernetesRawItem(KubernetesItem):
     NAME_REGEX = r"^([a-z0-9-\.]{1,253})?/[a-zA-Z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
+    def _check_bundle_collisions(self, items):
+        super(KubernetesRawItem, self)._check_bundle_collisions(items)
+        for item in items:
+            if item == self or not isinstance(item, KubernetesItem):
+                continue
+            if item.KIND == self.KIND and item.resource_name == self.resource_name:
+                raise BundleError(_(
+                    "duplicate definition of {item} (from bundle {bundle}) "
+                    "as {item2} (from bundle {bundle2}) on {node}"
+                ).format(
+                    item=self.id,
+                    bundle=self.bundle.name,
+                    item2=item.id,
+                    bundle2=item.bundle.name,
+                ))
+
     def get_auto_deps(self, items):
         deps = super(KubernetesRawItem, self).get_auto_deps(items)
         for item in items:
@@ -242,34 +258,7 @@ class KubernetesRawItem(KubernetesItem):
 
     @property
     def KIND(self):
-        name = self.name.split("/", 2)[1]
-        if name.lower() in (
-            "clusterrole",
-            "clusterrolebinding",
-            "configmap",
-            "cronjob",
-            "customresourcedefinition",
-            "daemonset",
-            "deployment",
-            "ingress",
-            "namespace",
-            "persistentvolumeclaim",
-            "service",
-            "secret",
-            "statefulset",
-        ):
-            raise BundleError(_(
-                "Kind of {item_type}:{name} (bundle '{bundle}') "
-                "on {node} clashes with builtin k8s_* item"
-            ).format(
-                item_type=self.ITEM_TYPE_NAME,
-                name=self.name,
-                bundle=self.bundle.name,
-                node=self.bundle.node.name,
-                regex=self.NAME_REGEX,
-            ))
-        else:
-            return name
+        return self.name.split("/", 2)[1]
 
 
 class KubernetesClusterRole(KubernetesItem):
