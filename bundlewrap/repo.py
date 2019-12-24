@@ -579,6 +579,8 @@ class Repository(object):
                 node_name = node.name
                 node_blame = self._node_metadata_blame[node_name]
                 
+                if (node_name, metadata_processor_name) in blacklisted_metaprocs:
+                    continue
                 
                 # check dependencies
                 dependency_missing = False
@@ -592,9 +594,6 @@ class Repository(object):
                 if dependency_missing:
                     continue
 
-                
-                if (node_name, metadata_processor_name) in blacklisted_metaprocs:
-                    continue
                 io.debug(_(
                     "running metadata processor {metaproc} for node {node}"
                 ).format(
