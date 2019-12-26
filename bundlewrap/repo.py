@@ -546,35 +546,37 @@ class Repository(object):
             print('populate_dependencies')
             
             # collect all metaprocs
-            metaprocs = {}
+            metaprocs = []
             for node_name in list(self._node_metadata_partial):
                 node = self.get_node(node_name)
                 for name, func in node.metadata_processors:
+                    func.__setattr__('__name', name)
                     func.__setattr__('__node', node)
-                    metaprocs[name] = func
+                    metaprocs.append(func)
             
-            # dependecy assignment helper
+            # dependency assignment helper
             import re
             def populate_dependency(name, after):
-                for metadata_processor_name, metadata_processor in metaprocs.items():
-                    if re.match(name, metadata_processor_name):
+                for metaproc in metaprocs:
+                    if re.match(name, getattr(metadata_processor, '__name')):
                         metadata_processor.__setattr__('__after', [
                             after, 
                             *getattr(metadata_processor, '__after')
                         ])
             
             # assign dependencies
-            for metadata_processor_name, metadata_processor in metaprocs.items():
-                for name in getattr(metadata_processor, '__before'):
+            for metaproc in metaprocs:
+                for dependency in getattr(metaproc, '__before'):
                     # populate `before`-dependencies
-                    populate_dependency(name=name, after=metadata_processor_name)
+                    populate_dependency(name=dependency, after=getattr(metadata_processor, '__name'))
             
             # run metaprocs
             metaproc_returned_DONE = False
-            for metadata_processor_name, metadata_processor in metaprocs.items():
+            for metadata_processor in metaprocs:
                 if QUIT_EVENT.is_set():
                     break
-
+                
+                metadata_processor_name = getattr(metadata_processor, '__name')
                 node = getattr(metadata_processor, '__node')
                 node_name = node.name
                 node_blame = self._node_metadata_blame[node_name]
