@@ -1,3 +1,13 @@
+# 3.7.0
+
+2019-10-07
+
+* Faults are now accepted as item attribute values
+* Filter objects, iterators and such can now be used as item attribute values
+* `BW_VAULT_DUMMY_MODE` will now yield dummy passwords of requested length
+* added `repo.vault.random_bytes_as_base64_for()`
+
+
 # 3.6.2
 
 2019-07-25

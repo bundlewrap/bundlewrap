@@ -79,6 +79,17 @@ class ItemStatus(object):
         return not self.must_be_deleted and not self.must_be_created and not bool(self.keys_to_fix)
 
 
+def make_normalize(attribute_default):
+    """
+    This is to ensure you can pass filter() results and such in place of
+    lists and have them converted to the proper type automatically.
+    """
+    if type(attribute_default) in (list, dict):
+        return type(attribute_default)
+    else:
+        return copy
+
+
 class Item(object):
     """
     A single piece of configuration (e.g. a file, a package, a service).
@@ -157,24 +168,38 @@ class Item(object):
             self._faults_missing_for_attributes.add(_("unknown"))
 
         for attribute_name, attribute_default in BUILTIN_ITEM_ATTRIBUTES.items():
-            setattr(self, attribute_name, force_text(attributes.get(
-                attribute_name,
-                copy(attribute_default),
-            )))
+            normalize = make_normalize(attribute_default)
+            try:
+                setattr(self, attribute_name, force_text(normalize(attributes.get(
+                    attribute_name,
+                    copy(attribute_default),
+                ))))
+            except FaultUnavailable:
+                self._faults_missing_for_attributes.add(attribute_name)
+                setattr(self, attribute_name, BUILTIN_ITEM_ATTRIBUTES[attribute_name])
 
         for attribute_name, attribute_default in self.ITEM_ATTRIBUTES.items():
             if attribute_name not in BUILTIN_ITEM_ATTRIBUTES:
+                normalize = make_normalize(attribute_default)
                 try:
-                    self.attributes[attribute_name] = force_text(attributes.get(
+                    self.attributes[attribute_name] = force_text(normalize(attributes.get(
                         attribute_name,
-                        attribute_default,
-                    ))
+                        copy(attribute_default),
+                    )))
                 except FaultUnavailable:
                     self._faults_missing_for_attributes.add(attribute_name)
 
         for attribute_name, attribute_default in self.WHEN_CREATING_ATTRIBUTES.items():
-            self.when_creating[attribute_name] = \
-                attributes.get('when_creating', {}).get(attribute_name, attribute_default)
+            normalize = make_normalize(attribute_default)
+            try:
+                self.when_creating[attribute_name] = force_text(normalize(
+                    attributes.get('when_creating', {}).get(
+                        attribute_name,
+                        copy(attribute_default),
+                    )
+                ))
+            except FaultUnavailable:
+                self._faults_missing_for_attributes.add('when_creating/' + attribute_name)
 
         if self.cascade_skip is None:
             self.cascade_skip = not (self.unless or self.triggered)
@@ -297,11 +322,10 @@ class Item(object):
         if self.ITEM_TYPE_NAME == 'action':
             # so we have an action where 'unless' says it must be run
             # but the 'interactive' attribute might still override that
-            if self.attributes['interactive'] != interactive or \
-                    self.attributes['interactive'] is None:
-                return True
-            else:
+            if self.attributes['interactive'] and not interactive:
                 return False
+            else:
+                return True
         return not self.cached_status.correct
 
     def _prepare_deps(self, items):
