@@ -483,29 +483,10 @@ class Repository(object):
         Builds complete metadata for all nodes that appear in
         self._node_metadata_partial.keys().
         """
-        
-        # collect all metaprocs
-        metaprocs = []
-        for node_name in list(self._node_metadata_partial):
-            node = self.get_node(node_name)
-            for func in node.metadata_processors:
-                metaprocs.append(func)
-        
-        # dependency assignment helper
-        import re
-        def populate_dependency(name, after):
-            for metaproc in metaprocs:
-                if re.match(name, getattr(metaproc, '__name')):
-                    metaproc.__setattr__('__after', list(set([
-                        after, 
-                        *getattr(metaproc, '__after')
-                    ])))
-        
-        # assign dependencies
-        for metaproc in metaprocs:
-            for dependency in getattr(metaproc, '__before'):
-                # populate `before`-dependencies
-                populate_dependency(name=dependency, after=getattr(metaproc, '__name'))
+        show_debug = False
+        def debug(string):
+            if show_debug:
+                print(string)
 
         # these processors have indicated that they do not need to be run again
         while not QUIT_EVENT.is_set():
@@ -564,15 +545,39 @@ class Repository(object):
             # until none of them return DONE anymore (indicating that they're
             # just waiting for another metaproc to maybe insert new data,
             # which isn't happening if none return DONE)
-
+        
+            # collect all metaprocs
+            metaprocs = []
+            for node_name in list(self._node_metadata_partial):
+                node = self.get_node(node_name)
+                for func in node.metadata_processors:
+                    metaprocs.append(func)
+            
+            # dependency assignment helper
+            import re
+            def populate_dependency(name, after):
+                for metaproc in metaprocs:
+                    if re.match(name, getattr(metaproc, '__name')):
+                        metaproc.__setattr__('__after', list(set([
+                            after, 
+                            *getattr(metaproc, '__after')
+                        ])))
+            
+            # assign dependencies
+            for metaproc in metaprocs:
+                for dependency in getattr(metaproc, '__before'):
+                    # populate `before`-dependencies
+                    populate_dependency(name=dependency, after=getattr(metaproc, '__name'))
             
             # run metaprocs
+            debug('run metaprocs')
             some_metaproc_returned_DONE = False
             for metadata_processor in metaprocs:
                 if QUIT_EVENT.is_set():
                     break
                 
                 if getattr(metadata_processor, '__done'):
+                    debug('alredy DONE: ' + getattr(metadata_processor, '__name'))
                     continue
 
                 metadata_processor_name = getattr(metadata_processor, '__name')
@@ -588,6 +593,7 @@ class Repository(object):
                         for potential_dependency in metaprocs:
                             if re.match(dependency_name, getattr(potential_dependency, '__name')):
                                 if not getattr(potential_dependency, '__done'):
+                                    debug('wait for dependency: ' + getattr(potential_dependency, '__name'))
                                     dependency_missing = True
                 if dependency_missing:
                     continue
@@ -630,6 +636,7 @@ class Repository(object):
                         metaproc=metadata_processor_name,
                         node=node.name,
                     ))
+                    debug('DONE: ' + getattr(metadata_processor, '__name'))
                     metadata_processor.__setattr__('__done', True)
                     some_metaproc_returned_DONE = True
                 else:
