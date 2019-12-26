@@ -557,10 +557,10 @@ class Repository(object):
             def populate_dependency(name, after):
                 for metaproc in metaprocs:
                     if re.match(name, getattr(metaproc, '__name')):
-                        metaproc.__setattr__('__after', list(set([
-                            after, 
-                            *getattr(metaproc, '__after')
-                        ])))
+                        metaproc.__setattr__(
+                            '__after',
+                            list(set(after + getattr(metaproc, '__after')))
+                        )
             
             # assign dependencies
             for metaproc in metaprocs:
