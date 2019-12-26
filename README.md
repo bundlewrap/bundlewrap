@@ -12,10 +12,6 @@ For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and
     <img src="http://img.shields.io/travis/bundlewrap/bundlewrap/master.svg" alt="Build status">
 </a>
 &nbsp;
-<a href="https://landscape.io/github/bundlewrap/bundlewrap/master">
-    <img src="https://landscape.io/github/bundlewrap/bundlewrap/master/landscape.svg?style=flat" alt="Code health">
-</a>
-&nbsp;
 <a href="https://pypi.python.org/pypi/bundlewrap/">
     <img src="http://img.shields.io/pypi/pyversions/bundlewrap.svg" alt="Python compatibility">
 </a>

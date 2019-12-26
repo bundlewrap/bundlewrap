@@ -6,7 +6,7 @@ from bundlewrap.utils.testing import host_os, make_repo, run
 
 
 def get_lock_id(output):
-    return search("locked with ID (\w+) ", output).groups()[0]
+    return search(r"locked with ID (\w+) ", output).groups()[0]
 
 
 def test_add_lock_apply_remove(tmpdir):

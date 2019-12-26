@@ -209,7 +209,7 @@ class SecretProxy(object):
         PRNG allows for more control over password length and complexity.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return "generatedpassword"
+            return ("generatedpassword"*length)[:length]
 
         prng = self._get_prng(identifier, key)
 
@@ -218,6 +218,13 @@ class SecretProxy(object):
             alphabet += punctuation
 
         return "".join([choice_prng(alphabet, prng) for i in range(length)])
+
+    def _generate_random_bytes_as_base64(self, identifier=None, key='generate', length=32):
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            return b64encode(bytearray([ord("a") for i in range(length)])).decode()
+
+        prng = self._get_prng(identifier, key)
+        return b64encode(bytearray([next(prng) for i in range(length)])).decode()
 
     def _get_prng(self, identifier, key):
         try:
@@ -332,4 +339,12 @@ class SecretProxy(object):
             key=key,
             length=length,
             symbols=symbols,
+        )
+
+    def random_bytes_as_base64_for(self, identifier, key='generate', length=32):
+        return Fault(
+            self._generate_random_bytes_as_base64,
+            identifier=identifier,
+            key=key,
+            length=length,
         )
