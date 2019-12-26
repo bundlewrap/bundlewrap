@@ -576,7 +576,6 @@ class Repository(object):
                     break
                 
                 if getattr(metadata_processor, '__done'):
-                    print(1111111111111111111111111111111111111111)
                     continue
 
                 metadata_processor_name = getattr(metadata_processor, '__name')
@@ -588,20 +587,14 @@ class Repository(object):
                 dependency_missing = False
                 after = getattr(metadata_processor, '__after')
                 if after:
-                    print('####### {} after {}'.format(metadata_processor_name, after))
                     for dependency_name in after:
                         for potential_dependency in metaprocs:
                             if re.match(dependency_name, getattr(potential_dependency, '__name')):
-                                print(dependency_name)
-                                print(getattr(potential_dependency, '__name'))
                                 if not getattr(potential_dependency, '__done'):
                                     dependency_missing = True
                 if dependency_missing:
-                    print('dependency missing')
                     continue
                     
-                print('NO dependency missing')
-
                 io.debug(_(
                     "running metadata processor {metaproc} for node {node}"
                 ).format(
@@ -640,7 +633,6 @@ class Repository(object):
                         metaproc=metadata_processor_name,
                         node=node.name,
                     ))
-                    print('done: ' + getattr(metadata_processor, '__name'))
                     metadata_processor.__setattr__('__done', True)
                     some_metaproc_returned_DONE = True
                 else:
