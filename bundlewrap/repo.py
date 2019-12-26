@@ -483,8 +483,34 @@ class Repository(object):
         Builds complete metadata for all nodes that appear in
         self._node_metadata_partial.keys().
         """
+        
+        # collect all metaprocs
+        metaprocs = []
+        for node_name in list(self._node_metadata_partial):
+            node = self.get_node(node_name)
+            for name, func in node.metadata_processors:
+                func.__setattr__('__name', name)
+                func.__setattr__('__node', node)
+                func.__setattr__('__done', False)
+                metaprocs.append(func)
+        
+        # dependency assignment helper
+        import re
+        def populate_dependency(name, after):
+            for metaproc in metaprocs:
+                if re.match(name, getattr(metaproc, '__name')):
+                    metaproc.__setattr__('__after', list(set([
+                        after, 
+                        *getattr(metaproc, '__after')
+                    ])))
+        
+        # assign dependencies
+        for metaproc in metaprocs:
+            for dependency in getattr(metaproc, '__before'):
+                # populate `before`-dependencies
+                populate_dependency(name=dependency, after=getattr(metaproc, '__name'))
+
         # these processors have indicated that they do not need to be run again
-        blacklisted_metaprocs = set()
         while not QUIT_EVENT.is_set():
             # First, get the static metadata out of the way
             for node_name in list(self._node_metadata_partial):
@@ -542,59 +568,39 @@ class Repository(object):
             # just waiting for another metaproc to maybe insert new data,
             # which isn't happening if none return DONE)
 
-
-            print('populate_dependencies')
-            
-            # collect all metaprocs
-            metaprocs = []
-            for node_name in list(self._node_metadata_partial):
-                node = self.get_node(node_name)
-                for name, func in node.metadata_processors:
-                    func.__setattr__('__name', name)
-                    func.__setattr__('__node', node)
-                    metaprocs.append(func)
-            
-            # dependency assignment helper
-            import re
-            def populate_dependency(name, after):
-                for metaproc in metaprocs:
-                    if re.match(name, getattr(metadata_processor, '__name')):
-                        metadata_processor.__setattr__('__after', [
-                            after, 
-                            *getattr(metadata_processor, '__after')
-                        ])
-            
-            # assign dependencies
-            for metaproc in metaprocs:
-                for dependency in getattr(metaproc, '__before'):
-                    # populate `before`-dependencies
-                    populate_dependency(name=dependency, after=getattr(metaproc, '__name'))
             
             # run metaprocs
-            metaproc_returned_DONE = False
+            some_metaproc_returned_DONE = False
             for metadata_processor in metaprocs:
                 if QUIT_EVENT.is_set():
                     break
                 
+                if getattr(metadata_processor, '__done'):
+                    print(1111111111111111111111111111111111111111)
+                    continue
+
                 metadata_processor_name = getattr(metadata_processor, '__name')
                 node = getattr(metadata_processor, '__node')
                 node_name = node.name
                 node_blame = self._node_metadata_blame[node_name]
-                
-                if (node_name, metadata_processor_name) in blacklisted_metaprocs:
-                    continue
-                
+                                
                 # check dependencies
                 dependency_missing = False
                 after = getattr(metadata_processor, '__after')
                 if after:
                     print('####### {} after {}'.format(metadata_processor_name, after))
-                    for dependency in after:
-                        for name, func in metaprocs.items():
-                            if re.match(name, dependency):
-                                dependency_missing = True
+                    for dependency_name in after:
+                        for potential_dependency in metaprocs:
+                            if re.match(dependency_name, getattr(potential_dependency, '__name')):
+                                print(dependency_name)
+                                print(getattr(potential_dependency, '__name'))
+                                if not getattr(potential_dependency, '__done'):
+                                    dependency_missing = True
                 if dependency_missing:
+                    print('dependency missing')
                     continue
+                    
+                print('NO dependency missing')
 
                 io.debug(_(
                     "running metadata processor {metaproc} for node {node}"
@@ -634,8 +640,9 @@ class Repository(object):
                         metaproc=metadata_processor_name,
                         node=node.name,
                     ))
-                    blacklisted_metaprocs.add((node_name, metadata_processor_name))
-                    metaproc_returned_DONE = True
+                    print('done: ' + getattr(metadata_processor, '__name'))
+                    metadata_processor.__setattr__('__done', True)
+                    some_metaproc_returned_DONE = True
                 else:
                     io.debug(_(
                         "metadata processor {metaproc} for node {node} "
@@ -669,7 +676,7 @@ class Repository(object):
 
                 self._node_metadata_partial[node.name] = processed_dict
 
-            if not metaproc_returned_DONE:
+            if not some_metaproc_returned_DONE:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
                     # During metadata processor execution, partial metadata may
                     # have been requested for nodes we did not previously
