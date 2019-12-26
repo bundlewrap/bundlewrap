@@ -568,7 +568,7 @@ class Repository(object):
             for metaproc in metaprocs:
                 for dependency in getattr(metaproc, '__before'):
                     # populate `before`-dependencies
-                    populate_dependency(name=dependency, after=getattr(metadata_processor, '__name'))
+                    populate_dependency(name=dependency, after=getattr(metaproc, '__name'))
             
             # run metaprocs
             metaproc_returned_DONE = False
