@@ -698,13 +698,13 @@ class Node(object):
     def metadata_processors(self):
         for bundle in self.bundles:
             for metadata_processor in bundle.metadata_processors:
-                yield (
-                    "{}.{}".format(
-                        bundle.name,
-                        metadata_processor.__name__,
-                    ),
-                    metadata_processor,
-                )
+                metadata_processor.__setattr__('__name', "{}.{}".format(
+                    bundle.name,
+                    metadata_processor.__name__,
+                ))
+                metadata_processor.__setattr__('__node', self)
+                metadata_processor.__setattr__('__done', False)
+                yield metadata_processor
 
     @property
     def partial_metadata(self):

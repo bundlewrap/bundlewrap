@@ -488,10 +488,7 @@ class Repository(object):
         metaprocs = []
         for node_name in list(self._node_metadata_partial):
             node = self.get_node(node_name)
-            for name, func in node.metadata_processors:
-                func.__setattr__('__name', name)
-                func.__setattr__('__node', node)
-                func.__setattr__('__done', False)
+            for func in node.metadata_processors:
                 metaprocs.append(func)
         
         # dependency assignment helper
