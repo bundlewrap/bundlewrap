@@ -483,10 +483,9 @@ class Repository(object):
         Builds complete metadata for all nodes that appear in
         self._node_metadata_partial.keys().
         """
-        show_debug = False
         def debug(string):
-            if show_debug:
-                print(string)
+            a = 1
+            #print(string)
 
         # these processors have indicated that they do not need to be run again
         while not QUIT_EVENT.is_set():
@@ -593,7 +592,7 @@ class Repository(object):
                         for potential_dependency in metaprocs:
                             if re.match(dependency_name, getattr(potential_dependency, '__name')):
                                 if not getattr(potential_dependency, '__done'):
-                                    debug('wait for dependency: ' + getattr(potential_dependency, '__name'))
+                                    debug(metadata_processor_name + ' waits for dependency ' + getattr(potential_dependency, '__name'))
                                     dependency_missing = True
                 if dependency_missing:
                     continue
