@@ -544,15 +544,16 @@ class Repository(object):
             for node_name in list(self._node_metadata_partial):
                 node = self.get_node(node_name)
                 for metaproc in node.metadata_processors:
-                    metaprocs.append(metaproc)
+                    if not metaproc._done:
+                        metaprocs.append(metaproc)
 
             
             # translate `before` into `after` dependencies
-            for dependant in metaprocs:
-                for dependency_name in dependant._before:
-                    for dependency in metaprocs:
-                        if re.match(dependency_name, dependency._name):
-                            dependency._after.add(dependant._name)
+            for dependency in metaprocs:
+                for dependant_query in dependency._before:
+                    for dependant in metaprocs:
+                        if re.match(dependant_query, dependant._name):
+                            dependant._after.add(dependency._name)
             
             # Now for the interesting part: We run all metadata processors
             # until none of them return DONE anymore (indicating that they're
