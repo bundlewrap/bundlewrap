@@ -484,9 +484,6 @@ class Repository(object):
         Builds complete metadata for all nodes that appear in
         self._node_metadata_partial.keys().
         """
-        def debug(string):
-            a = 1
-            #print(string)
 
         # these processors have indicated that they do not need to be run again
         while not QUIT_EVENT.is_set():
@@ -560,9 +557,6 @@ class Repository(object):
                     # populate `before`-dependencies
                     populate_dependency(name=dependency, after=metaproc._name)
             
-            # run metaprocs
-            debug('run metaprocs')
-
             # Now for the interesting part: We run all metadata processors
             # until none of them return DONE anymore (indicating that they're
             # just waiting for another metaproc to maybe insert new data,
@@ -574,10 +568,8 @@ class Repository(object):
                     break
                 
                 if metadata_processor._done:
-                    debug('alredy DONE: ' + metadata_processor._name)
                     continue
 
-                metadata_processor_name = metadata_processor._name
                 node = metadata_processor._node
                 node_name = node.name
                 node_blame = self._node_metadata_blame[node_name]
@@ -590,7 +582,7 @@ class Repository(object):
                         for potential_dependency in metaprocs:
                             if re.match(dependency_name, potential_dependency._name):
                                 if not potential_dependency._done:
-                                    debug(metadata_processor_name + ' waits for dependency ' + potential_dependency._name)
+                                    debug(metadata_processor._name + ' waits for dependency ' + potential_dependency._name)
                                     dependency_missing = True
                 if dependency_missing:
                     continue
@@ -598,7 +590,7 @@ class Repository(object):
                 io.debug(_(
                     "running metadata processor {metaproc} for node {node}"
                 ).format(
-                    metaproc=metadata_processor_name,
+                    metaproc=metadata_processor._name,
                     node=node.name,
                 ))
                 if blame:
@@ -616,24 +608,23 @@ class Repository(object):
                         "{metaproc} for node {node}:"
                     ).format(
                         x=red("!!!"),
-                        metaproc=metadata_processor_name,
+                        metaproc=metadata_processor._name,
                         node=node.name,
                     ))
                     raise exc
                 processed_dict, options = check_metadata_processor_result(
                     processed,
                     node.name,
-                    metadata_processor_name,
+                    metadata_processor._name,
                 )
                 if DONE in options:
                     io.debug(_(
                         "metadata processor {metaproc} for node {node} "
                         "has indicated that it need NOT be run again"
                     ).format(
-                        metaproc=metadata_processor_name,
+                        metaproc=metadata_processor._name,
                         node=node.name,
                     ))
-                    debug('DONE: ' + metadata_processor._name)
                     metadata_processor._done = True
                     some_metaproc_returned_DONE = True
                 else:
@@ -641,7 +632,7 @@ class Repository(object):
                         "metadata processor {metaproc} for node {node} "
                         "has indicated that it must be run again"
                     ).format(
-                        metaproc=metadata_processor_name,
+                        metaproc=metadata_processor._name,
                         node=node.name,
                     ))
 
@@ -663,7 +654,7 @@ class Repository(object):
                         self._node_metadata_partial[node.name],
                         processed_dict,
                         node_blame,
-                        "metadata_processor:{}".format(metadata_processor_name),
+                        "metadata_processor:{}".format(metadata_processor._name),
                         defaults=blame_defaults,
                     )
 
