@@ -13,7 +13,7 @@ def bw_stats(repo, args):
     metaprocs = set()
     for node in repo.nodes:
         for metadata_processor in node.metadata_processors:
-            metaprocs.add(getattr(metadata_processor, '__name'))
+            metaprocs.add(metadata_processor._name)
         for item in node.items:
             items.setdefault(item.ITEM_TYPE_NAME, 0)
             items[item.ITEM_TYPE_NAME] += 1
