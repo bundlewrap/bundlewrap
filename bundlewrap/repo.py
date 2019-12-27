@@ -547,12 +547,11 @@ class Repository(object):
                     metaprocs.append(metaproc)
 
             
-            # translate `before` to `after` dependencies
+            # translate `before` into `after` dependencies
             for dependant in metaprocs:
                 for dependency_name in dependant._before:
                     for dependency in metaprocs:
                         if re.match(dependency_name, dependency._name):
-                            print('-----------------------------------')
                             dependency._after.add(dependant._name)
             
             # Now for the interesting part: We run all metadata processors
