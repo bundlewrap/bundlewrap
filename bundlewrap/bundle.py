@@ -21,15 +21,11 @@ def metadata_processor(func=None, **kwargs):
     """
     
     def set_metadata_processor_attributes(func):
-        func.__is_a_metadata_processor = True
+        func._is_a_metadata_processor = True
         # set before
-        func.__before = kwargs.get('before', [])
-        if isinstance(func.__before, str):
-            func.__before = [func.__before]
+        func._before = kwargs.get('before', [])
         # set after
-        func.__after = kwargs.get('after', [])
-        if isinstance(func.__after, str):
-            func.__after = [func.__after]
+        func._after = kwargs.get('after', [])
         # return
         return func
     
@@ -127,7 +123,7 @@ class Bundle(object):
                     'repo': self.repo,
                 },
             ).items():
-                if getattr(attr, '__is_a_metadata_processor', False):
+                if getattr(attr, '_is_a_metadata_processor', False):
                     internal_name = getattr(attr, '__name__', name)
                     if internal_name in internal_names:
                         raise BundleError(_(
@@ -144,5 +140,11 @@ class Bundle(object):
                             name=name,
                         ))
                     internal_names.add(internal_name)
+                    attr._name = "{}.{}".format(
+                        self.name,
+                        internal_name,
+                    )
+                    attr._node = self.node
+                    attr._done = False
                     result.append(attr)
             return result
