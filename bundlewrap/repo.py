@@ -570,23 +570,20 @@ class Repository(object):
                 if metadata_processor._done:
                     continue
 
-                node = metadata_processor._node
-                node_name = node.name
-                node_blame = self._node_metadata_blame[node_name]
-                                
                 # check dependencies
                 dependency_missing = False
-                after = metadata_processor._after
-                if after:
-                    for dependency_name in after:
-                        for potential_dependency in metaprocs:
-                            if re.match(dependency_name, potential_dependency._name):
-                                continue
-                            if not potential_dependency._done:
-                                continue
-                            dependency_missing = True
+                for dependency_name in metadata_processor._after:
+                    for potential_dependency in metaprocs:
+                        if re.match(dependency_name, potential_dependency._name):
+                            continue
+                        if not potential_dependency._done:
+                            continue
+                        dependency_missing = True
                 if dependency_missing:
                     continue
+                    
+                node = metadata_processor._node
+                node_blame = self._node_metadata_blame[node.name]
                     
                 io.debug(_(
                     "running metadata processor {metaproc} for node {node}"
