@@ -569,7 +569,6 @@ class Repository(object):
                     continue
 
                 # check dependencies
-                dependency_missing = False
                 try:
                     for dependency_name in metadata_processor._after:
                         for potential_dependency in metaprocs:
