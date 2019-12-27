@@ -540,11 +540,6 @@ class Repository(object):
                                 "node:{}".format(source_node.name),
                             )
                         self._node_metadata_partial[node.name] = new_metadata
-
-            # Now for the interesting part: We run all metadata processors
-            # until none of them return DONE anymore (indicating that they're
-            # just waiting for another metaproc to maybe insert new data,
-            # which isn't happening if none return DONE)
         
             # collect all metaprocs
             metaprocs = []
@@ -567,7 +562,13 @@ class Repository(object):
             
             # run metaprocs
             debug('run metaprocs')
+
+            # Now for the interesting part: We run all metadata processors
+            # until none of them return DONE anymore (indicating that they're
+            # just waiting for another metaproc to maybe insert new data,
+            # which isn't happening if none return DONE)
             some_metaproc_returned_DONE = False
+
             for metadata_processor in metaprocs:
                 if QUIT_EVENT.is_set():
                     break
