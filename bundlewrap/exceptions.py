@@ -175,3 +175,9 @@ class NodeLockedException(Exception):
     Raised when a node is already locked during an 'apply' run.
     """
     pass
+
+
+class DependencyMissing(Exception):
+    """
+    """
+    pass

@@ -22,8 +22,8 @@ def metadata_processor(func=None, **kwargs):
     
     def set_metadata_processor_attributes(func):
         func._is_a_metadata_processor = True
-        func._before = kwargs.get('before', [])
-        func._after = kwargs.get('after', [])
+        func._before = set(kwargs.get('before', []))
+        func._after = set(kwargs.get('after', []))
         return func
     
     if func:

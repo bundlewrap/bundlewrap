@@ -18,6 +18,7 @@ from .exceptions import (
     NoSuchRepository,
     MissingRepoDependency,
     RepositoryError,
+    DependencyMissing,
 )
 from .group import Group
 from .metadata import (
@@ -542,20 +543,17 @@ class Repository(object):
             metaprocs = []
             for node_name in list(self._node_metadata_partial):
                 node = self.get_node(node_name)
-                for func in node.metadata_processors:
-                    metaprocs.append(func)
+                for metaproc in node.metadata_processors:
+                    metaprocs.append(metaproc)
+
             
-            # dependency assignment helper
-            def populate_dependency(name, after):
-                for metaproc in metaprocs:
-                    if re.match(name, metaproc._name):
-                        metaproc._after = list(set(after + metaproc._after))
-            
-            # assign dependencies
-            for metaproc in metaprocs:
-                for dependency in metaproc._before:
-                    # populate `before`-dependencies
-                    populate_dependency(name=dependency, after=metaproc._name)
+            # translate `before` to `after` dependencies
+            for dependant in metaprocs:
+                for dependency_name in dependant._before:
+                    for dependency in metaprocs:
+                        if re.match(dependency_name, dependency._name):
+                            print('-----------------------------------')
+                            dependency._after.add(dependant._name)
             
             # Now for the interesting part: We run all metadata processors
             # until none of them return DONE anymore (indicating that they're
@@ -572,14 +570,14 @@ class Repository(object):
 
                 # check dependencies
                 dependency_missing = False
-                for dependency_name in metadata_processor._after:
-                    for potential_dependency in metaprocs:
-                        if re.match(dependency_name, potential_dependency._name):
-                            continue
-                        if not potential_dependency._done:
-                            continue
-                        dependency_missing = True
-                if dependency_missing:
+                try:
+                    for dependency_name in metadata_processor._after:
+                        for potential_dependency in metaprocs:
+                            if potential_dependency._done:
+                                continue
+                            if re.match(dependency_name, potential_dependency._name):
+                                raise DependencyMissing
+                except DependencyMissing:
                     continue
                     
                 node = metadata_processor._node
