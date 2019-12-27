@@ -23,13 +23,13 @@ def metadata_processor(func=None, **kwargs):
     def set_metadata_processor_attributes(func):
         func.__is_a_metadata_processor = True
         # set before
-        func.__before = kwargs.setdefault('before', [])
+        func.__before = kwargs.get('before', [])
         if isinstance(func.__before, str):
             func.__before = [func.__before]
         # set after
-        func.__after = kwargs.setdefault('after', [])
+        func.__after = kwargs.get('after', [])
         if isinstance(func.__after, str):
-            func.__before = [func.__after]
+            func.__after = [func.__after]
         # return
         return func
     
