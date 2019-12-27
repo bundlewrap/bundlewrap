@@ -6,6 +6,7 @@ from inspect import isabstract
 from os import listdir, mkdir
 from os.path import isdir, isfile, join
 from threading import Lock
+import re
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 
@@ -553,7 +554,6 @@ class Repository(object):
                     metaprocs.append(func)
             
             # dependency assignment helper
-            import re
             def populate_dependency(name, after):
                 for metaproc in metaprocs:
                     if re.match(name, metaproc._name):
