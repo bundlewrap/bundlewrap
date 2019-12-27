@@ -581,9 +581,10 @@ class Repository(object):
                     for dependency_name in after:
                         for potential_dependency in metaprocs:
                             if re.match(dependency_name, potential_dependency._name):
-                                if not potential_dependency._done:
-                                    debug(metadata_processor._name + ' waits for dependency ' + potential_dependency._name)
-                                    dependency_missing = True
+                                continue
+                            if not potential_dependency._done:
+                                continue
+                            dependency_missing = True
                 if dependency_missing:
                     continue
                     
