@@ -97,13 +97,29 @@ class SecretProxy(object):
 
         return Fernet(key).decrypt(cryptotext.encode('utf-8')).decode('utf-8')
 
-    def _decrypt_file(self, source_path=None, key='encrypt'):
+    def _decrypt_file(self, source_path=None, key=None):
         """
         Decrypts the file at source_path (relative to data/) and
         returns the plaintext as unicode.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "decrypted file"
+
+        content = get_file_contents(join(self.repo.data_dir, source_path))
+
+        key_delim = content.find(b'$')
+        if key_delim > -1:
+            key_from_file = content[:key_delim].decode('utf-8')
+            content = content[key_delim + 1:]
+        else:
+            key_from_file = None
+
+        if key is None:
+            if key_from_file is not None:
+                key = key_from_file
+            else:
+                key = 'encrypt'
+
         try:
             key = self.keys[key]
         except KeyError:
@@ -117,7 +133,7 @@ class SecretProxy(object):
             ))
 
         f = Fernet(key)
-        return f.decrypt(get_file_contents(join(self.repo.data_dir, source_path))).decode('utf-8')
+        return f.decrypt(content).decode('utf-8')
 
     def _decrypt_file_as_base64(self, source_path=None, key='encrypt'):
         """
@@ -262,7 +278,7 @@ class SecretProxy(object):
             key=key,
         )
 
-    def decrypt_file(self, source_path, key='encrypt'):
+    def decrypt_file(self, source_path, key=None):
         return Fault(
             self._decrypt_file,
             source_path=source_path,
