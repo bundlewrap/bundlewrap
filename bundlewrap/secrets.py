@@ -77,25 +77,15 @@ class SecretProxy(object):
         self.keys = self._load_keys()
         self._call_log = {}
 
-    def _decrypt(self, cryptotext=None, key='encrypt'):
+    def _decrypt(self, cryptotext=None, key=None):
         """
         Decrypts a given encrypted password.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "decrypted text"
-        try:
-            key = self.keys[key]
-        except KeyError:
-            raise FaultUnavailable(_(
-                "Key '{key}' not available for decryption of the following cryptotext, "
-                "check your {file}: {cryptotext}"
-            ).format(
-                cryptotext=cryptotext,
-                file=FILENAME_SECRETS,
-                key=key,
-            ))
 
-        return Fernet(key).decrypt(cryptotext.encode('utf-8')).decode('utf-8')
+        key, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
+        return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file(self, source_path=None, key=None):
         """
@@ -105,10 +95,11 @@ class SecretProxy(object):
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "decrypted file"
 
-        key, content = self._determine_key_to_use(source_path=source_path, key=key)
+        cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
+        key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
 
         f = Fernet(key)
-        return f.decrypt(content).decode('utf-8')
+        return f.decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file_as_base64(self, source_path=None, key=None):
         """
@@ -118,24 +109,23 @@ class SecretProxy(object):
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return b64encode("decrypted file as base64").decode('utf-8')
 
-        key, content = self._determine_key_to_use(source_path=source_path, key=key)
+        cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
+        key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
 
         f = Fernet(key)
-        return b64encode(f.decrypt(content)).decode('utf-8')
+        return b64encode(f.decrypt(cryptotext)).decode('utf-8')
 
-    def _determine_key_to_use(self, source_path=None, key=None):
-        content = get_file_contents(join(self.repo.data_dir, source_path))
-
-        key_delim = content.find(b'$')
+    def _determine_key_to_use(self, cryptotext, key, entity_description):
+        key_delim = cryptotext.find(b'$')
         if key_delim > -1:
-            key_from_file = content[:key_delim].decode('utf-8')
-            content = content[key_delim + 1:]
+            key_from_text = cryptotext[:key_delim].decode('utf-8')
+            cryptotext = cryptotext[key_delim + 1:]
         else:
-            key_from_file = None
+            key_from_text = None
 
         if key is None:
-            if key_from_file is not None:
-                key = key_from_file
+            if key_from_text is not None:
+                key = key_from_text
             else:
                 key = 'encrypt'
 
@@ -143,15 +133,15 @@ class SecretProxy(object):
             key = self.keys[key]
         except KeyError:
             raise FaultUnavailable(_(
-                "Key '{key}' not available for decryption of the following file, "
-                "check your {file}: {source_path}"
+                "Key '{key}' not available for decryption of the following entity, "
+                "check your {file}: {entity_description}"
             ).format(
                 file=FILENAME_SECRETS,
                 key=key,
-                source_path=source_path,
+                entity_description=entity_description,
             ))
 
-        return key, content
+        return key, cryptotext
 
     def _generate_human_password(
         self, identifier=None, digits=2, key='generate', per_word=3, words=4,
@@ -265,7 +255,7 @@ class SecretProxy(object):
             result[section] = config.get(section, 'key').encode('utf-8')
         return result
 
-    def decrypt(self, cryptotext, key='encrypt'):
+    def decrypt(self, cryptotext, key=None):
         return Fault(
             self._decrypt,
             cryptotext=cryptotext,
@@ -291,6 +281,7 @@ class SecretProxy(object):
         Encrypts a given plaintext password and returns a string that can
         be fed into decrypt() to get the password back.
         """
+        key_name = key
         try:
             key = self.keys[key]
         except KeyError:
@@ -301,7 +292,7 @@ class SecretProxy(object):
                 key=key,
             ))
 
-        return Fernet(key).encrypt(plaintext.encode('utf-8')).decode('utf-8')
+        return key_name + '$' + Fernet(key).encrypt(plaintext.encode('utf-8')).decode('utf-8')
 
     def encrypt_file(self, source_path, target_path, key='encrypt'):
         """
