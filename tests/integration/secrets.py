@@ -29,6 +29,19 @@ def test_encrypt(tmpdir):
     assert rcode == 0
 
 
+def test_encrypt_different_key_autodetect(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.encrypt(\"test\", key=\"generate\"))'", path=str(tmpdir))
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.decrypt(\"{}\"))'".format(stdout.decode('utf-8').strip()), path=str(tmpdir))
+    assert stdout == b"test\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_encrypt_file(tmpdir):
     make_repo(tmpdir)
 
