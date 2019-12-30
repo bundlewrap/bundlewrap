@@ -644,6 +644,10 @@ def remove_item_dependents(items, dep_item, skipped=False):
                 # don't skip dummy items because of untriggered members
                 # see issue #151; separate elif for clarity
                 item._deps.remove(dep_item.id)
+            elif dep_item.id in item._concurrency_deps:
+                # don't skip items just because of concurrency deps
+                # separate elif for clarity
+                item._deps.remove(dep_item.id)
             else:
                 removed_items.append(item)
 
