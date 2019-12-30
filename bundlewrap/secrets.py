@@ -309,6 +309,7 @@ class SecretProxy(object):
         target_path. The source_path is relative to CWD or absolute,
         while target_path is relative to data/.
         """
+        key_name = key
         try:
             key = self.keys[key]
         except KeyError:
@@ -323,6 +324,7 @@ class SecretProxy(object):
         fernet = Fernet(key)
         target_file = join(self.repo.data_dir, target_path)
         with open(target_file, 'wb') as f:
+            f.write(key_name.encode('utf-8') + b'$')
             f.write(fernet.encrypt(plaintext))
         return target_file
 
