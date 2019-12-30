@@ -105,6 +105,25 @@ class SecretProxy(object):
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "decrypted file"
 
+        key, content = self._determine_key_to_use(source_path=source_path, key=key)
+
+        f = Fernet(key)
+        return f.decrypt(content).decode('utf-8')
+
+    def _decrypt_file_as_base64(self, source_path=None, key=None):
+        """
+        Decrypts the file at source_path (relative to data/) and
+        returns the plaintext as base64.
+        """
+        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
+            return b64encode("decrypted file as base64").decode('utf-8')
+
+        key, content = self._determine_key_to_use(source_path=source_path, key=key)
+
+        f = Fernet(key)
+        return b64encode(f.decrypt(content)).decode('utf-8')
+
+    def _determine_key_to_use(self, source_path=None, key=None):
         content = get_file_contents(join(self.repo.data_dir, source_path))
 
         key_delim = content.find(b'$')
@@ -132,32 +151,7 @@ class SecretProxy(object):
                 source_path=source_path,
             ))
 
-        f = Fernet(key)
-        return f.decrypt(content).decode('utf-8')
-
-    def _decrypt_file_as_base64(self, source_path=None, key='encrypt'):
-        """
-        Decrypts the file at source_path (relative to data/) and
-        returns the plaintext as base64.
-        """
-        if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return b64encode("decrypted file as base64").decode('utf-8')
-        try:
-            key = self.keys[key]
-        except KeyError:
-            raise FaultUnavailable(_(
-                "Key '{key}' not available for decryption of the following file, "
-                "check your {file}: {source_path}"
-            ).format(
-                file=FILENAME_SECRETS,
-                key=key,
-                source_path=source_path,
-            ))
-
-        f = Fernet(key)
-        return b64encode(f.decrypt(get_file_contents(
-            join(self.repo.data_dir, source_path),
-        ))).decode('utf-8')
+        return key, content
 
     def _generate_human_password(
         self, identifier=None, digits=2, key='generate', per_word=3, words=4,
@@ -285,7 +279,7 @@ class SecretProxy(object):
             key=key,
         )
 
-    def decrypt_file_as_base64(self, source_path, key='encrypt'):
+    def decrypt_file_as_base64(self, source_path, key=None):
         return Fault(
             self._decrypt_file_as_base64,
             source_path=source_path,
