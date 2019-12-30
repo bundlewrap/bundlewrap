@@ -103,9 +103,11 @@ If the source file is binary however (or any encoding other than UTF-8), you mus
 
 You can always add more keys to your `.secrets.cfg`, but you should keep the defaults around. Adding more keys makes it possible to give different keys to different teams. **By default, BundleWrap will skip items it can't find the required keys for**.
 
-When using `.password_for()`, `.decrypt()` etc., you can provide a `key` argument to select the key:
+When using `.password_for()`, `.encrypt()` etc., you can provide a `key` argument to select the key:
 
 	repo.vault.password_for("some database", key="devops")
+
+The encrypted data will be prefixed by `yourkeyname$...` to indicate that the key `yourkeyname` was used for encryption. Thus, during decryption, you can omit the `key=` parameter.
 
 <br>
 
