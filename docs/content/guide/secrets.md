@@ -107,7 +107,7 @@ When using `.password_for()`, `.encrypt()` etc., you can provide a `key` argumen
 
 	repo.vault.password_for("some database", key="devops")
 
-The encrypted data will be prefixed by `yourkeyname$...` to indicate that the key `yourkeyname` was used for encryption. Thus, during decryption, you can emit the `key=` parameter.
+The encrypted data will be prefixed by `yourkeyname$...` to indicate that the key `yourkeyname` was used for encryption. Thus, during decryption, you can omit the `key=` parameter.
 
 <br>
 
