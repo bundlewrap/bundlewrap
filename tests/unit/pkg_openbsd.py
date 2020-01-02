@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from bundlewrap.items.pkg_openbsd import parse_pkg_name
 from pytest import raises
 

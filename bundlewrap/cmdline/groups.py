@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from ..group import GROUP_ATTR_DEFAULTS
 from ..utils.text import bold, mark_for_translation as _
 from ..utils.ui import io

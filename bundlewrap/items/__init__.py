@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 Note that modules in this package have to use absolute imports because
 Repository.item_classes loads them as files.
 """
-from __future__ import unicode_literals
 from copy import copy
 from datetime import datetime
 from inspect import cleandoc

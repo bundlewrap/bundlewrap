@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from operator import itemgetter
 
 from ..utils.table import ROW_SEPARATOR, render_table

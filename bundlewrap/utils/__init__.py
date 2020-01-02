@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from base64 import b64encode
 from codecs import getwriter
 from contextlib import contextmanager

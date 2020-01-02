@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
 from .items import Item
 from .items.actions import Action

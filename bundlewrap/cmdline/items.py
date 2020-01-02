@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from os import makedirs
 from os.path import dirname, exists, join
 from sys import exit

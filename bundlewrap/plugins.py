@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from json import dumps, loads
 from os import chmod, remove
 from os.path import exists, join
