@@ -11,7 +11,6 @@ from bundlewrap.items.files import content_processor_jinja2, content_processor_m
 from bundlewrap.utils.dicts import merge_dict, reduce_dict
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import force_text, mark_for_translation as _
-from six import add_metaclass
 import yaml
 
 
@@ -21,8 +20,7 @@ def log_error(run_result):
         io.debug(run_result.stderr.decode('utf-8'))
 
 
-@add_metaclass(ABCMeta)
-class KubernetesItem(Item):
+class KubernetesItem(Item, metaclass=ABCMeta):
     """
     A generic Kubernetes item.
     """

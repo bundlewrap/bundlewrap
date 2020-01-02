@@ -3,11 +3,9 @@ from abc import ABCMeta, abstractmethod
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
-from six import add_metaclass
 
 
-@add_metaclass(ABCMeta)
-class Pkg(Item):
+class Pkg(Item, metaclass=ABCMeta):
     """
     A generic package.
     """
