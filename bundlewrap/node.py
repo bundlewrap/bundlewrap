@@ -841,8 +841,7 @@ def build_attr_property(attr, default):
             return attr_value
         else:
             raise DontCache(attr_value)
-    method.__name__ = str("_group_attr_{}".format(attr))  # required for cached_property
-                                                          # str() for Python 2 compatibility
+    method.__name__ = "_group_attr_{}".format(attr)  # required for cached_property
     return cached_property(method)
 
 for attr, default in GROUP_ATTR_DEFAULTS.items():
