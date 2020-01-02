@@ -69,8 +69,6 @@ class WorkerPool(object):
                 task=task_id,
                 worker=worker_id,
             ))
-            if not hasattr(exception, '__traceback__'):  # Python 2
-                exception.__traceback__ = future.exception_info()[1]
             exception.__task_id = task_id
             raise exception
         else:
