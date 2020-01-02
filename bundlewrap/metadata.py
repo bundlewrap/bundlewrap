@@ -77,13 +77,9 @@ def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=Fal
 
 
 def check_metadata_keys(node):
-    try:
-        basestring
-    except NameError:  # Python 2
-        basestring = str
     for path in map_dict_keys(node.metadata):
         value = path[-1]
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             raise TypeError(_("metadata key for {node} at path '{path}' is not a string").format(
                 node=node.name,
                 path="'->'".join(path[:-1]),
