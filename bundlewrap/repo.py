@@ -577,6 +577,7 @@ class Repository(object):
                             ))
                             raise exc
                         processed_dict, options = check_metadata_processor_result(
+                            input_metadata,
                             processed,
                             node.name,
                             metadata_processor_name,
