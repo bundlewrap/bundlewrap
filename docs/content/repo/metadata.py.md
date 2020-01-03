@@ -36,8 +36,8 @@ In this example, `"bar"` can only be set once `"foo"` is available and thus the 
 <tr><th>Option</th><th>Description</th></tr>
 <tr><td><code>DONE</code></td><td>Indicates that this metadata processor has done all it can and need not be called again. Return this whenever possible.</td></tr>
 <tr><td><code>RUN_ME_AGAIN</code></td><td>Indicates that this metadata processor is still waiting for metadata from another metadata processor to become available.</td></tr>
-<tr><td><code>DEFAULTS</code></td><td>The returned metadata dictionary will only be used to provide default values. The actual metadata generated so far will be recursively merged into the returned dict.</td></tr>
-<tr><td><code>OVERWRITE</code></td><td>The returned metadata dictionary will be recursively merged into the actual metadata generated so far (inverse of <code>DEFAULTS</code>).</td></tr>
+<tr><td><code>DEFAULTS</code></td><td>The returned metadata dictionary will only be used to provide default values. The actual metadata generated so far will be recursively merged into the returned dict. When using this flag, you must not return the original metadata dictionary but construct a new one as in the example below.</td></tr>
+<tr><td><code>OVERWRITE</code></td><td>The returned metadata dictionary will be recursively merged into the actual metadata generated so far (inverse of <code>DEFAULTS</code>). When using this flag, you must not return the original metadata dictionary but construct a new one as in the `DEFAULTS` example below.</td></tr>
 </table>
 
 Here is an example of how to use `DEFAULTS`:

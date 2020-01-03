@@ -93,7 +93,7 @@ def check_metadata_keys(node):
             ))
 
 
-def check_metadata_processor_result(result, node_name, metadata_processor_name):
+def check_metadata_processor_result(input_metadata, result, node_name, metadata_processor_name):
     """
     Validates the return value of a metadata processor and splits it
     into metadata and options.
@@ -111,6 +111,17 @@ def check_metadata_processor_result(result, node_name, metadata_processor_name):
         raise ValueError(_(
             "metadata processor {metaproc} for node {node} did not return "
             "a dict as the first element"
+        ).format(
+            metaproc=metadata_processor_name,
+            node=node_name,
+        ))
+    if (
+        (DEFAULTS in options or OVERWRITE in options) and
+        id(input_metadata) == id(result_dict)
+    ):
+        raise ValueError(_(
+            "metadata processor {metaproc} for node {node} returned original "
+            "metadata dict plus DEFAULTS or OVERWRITE"
         ).format(
             metaproc=metadata_processor_name,
             node=node_name,
