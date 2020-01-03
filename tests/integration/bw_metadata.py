@@ -258,6 +258,174 @@ def foo(metadata):
     assert rcode == 0
 
 
+def test_metadatapy_invalid_number_of_elements(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return metadata
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
+def test_metadatapy_invalid_first_element_not_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return DONE, metadata
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
+def test_metadatapy_invalid_defaults_plus_original_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return metadata, DONE, DEFAULTS
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
+def test_metadatapy_invalid_overwrite_plus_original_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return metadata, DONE, OVERWRITE
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
+def test_metadatapy_invalid_option(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return metadata, DONE, 1000
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
+def test_metadatapy_invalid_done_and_again(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return metadata, DONE, RUN_ME_AGAIN
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
+def test_metadatapy_invalid_no_done_or_again(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return {}, DEFAULTS
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
+def test_metadatapy_invalid_defaults_and_overwrite(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_processor
+def foo(metadata):
+    return {}, DEFAULTS, OVERWRITE, DONE
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
+
+
 def test_table(tmpdir):
     make_repo(
         tmpdir,
