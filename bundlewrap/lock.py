@@ -26,8 +26,8 @@ from .utils.ui import io
 
 HARD_LOCK_PATH = "/tmp/bundlewrap.lock"
 HARD_LOCK_FILE = HARD_LOCK_PATH + "/info"
-SOFT_LOCK_PATH = "/tmp/bundlewrap.softlock.d"
-SOFT_LOCK_FILE = "/tmp/bundlewrap.softlock.d/{id}"
+SOFT_LOCK_PATH = "/var/tmp/bundlewrap.softlock.d"
+SOFT_LOCK_FILE = "/var/tmp/bundlewrap.softlock.d/{id}"
 
 
 def get_hard_lock_info(node, local_path):
