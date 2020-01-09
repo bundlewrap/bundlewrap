@@ -1,3 +1,16 @@
+# 3.8.0
+
+2020-01-09
+
+* `k8s_raw`: added support for items without a namespace
+* `k8s_raw`: fixed overriding resource name in YAML
+* `k8s_raw`: allow using builtin item types if there are no actual conflicts
+* decryption keys can now be set within encrypted files
+* improved detection of incorrect metadata processor usage
+* fixed excessive skipping of items because of concurrency dependencies
+* fixed `preceded_by` not working for actions
+
+
 # 3.7.0
 
 2019-10-07
