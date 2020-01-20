@@ -726,6 +726,16 @@ class Repository(object):
                 else:
                     break
 
+        missing_results = results_expected_from.difference(results_observed_from)
+        if missing_results:
+            proclist = ""
+            for node_name, metaproc_name in missing_results:
+                proclist += node_name + " " + metaproc_name + "\n"
+            raise ValueError(_(
+                "Result expected from these metadata processor(s), "
+                "but never returned:\n"
+            ) + proclist)
+
     def metadata_hash(self):
         repo_dict = {}
         for node in self.nodes:
