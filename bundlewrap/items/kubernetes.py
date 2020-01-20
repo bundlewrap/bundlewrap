@@ -244,6 +244,7 @@ class KubernetesRawItem(KubernetesItem):
                     bundle=self.bundle.name,
                     item2=item.id,
                     bundle2=item.bundle.name,
+                    node=self.node.name,
                 ))
 
     def get_auto_deps(self, items):
