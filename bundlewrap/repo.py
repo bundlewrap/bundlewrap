@@ -21,6 +21,7 @@ from .exceptions import (
 from .group import Group
 from .metadata import (
     blame_changed_paths,
+    changes_metadata,
     check_metadata_processor_result,
     deepcopy_metadata,
     DEFAULTS,
@@ -570,6 +571,10 @@ class Repository(object):
             # just waiting for another metaproc to maybe insert new data,
             # which isn't happening if none return DONE)
             metaproc_returned_DONE = False
+            # Now for the interesting part: We run all metadata processors
+            # until none of them return changed metadata anymore.
+            # TODO loop prevention
+            metadata_changed = False
             for node_name in list(self._node_metadata_partial):
                 if QUIT_EVENT.is_set():
                     break
@@ -611,6 +616,12 @@ class Repository(object):
                         elif new_metadata:
                             # TODO validate returned metadata
                             results_observed_from.add((node_name, metadata_reactor_name))
+                            if not metadata_changed:
+                                metadata_changed = changes_metadata(
+                                    self._node_metadata_partial[node.name],
+                                    new_metadata,
+                                )
+
                             if blame:
                                 blame_changed_paths(
                                     self._node_metadata_partial[node.name],
@@ -702,7 +713,7 @@ class Repository(object):
                         self._node_metadata_partial[node.name] = processed_dict
                     ### TODO remove this block in 4.0 END
 
-            if not metaproc_returned_DONE:
+            if not metaproc_returned_DONE and not metadata_changed:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
                     # During metadata reactor execution, partial metadata may
                     # have been requested for nodes we did not previously
