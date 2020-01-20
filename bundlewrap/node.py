@@ -695,16 +695,37 @@ class Node(object):
         return hash_metadata(self.metadata)
 
     @property
-    def metadata_processors(self):
+    def metadata_defaults(self):
+        return self._metadata_processors[0]
+
+    @property
+    def _metadata_processors(self):
+        def tuple_with_name(bundle, metadata_processor):
+            return (
+                "{}.{}".format(
+                    bundle.name,
+                    metadata_processor.__name__,
+                ),
+                metadata_processor,
+            )
+
+        defaults = set()
+        reactors = set()
+        classic_metaprocs = set()
+
         for bundle in self.bundles:
-            for metadata_processor in bundle.metadata_processors:
-                yield (
-                    "{}.{}".format(
-                        bundle.name,
-                        metadata_processor.__name__,
-                    ),
-                    metadata_processor,
-                )
+            for default in bundle._metadata_processors[0]:
+                defaults.add(tuple_with_name(bundle, default))
+            for reactor in bundle._metadata_processors[1]:
+                reactors.add(tuple_with_name(bundle, reactor))
+            for classic_metaproc in bundle._metadata_processors[2]:
+                classic_metaprocs.add(tuple_with_name(bundle, classic_metaproc))
+
+        return defaults, reactors, classic_metaprocs
+
+    @property
+    def metadata_reactors(self):
+        return self._metadata_processors[1]
 
     @property
     def partial_metadata(self):

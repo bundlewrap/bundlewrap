@@ -32,6 +32,8 @@ DONE = 1
 RUN_ME_AGAIN = 2
 DEFAULTS = 3
 OVERWRITE = 4
+EXPECT_RESULT = 5
+DO_NOT_RUN_ME_AGAIN = 6
 
 
 def atomic(obj):

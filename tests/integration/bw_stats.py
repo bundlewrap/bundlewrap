@@ -33,7 +33,9 @@ def test_nondeterministic(tmpdir):
 │     1 │ nodes               │
 │     0 │ groups              │
 │     1 │ bundles             │
+│     0 │ metadata defaults   │
 │     0 │ metadata processors │
+│     0 │ metadata reactors   │
 │     2 │ items               │
 ├───────┼─────────────────────┤
 │     2 │ file                │
