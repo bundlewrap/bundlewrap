@@ -475,3 +475,47 @@ def test_table_no_key(tmpdir):
     )
     stdout, stderr, rcode = run("bw metadata --table node1", path=str(tmpdir))
     assert rcode == 1
+
+
+def test_metadatapy_proc_merge_order(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {
+                    "one": "node",
+                    "two": "node",
+                    "five": "node",
+                },
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_defaults
+def foo():
+    return {
+        "two": "defaults",
+        "three": "defaults",
+        "four": "defaults",
+    }
+
+@metadata_reactor
+def foo_reactor(metadata):
+    return {
+        "four": "reactor",
+        "five": "reactor",
+    }
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "one": "node",
+        "two": "node",
+        "three": "defaults",
+        "four": "reactor",
+        "five": "reactor",
+    }
+    assert stderr == b""
+    assert rcode == 0
