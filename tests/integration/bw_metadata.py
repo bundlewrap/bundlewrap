@@ -519,3 +519,96 @@ def foo_reactor(metadata):
     }
     assert stderr == b""
     assert rcode == 0
+
+
+def test_metadatapy_do_not_run_me_again(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""called = False
+
+@metadata_reactor
+def foo_reactor(metadata):
+    global called
+    if not called:
+        called = True
+        return DO_NOT_RUN_ME_AGAIN
+    else:
+        raise AssertionError
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 0
+
+
+def test_metadatapy_expect_result(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""called = False
+
+@metadata_reactor
+def foo_reactor(metadata):
+    global called
+    if not called:
+        called = True
+        return EXPECT_RESULT
+    else:
+        return {}
+
+@metadata_reactor
+def dummy_reactor(metadata):
+    # this reactor is just to ensure foo_reactor gets run again because
+    # something returned metadata
+    return {'dummy': 1}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
+
+
+def test_metadatapy_expect_result_fulfilled(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""called = False
+
+@metadata_reactor
+def foo_reactor(metadata):
+    global called
+    if not called:
+        called = True
+        return EXPECT_RESULT
+    else:
+        return {'foo': 1}
+
+@metadata_reactor
+def dummy_reactor(metadata):
+    # this reactor is just to ensure foo_reactor gets run again because
+    # something returned metadata
+    return {'dummy': 1}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 0
