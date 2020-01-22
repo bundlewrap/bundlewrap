@@ -502,8 +502,6 @@ class Repository(object):
                 # check if static metadata for this node is already done
                 if node_name in self._node_metadata_static_complete:
                     continue
-                else:
-                    self._node_metadata_static_complete.add(node_name)
 
                 with io.job(_("{node}  building group metadata").format(node=bold(node.name))):
                     group_order = _flatten_group_hierarchy(node.groups)
@@ -547,7 +545,11 @@ class Repository(object):
             # At this point, static metadata from groups and nodes has been merged.
             # Next, we look at defaults from metadata.py.
 
-            for node_name in self._node_metadata_partial:
+            for node_name in list(self._node_metadata_partial):
+                # check if static metadata for this node is already done
+                if node_name in self._node_metadata_static_complete:
+                    continue
+
                 node_blame = self._node_metadata_blame[node_name]
                 with io.job(_("{node}  running metadata defaults").format(node=bold(node.name))):
                     for defaults_processor_name, defaults_processor in node.metadata_defaults:
@@ -565,6 +567,10 @@ class Repository(object):
                             new_metadata,
                             self._node_metadata_partial[node.name],
                         )
+
+                # This will ensure node/group metadata and defaults are
+                # skipped over in future iterations.
+                self._node_metadata_static_complete.add(node_name)
 
             # Now for the interesting part: We run all metadata processors
             # until none of them return DONE anymore (indicating that they're
