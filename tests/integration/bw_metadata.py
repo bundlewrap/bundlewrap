@@ -612,3 +612,28 @@ def dummy_reactor(metadata):
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert rcode == 0
+
+
+def test_metadatapy_infinite_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def plusone(metadata):
+    return {'foo': metadata.get('foo', 0) + 1 }
+
+@metadata_reactor
+def plustwo(metadata):
+    return {'foo': metadata.get('foo', 0) + 2 }
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from imp import load_source
 from inspect import isabstract
-from os import listdir, mkdir
+from os import environ, listdir, mkdir
 from os.path import isdir, isfile, join
 from threading import Lock
 
@@ -46,6 +46,7 @@ DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 FILENAME_REQUIREMENTS = "requirements.txt"
+MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "100"))
 
 HOOK_EVENTS = (
     'action_run_end',
@@ -492,7 +493,19 @@ class Repository(object):
         results_expected_from = set()
         # these processors have actually produced a non-falsy result
         results_observed_from = set()
+
+        iterations = 0
+        reactors_that_returned_something_in_last_iteration = set()
         while not QUIT_EVENT.is_set():
+            iterations += 1
+            if iterations > MAX_METADATA_ITERATIONS:
+                proclist = ""
+                for node, metaproc in sorted(reactors_that_returned_something_in_last_iteration):
+                    proclist += node + " " + metaproc + "\n"
+                raise ValueError(_(
+                    "Infinite loop detected between these metadata reactors:\n"
+                ) + proclist)
+
             # First, get the static metadata out of the way
             for node_name in list(self._node_metadata_partial):
                 if QUIT_EVENT.is_set():
@@ -579,8 +592,9 @@ class Repository(object):
             metaproc_returned_DONE = False
             # Now for the interesting part: We run all metadata processors
             # until none of them return changed metadata anymore.
-            # TODO loop prevention
             metadata_changed = False
+            reactors_that_returned_something_in_last_iteration = set()
+
             for node_name in list(self._node_metadata_partial):
                 if QUIT_EVENT.is_set():
                     break
@@ -622,6 +636,9 @@ class Repository(object):
                         elif new_metadata:
                             # TODO validate returned metadata
                             results_observed_from.add((node_name, metadata_reactor_name))
+                            reactors_that_returned_something_in_last_iteration.add(
+                                (node_name, metadata_reactor_name),
+                            )
                             if not metadata_changed:
                                 metadata_changed = changes_metadata(
                                     self._node_metadata_partial[node.name],
