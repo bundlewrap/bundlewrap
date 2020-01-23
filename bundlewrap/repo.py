@@ -35,6 +35,7 @@ from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, names
 from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.dicts import hash_statedict, merge_dict
+from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io, QUIT_EVENT
 
@@ -618,7 +619,7 @@ class Repository(object):
                             # ...but we can't always do it for performance reasons.
                             input_metadata = self._node_metadata_partial[node.name]
                         try:
-                            new_metadata = metadata_reactor(input_metadata)
+                            new_metadata = metadata_reactor(Metastack(input_metadata))
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata processor "
