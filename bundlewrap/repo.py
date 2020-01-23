@@ -488,6 +488,9 @@ class Repository(object):
         Builds complete metadata for all nodes that appear in
         self._node_metadata_partial.keys().
         """
+        # TODO remove this mechanism in bw 4.0
+        self._in_new_metareactor = False
+
         # these processors have indicated that they do not need to be run again
         blacklisted_metaprocs = set()
         # these processors have indicated that they must produce a result at some point
@@ -602,6 +605,9 @@ class Repository(object):
                 node = self.get_node(node_name)
                 node_blame = self._node_metadata_blame[node_name]
                 with io.job(_("{node}  running metadata reactors").format(node=bold(node.name))):
+                    # TODO remove this mechanism in bw 4.0
+                    self._in_new_metareactor = True
+
                     for metadata_reactor_name, metadata_reactor in node.metadata_reactors:
                         if (node_name, metadata_reactor_name) in blacklisted_metaprocs:
                             continue
@@ -657,6 +663,9 @@ class Repository(object):
                                 self._node_metadata_partial[node.name],
                                 new_metadata,
                             )
+
+                    # TODO remove this mechanism in bw 4.0
+                    self._in_new_metareactor = False
 
                     ### TODO remove this block in 4.0 BEGIN
                     for metadata_processor_name, metadata_processor in node._metadata_processors[2]:
