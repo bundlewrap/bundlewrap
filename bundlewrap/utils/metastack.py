@@ -51,16 +51,23 @@ class Metastack(object):
         merged = base.copy()
 
         for key, value in update.items():
-            if isinstance(value, _Atomic):
-                raise MetastackAtomicIllegal()
+            if key in base and isinstance(base[key], _Atomic) and isinstance(value, _Atomic):
+                raise MetastackTypeConflict('atomics on two levels for the same key {}'.format(key))
 
             if key not in base:
                 merged[key] = value
             else:
-                if isinstance(base[key], _Atomic):
-                    pass
-                elif isinstance(base[key], dict) and isinstance(value, dict):
-                    merged[key] = self._merge_layers(base[key], value)
+                base_atomic = isinstance(base[key], _Atomic)
+                value_atomic = isinstance(value, _Atomic)
+
+                if isinstance(base[key], dict) and isinstance(value, dict):
+                    # XXX Feel free to optimize these at a later stage.
+                    if base_atomic:
+                        pass
+                    elif value_atomic:
+                        merged[key] = value
+                    else:
+                        merged[key] = self._merge_layers(base[key], value)
                 elif (
                     isinstance(base[key], list) and
                     (
@@ -69,9 +76,14 @@ class Metastack(object):
                         isinstance(value, tuple)
                     )
                 ):
-                    extended = base[key][:]
-                    extended.extend(value)
-                    merged[key] = extended
+                    if base_atomic:
+                        pass
+                    elif value_atomic:
+                        merged[key] = value
+                    else:
+                        extended = base[key][:]
+                        extended.extend(value)
+                        merged[key] = extended
                 elif (
                     isinstance(base[key], tuple) and
                     (
@@ -80,7 +92,12 @@ class Metastack(object):
                         isinstance(value, tuple)
                     )
                 ):
-                    merged[key] = base[key] + tuple(value)
+                    if base_atomic:
+                        pass
+                    elif value_atomic:
+                        merged[key] = value
+                    else:
+                        merged[key] = base[key] + tuple(value)
                 elif (
                     isinstance(base[key], set) and
                     (
@@ -89,7 +106,12 @@ class Metastack(object):
                         isinstance(value, tuple)
                     )
                 ):
-                    merged[key] = base[key].union(set(value))
+                    if base_atomic:
+                        pass
+                    elif value_atomic:
+                        merged[key] = value
+                    else:
+                        merged[key] = base[key].union(set(value))
                 elif (
                     (
                         (isinstance(base[key], bool) and isinstance(value, bool)) or
@@ -109,10 +131,6 @@ class Metastack(object):
         # Marked with an underscore because only the internal metadata
         # reactor routing is supposed to call this method.
         self._layers[identifier] = new_layer
-
-
-class MetastackAtomicIllegal(Exception):
-    pass
 
 
 class MetastackKeyError(Exception):

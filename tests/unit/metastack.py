@@ -1,5 +1,5 @@
 from bundlewrap.metadata import atomic
-from bundlewrap.utils.metastack import Metastack, MetastackAtomicIllegal, MetastackTypeConflict
+from bundlewrap.utils.metastack import Metastack, MetastackTypeConflict
 from pytest import raises
 
 from sys import version_info
@@ -254,5 +254,6 @@ def test_atomic_in_base():
 def test_atomic_in_layer():
     stack = Metastack({'list': [1, 2, 3]})
     stack._set_layer('identifier', {'list': atomic([4])})
-    with raises(MetastackAtomicIllegal):
-        stack.get('list', None)
+    assert 1 not in stack.get('list', None)
+    assert 2 not in stack.get('list', None)
+    assert 3 not in stack.get('list', None)
