@@ -1,4 +1,5 @@
 from bundlewrap.utils.metastack import Metastack
+from pytest import raises
 
 
 def test_has_no_top():
@@ -88,7 +89,19 @@ def test_merge_lists_multi_layers():
     stack = Metastack({'something': {'a_list': [1, 2], 'a_value': 5}})
     stack._set_layer('identifier', {'something': {'a_list': [3]}})
     stack._set_layer('unrelated', {'something': {'another_value': 10}})
-    assert stack.get('something/a_list', None) == [1, 2, 3]
+
+    # Objects in Metastacks are frozen. This converts lists to tuples.
+    # Unlike set and frozenset, list and tuple doesn't naturally support
+    # "is equal".
+    #
+    # This is acceptable, because in metaprocs people are expected to
+    # maybe check if something is in a list and maybe access some item
+    # of a list. All that works. Operations like .append() do not work
+    # and they are not supposed to.
+    assert len(stack.get('something/a_list', None)) == 3
+    assert stack.get('something/a_list', None)[0] == 1
+    assert stack.get('something/a_list', None)[1] == 2
+    assert stack.get('something/a_list', None)[2] == 3
 
 
 def test_merge_sets_multi_layers():
@@ -162,3 +175,14 @@ def test_update_layer_for_new_value():
     assert stack.get('foo', None) == 'bar'
     assert stack.get('boing', 'default') == 'default'
     assert stack.get('something', None) == 456
+
+
+def test_should_be_frozen():
+    stack = Metastack({'foo': {'bar': {1, 2, 3}}})
+    foo = stack.get('foo', None)
+
+    with raises(AttributeError):
+        foo['bar'].add(4)
+
+    with raises(TypeError):
+        del foo['bar']

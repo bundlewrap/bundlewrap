@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .dicts import merge_dict
+from .dicts import freeze_object, merge_dict
 
 
 class Metastack(object):
@@ -29,7 +29,7 @@ class Metastack(object):
             else:
                 raise MetastackKeyError('Path {} not in metastack'.format(path))
         else:
-            return result['data']
+            return freeze_object(result['data'])
 
     def has(self, path):
         try:
