@@ -99,7 +99,7 @@ A node in both groups will end up with `eth0` *and* `eth1`.
 
 The nameservers however are overwritten, so that nodes that are in both the "all" *and* the "internal" group will only have the `10.0.0.x` ones while nodes just in the "all" group will have the `8.8.x.x` nameservers.
 
-The NTP servers are appended: a node in both groups will have all three nameservers.
+The NTP servers are appended: a node in both groups will have all three of them.
 
 <div class="alert alert-warning">BundleWrap will consider group hierarchy when merging metadata. For example, it is possible to define a default nameserver for the "eu" group and then override it for the "eu.frankfurt" subgroup. The catch is that this only works for groups that are connected through a subgroup hierarchy. Independent groups will have their metadata merged in an undefined order. <code>bw test</code> will report conflicting metadata in independent groups as a metadata collision.</div>
 
