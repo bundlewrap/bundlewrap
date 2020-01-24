@@ -2,6 +2,8 @@ from bundlewrap.metadata import atomic
 from bundlewrap.utils.dicts import freeze_object, map_dict_keys, reduce_dict
 from pytest import raises
 
+from sys import version_info
+
 
 def test_dictmap():
     assert set(map_dict_keys({
@@ -65,23 +67,25 @@ def test_freeze_object():
     assert frozen['list_of_dicts'][0]['attribute'] == 123
     assert frozen['recursive_dict']['something']['else'] == 3
 
-    with raises(TypeError):
-        frozen['bool'] = False
+    # XXX Remove this if in bw 4.0 and always do the check
+    if version_info[0] >= 3:
+        with raises(TypeError):
+            frozen['bool'] = False
 
-    with raises(TypeError):
-        frozen['int'] = 10
+        with raises(TypeError):
+            frozen['int'] = 10
 
-    with raises(TypeError):
-        frozen['none'] = None
+        with raises(TypeError):
+            frozen['none'] = None
 
-    with raises(TypeError):
-        frozen['list_of_dicts'][0]['attribute'] = 456
+        with raises(TypeError):
+            frozen['list_of_dicts'][0]['attribute'] = 456
 
-    with raises(TypeError):
-        frozen['recursive_dict']['something']['else'] = 4
+        with raises(TypeError):
+            frozen['recursive_dict']['something']['else'] = 4
 
-    with raises(TypeError):
-        del frozen['int']
+        with raises(TypeError):
+            del frozen['int']
 
     with raises(AttributeError):
         frozen['simple_list'].append(5)

@@ -2,6 +2,8 @@ from bundlewrap.metadata import atomic
 from bundlewrap.utils.metastack import Metastack, MetastackAtomicIllegal, MetastackTypeConflict
 from pytest import raises
 
+from sys import version_info
+
 
 def test_has_no_top():
     stack = Metastack()
@@ -185,8 +187,10 @@ def test_should_be_frozen():
     with raises(AttributeError):
         foo['bar'].add(4)
 
-    with raises(TypeError):
-        del foo['bar']
+    # XXX Remove this if in bw 4.0 and always do the check
+    if version_info[0] >= 3:
+        with raises(TypeError):
+            del foo['bar']
 
 
 def test_type_conflicts():
