@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from .dicts import merge_dict
 
 
-class Metastack:
+class Metastack(object):
     def __init__(self, base={}):
         self._base = base
         self._layers = {}
@@ -24,7 +27,7 @@ class Metastack:
             if use_default:
                 return default
             else:
-                raise MetastackKeyError(f'Path {path} not in metastack')
+                raise MetastackKeyError('Path {} not in metastack'.format(path))
         else:
             return result['data']
 
