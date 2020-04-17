@@ -31,7 +31,7 @@ This page describes the various subdirectories and files than can exist inside a
 <td>This optional subdirectory contains hooks you can use to act on certain events when using BundleWrap.</td>
 </tr>
 <tr>
-<td><a href="/repo/dev_item">items/</a></td>
+<td><a href="/guide/dev_item">items/</a></td>
 <td>This optional subdirectory contains the code for your custom item types.</td>
 </tr>
 <tr>
