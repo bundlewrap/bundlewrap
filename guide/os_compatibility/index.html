@@ -9,19 +9,14 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
         <title>OS compatibility - BundleWrap</title>
-        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
         <link href="../../bundlewrap.css" rel="stylesheet">
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-        <![endif]-->
 
         <script src="../../js/jquery-1.10.2.min.js" defer></script>
-        <script src="../../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="../../js/bootstrap.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script>
         <script>
@@ -36,269 +31,261 @@
     </head>
 
     <body>
-
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-
-                <!-- Collapsed navigation -->
-                <div class="navbar-header">
-                    <!-- Expander button -->
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="../..">BundleWrap</a>
-                </div>
+                <a class="navbar-brand" href="../..">BundleWrap</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
                 <!-- Expanded navigation -->
-                <div class="navbar-collapse collapse">
+                <div id="navbar-collapse" class="navbar-collapse collapse">
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
-                            <li >
-                                <a href="../.."><i class="fa fa-home"></i></a>
+                            <li class="navitem">
+                                <a href="../.." class="nav-link"><i class="fa fa-home"></i></a>
                             </li>
                             <li class="dropdown active">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
-<li >
-    <a href="../quickstart/">Quickstart</a>
+<li>
+    <a href="../quickstart/" class="dropdown-item">Quickstart</a>
 </li>
                                     
-<li >
-    <a href="../installation/">Installation</a>
+<li>
+    <a href="../installation/" class="dropdown-item">Installation</a>
 </li>
                                     
-<li >
-    <a href="../cli/">CLI</a>
+<li>
+    <a href="../cli/" class="dropdown-item">CLI</a>
 </li>
                                     
-<li >
-    <a href="../env/">Environment Variables</a>
+<li>
+    <a href="../env/" class="dropdown-item">Environment Variables</a>
 </li>
                                     
-<li >
-    <a href="../item_file_templates/">File templates</a>
+<li>
+    <a href="../item_file_templates/" class="dropdown-item">File templates</a>
 </li>
                                     
-<li >
-    <a href="../secrets/">Handling secrets</a>
+<li>
+    <a href="../secrets/" class="dropdown-item">Handling secrets</a>
 </li>
                                     
-<li >
-    <a href="../locks/">Locking</a>
+<li>
+    <a href="../locks/" class="dropdown-item">Locking</a>
 </li>
                                     
-<li >
-    <a href="../kubernetes/">Kubernetes</a>
+<li>
+    <a href="../kubernetes/" class="dropdown-item">Kubernetes</a>
 </li>
                                     
-<li >
-    <a href="../dev_item/">Custom items</a>
+<li>
+    <a href="../dev_item/" class="dropdown-item">Custom items</a>
 </li>
                                     
-<li >
-    <a href="../dev_plugin/">Writing plugins</a>
+<li>
+    <a href="../dev_plugin/" class="dropdown-item">Writing plugins</a>
 </li>
                                     
-<li >
-    <a href="../api/">Python API</a>
+<li>
+    <a href="../api/" class="dropdown-item">Python API</a>
 </li>
                                     
-<li class="active">
-    <a href="./">OS compatibility</a>
+<li>
+    <a href="./" class="dropdown-item active">OS compatibility</a>
 </li>
                                     
-<li >
-    <a href="../migrate_12/">Migrating to 2.0</a>
+<li>
+    <a href="../migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
-<li >
-    <a href="../migrate_23/">Migrating to 3.0</a>
+<li>
+    <a href="../migrate_23/" class="dropdown-item">Migrating to 3.0</a>
 </li>
                                 </ul>
                             </li>
                             <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Repository <b class="caret"></b></a>
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Repository <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
-<li >
-    <a href="../../repo/layout/">Overview</a>
+<li>
+    <a href="../../repo/layout/" class="dropdown-item">Overview</a>
 </li>
                                     
-<li >
-    <a href="../../repo/nodes.py/">nodes.py</a>
+<li>
+    <a href="../../repo/nodes.py/" class="dropdown-item">nodes.py</a>
 </li>
                                     
-<li >
-    <a href="../../repo/groups.py/">groups.py</a>
+<li>
+    <a href="../../repo/groups.py/" class="dropdown-item">groups.py</a>
 </li>
                                     
-<li >
-    <a href="../../repo/requirements.txt/">requirements.txt</a>
+<li>
+    <a href="../../repo/requirements.txt/" class="dropdown-item">requirements.txt</a>
 </li>
                                     
-<li >
-    <a href="../../repo/items.py/">bundles/.../items.py</a>
+<li>
+    <a href="../../repo/items.py/" class="dropdown-item">bundles/.../items.py</a>
 </li>
                                     
-<li >
-    <a href="../../repo/metadata.py/">bundles/.../metadata.py</a>
+<li>
+    <a href="../../repo/metadata.py/" class="dropdown-item">bundles/.../metadata.py</a>
 </li>
                                     
-<li >
-    <a href="../../repo/hooks/">hooks/</a>
+<li>
+    <a href="../../repo/hooks/" class="dropdown-item">hooks/</a>
 </li>
                                     
-<li >
-    <a href="../../repo/libs/">libs/</a>
+<li>
+    <a href="../../repo/libs/" class="dropdown-item">libs/</a>
 </li>
                                     
-<li >
-    <a href="../../repo/plugins/">Plugins</a>
+<li>
+    <a href="../../repo/plugins/" class="dropdown-item">Plugins</a>
 </li>
                                 </ul>
                             </li>
                             <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Items <b class="caret"></b></a>
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Items <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
-<li >
-    <a href="../../items/action/">action</a>
+<li>
+    <a href="../../items/action/" class="dropdown-item">action</a>
 </li>
                                     
-<li >
-    <a href="../../items/directory/">directory</a>
+<li>
+    <a href="../../items/directory/" class="dropdown-item">directory</a>
 </li>
                                     
-<li >
-    <a href="../../items/file/">file</a>
+<li>
+    <a href="../../items/file/" class="dropdown-item">file</a>
 </li>
                                     
-<li >
-    <a href="../../items/group/">group</a>
+<li>
+    <a href="../../items/group/" class="dropdown-item">group</a>
 </li>
                                     
-<li >
-    <a href="../../items/k8s/">k8s_*</a>
+<li>
+    <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_apt/">pkg_apt</a>
+<li>
+    <a href="../../items/pkg_apt/" class="dropdown-item">pkg_apt</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_dnf/">pkg_dnf</a>
+<li>
+    <a href="../../items/pkg_dnf/" class="dropdown-item">pkg_dnf</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_openbsd/">pkg_openbsd</a>
+<li>
+    <a href="../../items/pkg_openbsd/" class="dropdown-item">pkg_openbsd</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_opkg/">pkg_opkg</a>
+<li>
+    <a href="../../items/pkg_opkg/" class="dropdown-item">pkg_opkg</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_pacman/">pkg_pacman</a>
+<li>
+    <a href="../../items/pkg_pacman/" class="dropdown-item">pkg_pacman</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_pip/">pkg_pip</a>
+<li>
+    <a href="../../items/pkg_pip/" class="dropdown-item">pkg_pip</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_snap/">pkg_snap</a>
+<li>
+    <a href="../../items/pkg_snap/" class="dropdown-item">pkg_snap</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_yum/">pkg_yum</a>
+<li>
+    <a href="../../items/pkg_yum/" class="dropdown-item">pkg_yum</a>
 </li>
                                     
-<li >
-    <a href="../../items/pkg_zypper/">pkg_zypper</a>
+<li>
+    <a href="../../items/pkg_zypper/" class="dropdown-item">pkg_zypper</a>
 </li>
                                     
-<li >
-    <a href="../../items/postgres_db/">postgres_db</a>
+<li>
+    <a href="../../items/postgres_db/" class="dropdown-item">postgres_db</a>
 </li>
                                     
-<li >
-    <a href="../../items/postgres_role/">postgres_role</a>
+<li>
+    <a href="../../items/postgres_role/" class="dropdown-item">postgres_role</a>
 </li>
                                     
-<li >
-    <a href="../../items/svc_openbsd/">svc_openbsd</a>
+<li>
+    <a href="../../items/svc_openbsd/" class="dropdown-item">svc_openbsd</a>
 </li>
                                     
-<li >
-    <a href="../../items/svc_systemd/">svc_systemd</a>
+<li>
+    <a href="../../items/svc_systemd/" class="dropdown-item">svc_systemd</a>
 </li>
                                     
-<li >
-    <a href="../../items/svc_systemv/">svc_systemv</a>
+<li>
+    <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
 </li>
                                     
-<li >
-    <a href="../../items/svc_upstart/">svc_upstart</a>
+<li>
+    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
-<li >
-    <a href="../../items/symlink/">symlink</a>
+<li>
+    <a href="../../items/symlink/" class="dropdown-item">symlink</a>
 </li>
                                     
-<li >
-    <a href="../../items/user/">user</a>
+<li>
+    <a href="../../items/user/" class="dropdown-item">user</a>
 </li>
                                 </ul>
                             </li>
                             <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Misc <b class="caret"></b></a>
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Misc <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
-<li >
-    <a href="../../misc/about/">About</a>
+<li>
+    <a href="../../misc/about/" class="dropdown-item">About</a>
 </li>
                                     
-<li >
-    <a href="../../misc/deciding/">Why BundleWrap</a>
+<li>
+    <a href="../../misc/deciding/" class="dropdown-item">Why BundleWrap</a>
 </li>
                                     
-<li >
-    <a href="../../misc/glossary/">Glossary</a>
+<li>
+    <a href="../../misc/glossary/" class="dropdown-item">Glossary</a>
 </li>
                                     
-<li >
-    <a href="../../misc/faq/">FAQ</a>
+<li>
+    <a href="../../misc/faq/" class="dropdown-item">FAQ</a>
 </li>
                                     
-<li >
-    <a href="../../misc/contributing/">Contributing</a>
+<li>
+    <a href="../../misc/contributing/" class="dropdown-item">Contributing</a>
 </li>
                                 </ul>
                             </li>
                         </ul>
 
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
-                            <li >
-                                <a rel="next" href="../api/">
+                            <li class="nav-item">
+                                <a rel="prev" href="../api/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
-                            <li >
-                                <a rel="prev" href="../migrate_12/">
+                            <li class="nav-item">
+                                <a rel="next" href="../migrate_12/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
-                            <li>
-                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/os_compatibility.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            <li class="nav-item">
+                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/os_compatibility.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -306,14 +293,34 @@
         </div>
 
         <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#os-compatibility">OS compatibility</a></li>
-            <li><a href="#nodeos-and-nodeos_version">node.os and node.os_version</a></li>
-            <li><a href="#other-node-attributes">other node attributes</a></li>
-    </ul>
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#os-compatibility" class="nav-link">OS compatibility</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#nodeos-and-nodeos_version" class="nav-link">node.os and node.os_version</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#other-node-attributes" class="nav-link">other node attributes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
 </div></div>
-                <div class="col-md-9" role="main">
+                    <div class="col-md-9" role="main">
 
 <h1 id="os-compatibility">OS compatibility</h1>
 <p>BundleWrap by necessity takes a pragmatic approach to supporting different operating systems and distributions. Our main target is Linux, but support for other UNIXes is also evolving. We cannot guarantee to be compatible with every distribution and BSD flavor under the sun, but we try to cover the common ones.</p>
@@ -323,6 +330,7 @@
 <p><br></p>
 <h2 id="other-node-attributes">other node attributes</h2>
 <p>In some cases (e.g. when not using sudo) you will need to manually adjust some things. Check the docs <a href="../../repo/nodes.py/#os-compatibility-overrides">on node-level OS overrides</a>.</p></div>
+            </div>
         </div>
 
         <footer class="col-md-12">
@@ -337,19 +345,19 @@
         <script src="../../js/base.js" defer></script>
         <script src="../../search/main.js" defer></script>
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
             </div>
             <div class="modal-body">
                 <p>
                     From here you can search these documents. Enter
                     your search terms below.
                 </p>
-                <form role="form">
+                <form>
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
@@ -360,12 +368,12 @@
             </div>
         </div>
     </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
             </div>
             <div class="modal-body">
               <table class="table">
