@@ -321,7 +321,7 @@ class KubernetesCronJob(KubernetesItem):
 class KubernetesCustomResourceDefinition(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_crd"
     KIND = "CustomResourceDefinition"
-    KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1beta1"
+    KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_crd"
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -337,7 +337,7 @@ class KubernetesCustomResourceDefinition(KubernetesItem):
 class KubernetesDaemonSet(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_daemonsets"
     KIND = "DaemonSet"
-    KUBERNETES_APIVERSION = "v1"
+    KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_daemonset"
 
     def get_auto_deps(self, items):
@@ -354,7 +354,7 @@ class KubernetesDaemonSet(KubernetesItem):
 class KubernetesDeployment(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_deployments"
     KIND = "Deployment"
-    KUBERNETES_APIVERSION = "extensions/v1beta1"
+    KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_deployment"
 
     def get_auto_deps(self, items):
@@ -371,7 +371,7 @@ class KubernetesDeployment(KubernetesItem):
 class KubernetesIngress(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_ingresses"
     KIND = "Ingress"
-    KUBERNETES_APIVERSION = "extensions/v1beta1"
+    KUBERNETES_APIVERSION = "networking.k8s.io/v1beta1"
     ITEM_TYPE_NAME = "k8s_ingress"
 
     def get_auto_deps(self, items):
