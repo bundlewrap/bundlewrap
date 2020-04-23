@@ -59,7 +59,10 @@ class KubernetesItem(Item):
         if self.attributes['delete']:
             return None
         else:
-            return {'manifest': self.manifest}
+            return {'manifest': json.dumps(
+                self.nuke_k8s_status(json.loads(self.manifest)),
+                indent=4, sort_keys=True,
+            )}
 
     def fix(self, status):
         if status.must_be_deleted:
@@ -157,6 +160,11 @@ class KubernetesItem(Item):
     def namespace(self):
         return self.name.split("/", 1)[0] or None
 
+    def nuke_k8s_status(self, manifest):
+        if 'status' in manifest:
+            del manifest['status']
+        return manifest
+
     def patch_attributes(self, attributes):
         if 'context' not in attributes:
             attributes['context'] = {}
@@ -180,7 +188,7 @@ class KubernetesItem(Item):
                 return None
             return {'manifest': json.dumps(reduce_dict(
                 full_json_response,
-                json.loads(self.manifest),
+                self.nuke_k8s_status(json.loads(self.manifest)),
             ), indent=4, sort_keys=True)}
         elif result.return_code == 1 and "NotFound" in result.stderr.decode('utf-8'):
             return None
