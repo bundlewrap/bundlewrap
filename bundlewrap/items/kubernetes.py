@@ -59,7 +59,10 @@ class KubernetesItem(Item):
         if self.attributes['delete']:
             return None
         else:
-            return {'manifest': self.manifest}
+            return {'manifest': json.dumps(
+                self.nuke_changing_attributes(json.loads(self.manifest)),
+                indent=4, sort_keys=True,
+            )}
 
     def fix(self, status):
         if status.must_be_deleted:
@@ -157,6 +160,14 @@ class KubernetesItem(Item):
     def namespace(self):
         return self.name.split("/", 1)[0] or None
 
+    def nuke_changing_attributes(self, manifest):
+        # These attributes cannot be managed by us. The cluster decides
+        # what's going on. We can't fix it.
+        for i in ('apiVersion', 'status'):
+            if i in manifest:
+                del manifest[i]
+        return manifest
+
     def patch_attributes(self, attributes):
         if 'context' not in attributes:
             attributes['context'] = {}
@@ -180,7 +191,7 @@ class KubernetesItem(Item):
                 return None
             return {'manifest': json.dumps(reduce_dict(
                 full_json_response,
-                json.loads(self.manifest),
+                self.nuke_changing_attributes(json.loads(self.manifest)),
             ), indent=4, sort_keys=True)}
         elif result.return_code == 1 and "NotFound" in result.stderr.decode('utf-8'):
             return None
@@ -310,7 +321,7 @@ class KubernetesCronJob(KubernetesItem):
 class KubernetesCustomResourceDefinition(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_crd"
     KIND = "CustomResourceDefinition"
-    KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1beta1"
+    KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_crd"
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -326,7 +337,7 @@ class KubernetesCustomResourceDefinition(KubernetesItem):
 class KubernetesDaemonSet(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_daemonsets"
     KIND = "DaemonSet"
-    KUBERNETES_APIVERSION = "v1"
+    KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_daemonset"
 
     def get_auto_deps(self, items):
@@ -343,7 +354,7 @@ class KubernetesDaemonSet(KubernetesItem):
 class KubernetesDeployment(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_deployments"
     KIND = "Deployment"
-    KUBERNETES_APIVERSION = "extensions/v1beta1"
+    KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_deployment"
 
     def get_auto_deps(self, items):
@@ -360,7 +371,7 @@ class KubernetesDeployment(KubernetesItem):
 class KubernetesIngress(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_ingresses"
     KIND = "Ingress"
-    KUBERNETES_APIVERSION = "extensions/v1beta1"
+    KUBERNETES_APIVERSION = "networking.k8s.io/v1beta1"
     ITEM_TYPE_NAME = "k8s_ingress"
 
     def get_auto_deps(self, items):
