@@ -30,6 +30,7 @@ from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, names
 from .utils.dicts import hash_statedict
+from .utils.metastack import Metastack
 from .utils.text import (
     blue,
     bold,
@@ -738,7 +739,14 @@ class Node(object):
         because they will be fed all metadata updates until no more
         changes are made by any metadata processor.
         """
-        return self.repo._metadata_for_node(self.name, partial=True)
+
+        partial = self.repo._metadata_for_node(self.name, partial=True)
+
+        # TODO remove this mechanism in bw 4.0, always return Metastacks
+        if self.repo._in_new_metareactor:
+            return Metastack(partial)
+        else:
+            return partial
 
     def run(self, command, data_stdin=None, may_fail=False, log_output=False):
         assert self.os in self.OS_FAMILY_UNIX
