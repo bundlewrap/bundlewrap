@@ -25,8 +25,6 @@ from .utils.ui import io
 
 
 LOCK_BASE = "/var/tmp"
-SOFT_LOCK_PATH = "/tmp/bundlewrap.softlock.d"
-SOFT_LOCK_FILE = "/tmp/bundlewrap.softlock.d/{id}"
 
 
 def identity():
@@ -41,17 +39,7 @@ class NodeLock(object):
         self.node = node
         self.ignore = ignore
         self.interactive = interactive
-
-        if self.node.locking_node is not None:
-            try:
-                self.locking_node = self.node.repo.get_node(self.node.locking_node)
-            except NoSuchNode:
-                raise Exception("Invalid locking_node {} for {}".format(
-                    self.node.locking_node,
-                    self.node.name,
-                ))
-        else:
-            self.locking_node = self.node
+        self.locking_node = _get_locking_node(node)
 
     def __enter__(self):
         if self.locking_node.os not in self.locking_node.OS_FAMILY_UNIX:
@@ -171,8 +159,30 @@ class NodeLock(object):
                 yield lock
 
 
+def _get_locking_node(node):
+    if node.locking_node is not None:
+        try:
+            return node.repo.get_node(node.locking_node)
+        except NoSuchNode:
+            raise Exception("Invalid locking_node {} for {}".format(
+                node.locking_node,
+                node.name,
+            ))
+    else:
+        return node
+
+
+def _soft_lock_dir(node_name):
+    return LOCK_BASE + "/bw-soft-" + quote(node_name)
+
+
+def _soft_lock_file(node_name, lock_id):
+    return _soft_lock_dir(node_name) + "/" + lock_id
+
+
 def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
-    assert node.os in node.OS_FAMILY_UNIX
+    locking_node = _get_locking_node(node)
+    assert locking_node.os in locking_node.OS_FAMILY_UNIX
     if "\n" in comment:
         raise ValueError(_("Lock comments must not contain any newlines"))
     if not item_selectors:
@@ -194,8 +204,8 @@ def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
     with tempfile() as local_path:
         with open(local_path, 'w') as f:
             f.write(content + "\n")
-        node.run("mkdir -p " + quote(SOFT_LOCK_PATH))
-        node.upload(local_path, SOFT_LOCK_FILE.format(id=lock_id), mode='0644')
+        locking_node.run("mkdir -p " + quote(_soft_lock_dir(node.name)))
+        locking_node.upload(local_path, _soft_lock_file(node.name, lock_id), mode='0644')
 
     node.repo.hooks.lock_add(node.repo, node, lock_id, item_selectors, expiry_timestamp, comment)
 
@@ -203,10 +213,11 @@ def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
 
 
 def softlock_list(node):
-    if node.os not in node.OS_FAMILY_UNIX:
+    locking_node = _get_locking_node(node)
+    if locking_node.os not in locking_node.OS_FAMILY_UNIX:
         return []
     with io.job(_("{}  checking soft locks").format(bold(node.name))):
-        cat = node.run("cat {}".format(SOFT_LOCK_FILE.format(id="*")), may_fail=True)
+        cat = locking_node.run("cat {}".format(_soft_lock_file(node.name, "*")), may_fail=True)
         if cat.return_code != 0:
             return []
         result = []
@@ -233,10 +244,11 @@ def softlock_list(node):
 
 
 def softlock_remove(node, lock_id):
-    assert node.os in node.OS_FAMILY_UNIX
+    locking_node = _get_locking_node(node)
+    assert locking_node.os in locking_node.OS_FAMILY_UNIX
     io.debug(_("removing soft lock {id} from node {node}").format(
         id=lock_id,
         node=node.name,
     ))
-    node.run("rm {}".format(SOFT_LOCK_FILE.format(id=lock_id)))
+    locking_node.run("rm {}".format(_soft_lock_file(node.name, lock_id)))
     node.repo.hooks.lock_remove(node.repo, node, lock_id)
