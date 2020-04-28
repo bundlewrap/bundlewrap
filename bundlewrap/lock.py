@@ -24,7 +24,7 @@ from .utils.text import (
 from .utils.ui import io
 
 
-LOCK_BASE = "/var/tmp"
+LOCK_BASE = "/var/lib/bw"
 
 
 def identity():
@@ -46,6 +46,7 @@ class NodeLock(object):
             # no locking required/possible
             return self
         with tempfile() as local_path:
+            self.locking_node.run("mkdir -p " + quote(LOCK_BASE))
             if not self.ignore:
                 with io.job(_("{node}  checking hard lock status").format(node=bold(self.node.name))):
                     result = self.locking_node.run("mkdir " + quote(self._hard_lock_dir()), may_fail=True)
