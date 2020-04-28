@@ -9,7 +9,7 @@ from pipes import quote
 from socket import gethostname
 from time import time
 
-from .exceptions import NodeLockedException, RemoteException
+from .exceptions import NodeLockedException, NoSuchNode, RemoteException
 from .utils import cached_property, tempfile
 from .utils.text import (
     blue,
@@ -24,29 +24,9 @@ from .utils.text import (
 from .utils.ui import io
 
 
-HARD_LOCK_PATH = "/tmp/bundlewrap.lock"
-HARD_LOCK_FILE = HARD_LOCK_PATH + "/info"
+LOCK_BASE = "/var/tmp"
 SOFT_LOCK_PATH = "/tmp/bundlewrap.softlock.d"
 SOFT_LOCK_FILE = "/tmp/bundlewrap.softlock.d/{id}"
-
-
-def get_hard_lock_info(node, local_path):
-    try:
-        node.download(HARD_LOCK_FILE, local_path)
-        with open(local_path, 'r') as fp:
-            return json.load(fp)
-    except (RemoteException, ValueError):
-            io.stderr(_(
-                "{x} {node_bold}  corrupted hard lock: "
-                "unable to read or parse lock file contents "
-                "(clear it with `bw run {node} 'rm -Rf {path}'`)"
-            ).format(
-                node_bold=bold(node.name),
-                node=node.name,
-                path=HARD_LOCK_PATH,
-                x=red("!"),
-            ))
-            return {}
 
 
 def identity():
@@ -62,16 +42,27 @@ class NodeLock(object):
         self.ignore = ignore
         self.interactive = interactive
 
+        if self.node.locking_node is not None:
+            try:
+                self.locking_node = self.node.repo.get_node(self.node.locking_node)
+            except NoSuchNode:
+                raise Exception("Invalid locking_node {} for {}".format(
+                    self.node.locking_node,
+                    self.node.name,
+                ))
+        else:
+            self.locking_node = self.node
+
     def __enter__(self):
-        if self.node.os not in self.node.OS_FAMILY_UNIX:
+        if self.locking_node.os not in self.locking_node.OS_FAMILY_UNIX:
             # no locking required/possible
             return self
         with tempfile() as local_path:
             if not self.ignore:
                 with io.job(_("{node}  checking hard lock status").format(node=bold(self.node.name))):
-                    result = self.node.run("mkdir " + quote(HARD_LOCK_PATH), may_fail=True)
+                    result = self.locking_node.run("mkdir " + quote(self._hard_lock_dir()), may_fail=True)
                     if result.return_code != 0:
-                        info = get_hard_lock_info(self.node, local_path)
+                        info = self._get_hard_lock_info(local_path)
                         expired = False
                         try:
                             d = info['date']
@@ -98,28 +89,52 @@ class NodeLock(object):
 
             with io.job(_("{node}  uploading lock file").format(node=bold(self.node.name))):
                 if self.ignore:
-                    self.node.run("mkdir -p " + quote(HARD_LOCK_PATH))
+                    self.locking_node.run("mkdir -p " + quote(self._hard_lock_dir()))
                 with open(local_path, 'w') as f:
                     f.write(json.dumps({
                         'date': time(),
                         'user': identity(),
                     }))
-                self.node.upload(local_path, HARD_LOCK_FILE)
+                self.locking_node.upload(local_path, self._hard_lock_file())
 
         return self
 
     def __exit__(self, type, value, traceback):
-        if self.node.os not in self.node.OS_FAMILY_UNIX:
+        if self.locking_node.os not in self.locking_node.OS_FAMILY_UNIX:
             # no locking required/possible
             return
         with io.job(_("{node}  removing hard lock").format(node=bold(self.node.name))):
-            result = self.node.run("rm -R {}".format(quote(HARD_LOCK_PATH)), may_fail=True)
+            result = self.locking_node.run("rm -R {}".format(quote(self._hard_lock_dir())), may_fail=True)
 
         if result.return_code != 0:
             io.stderr(_("{x} {node}  could not release hard lock").format(
                 node=bold(self.node.name),
                 x=red("!"),
             ))
+
+    def _get_hard_lock_info(self, local_path):
+        try:
+            self.locking_node.download(self._hard_lock_file(), local_path)
+            with open(local_path, 'r') as fp:
+                return json.load(fp)
+        except (RemoteException, ValueError):
+                io.stderr(_(
+                    "{x} {node_bold}  corrupted hard lock: "
+                    "unable to read or parse lock file contents "
+                    "(clear it with `bw run {node} 'rm -Rf {path}'`)"
+                ).format(
+                    node_bold=bold(self.locking_node.name),
+                    node=self.locking_node.name,
+                    path=self._hard_lock_dir(),
+                    x=red("!"),
+                ))
+                return {}
+
+    def _hard_lock_dir(self):
+        return LOCK_BASE + "/bw-hard-" + quote(self.node.name)
+
+    def _hard_lock_file(self):
+        return self._hard_lock_dir() + "/info"
 
     def _warning_message_hard(self, info):
         return wrap_question(
