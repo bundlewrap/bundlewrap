@@ -363,6 +363,7 @@ class Node(object):
         self._compiling_metadata = Lock()
         self._dynamic_group_lock = Lock()
         self._dynamic_groups_resolved = False  # None means we're currently doing it
+        self._groups = set(attributes.get('groups', set()))
         self._metadata_so_far = {}
         self._node_metadata = attributes.get('metadata', {})
         self._ssh_conn_established = False
@@ -437,7 +438,15 @@ class Node(object):
     @cached_property
     @io.job_wrapper(_("{}  determining groups").format(bold("{0.name}")))
     def groups(self):
-        _groups = set(self.repo._static_groups_for_node(self))
+        _groups = set()
+
+        for group_name in self._groups:
+            _groups.add(self.repo.get_group(group_name))
+
+        for group in self.repo.groups:
+            if self in group._static_nodes:
+                _groups.add(group)
+
         # lock to avoid infinite recursion when .members_add/remove
         # use stuff like node.in_group() that in turn calls this function
         if self._dynamic_group_lock.acquire(False):
