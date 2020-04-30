@@ -257,3 +257,44 @@ def test_atomic_in_layer():
     assert 1 not in stack.get('list', None)
     assert 2 not in stack.get('list', None)
     assert 3 not in stack.get('list', None)
+
+
+def test_set_layer_return_code():
+    stack = Metastack()
+    ret = stack._set_layer('identifier', {'foo': 'bar'})
+    assert ret is True
+    ret = stack._set_layer('identifier', {'foo': 'bar'})
+    assert ret is False
+    ret = stack._set_layer('identifier', {'foo': 'baz'})
+    assert ret is True
+    ret = stack._set_layer('identifier', {'foo': 'baz', 'bar': 1})
+    assert ret is True
+
+
+def test_as_dict():
+    stack = Metastack({
+        'bool': True,
+        'bytes': b'howdy',
+        'dict': {1: 2},
+        'int': 1,
+        'list': [1],
+        'none': None,
+        'set': {1},
+        'str': 'howdy',
+        'tuple': (1, 2),
+    })
+    stack._set_layer('identifier1', {'int': 1000})
+    stack._set_layer('identifier2', {'list': [2]})
+    stack._set_layer('identifier3', {'new_element': True})
+    assert stack._as_dict() == {
+        'bool': True,
+        'bytes': b'howdy',
+        'dict': {1: 2},
+        'int': 1000,
+        'list': [1, 2],
+        'new_element': True,
+        'none': None,
+        'set': {1},
+        'str': 'howdy',
+        'tuple': (1, 2),
+    }

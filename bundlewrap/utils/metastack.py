@@ -38,6 +38,14 @@ class Metastack(object):
             return False
         return True
 
+    def _as_dict(self):
+        final_dict = {}
+
+        for layer in [self._base] + list(self._layers.values()):
+            final_dict = self._merge_layers(final_dict, layer)
+
+        return final_dict
+
     def _dict_has_path(self, layer, path):
         current = layer
         for element in path.split('/'):
@@ -130,7 +138,11 @@ class Metastack(object):
     def _set_layer(self, identifier, new_layer):
         # Marked with an underscore because only the internal metadata
         # reactor routing is supposed to call this method.
+
+        # XXX This assumes that Faults don't exist anymore.
+        changed = self._layers.get(identifier, {}) != new_layer
         self._layers[identifier] = new_layer
+        return changed
 
 
 class MetastackKeyError(Exception):
