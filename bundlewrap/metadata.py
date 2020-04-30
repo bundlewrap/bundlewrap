@@ -95,7 +95,7 @@ def changes_metadata(existing_metadata, new_metadata):
             if changes_metadata(existing_metadata[key], new_value):
                 return True
         if isinstance(existing_metadata[key], Fault) and isinstance(new_value, Fault):
-            # Always consider Faults as equal. It would arguably by more correct to
+            # Always consider Faults as equal. It would arguably be more correct to
             # always assume them to be different, but that would mean that we could
             # never do change detection between two dicts of metadata. So we have no
             # choice but to warn users in docs that Faults will always be considered

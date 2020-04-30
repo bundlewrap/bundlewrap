@@ -628,7 +628,7 @@ class Repository(object):
                             new_metadata = metadata_reactor(Metastack(input_metadata))
                         except Exception as exc:
                             io.stderr(_(
-                                "{x} Exception while executing metadata processor "
+                                "{x} Exception while executing metadata reactor "
                                 "{metaproc} for node {node}:"
                             ).format(
                                 x=red("!!!"),
