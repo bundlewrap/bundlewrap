@@ -24,7 +24,7 @@ from .utils.text import (
 from .utils.ui import io
 
 
-LOCK_BASE = "/var/lib/bw"
+LOCK_BASE = "/var/lib/bundlewrap"
 
 
 def identity():
@@ -120,7 +120,7 @@ class NodeLock(object):
                 return {}
 
     def _hard_lock_dir(self):
-        return LOCK_BASE + "/bw-hard-" + quote(self.node.name)
+        return LOCK_BASE + "/hard-" + quote(self.node.name)
 
     def _hard_lock_file(self):
         return self._hard_lock_dir() + "/info"
@@ -174,7 +174,7 @@ def _get_locking_node(node):
 
 
 def _soft_lock_dir(node_name):
-    return LOCK_BASE + "/bw-soft-" + quote(node_name)
+    return LOCK_BASE + "/soft-" + quote(node_name)
 
 
 def _soft_lock_file(node_name, lock_id):
