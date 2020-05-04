@@ -392,11 +392,6 @@ class Repository(object):
     def groups(self):
         return sorted(self.group_dict.values())
 
-    def _static_groups_for_node(self, node):
-        for group in self.groups:
-            if node in group._static_nodes:
-                yield group
-
     def hash(self):
         return hash_statedict(self.cdict)
 
