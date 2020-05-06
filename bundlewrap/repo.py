@@ -589,14 +589,16 @@ class Repository(object):
                 # skipped over in future iterations.
                 self._node_metadata_static_complete.add(node_name)
 
+            # TODO remove this in 4.0
             # Now for the interesting part: We run all metadata processors
             # until none of them return DONE anymore (indicating that they're
             # just waiting for another metaproc to maybe insert new data,
             # which isn't happening if none return DONE)
             metaproc_returned_DONE = False
-            # Now for the interesting part: We run all metadata processors
+
+            # Now for the interesting part: We run all metadata reactors
             # until none of them return changed metadata anymore.
-            metadata_changed = False
+            reactor_returned_changed_metadata = False
             reactors_that_returned_something_in_last_iteration = set()
 
             for node_name in list(self._node_metadata_partial):
@@ -604,6 +606,7 @@ class Repository(object):
                     break
                 node = self.get_node(node_name)
                 node_blame = self._node_metadata_blame[node_name]
+
                 with io.job(_("{node}  running metadata reactors").format(node=bold(node.name))):
                     # TODO remove this mechanism in bw 4.0
                     self._in_new_metareactor = True
@@ -620,7 +623,9 @@ class Repository(object):
                         if blame:
                             # We need to deepcopy here because otherwise we have no chance of
                             # figuring out what changed...
-                            input_metadata = deepcopy_metadata(self._node_metadata_partial[node.name])
+                            input_metadata = deepcopy_metadata(
+                                self._node_metadata_partial[node.name]
+                            )
                         else:
                             # ...but we can't always do it for performance reasons.
                             input_metadata = self._node_metadata_partial[node.name]
@@ -646,8 +651,8 @@ class Repository(object):
                             reactors_that_returned_something_in_last_iteration.add(
                                 (node_name, metadata_reactor_name),
                             )
-                            if not metadata_changed:
-                                metadata_changed = changes_metadata(
+                            if not reactor_returned_changed_metadata:
+                                reactor_returned_changed_metadata = changes_metadata(
                                     self._node_metadata_partial[node.name],
                                     new_metadata,
                                 )
@@ -667,7 +672,8 @@ class Repository(object):
                     # TODO remove this mechanism in bw 4.0
                     self._in_new_metareactor = False
 
-                    ### TODO remove this block in 4.0 BEGIN
+                ### TODO remove this block in 4.0 BEGIN
+                with io.job(_("{node}  running metadata processors").format(node=bold(node.name))):
                     for metadata_processor_name, metadata_processor in node._metadata_processors[2]:
                         if (node_name, metadata_processor_name) in blacklisted_metaprocs:
                             continue
@@ -744,9 +750,9 @@ class Repository(object):
                             )
 
                         self._node_metadata_partial[node.name] = processed_dict
-                    ### TODO remove this block in 4.0 END
+                ### TODO remove this block in 4.0 END
 
-            if not metaproc_returned_DONE and not metadata_changed:
+            if not metaproc_returned_DONE and not reactor_returned_changed_metadata:
                 if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
                     # During metadata reactor execution, partial metadata may
                     # have been requested for nodes we did not previously
