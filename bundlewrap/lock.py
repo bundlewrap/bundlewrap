@@ -31,7 +31,7 @@ def identity():
     ))
 
 
-class NodeLock(object):
+class NodeLock:
     def __init__(self, node, interactive=False, ignore=False):
         self.node = node
         self.ignore = ignore

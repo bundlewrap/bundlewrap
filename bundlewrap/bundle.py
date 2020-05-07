@@ -30,7 +30,7 @@ def metadata_reactor(func):
     return func
 
 
-class Bundle(object):
+class Bundle:
     """
     A collection of config items, bound to a node.
     """

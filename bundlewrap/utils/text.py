@@ -183,7 +183,7 @@ def wrap_question(title, body, question, prefix=""):
     return output
 
 
-class LineBuffer(object):
+class LineBuffer:
     def __init__(self, target):
         self.buffer = b""
         self.record = BytesIO()

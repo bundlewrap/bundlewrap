@@ -58,7 +58,7 @@ def random(seed):
                 yield character
 
 
-class SecretProxy(object):
+class SecretProxy:
     @staticmethod
     def random_key():
         """

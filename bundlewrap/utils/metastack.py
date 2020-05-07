@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from .dicts import _Atomic, freeze_object
 
 
-class Metastack(object):
+class Metastack:
     def __init__(self, base={}):
         self._base = base
         self._layers = {}

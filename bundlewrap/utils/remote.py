@@ -36,7 +36,7 @@ def stat(node, path):
     return file_stat
 
 
-class PathInfo(object):
+class PathInfo:
     """
     Serves as a proxy to get_path_type.
     """

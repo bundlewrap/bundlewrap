@@ -5,7 +5,7 @@ from .utils.text import bold, mark_for_translation as _
 from .utils.ui import io
 
 
-class DummyItem(object):
+class DummyItem:
     bundle = None
     triggered = False
 

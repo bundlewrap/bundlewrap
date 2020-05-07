@@ -52,7 +52,7 @@ def _build_error_chain(loop_node, last_node, nodes_in_between):
     return error_chain
 
 
-class Group(object):
+class Group:
     """
     A group of nodes.
     """

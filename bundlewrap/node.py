@@ -42,7 +42,7 @@ from .utils.text import (
 from .utils.ui import io
 
 
-class ApplyResult(object):
+class ApplyResult:
     """
     Holds information about an apply run for a node.
     """
@@ -315,7 +315,7 @@ def format_item_result(result, node, bundle, item, interactive=False, details=No
         )
 
 
-class Node(object):
+class Node:
     OS_FAMILY_BSD = (
         'freebsd',
         'macos',

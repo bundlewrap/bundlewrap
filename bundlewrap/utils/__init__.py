@@ -65,7 +65,7 @@ def download(url, path):
                 f.write(block)
 
 
-class Fault(object):
+class Fault:
     """
     A proxy object for lazy access to things that may not really be
     available at the time of use.
@@ -231,7 +231,7 @@ def sha1(data):
     return hasher.hexdigest()
 
 
-class SkipList(object):
+class SkipList:
     """
     Used to maintain a list of nodes that have already been visited.
     """

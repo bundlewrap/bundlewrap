@@ -26,7 +26,7 @@ DIFF_MAX_INLINE_LENGTH = 36
 DIFF_MAX_LINE_LENGTH = 1024
 
 
-class _Atomic(object):
+class _Atomic:
     """
     This and the following related classes are used to mark objects as
     non-mergeable for the purposes of merge_dict().

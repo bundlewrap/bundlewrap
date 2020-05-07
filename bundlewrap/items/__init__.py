@@ -48,7 +48,7 @@ def format_comment(comment):
     return result
 
 
-class ItemStatus(object):
+class ItemStatus:
     """
     Holds information on a particular Item such as whether it needs
     fixing and what's broken.
@@ -88,7 +88,7 @@ def make_normalize(attribute_default):
         return copy
 
 
-class Item(object):
+class Item:
     """
     A single piece of configuration (e.g. a file, a package, a service).
     """

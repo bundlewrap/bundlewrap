@@ -122,7 +122,7 @@ def groups_from_file(filepath, libs, repo_path, vault):
         yield Group(groupname, infodict)
 
 
-class HooksProxy(object):
+class HooksProxy:
     def __init__(self, path):
         self.__hook_cache = {}
         self.__module_cache = {}
@@ -208,7 +208,7 @@ def items_from_path(path):
                 pass
 
 
-class LibsProxy(object):
+class LibsProxy:
     def __init__(self, path):
         self.__module_cache = {}
         self.__path = path
@@ -250,7 +250,7 @@ def nodes_from_file(filepath, libs, repo_path, vault):
         yield Node(nodename, infodict)
 
 
-class Repository(object):
+class Repository:
     def __init__(self, repo_path=None):
         self.path = "/dev/null" if repo_path is None else repo_path
 

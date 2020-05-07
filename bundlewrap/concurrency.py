@@ -10,7 +10,7 @@ from .utils.ui import io, QUIT_EVENT
 JOIN_TIMEOUT = 5  # seconds
 
 
-class WorkerPool(object):
+class WorkerPool:
     """
     Manages a bunch of worker threads.
     """

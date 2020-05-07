@@ -147,7 +147,7 @@ def write_to_stream(stream, msg):
                 raise
 
 
-class DrainableStdin(object):
+class DrainableStdin:
     def get_input(self):
         while True:
             if QUIT_EVENT.is_set():
@@ -160,7 +160,7 @@ class DrainableStdin(object):
             termios.tcflush(sys.stdin, termios.TCIFLUSH)
 
 
-class IOManager(object):
+class IOManager:
     """
     Threadsafe singleton class that handles all IO.
     """
