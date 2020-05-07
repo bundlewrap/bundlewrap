@@ -9,6 +9,7 @@ from ..utils.cmdline import HELP_get_target_nodes
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
+from .diff import bw_diff
 from .groups import bw_groups
 from .hash import bw_hash
 from .items import bw_items
@@ -204,6 +205,35 @@ def build_parser_bw():
         required=False,
         type=str,
         help=_("name of node to inspect"),
+    )
+
+    # bw diff
+    help_diff = _("Show differences between nodes")
+    parser_diff = subparsers.add_parser("diff", description=help_diff, help=help_diff)
+    parser_diff.set_defaults(func=bw_diff)
+    parser_diff.add_argument(
+        "-b",
+        "--branch",
+        default=None,
+        dest='branch',
+        metavar=_("branch"),
+        required=False,
+        type=str,
+        help=_("compare node(s) to this git branch instead"),
+    )
+    parser_diff.add_argument(
+        "-m",
+        "--metadata",
+        action='store_true',
+        default=False,
+        dest='metadata',
+        help=_("compare metadata instead of configuration"),
+    )
+    parser_diff.add_argument(
+        'target',
+        metavar=_("TARGETS"),
+        type=str,
+        help=HELP_get_target_nodes,
     )
 
     # bw groups
