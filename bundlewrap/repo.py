@@ -535,21 +535,18 @@ class Repository(object):
                     # start messing with these objects in metadata processors. Every
                     # time we would edit one of these objects, the changes would be
                     # shared amongst multiple nodes.
-                    for source_node in (node.template_node, node):
-                        if not source_node:  # template_node might be None
-                            continue
-                        new_metadata = deepcopy_metadata(merge_dict(
+                    new_metadata = deepcopy_metadata(merge_dict(
+                        self._node_metadata_partial[node.name],
+                        node._node_metadata,
+                    ))
+                    if blame:
+                        blame_changed_paths(
                             self._node_metadata_partial[node.name],
-                            source_node._node_metadata,
-                        ))
-                        if blame:
-                            blame_changed_paths(
-                                self._node_metadata_partial[node.name],
-                                new_metadata,
-                                node_blame,
-                                "node:{}".format(source_node.name),
-                            )
-                        self._node_metadata_partial[node.name] = new_metadata
+                            new_metadata,
+                            node_blame,
+                            "node:{}".format(node.name),
+                        )
+                    self._node_metadata_partial[node.name] = new_metadata
 
             # At this point, static metadata from groups and nodes has been merged.
             # Next, we look at defaults from metadata.py.

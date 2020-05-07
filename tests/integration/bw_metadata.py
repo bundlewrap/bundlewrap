@@ -75,65 +75,6 @@ def test_merge(tmpdir):
     assert rcode == 0
 
 
-def test_template_node(tmpdir):
-    make_repo(
-        tmpdir,
-        nodes={
-            "node1": {
-                'template_node': "node2",
-            },
-            "node2": {
-                'metadata': {
-                    "foo": 2,
-                },
-            },
-        },
-        groups={
-            "group1": {
-                'members': ["node1"],
-                'metadata': {
-                    "foo": 3,
-                },
-            },
-        },
-    )
-    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert loads(stdout.decode()) == {"foo": 2}
-    assert stderr == b""
-    assert rcode == 0
-
-
-def test_template_node_override(tmpdir):
-    make_repo(
-        tmpdir,
-        nodes={
-            "node1": {
-                'metadata': {
-                    "foo": 1,
-                },
-                'template_node': "node2",
-            },
-            "node2": {
-                'metadata': {
-                    "foo": 2,
-                },
-            },
-        },
-        groups={
-            "group1": {
-                'members': ["node1"],
-                'metadata': {
-                    "foo": 3,
-                },
-            },
-        },
-    )
-    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert loads(stdout.decode()) == {"foo": 1}
-    assert stderr == b""
-    assert rcode == 0
-
-
 def test_metadatapy(tmpdir):
     make_repo(
         tmpdir,
