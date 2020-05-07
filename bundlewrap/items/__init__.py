@@ -423,6 +423,7 @@ class Item:
                 type=cls.ITEM_TYPE_NAME,
             ))
 
+    @classmethod
     def _validate_required_attributes(cls, bundle, item_id, attributes):
         missing = []
         for attrname in cls.REQUIRED_ATTRIBUTES:
