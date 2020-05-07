@@ -7,7 +7,7 @@ repo_url: "https://github.com/bundlewrap/bundlewrap"
 remote_name: github
 copyright: "BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>.</p><p> Donations welcome in Bitcoin <code>13AJYksqncZromPF8HvDUXsmHChAm3Y7W7</code> or Ethereum <code>0x5Eb3037e197d3C0d2E014bcfC2e027EB0AD42812</code>."
 google_analytics: ['UA-33891245-2', 'docs.bundlewrap.org']
-pages:
+nav:
 - <i class="fa fa-home"></i>: index.md
 - Guides:
   - Quickstart: guide/quickstart.md

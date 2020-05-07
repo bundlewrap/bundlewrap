@@ -29,6 +29,8 @@ DONE = 1
 RUN_ME_AGAIN = 2
 DEFAULTS = 3
 OVERWRITE = 4
+EXPECT_RESULT = 5
+DO_NOT_RUN_ME_AGAIN = 6
 
 
 def atomic(obj):
@@ -76,6 +78,31 @@ def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=Fal
     return blame_dict
 
 
+def changes_metadata(existing_metadata, new_metadata):
+    """
+    Returns True if new_metadata contains any keys or values not present
+    in or different from existing_metadata.
+    """
+    for key, new_value in new_metadata.items():
+        if key not in existing_metadata:
+            return True
+        if isinstance(new_value, dict):
+            if not isinstance(existing_metadata[key], dict):
+                return True
+            if changes_metadata(existing_metadata[key], new_value):
+                return True
+        if isinstance(existing_metadata[key], Fault) and isinstance(new_value, Fault):
+            # Always consider Faults as equal. It would arguably be more correct to
+            # always assume them to be different, but that would mean that we could
+            # never do change detection between two dicts of metadata. So we have no
+            # choice but to warn users in docs that Faults will always be considered
+            # equal to one another.
+            continue
+        if new_value != existing_metadata[key]:
+            return True
+    return False
+
+
 def check_metadata_keys(node):
     for path in map_dict_keys(node.metadata):
         value = path[-1]
@@ -86,7 +113,7 @@ def check_metadata_keys(node):
             ))
 
 
-def check_metadata_processor_result(result, node_name, metadata_processor_name):
+def check_metadata_processor_result(input_metadata, result, node_name, metadata_processor_name):
     """
     Validates the return value of a metadata processor and splits it
     into metadata and options.
@@ -104,6 +131,17 @@ def check_metadata_processor_result(result, node_name, metadata_processor_name):
         raise ValueError(_(
             "metadata processor {metaproc} for node {node} did not return "
             "a dict as the first element"
+        ).format(
+            metaproc=metadata_processor_name,
+            node=node_name,
+        ))
+    if (
+        (DEFAULTS in options or OVERWRITE in options) and
+        id(input_metadata) == id(result_dict)
+    ):
+        raise ValueError(_(
+            "metadata processor {metaproc} for node {node} returned original "
+            "metadata dict plus DEFAULTS or OVERWRITE"
         ).format(
             metaproc=metadata_processor_name,
             node=node_name,

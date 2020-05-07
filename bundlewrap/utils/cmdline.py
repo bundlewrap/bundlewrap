@@ -52,15 +52,16 @@ def get_node(repo, node_name, adhoc_nodes=False):
             exit(1)
 
 
+HELP_get_target_nodes = _("""expression to select target nodes, i.e.:
+"node1,node2,group3,bundle:foo,!bundle:bar,!group:group4,lambda:node.metadata['magic']<3"
+to select 'node1', 'node2', all nodes in 'group3', all nodes with the
+bundle 'foo', all nodes without bundle 'bar', all nodes not in 'group4'
+and all nodes whose 'magic' metadata is less than three (any exceptions
+in lambda expressions are ignored)
+""")
+
+
 def get_target_nodes(repo, target_string, adhoc_nodes=False):
-    """
-    Returns a list of nodes. The input is a string like this:
-
-    "node1,node2,group3,bundle:foo"
-
-    Meaning: Targets are 'node1', 'node2', all nodes in 'group3',
-    and all nodes with the bundle 'foo'.
-    """
     targets = []
     for name in target_string.split(","):
         name = name.strip()
@@ -79,6 +80,14 @@ def get_target_nodes(repo, target_string, adhoc_nodes=False):
             for node in repo.nodes:
                 if group_name not in names(node.groups):
                     targets.append(node)
+        elif name.startswith("lambda:"):
+            expression = eval("lambda node: " + name.split(":", 1)[1])
+            for node in repo.nodes:
+                try:
+                    if expression(node):
+                        targets.append(node)
+                except:
+                    pass
         else:
             try:
                 targets.append(repo.get_node(name))
