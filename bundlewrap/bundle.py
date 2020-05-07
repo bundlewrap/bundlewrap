@@ -21,15 +21,6 @@ def metadata_defaults(func):
     return func
 
 
-def metadata_processor_classic(func):
-    """
-    Decorator that tags metadata processors.
-    """
-    func._is_metadata_processor = True
-    func._is_classic_metadata_processor = True
-    return func
-
-
 def metadata_reactor(func):
     """
     Decorator that tags metadata reactors.
@@ -113,7 +104,6 @@ class Bundle(object):
                 return set(), set(), set()
             defaults = set()
             reactors = set()
-            classic_processors = set()
             internal_names = set()
             for name, attr in get_all_attrs_from_file(
                 self.metadata_file,
@@ -125,7 +115,6 @@ class Bundle(object):
                     'OVERWRITE': OVERWRITE,
                     'RUN_ME_AGAIN': RUN_ME_AGAIN,
                     'metadata_defaults': metadata_defaults,
-                    'metadata_processor': metadata_processor_classic,
                     'metadata_reactor': metadata_reactor,
                     'node': self.node,
                     'repo': self.repo,
@@ -152,9 +141,7 @@ class Bundle(object):
                         defaults.add(attr)
                     elif getattr(attr, '_is_metadata_reactor', False):
                         reactors.add(attr)
-                    elif getattr(attr, '_is_classic_metadata_processor', False):
-                        classic_processors.add(attr)
                     else:
                         # this should never happen
                         raise AssertionError
-            return defaults, reactors, classic_processors
+            return defaults, reactors

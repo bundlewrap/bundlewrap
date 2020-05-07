@@ -392,50 +392,6 @@ def test_fault_missing(tmpdir):
     assert run("bw test -iI", path=str(tmpdir))[2] == 0
 
 
-def test_metadata_determinism_ok(tmpdir):
-    make_repo(
-        tmpdir,
-        nodes={
-            "node1": {
-                'bundles': ["bundle1"],
-            },
-        },
-        bundles={
-            "bundle1": {},
-        },
-    )
-    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
-        f.write("""@metadata_processor
-def test(metadata):
-    metadata['test'] = 1
-    return metadata, DONE
-""")
-    assert run("bw test -m 3", path=str(tmpdir))[2] == 0
-
-
-def test_metadata_determinism_broken(tmpdir):
-    make_repo(
-        tmpdir,
-        nodes={
-            "node1": {
-                'bundles': ["bundle1"],
-            },
-        },
-        bundles={
-            "bundle1": {},
-        },
-    )
-    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
-        f.write("""from random import randint
-
-@metadata_processor
-def test(metadata):
-    metadata.setdefault('test', randint(1, 99999))
-    return metadata, DONE
-""")
-    assert run("bw test -m 3", path=str(tmpdir))[2] == 1
-
-
 def test_config_determinism_ok(tmpdir):
     make_repo(
         tmpdir,

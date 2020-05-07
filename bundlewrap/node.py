@@ -27,7 +27,6 @@ from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, names
 from .utils.dicts import hash_statedict
-from .utils.metastack import Metastack
 from .utils.text import (
     blue,
     bold,
@@ -717,17 +716,14 @@ class Node(object):
 
         defaults = set()
         reactors = set()
-        classic_metaprocs = set()
 
         for bundle in self.bundles:
             for default in bundle._metadata_processors[0]:
                 defaults.add(tuple_with_name(bundle, default))
             for reactor in bundle._metadata_processors[1]:
                 reactors.add(tuple_with_name(bundle, reactor))
-            for classic_metaproc in bundle._metadata_processors[2]:
-                classic_metaprocs.add(tuple_with_name(bundle, classic_metaproc))
 
-        return defaults, reactors, classic_metaprocs
+        return defaults, reactors
 
     @property
     def metadata_reactors(self):
@@ -736,22 +732,15 @@ class Node(object):
     @property
     def partial_metadata(self):
         """
-        Only to be used from inside metadata processors. Can't use the
+        Only to be used from inside metadata reactors. Can't use the
         normal .metadata there because it might deadlock when nodes
         have interdependent metadata.
 
-        It's OK for metadata processors to work with partial metadata
+        It's OK for metadata reactors to work with partial metadata
         because they will be fed all metadata updates until no more
-        changes are made by any metadata processor.
+        changes are made by any metadata reactor.
         """
-
-        partial = self.repo._metadata_for_node(self.name, partial=True)
-
-        # TODO remove this mechanism in bw 4.0, always return Metastacks
-        if self.repo._in_new_metareactor:
-            return Metastack(partial)
-        else:
-            return partial
+        return self.repo._metadata_for_node(self.name, partial=True)
 
     def run(self, command, data_stdin=None, may_fail=False, log_output=False):
         assert self.os in self.OS_FAMILY_UNIX

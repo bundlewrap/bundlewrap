@@ -195,7 +195,7 @@ def test_plugin_conflicts(repo):
             ))
 
 
-def test_determinism_config(repo, nodes, iterations):
+def test_determinism(repo, nodes, iterations):
     """
     Generate configuration a couple of times for every node and see if
     anything changes between iterations
@@ -236,51 +236,9 @@ def test_determinism_config(repo, nodes, iterations):
     ))
 
 
-def test_determinism_metadata(repo, nodes, iterations):
-    """
-    Generate metadata a couple of times for every node and see if
-    anything changes between iterations
-    """
-    hashes = {}
-    io.progress_set_total(len(nodes) * iterations)
-    for i in range(iterations):
-        if QUIT_EVENT.is_set():
-            break
-        if i == 0:
-            # optimization: for the first iteration, just use the repo
-            # we already have
-            iteration_repo = repo
-        else:
-            iteration_repo = Repository(repo.path)
-        iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
-        for node in iteration_nodes:
-            if QUIT_EVENT.is_set():
-                break
-            with io.job(_("{node}  generating metadata ({i}/{n})").format(
-                i=i + 1,
-                n=iterations,
-                node=bold(node.name),
-            )):
-                result = node.metadata_hash()
-            hashes.setdefault(node.name, result)
-            if hashes[node.name] != result:
-                io.stderr(_(
-                    "{x} Metadata for node {node} changed when generated repeatedly "
-                    "(use `bw hash -d {node}` to debug)"
-                ).format(node=node.name, x=red("✘")))
-                exit(1)
-            io.progress_advance()
-    io.progress_set_total(0)
-    io.stdout(_("{x} Metadata remained the same after being generated {n} times").format(
-        n=iterations,
-        x=green("✓"),
-    ))
-
-
 def bw_test(repo, args):
     options_selected = (
-        args['determinism_config'] > 1 or
-        args['determinism_metadata'] > 1 or
+        args['determinism'] > 1 or
         args['hooks_node'] or
         args['hooks_repo'] or
         args['ignore_secret_identifiers'] is not None or
@@ -345,11 +303,8 @@ def bw_test(repo, args):
     if args['items']:
         test_items(nodes, args['ignore_missing_faults'])
 
-    if args['determinism_metadata'] > 1 and not QUIT_EVENT.is_set():
-        test_determinism_metadata(repo, nodes, args['determinism_metadata'])
-
-    if args['determinism_config'] > 1 and not QUIT_EVENT.is_set():
-        test_determinism_config(repo, nodes, args['determinism_config'])
+    if args['determinism'] > 1 and not QUIT_EVENT.is_set():
+        test_determinism(repo, nodes, args['determinism'])
 
     if args['hooks_node'] and not QUIT_EVENT.is_set():
         io.progress_set_total(len(nodes))
