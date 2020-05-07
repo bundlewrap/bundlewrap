@@ -30,6 +30,7 @@ from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, names
 from .utils.dicts import hash_statedict
+from .utils.metastack import Metastack
 from .utils.text import (
     blue,
     bold,
@@ -704,16 +705,37 @@ class Node(object):
         return hash_metadata(self.metadata)
 
     @property
-    def metadata_processors(self):
+    def metadata_defaults(self):
+        return self._metadata_processors[0]
+
+    @property
+    def _metadata_processors(self):
+        def tuple_with_name(bundle, metadata_processor):
+            return (
+                "{}.{}".format(
+                    bundle.name,
+                    metadata_processor.__name__,
+                ),
+                metadata_processor,
+            )
+
+        defaults = set()
+        reactors = set()
+        classic_metaprocs = set()
+
         for bundle in self.bundles:
-            for metadata_processor in bundle.metadata_processors:
-                yield (
-                    "{}.{}".format(
-                        bundle.name,
-                        metadata_processor.__name__,
-                    ),
-                    metadata_processor,
-                )
+            for default in bundle._metadata_processors[0]:
+                defaults.add(tuple_with_name(bundle, default))
+            for reactor in bundle._metadata_processors[1]:
+                reactors.add(tuple_with_name(bundle, reactor))
+            for classic_metaproc in bundle._metadata_processors[2]:
+                classic_metaprocs.add(tuple_with_name(bundle, classic_metaproc))
+
+        return defaults, reactors, classic_metaprocs
+
+    @property
+    def metadata_reactors(self):
+        return self._metadata_processors[1]
 
     @property
     def partial_metadata(self):
@@ -726,7 +748,14 @@ class Node(object):
         because they will be fed all metadata updates until no more
         changes are made by any metadata processor.
         """
-        return self.repo._metadata_for_node(self.name, partial=True)
+
+        partial = self.repo._metadata_for_node(self.name, partial=True)
+
+        # TODO remove this mechanism in bw 4.0, always return Metastacks
+        if self.repo._in_new_metareactor:
+            return Metastack(partial)
+        else:
+            return partial
 
     def run(self, command, data_stdin=None, may_fail=False, log_output=False):
         assert self.os in self.OS_FAMILY_UNIX

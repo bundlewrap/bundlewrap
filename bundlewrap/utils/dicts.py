@@ -17,6 +17,14 @@ except NameError:
     text_type = str
     byte_type = bytes
 
+try:
+    from types import MappingProxyType
+except ImportError:
+    # XXX Not available in Python 2, but that's EOL anyway and we're
+    # going to drop support for it very soon. The following at least
+    # creates a new object, so updates to it will not be persistent.
+    MappingProxyType = dict
+
 DIFF_MAX_INLINE_LENGTH = 36
 DIFF_MAX_LINE_LENGTH = 1024
 
@@ -181,6 +189,29 @@ class FaultResolvingJSONEncoder(JSONEncoder):
             return sorted(obj)
         else:
             return JSONEncoder.default(self, obj)
+
+
+def freeze_object(obj):
+    """
+    Returns a read-only version of the given object (if possible).
+    """
+    if isinstance(obj, dict):
+        keys = set(obj.keys())
+        for k in keys:
+            obj[k] = freeze_object(obj[k])
+        return MappingProxyType(obj)
+    elif isinstance(obj, (list, tuple)):
+        result = []
+        for i in obj:
+            result.append(freeze_object(i))
+        return tuple(result)
+    elif isinstance(obj, set):
+        result = set()
+        for i in obj:
+            result.add(freeze_object(i))
+        return frozenset(obj)
+    else:
+        return obj
 
 
 def hash_statedict(sdict):

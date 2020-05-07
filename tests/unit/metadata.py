@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from bundlewrap.utils import Fault
 from bundlewrap.utils.dicts import merge_dict
-from bundlewrap.metadata import atomic, blame_changed_paths
+from bundlewrap.metadata import atomic, blame_changed_paths, changes_metadata
 
 
 def test_atomic_no_merge_base():
@@ -97,3 +98,80 @@ def test_blame_and_merge():
         },
         'key4': 24,
     }
+
+
+def test_changes_same():
+    assert not changes_metadata(
+        {
+            'foo': 1,
+            'bar': 2,
+            'baz': [3],
+        },
+        {
+            'baz': [3],
+        },
+    )
+
+
+def test_changes_list():
+    assert changes_metadata(
+        {
+            'foo': 1,
+            'bar': 2,
+            'baz': [3],
+        },
+        {
+            'baz': [4],
+        },
+    )
+
+
+def test_changes_nested_same():
+    assert not changes_metadata(
+        {
+            'foo': 1,
+            'bar': 2,
+            'baz': {
+                'frob': 4,
+            },
+        },
+        {
+            'baz': {
+                'frob': 4,
+            },
+        },
+    )
+
+
+def test_changes_nested():
+    assert changes_metadata(
+        {
+            'foo': 1,
+            'bar': 2,
+            'baz': {
+                'frob': 4,
+            },
+        },
+        {
+            'baz': {
+                'frob': 5,
+            },
+        },
+    )
+
+
+def test_changes_fault():
+    def callback1():
+        return 1
+
+    def callback2():
+        return 2
+
+    assert not changes_metadata(
+        {
+            'foo': Fault(callback1),
+        },
+        {
+            'foo': Fault(callback2),
+        },
+    )

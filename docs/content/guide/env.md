@@ -46,6 +46,12 @@ Note that you should not set these variables to very high values. First, it can 
 
 <br>
 
+## `BW_MAX_METADATA_ITERATIONS`
+
+Sets the limit of how often metadata reactors will be run before BundleWrap calls it a loop and terminates with an exception. Defaults to `100`.
+
+<br>
+
 ## `BW_REPO_PATH`
 
 Set this to a path pointing to your BundleWrap repository. If unset, the current working directory is used. Can be overridden with `bw --repository PATH`. Keep in mind that `bw` will also look for a repository in all parent directories until it finds one.
