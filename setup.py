@@ -1,18 +1,5 @@
-from sys import version_info
-
 from setuptools import find_packages, setup
 
-
-dependencies = [
-    "cryptography",
-    "Jinja2",
-    "Mako",
-    "passlib",
-    "pyyaml",
-    "requests >= 1.0.0",
-]
-if version_info < (3, 2, 0):
-    dependencies.append("futures")
 
 setup(
     name="bundlewrap",
@@ -41,7 +28,6 @@ setup(
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -49,6 +35,13 @@ setup(
         "Topic :: System :: Installation/Setup",
         "Topic :: System :: Systems Administration",
     ],
-    install_requires=dependencies,
+    install_requires=[
+        "cryptography",
+        "Jinja2",
+        "Mako",
+        "passlib",
+        "pyyaml",
+        "requests >= 1.0.0",
+    ],
     zip_safe=False,
 )
