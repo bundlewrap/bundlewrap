@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 from datetime import datetime
-from errno import EPIPE
 import fcntl
 from functools import wraps
 from os import _exit, environ, getpid, kill
@@ -32,12 +31,6 @@ QUIT_EVENT = Event()
 SHUTDOWN_EVENT_HARD = Event()
 SHUTDOWN_EVENT_SOFT = Event()
 TTY = STDOUT_WRITER.isatty()
-
-
-if sys.version_info >= (3, 0):
-    broken_pipe_exception = BrokenPipeError
-else:
-    broken_pipe_exception = IOError
 
 
 def add_debug_indicator(f):
@@ -141,10 +134,8 @@ def write_to_stream(stream, msg):
         else:
             stream.write(ansi_clean(msg))
         stream.flush()
-    except broken_pipe_exception as e:
-        if broken_pipe_exception == IOError:
-            if e.errno != EPIPE:
-                raise
+    except BrokenPipeError:
+        pass
 
 
 class DrainableStdin:
