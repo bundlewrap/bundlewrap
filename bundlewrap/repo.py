@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from imp import load_source
 from inspect import isabstract
 from os import environ, listdir, mkdir

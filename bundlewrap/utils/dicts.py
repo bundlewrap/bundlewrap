@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from difflib import unified_diff
 from hashlib import sha1
 from json import dumps, JSONEncoder

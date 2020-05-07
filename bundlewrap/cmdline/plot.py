@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from ..deps import prepare_dependencies
 from ..utils.plot import graph_for_items, plot_group, plot_node_groups
 from ..utils.cmdline import get_group, get_node

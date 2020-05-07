@@ -1,11 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from datetime import datetime
-try:
-    from itertools import zip_longest
-except ImportError:  # Python 2
-    from itertools import izip_longest as zip_longest
+from itertools import zip_longest
 from sys import exit
 
 from ..concurrency import WorkerPool

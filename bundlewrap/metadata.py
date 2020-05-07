@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from copy import copy
 from hashlib import sha1
 from json import dumps, JSONEncoder
@@ -107,13 +104,9 @@ def changes_metadata(existing_metadata, new_metadata):
 
 
 def check_metadata_keys(node):
-    try:
-        basestring
-    except NameError:  # Python 2
-        basestring = str
     for path in map_dict_keys(node.metadata):
         value = path[-1]
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             raise TypeError(_("metadata key for {node} at path '{path}' is not a string").format(
                 node=node.name,
                 path="'->'".join(path[:-1]),

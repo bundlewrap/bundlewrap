@@ -1,11 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from base64 import b64encode, urlsafe_b64decode
-try:
-    from configparser import SafeConfigParser
-except ImportError:  # Python 2
-    from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import hashlib
 import hmac
 from os import environ

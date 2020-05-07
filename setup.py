@@ -10,7 +10,6 @@ dependencies = [
     "passlib",
     "pyyaml",
     "requests >= 1.0.0",
-    "six",
 ]
 if version_info < (3, 2, 0):
     dependencies.append("futures")
@@ -42,7 +41,6 @@ setup(
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
@@ -52,8 +50,5 @@ setup(
         "Topic :: System :: Systems Administration",
     ],
     install_requires=dependencies,
-    extras_require={  # used for wheels
-        ':python_version=="2.7"': ["futures"],
-    },
     zip_safe=False,
 )

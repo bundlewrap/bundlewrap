@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from bundlewrap.utils import Fault
 from bundlewrap.utils.dicts import merge_dict
 from bundlewrap.metadata import atomic, blame_changed_paths, changes_metadata

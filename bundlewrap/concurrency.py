@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from datetime import datetime
 from random import randint
@@ -49,17 +46,10 @@ class WorkerPool(object):
         io.debug(_("worker pool {pool} waiting for next task to complete").format(
             pool=self.pool_id,
         ))
-        while True:
-            # we must use a timeout here to allow Python <3.3 to call
-            # its SIGINT handler
-            # see also http://stackoverflow.com/q/25676835
-            completed, pending = wait(
-                self.pending_futures.keys(),
-                return_when=FIRST_COMPLETED,
-                timeout=0.1,
-            )
-            if completed:
-                break
+        completed, pending = wait(
+            self.pending_futures.keys(),
+            return_when=FIRST_COMPLETED,
+        )
         future = completed.pop()
 
         start_time = self.pending_futures[future]['start_time']
@@ -79,8 +69,6 @@ class WorkerPool(object):
                 task=task_id,
                 worker=worker_id,
             ))
-            if not hasattr(exception, '__traceback__'):  # Python 2
-                exception.__traceback__ = future.exception_info()[1]
             exception.__task_id = task_id
             raise exception
         else:
