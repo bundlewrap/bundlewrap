@@ -4,6 +4,33 @@ from os.path import join
 from bundlewrap.utils.testing import make_repo, run
 
 
+def test_group_members_at_node(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {'groups': ["group1", "group2"]},
+            "node2": {'groups': ["group1"]},
+            "node3": {'groups': []},
+        },
+        groups={
+            "group1": {},
+            "group2": {
+                'members': ["node2"],
+            },
+            "group3": {
+                'members': ["node3"],
+            },
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups -i group1,group2,group3 nodes", path=str(tmpdir))
+    assert stdout == b"""group1\tnode1,node2
+group2\tnode1,node2
+group3\tnode3
+"""
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_group_members_add(tmpdir):
     make_repo(
         tmpdir,

@@ -32,6 +32,8 @@ DONE = 1
 RUN_ME_AGAIN = 2
 DEFAULTS = 3
 OVERWRITE = 4
+EXPECT_RESULT = 5
+DO_NOT_RUN_ME_AGAIN = 6
 
 
 def atomic(obj):
@@ -77,6 +79,31 @@ def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=Fal
                 else:
                     blame_dict[path] = (blame_name,)
     return blame_dict
+
+
+def changes_metadata(existing_metadata, new_metadata):
+    """
+    Returns True if new_metadata contains any keys or values not present
+    in or different from existing_metadata.
+    """
+    for key, new_value in new_metadata.items():
+        if key not in existing_metadata:
+            return True
+        if isinstance(new_value, dict):
+            if not isinstance(existing_metadata[key], dict):
+                return True
+            if changes_metadata(existing_metadata[key], new_value):
+                return True
+        if isinstance(existing_metadata[key], Fault) and isinstance(new_value, Fault):
+            # Always consider Faults as equal. It would arguably be more correct to
+            # always assume them to be different, but that would mean that we could
+            # never do change detection between two dicts of metadata. So we have no
+            # choice but to warn users in docs that Faults will always be considered
+            # equal to one another.
+            continue
+        if new_value != existing_metadata[key]:
+            return True
+    return False
 
 
 def check_metadata_keys(node):

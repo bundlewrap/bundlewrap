@@ -82,6 +82,14 @@ Set this to `True` to prevent BundleWrap from creating items for and connecting 
 
 <br>
 
+### groups
+
+A list of group names this node should be added to. Be aware that you can also define group members at the group itself and you probably should not use both methods in parallel to avoid confusion.
+
+Cannot be set at group level.
+
+<br>
+
 ### hostname
 
 A string used as a DNS name when connecting to this node. May also be an IP address.

@@ -5,6 +5,7 @@ from argparse import ArgumentParser, SUPPRESS
 from os import environ, getcwd
 
 from .. import VERSION_STRING
+from ..utils.cmdline import HELP_get_target_nodes
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
@@ -91,9 +92,9 @@ def build_parser_bw():
     parser_apply.set_defaults(func=bw_apply)
     parser_apply.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
+        help=HELP_get_target_nodes,
     )
     parser_apply.add_argument(
         "-f",
@@ -347,9 +348,9 @@ def build_parser_bw():
     parser_lock_add.set_defaults(func=bw_lock_add)
     parser_lock_add.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
+        help=HELP_get_target_nodes,
     )
     parser_lock_add.add_argument(
         "-c",
@@ -399,9 +400,9 @@ def build_parser_bw():
     parser_lock_remove.set_defaults(func=bw_lock_remove)
     parser_lock_remove.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
+        help=HELP_get_target_nodes,
     )
     parser_lock_remove.add_argument(
         'lock_id',
@@ -430,9 +431,9 @@ def build_parser_bw():
     parser_lock_show.set_defaults(func=bw_lock_show)
     parser_lock_show.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         type=str,
-        help=_("target node"),
+        help=HELP_get_target_nodes,
     )
     bw_lock_show_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_lock_show.add_argument(
@@ -499,10 +500,10 @@ def build_parser_bw():
     parser_nodes.add_argument(
         'target',
         default=None,
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         nargs='?',
         type=str,
-        help=_("filter according to nodes, groups and/or bundle selectors"),
+        help=HELP_get_target_nodes,
     )
     parser_nodes.add_argument(
         'attrs',
@@ -719,9 +720,9 @@ def build_parser_bw():
     parser_run.set_defaults(func=bw_run)
     parser_run.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
+        help=HELP_get_target_nodes,
     )
     parser_run.add_argument(
         'command',
@@ -790,10 +791,10 @@ def build_parser_bw():
     parser_test.add_argument(
         'target',
         default=None,
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         nargs='?',
         type=str,
-        help=_("target nodes, groups and/or bundle selectors (defaults to all)"),
+        help=HELP_get_target_nodes + _(" (defaults to all)"),
     )
     parser_test.add_argument(
         "-c",
@@ -905,9 +906,9 @@ def build_parser_bw():
     parser_verify.set_defaults(func=bw_verify)
     parser_verify.add_argument(
         'target',
-        metavar=_("NODE1,NODE2,GROUP1,bundle:BUNDLE1..."),
+        metavar=_("TARGETS"),
         type=str,
-        help=_("target nodes, groups and/or bundle selectors"),
+        help=HELP_get_target_nodes,
     )
     parser_verify.add_argument(
         "-a",

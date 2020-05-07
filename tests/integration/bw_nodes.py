@@ -46,3 +46,33 @@ def test_bundles(tmpdir):
     assert stdout.decode().strip().split("\n") == ["bundle1", "bundle2"]
     assert stderr == b""
     assert rcode == 0
+
+
+def test_bundles_via_group(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+            "bundle3": {},
+        },
+        groups={
+            "group1": {
+                'bundles': {"bundle2"},
+                'subgroups': {"group2"},
+            },
+            "group2": {
+                'bundles': {"bundle3"},
+            }
+        },
+        nodes={
+            "node1": {
+                'bundles': {"bundle1"},
+                'groups': {"group2"},
+            },
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes node1 bundles | cut -f 2", path=str(tmpdir))
+    assert stdout.decode().strip().split("\n") == ["bundle1", "bundle2", "bundle3"]
+    assert stderr == b""
+    assert rcode == 0

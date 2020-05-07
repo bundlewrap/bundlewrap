@@ -1,3 +1,15 @@
+# 3.9.0
+
+2020-05-04
+
+* added lambda expressions for CLI node selection
+* added `groups` attribute to nodes
+* added support for Python 3.8
+* k8s: bumped `apiVersion` where appropriate
+* fixed handling of `apiVersion` and `status`
+* fixed KeyError on k8s item collision
+
+
 # 3.8.0
 
 2020-01-09
