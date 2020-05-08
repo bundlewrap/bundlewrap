@@ -705,9 +705,10 @@ class Node:
 
     @property
     def _metadata_processors(self):
-        def tuple_with_name(bundle, metadata_processor):
+        def tuple_with_name(kind, bundle, metadata_processor):
             return (
-                "{}.{}".format(
+                "{}:{}.{}".format(
+                    kind,
                     bundle.name,
                     metadata_processor.__name__,
                 ),
@@ -719,9 +720,9 @@ class Node:
 
         for bundle in self.bundles:
             for default in bundle._metadata_processors[0]:
-                defaults.add(tuple_with_name(bundle, default))
+                defaults.add("metadata_defaults", tuple_with_name(bundle, default))
             for reactor in bundle._metadata_processors[1]:
-                reactors.add(tuple_with_name(bundle, reactor))
+                reactors.add("metadata_reactor", tuple_with_name(bundle, reactor))
 
         return defaults, reactors
 
