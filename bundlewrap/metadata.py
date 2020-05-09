@@ -1,4 +1,3 @@
-from copy import copy
 from hashlib import sha1
 from json import dumps, JSONEncoder
 
@@ -8,29 +7,18 @@ from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_p
 from .utils.text import force_text, mark_for_translation as _
 
 
-try:
-    text_type = unicode
-    byte_type = str
-except NameError:
-    text_type = str
-    byte_type = bytes
-
 METADATA_TYPES = (
     bool,
-    byte_type,
+    bytes,
     Fault,
     int,
-    text_type,
+    str,
     type(None),
 )
 
 # constants returned as options by metadata processors
-DONE = 1
-RUN_ME_AGAIN = 2
-DEFAULTS = 3
-OVERWRITE = 4
-EXPECT_RESULT = 5
-DO_NOT_RUN_ME_AGAIN = 6
+EXPECT_RESULT = 1
+DO_NOT_RUN_ME_AGAIN = 2
 
 
 def atomic(obj):
@@ -48,61 +36,6 @@ def atomic(obj):
         return cls(obj)
 
 
-def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=False):
-    def is_mergeable(value1, value2):
-        if isinstance(value1, (list, set, tuple)) and isinstance(value2, (list, set, tuple)):
-            return True
-        elif isinstance(value1, dict) and isinstance(value2, dict):
-            return True
-        return False
-
-    new_paths = map_dict_keys(new_dict)
-
-    # clean up removed paths from blame_dict
-    for path in list(blame_dict.keys()):
-        if path not in new_paths:
-            del blame_dict[path]
-
-    for path in new_paths:
-        new_value = value_at_key_path(new_dict, path)
-        try:
-            old_value = value_at_key_path(old_dict, path)
-        except KeyError:
-            blame_dict[path] = (blame_name,)
-        else:
-            if old_value != new_value:
-                if defaults or is_mergeable(old_value, new_value):
-                    blame_dict[path] += (blame_name,)
-                else:
-                    blame_dict[path] = (blame_name,)
-    return blame_dict
-
-
-def changes_metadata(existing_metadata, new_metadata):
-    """
-    Returns True if new_metadata contains any keys or values not present
-    in or different from existing_metadata.
-    """
-    for key, new_value in new_metadata.items():
-        if key not in existing_metadata:
-            return True
-        if isinstance(new_value, dict):
-            if not isinstance(existing_metadata[key], dict):
-                return True
-            if changes_metadata(existing_metadata[key], new_value):
-                return True
-        if isinstance(existing_metadata[key], Fault) and isinstance(new_value, Fault):
-            # Always consider Faults as equal. It would arguably be more correct to
-            # always assume them to be different, but that would mean that we could
-            # never do change detection between two dicts of metadata. So we have no
-            # choice but to warn users in docs that Faults will always be considered
-            # equal to one another.
-            continue
-        if new_value != existing_metadata[key]:
-            return True
-    return False
-
-
 def check_metadata_keys(node):
     for path in map_dict_keys(node.metadata):
         value = path[-1]
@@ -111,76 +44,6 @@ def check_metadata_keys(node):
                 node=node.name,
                 path="'->'".join(path[:-1]),
             ))
-
-
-def check_metadata_processor_result(input_metadata, result, node_name, metadata_processor_name):
-    """
-    Validates the return value of a metadata processor and splits it
-    into metadata and options.
-    """
-    if not isinstance(result, tuple) or not len(result) >= 2:
-        raise ValueError(_(
-            "metadata processor {metaproc} for node {node} did not return "
-            "a tuple of length 2 or greater"
-        ).format(
-            metaproc=metadata_processor_name,
-            node=node_name,
-        ))
-    result_dict, options = result[0], result[1:]
-    if not isinstance(result_dict, dict):
-        raise ValueError(_(
-            "metadata processor {metaproc} for node {node} did not return "
-            "a dict as the first element"
-        ).format(
-            metaproc=metadata_processor_name,
-            node=node_name,
-        ))
-    if (
-        (DEFAULTS in options or OVERWRITE in options) and
-        id(input_metadata) == id(result_dict)
-    ):
-        raise ValueError(_(
-            "metadata processor {metaproc} for node {node} returned original "
-            "metadata dict plus DEFAULTS or OVERWRITE"
-        ).format(
-            metaproc=metadata_processor_name,
-            node=node_name,
-        ))
-    for option in options:
-        if option not in (DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE):
-            raise ValueError(_(
-                "metadata processor {metaproc} for node {node} returned an "
-                "invalid option: {opt}"
-            ).format(
-                metaproc=metadata_processor_name,
-                node=node_name,
-                opt=repr(option),
-            ))
-    if DONE in options and RUN_ME_AGAIN in options:
-        raise ValueError(_(
-            "metadata processor {metaproc} for node {node} cannot return both "
-            "DONE and RUN_ME_AGAIN"
-        ).format(
-            metaproc=metadata_processor_name,
-            node=node_name,
-        ))
-    if DONE not in options and RUN_ME_AGAIN not in options:
-        raise ValueError(_(
-            "metadata processor {metaproc} for node {node} must return either "
-            "DONE or RUN_ME_AGAIN"
-        ).format(
-            metaproc=metadata_processor_name,
-            node=node_name,
-        ))
-    if DEFAULTS in options and OVERWRITE in options:
-        raise ValueError(_(
-            "metadata processor {metaproc} for node {node} cannot return both "
-            "DEFAULTS and OVERWRITE"
-        ).format(
-            metaproc=metadata_processor_name,
-            node=node_name,
-        ))
-    return result_dict, options
 
 
 def check_for_unsolvable_metadata_key_conflicts(node):
@@ -288,42 +151,6 @@ def check_for_unsolvable_metadata_key_conflicts(node):
                             chains[index2],
                             keypath,
                         )
-
-
-def deepcopy_metadata(obj):
-    """
-    Our own version of deepcopy.copy that doesn't pickle and ensures
-    a limited range of types is used in metadata.
-    """
-    if isinstance(obj, METADATA_TYPES):
-        return obj
-    elif isinstance(obj, dict):
-        if isinstance(obj, ATOMIC_TYPES[dict]):
-            new_obj = atomic({})
-        else:
-            new_obj = {}
-        for key, value in obj.items():
-            if not isinstance(key, METADATA_TYPES):
-                raise ValueError(_("illegal metadata key type: {}").format(repr(key)))
-            new_key = copy(key)
-            new_obj[new_key] = deepcopy_metadata(value)
-    elif isinstance(obj, (list, tuple)):
-        if isinstance(obj, (ATOMIC_TYPES[list], ATOMIC_TYPES[tuple])):
-            new_obj = atomic([])
-        else:
-            new_obj = []
-        for member in obj:
-            new_obj.append(deepcopy_metadata(member))
-    elif isinstance(obj, set):
-        if isinstance(obj, ATOMIC_TYPES[set]):
-            new_obj = atomic(set())
-        else:
-            new_obj = set()
-        for member in obj:
-            new_obj.add(deepcopy_metadata(member))
-    else:
-        raise ValueError(_("illegal metadata value type: {}").format(repr(obj)))
-    return new_obj
 
 
 def find_groups_causing_metadata_conflict(node_name, chain1, chain2, keypath):

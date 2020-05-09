@@ -101,6 +101,16 @@ class Fault:
                 return self.value + other
             return Fault(callback)
 
+    def __eq__(self, other):
+        """
+        Always consider Faults as equal. It would arguably be more
+        correct to always assume them to be different, but that would
+        mean that we could never do change detection between two dicts
+        of metadata. So we have no choice but to warn users in docs that
+        Faults will always be considered equal to one another.
+        """
+        return isinstance(other, Fault)
+
     def __len__(self):
         return len(self.value)
 

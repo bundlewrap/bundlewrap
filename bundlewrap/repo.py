@@ -17,21 +17,14 @@ from .exceptions import (
 )
 from .group import Group
 from .metadata import (
-    blame_changed_paths,
-    changes_metadata,
-    check_metadata_processor_result,
-    deepcopy_metadata,
-    DEFAULTS,
     DO_NOT_RUN_ME_AGAIN,
-    DONE,
     EXPECT_RESULT,
-    OVERWRITE,
 )
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, names
 from .utils.scm import get_git_branch, get_git_clean, get_rev
-from .utils.dicts import hash_statedict, merge_dict
+from .utils.dicts import hash_statedict
 from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io, QUIT_EVENT
