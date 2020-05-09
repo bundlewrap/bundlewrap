@@ -6,6 +6,13 @@ from .dicts import freeze_object, merge_dict
 
 
 class Metastack:
+    """
+    Holds a number of metadata layers. When laid on top of one another,
+    these layers form complete metadata for a node. Each layer comes
+    from one particular source of metadata: a bundle default, a group,
+    the node itself, or a metadata reactor. Metadata reactors are unique
+    in their ability to revise their own layer each time they are run.
+    """
     def __init__(self):
         # We rely heavily on insertion order in this dict.
         if version_info < (3, 7):
@@ -14,6 +21,20 @@ class Metastack:
             self._layers = {}
 
     def get(self, path, default, use_default=True):
+        """
+        Get the value at the given path, merging all layers together.
+
+        Path may either be string like
+
+            'foo/bar'
+
+        accessing the 'bar' key in the dict at the 'foo' key
+        or a tuple like
+
+            ('fo/o', 'bar')
+
+        accessing the 'bar' key in the dict at the 'fo/o' key.
+        """
         if not isinstance(path, (tuple, list)):
             path = path.split('/')
 
