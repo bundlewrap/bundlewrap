@@ -1,4 +1,3 @@
-from bundlewrap.utils import Fault
 from bundlewrap.utils.dicts import merge_dict
 from bundlewrap.metadata import atomic
 

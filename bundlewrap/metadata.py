@@ -7,7 +7,7 @@ from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_p
 from .utils.text import force_text, mark_for_translation as _
 
 
-METADATA_TYPES = (
+METADATA_TYPES = (  # only meant for natively atomic types
     bool,
     bytes,
     Fault,
