@@ -2,7 +2,7 @@ from collections import OrderedDict
 from sys import version_info
 
 from ..metadata import validate_metadata
-from .dicts import _Atomic, freeze_object
+from .dicts import freeze_object, merge_dict
 
 
 def _dict_has_path(layer, path):
@@ -12,87 +12,6 @@ def _dict_has_path(layer, path):
             return False, None
         current = current[element]
     return True, current
-
-
-def _merge_layers(base, update):
-    merged = base.copy()
-
-    for key, value in update.items():
-        if key in base and isinstance(base[key], _Atomic) and isinstance(value, _Atomic):
-            raise MetastackTypeConflict('atomics on two levels for the same key {}'.format(key))
-
-        if key not in base:
-            merged[key] = value
-        else:
-            base_atomic = isinstance(base[key], _Atomic)
-            value_atomic = isinstance(value, _Atomic)
-
-            if isinstance(base[key], dict) and isinstance(value, dict):
-                # XXX Feel free to optimize these at a later stage.
-                if base_atomic:
-                    pass
-                elif value_atomic:
-                    merged[key] = value
-                else:
-                    merged[key] = _merge_layers(base[key], value)
-            elif (
-                isinstance(base[key], list) and
-                (
-                    isinstance(value, list) or
-                    isinstance(value, set) or
-                    isinstance(value, tuple)
-                )
-            ):
-                if base_atomic:
-                    pass
-                elif value_atomic:
-                    merged[key] = value
-                else:
-                    extended = base[key][:]
-                    extended.extend(value)
-                    merged[key] = extended
-            elif (
-                isinstance(base[key], tuple) and
-                (
-                    isinstance(value, list) or
-                    isinstance(value, set) or
-                    isinstance(value, tuple)
-                )
-            ):
-                if base_atomic:
-                    pass
-                elif value_atomic:
-                    merged[key] = value
-                else:
-                    merged[key] = base[key] + tuple(value)
-            elif (
-                isinstance(base[key], set) and
-                (
-                    isinstance(value, list) or
-                    isinstance(value, set) or
-                    isinstance(value, tuple)
-                )
-            ):
-                if base_atomic:
-                    pass
-                elif value_atomic:
-                    merged[key] = value
-                else:
-                    merged[key] = base[key].union(set(value))
-            elif (
-                (
-                    (isinstance(base[key], bool) and isinstance(value, bool)) or
-                    (isinstance(base[key], bytes) and isinstance(value, bytes)) or
-                    (isinstance(base[key], int) and isinstance(value, int)) or
-                    (isinstance(base[key], str) and isinstance(value, str)) or
-                    (base[key] is None and value is None)
-                )
-            ):
-                merged[key] = value
-            else:
-                raise MetastackTypeConflict()
-
-    return merged
 
 
 class Metastack:
@@ -115,7 +34,7 @@ class Metastack:
                     result = {'data': value}
                     undef = False
                 else:
-                    result = _merge_layers(result, {'data': value})
+                    result = merge_dict(result, {'data': value})
 
         if undef:
             if use_default:
@@ -136,7 +55,7 @@ class Metastack:
         final_dict = {}
 
         for layer in self._layers.values():
-            final_dict = _merge_layers(final_dict, layer)
+            final_dict = merge_dict(final_dict, layer)
 
         return final_dict
 
@@ -154,8 +73,4 @@ class Metastack:
 
 
 class MetastackKeyError(Exception):
-    pass
-
-
-class MetastackTypeConflict(Exception):
     pass

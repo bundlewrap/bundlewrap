@@ -1,5 +1,5 @@
 from bundlewrap.metadata import atomic
-from bundlewrap.utils.metastack import Metastack, MetastackTypeConflict
+from bundlewrap.utils.metastack import Metastack
 from pytest import raises
 
 
@@ -205,73 +205,18 @@ def test_should_be_frozen():
         del foo['bar']
 
 
-def test_type_conflicts():
-    stack = Metastack()
-    stack._set_layer('base', {
-        'bool': True,
-        'bytes': b'howdy',
-        'dict': {'1': 2},
-        'int': 1,
-        'list': [1],
-        'none': None,
-        'set': {1},
-        'str': 'howdy',
-        'tuple': (1, 2),
-    })
-    stack._set_layer('overlay', {
-        'bool': None,
-        'bytes': None,
-        'dict': None,
-        'int': None,
-        'list': None,
-        'none': 1,
-        'set': None,
-        'str': None,
-        'tuple': None,
-    })
-
-    with raises(MetastackTypeConflict):
-        stack.get('bool', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('bytes', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('dict', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('int', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('list', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('none', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('set', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('str', None)
-
-    with raises(MetastackTypeConflict):
-        stack.get('tuple', None)
-
-
 def test_atomic_in_base():
     stack = Metastack()
     stack._set_layer('base', {'list': atomic([1, 2, 3])})
     stack._set_layer('overlay', {'list': [4]})
-    assert 4 not in stack.get('list', None)
+    assert list(stack.get('list', None)) == [4]
 
 
 def test_atomic_in_layer():
     stack = Metastack()
     stack._set_layer('base', {'list': [1, 2, 3]})
     stack._set_layer('overlay', {'list': atomic([4])})
-    assert 1 not in stack.get('list', None)
-    assert 2 not in stack.get('list', None)
-    assert 3 not in stack.get('list', None)
+    assert list(stack.get('list', None)) == [4]
 
 
 def test_set_layer_return_code():
