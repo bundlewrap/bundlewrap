@@ -1,17 +1,8 @@
 from collections import OrderedDict
 from sys import version_info
 
-from ..metadata import validate_metadata
+from ..metadata import validate_metadata, value_at_key_path
 from .dicts import freeze_object, merge_dict
-
-
-def _dict_has_path(layer, path):
-    current = layer
-    for element in path.split('/'):
-        if not isinstance(current, dict) or element not in current:
-            return False, None
-        current = current[element]
-    return True, current
 
 
 class Metastack:
@@ -23,12 +14,18 @@ class Metastack:
             self._layers = {}
 
     def get(self, path, default, use_default=True):
+        if not isinstance(path, (tuple, list)):
+            path = path.split('/')
+
         result = None
         undef = True
 
         for layer in self._layers.values():
-            exists, value = _dict_has_path(layer, path)
-            if exists:
+            try:
+                value = value_at_key_path(layer, path)
+            except KeyError:
+                pass
+            else:
                 if undef:
                     # First time we see anything.
                     result = {'data': value}
@@ -40,7 +37,7 @@ class Metastack:
             if use_default:
                 return default
             else:
-                raise MetastackKeyError('Path {} not in metastack'.format(path))
+                raise MetastackKeyError('Path {} not in metastack'.format('/'.join(path)))
         else:
             return freeze_object(result['data'])
 
