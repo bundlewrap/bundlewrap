@@ -259,3 +259,16 @@ def test_as_dict():
         'str': 'howdy',
         'tuple': (1, 2),
     }
+
+
+def test_as_blame():
+    stack = Metastack()
+    stack._set_layer('base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack._set_layer('overlay', {'something': {'a_list': [3]}})
+    stack._set_layer('unrelated', {'something': {'another_value': 10}})
+    assert stack._as_blame() == {
+        ('something',): ['base', 'overlay', 'unrelated'],
+        ('something', 'a_list'): ['base', 'overlay'],
+        ('something', 'a_value'): ['base'],
+        ('something', 'another_value'): ['unrelated'],
+    }

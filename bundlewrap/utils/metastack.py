@@ -2,7 +2,7 @@ from collections import OrderedDict
 from sys import version_info
 
 from ..metadata import validate_metadata, value_at_key_path
-from .dicts import freeze_object, merge_dict
+from .dicts import freeze_object, map_dict_keys, merge_dict
 
 
 _NO_DEFAULT = "<NO METASTACK DEFAULT PROVIDED>"
@@ -81,8 +81,17 @@ class Metastack:
         return final_dict
 
     def _as_blame(self):
-        # TODO
-        raise NotImplementedError
+        keymap = map_dict_keys(self._as_dict())
+        blame = {}
+        for path in keymap:
+            for identifier, layer in self._layers.items():
+                try:
+                    value_at_key_path(layer, path)
+                except KeyError:
+                    pass
+                else:
+                    blame.setdefault(path, []).append(identifier)
+        return blame
 
     def _set_layer(self, identifier, new_layer):
         # Marked with an underscore because only the internal metadata
