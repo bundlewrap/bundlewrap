@@ -16,10 +16,7 @@ from .exceptions import (
     RepositoryError,
 )
 from .group import Group
-from .metadata import (
-    DO_NOT_RUN_ME_AGAIN,
-    EXPECT_RESULT,
-)
+from .metadata import DO_NOT_RUN_ME_AGAIN
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, names
@@ -511,8 +508,8 @@ class Repository:
         nodes_with_completed_static_metadata = set()
         # these reactors have indicated that they do not need to be run again
         do_not_run_again = set()
-        # these reactors have indicated that they must produce a result at some point
-        results_expected_from = set()
+        # these reactors have raised KeyErrors
+        keyerrors = {}
         # these reactors have actually produced a non-falsy result
         results_observed_from = set()
         # loop detection
@@ -592,6 +589,9 @@ class Repository:
                             continue
                         try:
                             new_metadata = metadata_reactor(self._metastacks[node.name])
+                        except KeyError as exc:
+                            keyerrors[(node_name, metadata_reactor_name)] = exc
+                            continue
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata reactor "
@@ -602,10 +602,14 @@ class Repository:
                                 node=node.name,
                             ))
                             raise exc
+                        else:
+                            # reactor terminated normally, clear any previously stored exception
+                            try:
+                                del keyerrors[(node_name, metadata_reactor_name)]
+                            except KeyError:
+                                pass
                         if new_metadata == DO_NOT_RUN_ME_AGAIN:
                             do_not_run_again.add((node_name, metadata_reactor_name))
-                        elif new_metadata == EXPECT_RESULT:
-                            results_expected_from.add((node_name, metadata_reactor_name))
                         else:
                             if new_metadata:
                                 results_observed_from.add((node_name, metadata_reactor_name))
@@ -631,14 +635,14 @@ class Repository:
                 else:
                     break
 
-        missing_results = results_expected_from.difference(results_observed_from)
-        if missing_results:
+        if keyerrors:
             reactors = ""
-            for node_name, reactor in missing_results:
-                reactors += node_name + " " + reactor + "\n"
+            for source, exc in keyerrors.items():
+                node_name, reactor = source
+                reactors += "{}  {}  {}\n".format(node_name, reactor, exc)
             raise ValueError(_(
-                "Result expected from these metadata reactor(s), "
-                "but never returned:\n"
+                "These metadata reactors raised a KeyError "
+                "even after all other reactors were done:\n"
             ) + reactors)
 
     def metadata_hash(self):

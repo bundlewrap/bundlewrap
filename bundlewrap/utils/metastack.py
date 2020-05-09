@@ -5,6 +5,9 @@ from ..metadata import validate_metadata, value_at_key_path
 from .dicts import freeze_object, merge_dict
 
 
+_NO_DEFAULT = "<NO METASTACK DEFAULT PROVIDED>"
+
+
 class Metastack:
     """
     Holds a number of metadata layers. When laid on top of one another,
@@ -20,7 +23,7 @@ class Metastack:
         else:
             self._layers = {}
 
-    def get(self, path, default, use_default=True):
+    def get(self, path, default=_NO_DEFAULT):
         """
         Get the value at the given path, merging all layers together.
 
@@ -55,17 +58,17 @@ class Metastack:
                     result = merge_dict(result, {'data': value})
 
         if undef:
-            if use_default:
+            if default != _NO_DEFAULT:
                 return default
             else:
-                raise MetastackKeyError('Path {} not in metastack'.format('/'.join(path)))
+                raise KeyError('/'.join(path))
         else:
             return freeze_object(result['data'])
 
     def has(self, path):
         try:
-            self.get(path, '<unused>', use_default=False)
-        except MetastackKeyError:
+            self.get(path)
+        except KeyError:
             return False
         return True
 
@@ -88,7 +91,3 @@ class Metastack:
         changed = self._layers.get(identifier, {}) != new_layer
         self._layers[identifier] = new_layer
         return changed
-
-
-class MetastackKeyError(Exception):
-    pass

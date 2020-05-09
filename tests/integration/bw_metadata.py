@@ -329,7 +329,7 @@ def foo_reactor(metadata):
     assert rcode == 0
 
 
-def test_metadatapy_expect_result(tmpdir):
+def test_metadatapy_reactor_keyerror_from_metastack(tmpdir):
     make_repo(
         tmpdir,
         bundles={"test": {}},
@@ -341,28 +341,19 @@ def test_metadatapy_expect_result(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""called = False
-
+"""
 @metadata_reactor
 def foo_reactor(metadata):
-    global called
-    if not called:
-        called = True
-        return EXPECT_RESULT
-    else:
-        return {}
-
-@metadata_reactor
-def dummy_reactor(metadata):
-    # this reactor is just to ensure foo_reactor gets run again because
-    # something returned metadata
-    return {'dummy': 1}
+    return {'foo': metadata.get('bar')}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert rcode == 1
+    assert b"node1" in stderr
+    assert b"foo_reactor" in stderr
+    assert b"'bar'" in stderr
 
 
-def test_metadatapy_expect_result_fulfilled(tmpdir):
+def test_metadatapy_reactor_keyerror_from_dict(tmpdir):
     make_repo(
         tmpdir,
         bundles={"test": {}},
@@ -374,24 +365,56 @@ def test_metadatapy_expect_result_fulfilled(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""called = False
-
+"""
 @metadata_reactor
 def foo_reactor(metadata):
-    global called
-    if not called:
-        called = True
-        return EXPECT_RESULT
-    else:
-        return {'foo': 1}
-
-@metadata_reactor
-def dummy_reactor(metadata):
-    # this reactor is just to ensure foo_reactor gets run again because
-    # something returned metadata
-    return {'dummy': 1}
+    x = {}['baz']
+    return {'x': x}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
+    assert b"node1" in stderr
+    assert b"foo_reactor" in stderr
+    assert b"'baz'" in stderr
+
+
+def test_metadatapy_reactor_keyerror_fixed(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def foo(metadata):
+    bar_ran = metadata.get('bar_ran', False)
+    if not bar_ran:
+        return {'foo_ran': True}
+    else:
+        return {'foo': metadata.get('bar'), 'foo_ran': True}
+
+@metadata_reactor
+def bar(metadata):
+    foo_ran = metadata.get('foo_ran', False)
+    if not foo_ran:
+        return {'bar_ran': False}
+    else:
+        return {'bar': 47, 'bar_ran': True}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "bar": 47,
+        "bar_ran": True,
+        "foo": 47,
+        "foo_ran": True,
+    }
+    assert stderr == b""
     assert rcode == 0
 
 

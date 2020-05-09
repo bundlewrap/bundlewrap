@@ -1,7 +1,7 @@
 from os.path import exists, join
 
 from .exceptions import BundleError, NoSuchBundle, RepositoryError
-from .metadata import EXPECT_RESULT, DO_NOT_RUN_ME_AGAIN
+from .metadata import DO_NOT_RUN_ME_AGAIN
 from .utils import cached_property, get_all_attrs_from_file
 from .utils.text import bold, mark_for_translation as _
 from .utils.text import validate_name
@@ -109,7 +109,6 @@ class Bundle:
                 self.metadata_file,
                 base_env={
                     'DO_NOT_RUN_ME_AGAIN': DO_NOT_RUN_ME_AGAIN,
-                    'EXPECT_RESULT': EXPECT_RESULT,
                     'metadata_defaults': metadata_defaults,
                     'metadata_reactor': metadata_reactor,
                     'node': self.node,

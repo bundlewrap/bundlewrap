@@ -17,8 +17,7 @@ METADATA_TYPES = (  # only meant for natively atomic types
 )
 
 # constants returned as options by metadata processors
-EXPECT_RESULT = 1
-DO_NOT_RUN_ME_AGAIN = 2
+DO_NOT_RUN_ME_AGAIN = 1
 
 
 def validate_metadata(metadata, _top_level=True):
