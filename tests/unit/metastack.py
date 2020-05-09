@@ -2,8 +2,6 @@ from bundlewrap.metadata import atomic
 from bundlewrap.utils.metastack import Metastack, MetastackTypeConflict
 from pytest import raises
 
-from sys import version_info
-
 
 def test_has_no_top():
     stack = Metastack()
