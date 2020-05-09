@@ -212,7 +212,7 @@ def test_type_conflicts():
     stack._set_layer('base', {
         'bool': True,
         'bytes': b'howdy',
-        'dict': {1: 2},
+        'dict': {'1': 2},
         'int': 1,
         'list': [1],
         'none': None,
@@ -293,7 +293,7 @@ def test_as_dict():
     stack._set_layer('base', {
         'bool': True,
         'bytes': b'howdy',
-        'dict': {1: 2},
+        'dict': {'1': 2},
         'int': 1,
         'list': [1],
         'none': None,
@@ -307,7 +307,7 @@ def test_as_dict():
     assert stack._as_dict() == {
         'bool': True,
         'bytes': b'howdy',
-        'dict': {1: 2},
+        'dict': {'1': 2},
         'int': 1000,
         'list': [1, 2],
         'new_element': True,

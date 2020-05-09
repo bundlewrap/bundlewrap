@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
+from ..metadata import validate_metadata
 from .dicts import _Atomic, freeze_object
 
 
@@ -143,7 +141,7 @@ class Metastack:
     def _set_layer(self, identifier, new_layer):
         # Marked with an underscore because only the internal metadata
         # reactor routing is supposed to call this method.
-        # TODO validate new_layer as metadata
+        validate_metadata(new_layer)
         changed = self._layers.get(identifier, {}) != new_layer
         self._layers[identifier] = new_layer
         return changed

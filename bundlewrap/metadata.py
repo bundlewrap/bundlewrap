@@ -21,6 +21,21 @@ EXPECT_RESULT = 1
 DO_NOT_RUN_ME_AGAIN = 2
 
 
+def validate_metadata(metadata, _top_level=True):
+    if _top_level and not isinstance(metadata, dict):
+        raise TypeError(_("metadata must be a dict"))
+    if isinstance(metadata, dict):
+        for key, value in metadata.items():
+            if not isinstance(key, str):
+                raise TypeError(_("metadata keys must be str, not: {}").format(repr(key)))
+            validate_metadata(value, _top_level=False)
+    elif isinstance(metadata, (tuple, list, set)):
+        for value in metadata:
+            validate_metadata(value, _top_level=False)
+    elif not isinstance(metadata, METADATA_TYPES):
+        raise TypeError(_("illegal metadata value type: {}").format(repr(metadata)))
+
+
 def atomic(obj):
     """
     Wraps a compatible object in a custom class to prevent it from being
@@ -34,16 +49,6 @@ def atomic(obj):
                          "(not: {})".format(repr(obj)))
     else:
         return cls(obj)
-
-
-def check_metadata_keys(node):
-    for path in map_dict_keys(node.metadata):
-        value = path[-1]
-        if not isinstance(value, str):
-            raise TypeError(_("metadata key for {node} at path '{path}' is not a string").format(
-                node=node.name,
-                path="'->'".join(path[:-1]),
-            ))
 
 
 def check_for_unsolvable_metadata_key_conflicts(node):

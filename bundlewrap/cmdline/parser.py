@@ -846,13 +846,6 @@ def build_parser_bw():
         help=_("run node-level test hooks"),
     )
     parser_test.add_argument(
-        "-K",
-        "--metadata-keys",
-        action='store_true',
-        dest='metadata_keys',
-        help=_("validate metadata keys"),
-    )
-    parser_test.add_argument(
         "-M",
         "--metadata-collisions",
         action='store_true',
