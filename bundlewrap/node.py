@@ -720,9 +720,9 @@ class Node:
 
         for bundle in self.bundles:
             for default in bundle._metadata_processors[0]:
-                defaults.add("metadata_defaults", tuple_with_name(bundle, default))
+                defaults.add(tuple_with_name("metadata_defaults", bundle, default))
             for reactor in bundle._metadata_processors[1]:
-                reactors.add("metadata_reactor", tuple_with_name(bundle, reactor))
+                reactors.add(tuple_with_name("metadata_reactor", bundle, reactor))
 
         return defaults, reactors
 

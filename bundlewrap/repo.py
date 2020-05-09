@@ -546,7 +546,7 @@ class Repository:
                 with io.job(_("{node}  running metadata defaults").format(node=bold(node.name))):
                     for defaults_processor_name, defaults_processor in node.metadata_defaults:
                         try:
-                            new_metadata = defaults_processor(self._metastacks[node.name])
+                            new_metadata = defaults_processor()
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata defaults "

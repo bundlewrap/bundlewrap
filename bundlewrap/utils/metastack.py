@@ -14,7 +14,7 @@ def _dict_has_path(layer, path):
 
 
 def _merge_layers(base, update):
-    merged = {}
+    merged = base.copy()
 
     for key, value in update.items():
         if key in base and isinstance(base[key], _Atomic) and isinstance(value, _Atomic):
@@ -111,7 +111,7 @@ class Metastack:
                     result = {'data': value}
                     undef = False
                 else:
-                    result = self._merge_layers(result, {'data': value})
+                    result = _merge_layers(result, {'data': value})
 
         if undef:
             if use_default:
@@ -132,7 +132,7 @@ class Metastack:
         final_dict = {}
 
         for layer in self._layers.values():
-            final_dict = self._merge_layers(final_dict, layer)
+            final_dict = _merge_layers(final_dict, layer)
 
         return final_dict
 
