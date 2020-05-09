@@ -477,6 +477,9 @@ class Repository:
 
             self._build_node_metadata()
 
+            io.debug("completed metadata for {} nodes".format(
+                len(self._nodes_we_need_metadata_for),
+            ))
             # now that we have completed all metadata for this
             # node and all related nodes, copy that data over
             # to the complete dict
