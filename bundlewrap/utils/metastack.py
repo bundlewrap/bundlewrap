@@ -1,3 +1,6 @@
+from collections import OrderedDict
+from sys import version_info
+
 from ..metadata import validate_metadata
 from .dicts import _Atomic, freeze_object
 
@@ -95,7 +98,10 @@ def _merge_layers(base, update):
 class Metastack:
     def __init__(self):
         # We rely heavily on insertion order in this dict.
-        self._layers = {}
+        if version_info < (3, 7):
+            self._layers = OrderedDict()
+        else:
+            self._layers = {}
 
     def get(self, path, default, use_default=True):
         result = None
