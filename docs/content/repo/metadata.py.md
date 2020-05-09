@@ -39,7 +39,7 @@ To avoid deadlocks when accessing *other* nodes' metadata from within a metadata
 <div class="alert alert-danger">Be careful when returning <a href="../../guide/api#bundlewraputilsfault">Fault</a> objects from reactors. <strong>All</strong> Fault objects (including those returned from <code>repo.vault.*</code>) will be considered <strong>equal</strong> to one another when BundleWrap inspects the returned metadata to check if anything changed compared to what was returned in an earlier iteration.</div>
 
 
-### DO_NOT_RUN_ME_AGAIN
+### DoNotRunAgain
 
 On the other hand, if your reactor only needs to provide new metadata in *some* cases, you can tell BundleWrap to not run it again to save some performance:
 
@@ -48,7 +48,7 @@ On the other hand, if your reactor only needs to provide new metadata in *some* 
 	    if node.has_bundle("bar"):
 	        return {"bar": 1}
 	    else:
-	        return DO_NOT_RUN_ME_AGAIN
+	        raise DoNotRunAgain
 
 
-<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_defaults</code>, <code>metadata_reactors</code>, and <code>DO_NOT_RUN_ME_AGAIN</code> in <code>metadata.py</code> without importing them.</div>
+<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_defaults</code>, <code>metadata_reactors</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div>

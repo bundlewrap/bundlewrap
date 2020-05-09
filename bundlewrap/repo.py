@@ -16,7 +16,7 @@ from .exceptions import (
     RepositoryError,
 )
 from .group import Group
-from .metadata import DO_NOT_RUN_ME_AGAIN
+from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, names
@@ -591,7 +591,8 @@ class Repository:
                             new_metadata = metadata_reactor(self._metastacks[node.name])
                         except KeyError as exc:
                             keyerrors[(node_name, metadata_reactor_name)] = exc
-                            continue
+                        except DoNotRunAgain:
+                            do_not_run_again.add((node_name, metadata_reactor_name))
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata reactor "
@@ -608,9 +609,6 @@ class Repository:
                                 del keyerrors[(node_name, metadata_reactor_name)]
                             except KeyError:
                                 pass
-                        if new_metadata == DO_NOT_RUN_ME_AGAIN:
-                            do_not_run_again.add((node_name, metadata_reactor_name))
-                        else:
                             if new_metadata:
                                 results_observed_from.add((node_name, metadata_reactor_name))
 

@@ -16,8 +16,12 @@ METADATA_TYPES = (  # only meant for natively atomic types
     type(None),
 )
 
-# constants returned as options by metadata processors
-DO_NOT_RUN_ME_AGAIN = 1
+
+class DoNotRunAgain(Exception):
+    """
+    Raised from metadata reactors to indicate they can be disregarded.
+    """
+    pass
 
 
 def validate_metadata(metadata, _top_level=True):

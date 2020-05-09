@@ -321,11 +321,19 @@ def foo_reactor(metadata):
     global called
     if not called:
         called = True
-        return DO_NOT_RUN_ME_AGAIN
+        raise DoNotRunAgain
     else:
         raise AssertionError
+
+@metadata_reactor
+def bar_reactor(metadata):
+    return {'called': called}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "called": True,
+    }
+    assert stderr == b""
     assert rcode == 0
 
 
