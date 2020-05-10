@@ -2,9 +2,8 @@
 from __future__ import unicode_literals
 
 from decimal import Decimal
-from json import dumps
 
-from ..metadata import MetadataJSONEncoder
+from ..metadata import metadata_to_json
 from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
 from ..utils.dicts import value_at_key_path
@@ -51,10 +50,7 @@ def bw_metadata(repo, args):
                         break
             page_lines(render_table(table))
         else:
-            for line in dumps(
+            for line in metadata_to_json(
                 value_at_key_path(node.metadata, args['keys']),
-                cls=MetadataJSONEncoder,
-                indent=4,
-                sort_keys=True,
             ).splitlines():
                 io.stdout(force_text(line))
