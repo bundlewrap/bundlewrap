@@ -2,10 +2,11 @@ from difflib import unified_diff
 
 from ..items.files import DIFF_MAX_FILE_SIZE
 from ..metadata import metadata_to_json
+from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
 from ..utils.dicts import diff_keys
-from ..utils.text import mark_for_translation as _, red
-from ..utils.ui import io
+from ..utils.text import mark_for_translation as _, red, blue
+from ..utils.ui import io, QUIT_EVENT
 
 
 def bw_diff(repo, args):
@@ -20,7 +21,70 @@ def bw_diff(repo, args):
     if args['branch']:
         raise NotImplementedError
     elif args['prompt']:
-        raise NotImplementedError
+        if args['metadata']:
+            if len(target_nodes) == 1:
+                node_before = target_nodes[0]
+                node_before_metadata = metadata_to_json(node_before.metadata).splitlines()
+
+                io.stdout(_("{x} Took a snapshot of that node's metadata.").format(x=blue("i")))
+                io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
+                if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                    exit(1)
+
+                after_repo = Repository(repo.path)
+                target_nodes = get_target_nodes(
+                    after_repo,
+                    args['target'],
+                    adhoc_nodes=args['adhoc_nodes'],
+                )
+                assert len(target_nodes) == 1
+                node_after = target_nodes[0]
+                node_after_metadata = metadata_to_json(node_after.metadata).splitlines()
+                io.stdout("\n".join(unified_diff(
+                    node_before_metadata,
+                    node_after_metadata,
+                    fromfile=_("before"),
+                    tofile=_("after"),
+                )))
+            else:
+                nodes_metadata_before = {}
+                for node in target_nodes:
+                    if QUIT_EVENT.is_set():
+                        exit(1)
+                    nodes_metadata_before[node.name] = node.metadata_hash()
+
+                io.stdout(_("{x} Took a snapshot of those nodes' metadata.").format(x=blue("i")))
+                io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
+                if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                    exit(1)
+
+                after_repo = Repository(repo.path)
+                nodes_metadata_after = {}
+                for node_name in nodes_metadata_before:
+                    if QUIT_EVENT.is_set():
+                        exit(1)
+                    nodes_metadata_after[node_name] = \
+                        after_repo.get_node(node_name).metadata_hash()
+
+                node_hashes_before = sorted(
+                    ["{}\t{}".format(i, h) for i, h in nodes_metadata_before.items()]
+                )
+                node_hashes_after = sorted(
+                    ["{}\t{}".format(i, h) for i, h in nodes_metadata_after.items()]
+                )
+                io.stdout("\n".join(
+                    filter(
+                        lambda line: line.startswith("+") or line.startswith("-"),
+                        unified_diff(
+                            node_hashes_before,
+                            node_hashes_after,
+                            fromfile=_("before"),
+                            tofile=_("after"),
+                            n=0,
+                        ),
+                    ),
+                ))
+
     else:
         if len(target_nodes) != 2:
             io.stdout(_(
