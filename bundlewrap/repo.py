@@ -9,7 +9,7 @@ from threading import Lock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 
-from . import items, utils, VERSION_STRING
+from . import items, VERSION_STRING
 from .bundle import FILENAME_BUNDLE
 from .exceptions import (
     NoSuchGroup,
@@ -29,7 +29,7 @@ from .metadata import (
 )
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
-from .utils import cached_property, names
+from .utils import cached_property, get_file_contents, names
 from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.dicts import hash_statedict, merge_dict
 from .utils.text import bold, mark_for_translation as _, red, validate_name
@@ -98,30 +98,9 @@ nodes = {
 }
 
 
-def groups_from_file(filepath, libs, repo_path, vault):
-    """
-    Returns all groups as defined in the given groups.py.
-    """
-    try:
-        flat_group_dict = utils.getattr_from_file(
-            filepath,
-            'groups',
-            base_env={
-                'libs': libs,
-                'repo_path': repo_path,
-                'vault': vault,
-            },
-        )
-    except KeyError:
-        raise RepositoryError(_(
-            "{} must define a 'groups' variable"
-        ).format(filepath))
-    for groupname, infodict in flat_group_dict.items():
-        yield Group(groupname, infodict)
-
-
 class HooksProxy(object):
-    def __init__(self, path):
+    def __init__(self, repo, path):
+        self.repo = repo
         self.__hook_cache = {}
         self.__module_cache = {}
         self.__path = path
@@ -171,39 +150,11 @@ class HooksProxy(object):
                 continue
             self.__module_cache[filename] = {}
             self.__registered_hooks[filename] = []
-            for name, obj in utils.get_all_attrs_from_file(filepath).items():
+            for name, obj in self.repo.get_all_attrs_from_file(filepath).items():
                 if name not in HOOK_EVENTS:
                     continue
                 self.__module_cache[filename][name] = obj
                 self.__registered_hooks[filename].append(name)
-
-
-def items_from_path(path):
-    """
-    Looks for Item subclasses in the given path.
-
-    An alternative method would involve metaclasses (as Django
-    does it), but then it gets very hard to have two separate repos
-    in the same process, because both of them would register config
-    item classes globally.
-    """
-    if not isdir(path):
-        return
-    for filename in listdir(path):
-        filepath = join(path, filename)
-        if not filename.endswith(".py") or \
-                not isfile(filepath) or \
-                filename.startswith("_"):
-            continue
-        for name, obj in \
-                utils.get_all_attrs_from_file(filepath).items():
-            if obj == items.Item or name.startswith("_"):
-                continue
-            try:
-                if issubclass(obj, items.Item) and not isabstract(obj):
-                    yield obj
-            except TypeError:
-                pass
 
 
 class LibsProxy(object):
@@ -226,28 +177,6 @@ class LibsProxy(object):
         return self.__module_cache[attrname]
 
 
-def nodes_from_file(filepath, libs, repo_path, vault):
-    """
-    Returns a list of nodes as defined in the given nodes.py.
-    """
-    try:
-        flat_node_dict = utils.getattr_from_file(
-            filepath,
-            'nodes',
-            base_env={
-                'libs': libs,
-                'repo_path': repo_path,
-                'vault': vault,
-            },
-        )
-    except KeyError:
-        raise RepositoryError(
-            _("{} must define a 'nodes' variable").format(filepath)
-        )
-    for nodename, infodict in flat_node_dict.items():
-        yield Node(nodename, infodict)
-
-
 class Repository(object):
     def __init__(self, repo_path=None):
         self.path = "/dev/null" if repo_path is None else repo_path
@@ -257,6 +186,8 @@ class Repository(object):
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
+        self._get_all_attr_code_cache = {}
+        self._get_all_attr_result_cache = {}
         self._node_metadata_blame = {}
         self._node_metadata_complete = {}
         self._node_metadata_partial = {}
@@ -266,7 +197,7 @@ class Repository(object):
         if repo_path is not None:
             self.populate_from_path(repo_path)
         else:
-            self.item_classes = list(items_from_path(items.__path__[0]))
+            self.item_classes = list(self.items_from_dir(items.__path__[0]))
 
     def __eq__(self, other):
         if self.path == "/dev/null":
@@ -294,10 +225,10 @@ class Repository(object):
         """
         Adds the given group object to this repo.
         """
-        if group.name in utils.names(self.nodes):
+        if group.name in names(self.nodes):
             raise RepositoryError(_("you cannot have a node and a group "
                                     "both named '{}'").format(group.name))
-        if group.name in utils.names(self.groups):
+        if group.name in names(self.groups):
             raise RepositoryError(_("you cannot have two groups "
                                     "both named '{}'").format(group.name))
         group.repo = self
@@ -307,10 +238,10 @@ class Repository(object):
         """
         Adds the given node object to this repo.
         """
-        if node.name in utils.names(self.groups):
+        if node.name in names(self.groups):
             raise RepositoryError(_("you cannot have a node and a group "
                                     "both named '{}'").format(node.name))
-        if node.name in utils.names(self.nodes):
+        if node.name in names(self.nodes):
             raise RepositoryError(_("you cannot have two nodes "
                                     "both named '{}'").format(node.name))
 
@@ -372,6 +303,81 @@ class Repository(object):
         node = Node(node_name)
         self.add_node(node)
         return node
+
+    def get_all_attrs_from_file(self, path, base_env=None):
+        """
+        Reads all 'attributes' (if it were a module) from a source file.
+        """
+        if base_env is None:
+            base_env = {}
+
+        if not base_env and path in self._get_all_attr_result_cache:
+            # do not allow caching when passing in a base env because that
+            # breaks repeated calls with different base envs for the same
+            # file
+            return self._get_all_attr_result_cache[path]
+
+        if path not in self._get_all_attr_code_cache:
+            source = get_file_contents(path)
+            self._get_all_attr_code_cache[path] = \
+                compile(source, path, mode='exec')
+
+        code = self._get_all_attr_code_cache[path]
+        env = base_env.copy()
+        try:
+            exec(code, env)
+        except:
+            io.stderr("Exception while executing {}".format(path))
+            raise
+
+        if not base_env:
+            self._get_all_attr_result_cache[path] = env
+
+        return env
+
+    def nodes_or_groups_from_file(self, path, attribute):
+        try:
+            flat_dict = self.get_all_attrs_from_file(
+                path,
+                base_env={
+                    'libs': self.libs,
+                    'repo_path': self.path,
+                    'vault': self.vault,
+                },
+            )[attribute]
+        except KeyError:
+            raise RepositoryError(_(
+                "{} must define a '{}' variable"
+            ).format(path, attribute))
+        for name, infodict in flat_dict.items():
+            yield (name, infodict)
+
+    def items_from_dir(self, path):
+        """
+        Looks for Item subclasses in the given path.
+
+        An alternative method would involve metaclasses (as Django
+        does it), but then it gets very hard to have two separate repos
+        in the same process, because both of them would register config
+        item classes globally.
+        """
+        if not isdir(path):
+            return
+        for filename in listdir(path):
+            filepath = join(path, filename)
+            if not filename.endswith(".py") or \
+                    not isfile(filepath) or \
+                    filename.startswith("_"):
+                continue
+            for name, obj in \
+                    self.get_all_attrs_from_file(filepath).items():
+                if obj == items.Item or name.startswith("_"):
+                    continue
+                try:
+                    if issubclass(obj, items.Item) and not isabstract(obj):
+                        yield obj
+                except TypeError:
+                    pass
 
     def get_group(self, group_name):
         try:
@@ -688,20 +694,20 @@ class Repository(object):
 
         # populate groups
         self.group_dict = {}
-        for group in groups_from_file(self.groups_file, self.libs, self.path, self.vault):
-            self.add_group(group)
+        for group in self.nodes_or_groups_from_file(self.groups_file, 'groups'):
+            self.add_group(Group(*group))
 
         # populate items
-        self.item_classes = list(items_from_path(items.__path__[0]))
-        for item_class in items_from_path(self.items_dir):
+        self.item_classes = list(self.items_from_dir(items.__path__[0]))
+        for item_class in self.items_from_dir(self.items_dir):
             self.item_classes.append(item_class)
 
         # populate nodes
         self.node_dict = {}
-        for node in nodes_from_file(self.nodes_file, self.libs, self.path, self.vault):
-            self.add_node(node)
+        for node in self.nodes_or_groups_from_file(self.nodes_file, 'nodes'):
+            self.add_node(Node(*node))
 
-    @utils.cached_property
+    @cached_property
     def revision(self):
         return get_rev()
 
@@ -715,5 +721,5 @@ class Repository(object):
         self.libs_dir = join(self.path, DIRNAME_LIBS)
         self.nodes_file = join(self.path, FILENAME_NODES)
 
-        self.hooks = HooksProxy(self.hooks_dir)
+        self.hooks = HooksProxy(self, self.hooks_dir)
         self.libs = LibsProxy(self.libs_dir)
