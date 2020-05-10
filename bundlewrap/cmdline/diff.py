@@ -116,6 +116,42 @@ def intermission_diff_metadata_multiple_nodes(repo, nodes, intermission):
     ))
 
 
+def intermission_diff_single_item(repo, node, item, intermission):
+    item_before = node.get_item(item)
+    item_before_dict = item_before.cdict()
+    item_before_diffable = False
+    item_before_content = None
+
+    if (
+        item.startswith("file:")
+        and item_before.attributes['content_type'] not in ('base64', 'binary')
+        and len(item_before.content) < DIFF_MAX_FILE_SIZE
+    ):
+        item_before_diffable = True
+        item_before_content = item_before.content
+
+    intermission()
+
+    repo_after = Repository(repo.path)
+    node_after = repo_after.get_node(node.name)
+    item_after = node_after.get_item(item)
+    item_after_dict = item_after.cdict()
+
+    if (
+        item.startswith("file:")
+        and item_before_diffable
+        and item_after.attributes['content_type'] not in ('base64', 'binary')
+        and len(item_after.content) < DIFF_MAX_FILE_SIZE
+    ):
+        del item_before_dict['content_hash']
+        del item_after_dict['content_hash']
+        item_before_dict['content'] = item_before_content
+        item_after_dict['content'] = item_after.content
+
+    relevant_keys = diff_keys(item_before_dict, item_after_dict)
+    io.stdout(item_before.ask(item_before_dict, item_after_dict, relevant_keys))
+
+
 def bw_diff(repo, args):
     if args['metadata'] and args['item']:
         io.stdout(_(
@@ -145,8 +181,18 @@ def bw_diff(repo, args):
                 intermission_diff_metadata_multiple_nodes(repo, target_nodes, intermission)
 
         elif args['item']:
-            # compare single item on single node
-            raise NotImplementedError
+            if len(target_nodes) != 1:
+                io.stdout(_(
+                    "{x} Select exactly one node to compare item"
+                ).format(x=red("!!!")))
+                exit(1)
+
+            def intermission():
+                io.stdout(_("{x} Took a snapshot of that item.").format(x=blue("i")))
+                io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
+                if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                    exit(1)
+            intermission_diff_single_item(repo, target_nodes[0], args['item'], intermission)
 
         else:
             # compare set of entire nodes' config
