@@ -39,7 +39,7 @@ def diff_item(node_a, node_b, item):
         item_b_dict['content'] = item_b.content
 
     relevant_keys = diff_keys(item_a_dict, item_b_dict)
-    io.stdout(item_a.ask(item_a_dict, item_b_dict, relevant_keys))
+    io.stdout(item_a.ask(item_b_dict, item_a_dict, relevant_keys))
 
 
 def diff_node(node_a, node_b):
@@ -149,7 +149,46 @@ def intermission_diff_single_item(repo, node, item, intermission):
         item_after_dict['content'] = item_after.content
 
     relevant_keys = diff_keys(item_before_dict, item_after_dict)
-    io.stdout(item_before.ask(item_before_dict, item_after_dict, relevant_keys))
+    print(item_before_dict)
+    print(item_after_dict)
+    io.stdout(item_before.ask(item_after_dict, item_before_dict, relevant_keys))
+
+
+def intermission_diff_config_multiple_nodes(repo, nodes, intermission):
+    nodes_config_before = {}
+    for node in nodes:
+        if QUIT_EVENT.is_set():
+            exit(1)
+        nodes_config_before[node.name] = node.hash()
+
+    intermission()
+
+    after_repo = Repository(repo.path)
+    nodes_config_after = {}
+    for node_name in nodes_config_before:
+        if QUIT_EVENT.is_set():
+            exit(1)
+        nodes_config_after[node_name] = \
+            after_repo.get_node(node_name).hash()
+
+    node_hashes_before = sorted(
+        ["{}\t{}".format(i, h) for i, h in nodes_config_before.items()]
+    )
+    node_hashes_after = sorted(
+        ["{}\t{}".format(i, h) for i, h in nodes_config_after.items()]
+    )
+    io.stdout("\n".join(
+        filter(
+            lambda line: line.startswith("+") or line.startswith("-"),
+            unified_diff(
+                node_hashes_before,
+                node_hashes_after,
+                fromfile=_("before"),
+                tofile=_("after"),
+                n=0,
+            ),
+        ),
+    ))
 
 
 def bw_diff(repo, args):
@@ -195,8 +234,12 @@ def bw_diff(repo, args):
             intermission_diff_single_item(repo, target_nodes[0], args['item'], intermission)
 
         else:
-            # compare set of entire nodes' config
-            raise NotImplementedError
+            def intermission():
+                io.stdout(_("{x} Took a snapshot of those nodes.").format(x=blue("i")))
+                io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
+                if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                    exit(1)
+            intermission_diff_config_multiple_nodes(repo, target_nodes, intermission)
 
     else:
         if len(target_nodes) != 2:
