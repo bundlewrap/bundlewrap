@@ -131,12 +131,10 @@ def diff_value_text(title, value1, value2):
                 green(value2),
             )
     output = bold(title) + "\n"
-    for line in unified_diff(
+    for line in tuple(unified_diff(
         value1.splitlines(True),
         value2.splitlines(True),
-        fromfile=_("<node>"),
-        tofile=_("<bundlewrap>"),
-    ):
+    ))[2:]:
         suffix = ""
         if len(line) > DIFF_MAX_LINE_LENGTH:
             suffix += _(" (line truncated after {} characters)").format(DIFF_MAX_LINE_LENGTH)

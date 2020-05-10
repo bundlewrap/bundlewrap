@@ -216,10 +216,28 @@ def build_parser_bw():
         "--branch",
         default=None,
         dest='branch',
-        metavar=_("branch"),
+        metavar=_("REV"),
         required=False,
         type=str,
-        help=_("compare node(s) to this git branch instead"),
+        help=_("compare node(s) to this git branch or commit instead"),
+    )
+    parser_diff.add_argument(
+        "-p",
+        "--prompt",
+        action='store_true',
+        default=False,
+        dest='prompt',
+        help=_("interactively ask for user to make changes"),
+    )
+    parser_diff.add_argument(
+        "-i",
+        "--item",
+        default=None,
+        dest='item',
+        metavar=_("ITEM"),
+        required=False,
+        type=str,
+        help=_("compare this specific item between nodes"),
     )
     parser_diff.add_argument(
         "-m",
