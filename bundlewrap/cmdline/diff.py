@@ -149,8 +149,6 @@ def intermission_diff_single_item(repo, node, item, intermission):
         item_after_dict['content'] = item_after.content
 
     relevant_keys = diff_keys(item_before_dict, item_after_dict)
-    print(item_before_dict)
-    print(item_after_dict)
     io.stdout(item_before.ask(item_after_dict, item_before_dict, relevant_keys))
 
 
