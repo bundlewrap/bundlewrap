@@ -34,6 +34,28 @@ DEFAULTS = 3
 OVERWRITE = 4
 
 
+class DoNotRunAgain(Exception):
+    """
+    Raised from metadata reactors to indicate they can be disregarded.
+    """
+    pass
+
+
+def validate_metadata(metadata, _top_level=True):
+    if _top_level and not isinstance(metadata, dict):
+        raise TypeError(_("metadata must be a dict"))
+    if isinstance(metadata, dict):
+        for key, value in metadata.items():
+            if not isinstance(key, str):
+                raise TypeError(_("metadata keys must be str, not: {}").format(repr(key)))
+            validate_metadata(value, _top_level=False)
+    elif isinstance(metadata, (tuple, list, set)):
+        for value in metadata:
+            validate_metadata(value, _top_level=False)
+    elif not isinstance(metadata, METADATA_TYPES):
+        raise TypeError(_("illegal metadata value type: {}").format(repr(metadata)))
+
+
 def atomic(obj):
     """
     Wraps a compatible object in a custom class to prevent it from being
@@ -77,6 +99,31 @@ def blame_changed_paths(old_dict, new_dict, blame_dict, blame_name, defaults=Fal
                 else:
                     blame_dict[path] = (blame_name,)
     return blame_dict
+
+
+def changes_metadata(existing_metadata, new_metadata):
+    """
+    Returns True if new_metadata contains any keys or values not present
+    in or different from existing_metadata.
+    """
+    for key, new_value in new_metadata.items():
+        if key not in existing_metadata:
+            return True
+        if isinstance(new_value, dict):
+            if not isinstance(existing_metadata[key], dict):
+                return True
+            if changes_metadata(existing_metadata[key], new_value):
+                return True
+        if isinstance(existing_metadata[key], Fault) and isinstance(new_value, Fault):
+            # Always consider Faults as equal. It would arguably be more correct to
+            # always assume them to be different, but that would mean that we could
+            # never do change detection between two dicts of metadata. So we have no
+            # choice but to warn users in docs that Faults will always be considered
+            # equal to one another.
+            continue
+        if new_value != existing_metadata[key]:
+            return True
+    return False
 
 
 def check_metadata_keys(node):

@@ -475,3 +475,193 @@ def test_table_no_key(tmpdir):
     )
     stdout, stderr, rcode = run("bw metadata --table node1", path=str(tmpdir))
     assert rcode == 1
+
+
+def test_metadatapy_proc_merge_order(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {
+                    "one": "node",
+                    "two": "node",
+                    "five": "node",
+                },
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_defaults
+def foo():
+    return {
+        "two": "defaults",
+        "three": "defaults",
+        "four": "defaults",
+    }
+
+@metadata_reactor
+def foo_reactor(metadata):
+    return {
+        "four": "reactor",
+        "five": "reactor",
+    }
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "one": "node",
+        "two": "node",
+        "three": "defaults",
+        "four": "reactor",
+        "five": "reactor",
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_metadatapy_do_not_run_me_again(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""called = False
+@metadata_reactor
+def foo_reactor(metadata):
+    global called
+    if not called:
+        called = True
+        raise DoNotRunAgain
+    else:
+        raise AssertionError
+@metadata_reactor
+def bar_reactor(metadata):
+    return {'called': called}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "called": True,
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_metadatapy_reactor_keyerror_from_metastack(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def foo_reactor(metadata):
+    return {'foo': metadata.get('bar')}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
+    assert b"node1" in stderr
+    assert b"foo_reactor" in stderr
+    assert b"'bar'" in stderr
+
+
+def test_metadatapy_reactor_keyerror_from_dict(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def foo_reactor(metadata):
+    x = {}['baz']
+    return {'x': x}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
+    assert b"node1" in stderr
+    assert b"foo_reactor" in stderr
+    assert b"'baz'" in stderr
+
+
+def test_metadatapy_reactor_keyerror_fixed(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def foo(metadata):
+    bar_ran = metadata.get('bar_ran', False)
+    if not bar_ran:
+        return {'foo_ran': True}
+    else:
+        return {'foo': metadata.get('bar'), 'foo_ran': True}
+@metadata_reactor
+def bar(metadata):
+    foo_ran = metadata.get('foo_ran', False)
+    if not foo_ran:
+        return {'bar_ran': False}
+    else:
+        return {'bar': 47, 'bar_ran': True}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "bar": 47,
+        "bar_ran": True,
+        "foo": 47,
+        "foo_ran": True,
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_metadatapy_infinite_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def plusone(metadata):
+    return {'foo': metadata.get('foo', 0) + 1 }
+
+@metadata_reactor
+def plustwo(metadata):
+    return {'foo': metadata.get('foo', 0) + 2 }
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
