@@ -1,7 +1,7 @@
 from os.path import exists, join
 
 from .exceptions import BundleError, NoSuchBundle, RepositoryError
-from .metadata import DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE, EXPECT_RESULT, DO_NOT_RUN_ME_AGAIN
+from .metadata import DoNotRunAgain
 from .utils import cached_property, get_all_attrs_from_file
 from .utils.text import bold, mark_for_translation as _
 from .utils.text import validate_name
@@ -108,12 +108,7 @@ class Bundle:
             for name, attr in get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
-                    'DEFAULTS': DEFAULTS,
-                    'DO_NOT_RUN_ME_AGAIN': DO_NOT_RUN_ME_AGAIN,
-                    'DONE': DONE,
-                    'EXPECT_RESULT': EXPECT_RESULT,
-                    'OVERWRITE': OVERWRITE,
-                    'RUN_ME_AGAIN': RUN_ME_AGAIN,
+                    'DoNotRunAgain': DoNotRunAgain,
                     'metadata_defaults': metadata_defaults,
                     'metadata_reactor': metadata_reactor,
                     'node': self.node,

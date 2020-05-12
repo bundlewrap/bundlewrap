@@ -16,22 +16,12 @@ from .exceptions import (
     RepositoryError,
 )
 from .group import Group
-from .metadata import (
-    blame_changed_paths,
-    changes_metadata,
-    check_metadata_processor_result,
-    deepcopy_metadata,
-    DEFAULTS,
-    DO_NOT_RUN_ME_AGAIN,
-    DONE,
-    EXPECT_RESULT,
-    OVERWRITE,
-)
+from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import cached_property, names
 from .utils.scm import get_git_branch, get_git_clean, get_rev
-from .utils.dicts import hash_statedict, merge_dict
+from .utils.dicts import hash_statedict
 from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io, QUIT_EVENT
@@ -259,10 +249,7 @@ class Repository:
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
-        self._node_metadata_blame = {}
         self._node_metadata_complete = {}
-        self._node_metadata_partial = {}
-        self._node_metadata_static_complete = set()
         self._node_metadata_lock = Lock()
 
         if repo_path is not None:
@@ -442,16 +429,37 @@ class Repository:
         node and all related nodes. Related meaning nodes that this node
         depends on in one of its metadata processors.
         """
+        if partial:
+            if node_name in self._node_metadata_complete:
+                # We already completed metadata for this node, but partial must
+                # return a Metastack, so we build a single-layered one just for
+                # the interface.
+                metastack = Metastack()
+                metastack._set_layer(
+                    "flattened",
+                    self._node_metadata_complete[node_name],
+                )
+                return metastack
+            else:
+                # Return the WIP Metastack or an empty one if we didn't start
+                # yet.
+                self._nodes_we_need_metadata_for.add(node_name)
+                return self._metastacks.setdefault(node_name, Metastack())
+
         try:
             return self._node_metadata_complete[node_name]
         except KeyError:
             pass
 
-        if partial:
-            self._node_metadata_partial.setdefault(node_name, {})
-            # TODO Optimize, currently the whole thing is rendered as a
-            # dict ...
-            return Metastack(self._node_metadata_partial[node_name])
+        # Different worker threads might request metadata at the same time.
+        # This creates problems for the following variables:
+        #
+        #    self._metastacks
+        #    self._nodes_we_need_metadata_for
+        #
+        # Chaos would ensue if we allowed multiple instances of
+        # _build_node_metadata() running in parallel, messing with these
+        # vars. So we use a lock and reset the vars before and after.
 
         with self._node_metadata_lock:
             try:
@@ -460,152 +468,131 @@ class Repository:
             except KeyError:
                 pass
 
+            # set up temporary vars
             self._metastacks = {}
-            self._node_metadata_partial[node_name] = {}
-            self._build_node_metadata(blame=blame)
+            self._nodes_we_need_metadata_for = {node_name}
 
+            self._build_node_metadata()
+
+            io.debug("completed metadata for {} nodes".format(
+                len(self._nodes_we_need_metadata_for),
+            ))
             # now that we have completed all metadata for this
             # node and all related nodes, copy that data over
             # to the complete dict
-            self._node_metadata_complete.update(self._node_metadata_partial)
-
-            # reset temporary vars
-            self._metastacks = {}
-            self._node_metadata_partial = {}
-            self._node_metadata_static_complete = set()
+            for node_name in self._nodes_we_need_metadata_for:
+                self._node_metadata_complete[node_name] = \
+                    self._metastacks[node_name]._as_dict()
 
             if blame:
-                return self._node_metadata_blame[node_name]
+                blame_result = self._metastacks[node_name]._blame()
+
+            # reset temporary vars (this isn't strictly necessary, but might
+            # free up some memory and avoid confusion)
+            self._metastacks = {}
+            self._nodes_we_need_metadata_for = set()
+
+            if blame:
+                return blame_result
             else:
                 return self._node_metadata_complete[node_name]
 
-    def _build_node_metadata(self, blame=False):
+    def _build_node_metadata(self):
         """
         Builds complete metadata for all nodes that appear in
-        self._node_metadata_partial.keys().
+        self._nodes_we_need_metadata_for.
         """
-
+        # Prevents us from reassembling static metadata needlessly and
+        # helps us detect nodes pulled into self._nodes_we_need_metadata_for
+        # by node.partial_metadata.
+        nodes_with_completed_static_metadata = set()
         # these reactors have indicated that they do not need to be run again
         do_not_run_again = set()
-        # these reactors have indicated that they must produce a result at some point
-        results_expected_from = set()
+        # these reactors have raised KeyErrors
+        keyerrors = {}
         # these reactors have actually produced a non-falsy result
         results_observed_from = set()
-
+        # loop detection
         iterations = 0
         reactors_that_changed_something_in_last_iteration = set()
+
         while not QUIT_EVENT.is_set():
             iterations += 1
             if iterations > MAX_METADATA_ITERATIONS:
-                proclist = ""
-                for node, metaproc in sorted(reactors_that_changed_something_in_last_iteration):
-                    proclist += node + " " + metaproc + "\n"
+                reactors = ""
+                for node, reactor in sorted(reactors_that_changed_something_in_last_iteration):
+                    reactors += node + " " + reactor + "\n"
                 raise ValueError(_(
                     "Infinite loop detected between these metadata reactors:\n"
-                ) + proclist)
+                ) + reactors)
 
             # First, get the static metadata out of the way
-            for node_name in list(self._node_metadata_partial):
+            for node_name in list(self._nodes_we_need_metadata_for):
                 if QUIT_EVENT.is_set():
                     break
                 node = self.get_node(node_name)
-                node_blame = self._node_metadata_blame.setdefault(node_name, {})
                 # check if static metadata for this node is already done
-                if node_name in self._node_metadata_static_complete:
+                if node_name in nodes_with_completed_static_metadata:
                     continue
+                self._metastacks[node_name] = Metastack()
 
-                with io.job(_("{node}  building group metadata").format(node=bold(node.name))):
-                    group_order = _flatten_group_hierarchy(node.groups)
-                    for group_name in group_order:
-                        new_metadata = merge_dict(
-                            self._node_metadata_partial[node.name],
-                            self.get_group(group_name).metadata,
-                        )
-                        if blame:
-                            blame_changed_paths(
-                                self._node_metadata_partial[node.name],
-                                new_metadata,
-                                node_blame,
-                                "group:{}".format(group_name),
-                            )
-                        self._node_metadata_partial[node.name] = new_metadata
-
-                with io.job(_("{node}  merging node metadata").format(node=bold(node.name))):
-                    # deepcopy_metadata is important here because up to this point
-                    # different nodes from the same group might still share objects
-                    # nested deeply in their metadata. This becomes a problem if we
-                    # start messing with these objects in metadata reactors. Every
-                    # time we would edit one of these objects, the changes would be
-                    # shared amongst multiple nodes.
-                    # TODO verify this -^ still applies with Metastacks
-                    new_metadata = deepcopy_metadata(merge_dict(
-                        self._node_metadata_partial[node.name],
-                        node._node_metadata,
-                    ))
-                    if blame:
-                        blame_changed_paths(
-                            self._node_metadata_partial[node.name],
-                            new_metadata,
-                            node_blame,
-                            "node:{}".format(node.name),
-                        )
-                    self._node_metadata_partial[node.name] = new_metadata
-
-            # At this point, static metadata from groups and nodes has been merged.
-            # Next, we look at defaults from metadata.py.
-
-            for node_name in list(self._node_metadata_partial):
-                # check if static metadata for this node is already done
-                if node_name in self._node_metadata_static_complete:
-                    continue
-
-                node_blame = self._node_metadata_blame[node_name]
                 with io.job(_("{node}  running metadata defaults").format(node=bold(node.name))):
                     for defaults_processor_name, defaults_processor in node.metadata_defaults:
-                        new_metadata = defaults_processor()
-                        # TODO validate returned metadata
-                        if blame:
-                            blame_changed_paths(
-                                self._node_metadata_partial[node.name],
-                                new_metadata,
-                                node_blame,
-                                "metadata_defaults:{}".format(defaults_processor_name),
-                                defaults=True,
-                            )
-                        self._node_metadata_partial[node.name] = merge_dict(
+                        try:
+                            new_metadata = defaults_processor()
+                        except Exception as exc:
+                            io.stderr(_(
+                                "{x} Exception while executing metadata defaults "
+                                "{metaproc} for node {node}:"
+                            ).format(
+                                x=red("!!!"),
+                                metaproc=defaults_processor_name,
+                                node=node.name,
+                            ))
+                            raise exc
+                        self._metastacks[node_name]._set_layer(
+                            defaults_processor_name,
                             new_metadata,
-                            self._node_metadata_partial[node.name],
                         )
+
+                with io.job(_("{node}  adding group metadata").format(node=bold(node.name))):
+                    group_order = _flatten_group_hierarchy(node.groups)
+                    for group_name in group_order:
+                        self._metastacks[node_name]._set_layer(
+                            "group:{}".format(group_name),
+                            self.get_group(group_name).metadata,
+                        )
+
+                with io.job(_("{node}  adding node metadata").format(node=bold(node.name))):
+                    self._metastacks[node_name]._set_layer(
+                        "node:{}".format(node_name),
+                        node._node_metadata,
+                    )
 
                 # This will ensure node/group metadata and defaults are
                 # skipped over in future iterations.
-                self._node_metadata_static_complete.add(node_name)
-
-                self._metastacks[node_name] = Metastack(self._node_metadata_partial[node.name])
+                nodes_with_completed_static_metadata.add(node_name)
 
             # Now for the interesting part: We run all metadata reactors
             # until none of them return changed metadata anymore.
             any_reactor_returned_changed_metadata = False
             reactors_that_changed_something_in_last_iteration = set()
 
-            for node_name in list(self._node_metadata_partial):
+            for node_name in list(self._nodes_we_need_metadata_for):
                 if QUIT_EVENT.is_set():
                     break
                 node = self.get_node(node_name)
-                node_blame = self._node_metadata_blame[node_name]
 
                 with io.job(_("{node}  running metadata reactors").format(node=bold(node.name))):
                     for metadata_reactor_name, metadata_reactor in node.metadata_reactors:
                         if (node_name, metadata_reactor_name) in do_not_run_again:
                             continue
-                        io.debug(_(
-                            "running metadata reactor {metaproc} for node {node}"
-                        ).format(
-                            metaproc=metadata_reactor_name,
-                            node=node.name,
-                        ))
                         try:
                             new_metadata = metadata_reactor(self._metastacks[node.name])
+                        except KeyError as exc:
+                            keyerrors[(node_name, metadata_reactor_name)] = exc
+                        except DoNotRunAgain:
+                            do_not_run_again.add((node_name, metadata_reactor_name))
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata reactor "
@@ -616,52 +603,45 @@ class Repository:
                                 node=node.name,
                             ))
                             raise exc
-                        if new_metadata == DO_NOT_RUN_ME_AGAIN:
-                            do_not_run_again.add((node_name, metadata_reactor_name))
-                        elif new_metadata == EXPECT_RESULT:
-                            results_expected_from.add((node_name, metadata_reactor_name))
                         else:
-                            # TODO validate returned metadata
+                            # reactor terminated normally, clear any previously stored exception
+                            try:
+                                del keyerrors[(node_name, metadata_reactor_name)]
+                            except KeyError:
+                                pass
                             if new_metadata:
                                 results_observed_from.add((node_name, metadata_reactor_name))
 
-                            this_changed = self._metastacks[node_name]._set_layer(metadata_reactor_name, new_metadata)
+                            this_changed = self._metastacks[node_name]._set_layer(
+                                metadata_reactor_name,
+                                new_metadata,
+                            )
                             if this_changed:
                                 reactors_that_changed_something_in_last_iteration.add(
                                     (node_name, metadata_reactor_name),
                                 )
-                            if not any_reactor_returned_changed_metadata:
-                                any_reactor_returned_changed_metadata = this_changed
-
-                            # Render as dict to give node.partial_metadata() a
-                            # chance to see new data.
-                            # TODO Optimize, implement Metastack.copy() or similar.
-                            # Careful, we need to create a full copy eventually anyway.
-                            self._node_metadata_partial[node_name] = self._metastacks[node_name]._as_dict()
-                            # TODO blame
+                                any_reactor_returned_changed_metadata = True
 
             if not any_reactor_returned_changed_metadata:
-                if self._node_metadata_static_complete != set(self._node_metadata_partial.keys()):
+                if nodes_with_completed_static_metadata != self._nodes_we_need_metadata_for:
                     # During metadata reactor execution, partial metadata may
                     # have been requested for nodes we did not previously
-                    # consider. Since partial metadata may default to
-                    # just an empty dict, we still need to make sure to
-                    # generate static metadata for these new nodes, as
-                    # that may trigger additional runs of metadata
-                    # reactors.
+                    # consider. We still need to make sure to generate static
+                    # metadata for these new nodes, as that may trigger
+                    # additional results from metadata reactors.
                     continue
                 else:
                     break
 
-        missing_results = results_expected_from.difference(results_observed_from)
-        if missing_results:
-            proclist = ""
-            for node_name, metaproc_name in missing_results:
-                proclist += node_name + " " + metaproc_name + "\n"
+        if keyerrors:
+            reactors = ""
+            for source, exc in keyerrors.items():
+                node_name, reactor = source
+                reactors += "{}  {}  {}\n".format(node_name, reactor, exc)
             raise ValueError(_(
-                "Result expected from these metadata processor(s), "
-                "but never returned:\n"
-            ) + proclist)
+                "These metadata reactors raised a KeyError "
+                "even after all other reactors were done:\n"
+            ) + reactors)
 
     def metadata_hash(self):
         repo_dict = {}
