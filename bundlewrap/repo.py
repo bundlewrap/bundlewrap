@@ -25,10 +25,9 @@ from .metadata import (
     check_metadata_processor_result,
     deepcopy_metadata,
     DEFAULTS,
-    DO_NOT_RUN_ME_AGAIN,
     DONE,
-    EXPECT_RESULT,
     OVERWRITE,
+    DoNotRunAgain,
 )
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
@@ -492,6 +491,7 @@ class Repository(object):
         results_expected_from = set()
         # these processors have actually produced a non-falsy result
         results_observed_from = set()
+        keyerrors = {}
 
         iterations = 0
         reactors_that_returned_something_in_last_iteration = set()
@@ -625,7 +625,13 @@ class Repository(object):
                             # ...but we can't always do it for performance reasons.
                             input_metadata = self._node_metadata_partial[node.name]
                         try:
-                            new_metadata = metadata_reactor(Metastack(input_metadata))
+                            stack = Metastack()
+                            stack._set_layer("flattened", input_metadata)
+                            new_metadata = metadata_reactor(stack)
+                        except KeyError as exc:
+                            keyerrors[(node_name, metadata_reactor_name)] = exc
+                        except DoNotRunAgain:
+                            blacklisted_metaprocs.add((node_name, metadata_reactor_name))
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata reactor "
@@ -636,13 +642,12 @@ class Repository(object):
                                 node=node.name,
                             ))
                             raise exc
-                        if new_metadata == DO_NOT_RUN_ME_AGAIN:
-                            blacklisted_metaprocs.add((node_name, metadata_reactor_name))
-                        elif new_metadata == EXPECT_RESULT:
-                            results_expected_from.add((node_name, metadata_reactor_name))
-                        elif new_metadata:
-                            # TODO validate returned metadata
-                            results_observed_from.add((node_name, metadata_reactor_name))
+                        else:
+                            # reactor terminated normally, clear any previously stored exception
+                            try:
+                                del keyerrors[(node_name, metadata_reactor_name)]
+                            except KeyError:
+                                pass
                             reactors_that_returned_something_in_last_iteration.add(
                                 (node_name, metadata_reactor_name),
                             )
@@ -760,15 +765,15 @@ class Repository(object):
                 else:
                     break
 
-        missing_results = results_expected_from.difference(results_observed_from)
-        if missing_results:
-            proclist = ""
-            for node_name, metaproc_name in missing_results:
-                proclist += node_name + " " + metaproc_name + "\n"
+        if keyerrors:
+            reactors = ""
+            for source, exc in keyerrors.items():
+                node_name, reactor = source
+                reactors += "{}  {}  {}\n".format(node_name, reactor, exc)
             raise ValueError(_(
-                "Result expected from these metadata processor(s), "
-                "but never returned:\n"
-            ) + proclist)
+                "These metadata reactors raised a KeyError "
+                "even after all other reactors were done:\n"
+            ) + reactors)
 
     def metadata_hash(self):
         repo_dict = {}

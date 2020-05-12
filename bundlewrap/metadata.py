@@ -32,8 +32,28 @@ DONE = 1
 RUN_ME_AGAIN = 2
 DEFAULTS = 3
 OVERWRITE = 4
-EXPECT_RESULT = 5
-DO_NOT_RUN_ME_AGAIN = 6
+
+
+class DoNotRunAgain(Exception):
+    """
+    Raised from metadata reactors to indicate they can be disregarded.
+    """
+    pass
+
+
+def validate_metadata(metadata, _top_level=True):
+    if _top_level and not isinstance(metadata, dict):
+        raise TypeError(_("metadata must be a dict"))
+    if isinstance(metadata, dict):
+        for key, value in metadata.items():
+            if not isinstance(key, str):
+                raise TypeError(_("metadata keys must be str, not: {}").format(repr(key)))
+            validate_metadata(value, _top_level=False)
+    elif isinstance(metadata, (tuple, list, set)):
+        for value in metadata:
+            validate_metadata(value, _top_level=False)
+    elif not isinstance(metadata, METADATA_TYPES):
+        raise TypeError(_("illegal metadata value type: {}").format(repr(metadata)))
 
 
 def atomic(obj):
