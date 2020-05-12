@@ -802,9 +802,9 @@ def build_parser_bw():
     )
     parser_test.add_argument(
         "-d",
-        "--determinism",
+        "--config-determinism",
         default=0,
-        dest='determinism',
+        dest='determinism_config',
         help=_("verify determinism of configuration by running `bw hash` N times "
                "and checking for consistent results (with N > 1)"),
         metavar="N",
@@ -844,6 +844,23 @@ def build_parser_bw():
         action='store_true',
         dest='hooks_node',
         help=_("run node-level test hooks"),
+    )
+    parser_test.add_argument(
+        "-K",
+        "--metadata-keys",
+        action='store_true',
+        dest='metadata_keys',
+        help=_("validate metadata keys"),
+    )
+    parser_test.add_argument(
+        "-m",
+        "--metadata-determinism",
+        default=0,
+        dest='determinism_metadata',
+        help=_("verify determinism of metadata by running `bw hash -m` N times "
+               "and checking for consistent results (with N > 1)"),
+        metavar="N",
+        type=int,
     )
     parser_test.add_argument(
         "-M",
