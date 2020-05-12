@@ -5,45 +5,27 @@ from pytest import raises
 
 def test_has_no_top():
     stack = Metastack()
-    assert stack.has('something') is False
+    with raises(KeyError):
+        stack.get('something')
 
 
 def test_has_no_subpath():
     stack = Metastack()
     stack._set_layer('base', {'something': {'in': {}}})
-    assert stack.has('something/in/a/path') is False
-
-
-def test_has_top():
-    stack = Metastack()
-    stack._set_layer('base', {'something': 123})
-    assert stack.has('something') is True
+    with raises(KeyError):
+        stack.get('something/in/a/path')
 
 
 def test_get_top():
     stack = Metastack()
     stack._set_layer('base', {'something': 123})
-    assert stack.get('something', None) == 123
-
-
-def test_has_subpath():
-    stack = Metastack()
-    stack._set_layer('base', {'something': {'in': {'a': 'subpath'}}})
-    assert stack.has('something/in/a') is True
+    assert stack.get('something') == 123
 
 
 def test_get_subpath():
     stack = Metastack()
     stack._set_layer('base', {'something': {'in': {'a': 'subpath'}}})
     assert stack.get('something/in/a', None) == 'subpath'
-
-
-def test_has_with_base():
-    stack = Metastack()
-    stack._set_layer('', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    assert stack.has('something/a_list') is True
-    assert stack.has('something/a_value') is True
-    assert stack.has('something/does_not_exist') is False
 
 
 def test_get_default_with_empty():

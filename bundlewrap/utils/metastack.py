@@ -65,13 +65,6 @@ class Metastack:
         else:
             return freeze_object(result['data'])
 
-    def has(self, path):
-        try:
-            self.get(path)
-        except KeyError:
-            return False
-        return True
-
     def _as_dict(self):
         final_dict = {}
 
