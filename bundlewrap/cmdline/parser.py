@@ -212,14 +212,24 @@ def build_parser_bw():
     parser_diff = subparsers.add_parser("diff", description=help_diff, help=help_diff)
     parser_diff.set_defaults(func=bw_diff)
     parser_diff.add_argument(
-        "-b",
-        "--branch",
+        "-c",
+        "--cmd-change",
         default=None,
-        dest='branch',
-        metavar=_("REV"),
+        dest='cmd_change',
+        metavar=_("CMD_CHANGE"),
         required=False,
         type=str,
-        help=_("compare node(s) to this git branch or commit instead"),
+        help=_("command to execute between taking metadata snapshots (e.g., change Git branch)"),
+    )
+    parser_diff.add_argument(
+        "-r",
+        "--cmd-reset",
+        default=None,
+        dest='cmd_reset',
+        metavar=_("CMD_RESET"),
+        required=False,
+        type=str,
+        help=_("command to execute when finished (e.g., switch back to original Git branch)"),
     )
     parser_diff.add_argument(
         "-p",
