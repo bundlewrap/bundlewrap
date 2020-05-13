@@ -126,12 +126,10 @@ def test_metadatapy_defaults(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""@metadata_defaults
-def foo():
-    return {
-        "baz": node.name,
-        "foo": "baz",
-    }
+"""defaults = {
+    "baz": node.name,
+    "foo": "baz",
+}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
@@ -161,14 +159,12 @@ nodes = {
 """)
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""@metadata_defaults
-def foo():
-    return {
-        "foo": {
-            "bar": "frob",
-            "baz": "gobble",
-        },
-    }
+"""defaults = {
+    "foo": {
+        "bar": "frob",
+        "baz": "gobble",
+    },
+}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
@@ -275,13 +271,11 @@ def test_metadatapy_proc_merge_order(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""@metadata_defaults
-def foo():
-    return {
-        "two": "defaults",
-        "three": "defaults",
-        "four": "defaults",
-    }
+"""defaults = {
+    "two": "defaults",
+    "three": "defaults",
+    "four": "defaults",
+}
 
 @metadata_reactor
 def foo_reactor(metadata):

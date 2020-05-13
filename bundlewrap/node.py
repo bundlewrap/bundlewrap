@@ -701,34 +701,24 @@ class Node:
 
     @property
     def metadata_defaults(self):
-        return self._metadata_processors[0]
-
-    @property
-    def _metadata_processors(self):
-        def tuple_with_name(kind, bundle, metadata_processor):
-            return (
-                "{}:{}.{}".format(
-                    kind,
-                    bundle.name,
-                    metadata_processor.__name__,
-                ),
-                metadata_processor,
-            )
-
-        defaults = set()
-        reactors = set()
-
         for bundle in self.bundles:
-            for default in bundle._metadata_processors[0]:
-                defaults.add(tuple_with_name("metadata_defaults", bundle, default))
-            for reactor in bundle._metadata_processors[1]:
-                reactors.add(tuple_with_name("metadata_reactor", bundle, reactor))
-
-        return defaults, reactors
+            if bundle._metadata_defaults_and_reactors[0]:
+                yield (
+                    "metadata_defaults:{}".format(bundle.name),
+                    bundle._metadata_defaults_and_reactors[0],
+                )
 
     @property
     def metadata_reactors(self):
-        return self._metadata_processors[1]
+        for bundle in self.bundles:
+            for reactor in bundle._metadata_defaults_and_reactors[1]:
+                yield (
+                    "metadata_reactor:{}.{}".format(
+                        bundle.name,
+                        reactor.__name__,
+                    ),
+                    reactor,
+                )
 
     @property
     def partial_metadata(self):

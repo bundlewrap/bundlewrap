@@ -12,20 +12,10 @@ FILENAME_BUNDLE = "items.py"
 FILENAME_METADATA = "metadata.py"
 
 
-def metadata_defaults(func):
-    """
-    Decorator that tags metadata defaults.
-    """
-    func._is_metadata_processor = True
-    func._is_metadata_defaults = True
-    return func
-
-
 def metadata_reactor(func):
     """
     Decorator that tags metadata reactors.
     """
-    func._is_metadata_processor = True
     func._is_metadata_reactor = True
     return func
 
@@ -95,35 +85,36 @@ class Bundle:
         )
 
     @cached_property
-    def _metadata_processors(self):
-        with io.job(_("{node}  {bundle}  collecting metadata processors").format(
+    def _metadata_defaults_and_reactors(self):
+        with io.job(_("{node}  {bundle}  collecting metadata reactors").format(
             node=bold(self.node.name),
             bundle=bold(self.name),
         )):
             if not exists(self.metadata_file):
-                return set(), set(), set()
-            defaults = set()
+                return {}, set()
+            defaults = {}
             reactors = set()
             internal_names = set()
             for name, attr in get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
                     'DoNotRunAgain': DoNotRunAgain,
-                    'metadata_defaults': metadata_defaults,
                     'metadata_reactor': metadata_reactor,
                     'node': self.node,
                     'repo': self.repo,
                 },
             ).items():
-                if getattr(attr, '_is_metadata_processor', False):
+                if name == "defaults":
+                    defaults = attr
+                elif getattr(attr, '_is_metadata_reactor', False):
                     internal_name = getattr(attr, '__name__', name)
                     if internal_name in internal_names:
                         raise BundleError(_(
-                            "Metadata processor '{name}' in bundle {bundle} for node {node} has "
+                            "Metadata reactor '{name}' in bundle {bundle} for node {node} has "
                             "__name__ '{internal_name}', which was previously used by another "
-                            "metadata processor in the same metadata.py. BundleWrap uses __name__ "
-                            "internally to tell metadata processors apart, so this is a problem. "
-                            "Perhaps you used a decorator on your metadata processors that "
+                            "metadata reactor in the same metadata.py. BundleWrap uses __name__ "
+                            "internally to tell metadata reactors apart, so this is a problem. "
+                            "Perhaps you used a decorator on your metadata reactors that "
                             "doesn't use functools.wraps? You should use that."
                         ).format(
                             bundle=self.name,
@@ -132,11 +123,5 @@ class Bundle:
                             name=name,
                         ))
                     internal_names.add(internal_name)
-                    if getattr(attr, '_is_metadata_defaults', False):
-                        defaults.add(attr)
-                    elif getattr(attr, '_is_metadata_reactor', False):
-                        reactors.add(attr)
-                    else:
-                        # this should never happen
-                        raise AssertionError
+                    reactors.add(attr)
             return defaults, reactors
