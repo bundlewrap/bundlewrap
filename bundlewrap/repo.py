@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from imp import load_source
 from inspect import isabstract
-from os import environ, listdir, mkdir
+from os import environ, listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 from threading import Lock
 
@@ -159,6 +159,34 @@ class HooksProxy(object):
                     continue
                 self.__module_cache[filename][name] = obj
                 self.__registered_hooks[filename].append(name)
+
+
+def items_from_path(path):
+    """
+    Looks for Item subclasses in the given path.
+
+    An alternative method would involve metaclasses (as Django
+    does it), but then it gets very hard to have two separate repos
+    in the same process, because both of them would register config
+    item classes globally.
+    """
+    if not isdir(path):
+        return
+    for root_dir, _dirs, files in walk(path):
+        for filename in files:
+            filepath = join(root_dir, filename)
+            if not filename.endswith(".py") or \
+                    not isfile(filepath) or \
+                    filename.startswith("_"):
+                continue
+            for name, obj in utils.get_all_attrs_from_file(filepath).items():
+                if obj == items.Item or name.startswith("_"):
+                    continue
+                try:
+                    if issubclass(obj, items.Item) and not isabstract(obj):
+                        yield obj
+                except TypeError:
+                    pass
 
 
 class LibsProxy(object):
@@ -584,19 +612,17 @@ class Repository(object):
 
                 node_blame = self._node_metadata_blame[node_name]
                 with io.job(_("{node}  running metadata defaults").format(node=bold(node.name))):
-                    for defaults_processor_name, defaults_processor in node.metadata_defaults:
-                        new_metadata = defaults_processor()
-                        # TODO validate returned metadata
+                    for defaults_name, defaults in node.metadata_defaults:
                         if blame:
                             blame_changed_paths(
                                 self._node_metadata_partial[node.name],
-                                new_metadata,
+                                defaults,
                                 node_blame,
-                                "metadata_defaults:{}".format(defaults_processor_name),
+                                defaults_name,
                                 defaults=True,
                             )
                         self._node_metadata_partial[node.name] = merge_dict(
-                            new_metadata,
+                            defaults,
                             self._node_metadata_partial[node.name],
                         )
 

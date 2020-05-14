@@ -15,15 +15,6 @@ FILENAME_BUNDLE = "items.py"
 FILENAME_METADATA = "metadata.py"
 
 
-def metadata_defaults(func):
-    """
-    Decorator that tags metadata defaults.
-    """
-    func._is_metadata_processor = True
-    func._is_metadata_defaults = True
-    return func
-
-
 def metadata_processor_classic(func):
     """
     Decorator that tags metadata processors.
@@ -114,7 +105,7 @@ class Bundle(object):
         )):
             if not exists(self.metadata_file):
                 return set(), set(), set()
-            defaults = set()
+            defaults = {}
             reactors = set()
             classic_processors = set()
             internal_names = set()
@@ -126,14 +117,15 @@ class Bundle(object):
                     'OVERWRITE': OVERWRITE,
                     'RUN_ME_AGAIN': RUN_ME_AGAIN,
                     'DoNotRunAgain': DoNotRunAgain,
-                    'metadata_defaults': metadata_defaults,
                     'metadata_processor': metadata_processor_classic,
                     'metadata_reactor': metadata_reactor,
                     'node': self.node,
                     'repo': self.repo,
                 },
             ).items():
-                if getattr(attr, '_is_metadata_processor', False):
+                if name == "defaults":
+                    defaults = attr
+                elif getattr(attr, '_is_metadata_processor', False):
                     internal_name = getattr(attr, '__name__', name)
                     if internal_name in internal_names:
                         raise BundleError(_(
@@ -150,9 +142,7 @@ class Bundle(object):
                             name=name,
                         ))
                     internal_names.add(internal_name)
-                    if getattr(attr, '_is_metadata_defaults', False):
-                        defaults.add(attr)
-                    elif getattr(attr, '_is_metadata_reactor', False):
+                    if getattr(attr, '_is_metadata_reactor', False):
                         reactors.add(attr)
                     elif getattr(attr, '_is_classic_metadata_processor', False):
                         classic_processors.add(attr)

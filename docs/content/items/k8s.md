@@ -33,10 +33,10 @@ Note that the names of all items in a namespace must be prefixed with the name o
 <tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
 <tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
 <tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
-<tr><td>Custom Resource Definition</td><td>k8s_crd</td><td>apiextensions.k8s.io/v1beta1</td></tr>
-<tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>v1</td></tr>
-<tr><td>Deployment</td><td>k8s_deployments</td><td>extensions/v1beta1</td></tr>
-<tr><td>Ingress</td><td>k8s_ingresses</td><td>extensions/v1beta1</td></tr>
+<tr><td>Custom Resource Definition</td><td>k8s_crd</td><td>apiextensions.k8s.io/v1</td></tr>
+<tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>apps/v1</td></tr>
+<tr><td>Deployment</td><td>k8s_deployments</td><td>apps/v1</td></tr>
+<tr><td>Ingress</td><td>k8s_ingresses</td><td>networking.k8s.io/v1beta1</td></tr>
 <tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
 <tr><td>Network Policy</td><td>k8s_networkpolicies</td><td>networking.k8s.io/v1</td></tr>
 <tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
