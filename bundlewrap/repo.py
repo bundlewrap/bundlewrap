@@ -510,8 +510,6 @@ class Repository:
         do_not_run_again = set()
         # these reactors have raised KeyErrors
         keyerrors = {}
-        # these reactors have actually produced a non-falsy result
-        results_observed_from = set()
         # loop detection
         iterations = 0
         reactors_that_changed_something_in_last_iteration = set()
@@ -600,8 +598,6 @@ class Repository:
                                 del keyerrors[(node_name, reactor_name)]
                             except KeyError:
                                 pass
-                            if new_metadata:
-                                results_observed_from.add((node_name, reactor_name))
 
                             this_changed = self._metastacks[node_name]._set_layer(
                                 reactor_name,
