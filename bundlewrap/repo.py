@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from imp import load_source
 from inspect import isabstract
 from os import environ, listdir, mkdir
-from os.path import isdir, isfile, join
+from os.path import abspath, dirname, isdir, isfile, join
 from threading import Lock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
@@ -254,7 +254,10 @@ def nodes_from_file(filepath, libs, repo_path, vault):
 
 class Repository(object):
     def __init__(self, repo_path=None):
-        self.path = "/dev/null" if repo_path is None else repo_path
+        if repo_path is None:
+            self.path = "/dev/null"
+        else:
+            self.path = self._discover_root_path(abspath(repo_path))
 
         self._set_path(self.path)
 
@@ -268,7 +271,7 @@ class Repository(object):
         self._node_metadata_lock = Lock()
 
         if repo_path is not None:
-            self.populate_from_path(repo_path)
+            self.populate_from_path(self.path)
         else:
             self.item_classes = list(items_from_path(items.__path__[0]))
 
@@ -376,6 +379,17 @@ class Repository(object):
         node = Node(node_name)
         self.add_node(node)
         return node
+
+    def _discover_root_path(self, path):
+        while True:
+            if self.is_repo(path):
+                return path
+
+            previous_component = dirname(path)
+            if path == previous_component:
+                raise NoSuchRepository
+
+            path = previous_component
 
     def get_group(self, group_name):
         try:
