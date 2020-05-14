@@ -1,6 +1,6 @@
 from imp import load_source
 from inspect import isabstract
-from os import environ, listdir, mkdir
+from os import environ, listdir, mkdir, walk
 from os.path import isdir, isfile, join
 from threading import Lock
 
@@ -181,21 +181,21 @@ def items_from_path(path):
     """
     if not isdir(path):
         return
-    for filename in listdir(path):
-        filepath = join(path, filename)
-        if not filename.endswith(".py") or \
-                not isfile(filepath) or \
-                filename.startswith("_"):
-            continue
-        for name, obj in \
-                utils.get_all_attrs_from_file(filepath).items():
-            if obj == items.Item or name.startswith("_"):
+    for root_dir, _dirs, files in walk(path):
+        for filename in files:
+            filepath = join(root_dir, filename)
+            if not filename.endswith(".py") or \
+                    not isfile(filepath) or \
+                    filename.startswith("_"):
                 continue
-            try:
-                if issubclass(obj, items.Item) and not isabstract(obj):
-                    yield obj
-            except TypeError:
-                pass
+            for name, obj in utils.get_all_attrs_from_file(filepath).items():
+                if obj == items.Item or name.startswith("_"):
+                    continue
+                try:
+                    if issubclass(obj, items.Item) and not isabstract(obj):
+                        yield obj
+                except TypeError:
+                    pass
 
 
 class LibsProxy:
