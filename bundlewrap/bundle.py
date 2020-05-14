@@ -5,7 +5,7 @@ from os.path import exists, join
 
 from .exceptions import BundleError, NoSuchBundle, RepositoryError
 from .metadata import DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE, DoNotRunAgain
-from .utils import cached_property, get_all_attrs_from_file
+from .utils import cached_property
 from .utils.text import bold, mark_for_translation as _
 from .utils.text import validate_name
 from .utils.ui import io
@@ -62,7 +62,7 @@ class Bundle(object):
         if not exists(self.bundle_file):
             return {}
         else:
-            return get_all_attrs_from_file(
+            return self.repo.get_all_attrs_from_file(
                 self.bundle_file,
                 base_env={
                     'node': self.node,
@@ -109,7 +109,7 @@ class Bundle(object):
             reactors = set()
             classic_processors = set()
             internal_names = set()
-            for name, attr in get_all_attrs_from_file(
+            for name, attr in self.repo.get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
                     'DEFAULTS': DEFAULTS,

@@ -7,7 +7,7 @@ from os.path import exists, join
 import re
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.metadata import MetadataJSONEncoder
+from bundlewrap.metadata import metadata_to_json
 from bundlewrap.operations import run_local
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.files import content_processor_jinja2, content_processor_mako
@@ -149,12 +149,7 @@ class KubernetesItem(Item):
 
     @property
     def manifest(self):
-        return json.dumps(
-            self._manifest_dict,
-            cls=MetadataJSONEncoder,
-            indent=4,
-            sort_keys=True,
-        )
+        return metadata_to_json(self._manifest_dict)
 
     @property
     def namespace(self):

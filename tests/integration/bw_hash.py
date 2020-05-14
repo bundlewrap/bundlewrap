@@ -143,9 +143,8 @@ nodes = {
     },
 }
 """)
-    print(run("bw debug -c 'print(repo.vault.password_for(\"testing\"))'", path=str(tmpdir)))
     stdout1, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
-    assert stdout1 == b"d0c998fd17a68322a03345954bb0a75301d3a127\n"
+    assert stdout1 == b"b60c0959c9c1ff38940d7b6d4121b2162be34fc9\n"
     assert stderr == b""
     assert rcode == 0
     stdout2, stderr, rcode = run("bw hash -m node2", path=str(tmpdir))
@@ -193,7 +192,7 @@ def test_metadata_nested_sort(tmpdir):
 
     stdout1, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
     assert rcode == 0
-    assert stdout1 == b"bc403a093ca3399cd3efa7a64ec420e0afef5e70\n"
+    assert stdout1 == b"d96dc8da8948d0da7924954a657ac960ce7194e9\n"
 
     stdout2, stderr, rcode = run("bw hash -m node2", path=str(tmpdir))
     assert rcode == 0
@@ -214,7 +213,7 @@ def test_metadata_repo(tmpdir):
 
     stdout, stderr, rcode = run("bw hash -m", path=str(tmpdir))
     assert rcode == 0
-    assert stdout == b"c0cc160ab1b6e71155cd4f65139bc7f66304d7f3\n"
+    assert stdout == b"8c4a30eaa521c966c678d6e51070f6b3a34b7322\n"
 
 
 def test_metadata_repo_dict(tmpdir):
@@ -231,7 +230,7 @@ def test_metadata_repo_dict(tmpdir):
 
     stdout, stderr, rcode = run("bw hash -md", path=str(tmpdir))
     assert rcode == 0
-    assert stdout == b"node1\t013b3a8199695eb45c603ea4e0a910148d80e7ed\n"
+    assert stdout == b"node1\t223fb72805ecab20f92b463af65896303f997f1c\n"
 
 
 def test_groups_repo(tmpdir):

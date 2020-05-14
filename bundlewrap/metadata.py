@@ -405,13 +405,17 @@ class MetadataJSONEncoder(JSONEncoder):
             raise ValueError(_("illegal metadata value type: {}").format(repr(obj)))
 
 
+def metadata_to_json(metadata):
+    return dumps(
+        metadata,
+        cls=MetadataJSONEncoder,
+        indent=4,
+        sort_keys=True,
+    )
+
+
 def hash_metadata(sdict):
     """
     Returns a canonical SHA1 hash to describe this dict.
     """
-    return sha1(dumps(
-        sdict,
-        cls=MetadataJSONEncoder,
-        indent=None,
-        sort_keys=True,
-    ).encode('utf-8')).hexdigest()
+    return sha1(metadata_to_json(sdict).encode('utf-8')).hexdigest()
