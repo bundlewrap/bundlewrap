@@ -536,23 +536,11 @@ class Repository:
                     continue
                 self._metastacks[node_name] = Metastack()
 
-                with io.job(_("{node}  running metadata defaults").format(node=bold(node.name))):
-                    for defaults_processor_name, defaults_processor in node.metadata_defaults:
-                        try:
-                            new_metadata = defaults_processor()
-                        except Exception as exc:
-                            io.stderr(_(
-                                "{x} Exception while executing metadata defaults "
-                                "{metaproc} for node {node}:"
-                            ).format(
-                                x=red("!!!"),
-                                metaproc=defaults_processor_name,
-                                node=node.name,
-                            ))
-                            raise exc
+                with io.job(_("{node}  adding metadata defaults").format(node=bold(node.name))):
+                    for defaults_name, defaults in node.metadata_defaults:
                         self._metastacks[node_name]._set_layer(
-                            defaults_processor_name,
-                            new_metadata,
+                            defaults_name,
+                            defaults,
                         )
 
                 with io.job(_("{node}  adding group metadata").format(node=bold(node.name))):
