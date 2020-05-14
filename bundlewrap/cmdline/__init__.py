@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from cProfile import Profile
 from functools import wraps
 from os import environ
-from os.path import abspath, dirname
+from os.path import abspath
 from pipes import quote
 from sys import argv, exit, stderr, stdout
 from traceback import format_exc, print_exc
@@ -123,28 +123,23 @@ def main(*args, **kwargs):
         # 'bw repo create' is a special case that only takes a path
         repo = path
     else:
-        while True:
-            try:
-                repo = Repository(path)
-                break
-            except NoSuchRepository:
-                if path == dirname(path):
-                    io.stderr(_(
-                        "{x} {path} "
-                        "is not a BundleWrap repository."
-                    ).format(path=quote(abspath(pargs.repo_path)), x=red("!!!")))
-                    io.deactivate()
-                    exit(1)
-                else:
-                    path = dirname(path)
-            except MissingRepoDependency as exc:
-                io.stderr(str(exc))
-                io.deactivate()
-                exit(1)
-            except Exception:
-                io.stderr(format_exc())
-                io.deactivate()
-                exit(1)
+        try:
+            repo = Repository(path)
+        except NoSuchRepository:
+            io.stderr(_(
+                "{x} {path} "
+                "is not a BundleWrap repository."
+            ).format(path=quote(abspath(pargs.repo_path)), x=red("!!!")))
+            io.deactivate()
+            exit(1)
+        except MissingRepoDependency as exc:
+            io.stderr(str(exc))
+            io.deactivate()
+            exit(1)
+        except Exception:
+            io.stderr(format_exc())
+            io.deactivate()
+            exit(1)
 
     # convert all string args into text
     text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}

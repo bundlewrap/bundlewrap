@@ -46,7 +46,7 @@ def validate_metadata(metadata, _top_level=True):
         raise TypeError(_("metadata must be a dict"))
     if isinstance(metadata, dict):
         for key, value in metadata.items():
-            if not isinstance(key, str):
+            if not isinstance(key, text_type):
                 raise TypeError(_("metadata keys must be str, not: {}").format(repr(key)))
             validate_metadata(value, _top_level=False)
     elif isinstance(metadata, (tuple, list, set)):

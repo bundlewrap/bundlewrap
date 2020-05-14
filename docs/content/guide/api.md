@@ -29,7 +29,7 @@ Here's a short example of how to use BundleWrap to get the uptime for a node.
 
 ### bundlewrap.repo.Repository(path)
 
-The starting point of any interaction with BundleWrap. An object of this class represents the repository at the given path.
+The starting point of any interaction with BundleWrap. An object of this class represents the repository at the given path. `path` can be a subpath of your repository (e.g., `bundles/nginx/`) and will internally be resolved to the root path of said repository.
 
 <br>
 
