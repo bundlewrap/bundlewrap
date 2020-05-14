@@ -5,6 +5,7 @@ import hashlib
 from inspect import isgenerator
 from os import chmod, close, makedirs, remove
 from os.path import dirname, exists
+from random import shuffle
 import stat
 from sys import stderr, stdout
 from tempfile import mkstemp
@@ -230,6 +231,15 @@ def names(obj_list):
     """
     for obj in obj_list:
         yield obj.name
+
+
+def randomize_order(obj):
+    if isinstance(obj, dict):
+        result = list(obj.items())
+    else:
+        result = list(obj)
+    shuffle(result)
+    return result
 
 
 def sha1(data):

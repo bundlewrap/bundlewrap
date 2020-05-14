@@ -19,7 +19,7 @@ from .group import Group
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
-from .utils import cached_property, names
+from .utils import cached_property, names, randomize_order
 from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.dicts import hash_statedict
 from .utils.metastack import Metastack
@@ -537,7 +537,8 @@ class Repository:
                 self._metastacks[node_name] = Metastack()
 
                 with io.job(_("{node}  adding metadata defaults").format(node=bold(node.name))):
-                    for defaults_name, defaults in node.metadata_defaults:
+                    # randomize order to increase chance of exposing clashing defaults
+                    for defaults_name, defaults in randomize_order(node.metadata_defaults):
                         self._metastacks[node_name]._set_layer(
                             defaults_name,
                             defaults,
@@ -566,47 +567,49 @@ class Repository:
             any_reactor_returned_changed_metadata = False
             reactors_that_changed_something_in_last_iteration = set()
 
-            for node_name in list(self._nodes_we_need_metadata_for):
+            # randomize order to increase chance of exposing unintended
+            # non-deterministic effects of execution order
+            for node_name in randomize_order(self._nodes_we_need_metadata_for):
                 if QUIT_EVENT.is_set():
                     break
                 node = self.get_node(node_name)
 
                 with io.job(_("{node}  running metadata reactors").format(node=bold(node.name))):
-                    for metadata_reactor_name, metadata_reactor in node.metadata_reactors:
-                        if (node_name, metadata_reactor_name) in do_not_run_again:
+                    for reactor_name, reactor in randomize_order(node.metadata_reactors):
+                        if (node_name, reactor_name) in do_not_run_again:
                             continue
                         try:
-                            new_metadata = metadata_reactor(self._metastacks[node.name])
+                            new_metadata = reactor(self._metastacks[node.name])
                         except KeyError as exc:
-                            keyerrors[(node_name, metadata_reactor_name)] = exc
+                            keyerrors[(node_name, reactor_name)] = exc
                         except DoNotRunAgain:
-                            do_not_run_again.add((node_name, metadata_reactor_name))
+                            do_not_run_again.add((node_name, reactor_name))
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata reactor "
                                 "{metaproc} for node {node}:"
                             ).format(
                                 x=red("!!!"),
-                                metaproc=metadata_reactor_name,
+                                metaproc=reactor_name,
                                 node=node.name,
                             ))
                             raise exc
                         else:
                             # reactor terminated normally, clear any previously stored exception
                             try:
-                                del keyerrors[(node_name, metadata_reactor_name)]
+                                del keyerrors[(node_name, reactor_name)]
                             except KeyError:
                                 pass
                             if new_metadata:
-                                results_observed_from.add((node_name, metadata_reactor_name))
+                                results_observed_from.add((node_name, reactor_name))
 
                             this_changed = self._metastacks[node_name]._set_layer(
-                                metadata_reactor_name,
+                                reactor_name,
                                 new_metadata,
                             )
                             if this_changed:
                                 reactors_that_changed_something_in_last_iteration.add(
-                                    (node_name, metadata_reactor_name),
+                                    (node_name, reactor_name),
                                 )
                                 any_reactor_returned_changed_metadata = True
 
