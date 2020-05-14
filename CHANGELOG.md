@@ -1,3 +1,12 @@
+# 3.10.0
+
+unreleased
+
+* added metadata defaults and reactors
+* added `bw diff`
+* `items/` is now searched recursively
+
+
 # 3.9.0
 
 2020-05-04
