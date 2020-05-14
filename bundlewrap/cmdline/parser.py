@@ -212,6 +212,16 @@ def build_parser_bw():
     parser_diff = subparsers.add_parser("diff", description=help_diff, help=help_diff)
     parser_diff.set_defaults(func=bw_diff)
     parser_diff.add_argument(
+        "-b",
+        "--branch",
+        default=None,
+        dest='branch',
+        metavar=_("REV"),
+        required=False,
+        type=str,
+        help=_("compare with this git rev instead (requires clean working dir)"),
+    )
+    parser_diff.add_argument(
         "-c",
         "--cmd-change",
         default=None,

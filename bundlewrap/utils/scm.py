@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from pipes import quote
 from subprocess import CalledProcessError, check_output, STDOUT
+
+from .text import mark_for_translation as _
 
 
 def get_git_branch():
@@ -65,3 +68,17 @@ def get_rev():
         if rev is not None:
             return rev
     return None
+
+
+def set_git_rev(rev, detach=False):
+    if not get_git_clean():
+        raise RuntimeError(_("git working dir not clean, won't change rev"))
+    if detach:
+        command = "git checkout --detach {}".format(quote(rev))
+    else:
+        command = "git checkout {}".format(quote(rev))
+    check_output(
+        command,
+        shell=True,
+        stderr=STDOUT,
+    )

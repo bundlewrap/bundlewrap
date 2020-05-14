@@ -5,7 +5,8 @@ from ..metadata import metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
 from ..utils.dicts import diff_keys
-from ..utils.text import mark_for_translation as _, red, blue, yellow
+from ..utils.scm import get_git_branch, get_git_rev, set_git_rev
+from ..utils.text import force_text, mark_for_translation as _, red, blue, yellow
 from ..utils.ui import io, QUIT_EVENT
 
 from subprocess import check_call
@@ -19,6 +20,7 @@ def diff_metadata(node_a, node_b):
         node_b_metadata,
         fromfile=node_a.name,
         tofile=node_b.name,
+        lineterm='',
     )))
 
 
@@ -59,6 +61,7 @@ def diff_node(node_a, node_b):
                 node_b_hashes,
                 fromfile=node_a.name,
                 tofile=node_b.name,
+                lineterm='',
                 n=0,
             ),
         ),
@@ -67,13 +70,26 @@ def diff_node(node_a, node_b):
 
 def command_closure(command):
     def run_it():
-        io.stdout(_(
+        io.stderr(_(
             "{x} Running: {command}"
         ).format(
             command=command,
-            x=yellow("!"),
+            x=yellow("i"),
         ))
         check_call(command, shell=True)
+
+    return run_it
+
+
+def git_checkout_closure(rev, detach=False):
+    def run_it():
+        io.stderr(_(
+            "{x} Switching to git rev: {rev}"
+        ).format(
+            rev=rev,
+            x=yellow("i"),
+        ))
+        set_git_rev(rev, detach=detach)
 
     return run_it
 
@@ -92,6 +108,7 @@ def hooked_diff_metadata_single_node(repo, node, intermissions, epilogues):
         node_after_metadata,
         fromfile=_("before"),
         tofile=_("after"),
+        lineterm='',
     )))
 
     for epilogue in epilogues:
@@ -130,6 +147,7 @@ def hooked_diff_metadata_multiple_nodes(repo, nodes, intermissions, epilogues):
                 node_hashes_after,
                 fromfile=_("before"),
                 tofile=_("after"),
+                lineterm='',
                 n=0,
             ),
         ),
@@ -211,6 +229,7 @@ def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):
                 node_hashes_after,
                 fromfile=_("before"),
                 tofile=_("after"),
+                lineterm='',
                 n=0,
             ),
         ),
@@ -222,27 +241,32 @@ def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):
 
 def bw_diff(repo, args):
     if args['metadata'] and args['item']:
-        io.stdout(_(
+        io.stderr(_(
             "{x} Cannot compare metadata and items at the same time"
         ).format(x=red("!!!")))
         exit(1)
 
     target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
 
-    if args['prompt'] or args['cmd_change'] or args['cmd_reset']:
+    if args['branch'] or args['cmd_change'] or args['cmd_reset'] or args['prompt']:
         intermissions = []
         epilogues = []
+        if args['branch']:
+            original_rev = force_text(get_git_branch() or get_git_rev())
+            intermissions.append(git_checkout_closure(force_text(args['branch']), detach=True))
         if args['cmd_change']:
             intermissions.append(command_closure(args['cmd_change']))
         if args['cmd_reset']:
             epilogues.append(command_closure(args['cmd_reset']))
+        if args['branch']:
+            epilogues.append(git_checkout_closure(original_rev, detach=False))
 
         if args['metadata']:
             if len(target_nodes) == 1:
                 def intermission():
                     io.stdout(_("{x} Took a snapshot of that node's metadata.").format(x=blue("i")))
                     io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
-                    if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                    if not io.ask(_("{x} Ready to proceed? (n to cancel)").format(x=blue("?")), True):
                         exit(1)
                 if args['prompt']:
                     intermissions.append(intermission)
@@ -251,14 +275,14 @@ def bw_diff(repo, args):
                 def intermission():
                     io.stdout(_("{x} Took a snapshot of those nodes' metadata.").format(x=blue("i")))
                     io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
-                    if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                    if not io.ask(_("{x} Ready to proceed? (n to cancel)").format(x=blue("?")), True):
                         exit(1)
                 if args['prompt']:
                     intermissions.append(intermission)
                 hooked_diff_metadata_multiple_nodes(repo, target_nodes, intermissions, epilogues)
         elif args['item']:
             if len(target_nodes) != 1:
-                io.stdout(_(
+                io.stderr(_(
                     "{x} Select exactly one node to compare item"
                 ).format(x=red("!!!")))
                 exit(1)
@@ -266,7 +290,7 @@ def bw_diff(repo, args):
             def intermission():
                 io.stdout(_("{x} Took a snapshot of that item.").format(x=blue("i")))
                 io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
-                if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                if not io.ask(_("{x} Ready to proceed? (n to cancel)").format(x=blue("?")), True):
                     exit(1)
             if args['prompt']:
                 intermissions.append(intermission)
@@ -275,14 +299,14 @@ def bw_diff(repo, args):
             def intermission():
                 io.stdout(_("{x} Took a snapshot of those nodes.").format(x=blue("i")))
                 io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
-                if not io.ask(_("{x} Are you done?").format(x=blue("?")), True):
+                if not io.ask(_("{x} Ready to proceed? (n to cancel)").format(x=blue("?")), True):
                     exit(1)
             if args['prompt']:
                 intermissions.append(intermission)
             hooked_diff_config_multiple_nodes(repo, target_nodes, intermissions, epilogues)
     else:
         if len(target_nodes) != 2:
-            io.stdout(_(
+            io.stderr(_(
                 "{x} Exactly two nodes must be selected"
             ).format(x=red("!!!")))
             exit(1)
