@@ -20,6 +20,7 @@ def diff_metadata(node_a, node_b):
         node_b_metadata,
         fromfile=node_a.name,
         tofile=node_b.name,
+        lineterm='',
     )))
 
 
@@ -60,6 +61,7 @@ def diff_node(node_a, node_b):
                 node_b_hashes,
                 fromfile=node_a.name,
                 tofile=node_b.name,
+                lineterm='',
                 n=0,
             ),
         ),
@@ -106,6 +108,7 @@ def hooked_diff_metadata_single_node(repo, node, intermissions, epilogues):
         node_after_metadata,
         fromfile=_("before"),
         tofile=_("after"),
+        lineterm='',
     )))
 
     for epilogue in epilogues:
@@ -144,6 +147,7 @@ def hooked_diff_metadata_multiple_nodes(repo, nodes, intermissions, epilogues):
                 node_hashes_after,
                 fromfile=_("before"),
                 tofile=_("after"),
+                lineterm='',
                 n=0,
             ),
         ),
@@ -225,6 +229,7 @@ def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):
                 node_hashes_after,
                 fromfile=_("before"),
                 tofile=_("after"),
+                lineterm='',
                 n=0,
             ),
         ),
