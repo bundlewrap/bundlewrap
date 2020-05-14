@@ -68,7 +68,7 @@ def diff_node(node_a, node_b):
 
 def command_closure(command):
     def run_it():
-        io.stdout(_(
+        io.stderr(_(
             "{x} Running: {command}"
         ).format(
             command=command,
@@ -81,7 +81,7 @@ def command_closure(command):
 
 def git_checkout_closure(rev, detach=False):
     def run_it():
-        io.stdout(_(
+        io.stderr(_(
             "{x} Switching to git rev: {rev}"
         ).format(
             rev=rev,
@@ -236,7 +236,7 @@ def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):
 
 def bw_diff(repo, args):
     if args['metadata'] and args['item']:
-        io.stdout(_(
+        io.stderr(_(
             "{x} Cannot compare metadata and items at the same time"
         ).format(x=red("!!!")))
         exit(1)
@@ -277,7 +277,7 @@ def bw_diff(repo, args):
                 hooked_diff_metadata_multiple_nodes(repo, target_nodes, intermissions, epilogues)
         elif args['item']:
             if len(target_nodes) != 1:
-                io.stdout(_(
+                io.stderr(_(
                     "{x} Select exactly one node to compare item"
                 ).format(x=red("!!!")))
                 exit(1)
@@ -301,7 +301,7 @@ def bw_diff(repo, args):
             hooked_diff_config_multiple_nodes(repo, target_nodes, intermissions, epilogues)
     else:
         if len(target_nodes) != 2:
-            io.stdout(_(
+            io.stderr(_(
                 "{x} Exactly two nodes must be selected"
             ).format(x=red("!!!")))
             exit(1)
