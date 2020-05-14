@@ -494,13 +494,11 @@ def test_metadatapy_proc_merge_order(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
-"""@metadata_defaults
-def foo():
-    return {
-        "two": "defaults",
-        "three": "defaults",
-        "four": "defaults",
-    }
+"""defaults = {
+    "two": "defaults",
+    "three": "defaults",
+    "four": "defaults",
+}
 
 @metadata_reactor
 def foo_reactor(metadata):

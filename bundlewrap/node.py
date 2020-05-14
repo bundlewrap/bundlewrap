@@ -710,26 +710,29 @@ class Node(object):
 
     @property
     def _metadata_processors(self):
-        def tuple_with_name(bundle, metadata_processor):
+        def tuple_with_name(kind, bundle, metadata_processor):
             return (
-                "{}.{}".format(
+                "{}:{}.{}".format(
+                    kind,
                     bundle.name,
                     metadata_processor.__name__,
                 ),
                 metadata_processor,
             )
 
-        defaults = set()
+        defaults = []
         reactors = set()
         classic_metaprocs = set()
 
         for bundle in self.bundles:
-            for default in bundle._metadata_processors[0]:
-                defaults.add(tuple_with_name(bundle, default))
+            defaults.append((
+                "metadata_defaults:{}".format(bundle.name),
+                bundle._metadata_processors[0],
+            ))
             for reactor in bundle._metadata_processors[1]:
-                reactors.add(tuple_with_name(bundle, reactor))
+                reactors.add(tuple_with_name("metadata_reactor", bundle, reactor))
             for classic_metaproc in bundle._metadata_processors[2]:
-                classic_metaprocs.add(tuple_with_name(bundle, classic_metaproc))
+                classic_metaprocs.add(tuple_with_name("metadata_processor", bundle, classic_metaproc))
 
         return defaults, reactors, classic_metaprocs
 

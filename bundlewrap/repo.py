@@ -578,19 +578,17 @@ class Repository(object):
 
                 node_blame = self._node_metadata_blame[node_name]
                 with io.job(_("{node}  running metadata defaults").format(node=bold(node.name))):
-                    for defaults_processor_name, defaults_processor in node.metadata_defaults:
-                        new_metadata = defaults_processor()
-                        # TODO validate returned metadata
+                    for defaults_name, defaults in node.metadata_defaults:
                         if blame:
                             blame_changed_paths(
                                 self._node_metadata_partial[node.name],
-                                new_metadata,
+                                defaults,
                                 node_blame,
-                                "metadata_defaults:{}".format(defaults_processor_name),
+                                defaults_name,
                                 defaults=True,
                             )
                         self._node_metadata_partial[node.name] = merge_dict(
-                            new_metadata,
+                            defaults,
                             self._node_metadata_partial[node.name],
                         )
 
