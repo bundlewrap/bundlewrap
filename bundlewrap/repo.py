@@ -161,34 +161,6 @@ class HooksProxy(object):
                 self.__registered_hooks[filename].append(name)
 
 
-def items_from_path(path):
-    """
-    Looks for Item subclasses in the given path.
-
-    An alternative method would involve metaclasses (as Django
-    does it), but then it gets very hard to have two separate repos
-    in the same process, because both of them would register config
-    item classes globally.
-    """
-    if not isdir(path):
-        return
-    for root_dir, _dirs, files in walk(path):
-        for filename in files:
-            filepath = join(root_dir, filename)
-            if not filename.endswith(".py") or \
-                    not isfile(filepath) or \
-                    filename.startswith("_"):
-                continue
-            for name, obj in utils.get_all_attrs_from_file(filepath).items():
-                if obj == items.Item or name.startswith("_"):
-                    continue
-                try:
-                    if issubclass(obj, items.Item) and not isabstract(obj):
-                        yield obj
-                except TypeError:
-                    pass
-
-
 class LibsProxy(object):
     def __init__(self, path):
         self.__module_cache = {}
@@ -398,21 +370,21 @@ class Repository(object):
         """
         if not isdir(path):
             return
-        for filename in listdir(path):
-            filepath = join(path, filename)
-            if not filename.endswith(".py") or \
-                    not isfile(filepath) or \
-                    filename.startswith("_"):
-                continue
-            for name, obj in \
-                    self.get_all_attrs_from_file(filepath).items():
-                if obj == items.Item or name.startswith("_"):
+        for root_dir, _dirs, files in walk(path):
+            for filename in files:
+                filepath = join(root_dir, filename)
+                if not filename.endswith(".py") or \
+                        not isfile(filepath) or \
+                        filename.startswith("_"):
                     continue
-                try:
-                    if issubclass(obj, items.Item) and not isabstract(obj):
-                        yield obj
-                except TypeError:
-                    pass
+                for name, obj in self.get_all_attrs_from_file(filepath).items():
+                    if obj == items.Item or name.startswith("_"):
+                        continue
+                    try:
+                        if issubclass(obj, items.Item) and not isabstract(obj):
+                            yield obj
+                    except TypeError:
+                        pass
 
     def _discover_root_path(self, path):
         while True:
@@ -535,10 +507,7 @@ class Repository(object):
 
         # these processors have indicated that they do not need to be run again
         blacklisted_metaprocs = set()
-        # these processors have indicated that they must produce a result at some point
-        results_expected_from = set()
-        # these processors have actually produced a non-falsy result
-        results_observed_from = set()
+
         keyerrors = {}
 
         iterations = 0
