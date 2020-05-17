@@ -725,10 +725,11 @@ class Node(object):
         classic_metaprocs = set()
 
         for bundle in self.bundles:
-            defaults.append((
-                "metadata_defaults:{}".format(bundle.name),
-                bundle._metadata_processors[0],
-            ))
+            if bundle._metadata_processors[0]:
+                defaults.append((
+                    "metadata_defaults:{}".format(bundle.name),
+                    bundle._metadata_processors[0],
+                ))
             for reactor in bundle._metadata_processors[1]:
                 reactors.add(tuple_with_name("metadata_reactor", bundle, reactor))
             for classic_metaproc in bundle._metadata_processors[2]:
