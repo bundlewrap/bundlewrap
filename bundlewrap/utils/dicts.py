@@ -1,35 +1,18 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from difflib import unified_diff
 from hashlib import sha1
 from json import dumps, JSONEncoder
+from types import MappingProxyType
 
 from . import Fault
 from .text import bold, green, red
 from .text import force_text, mark_for_translation as _
 
 
-try:
-    text_type = unicode
-    byte_type = str
-except NameError:
-    text_type = str
-    byte_type = bytes
-
-try:
-    from types import MappingProxyType
-except ImportError:
-    # XXX Not available in Python 2, but that's EOL anyway and we're
-    # going to drop support for it very soon. The following at least
-    # creates a new object, so updates to it will not be persistent.
-    MappingProxyType = dict
-
 DIFF_MAX_INLINE_LENGTH = 36
 DIFF_MAX_LINE_LENGTH = 1024
 
 
-class _Atomic(object):
+class _Atomic:
     """
     This and the following related classes are used to mark objects as
     non-mergeable for the purposes of merge_dict().
@@ -159,12 +142,12 @@ def diff_value_text(title, value1, value2):
 
 TYPE_DIFFS = {
     bool: diff_value_bool,
-    byte_type: diff_value_text,
+    bytes: diff_value_text,
     float: diff_value_int,
     int: diff_value_int,
     list: diff_value_list,
     set: diff_value_list,
-    text_type: diff_value_text,
+    str: diff_value_text,
     tuple: diff_value_list,
 }
 
@@ -363,7 +346,7 @@ def validate_statedict(sdict):
     if sdict is None:
         return
     for key, value in sdict.items():
-        if not isinstance(force_text(key), text_type):
+        if not isinstance(force_text(key), str):
             raise ValueError(_("non-text statedict key: {}").format(key))
 
         if type(value) not in TYPE_DIFFS and value is not None:

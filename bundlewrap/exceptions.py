@@ -1,18 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-from sys import version_info
-
-
-class UnicodeException(Exception):
-    def __init__(self, msg=""):
-        if version_info >= (3, 0):
-            super(UnicodeException, self).__init__(msg)
-        else:
-            super(UnicodeException, self).__init__(msg.encode('utf-8'))
-
-
-class ActionFailure(UnicodeException):
+class ActionFailure(Exception):
     """
     Raised when an action failes to meet the expected rcode/output.
     """
@@ -28,14 +14,14 @@ class DontCache(Exception):
         self.obj = obj
 
 
-class FaultUnavailable(UnicodeException):
+class FaultUnavailable(Exception):
     """
     Raised when a Fault object cannot be resolved.
     """
     pass
 
 
-class GracefulApplyException(UnicodeException):
+class GracefulApplyException(Exception):
     """
     Raised when a problem has been encountered in `bw apply`, but a more
     verbose error has already been printed.
@@ -43,49 +29,49 @@ class GracefulApplyException(UnicodeException):
     pass
 
 
-class NoSuchBundle(UnicodeException):
+class NoSuchBundle(Exception):
     """
     Raised when a bundle of unknown name is requested.
     """
     pass
 
 
-class NoSuchGroup(UnicodeException):
+class NoSuchGroup(Exception):
     """
     Raised when a group of unknown name is requested.
     """
     pass
 
 
-class NoSuchItem(UnicodeException):
+class NoSuchItem(Exception):
     """
     Raised when an item of unknown name is requested.
     """
     pass
 
 
-class NoSuchNode(UnicodeException):
+class NoSuchNode(Exception):
     """
     Raised when a node of unknown name is requested.
     """
     pass
 
 
-class NoSuchPlugin(UnicodeException):
+class NoSuchPlugin(Exception):
     """
     Raised when a plugin of unknown name is requested.
     """
     pass
 
 
-class RemoteException(UnicodeException):
+class RemoteException(Exception):
     """
     Raised when a shell command on a node fails.
     """
     pass
 
 
-class RepositoryError(UnicodeException):
+class RepositoryError(Exception):
     """
     Indicates that somethings is wrong with the current repository.
     """
@@ -149,7 +135,7 @@ class PluginLocalConflict(PluginError):
     pass
 
 
-class SkipNode(UnicodeException):
+class SkipNode(Exception):
     """
     Can be raised by hooks to skip a node.
     """
@@ -163,7 +149,7 @@ class TemplateError(RepositoryError):
     pass
 
 
-class UsageException(UnicodeException):
+class UsageException(Exception):
     """
     Raised when command line options don't make sense.
     """

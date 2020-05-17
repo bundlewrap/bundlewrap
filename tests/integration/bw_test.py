@@ -405,10 +405,9 @@ def test_metadata_determinism_ok(tmpdir):
         },
     )
     with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
-        f.write("""@metadata_processor
+        f.write("""@metadata_reactor
 def test(metadata):
-    metadata['test'] = 1
-    return metadata, DONE
+    return {'test': 1}
 """)
     assert run("bw test -m 3", path=str(tmpdir))[2] == 0
 
@@ -427,11 +426,11 @@ def test_metadata_determinism_broken(tmpdir):
     )
     with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
         f.write("""from random import randint
+n = randint(1, 99999)
 
-@metadata_processor
+@metadata_reactor
 def test(metadata):
-    metadata.setdefault('test', randint(1, 99999))
-    return metadata, DONE
+    return {'test': n}
 """)
     assert run("bw test -m 3", path=str(tmpdir))[2] == 1
 

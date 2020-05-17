@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 from re import search
 
 from bundlewrap.utils.testing import host_os, make_repo, run

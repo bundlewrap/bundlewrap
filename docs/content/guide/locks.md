@@ -30,3 +30,23 @@ Note that each lock is identified by a case-insensitive 4-character ID that can 
 ✓ node1  lock Y1KD removed</code></pre>
 
 Expired locks are automatically and silently purged whenever BundleWrap has the opportunity. Be sure to check out `bw lock add --help` for how to customize expiration time, add a short comment explaining the reason for the lock, or lock only certain items. Using `bw apply` on a soft locked node is not an error and affected items will simply be skipped.
+
+## Locking non-UNIX nodes
+
+Most of the time, BundleWrap assumes that your target system is a UNIX-like operating system. It then stores locks as files in the node's local file system.
+
+BundleWrap supports managing non-UNIX nodes, too, such as Kubernetes. You can also write your own custom item types to manage hardware. In those situations, BundleWrap has no place to store lock files.
+
+You can solve this by designating another regular UNIX node as a "locking node":
+
+<pre><code class="nohighlight">nodes['my.k8s.cluster'] = {
+    'locking_node': 'my.openbsd.box',
+    'os': 'kubernetes',
+    'metadata': {
+        ...
+    },
+}</code></pre>
+
+`my.openbsd.box` is the name of another regular node, which must be managed by BundleWrap. You can now use all the usual locking mechanisms when working with `my.k8s.cluster` and its locks will be stored on `my.openbsd.box`. (They will, of course, not conflict with regular locks for `my.openbsd.box`.)
+
+A locking node can host locks for as many other nodes as you wish.

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from pipes import quote
 from subprocess import CalledProcessError, check_output, STDOUT
 

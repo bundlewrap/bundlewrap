@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 from sys import exit
 
 from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode

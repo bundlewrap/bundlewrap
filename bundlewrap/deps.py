@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
 from .items import Item
 from .items.actions import Action
@@ -8,7 +5,7 @@ from .utils.text import bold, mark_for_translation as _
 from .utils.ui import io
 
 
-class DummyItem(object):
+class DummyItem:
     bundle = None
     triggered = False
 

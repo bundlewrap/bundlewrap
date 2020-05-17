@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from datetime import datetime, timedelta
 from hashlib import md5
 from os import environ
@@ -30,7 +27,6 @@ from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, names
 from .utils.dicts import hash_statedict
-from .utils.metastack import Metastack
 from .utils.text import (
     blue,
     bold,
@@ -46,7 +42,7 @@ from .utils.text import (
 from .utils.ui import io
 
 
-class ApplyResult(object):
+class ApplyResult:
     """
     Holds information about an apply run for a node.
     """
@@ -319,7 +315,7 @@ def format_item_result(result, node, bundle, item, interactive=False, details=No
         )
 
 
-class Node(object):
+class Node:
     OS_FAMILY_BSD = (
         'freebsd',
         'macos',
@@ -369,7 +365,6 @@ class Node(object):
         self._node_metadata = attributes.get('metadata', {})
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
-        self._template_node_name = attributes.get('template_node')
         self.hostname = attributes.get('hostname', name)
         self.name = name
 
@@ -706,60 +701,36 @@ class Node(object):
 
     @property
     def metadata_defaults(self):
-        return self._metadata_processors[0]
-
-    @property
-    def _metadata_processors(self):
-        def tuple_with_name(kind, bundle, metadata_processor):
-            return (
-                "{}:{}.{}".format(
-                    kind,
-                    bundle.name,
-                    metadata_processor.__name__,
-                ),
-                metadata_processor,
-            )
-
-        defaults = []
-        reactors = set()
-        classic_metaprocs = set()
-
         for bundle in self.bundles:
-            if bundle._metadata_processors[0]:
-                defaults.append((
+            if bundle._metadata_defaults_and_reactors[0]:
+                yield (
                     "metadata_defaults:{}".format(bundle.name),
-                    bundle._metadata_processors[0],
-                ))
-            for reactor in bundle._metadata_processors[1]:
-                reactors.add(tuple_with_name("metadata_reactor", bundle, reactor))
-            for classic_metaproc in bundle._metadata_processors[2]:
-                classic_metaprocs.add(tuple_with_name("metadata_processor", bundle, classic_metaproc))
-
-        return defaults, reactors, classic_metaprocs
-
+                    bundle._metadata_defaults_and_reactors[0],
+                )
     @property
     def metadata_reactors(self):
-        return self._metadata_processors[1]
+        for bundle in self.bundles:
+            for reactor in bundle._metadata_defaults_and_reactors[1]:
+                yield (
+                    "metadata_reactor:{}.{}".format(
+                        bundle.name,
+                        reactor.__name__,
+                    ),
+                    reactor,
+                )
 
     @property
     def partial_metadata(self):
         """
-        Only to be used from inside metadata processors. Can't use the
+        Only to be used from inside metadata reactors. Can't use the
         normal .metadata there because it might deadlock when nodes
         have interdependent metadata.
 
-        It's OK for metadata processors to work with partial metadata
+        It's OK for metadata reactors to work with partial metadata
         because they will be fed all metadata updates until no more
-        changes are made by any metadata processor.
+        changes are made by any metadata reactor.
         """
-
-        partial = self.repo._metadata_for_node(self.name, partial=True)
-
-        # TODO remove this mechanism in bw 4.0, always return Metastacks
-        if self.repo._in_new_metareactor:
-            return Metastack(partial)
-        else:
-            return partial
+        return self.repo._metadata_for_node(self.name, partial=True)
 
     def run(self, command, data_stdin=None, may_fail=False, log_output=False):
         assert self.os in self.OS_FAMILY_UNIX
@@ -804,20 +775,6 @@ class Node(object):
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
-
-    @property
-    def template_node(self):
-        if not self._template_node_name:
-            return None
-        else:
-            target_node = self.repo.get_node(self._template_node_name)
-            if target_node._template_node_name:
-                raise RepositoryError(_(
-                    "{template_node} cannot use template_node because {node} uses {template_node} "
-                    "as template_node"
-                ).format(node=self.name, template_node=target_node.name))
-            else:
-                return target_node
 
     def upload(self, local_path, remote_path, mode=None, owner="", group="", may_fail=False):
         assert self.os in self.OS_FAMILY_UNIX
@@ -865,10 +822,6 @@ def build_attr_property(attr, default):
                 attr_source = "group:{}".format(group.name)
                 attr_value = getattr(group, attr)
 
-        if self.template_node:
-            attr_source = "template_node"
-            attr_value = getattr(self.template_node, attr)
-
         if getattr(self, "_{}".format(attr)) is not None:
             attr_source = "node"
             attr_value = getattr(self, "_{}".format(attr))
@@ -886,8 +839,7 @@ def build_attr_property(attr, default):
             return attr_value
         else:
             raise DontCache(attr_value)
-    method.__name__ = str("_group_attr_{}".format(attr))  # required for cached_property
-                                                          # str() for Python 2 compatibility
+    method.__name__ = "_group_attr_{}".format(attr)  # required for cached_property
     return cached_property(method)
 
 for attr, default in GROUP_ATTR_DEFAULTS.items():

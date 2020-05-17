@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from collections import OrderedDict
 from sys import version_info
 
@@ -29,11 +26,16 @@ class Metastack:
     def get(self, path, default=_NO_DEFAULT):
         """
         Get the value at the given path, merging all layers together.
+
         Path may either be string like
+
             'foo/bar'
+
         accessing the 'bar' key in the dict at the 'foo' key
         or a tuple like
+
             ('fo/o', 'bar')
+
         accessing the 'bar' key in the dict at the 'fo/o' key.
         """
         if not isinstance(path, (tuple, list)):

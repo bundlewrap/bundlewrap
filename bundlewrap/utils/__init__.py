@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from base64 import b64encode
 from codecs import getwriter
 from contextlib import contextmanager
@@ -8,6 +5,7 @@ import hashlib
 from inspect import isgenerator
 from os import chmod, close, makedirs, remove
 from os.path import dirname, exists
+from random import shuffle
 import stat
 from sys import stderr, stdout
 from tempfile import mkstemp
@@ -68,7 +66,7 @@ def download(url, path):
                 f.write(block)
 
 
-class Fault(object):
+class Fault:
     """
     A proxy object for lazy access to things that may not really be
     available at the time of use.
@@ -103,6 +101,16 @@ class Fault(object):
             def callback():
                 return self.value + other
             return Fault(callback)
+
+    def __eq__(self, other):
+        """
+        Always consider Faults as equal. It would arguably be more
+        correct to always assume them to be different, but that would
+        mean that we could never do change detection between two dicts
+        of metadata. So we have no choice but to warn users in docs that
+        Faults will always be considered equal to one another.
+        """
+        return isinstance(other, Fault)
 
     def __len__(self):
         return len(self.value)
@@ -181,6 +189,15 @@ def names(obj_list):
         yield obj.name
 
 
+def randomize_order(obj):
+    if isinstance(obj, dict):
+        result = list(obj.items())
+    else:
+        result = list(obj)
+    shuffle(result)
+    return result
+
+
 def sha1(data):
     """
     Returns hex SHA1 hash for input.
@@ -190,7 +207,7 @@ def sha1(data):
     return hasher.hexdigest()
 
 
-class SkipList(object):
+class SkipList:
     """
     Used to maintain a list of nodes that have already been visited.
     """

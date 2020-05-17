@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from datetime import datetime, timedelta
 from io import BytesIO
 from os import environ
@@ -122,7 +119,6 @@ def error_summary(errors):
 def force_text(data):
     """
     Try to return a text aka unicode object from the given data.
-    Also has Python 2/3 compatibility baked in. Oh the humanity.
     """
     if isinstance(data, bytes):
         return data.decode('utf-8', 'replace')
@@ -187,7 +183,7 @@ def wrap_question(title, body, question, prefix=""):
     return output
 
 
-class LineBuffer(object):
+class LineBuffer:
     def __init__(self, target):
         self.buffer = b""
         self.record = BytesIO()

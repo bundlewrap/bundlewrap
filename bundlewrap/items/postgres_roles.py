@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from passlib.apps import postgres_context
 
 from bundlewrap.exceptions import BundleError

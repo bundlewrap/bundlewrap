@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from os.path import exists, join
 
 from .exceptions import BundleError, NoSuchBundle, RepositoryError
-from .metadata import DEFAULTS, DONE, RUN_ME_AGAIN, OVERWRITE, DoNotRunAgain
+from .metadata import DoNotRunAgain
 from .utils import cached_property
 from .utils.text import bold, mark_for_translation as _
 from .utils.text import validate_name
@@ -15,25 +12,15 @@ FILENAME_BUNDLE = "items.py"
 FILENAME_METADATA = "metadata.py"
 
 
-def metadata_processor_classic(func):
-    """
-    Decorator that tags metadata processors.
-    """
-    func._is_metadata_processor = True
-    func._is_classic_metadata_processor = True
-    return func
-
-
 def metadata_reactor(func):
     """
     Decorator that tags metadata reactors.
     """
-    func._is_metadata_processor = True
     func._is_metadata_reactor = True
     return func
 
 
-class Bundle(object):
+class Bundle:
     """
     A collection of config items, bound to a node.
     """
@@ -98,26 +85,21 @@ class Bundle(object):
         )
 
     @cached_property
-    def _metadata_processors(self):
-        with io.job(_("{node}  {bundle}  collecting metadata processors").format(
+    def _metadata_defaults_and_reactors(self):
+        with io.job(_("{node}  {bundle}  collecting metadata reactors").format(
             node=bold(self.node.name),
             bundle=bold(self.name),
         )):
             if not exists(self.metadata_file):
-                return {}, set(), set()
+                return {}, set()
+
             defaults = {}
             reactors = set()
-            classic_processors = set()
             internal_names = set()
             for name, attr in self.repo.get_all_attrs_from_file(
                 self.metadata_file,
                 base_env={
-                    'DEFAULTS': DEFAULTS,
-                    'DONE': DONE,
-                    'OVERWRITE': OVERWRITE,
-                    'RUN_ME_AGAIN': RUN_ME_AGAIN,
                     'DoNotRunAgain': DoNotRunAgain,
-                    'metadata_processor': metadata_processor_classic,
                     'metadata_reactor': metadata_reactor,
                     'node': self.node,
                     'repo': self.repo,
@@ -125,15 +107,15 @@ class Bundle(object):
             ).items():
                 if name == "defaults":
                     defaults = attr
-                elif getattr(attr, '_is_metadata_processor', False):
+                elif getattr(attr, '_is_metadata_reactor', False):
                     internal_name = getattr(attr, '__name__', name)
                     if internal_name in internal_names:
                         raise BundleError(_(
-                            "Metadata processor '{name}' in bundle {bundle} for node {node} has "
+                            "Metadata reactor '{name}' in bundle {bundle} for node {node} has "
                             "__name__ '{internal_name}', which was previously used by another "
-                            "metadata processor in the same metadata.py. BundleWrap uses __name__ "
-                            "internally to tell metadata processors apart, so this is a problem. "
-                            "Perhaps you used a decorator on your metadata processors that "
+                            "metadata reactor in the same metadata.py. BundleWrap uses __name__ "
+                            "internally to tell metadata reactors apart, so this is a problem. "
+                            "Perhaps you used a decorator on your metadata reactors that "
                             "doesn't use functools.wraps? You should use that."
                         ).format(
                             bundle=self.name,
@@ -142,11 +124,5 @@ class Bundle(object):
                             name=name,
                         ))
                     internal_names.add(internal_name)
-                    if getattr(attr, '_is_metadata_reactor', False):
-                        reactors.add(attr)
-                    elif getattr(attr, '_is_classic_metadata_processor', False):
-                        classic_processors.add(attr)
-                    else:
-                        # this should never happen
-                        raise AssertionError
-            return defaults, reactors, classic_processors
+                    reactors.add(attr)
+            return defaults, reactors

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from operator import itemgetter
 
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -11,14 +8,10 @@ from ..utils.ui import page_lines
 def bw_stats(repo, args):
     items = {}
     metadata_defaults = set()
-    metadata_processors = set()
     metadata_reactors = set()
     for node in repo.nodes:
         for metadata_default_name, metadata_default in node.metadata_defaults:
             metadata_defaults.add(metadata_default_name)
-        # TODO remove this in 4.0
-        for metadata_processor_name, metadata_processor in node._metadata_processors[2]:
-            metadata_processors.add(metadata_processor_name)
         for metadata_reactor_name, metadata_reactor in node.metadata_reactors:
             metadata_reactors.add(metadata_reactor_name)
         for item in node.items:
@@ -35,7 +28,6 @@ def bw_stats(repo, args):
         [str(len(repo.groups)), _("groups")],
         [str(len(repo.bundle_names)), _("bundles")],
         [str(len(metadata_defaults)), _("metadata defaults")],
-        [str(len(metadata_processors)), _("metadata processors")],
         [str(len(metadata_reactors)), _("metadata reactors")],
         [str(sum([len(list(node.items)) for node in repo.nodes])), _("items")],
         ROW_SEPARATOR,

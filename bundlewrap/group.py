@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import re
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
@@ -14,6 +11,7 @@ GROUP_ATTR_DEFAULTS = {
     'cmd_wrapper_outer': "sudo sh -c {}",
     'dummy': False,
     'kubectl_context': None,
+    'locking_node': None,
     'os': 'linux',
     # Setting os_version to 0 by default will probably yield less
     # surprises than setting it to max_int. Users will probably
@@ -54,7 +52,7 @@ def _build_error_chain(loop_node, last_node, nodes_in_between):
     return error_chain
 
 
-class Group(object):
+class Group:
     """
     A group of nodes.
     """

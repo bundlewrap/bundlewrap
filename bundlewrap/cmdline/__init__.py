@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from cProfile import Profile
 from functools import wraps
 from os import environ

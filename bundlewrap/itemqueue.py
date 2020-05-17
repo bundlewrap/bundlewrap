@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from .deps import (
     DummyItem,
     find_item,
@@ -14,7 +11,7 @@ from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
 
-class BaseQueue(object):
+class BaseQueue:
     def __init__(self, items, node_os, node_os_version):
         self.items_with_deps = prepare_dependencies(items, node_os, node_os_version)
         self.items_without_deps = []

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from pipes import quote
 
 from . import cached_property
@@ -39,7 +36,7 @@ def stat(node, path):
     return file_stat
 
 
-class PathInfo(object):
+class PathInfo:
     """
     Serves as a proxy to get_path_type.
     """

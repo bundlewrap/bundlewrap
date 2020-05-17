@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 Note that modules in this package have to use absolute imports because
 Repository.item_classes loads them as files.
 """
-from __future__ import unicode_literals
 from copy import copy
 from datetime import datetime
 from inspect import cleandoc
@@ -50,7 +48,7 @@ def format_comment(comment):
     return result
 
 
-class ItemStatus(object):
+class ItemStatus:
     """
     Holds information on a particular Item such as whether it needs
     fixing and what's broken.
@@ -90,7 +88,7 @@ def make_normalize(attribute_default):
         return copy
 
 
-class Item(object):
+class Item:
     """
     A single piece of configuration (e.g. a file, a package, a service).
     """
@@ -425,6 +423,7 @@ class Item(object):
                 type=cls.ITEM_TYPE_NAME,
             ))
 
+    @classmethod
     def _validate_required_attributes(cls, bundle, item_id, attributes):
         missing = []
         for attrname in cls.REQUIRED_ATTRIBUTES:

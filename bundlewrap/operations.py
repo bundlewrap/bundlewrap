@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from datetime import datetime
 from pipes import quote
 from select import select
@@ -72,7 +69,7 @@ def download(
         ))
 
 
-class RunResult(object):
+class RunResult:
     def __init__(self):
         self.duration = None
         self.return_code = None

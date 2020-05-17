@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from json import dumps, loads
 from os import chmod, remove
 from os.path import exists, join
@@ -17,7 +14,7 @@ from .utils.ui import io
 BASE_URL = "https://raw.githubusercontent.com/bundlewrap/plugins/master"
 
 
-class PluginManager(object):
+class PluginManager:
     def __init__(self, path, base_url=BASE_URL):
         self.base_url = base_url
         self.path = path
