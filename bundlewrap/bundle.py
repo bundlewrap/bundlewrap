@@ -104,7 +104,7 @@ class Bundle(object):
             bundle=bold(self.name),
         )):
             if not exists(self.metadata_file):
-                return set(), set(), set()
+                return {}, set(), set()
             defaults = {}
             reactors = set()
             classic_processors = set()
