@@ -1,3 +1,14 @@
+# 4.0.0
+
+unreleased
+
+* new metadata processor API (BACKWARDS INCOMPATIBLE)
+* removed `template_node` node attribute (BACKWARDS INCOMPATIBLE)
+* removed support for Python 3.4 (BACKWARDS INCOMPATIBLE)
+* removed support for Python 2.7 (BACKWARDS INCOMPATIBLE)
+* added `locking_node` node attribute
+
+
 # 3.10.0
 
 2020-05-17
