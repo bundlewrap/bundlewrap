@@ -1,6 +1,6 @@
 # 3.10.0
 
-unreleased
+2020-05-17
 
 * added metadata defaults and reactors
 * added `bw diff`
