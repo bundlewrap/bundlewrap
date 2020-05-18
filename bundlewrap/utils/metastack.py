@@ -1,8 +1,8 @@
 from collections import OrderedDict
 from sys import version_info
 
-from ..metadata import validate_metadata, value_at_key_path
-from .dicts import freeze_object, map_dict_keys, merge_dict
+from ..metadata import deepcopy_metadata, validate_metadata, value_at_key_path
+from .dicts import map_dict_keys, merge_dict
 
 
 _NO_DEFAULT = "<NO METASTACK DEFAULT PROVIDED>"
@@ -63,7 +63,7 @@ class Metastack:
             else:
                 raise KeyError('/'.join(path))
         else:
-            return freeze_object(result['data'])
+            return deepcopy_metadata(result['data'])
 
     def _as_dict(self):
         final_dict = {}

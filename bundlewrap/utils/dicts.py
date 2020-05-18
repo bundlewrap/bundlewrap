@@ -1,7 +1,6 @@
 from difflib import unified_diff
 from hashlib import sha1
 from json import dumps, JSONEncoder
-from types import MappingProxyType
 
 from . import Fault
 from .text import bold, green, red
@@ -170,29 +169,6 @@ class FaultResolvingJSONEncoder(JSONEncoder):
             return sorted(obj)
         else:
             return JSONEncoder.default(self, obj)
-
-
-def freeze_object(obj):
-    """
-    Returns a read-only version of the given object (if possible).
-    """
-    if isinstance(obj, dict):
-        keys = set(obj.keys())
-        for k in keys:
-            obj[k] = freeze_object(obj[k])
-        return MappingProxyType(obj)
-    elif isinstance(obj, (list, tuple)):
-        result = []
-        for i in obj:
-            result.append(freeze_object(i))
-        return tuple(result)
-    elif isinstance(obj, set):
-        result = set()
-        for i in obj:
-            result.add(freeze_object(i))
-        return frozenset(obj)
-    else:
-        return obj
 
 
 def hash_statedict(sdict):

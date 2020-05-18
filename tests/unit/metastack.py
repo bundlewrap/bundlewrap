@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-
 from bundlewrap.metadata import atomic
 from bundlewrap.utils.metastack import Metastack
 from pytest import raises
@@ -179,16 +175,14 @@ def test_update_layer_for_new_value():
     assert stack.get('something', None) == 456
 
 
-def test_should_be_frozen():
+def test_deepcopy():
     stack = Metastack()
     stack._set_layer('base', {'foo': {'bar': {1, 2, 3}}})
     foo = stack.get('foo', None)
-
-    with raises(AttributeError):
-        foo['bar'].add(4)
-
-    with raises(TypeError):
-        del foo['bar']
+    foo['bar'].add(4)
+    assert stack.get('foo/bar') == {1, 2, 3}
+    del foo['bar']
+    assert stack.get('foo/bar')
 
 
 def test_atomic_in_base():

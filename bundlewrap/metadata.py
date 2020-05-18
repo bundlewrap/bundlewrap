@@ -1,3 +1,4 @@
+from copy import copy
 from hashlib import sha1
 from json import dumps, JSONEncoder
 
@@ -22,6 +23,39 @@ class DoNotRunAgain(Exception):
     Raised from metadata reactors to indicate they can be disregarded.
     """
     pass
+
+
+def deepcopy_metadata(obj):
+    """
+    Our own version of deepcopy.copy that doesn't pickle.
+    """
+    if isinstance(obj, METADATA_TYPES):
+        return obj
+    elif isinstance(obj, dict):
+        if isinstance(obj, ATOMIC_TYPES[dict]):
+            new_obj = atomic({})
+        else:
+            new_obj = {}
+        for key, value in obj.items():
+            new_key = copy(key)
+            new_obj[new_key] = deepcopy_metadata(value)
+    elif isinstance(obj, (list, tuple)):
+        if isinstance(obj, (ATOMIC_TYPES[list], ATOMIC_TYPES[tuple])):
+            new_obj = atomic([])
+        else:
+            new_obj = []
+        for member in obj:
+            new_obj.append(deepcopy_metadata(member))
+    elif isinstance(obj, set):
+        if isinstance(obj, ATOMIC_TYPES[set]):
+            new_obj = atomic(set())
+        else:
+            new_obj = set()
+        for member in obj:
+            new_obj.add(deepcopy_metadata(member))
+    else:
+        assert False  # there should be no other types
+    return new_obj
 
 
 def validate_metadata(metadata, _top_level=True):
