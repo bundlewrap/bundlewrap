@@ -9,7 +9,11 @@ See also: [Guide to Kubernetes](../guide/kubernetes.md)
 Manage resources in Kubernetes clusters.
 
     k8s_namespaces = {
-         "my-app": {},
+         "my-app": {
+            'manifest': {
+                'apiVersion': "v1",
+            },
+         },
          "my-previous-app": {'delete': True},
     }
 
@@ -28,25 +32,25 @@ Note that the names of all items in a namespace must be prefixed with the name o
 ## Resource types
 
 <table>
-<tr><th>Resource type</th><th>Bundle attribute</th><th>apiVersion</th></tr>
-<tr><td>Cluster Role</td><td>k8s_clusterroles</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
-<tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
-<tr><td>Custom Resource Definition</td><td>k8s_crd</td><td>apiextensions.k8s.io/v1</td></tr>
-<tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>apps/v1</td></tr>
-<tr><td>Deployment</td><td>k8s_deployments</td><td>apps/v1</td></tr>
-<tr><td>Ingress</td><td>k8s_ingresses</td><td>networking.k8s.io/v1beta1</td></tr>
-<tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
-<tr><td>Network Policy</td><td>k8s_networkpolicies</td><td>networking.k8s.io/v1</td></tr>
-<tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
-<tr><td>Role</td><td>k8s_roles</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Role Binding</td><td>k8s_rolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Service</td><td>k8s_services</td><td>v1</td></tr>
-<tr><td>Service Account</td><td>k8s_serviceaccounts</td><td>v1</td></tr>
-<tr><td>Secret</td><td>k8s_secrets</td><td>v1</td></tr>
-<tr><td>StatefulSet</td><td>k8s_statefulsets</td><td>apps/v1</td></tr>
-<tr><td>(any)</td><td>k8s_raw</td><td>(any)</td></tr>
+<tr><th>Resource type</th><th>Bundle attribute</th></tr>
+<tr><td>Cluster Role</td><td>k8s_clusterroles</td></tr>
+<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindings</td></tr>
+<tr><td>Config Map</td><td>k8s_configmaps</td></tr>
+<tr><td>Cron Job</td><td>k8s_cronjobs</td></tr>
+<tr><td>Custom Resource Definition</td><td>k8s_crd</td></tr>
+<tr><td>Daemon Set</td><td>k8s_daemonsets</td></tr>
+<tr><td>Deployment</td><td>k8s_deployments</td></tr>
+<tr><td>Ingress</td><td>k8s_ingresses</td></tr>
+<tr><td>Namespace</td><td>k8s_namespaces</td></tr>
+<tr><td>Network Policy</td><td>k8s_networkpolicies</td></tr>
+<tr><td>Persistent Volume Claim</td><td>k8s_pvc</td></tr>
+<tr><td>Role</td><td>k8s_roles</td></tr>
+<tr><td>Role Binding</td><td>k8s_rolebindings</td></tr>
+<tr><td>Service</td><td>k8s_services</td></tr>
+<tr><td>Service Account</td><td>k8s_serviceaccounts</td></tr>
+<tr><td>Secret</td><td>k8s_secrets</td></tr>
+<tr><td>StatefulSet</td><td>k8s_statefulsets</td></tr>
+<tr><td>(any)</td><td>k8s_raw</td></tr>
 </table>
 
 You can define [Custom Resources](https://kubernetes.io/docs/concepts/api-extension/custom-resources/) like this:
@@ -54,6 +58,7 @@ You can define [Custom Resources](https://kubernetes.io/docs/concepts/api-extens
     k8s_crd = {
         "custom-thing": {
             'manifest': {
+                'apiVersion': "apiextensions.k8s.io/v1beta1",
                 'spec': {
                     'names': {
                         'kind': "CustomThing",

@@ -38,7 +38,6 @@ class KubernetesItem(Item):
         'context': None,
     }
     KIND = None
-    KUBERNETES_APIVERSION = "v1"
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
@@ -131,7 +130,6 @@ class KubernetesItem(Item):
 
         merged_manifest = merge_dict(
             {
-                'apiVersion': self.KUBERNETES_APIVERSION,
                 'kind': self.KIND,
                 'metadata': {
                     'name': self.name.split("/")[-1],
@@ -232,7 +230,6 @@ class KubernetesItem(Item):
 class KubernetesRawItem(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_raw"
     ITEM_TYPE_NAME = "k8s_raw"
-    KUBERNETES_APIVERSION = None
     NAME_REGEX = r"^([a-z0-9-\.]{1,253})?/[a-zA-Z0-9-\.]{1,253}/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
@@ -271,7 +268,6 @@ class KubernetesRawItem(KubernetesItem):
 class KubernetesClusterRole(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_clusterroles"
     KIND = "ClusterRole"
-    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrole"
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -284,7 +280,6 @@ class KubernetesClusterRole(KubernetesItem):
 class KubernetesClusterRoleBinding(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_clusterrolebindings"
     KIND = "ClusterRoleBinding"
-    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_clusterrolebinding"
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -302,21 +297,18 @@ class KubernetesClusterRoleBinding(KubernetesItem):
 class KubernetesConfigMap(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_configmaps"
     KIND = "ConfigMap"
-    KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_configmap"
 
 
 class KubernetesCronJob(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_cronjobs"
     KIND = "CronJob"
-    KUBERNETES_APIVERSION = "batch/v1beta1"
     ITEM_TYPE_NAME = "k8s_cronjob"
 
 
 class KubernetesCustomResourceDefinition(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_crd"
     KIND = "CustomResourceDefinition"
-    KUBERNETES_APIVERSION = "apiextensions.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_crd"
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -332,7 +324,6 @@ class KubernetesCustomResourceDefinition(KubernetesItem):
 class KubernetesDaemonSet(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_daemonsets"
     KIND = "DaemonSet"
-    KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_daemonset"
 
     def get_auto_deps(self, items):
@@ -349,7 +340,6 @@ class KubernetesDaemonSet(KubernetesItem):
 class KubernetesDeployment(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_deployments"
     KIND = "Deployment"
-    KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_deployment"
 
     def get_auto_deps(self, items):
@@ -366,7 +356,6 @@ class KubernetesDeployment(KubernetesItem):
 class KubernetesIngress(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_ingresses"
     KIND = "Ingress"
-    KUBERNETES_APIVERSION = "networking.k8s.io/v1beta1"
     ITEM_TYPE_NAME = "k8s_ingress"
 
     def get_auto_deps(self, items):
@@ -383,7 +372,6 @@ class KubernetesIngress(KubernetesItem):
 class KubernetesNamespace(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_namespaces"
     KIND = "Namespace"
-    KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_namespace"
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -395,7 +383,6 @@ class KubernetesNamespace(KubernetesItem):
 class KubernetesNetworkPolicy(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_networkpolicies"
     KIND = "NetworkPolicy"
-    KUBERNETES_APIVERSION = "networking.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_networkpolicy"
     NAME_REGEX = r"^([a-z0-9-\.]{1,253})?/[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
@@ -404,21 +391,18 @@ class KubernetesNetworkPolicy(KubernetesItem):
 class KubernetesPersistentVolumeClain(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_pvc"
     KIND = "PersistentVolumeClaim"
-    KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_pvc"
 
 
 class KubernetesRole(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_roles"
     KIND = "Role"
-    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_role"
 
 
 class KubernetesRoleBinding(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_rolebindings"
     KIND = "RoleBinding"
-    KUBERNETES_APIVERSION = "rbac.authorization.k8s.io/v1"
     ITEM_TYPE_NAME = "k8s_rolebinding"
 
     def get_auto_deps(self, items):
@@ -430,7 +414,6 @@ class KubernetesRoleBinding(KubernetesItem):
 class KubernetesSecret(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_secrets"
     KIND = "Secret"
-    KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_secret"
 
     def get_auto_deps(self, items):
@@ -440,21 +423,18 @@ class KubernetesSecret(KubernetesItem):
 class KubernetesService(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_services"
     KIND = "Service"
-    KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_service"
 
 
 class KubernetesServiceAccount(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_serviceaccounts"
     KIND = "ServiceAccount"
-    KUBERNETES_APIVERSION = "v1"
     ITEM_TYPE_NAME = "k8s_serviceaccount"
 
 
 class KubernetesStatefulSet(KubernetesItem):
     BUNDLE_ATTRIBUTE_NAME = "k8s_statefulsets"
     KIND = "StatefulSet"
-    KUBERNETES_APIVERSION = "apps/v1"
     ITEM_TYPE_NAME = "k8s_statefulset"
 
     def get_auto_deps(self, items):
