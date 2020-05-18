@@ -197,7 +197,7 @@ def foo(metadata):
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
         "baz": "foo",
-        "foo": "baz",
+        "foo": "bar",
     }
     assert stderr == b""
     assert rcode == 0
@@ -254,17 +254,24 @@ def test_table_no_key(tmpdir):
     assert rcode == 1
 
 
-def test_metadatapy_proc_merge_order(tmpdir):
+def test_metadatapy_merge_order(tmpdir):
     make_repo(
         tmpdir,
         bundles={"test": {}},
         nodes={
             "node1": {
                 'bundles': ["test"],
+                'groups': {"group1"},
                 'metadata': {
-                    "one": "node",
-                    "two": "node",
-                    "five": "node",
+                    "four": "node",
+                },
+            },
+        },
+        groups={
+            "group1": {
+                'metadata': {
+                    "three": "group",
+                    "four": "group",
                 },
             },
         },
@@ -272,6 +279,7 @@ def test_metadatapy_proc_merge_order(tmpdir):
     with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
         f.write(
 """defaults = {
+    "one": "defaults",
     "two": "defaults",
     "three": "defaults",
     "four": "defaults",
@@ -280,17 +288,50 @@ def test_metadatapy_proc_merge_order(tmpdir):
 @metadata_reactor
 def foo_reactor(metadata):
     return {
+        "two": "reactor",
+        "three": "reactor",
         "four": "reactor",
-        "five": "reactor",
     }
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
-        "one": "node",
-        "two": "node",
-        "three": "defaults",
-        "four": "reactor",
-        "five": "reactor",
+        "one": "defaults",
+        "two": "reactor",
+        "three": "group",
+        "four": "node",
+    }
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_metadatapy_static_reorder(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {
+                    "foo": "bar",
+                    "frob": "flup",
+                },
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo_reactor(metadata):
+    return {
+        "foo": "overwritten",
+        "baz": metadata.get("frob"),
+    }
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "foo": "bar",
+        "frob": "flup",
+        "baz": "flup",
     }
     assert stderr == b""
     assert rcode == 0

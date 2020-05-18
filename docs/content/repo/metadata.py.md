@@ -30,6 +30,8 @@ The parameter `metadata` is not a dictionary but an instance of `Metastack`. You
 
 While node and group metadata and metadata defaults will always be available to reactors, you should not rely on that for the simple reason that you may one day move some metadata from those static sources into another reactor, which may be run later. Thus you may need to wait for some iterations before that data shows up in `metadata`. Note that BundleWrap will catch any `KeyError`s raised in metadata reactors and only report them if they don't go away after all other relevant reactors are done.
 
+While you can access metadata from groups and nodes in your reactors, you cannot overwrite anything from them, no matter what you return from your reactor. You may add to collections like sets and dicts, but atomic values will always be overwritten by metadata from `nodes.py` and `groups.py`.
+
 To avoid deadlocks when accessing *other* nodes' metadata from within a metadata reactor, use `other_node.partial_metadata` instead of `other_node.metadata`. For the same reason, always use the `metadata` parameter to access the current node's metadata, never `node.metadata`.
 
 <div class="alert alert-danger">Be careful when returning <a href="../../guide/api#bundlewraputilsfault">Fault</a> objects from reactors. <strong>All</strong> Fault objects (including those returned from <code>repo.vault.*</code>) will be considered <strong>equal</strong> to one another when BundleWrap inspects the returned metadata to check if anything changed compared to what was returned in an earlier iteration.</div>

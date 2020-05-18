@@ -650,6 +650,15 @@ class Repository:
                     # additional results from metadata reactors.
                     continue
                 else:
+                    # Now that we're done, re-sort static metadata to
+                    # overrule reactors.
+                    for node_name, metastack in self._metastacks.items():
+                        for identifier in list(metastack._layers.keys()):
+                            if (
+                                identifier.startswith("group:") or
+                                identifier.startswith("node:")
+                            ):
+                                metastack._layers[identifier] = metastack._layers.pop(identifier)
                     break
 
         if keyerrors:
