@@ -12,14 +12,26 @@ FILENAME_BUNDLE = "items.py"
 FILENAME_METADATA = "metadata.py"
 
 
-def metadata_reactor(func):
-    """
-    Decorator that tags metadata reactors.
-    """
-    if func.__name__ == "defaults":
-        raise ValueError(_("metadata reactor cannot be named 'defaults'"))
-    func._is_metadata_reactor = True
-    return func
+def metadata_reactor_for_bundle(bundle_name):
+    reactor_names = set()
+
+    def metadata_reactor(func):
+        """
+        Decorator that tags metadata reactors.
+        """
+        if func.__name__ == "defaults":
+            raise ValueError(_(
+                "metadata reactor in bundle '{}' cannot be named 'defaults'"
+            ).format(bundle_name))
+        if func.__name__ in reactor_names:
+            raise ValueError(_(
+                "duplicate metadata reactor '{reactor}' in bundle '{bundle}'"
+            ).format(bundle=bundle_name, reactor=func.__name__))
+        reactor_names.add(func.__name__)
+        func._is_metadata_reactor = True
+        return func
+
+    return metadata_reactor
 
 
 class Bundle:
@@ -102,7 +114,7 @@ class Bundle:
                 self.metadata_file,
                 base_env={
                     'DoNotRunAgain': DoNotRunAgain,
-                    'metadata_reactor': metadata_reactor,
+                    'metadata_reactor': metadata_reactor_for_bundle(self.name),
                     'node': self.node,
                     'repo': self.repo,
                 },
