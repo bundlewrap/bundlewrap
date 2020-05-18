@@ -24,13 +24,11 @@ So let's look at reactors next. Metadata reactors are functions that take the me
 	        "bar": metadata.get("foo"),
 	    }
 
-While this looks simple enough, there are some important caveats. First and foremost: Metadata reactors must assume to be called many times. This is to give you an opportunity to react to metadata provided by other reactors. All reactors will be run again and again until none of them return any changed metadata. Anything you return from a reactor will overwrite existing metadata.
+While this looks simple enough, there are some important caveats. First and foremost: Metadata reactors must assume to be called many times. This is to give you an opportunity to react to metadata provided by other reactors. All reactors will be run again and again until none of them return any changed metadata. Anything you return from a reactor will overwrite defaults, while metadata from `groups.py` and `nodes.py` will still overwrite metadata from reactors. Collection types like sets and dicts will be merged.
 
 The parameter `metadata` is not a dictionary but an instance of `Metastack`. You cannot modify the contents of this object. It provides `.get("some/path", "default")` to query a key path (equivalent to `metadata["some"]["path"]` in a dict) and accepts an optional default value. It will raise a `KeyError` when called for a non-existant path without a default.
 
 While node and group metadata and metadata defaults will always be available to reactors, you should not rely on that for the simple reason that you may one day move some metadata from those static sources into another reactor, which may be run later. Thus you may need to wait for some iterations before that data shows up in `metadata`. Note that BundleWrap will catch any `KeyError`s raised in metadata reactors and only report them if they don't go away after all other relevant reactors are done.
-
-While you can access metadata from groups and nodes in your reactors, you cannot overwrite anything from them, no matter what you return from your reactor. You may add to collections like sets and dicts, but atomic values will always be overwritten by metadata from `nodes.py` and `groups.py`.
 
 To avoid deadlocks when accessing *other* nodes' metadata from within a metadata reactor, use `other_node.partial_metadata` instead of `other_node.metadata`. For the same reason, always use the `metadata` parameter to access the current node's metadata, never `node.metadata`.
 
