@@ -696,6 +696,10 @@ class Node:
     def metadata_blame(self):
         return self.repo._metadata_for_node(self.name, partial=False, blame=True)
 
+    @property
+    def _metadata_stack(self):
+        return self.repo._metadata_for_node(self.name, partial=False, stack=True)
+
     def metadata_get(self, path):
         return value_at_key_path(self.metadata, path)
 
@@ -710,6 +714,7 @@ class Node:
                     "metadata_defaults:{}".format(bundle.name),
                     bundle._metadata_defaults_and_reactors[0],
                 )
+
     @property
     def metadata_reactors(self):
         for bundle in self.bundles:

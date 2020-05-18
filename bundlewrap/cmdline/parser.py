@@ -932,10 +932,10 @@ def build_parser_bw():
     )
     parser_test.add_argument(
         "-M",
-        "--metadata-collisions",
+        "--metadata-conflicts",
         action='store_true',
-        dest='metadata_collisions',
-        help=_("check for conflicting metadata keys in group metadata"),
+        dest='metadata_conflicts',
+        help=_("check for conflicting metadata keys in group metadata, reactors, and defaults"),
     )
     parser_test.add_argument(
         "-o",

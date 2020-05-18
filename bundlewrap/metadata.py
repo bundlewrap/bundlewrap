@@ -54,7 +54,63 @@ def atomic(obj):
         return cls(obj)
 
 
-def check_for_unsolvable_metadata_key_conflicts(node):
+def check_for_metadata_conflicts(node):
+    check_for_metadata_conflicts_between_groups(node)
+    check_for_metadata_conflicts_between_defaults_and_reactors(node)
+
+
+def check_for_metadata_conflicts_between_defaults_and_reactors(node):
+    """
+    Finds conflicting metadata keys in bundle defaults and reactors.
+
+    Dicts can be merged with dicts, sets can be merged with sets, but
+    any other combination is a conflict.
+    """
+    TYPE_DICT = 1
+    TYPE_SET = 2
+    TYPE_OTHER = 3
+
+    def paths_with_types(d):
+        for path in map_dict_keys(d):
+            value = value_at_key_path(d, path)
+            if isinstance(value, dict):
+                yield path, TYPE_DICT
+            elif isinstance(value, set):
+                yield path, TYPE_SET
+            else:
+                yield path, TYPE_OTHER
+
+    for prefix in ("metadata_defaults:", "metadata_reactor:"):
+        paths = {}
+        for identifier, layer in node._metadata_stack._layers.items():
+            if identifier.startswith(prefix):
+                for path, current_type in paths_with_types(layer):
+                    try:
+                        prev_type, prev_identifier = paths[path]
+                    except KeyError:
+                        paths[path] = current_type, identifier
+                    else:
+                        if (
+                            prev_type == TYPE_DICT
+                            and current_type == TYPE_DICT
+                        ):
+                            pass
+                        elif (
+                            prev_type == TYPE_SET
+                            and current_type == TYPE_SET
+                        ):
+                            pass
+                        else:
+                            raise ValueError(_(
+                                "{a} and {b} are clashing over this key path: {path}"
+                            ).format(
+                                a=identifier,
+                                b=prev_identifier,
+                                path="/".join(path),
+                            ))
+
+
+def check_for_metadata_conflicts_between_groups(node):
     """
     Finds metadata keys defined by two groups that are not part of a
     shared subgroup hierarchy.

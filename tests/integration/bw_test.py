@@ -369,6 +369,184 @@ def test_group_metadata_collision_set_ok(tmpdir):
     assert run("bw test -M", path=str(tmpdir))[2] == 0
 
 
+def test_defaults_metadata_collision(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1", "bundle2"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""defaults = {
+    "foo": "bar",
+}
+""")
+    with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
+        f.write(
+"""defaults = {
+    "foo": "baz",
+}
+""")
+    stdout, stderr, rcode = run("bw test -M", path=str(tmpdir))
+    assert rcode == 1
+    assert b"foo" in stderr
+
+
+def test_defaults_metadata_collision_nested(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1", "bundle2"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""defaults = {
+    "foo": {"bar": "baz"},
+}
+""")
+    with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
+        f.write(
+"""defaults = {
+    "foo": {"bar": "frob"},
+}
+""")
+    stdout, stderr, rcode = run("bw test -M", path=str(tmpdir))
+    assert rcode == 1
+    assert b"foo/bar" in stderr
+
+
+def test_defaults_metadata_collision_ok(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1", "bundle2"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""defaults = {
+    "foo": {"bar"},
+}
+""")
+    with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
+        f.write(
+"""defaults = {
+    "foo": {"baz"},
+}
+""")
+    assert run("bw test -M", path=str(tmpdir))[2] == 0
+
+
+def test_reactor_metadata_collision(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1", "bundle2"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo(metadata):
+    return {"foo": 1}
+""")
+    with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo(metadata):
+    return {"foo": 2}
+""")
+    stdout, stderr, rcode = run("bw test -M", path=str(tmpdir))
+    assert rcode == 1
+    assert b"foo" in stderr
+
+
+def test_reactor_metadata_collision_nested(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1", "bundle2"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo(metadata):
+    return {"foo": {"bar": "1"}}
+""")
+    with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo(metadata):
+    return {"foo": {"bar": "2"}}
+""")
+    stdout, stderr, rcode = run("bw test -M", path=str(tmpdir))
+    assert rcode == 1
+    assert b"foo/bar" in stderr
+
+
+def test_reactor_metadata_collision_nested_mixed(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1", "bundle2"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+            "bundle2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo(metadata):
+    return {"foo": {"bar": {True}}}
+""")
+    with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo(metadata):
+    return {"foo": {"bar": [False]}}
+""")
+    stdout, stderr, rcode = run("bw test -M", path=str(tmpdir))
+    assert rcode == 1
+    assert b"foo/bar" in stderr
+
+
 def test_fault_missing(tmpdir):
     make_repo(
         tmpdir,
