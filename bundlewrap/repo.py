@@ -619,10 +619,22 @@ class Repository:
                             except KeyError:
                                 pass
 
-                            this_changed = self._metastacks[node_name]._set_layer(
-                                reactor_name,
-                                new_metadata,
-                            )
+                            try:
+                                this_changed = self._metastacks[node_name]._set_layer(
+                                    reactor_name,
+                                    new_metadata,
+                                )
+                            except TypeError as exc:
+                                # TODO catch validation errors better
+                                io.stderr(_(
+                                    "{x} Exception after executing metadata reactor "
+                                    "{metaproc} for node {node}:"
+                                ).format(
+                                    x=red("!!!"),
+                                    metaproc=reactor_name,
+                                    node=node.name,
+                                ))
+                                raise exc
                             if this_changed:
                                 reactors_that_changed_something_in_last_iteration.add(
                                     (node_name, reactor_name),
