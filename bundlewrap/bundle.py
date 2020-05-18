@@ -16,6 +16,8 @@ def metadata_reactor(func):
     """
     Decorator that tags metadata reactors.
     """
+    if func.__name__ == "defaults":
+        raise ValueError(_("metadata reactor cannot be named 'defaults'"))
     func._is_metadata_reactor = True
     return func
 
