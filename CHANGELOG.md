@@ -7,6 +7,7 @@ unreleased
 * removed support for Python 3.4 (BACKWARDS INCOMPATIBLE)
 * removed support for Python 2.7 (BACKWARDS INCOMPATIBLE)
 * added `locking_node` node attribute
+* renamed `bw test --metadata-collisions` to `bw test --metadata-conflicts` (BACKWARDS INCOMPATIBLE)
 
 
 # 3.10.0

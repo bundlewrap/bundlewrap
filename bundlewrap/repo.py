@@ -438,7 +438,7 @@ class Repository:
         """
         return self.nodes_in_all_groups([group_name])
 
-    def _metadata_for_node(self, node_name, partial=False, blame=False):
+    def _metadata_for_node(self, node_name, partial=False, blame=False, stack=False):
         """
         Returns full or partial metadata for this node.
 
@@ -465,6 +465,13 @@ class Repository:
                 # yet.
                 self._nodes_we_need_metadata_for.add(node_name)
                 return self._metastacks.setdefault(node_name, Metastack())
+
+        if blame or stack:
+            # cannot return cached result here, force rebuild
+            try:
+                del self._node_metadata_complete[node_name]
+            except KeyError:
+                pass
 
         try:
             return self._node_metadata_complete[node_name]
@@ -505,7 +512,9 @@ class Repository:
                     self._metastacks[node_name]._as_dict()
 
             if blame:
-                blame_result = self._metastacks[node_name]._blame()
+                blame_result = self._metastacks[node_name]._as_blame()
+            elif stack:
+                stack_result = self._metastacks[node_name]
 
             # reset temporary vars (this isn't strictly necessary, but might
             # free up some memory and avoid confusion)
@@ -514,6 +523,8 @@ class Repository:
 
             if blame:
                 return blame_result
+            elif stack:
+                return stack_result
             else:
                 return self._node_metadata_complete[node_name]
 
