@@ -540,6 +540,18 @@ def build_parser_bw():
         help=_("show where each piece of metadata comes from"),
     )
     parser_metadata.add_argument(
+        "-c", "--colors",
+        action='store_true',
+        dest='color',
+        help=_("colorize metadata sources (defaults grey, reactors green, groups yellow, node red)"),
+    )
+    parser_metadata.add_argument(
+        "-D", "--hide-defaults",
+        action='store_true',
+        dest='hide_defaults',
+        help=_("hide values set by defaults in metadata.py"),
+    )
+    parser_metadata.add_argument(
         "-t",
         "--table",
         action='store_true',

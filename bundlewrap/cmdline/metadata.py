@@ -1,12 +1,36 @@
 from decimal import Decimal
 
-from ..metadata import metadata_to_json
+from ..metadata import deepcopy_metadata, metadata_to_json
 from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
-from ..utils.dicts import value_at_key_path
+from ..utils.dicts import delete_key_at_path, replace_key_at_path, value_at_key_path
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import bold, force_text, mark_for_translation as _, red
+from ..utils.text import bold, force_text, green, grey, mark_for_translation as _, red, yellow
 from ..utils.ui import io, page_lines
+
+
+def _color_for_source(key, source):
+    if source.startswith("metadata_defaults:"):
+        return grey(key)
+    elif source.startswith("metadata_reactor:"):
+        return green(key)
+    elif source.startswith("group:"):
+        return yellow(key)
+    elif source.startswith("node:"):
+        return red(key)
+    else:
+        return key
+
+
+def _colorize_path(args, metadata, path, src):
+    if src.startswith("metadata_defaults:") and args['hide_defaults']:
+        delete_key_at_path(metadata, path)
+    else:
+        replace_key_at_path(
+            metadata,
+            path,
+            _color_for_source(path[-1], src),
+        )
 
 
 def bw_metadata(repo, args):
@@ -47,7 +71,23 @@ def bw_metadata(repo, args):
                         break
             page_lines(render_table(table))
         else:
+            if args['color'] or args['hide_defaults']:
+                metadata = deepcopy_metadata(node.metadata)
+                blame = list(node.metadata_blame.items())
+                # sort descending by key path length since we will be replacing
+                # the keys and can't access paths beneath replaced keys anymore
+                blame.sort(key=lambda e: len(e[0]), reverse=True)
+                for path, blamed in blame:
+                    value = value_at_key_path(metadata, path)
+                    if isinstance(value, (dict, list, tuple, set)):
+                        if len(blamed) == 1:
+                            _colorize_path(args, metadata, path, blamed[0])
+                    else:
+                        _colorize_path(args, metadata, path, blamed[-1])
+            else:
+                metadata = node.metadata
+
             for line in metadata_to_json(
-                value_at_key_path(node.metadata, args['keys']),
+                value_at_key_path(metadata, args['keys']),
             ).splitlines():
-                io.stdout(force_text(line))
+                io.stdout(force_text(line).replace("\\u001b", "\033"))
