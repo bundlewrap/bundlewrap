@@ -23,7 +23,7 @@ Here are the steps:
 3. Same goes for documentation.
 4. Set up a [virtualenv](http://virtualenv.readthedocs.org/en/latest/) and run `pip install -r requirements.txt`.
 5. Make sure you can connect to your localhost via `ssh` without using a password and that you are able to run `sudo`.
-6. Run `py.test`.
+6. Run `py.test tests/`.
 7. Review and sign the Copyright Assignment Agreement (CAA) by adding your name and email to the `AUTHORS` file. (This step can be skipped if your contribution is too small to be considered intellectual property, e.g. spelling fixes)
 8. Open a pull request on [GitHub](https://github.com/bundlewrap/bundlewrap).
 9. Feel great. Thank you.
