@@ -113,7 +113,9 @@ def bw_metadata(repo, args):
                     args['hide_node'],
                 )
 
-            for line in metadata_to_json(
-                value_at_key_path(metadata, args['keys']),
-            ).splitlines():
-                io.stdout(force_text(line).replace("\\u001b", "\033"))
+            page_lines([
+                force_text(line).replace("\\u001b", "\033")
+                for line in metadata_to_json(
+                    value_at_key_path(metadata, args['keys']),
+                ).splitlines()
+            ])
