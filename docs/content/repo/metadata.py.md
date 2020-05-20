@@ -32,8 +32,6 @@ While node and group metadata and metadata defaults will always be available to 
 
 To avoid deadlocks when accessing *other* nodes' metadata from within a metadata reactor, use `other_node.partial_metadata` instead of `other_node.metadata`. For the same reason, always use the `metadata` parameter to access the current node's metadata, never `node.metadata`.
 
-<div class="alert alert-danger">Be careful when returning <a href="../../guide/api#bundlewraputilsfault">Fault</a> objects from reactors. <strong>All</strong> Fault objects (including those returned from <code>repo.vault.*</code>) will be considered <strong>equal</strong> to one another when BundleWrap inspects the returned metadata to check if anything changed compared to what was returned in an earlier iteration.</div>
-
 
 ### DoNotRunAgain
 
