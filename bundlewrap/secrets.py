@@ -251,7 +251,7 @@ class SecretProxy:
 
     def decrypt(self, cryptotext, key=None):
         return Fault(
-            'bw secrets decrypt {} {}'.format(cryptotext, key),
+            'bw secrets decrypt',
             self._decrypt,
             cryptotext=cryptotext,
             key=key,
@@ -259,7 +259,7 @@ class SecretProxy:
 
     def decrypt_file(self, source_path, key=None):
         return Fault(
-            'bw secrets decrypt_file {} {}'.format(source_path, key),
+            'bw secrets decrypt_file',
             self._decrypt_file,
             source_path=source_path,
             key=key,
@@ -267,7 +267,7 @@ class SecretProxy:
 
     def decrypt_file_as_base64(self, source_path, key=None):
         return Fault(
-            'bw secrets decrypt_file_as_base64 {} {}'.format(source_path, key),
+            'bw secrets decrypt_file_as_base64',
             self._decrypt_file_as_base64,
             source_path=source_path,
             key=key,
@@ -322,13 +322,7 @@ class SecretProxy:
         self._call_log.setdefault(identifier, 0)
         self._call_log[identifier] += 1
         return Fault(
-            'bw secrets human_password {} {} {} {} {}'.format(
-                identifier,
-                digits,
-                key,
-                per_word,
-                words,
-            ),
+            'bw secrets human_password_for',
             self._generate_human_password,
             identifier=identifier,
             digits=digits,
@@ -341,12 +335,7 @@ class SecretProxy:
         self._call_log.setdefault(identifier, 0)
         self._call_log[identifier] += 1
         return Fault(
-            'bw secrets password {} {} {} {}'.format(
-                identifier,
-                key,
-                length,
-                symbols,
-            ),
+            'bw secrets password_for',
             self._generate_password,
             identifier=identifier,
             key=key,
@@ -356,11 +345,7 @@ class SecretProxy:
 
     def random_bytes_as_base64_for(self, identifier, key='generate', length=32):
         return Fault(
-            'bw secrets random_bytes_as_base64 {} {} {}'.format(
-                identifier,
-                key,
-                length,
-            ),
+            'bw secrets random_bytes_as_base64',
             self._generate_random_bytes_as_base64,
             identifier=identifier,
             key=key,

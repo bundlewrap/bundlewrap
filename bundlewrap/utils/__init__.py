@@ -79,6 +79,11 @@ class Fault:
             self.id_list = fault_identifier
         else:
             self.id_list = [fault_identifier]
+
+        for key, value in sorted(kwargs.items()):
+            self.id_list.append(hash(key))
+            self.id_list.append(hash(value))
+
         self._available = None
         self._exc = None
         self._value = None

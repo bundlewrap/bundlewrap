@@ -219,3 +219,12 @@ def test_can_be_used_in_set():
     assert len(s) == 2
     assert 'foo' in [i.value for i in s]
     assert 'bar' in [i.value for i in s]
+
+
+def test_kwargs_add_to_idlist():
+    def callback():
+        return 'foo'
+
+    a = Fault('id foo', callback, foo='bar', baz='bam', frob='glob')
+    b = Fault('id foo', callback, different='kwargs')
+    assert a != b
