@@ -74,7 +74,16 @@ class Fault:
     This let's us gracefully skip items that require information that's
     currently not available.
     """
-    def __init__(self, callback, **kwargs):
+    def __init__(self, fault_identifier, callback, **kwargs):
+        if isinstance(fault_identifier, list):
+            self.id_list = fault_identifier
+        else:
+            self.id_list = [fault_identifier]
+
+        for key, value in sorted(kwargs.items()):
+            self.id_list.append(hash(key))
+            self.id_list.append(hash(value))
+
         self._available = None
         self._exc = None
         self._value = None
@@ -96,21 +105,20 @@ class Fault:
         if isinstance(other, Fault):
             def callback():
                 return self.value + other.value
-            return Fault(callback)
+            return Fault(self.id_list + other.id_list, callback)
         else:
             def callback():
                 return self.value + other
-            return Fault(callback)
+            return Fault(self.id_list + ['raw {}'.format(repr(other))], callback)
 
     def __eq__(self, other):
-        """
-        Always consider Faults as equal. It would arguably be more
-        correct to always assume them to be different, but that would
-        mean that we could never do change detection between two dicts
-        of metadata. So we have no choice but to warn users in docs that
-        Faults will always be considered equal to one another.
-        """
-        return isinstance(other, Fault)
+        if not isinstance(other, Fault):
+            return False
+        else:
+            return self.id_list == other.id_list
+
+    def __hash__(self):
+        return hash(tuple(self.id_list))
 
     def __len__(self):
         return len(self.value)
@@ -124,12 +132,12 @@ class Fault:
     def b64encode(self):
         def callback():
             return b64encode(self.value.encode('UTF-8')).decode('UTF-8')
-        return Fault(callback)
+        return Fault(self.id_list + ['b64encode'], callback)
 
     def format_into(self, format_string):
         def callback():
             return format_string.format(self.value)
-        return Fault(callback)
+        return Fault(self.id_list + ['format_into ' + format_string], callback)
 
     @property
     def is_available(self):
@@ -148,7 +156,7 @@ def _make_method_callback(method_name):
     def method(self, *args, **kwargs):
         def callback():
             return getattr(self.value, method_name)(*args, **kwargs)
-        return Fault(callback)
+        return Fault(self.id_list + [method_name], callback)
     return method
 
 
