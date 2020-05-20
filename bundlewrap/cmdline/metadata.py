@@ -46,6 +46,7 @@ def _colorize_path(
             sources_filtered = True
     if not sources:
         delete_key_at_path(metadata, path)
+        return None
     elif len(sources) == 1:
         if sources_filtered:
             # do not colorize if a key is really mixed-source
@@ -57,6 +58,7 @@ def _colorize_path(
             path,
             colorized_key,
         )
+        return colorized_key
 
 
 def bw_metadata(repo, args):
@@ -102,8 +104,13 @@ def bw_metadata(repo, args):
             # sort descending by key path length since we will be replacing
             # the keys and can't access paths beneath replaced keys anymore
             blame.sort(key=lambda e: len(e[0]), reverse=True)
+
+            filtered_path = (args['keys'] or [""])[0].split("/")
+            if filtered_path == [""]:
+                filtered_path = []
+
             for path, blamed in blame:
-                _colorize_path(
+                colorized_key = _colorize_path(
                     metadata,
                     path,
                     blamed,
@@ -112,10 +119,13 @@ def bw_metadata(repo, args):
                     args['hide_groups'],
                     args['hide_node'],
                 )
+                if colorized_key and list(path) == filtered_path[:len(path)]:
+                    # we just replaced a key in the filtered path
+                    filtered_path[len(path) - 1] = colorized_key
 
             page_lines([
                 force_text(line).replace("\\u001b", "\033")
                 for line in metadata_to_json(
-                    value_at_key_path(metadata, args['keys']),
+                    value_at_key_path(metadata, filtered_path),
                 ).splitlines()
             ])
