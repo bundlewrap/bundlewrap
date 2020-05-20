@@ -22,14 +22,40 @@ def _color_for_source(key, source):
         return key
 
 
-def _colorize_path(metadata, path, src, hide_defaults):
-    if src.startswith("metadata_defaults:") and hide_defaults:
+def _colorize_path(
+    metadata,
+    path,
+    sources,
+    hide_defaults,
+    hide_reactors,
+    hide_groups,
+    hide_node,
+):
+    if not isinstance(value_at_key_path(metadata, path), (dict, list, tuple, set)):
+        # only last source relevant for atomic types
+        sources = [sources[-1]]
+    sources_filtered = False
+    for src in sources.copy():
+        if (
+            (src.startswith("metadata_defaults:") and hide_defaults) or
+            (src.startswith("metadata_reactor:") and hide_reactors) or
+            (src.startswith("group:") and hide_groups) or
+            (src.startswith("node:") and hide_node)
+        ):
+            sources.remove(src)
+            sources_filtered = True
+    if not sources:
         delete_key_at_path(metadata, path)
-    else:
+    elif len(sources) == 1:
+        if sources_filtered:
+            # do not colorize if a key is really mixed-source
+            colorized_key = path[-1]
+        else:
+            colorized_key = _color_for_source(path[-1], sources[0])
         replace_key_at_path(
             metadata,
             path,
-            _color_for_source(path[-1], src),
+            colorized_key,
         )
 
 
@@ -77,12 +103,15 @@ def bw_metadata(repo, args):
             # the keys and can't access paths beneath replaced keys anymore
             blame.sort(key=lambda e: len(e[0]), reverse=True)
             for path, blamed in blame:
-                value = value_at_key_path(metadata, path)
-                if isinstance(value, (dict, list, tuple, set)):
-                    if len(blamed) == 1:
-                        _colorize_path(metadata, path, blamed[0], args['hide_defaults'])
-                else:
-                    _colorize_path(metadata, path, blamed[-1], args['hide_defaults'])
+                _colorize_path(
+                    metadata,
+                    path,
+                    blamed,
+                    args['hide_defaults'],
+                    args['hide_reactors'],
+                    args['hide_groups'],
+                    args['hide_node'],
+                )
 
             for line in metadata_to_json(
                 value_at_key_path(metadata, args['keys']),

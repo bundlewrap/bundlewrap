@@ -546,6 +546,24 @@ def build_parser_bw():
         help=_("hide values set by defaults in metadata.py"),
     )
     parser_metadata.add_argument(
+        "-G", "--hide-groups",
+        action='store_true',
+        dest='hide_groups',
+        help=_("hide values set in groups.py"),
+    )
+    parser_metadata.add_argument(
+        "-N", "--hide-node",
+        action='store_true',
+        dest='hide_node',
+        help=_("hide values set in nodes.py"),
+    )
+    parser_metadata.add_argument(
+        "-R", "--hide-reactors",
+        action='store_true',
+        dest='hide_reactors',
+        help=_("hide values set by reactors in metadata.py"),
+    )
+    parser_metadata.add_argument(
         "-t",
         "--table",
         action='store_true',
