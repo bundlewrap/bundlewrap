@@ -21,6 +21,27 @@ def test_add_fault():
     assert c.value == 'foobar'
 
 
+def test_add_fault_nonstring():
+    def callback_a():
+        return 4
+    def callback_b():
+        return 8
+
+    a = Fault('id foo', callback_a)
+    b = Fault('id bar', callback_b)
+    c = a + b
+    assert c.value == 12
+
+
+def test_add_plain_nonstring():
+    def callback():
+        return 4
+
+    a = Fault('id foo', callback)
+    b = a + 8
+    assert b.value == 12
+
+
 def test_add_plain():
     def callback_a():
         return 'foo'
