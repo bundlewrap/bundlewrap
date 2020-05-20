@@ -337,41 +337,6 @@ def foo_reactor(metadata):
     assert rcode == 0
 
 
-def test_metadatapy_do_not_run_me_again(tmpdir):
-    make_repo(
-        tmpdir,
-        bundles={"test": {}},
-        nodes={
-            "node1": {
-                'bundles': ["test"],
-            },
-        },
-    )
-    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
-        f.write(
-"""called = False
-@metadata_reactor
-def foo_reactor(metadata):
-    global called
-    if not called:
-        called = True
-        raise DoNotRunAgain
-    else:
-        raise AssertionError
-
-
-@metadata_reactor
-def bar_reactor(metadata):
-    return {'called': called}
-""")
-    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
-    assert loads(stdout.decode()) == {
-        "called": True,
-    }
-    assert stderr == b""
-    assert rcode == 0
-
-
 def test_metadatapy_reactor_keyerror_from_metastack(tmpdir):
     make_repo(
         tmpdir,
