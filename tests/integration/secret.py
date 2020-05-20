@@ -185,3 +185,238 @@ def test_random_bytes_as_base64_length(tmpdir):
     assert stdout == b"rg==\n"
     assert stderr == b""
     assert rcode == 0
+
+
+def test_faults_equality_decrypt(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run("bw debug -c 'print(repo.vault.encrypt(\"foo\"))'", path=str(tmpdir))
+    assert stderr == b""
+    assert rcode == 0
+    enc_foo = stdout.decode('utf-8').strip()
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.encrypt(\"bar\"))'", path=str(tmpdir),
+    )
+    assert stderr == b""
+    assert rcode == 0
+    enc_bar = stdout.decode('utf-8').strip()
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.decrypt(\"{}\") == repo.vault.decrypt(\"{}\"))'".format(
+            enc_foo, enc_foo,
+        ),
+        path=str(tmpdir),
+    )
+    assert stdout == b"True\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.decrypt(\"{}\") == repo.vault.decrypt(\"{}\"))'".format(
+            enc_foo, enc_bar,
+        ),
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_faults_equality_decrypt_file(tmpdir):
+    make_repo(tmpdir)
+
+    source_file = join(str(tmpdir), "data", "source")
+    with open(source_file, 'w') as f:
+        f.write("foo")
+    stdout, stderr, rcode = run(
+        "bw debug -c 'repo.vault.encrypt_file(\"{}\", \"{}\")'".format(
+            source_file,
+            "enc_foo",
+        ),
+        path=str(tmpdir),
+    )
+    assert stderr == b""
+    assert rcode == 0
+
+    source_file = join(str(tmpdir), "data", "source")
+    with open(source_file, 'w') as f:
+        f.write("bar")
+    stdout, stderr, rcode = run(
+        "bw debug -c 'repo.vault.encrypt_file(\"{}\", \"{}\")'".format(
+            source_file,
+            "enc_bar",
+        ),
+        path=str(tmpdir),
+    )
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.decrypt_file(\"{}\") == repo.vault.decrypt_file(\"{}\"))'".format(
+            "enc_foo", "enc_foo",
+        ),
+        path=str(tmpdir),
+    )
+    assert stdout == b"True\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.decrypt_file(\"{}\") == repo.vault.decrypt_file(\"{}\"))'".format(
+            "enc_foo", "enc_bar",
+        ),
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_faults_equality_decrypt_file_as_base64(tmpdir):
+    make_repo(tmpdir)
+
+    source_file = join(str(tmpdir), "data", "source")
+    with open(source_file, 'w') as f:
+        f.write("foo")
+    stdout, stderr, rcode = run(
+        "bw debug -c 'repo.vault.encrypt_file(\"{}\", \"{}\")'".format(
+            source_file,
+            "enc_foo",
+        ),
+        path=str(tmpdir),
+    )
+    assert stderr == b""
+    assert rcode == 0
+
+    source_file = join(str(tmpdir), "data", "source")
+    with open(source_file, 'w') as f:
+        f.write("bar")
+    stdout, stderr, rcode = run(
+        "bw debug -c 'repo.vault.encrypt_file(\"{}\", \"{}\")'".format(
+            source_file,
+            "enc_bar",
+        ),
+        path=str(tmpdir),
+    )
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.decrypt_file_as_base64(\"{}\") == repo.vault.decrypt_file_as_base64(\"{}\"))'".format(
+            "enc_foo", "enc_foo",
+        ),
+        path=str(tmpdir),
+    )
+    assert stdout == b"True\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.decrypt_file_as_base64(\"{}\") == repo.vault.decrypt_file_as_base64(\"{}\"))'".format(
+            "enc_foo", "enc_bar",
+        ),
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_faults_equality_decrypt_file_mixed(tmpdir):
+    make_repo(tmpdir)
+
+    source_file = join(str(tmpdir), "data", "source")
+    with open(source_file, 'w') as f:
+        f.write("foo")
+    stdout, stderr, rcode = run(
+        "bw debug -c 'repo.vault.encrypt_file(\"{}\", \"{}\")'".format(
+            source_file,
+            "enc_foo",
+        ),
+        path=str(tmpdir),
+    )
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.decrypt_file_as_base64(\"{}\") == repo.vault.decrypt_file(\"{}\"))'".format(
+            "enc_foo", "enc_foo",
+        ),
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_faults_equality_human_password_for(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.human_password_for(\"a\") == repo.vault.human_password_for(\"a\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"True\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.human_password_for(\"a\") == repo.vault.human_password_for(\"b\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_faults_equality_password_for(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.password_for(\"a\") == repo.vault.password_for(\"a\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"True\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.password_for(\"a\") == repo.vault.password_for(\"b\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_faults_equality_password_for_mixed(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.password_for(\"a\") == repo.vault.human_password_for(\"a\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_faults_equality_random_bytes_as_base64(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.random_bytes_as_base64_for(\"a\") == repo.vault.random_bytes_as_base64_for(\"a\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"True\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.random_bytes_as_base64_for(\"a\") == repo.vault.random_bytes_as_base64_for(\"b\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"False\n"
+    assert stderr == b""
+    assert rcode == 0
