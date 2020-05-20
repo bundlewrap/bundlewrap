@@ -512,7 +512,7 @@ def build_parser_bw():
     )
 
     # bw metadata
-    help_metadata = ("View a JSON representation of a node's metadata")
+    help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red)")
     parser_metadata = subparsers.add_parser(
         "metadata",
         description=help_metadata,
@@ -538,12 +538,6 @@ def build_parser_bw():
         action='store_true',
         dest='blame',
         help=_("show where each piece of metadata comes from"),
-    )
-    parser_metadata.add_argument(
-        "-c", "--colors",
-        action='store_true',
-        dest='color',
-        help=_("colorize metadata sources (defaults grey, reactors green, groups yellow, node red)"),
     )
     parser_metadata.add_argument(
         "-D", "--hide-defaults",

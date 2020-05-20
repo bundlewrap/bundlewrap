@@ -57,11 +57,6 @@ def green(text):
 
 
 @ansi_wrapper
-def grey(text):
-    return "\033[90m{}\033[0m".format(text)
-
-
-@ansi_wrapper
 def red(text):
     return "\033[31m{}\033[0m".format(text)
 

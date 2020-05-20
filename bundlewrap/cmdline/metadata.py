@@ -5,13 +5,13 @@ from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
 from ..utils.dicts import delete_key_at_path, replace_key_at_path, value_at_key_path
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import bold, force_text, green, grey, mark_for_translation as _, red, yellow
+from ..utils.text import blue, bold, force_text, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, page_lines
 
 
 def _color_for_source(key, source):
     if source.startswith("metadata_defaults:"):
-        return grey(key)
+        return blue(key)
     elif source.startswith("metadata_reactor:"):
         return green(key)
     elif source.startswith("group:"):
@@ -22,8 +22,8 @@ def _color_for_source(key, source):
         return key
 
 
-def _colorize_path(args, metadata, path, src):
-    if src.startswith("metadata_defaults:") and args['hide_defaults']:
+def _colorize_path(metadata, path, src, hide_defaults):
+    if src.startswith("metadata_defaults:") and hide_defaults:
         delete_key_at_path(metadata, path)
     else:
         replace_key_at_path(
@@ -71,21 +71,18 @@ def bw_metadata(repo, args):
                         break
             page_lines(render_table(table))
         else:
-            if args['color'] or args['hide_defaults']:
-                metadata = deepcopy_metadata(node.metadata)
-                blame = list(node.metadata_blame.items())
-                # sort descending by key path length since we will be replacing
-                # the keys and can't access paths beneath replaced keys anymore
-                blame.sort(key=lambda e: len(e[0]), reverse=True)
-                for path, blamed in blame:
-                    value = value_at_key_path(metadata, path)
-                    if isinstance(value, (dict, list, tuple, set)):
-                        if len(blamed) == 1:
-                            _colorize_path(args, metadata, path, blamed[0])
-                    else:
-                        _colorize_path(args, metadata, path, blamed[-1])
-            else:
-                metadata = node.metadata
+            metadata = deepcopy_metadata(node.metadata)
+            blame = list(node.metadata_blame.items())
+            # sort descending by key path length since we will be replacing
+            # the keys and can't access paths beneath replaced keys anymore
+            blame.sort(key=lambda e: len(e[0]), reverse=True)
+            for path, blamed in blame:
+                value = value_at_key_path(metadata, path)
+                if isinstance(value, (dict, list, tuple, set)):
+                    if len(blamed) == 1:
+                        _colorize_path(metadata, path, blamed[0], args['hide_defaults'])
+                else:
+                    _colorize_path(metadata, path, blamed[-1], args['hide_defaults'])
 
             for line in metadata_to_json(
                 value_at_key_path(metadata, args['keys']),
