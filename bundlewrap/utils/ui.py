@@ -116,9 +116,14 @@ def page_lines(lines):
     View the given list of Unicode lines in a pager (e.g. `less`).
     """
     lines = list(lines)
-    line_width = max([len(ansi_clean(line)) for line in lines])
-    if TTY and line_width > term_width():
-        pager = Popen([environ.get("PAGER", "/usr/bin/less")], stdin=PIPE)
+    if TTY:
+        env = environ.copy()
+        env["LESS"] = env.get("LESS", "") + " -FR"
+        pager = Popen(
+            [environ.get("PAGER", "/usr/bin/less")],
+            env=env,
+            stdin=PIPE,
+        )
         pager.stdin.write("\n".join(lines).encode('utf-8'))
         pager.stdin.close()
         pager.communicate()

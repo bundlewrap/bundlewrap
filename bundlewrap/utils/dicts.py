@@ -342,6 +342,22 @@ def validate_statedict(sdict):
                     ))
 
 
+def delete_key_at_path(d, path):
+    if len(path) == 1:
+        del d[path[0]]
+    else:
+        delete_key_at_path(d[path[0]], path[1:])
+
+
+def replace_key_at_path(d, path, new_key):
+    if len(path) == 1:
+        value = d[path[0]]
+        del d[path[0]]
+        d[new_key] = value
+    else:
+        replace_key_at_path(d[path[0]], path[1:], new_key)
+
+
 def value_at_key_path(dict_obj, path):
     """
     Given the list of keys in `path`, recursively traverse `dict_obj`

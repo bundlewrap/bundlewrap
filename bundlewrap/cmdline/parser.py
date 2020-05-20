@@ -512,7 +512,7 @@ def build_parser_bw():
     )
 
     # bw metadata
-    help_metadata = ("View a JSON representation of a node's metadata")
+    help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red)")
     parser_metadata = subparsers.add_parser(
         "metadata",
         description=help_metadata,
@@ -534,10 +534,34 @@ def build_parser_bw():
         help=_("print only partial metadata from the given space-separated key path (e.g. `bw metadata mynode users jdoe` to show `mynode.metadata['users']['jdoe']`)"),
     )
     parser_metadata.add_argument(
-        "--blame",
+        "-b", "--blame",
         action='store_true',
         dest='blame',
         help=_("show where each piece of metadata comes from"),
+    )
+    parser_metadata.add_argument(
+        "-D", "--hide-defaults",
+        action='store_true',
+        dest='hide_defaults',
+        help=_("hide values set by defaults in metadata.py"),
+    )
+    parser_metadata.add_argument(
+        "-G", "--hide-groups",
+        action='store_true',
+        dest='hide_groups',
+        help=_("hide values set in groups.py"),
+    )
+    parser_metadata.add_argument(
+        "-N", "--hide-node",
+        action='store_true',
+        dest='hide_node',
+        help=_("hide values set in nodes.py"),
+    )
+    parser_metadata.add_argument(
+        "-R", "--hide-reactors",
+        action='store_true',
+        dest='hide_reactors',
+        help=_("hide values set by reactors in metadata.py"),
     )
     parser_metadata.add_argument(
         "-t",

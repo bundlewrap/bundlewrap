@@ -7,6 +7,12 @@ unreleased
 * removed support for Python 3.4 (BACKWARDS INCOMPATIBLE)
 * removed support for Python 2.7 (BACKWARDS INCOMPATIBLE)
 * added `locking_node` node attribute
+* added `bw metadata -b`
+* added `bw metadata --hide-defaults`
+* added `bw metadata --hide-reactors`
+* added `bw metadata --hide-groups`
+* added `bw metadata --hide-node`
+* added paging and color-coding for metadata sources to `bw metadata`
 * renamed `bw test --metadata-collisions` to `bw test --metadata-conflicts` (BACKWARDS INCOMPATIBLE)
 
 

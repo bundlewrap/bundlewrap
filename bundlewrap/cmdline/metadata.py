@@ -1,12 +1,64 @@
 from decimal import Decimal
 
-from ..metadata import metadata_to_json
+from ..metadata import deepcopy_metadata, metadata_to_json
 from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
-from ..utils.dicts import value_at_key_path
+from ..utils.dicts import delete_key_at_path, replace_key_at_path, value_at_key_path
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import bold, force_text, mark_for_translation as _, red
+from ..utils.text import blue, bold, force_text, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, page_lines
+
+
+def _color_for_source(key, source):
+    if source.startswith("metadata_defaults:"):
+        return blue(key)
+    elif source.startswith("metadata_reactor:"):
+        return green(key)
+    elif source.startswith("group:"):
+        return yellow(key)
+    elif source.startswith("node:"):
+        return red(key)
+    else:
+        return key
+
+
+def _colorize_path(
+    metadata,
+    path,
+    sources,
+    hide_defaults,
+    hide_reactors,
+    hide_groups,
+    hide_node,
+):
+    if not isinstance(value_at_key_path(metadata, path), (dict, list, tuple, set)):
+        # only last source relevant for atomic types
+        sources = [sources[-1]]
+    sources_filtered = False
+    for src in sources.copy():
+        if (
+            (src.startswith("metadata_defaults:") and hide_defaults) or
+            (src.startswith("metadata_reactor:") and hide_reactors) or
+            (src.startswith("group:") and hide_groups) or
+            (src.startswith("node:") and hide_node)
+        ):
+            sources.remove(src)
+            sources_filtered = True
+    if not sources:
+        delete_key_at_path(metadata, path)
+        return None
+    elif len(sources) == 1:
+        if sources_filtered:
+            # do not colorize if a key is really mixed-source
+            colorized_key = path[-1]
+        else:
+            colorized_key = _color_for_source(path[-1], sources[0])
+        replace_key_at_path(
+            metadata,
+            path,
+            colorized_key,
+        )
+        return colorized_key
 
 
 def bw_metadata(repo, args):
@@ -47,7 +99,33 @@ def bw_metadata(repo, args):
                         break
             page_lines(render_table(table))
         else:
-            for line in metadata_to_json(
-                value_at_key_path(node.metadata, args['keys']),
-            ).splitlines():
-                io.stdout(force_text(line))
+            metadata = deepcopy_metadata(node.metadata)
+            blame = list(node.metadata_blame.items())
+            # sort descending by key path length since we will be replacing
+            # the keys and can't access paths beneath replaced keys anymore
+            blame.sort(key=lambda e: len(e[0]), reverse=True)
+
+            filtered_path = (args['keys'] or [""])[0].split("/")
+            if filtered_path == [""]:
+                filtered_path = []
+
+            for path, blamed in blame:
+                colorized_key = _colorize_path(
+                    metadata,
+                    path,
+                    blamed,
+                    args['hide_defaults'],
+                    args['hide_reactors'],
+                    args['hide_groups'],
+                    args['hide_node'],
+                )
+                if colorized_key and list(path) == filtered_path[:len(path)]:
+                    # we just replaced a key in the filtered path
+                    filtered_path[len(path) - 1] = colorized_key
+
+            page_lines([
+                force_text(line).replace("\\u001b", "\033")
+                for line in metadata_to_json(
+                    value_at_key_path(metadata, filtered_path),
+                ).splitlines()
+            ])
