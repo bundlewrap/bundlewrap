@@ -303,12 +303,12 @@ class MetadataJSONEncoder(JSONEncoder):
             raise ValueError(_("illegal metadata value type: {}").format(repr(obj)))
 
 
-def metadata_to_json(metadata):
+def metadata_to_json(metadata, sort_keys=True):
     return dumps(
         metadata,
         cls=MetadataJSONEncoder,
         indent=4,
-        sort_keys=True,
+        sort_keys=sort_keys,
     )
 
 

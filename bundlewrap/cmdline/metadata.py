@@ -1,11 +1,22 @@
+from collections import OrderedDict
 from decimal import Decimal
+from sys import version_info
 
 from ..metadata import deepcopy_metadata, metadata_to_json
 from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
 from ..utils.dicts import delete_key_at_path, replace_key_at_path, value_at_key_path
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import blue, bold, force_text, green, mark_for_translation as _, red, yellow
+from ..utils.text import (
+    ansi_clean,
+    blue,
+    bold,
+    force_text,
+    green,
+    mark_for_translation as _,
+    red,
+    yellow,
+)
 from ..utils.ui import io, page_lines
 
 
@@ -59,6 +70,21 @@ def _colorize_path(
             colorized_key,
         )
         return colorized_key
+
+
+def _sort_dict_colorblind(old_dict):
+    if version_info < (3, 7):
+        new_dict = OrderedDict()
+    else:
+        new_dict = {}
+
+    for key in sorted(old_dict.keys(), key=lambda k: ansi_clean(k)):
+        if isinstance(old_dict[key], dict):
+            new_dict[key] = _sort_dict_colorblind(old_dict[key])
+        else:
+            new_dict[key] = old_dict[key]
+
+    return new_dict
 
 
 def bw_metadata(repo, args):
@@ -123,9 +149,15 @@ def bw_metadata(repo, args):
                     # we just replaced a key in the filtered path
                     filtered_path[len(path) - 1] = colorized_key
 
+            # now we need to recreate the dict, sorting the keys as if
+            # they were not colored (otherwise we'd end up sorted by
+            # color)
+            metadata_sorted = _sort_dict_colorblind(metadata)
+
             page_lines([
                 force_text(line).replace("\\u001b", "\033")
                 for line in metadata_to_json(
-                    value_at_key_path(metadata, filtered_path),
+                    value_at_key_path(metadata_sorted, filtered_path),
+                    sort_keys=False,
                 ).splitlines()
             ])
