@@ -109,7 +109,7 @@ class Fault:
         else:
             def callback():
                 return self.value + other
-            return Fault(self.id_list + ['raw {}'.format(other)], callback)
+            return Fault(self.id_list + ['raw {}'.format(repr(other))], callback)
 
     def __eq__(self, other):
         if not isinstance(other, Fault):
