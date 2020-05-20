@@ -117,6 +117,7 @@ def page_lines(lines):
     """
     lines = list(lines)
     if TTY:
+        write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
         env = environ.copy()
         env["LESS"] = env.get("LESS", "") + " -FR"
         pager = Popen(
@@ -127,6 +128,7 @@ def page_lines(lines):
         pager.stdin.write("\n".join(lines).encode('utf-8'))
         pager.stdin.close()
         pager.communicate()
+        write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
     else:
         for line in lines:
             io.stdout(line)
