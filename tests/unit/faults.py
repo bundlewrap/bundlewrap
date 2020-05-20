@@ -228,3 +228,14 @@ def test_kwargs_add_to_idlist():
     a = Fault('id foo', callback, foo='bar', baz='bam', frob='glob')
     b = Fault('id foo', callback, different='kwargs')
     assert a != b
+
+
+def test_eq_and_hash_do_not_resolve_fault():
+    def callback():
+        raise Exception('Fault resolved, this should not happen')
+
+    a = Fault('id foo', callback)
+    b = Fault('id foo', callback)
+    assert a == b
+
+    s = {a, b}
