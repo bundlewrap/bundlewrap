@@ -25,14 +25,14 @@ from ..utils.ui import io
 
 def bw_apply(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
-    pending_nodes = target_nodes[:]
+    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    pending_nodes = target_nodes.copy()
 
     io.progress_set_total(count_items(pending_nodes))
 
     repo.hooks.apply_start(
         repo,
-        args['target'],
+        args['targets'],
         target_nodes,
         interactive=args['interactive'],
     )
@@ -102,7 +102,7 @@ def bw_apply(repo, args):
 
     repo.hooks.apply_end(
         repo,
-        args['target'],
+        args['targets'],
         target_nodes,
         duration=total_duration,
     )

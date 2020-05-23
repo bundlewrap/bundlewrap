@@ -22,7 +22,7 @@ def test_skip_bundle(tmpdir):
             },
         },
     )
-    result = run("bw apply --skip bundle:test localhost", path=str(tmpdir))
+    result = run("bw apply --skip bundle:test -- localhost", path=str(tmpdir))
     assert result[2] == 0
     assert not exists(join(str(tmpdir), "foo"))
 
@@ -49,7 +49,7 @@ def test_skip_group(tmpdir):
             "foo": {'members': ["localhost"]},
         },
     )
-    result = run("bw apply --skip group:foo localhost", path=str(tmpdir))
+    result = run("bw apply --skip group:foo -- localhost", path=str(tmpdir))
     assert result[2] == 0
     assert not exists(join(str(tmpdir), "foo"))
 
@@ -73,7 +73,7 @@ def test_skip_id(tmpdir):
             },
         },
     )
-    result = run("bw apply --skip file:{} localhost".format(join(str(tmpdir), "foo")), path=str(tmpdir))
+    result = run("bw apply --skip file:{} -- localhost".format(join(str(tmpdir), "foo")), path=str(tmpdir))
     assert result[2] == 0
     assert not exists(join(str(tmpdir), "foo"))
 
@@ -97,7 +97,7 @@ def test_skip_node(tmpdir):
             },
         },
     )
-    result = run("bw apply --skip node:localhost localhost", path=str(tmpdir))
+    result = run("bw apply --skip node:localhost -- localhost", path=str(tmpdir))
     assert result[2] == 0
     assert not exists(join(str(tmpdir), "foo"))
 
@@ -122,7 +122,7 @@ def test_skip_tag(tmpdir):
             },
         },
     )
-    result = run("bw apply --skip tag:nope localhost", path=str(tmpdir))
+    result = run("bw apply --skip tag:nope -- localhost", path=str(tmpdir))
     assert result[2] == 0
     assert not exists(join(str(tmpdir), "foo"))
 
@@ -146,7 +146,7 @@ def test_skip_type(tmpdir):
             },
         },
     )
-    result = run("bw apply --skip file: localhost", path=str(tmpdir))
+    result = run("bw apply --skip file: -- localhost", path=str(tmpdir))
     assert result[2] == 0
     assert not exists(join(str(tmpdir), "foo"))
 
@@ -176,7 +176,7 @@ def test_skip_trigger(tmpdir):
             },
         },
     )
-    result = run("bw apply --skip tag:nope localhost", path=str(tmpdir))
+    result = run("bw apply --skip tag:nope -- localhost", path=str(tmpdir))
     assert result[2] == 0
     assert not exists(join(str(tmpdir), "foo"))
     assert not exists(join(str(tmpdir), "bar"))

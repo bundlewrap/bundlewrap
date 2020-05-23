@@ -52,55 +52,55 @@ def get_node(repo, node_name, adhoc_nodes=False):
             exit(1)
 
 
-HELP_get_target_nodes = _("""expression to select target nodes, i.e.:
-"node1,node2,group3,bundle:foo,!bundle:bar,!group:group4,lambda:node.metadata['magic']<3"
-to select 'node1', 'node2', all nodes in 'group3', all nodes with the
-bundle 'foo', all nodes without bundle 'bar', all nodes not in 'group4'
-and all nodes whose 'magic' metadata is less than three (any exceptions
-in lambda expressions are ignored)
+HELP_get_target_nodes = _("""expression to select target nodes:
+
+my_node            # to select a single node
+my_group           # all nodes in this group
+bundle:my_bundle   # all nodes with this bundle
+!bundle:my_bundle  # all nodes without this bundle
+!group:my_group    # all nodes not in this group
+"lambda:node.metadata_get('foo/magic', 47) < 3"
+                   # all nodes whose metadata["foo"]["magic"] is less than three
 """)
 
 
-def get_target_nodes(repo, target_string, adhoc_nodes=False):
-    targets = []
-    for name in target_string.split(","):
+def get_target_nodes(repo, target_strings, adhoc_nodes=False):
+    targets = set()
+    for name in target_strings:
         name = name.strip()
         if name.startswith("bundle:"):
             bundle_name = name.split(":", 1)[1]
             for node in repo.nodes:
                 if bundle_name in names(node.bundles):
-                    targets.append(node)
+                    targets.add(node)
         elif name.startswith("!bundle:"):
             bundle_name = name.split(":", 1)[1]
             for node in repo.nodes:
                 if bundle_name not in names(node.bundles):
-                    targets.append(node)
+                    targets.add(node)
         elif name.startswith("!group:"):
             group_name = name.split(":", 1)[1]
             for node in repo.nodes:
                 if group_name not in names(node.groups):
-                    targets.append(node)
+                    targets.add(node)
         elif name.startswith("lambda:"):
             expression = eval("lambda node: " + name.split(":", 1)[1])
             for node in repo.nodes:
-                try:
-                    if expression(node):
-                        targets.append(node)
-                except:
-                    pass
+                if expression(node):
+                    targets.add(node)
         else:
             try:
-                targets.append(repo.get_node(name))
+                targets.add(repo.get_node(name))
             except NoSuchNode:
                 try:
-                    targets += list(repo.get_group(name).nodes)
+                    targets.update(repo.get_group(name).nodes)
                 except NoSuchGroup:
                     if adhoc_nodes:
-                        targets.append(repo.create_node(name))
+                        targets.add(repo.create_node(name))
                     else:
                         io.stderr(_("{x} No such node or group: {name}").format(
                             x=red("!!!"),
                             name=name,
                         ))
                         exit(1)
-    return sorted(set(targets))
+    return targets

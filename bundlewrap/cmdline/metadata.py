@@ -5,7 +5,12 @@ from sys import version_info
 from ..metadata import deepcopy_metadata, metadata_to_json
 from ..utils import Fault
 from ..utils.cmdline import get_node, get_target_nodes
-from ..utils.dicts import delete_key_at_path, replace_key_at_path, value_at_key_path
+from ..utils.dicts import (
+    delete_key_at_path,
+    replace_key_at_path,
+    set_key_at_path,
+    value_at_key_path,
+)
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     ansi_clean,
@@ -87,14 +92,30 @@ def _sort_dict_colorblind(old_dict):
     return new_dict
 
 
+def _list_starts_with(list_a, list_b):
+    """
+    Returns True if list_a starts with list_b.
+    """
+    list_a = tuple(list_a)
+    list_b = tuple(list_b)
+    try:
+        return list_a[:len(list_b)] == list_b
+    except IndexError:
+        return False
+
+
 def bw_metadata(repo, args):
-    if args['table']:
-        if not args['keys']:
-            io.stdout(_("{x} at least one key is required with --table").format(x=red("!!!")))
+    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    key_paths = sorted([path.strip().split("/") for path in args['keys']])
+    if len(target_nodes) > 1:
+        if not key_paths:
+            io.stdout(_("{x} at least one key is required when viewing multiple nodes").format(x=red("!!!")))
             exit(1)
-        target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
-        key_paths = [path.strip().split(" ") for path in " ".join(args['keys']).split(",")]
-        table = [[bold(_("node"))] + [bold(" ".join(path)) for path in key_paths], ROW_SEPARATOR]
+        if args['blame']:
+            io.stdout(_("{x} blame information can only be shown for a single node").format(x=red("!!!")))
+            exit(1)
+
+        table = [[bold(_("node"))] + [bold("/".join(path)) for path in key_paths], ROW_SEPARATOR]
         for node in target_nodes:
             values = []
             for key_path in key_paths:
@@ -113,12 +134,11 @@ def bw_metadata(repo, args):
             table.append([bold(node.name)] + values)
         page_lines(render_table(table))
     else:
-        node = get_node(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+        node = target_nodes.pop()
         if args['blame']:
-            key_paths = [path.strip() for path in " ".join(args['keys']).split(",")]
             table = [[bold(_("path")), bold(_("source"))], ROW_SEPARATOR]
             for path, blamed in sorted(node.metadata_blame.items()):
-                joined_path = " ".join(path)
+                joined_path = "/".join(path)
                 for key_path in key_paths:
                     if joined_path.startswith(key_path):
                         table.append([joined_path, ", ".join(blamed)])
@@ -131,11 +151,21 @@ def bw_metadata(repo, args):
             # the keys and can't access paths beneath replaced keys anymore
             blame.sort(key=lambda e: len(e[0]), reverse=True)
 
-            filtered_path = (args['keys'] or [""])[0].split("/")
-            if filtered_path == [""]:
-                filtered_path = []
-
             for path, blamed in blame:
+                if key_paths:
+                    # remove all paths we did not ask to see
+                    path_seen = False
+                    for filtered_path in key_paths:
+                        if (
+                            _list_starts_with(path, filtered_path) or
+                            _list_starts_with(filtered_path, path)
+                        ):
+                            path_seen = True
+                            break
+                    if not path_seen:
+                        delete_key_at_path(metadata, path)
+                        continue
+
                 colorized_key = _colorize_path(
                     metadata,
                     path,
@@ -145,9 +175,10 @@ def bw_metadata(repo, args):
                     args['hide_groups'],
                     args['hide_node'],
                 )
-                if colorized_key and list(path) == filtered_path[:len(path)]:
-                    # we just replaced a key in the filtered path
-                    filtered_path[len(path) - 1] = colorized_key
+                for key_path in key_paths:
+                    if colorized_key and list(path) == key_path[:len(path)]:
+                        # we just replaced a key in the filtered path
+                        key_path[len(path) - 1] = colorized_key
 
             # now we need to recreate the dict, sorting the keys as if
             # they were not colored (otherwise we'd end up sorted by
@@ -157,7 +188,7 @@ def bw_metadata(repo, args):
             page_lines([
                 force_text(line).replace("\\u001b", "\033")
                 for line in metadata_to_json(
-                    value_at_key_path(metadata_sorted, filtered_path),
+                    metadata_sorted,
                     sort_keys=False,
                 ).splitlines()
             ])

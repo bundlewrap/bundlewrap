@@ -420,7 +420,7 @@ class Node:
         True if this node should be skipped based on the given selector
         string (e.g. "node:foo,group:bar").
         """
-        components = [c.strip() for c in autoskip_selector.split(",")]
+        components = [c.strip() for c in autoskip_selector]
         if "node:{}".format(self.name) in components:
             return True
         for group in self.groups:
@@ -701,6 +701,8 @@ class Node:
         return self.repo._metadata_for_node(self.name, partial=False, stack=True)
 
     def metadata_get(self, path, default=NO_DEFAULT):
+        if not isinstance(path, (tuple, list)):
+            path = path.split("/")
         try:
             return value_at_key_path(self.metadata, path)
         except KeyError:

@@ -10,14 +10,14 @@ GROUP_ATTRS_LISTS = ('nodes',)
 
 def bw_groups(repo, args):
     if not args['groups']:
-        for group in repo.groups:
+        for group in sorted(repo.groups):
             io.stdout(group.name)
     else:
-        groups = [repo.get_group(group.strip()) for group in args['groups'].split(",")]
+        groups = {repo.get_group(group.strip()) for group in args['groups']}
         if not args['attrs']:
-            subgroups = set(groups)
+            subgroups = groups.copy()
             for group in groups:
-                subgroups = subgroups.union(group.subgroups)
+                subgroups.update(group.subgroups)
             for subgroup in sorted(subgroups):
                 io.stdout(subgroup.name)
         else:

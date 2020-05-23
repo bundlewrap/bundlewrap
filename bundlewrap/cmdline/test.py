@@ -282,8 +282,8 @@ def bw_test(repo, args):
         args['plugin_conflicts'] or
         args['subgroup_loops']
     )
-    if args['target']:
-        nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+    if args['targets']:
+        nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
         if not options_selected:
             args['hooks_node'] = True
             args['items'] = True

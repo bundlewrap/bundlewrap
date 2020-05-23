@@ -110,13 +110,13 @@ def stats_summary(results, include_stdout, include_stderr):
 
 def bw_run(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
-    pending_nodes = target_nodes[:]
+    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    pending_nodes = target_nodes.copy()
     io.progress_set_total(len(pending_nodes))
 
     repo.hooks.run_start(
         repo,
-        args['target'],
+        args['targets'],
         target_nodes,
         args['command'],
     )
@@ -170,7 +170,7 @@ def bw_run(repo, args):
 
     repo.hooks.run_end(
         repo,
-        args['target'],
+        args['targets'],
         target_nodes,
         args['command'],
         duration=datetime.now() - start_time,
