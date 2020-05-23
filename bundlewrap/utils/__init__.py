@@ -14,9 +14,8 @@ from requests import get
 
 from ..exceptions import DontCache, FaultUnavailable
 
-__GETATTR_CODE_CACHE = {}
-__GETATTR_RESULT_CACHE = {}
-__GETATTR_NODEFAULT = "very_unlikely_default_value"
+
+NO_DEFAULT = "Very unlikely default value used by BundleWrap to indicate no default was provided"
 
 
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
