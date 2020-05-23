@@ -2,7 +2,7 @@ from datetime import datetime
 from getpass import getuser
 import json
 from os import environ
-from pipes import quote
+from shlex import quote
 from socket import gethostname
 from time import time
 

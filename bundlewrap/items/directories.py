@@ -1,6 +1,6 @@
 from collections import defaultdict
 from os.path import normpath
-from pipes import quote
+from shlex import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item

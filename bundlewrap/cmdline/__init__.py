@@ -2,7 +2,7 @@ from cProfile import Profile
 from functools import wraps
 from os import environ
 from os.path import abspath
-from pipes import quote
+from shlex import quote
 from sys import argv, exit, stderr, stdout
 from traceback import format_exc, print_exc
 

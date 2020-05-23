@@ -3,7 +3,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 from os.path import basename, dirname, exists, join, normpath
-from pipes import quote
+from shlex import quote
 from subprocess import call
 from sys import exc_info
 from traceback import format_exception

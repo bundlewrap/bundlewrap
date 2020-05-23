@@ -1,5 +1,5 @@
 from datetime import datetime
-from pipes import quote
+from shlex import quote
 from select import select
 from shlex import split
 from subprocess import Popen, PIPE

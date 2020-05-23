@@ -1,4 +1,4 @@
-from pipes import quote
+from shlex import quote
 from subprocess import CalledProcessError, check_output, STDOUT
 
 from .text import mark_for_translation as _
