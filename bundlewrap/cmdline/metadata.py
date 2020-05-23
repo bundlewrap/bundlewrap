@@ -116,7 +116,7 @@ def bw_metadata(repo, args):
             exit(1)
 
         table = [[bold(_("node"))] + [bold("/".join(path)) for path in key_paths], ROW_SEPARATOR]
-        for node in target_nodes:
+        for node in sorted(target_nodes):
             values = []
             for key_path in key_paths:
                 metadata = node.metadata
