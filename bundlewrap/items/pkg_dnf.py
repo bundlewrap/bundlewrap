@@ -1,4 +1,4 @@
-from pipes import quote
+from shlex import quote
 
 from bundlewrap.items.pkg import Pkg
 

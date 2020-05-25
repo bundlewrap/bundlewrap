@@ -23,7 +23,7 @@ def test_hostname(tmpdir):
         groups={"all": {'members': ["node1"]}},
         nodes={"node1": {'hostname': "node1.example.com"}},
     )
-    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes all hostname | cut -f 2", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes all -a hostname | cut -f 2", path=str(tmpdir))
     assert stdout == b"node1.example.com\n"
     assert stderr == b""
     assert rcode == 0
@@ -42,7 +42,7 @@ def test_bundles(tmpdir):
             "node2": {'bundles': ["bundle2"]},
         },
     )
-    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes all bundles | grep node1 | cut -f 2", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes all -a bundles | grep node1 | cut -f 2", path=str(tmpdir))
     assert stdout.decode().strip().split("\n") == ["bundle1", "bundle2"]
     assert stderr == b""
     assert rcode == 0
@@ -72,7 +72,7 @@ def test_bundles_via_group(tmpdir):
             },
         },
     )
-    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes node1 bundles | cut -f 2", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes node1 -a bundles | cut -f 2", path=str(tmpdir))
     assert stdout.decode().strip().split("\n") == ["bundle1", "bundle2", "bundle3"]
     assert stderr == b""
     assert rcode == 0

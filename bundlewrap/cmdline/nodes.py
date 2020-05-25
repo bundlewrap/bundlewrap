@@ -22,7 +22,7 @@ def _attribute_table(
     inline,
 ):
     rows = [[entity_label], ROW_SEPARATOR]
-    selected_attrs = [attr.strip() for attr in selected_attrs.split(",")]
+    selected_attrs = [attr.strip() for attr in selected_attrs]
     if selected_attrs == ['all']:
         selected_attrs = available_attrs
     for attr in selected_attrs:
@@ -31,7 +31,7 @@ def _attribute_table(
             exit(1)
         rows[0].append(bold(attr))
     has_list_attrs = False
-    for entity in entities:
+    for entity in sorted(entities):
         attr_values = [[entity.name]]
         for attr in selected_attrs:
             if attr in available_attrs_lists:
@@ -64,12 +64,12 @@ def _attribute_table(
 
 
 def bw_nodes(repo, args):
-    if args['target'] is not None:
-        nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+    if args['targets']:
+        nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
     else:
         nodes = repo.nodes
     if not args['attrs']:
-        for node in nodes:
+        for node in sorted(nodes):
             io.stdout(node.name)
     else:
         _attribute_table(

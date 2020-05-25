@@ -9,7 +9,7 @@ def test_metadata(tmpdir):
             "node2": {'metadata': {"key": "value2"}},
         },
     )
-    stdout, stderr, rcode = run("bw diff -m node1,node2", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw diff -m node1 node2", path=str(tmpdir))
     assert b"value1" in stdout
     assert b"value2" in stdout
     assert stderr == b""
@@ -40,7 +40,7 @@ def test_file_items(tmpdir):
             },
         },
     )
-    stdout, stderr, rcode = run("bw diff -i file:/tmp/test node1,node2", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw diff -i file:/tmp/test -- node1 node2", path=str(tmpdir))
     assert b"one" in stdout
     assert b"two" in stdout
     assert stderr == b""
@@ -78,7 +78,7 @@ def test_whole_node(tmpdir):
             },
         },
     )
-    stdout, stderr, rcode = run("bw diff node1,node2", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw diff node1 node2", path=str(tmpdir))
     assert b"/tmp/foo" in stdout
     assert b"/tmp/bar" not in stdout
     assert stderr == b""

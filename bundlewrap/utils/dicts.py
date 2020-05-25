@@ -358,6 +358,13 @@ def replace_key_at_path(d, path, new_key):
         replace_key_at_path(d[path[0]], path[1:], new_key)
 
 
+def set_key_at_path(d, path, value):
+    if len(path) == 1:
+        d[path[0]] = value
+    else:
+        set_key_at_path(d[path[0]], path[1:], value)
+
+
 def value_at_key_path(dict_obj, path):
     """
     Given the list of keys in `path`, recursively traverse `dict_obj`

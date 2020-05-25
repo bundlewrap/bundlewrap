@@ -1,4 +1,4 @@
-from pipes import quote
+from shlex import quote
 import re
 
 from bundlewrap.exceptions import BundleError

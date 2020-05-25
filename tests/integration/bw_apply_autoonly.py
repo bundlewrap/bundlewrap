@@ -34,7 +34,7 @@ def test_only_bundle_with_dep(tmpdir):
         },
     )
 
-    run("bw apply -o bundle:test localhost", path=str(tmpdir))
+    run("bw apply -o bundle:test -- localhost", path=str(tmpdir))
     assert exists(join(str(tmpdir), "foo"))
     assert exists(join(str(tmpdir), "bar"))
     assert not exists(join(str(tmpdir), "baz"))

@@ -25,7 +25,7 @@ from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import hash_metadata
-from .utils import cached_property, names
+from .utils import cached_property, names, NO_DEFAULT
 from .utils.dicts import hash_statedict, value_at_key_path
 from .utils.text import (
     blue,
@@ -420,7 +420,7 @@ class Node:
         True if this node should be skipped based on the given selector
         string (e.g. "node:foo,group:bar").
         """
-        components = [c.strip() for c in autoskip_selector.split(",")]
+        components = [c.strip() for c in autoskip_selector]
         if "node:{}".format(self.name) in components:
             return True
         for group in self.groups:
@@ -700,8 +700,16 @@ class Node:
     def _metadata_stack(self):
         return self.repo._metadata_for_node(self.name, partial=False, stack=True)
 
-    def metadata_get(self, path):
-        return value_at_key_path(self.metadata, path)
+    def metadata_get(self, path, default=NO_DEFAULT):
+        if not isinstance(path, (tuple, list)):
+            path = path.split("/")
+        try:
+            return value_at_key_path(self.metadata, path)
+        except KeyError:
+            if default != NO_DEFAULT:
+                return default
+            else:
+                raise
 
     def metadata_hash(self):
         return hash_metadata(self.metadata)

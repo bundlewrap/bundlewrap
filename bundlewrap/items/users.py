@@ -1,5 +1,5 @@
 from logging import ERROR, getLogger
-from pipes import quote
+from shlex import quote
 from string import ascii_lowercase, digits
 
 from passlib.hash import bcrypt, md5_crypt, sha256_crypt, sha512_crypt

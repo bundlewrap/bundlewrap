@@ -1,4 +1,4 @@
-from argparse import ArgumentParser, SUPPRESS
+from argparse import ArgumentParser, RawTextHelpFormatter, SUPPRESS
 from os import environ, getcwd
 
 from .. import VERSION_STRING
@@ -86,11 +86,17 @@ def build_parser_bw():
 
     # bw apply
     help_apply = _("Applies the configuration defined in your repository to your nodes")
-    parser_apply = subparsers.add_parser("apply", description=help_apply, help=help_apply)
+    parser_apply = subparsers.add_parser(
+        "apply",
+        description=help_apply,
+        help=help_apply,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
     parser_apply.set_defaults(func=bw_apply)
     parser_apply.add_argument(
-        'target',
-        metavar=_("TARGETS"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
@@ -113,16 +119,18 @@ def build_parser_bw():
     parser_apply.add_argument(
         "-o",
         "--only",
-        default="",
+        default=[],
         dest='autoonly',
-        help=_(
-            "e.g. 'file:/foo,tag:foo,bundle:bar' "
-            "to skip EVERYTHING BUT all instances of file:/foo "
-            "and items with tag 'foo', "
-            "or in bundle 'bar', "
-            "or a dependency of any of these"
-        ),
+        help=_("""skip all items not matching any SELECTOR:
+
+file:/my_path     # this specific item
+tag:my_tag        # items with this tag
+bundle:my_bundle  # items in this bundle
+
+dependencies of selected items will NOT be skipped
+        """),
         metavar=_("SELECTOR"),
+        nargs='+',
         type=str,
     )
     bw_apply_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
@@ -148,15 +156,16 @@ def build_parser_bw():
     parser_apply.add_argument(
         "-s",
         "--skip",
-        default="",
+        default=[],
         dest='autoskip',
-        help=_(
-            "e.g. 'file:/foo,tag:foo,bundle:bar' "
-            "to skip all instances of file:/foo "
-            "and items with tag 'foo', "
-            "or in bundle 'bar'"
-        ),
+        help=_("""skip items matching any SELECTOR:
+
+file:/my_path     # this specific item
+tag:my_tag        # items with this tag
+bundle:my_bundle  # items in this bundle
+        """),
         metavar=_("SELECTOR"),
+        nargs='+',
         type=str,
     )
     parser_apply.add_argument(
@@ -206,7 +215,12 @@ def build_parser_bw():
 
     # bw diff
     help_diff = _("Show differences between nodes")
-    parser_diff = subparsers.add_parser("diff", description=help_diff, help=help_diff)
+    parser_diff = subparsers.add_parser(
+        "diff",
+        description=help_diff,
+        help=help_diff,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
     parser_diff.set_defaults(func=bw_diff)
     parser_diff.add_argument(
         "-b",
@@ -265,8 +279,9 @@ def build_parser_bw():
         help=_("compare metadata instead of configuration"),
     )
     parser_diff.add_argument(
-        'target',
-        metavar=_("TARGETS"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
@@ -275,6 +290,15 @@ def build_parser_bw():
     help_groups = _("Lists groups in this repository")
     parser_groups = subparsers.add_parser("groups", description=help_groups, help=help_groups)
     parser_groups.set_defaults(func=bw_groups)
+    parser_groups.add_argument(
+        "-a", "--attrs",
+        dest='attrs',
+        metavar=_("ATTR"),
+        nargs='+',
+        type=str,
+        help=_("show table with the given attributes for each group "
+               "(e.g. 'all', 'members', 'os', ...)"),
+    )
     parser_groups.add_argument(
         "-i",
         "--inline",
@@ -285,19 +309,10 @@ def build_parser_bw():
     parser_groups.add_argument(
         'groups',
         default=None,
-        metavar=_("GROUP1,GROUP2..."),
-        nargs='?',
+        metavar=_("GROUP"),
+        nargs='*',
         type=str,
-        help=_("show the given groups and their subgroups"),
-    )
-    parser_groups.add_argument(
-        'attrs',
-        default=None,
-        metavar=_("ATTR1,ATTR2..."),
-        nargs='?',
-        type=str,
-        help=_("show table with the given attributes for each group "
-               "(e.g. 'all', 'members', 'os', ...)"),
+        help=_("show the given groups (and their subgroups, unless --attrs is used)"),
     )
 
     # bw hash
@@ -400,7 +415,11 @@ def build_parser_bw():
 
     # bw lock
     help_lock = _("Manage locks on nodes used to prevent collisions between BundleWrap users")
-    parser_lock = subparsers.add_parser("lock", description=help_lock, help=help_lock)
+    parser_lock = subparsers.add_parser(
+        "lock",
+        description=help_lock,
+        help=help_lock,
+    )
     parser_lock_subparsers = parser_lock.add_subparsers()
 
     # bw lock add
@@ -409,11 +428,13 @@ def build_parser_bw():
         "add",
         description=help_lock_add,
         help=help_lock_add,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_lock_add.set_defaults(func=bw_lock_add)
     parser_lock_add.add_argument(
-        'target',
-        metavar=_("TARGETS"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
@@ -438,10 +459,16 @@ def build_parser_bw():
     parser_lock_add.add_argument(
         "-i",
         "--items",
-        default="*",
+        default=["*"],
         dest='items',
-        help=_("comma-separated list of item selectors the lock applies to "
-               "(defaults to \"*\" meaning all)"),
+        help=_("""lock only items matching any SELECTOR:
+
+file:/my_path     # this specific item
+tag:my_tag        # items with this tag
+bundle:my_bundle  # items in this bundle
+        """),
+        metavar=_("SELECTOR"),
+        nargs='+',
         type=str,
     )
     bw_lock_add_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
@@ -461,11 +488,13 @@ def build_parser_bw():
         "remove",
         description=help_lock_remove,
         help=help_lock_remove,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_lock_remove.set_defaults(func=bw_lock_remove)
     parser_lock_remove.add_argument(
-        'target',
-        metavar=_("TARGETS"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
@@ -492,11 +521,13 @@ def build_parser_bw():
         "show",
         description=help_lock_show,
         help=help_lock_show,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_lock_show.set_defaults(func=bw_lock_show)
     parser_lock_show.add_argument(
-        'target',
+        'targets',
         metavar=_("TARGETS"),
+        nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
@@ -512,26 +543,29 @@ def build_parser_bw():
     )
 
     # bw metadata
-    help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red)")
+    help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red) or a table of selected metadata keys from multiple nodes")
     parser_metadata = subparsers.add_parser(
         "metadata",
         description=help_metadata,
         help=help_metadata,
+        formatter_class=RawTextHelpFormatter,
     )
     parser_metadata.set_defaults(func=bw_metadata)
     parser_metadata.add_argument(
-        'target',
-        metavar=_("NODE"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
-        help=_("node to print JSON-formatted metadata for"),
+        help=HELP_get_target_nodes,
     )
     parser_metadata.add_argument(
-        'keys',
+        "-k", "--keys",
         default=[],
+        dest='keys',
         metavar=_("KEY"),
         nargs='*',
         type=str,
-        help=_("print only partial metadata from the given space-separated key path (e.g. `bw metadata mynode users jdoe` to show `mynode.metadata['users']['jdoe']`)"),
+        help=_("show only partial metadata from the given key paths (e.g. `bw metadata mynode -k users/jdoe` to show `mynode.metadata['users']['jdoe']`)"),
     )
     parser_metadata.add_argument(
         "-b", "--blame",
@@ -563,21 +597,15 @@ def build_parser_bw():
         dest='hide_reactors',
         help=_("hide values set by reactors in metadata.py"),
     )
-    parser_metadata.add_argument(
-        "-t",
-        "--table",
-        action='store_true',
-        dest='table',
-        help=_(
-            "show a table of selected metadata values from multiple nodes instead; "
-            "allows for multiple comma-separated paths in KEY; "
-            "allows for node selectors in NODE (e.g. 'NODE1,NODE2,GROUP1,bundle:BUNDLE1...')"
-        ),
-    )
 
     # bw nodes
     help_nodes = _("List nodes in this repository")
-    parser_nodes = subparsers.add_parser("nodes", description=help_nodes, help=help_nodes)
+    parser_nodes = subparsers.add_parser(
+        "nodes",
+        description=help_nodes,
+        help=help_nodes,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
     parser_nodes.set_defaults(func=bw_nodes)
     parser_nodes.add_argument(
         "-i",
@@ -587,18 +615,20 @@ def build_parser_bw():
         help=_("keep lists on a single line (for grep)"),
     )
     parser_nodes.add_argument(
-        'target',
+        'targets',
         default=None,
-        metavar=_("TARGETS"),
-        nargs='?',
+        metavar=_("TARGET"),
+        nargs='*',
         type=str,
         help=HELP_get_target_nodes,
     )
     parser_nodes.add_argument(
-        'attrs',
+        "-a",
+        "--attrs",
         default=None,
-        metavar=_("ATTR1,ATTR2..."),
-        nargs='?',
+        dest='attrs',
+        metavar=_("ATTR"),
+        nargs='+',
         type=str,
         help=_("show table with the given attributes for each node "
                "(e.g. 'all', 'groups', 'bundles', 'hostname', 'os', ...)"),
@@ -805,11 +835,17 @@ def build_parser_bw():
 
     # bw run
     help_run = _("Run a one-off command on a number of nodes")
-    parser_run = subparsers.add_parser("run", description=help_run, help=help_run)
+    parser_run = subparsers.add_parser(
+        "run",
+        description=help_run,
+        help=help_run,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
     parser_run.set_defaults(func=bw_run)
     parser_run.add_argument(
-        'target',
-        metavar=_("TARGETS"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
@@ -875,15 +911,20 @@ def build_parser_bw():
                   "change in future releases). Currently, the default is -IJKM "
                   "if specific nodes are given and -HIJKMS if testing the "
                   "entire repo.")
-    parser_test = subparsers.add_parser("test", description=help_test, help=help_test)
+    parser_test = subparsers.add_parser(
+        "test",
+        description=help_test,
+        help=help_test,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
     parser_test.set_defaults(func=bw_test)
     parser_test.add_argument(
-        'target',
+        'targets',
         default=None,
-        metavar=_("TARGETS"),
-        nargs='?',
+        metavar=_("TARGET"),
+        nargs='*',
         type=str,
-        help=HELP_get_target_nodes + _(" (defaults to all)"),
+        help=HELP_get_target_nodes + _("\n(defaults to all)"),
     )
     parser_test.add_argument(
         "-c",
@@ -991,11 +1032,17 @@ def build_parser_bw():
 
     # bw verify
     help_verify = _("Inspect the health or 'correctness' of a node without changing it")
-    parser_verify = subparsers.add_parser("verify", description=help_verify, help=help_verify)
+    parser_verify = subparsers.add_parser(
+        "verify",
+        description=help_verify,
+        help=help_verify,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
     parser_verify.set_defaults(func=bw_verify)
     parser_verify.add_argument(
-        'target',
-        metavar=_("TARGETS"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )

@@ -113,7 +113,7 @@ def stats_summary(node_stats, total_duration):
 def bw_verify(repo, args):
     errors = []
     node_stats = {}
-    pending_nodes = get_target_nodes(repo, args['target'], adhoc_nodes=args['adhoc_nodes'])
+    pending_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
     start_time = datetime.now()
     io.progress_set_total(count_items(pending_nodes))
 

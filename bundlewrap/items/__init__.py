@@ -348,23 +348,21 @@ class Item:
         skipped based on the given set of locks.
         """
         for lock in mine:
-            for selector in lock['items']:
-                if self.covered_by_autoskip_selector(selector):
-                    io.debug(_("{item} on {node} whitelisted by lock {lock}").format(
-                        item=self.id,
-                        lock=lock['id'],
-                        node=self.node.name,
-                    ))
-                    return False
+            if self.covered_by_autoskip_selector(lock['items']):
+                io.debug(_("{item} on {node} whitelisted by lock {lock}").format(
+                    item=self.id,
+                    lock=lock['id'],
+                    node=self.node.name,
+                ))
+                return False
         for lock in others:
-            for selector in lock['items']:
-                if self.covered_by_autoskip_selector(selector):
-                    io.debug(_("{item} on {node} blacklisted by lock {lock}").format(
-                        item=self.id,
-                        lock=lock['id'],
-                        node=self.node.name,
-                    ))
-                    return True
+            if self.covered_by_autoskip_selector(lock['items']):
+                io.debug(_("{item} on {node} blacklisted by lock {lock}").format(
+                    item=self.id,
+                    lock=lock['id'],
+                    node=self.node.name,
+                ))
+                return True
         return False
 
     def _test(self):
@@ -440,8 +438,8 @@ class Item:
 
     def apply(
         self,
-        autoskip_selector="",
-        autoonly_selector="",
+        autoskip_selector=[],
+        autoonly_selector=[],
         my_soft_locks=(),
         other_peoples_soft_locks=(),
         interactive=False,
@@ -641,7 +639,7 @@ class Item:
         True if this item should be skipped based on the given selector
         string (e.g. "tag:foo,bundle:bar").
         """
-        components = [c.strip() for c in autoskip_selector.split(",")]
+        components = [c.strip() for c in autoskip_selector]
         if (
             "*" in components or
             self.id in components or
@@ -661,7 +659,7 @@ class Item:
         """
         if not autoonly_selector:
             return True
-        components = [c.strip() for c in autoonly_selector.split(",")]
+        components = [c.strip() for c in autoonly_selector]
         if (
             self.id in components or
             "bundle:{}".format(self.bundle.name) in components or

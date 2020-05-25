@@ -1,4 +1,4 @@
-from pipes import quote
+from shlex import quote
 
 from . import cached_property
 from .text import force_text, mark_for_translation as _

@@ -55,13 +55,13 @@ def bw_hash(repo, args):
     if args['dict']:
         if args['group_membership']:
             if target_type in ('node', 'repo'):
-                for group in target.groups:
+                for group in sorted(target.groups):
                     io.stdout(group.name)
             else:
-                for node in target.nodes:
+                for node in sorted(target.nodes):
                     io.stdout(node.name)
         elif args['metadata']:
-            for node in target.nodes:
+            for node in sorted(target.nodes):
                 io.stdout("{}\t{}".format(node.name, node.metadata_hash()))
         else:
             cdict = target.cached_cdict if args['item'] else target.cdict
@@ -69,7 +69,10 @@ def bw_hash(repo, args):
                 io.stdout("REMOVE")
             else:
                 for key, value in sorted(cdict.items()):
-                    io.stdout("{}\t{}".format(key, value) if args['item'] else "{}  {}".format(value, key))
+                    io.stdout(
+                        "{}\t{}".format(key, value) if args['item']
+                        else "{}  {}".format(value, key)
+                    )
     else:
         if args['group_membership']:
             io.stdout(target.group_membership_hash())
