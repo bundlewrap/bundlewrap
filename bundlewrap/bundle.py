@@ -63,12 +63,16 @@ class Bundle:
         if not exists(self.bundle_file):
             return {}
         else:
+            base_env={
+                'node': self.node,
+                'repo': self.repo,
+            }
+            for item_class in self.repo.item_classes:
+                base_env[item_class.BUNDLE_ATTRIBUTE_NAME] = {}
+
             return self.repo.get_all_attrs_from_file(
                 self.bundle_file,
-                base_env={
-                    'node': self.node,
-                    'repo': self.repo,
-                },
+                base_env=base_env,
             )
 
     @cached_property
