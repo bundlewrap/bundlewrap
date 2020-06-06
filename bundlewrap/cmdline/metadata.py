@@ -4,11 +4,10 @@ from sys import version_info
 
 from ..metadata import deepcopy_metadata, metadata_to_json
 from ..utils import Fault
-from ..utils.cmdline import get_node, get_target_nodes
+from ..utils.cmdline import get_target_nodes
 from ..utils.dicts import (
     delete_key_at_path,
     replace_key_at_path,
-    set_key_at_path,
     value_at_key_path,
 )
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -105,7 +104,7 @@ def _list_starts_with(list_a, list_b):
 
 
 def bw_metadata(repo, args):
-    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = get_target_nodes(repo, args['targets'])
     key_paths = sorted([path.strip().split("/") for path in args['keys']])
     if len(target_nodes) > 1:
         if not key_paths:

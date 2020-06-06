@@ -8,6 +8,7 @@ unreleased
 * removed support for Python 2.7 (BACKWARDS INCOMPATIBLE)
 * removed `members` attribute for groups (BACKWARDS INCOMPATIBLE)
 * removed `members_add/remove` attribute for groups (BACKWARDS INCOMPATIBLE)
+* removed `bw --adhoc-nodes` (BACKWARDS INCOMPATIBLE)
 * added `locking_node` node attribute
 * added `bw metadata -b`
 * added `bw metadata --hide-defaults`

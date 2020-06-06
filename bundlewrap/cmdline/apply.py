@@ -25,7 +25,7 @@ from ..utils.ui import io
 
 def bw_apply(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = get_target_nodes(repo, args['targets'])
     pending_nodes = target_nodes.copy()
 
     io.progress_set_total(count_items(pending_nodes))

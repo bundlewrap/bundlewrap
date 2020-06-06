@@ -28,15 +28,11 @@ def bw_hash(repo, args):
                 target = repo.get_group(args['node_or_group'])
                 target_type = 'group'
             except NoSuchGroup:
-                if args['adhoc_nodes']:
-                    target = repo.create_node(args['node_or_group'])
-                    target_type = 'node'
-                else:
-                    io.stderr(_("{x} No such node or group: {node_or_group}").format(
-                        node_or_group=args['node_or_group'],
-                        x=red("!!!"),
-                    ))
-                    exit(1)
+                io.stderr(_("{x} No such node or group: {node_or_group}").format(
+                    node_or_group=args['node_or_group'],
+                    x=red("!!!"),
+                ))
+                exit(1)
         else:
             if args['item']:
                 target = get_item(target, args['item'])

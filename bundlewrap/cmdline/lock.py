@@ -37,7 +37,7 @@ def remove_lock_if_present(node, lock_id):
 
 def bw_lock_add(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = get_target_nodes(repo, args['targets'])
     target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     max_node_name_length = max([len(node.name) for node in target_nodes])
@@ -91,7 +91,7 @@ def bw_lock_add(repo, args):
 
 def bw_lock_remove(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = get_target_nodes(repo, args['targets'])
     target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     max_node_name_length = max([len(node.name) for node in target_nodes])
@@ -147,7 +147,7 @@ def bw_lock_remove(repo, args):
 
 def bw_lock_show(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = get_target_nodes(repo, args['targets'])
     target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     locks_on_node = {}

@@ -110,7 +110,7 @@ def stats_summary(results, include_stdout, include_stderr):
 
 def bw_run(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+    target_nodes = get_target_nodes(repo, args['targets'])
     pending_nodes = target_nodes.copy()
     io.progress_set_total(len(pending_nodes))
 

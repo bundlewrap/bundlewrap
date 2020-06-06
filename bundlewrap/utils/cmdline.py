@@ -38,18 +38,15 @@ def get_item(node, item_id):
         exit(1)
 
 
-def get_node(repo, node_name, adhoc_nodes=False):
+def get_node(repo, node_name):
     try:
         return repo.get_node(node_name)
     except NoSuchNode:
-        if adhoc_nodes:
-            return repo.create_node(node_name)
-        else:
-            io.stderr(_("{x} No such node: {node}").format(
-                node=node_name,
-                x=red("!!!"),
-            ))
-            exit(1)
+        io.stderr(_("{x} No such node: {node}").format(
+            node=node_name,
+            x=red("!!!"),
+        ))
+        exit(1)
 
 
 HELP_get_target_nodes = _("""expression to select target nodes:
@@ -64,7 +61,7 @@ bundle:my_bundle   # all nodes with this bundle
 """)
 
 
-def get_target_nodes(repo, target_strings, adhoc_nodes=False):
+def get_target_nodes(repo, target_strings):
     targets = set()
     for name in target_strings:
         name = name.strip()
@@ -95,12 +92,9 @@ def get_target_nodes(repo, target_strings, adhoc_nodes=False):
                 try:
                     targets.update(repo.get_group(name).nodes)
                 except NoSuchGroup:
-                    if adhoc_nodes:
-                        targets.add(repo.create_node(name))
-                    else:
-                        io.stderr(_("{x} No such node or group: {name}").format(
-                            x=red("!!!"),
-                            name=name,
-                        ))
-                        exit(1)
+                    io.stderr(_("{x} No such node or group: {name}").format(
+                        x=red("!!!"),
+                        name=name,
+                    ))
+                    exit(1)
     return targets

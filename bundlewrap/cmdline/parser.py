@@ -37,17 +37,6 @@ def build_parser_bw():
         help=_("set StrictHostKeyChecking=no instead of yes for SSH"),
     )
     parser.add_argument(
-        "-A",
-        "--adhoc-nodes",
-        action='store_true',
-        default=False,
-        dest='adhoc_nodes',
-        help=_(
-            "treat unknown node names as adhoc 'virtual' nodes that receive configuration only "
-            "through groups whose member_patterns match the node name given on the command line "
-            "(which also has to be a resolvable hostname)"),
-    )
-    parser.add_argument(
         "-d",
         "--debug",
         action='store_true',

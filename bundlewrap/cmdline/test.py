@@ -283,7 +283,7 @@ def bw_test(repo, args):
         args['subgroup_loops']
     )
     if args['targets']:
-        nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+        nodes = get_target_nodes(repo, args['targets'])
         if not options_selected:
             args['hooks_node'] = True
             args['items'] = True

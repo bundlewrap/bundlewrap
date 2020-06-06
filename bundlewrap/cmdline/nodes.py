@@ -65,7 +65,7 @@ def _attribute_table(
 
 def bw_nodes(repo, args):
     if args['targets']:
-        nodes = get_target_nodes(repo, args['targets'], adhoc_nodes=args['adhoc_nodes'])
+        nodes = get_target_nodes(repo, args['targets'])
     else:
         nodes = repo.nodes
     if not args['attrs']:
