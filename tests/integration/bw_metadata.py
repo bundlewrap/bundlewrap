@@ -43,6 +43,7 @@ def test_merge(tmpdir):
         tmpdir,
         nodes={
             "node1": {
+                'groups': {"group1"},
                 'metadata': {
                     "foo": {
                         "bar": "baz",
@@ -52,7 +53,6 @@ def test_merge(tmpdir):
         },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     "ding": 5,
                     "foo": {
@@ -228,11 +228,7 @@ def test_table(tmpdir):
                 },
             },
         },
-        groups={
-            "all": {
-                'members': ["node1", "node2"],
-            },
-        },
+        groups={"all": {'member_patterns': {r".*"}}},
     )
     stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw metadata all -k foo_dict/bar foo_list foo_int foo_umlaut", path=str(tmpdir))
     assert stdout.decode('utf-8') == """node\tfoo_dict/bar\tfoo_int\tfoo_list\tfoo_umlaut

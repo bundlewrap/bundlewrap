@@ -371,8 +371,6 @@ class Node:
         self._add_host_keys = environ.get('BW_ADD_HOST_KEYS', False) == "1"
         self._bundles = attributes.get('bundles', [])
         self._compiling_metadata = Lock()
-        self._dynamic_group_lock = Lock()
-        self._dynamic_groups_resolved = False  # None means we're currently doing it
         self._groups = set(attributes.get('groups', set()))
         self._metadata_so_far = {}
         self._node_metadata = attributes.get('metadata', {})
@@ -392,12 +390,6 @@ class Node:
 
     @cached_property
     def bundles(self):
-        if self._dynamic_group_lock.acquire(False):
-            self._dynamic_group_lock.release()
-        else:
-            raise RepositoryError(_(
-                "node bundles cannot be queried with members_add/remove"
-            ))
         with io.job(_("{node}  loading bundles").format(node=bold(self.name))):
             added_bundles = []
             found_bundles = []
@@ -453,32 +445,13 @@ class Node:
             _groups.add(self.repo.get_group(group_name))
 
         for group in self.repo.groups:
-            if self in group._static_nodes:
-                _groups.add(group)
+            if group in _groups:
+                # we're already in this group, no need to check it again
+                continue
+            for pattern in group.member_patterns:
+                if pattern.search(self.name) is not None:
+                    _groups.add(group)
 
-        # lock to avoid infinite recursion when .members_add/remove
-        # use stuff like node.in_group() that in turn calls this function
-        if self._dynamic_group_lock.acquire(False):
-            cache_result = True
-            self._dynamic_groups_resolved = None
-            # first we remove ourselves from all static groups whose
-            # .members_remove matches us
-            for group in list(_groups):
-                if group.members_remove is not None and group.members_remove(self):
-                    try:
-                        _groups.remove(group)
-                    except KeyError:
-                        pass
-            # now add all groups whose .members_add (but not .members_remove)
-            # matches us
-            _groups = _groups.union(self._groups_dynamic)
-            self._dynamic_groups_resolved = True
-            self._dynamic_group_lock.release()
-        else:
-            cache_result = False
-
-        # we have to add parent groups at the very end, since we might
-        # have added or removed subgroups thru .members_add/remove
         while True:
             # Since we're only looking at *immediate* parent groups,
             # we have to keep doing this until we stop adding parent
@@ -486,40 +459,11 @@ class Node:
             _original_groups = _groups.copy()
             for group in list(_groups):
                 for parent_group in group.immediate_parent_groups:
-                    if cache_result:
-                        with self._dynamic_group_lock:
-                            self._dynamic_groups_resolved = None
-                            if (
-                                not parent_group.members_remove or
-                                not parent_group.members_remove(self)
-                            ):
-                                _groups.add(parent_group)
-                            self._dynamic_groups_resolved = True
-                    else:
-                        _groups.add(parent_group)
+                    _groups.add(parent_group)
             if _groups == _original_groups:
                 # we didn't add any new parent groups, so we can stop
                 break
 
-        if cache_result:
-            return sorted(_groups)
-        else:
-            raise DontCache(sorted(_groups))
-
-    @property
-    def _groups_dynamic(self):
-        """
-        Returns all groups whose members_add matches this node.
-        """
-        _groups = set()
-        for group in self.repo.groups:
-            if group.members_add is not None and group.members_add(self):
-                _groups.add(group)
-            if group.members_remove is not None and group.members_remove(self):
-                try:
-                    _groups.remove(group)
-                except KeyError:
-                    pass
         return _groups
 
     def has_any_bundle(self, bundle_list):
@@ -697,13 +641,7 @@ class Node:
         Returns full metadata for a node. MUST NOT be used from inside a
         metadata processor. Use .partial_metadata instead.
         """
-        if self._dynamic_groups_resolved is None:
-            # return only metadata set directly at the node level if
-            # we're still in the process of figuring out which groups
-            # we belong to
-            return self._node_metadata
-        else:
-            return self.repo._metadata_for_node(self.name, partial=False)
+        return self.repo._metadata_for_node(self.name, partial=False)
 
     @property
     def metadata_blame(self):
@@ -864,10 +802,7 @@ def build_attr_property(attr, default):
             attr=attr,
             source=attr_source,
         ))
-        if self._dynamic_groups_resolved:
-            return attr_value
-        else:
-            raise DontCache(attr_value)
+        return attr_value
     method.__name__ = "_group_attr_{}".format(attr)  # required for cached_property
     return cached_property(method)
 

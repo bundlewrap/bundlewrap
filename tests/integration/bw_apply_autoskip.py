@@ -42,11 +42,12 @@ def test_skip_group(tmpdir):
         nodes={
             "localhost": {
                 'bundles': ["test"],
+                'groups': {"foo"},
                 'os': host_os(),
             },
         },
         groups={
-            "foo": {'members': ["localhost"]},
+            "foo": {},
         },
     )
     result = run("bw apply --skip group:foo -- localhost", path=str(tmpdir))

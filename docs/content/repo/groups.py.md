@@ -10,11 +10,6 @@ As with `nodes.py`, you define your groups as a dictionary:
 	            r".*",
 	        ),
 	    },
-	    'group1': {
-	        'members': (
-	            'node1',
-	        ),
-	    },
 	}
 
 All group attributes are optional.
@@ -26,18 +21,15 @@ All group attributes are optional.
 This section is a reference for all possible attributes you can define for a group:
 
 	groups = {
-	     'group1': {
-	         # THIS PART IS EXPLAINED HERE
-	         'bundles': ["bundle1", "bundle2"],
-	         'members': ["node1"],
-	         'members_add': lambda node: node.os == 'debian',
-	         'members_remove': lambda node: node.os == 'ubuntu',
-	         'member_patterns': [r"^cluster1\."],
-	         'metadata': {'foo': "bar"},
-	         'os': 'linux',
-	         'subgroups': ["group2", "group3"],
-	         'subgroup_patterns': [r"^group.*pattern$"],
-	     },
+	    'group1': {
+	        # THIS PART IS EXPLAINED HERE
+	        'bundles': ["bundle1", "bundle2"],
+	        'member_patterns': [r"^cluster1\."],
+	        'metadata': {'foo': "bar"},
+	        'os': 'linux',
+	        'subgroups': ["group2", "group3"],
+	        'subgroup_patterns': [r"^group.*pattern$"],
+	    },
 	}
 
 Note that many attributes from [nodes.py](nodes.py.md) (e.g. `bundles`) may also be set at group level, but aren't explicitly documented here again.
@@ -49,20 +41,6 @@ Note that many attributes from [nodes.py](nodes.py.md) (e.g. `bundles`) may also
 A list of regular expressions. Node names matching these expressions will be added to the group members.
 
 Matches are determined using [the search() method](http://docs.python.org/2/library/re.html#re.RegexObject.search).
-
-<br>
-
-## members
-
-A tuple or list of node names that belong to this group.
-
-<br>
-
-## members_add and members_remove
-
-For these attributes you can provide a function that takes a node object as its only argument. The function must return a boolean. The function will be called once for every node in the repo. If `True`, this node will be added (`members_add`) to or removed (`members_remove`) from this group.
-
-<div class="alert alert-warning">Inside your function you may query node attributes and groups, but you will not see groups or attributes added as a result of a different <code>members_add</code> / <code>members_remove</code> function. Only attributes and groups that have been set statically will be available. You can, however, remove a node with <code>members_remove</code> that you added with <code>members_add</code> (but not vice-versa).<br>You should also avoid using <code>node.metadata</code> here. Since metadata ultimately depends on group memberships, only metadata set in <code>nodes.py</code> will be returned here.</div>
 
 <br>
 

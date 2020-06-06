@@ -20,7 +20,7 @@ def test_single(tmpdir):
 def test_hostname(tmpdir):
     make_repo(
         tmpdir,
-        groups={"all": {'members': ["node1"]}},
+        groups={"all": {'member_patterns': {r".*"}}},
         nodes={"node1": {'hostname': "node1.example.com"}},
     )
     stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw nodes all -a hostname | cut -f 2", path=str(tmpdir))
@@ -36,7 +36,7 @@ def test_bundles(tmpdir):
             "bundle1": {},
             "bundle2": {},
         },
-        groups={"all": {'members': ["node1", "node2"]}},
+        groups={"all": {'member_patterns': {r".*"}}},
         nodes={
             "node1": {'bundles': ["bundle1", "bundle2"]},
             "node2": {'bundles': ["bundle2"]},

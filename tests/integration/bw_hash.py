@@ -265,13 +265,13 @@ def test_groups(tmpdir):
     make_repo(
         tmpdir,
         groups={
-            "group1": {'members': ["node1", "node2"]},
-            "group2": {'members': ["node3"]},
+            "group1": {},
+            "group2": {},
         },
         nodes={
-            "node1": {},
-            "node2": {},
-            "node3": {},
+            "node1": {'groups': {"group1"}},
+            "node2": {'groups': {"group1"}},
+            "node3": {'groups': {"group2"}},
         },
     )
 
@@ -284,13 +284,13 @@ def test_groups_dict(tmpdir):
     make_repo(
         tmpdir,
         groups={
-            "group1": {'members': ["node1", "node2"]},
-            "group2": {'members': ["node3"]},
+            "group1": {},
+            "group2": {},
         },
         nodes={
-            "node1": {},
-            "node2": {},
-            "node3": {},
+            "node1": {'groups': {"group1"}},
+            "node2": {'groups': {"group1"}},
+            "node3": {'groups': {"group2"}},
         },
     )
 
@@ -303,13 +303,13 @@ def test_groups_node(tmpdir):
     make_repo(
         tmpdir,
         groups={
-            "group1": {'members': ["node1", "node2"]},
-            "group2": {'members': ["node3"]},
+            "group1": {},
+            "group2": {},
         },
         nodes={
-            "node1": {},
-            "node2": {},
-            "node3": {},
+            "node1": {'groups': {"group1"}},
+            "node2": {'groups': {"group1"}},
+            "node3": {'groups': {"group2"}},
         },
     )
 
@@ -322,13 +322,13 @@ def test_groups_node_dict(tmpdir):
     make_repo(
         tmpdir,
         groups={
-            "group1": {'members': ["node1", "node2"]},
-            "group2": {'members': ["node3"]},
+            "group1": {},
+            "group2": {},
         },
         nodes={
-            "node1": {},
-            "node2": {},
-            "node3": {},
+            "node1": {'groups': {"group1"}},
+            "node2": {'groups': {"group1"}},
+            "node3": {'groups': {"group2"}},
         },
     )
 

@@ -6,6 +6,8 @@ unreleased
 * removed `template_node` node attribute (BACKWARDS INCOMPATIBLE)
 * removed support for Python 3.4 (BACKWARDS INCOMPATIBLE)
 * removed support for Python 2.7 (BACKWARDS INCOMPATIBLE)
+* removed `members` attribute for groups (BACKWARDS INCOMPATIBLE)
+* removed `members_add/remove` attribute for groups (BACKWARDS INCOMPATIBLE)
 * added `locking_node` node attribute
 * added `bw metadata -b`
 * added `bw metadata --hide-defaults`

@@ -114,6 +114,9 @@ def graph_for_items(
 
 
 def plot_group(groups, nodes, show_nodes):
+    groups = sorted(groups)
+    nodes = sorted(nodes)
+
     yield "digraph bundlewrap"
     yield "{"
 
@@ -133,26 +136,22 @@ def plot_group(groups, nodes, show_nodes):
         yield "\"{}\" [fontcolor=\"#303030\",shape=box,style=rounded];".format(node.name)
 
     for group in groups:
-        for subgroup in group.immediate_subgroup_names:
+        for subgroup in sorted(group.immediate_subgroup_names):
             yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
-        for subgroup in group._subgroup_names_from_patterns:
+        for subgroup in sorted(group._subgroup_names_from_patterns):
             yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
 
     if show_nodes:
         for group in groups:
-            for node in group._nodes_from_members:
-                yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
-                    group.name, node.name)
-
-            for node in group._nodes_from_patterns:
-                yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
-                    group.name, node.name)
-
             for node in nodes:
-                if group in node._groups_dynamic:
-                    yield "\"{}\" -> \"{}\" [color=\"#FF0000\",penwidth=2]".format(
+                if group in sorted(node._groups):
+                    yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                         group.name, node.name)
-
+                else:
+                    for pattern in sorted(group.member_patterns):
+                        if pattern.search(node.name) is not None:
+                            yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
+                                group.name, node.name)
     yield "}"
 
 
@@ -169,32 +168,30 @@ def plot_node_groups(node):
                  "fontname=Helvetica]")
     yield "edge [arrowhead=vee]"
 
-    for group in node.groups:
+    for group in sorted(node.groups):
         yield "\"{}\" [fontcolor=white,style=filled];".format(group.name)
 
     yield "\"{}\" [fontcolor=\"#303030\",shape=box,style=rounded];".format(node.name)
 
-    for group in node.groups:
-        for subgroup in group.immediate_subgroup_names:
+    for group in sorted(node.groups):
+        for subgroup in sorted(group.immediate_subgroup_names):
             if subgroup in names(node.groups):
-                yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
-        for pattern in group.immediate_subgroup_patterns:
-            compiled_pattern = re.compile(pattern)
-            for group2 in node.groups:
-                if compiled_pattern.search(group2.name) is not None and group2 != group:
-                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, group2.name)
+                yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(
+                    group.name, subgroup)
+        for pattern in sorted(group.immediate_subgroup_patterns):
+            for group2 in sorted(node.groups):
+                if pattern.search(group2.name) is not None and group2 != group:
+                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(
+                        group.name, group2.name)
 
-    for group in node.groups:
-        if node in group._nodes_from_members:
+        if group in node._groups:
             yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                 group.name, node.name)
-        elif node in group._nodes_from_patterns:
-            yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
-                group.name, node.name)
-        elif group in node._groups_dynamic:
-            yield "\"{}\" -> \"{}\" [color=\"#FF0000\",penwidth=2]".format(
-                group.name, node.name)
-
+        else:
+            for pattern in sorted(group.member_patterns):
+                if pattern.search(node.name) is not None:
+                    yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
+                        group.name, node.name)
     yield "}"
 
 

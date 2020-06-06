@@ -43,9 +43,6 @@ GROUP_ATTR_TYPES = {
     'dummy': bool,
     'kubectl_context': (str, type(None)),
     'locking_node': (str, type(None)),
-    'members': COLLECTION_OF_STRINGS,
-    'members_add': (type(lambda: None), type(None)),
-    'members_remove': (type(lambda: None), type(None)),
     'member_patterns': COLLECTION_OF_STRINGS,
     'metadata': dict,
     'os': str,
@@ -93,12 +90,15 @@ class Group:
         self.name = group_name
         self.bundle_names = infodict.get('bundles', [])
         self.immediate_subgroup_names = infodict.get('subgroups', [])
-        self.immediate_subgroup_patterns = infodict.get('subgroup_patterns', [])
-        self.members_add = infodict.get('members_add', None)
-        self.members_remove = infodict.get('members_remove', None)
+        self.immediate_subgroup_patterns = {
+            re.compile(pattern) for pattern in
+            infodict.get('subgroup_patterns', [])
+        }
         self.metadata = infodict.get('metadata', {})
-        self.node_patterns = infodict.get('member_patterns', [])
-        self.static_member_names = infodict.get('members', [])
+        self.member_patterns = {
+            re.compile(pattern) for pattern in
+            infodict.get('member_patterns', [])
+        }
 
         for attr in GROUP_ATTR_DEFAULTS:
             # defaults are applied in node.py
@@ -138,42 +138,12 @@ class Group:
             if node.in_group(self.name):
                 yield node
 
-    @cached_property
-    def _static_nodes(self):
-        result = set()
-        result.update(self._nodes_from_members)
-        result.update(self._nodes_from_patterns)
-        return result
-
     @property
     def _subgroup_names_from_patterns(self):
         for pattern in self.immediate_subgroup_patterns:
-            compiled_pattern = re.compile(pattern)
             for group in self.repo.groups:
-                if compiled_pattern.search(group.name) is not None and group != self:
+                if pattern.search(group.name) is not None and group != self:
                     yield group.name
-
-    @property
-    def _nodes_from_members(self):
-        for node_name in self.static_member_names:
-            try:
-                yield self.repo.get_node(node_name)
-            except NoSuchNode:
-                raise RepositoryError(_(
-                    "Group '{group}' has '{node}' listed as a member in groups.py, "
-                    "but no such node could be found."
-                ).format(
-                    group=self.name,
-                    node=node_name,
-                ))
-
-    @property
-    def _nodes_from_patterns(self):
-        for pattern in self.node_patterns:
-            compiled_pattern = re.compile(pattern)
-            for node in self.repo.nodes:
-                if not compiled_pattern.search(node.name) is None:
-                    yield node
 
     def _check_subgroup_names(self, visited_names):
         """

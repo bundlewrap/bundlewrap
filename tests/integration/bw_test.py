@@ -200,10 +200,16 @@ def test_group_loop(tmpdir):
 def test_group_metadata_collision(tmpdir):
     make_repo(
         tmpdir,
-        nodes={"node1": {}},
+        nodes={
+            "node1": {
+                'groups': {
+                    "group1",
+                    "group3",
+                },
+            },
+        },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': {
                         'baz': 1,
@@ -220,9 +226,7 @@ def test_group_metadata_collision(tmpdir):
                 },
                 'subgroups': ["group3"],
             },
-            "group3": {
-                'members': ["node1"],
-            },
+            "group3": {},
         },
     )
     assert run("bw test -M", path=str(tmpdir))[2] == 1
@@ -231,10 +235,16 @@ def test_group_metadata_collision(tmpdir):
 def test_group_metadata_collision_subgroups(tmpdir):
     make_repo(
         tmpdir,
-        nodes={"node1": {}},
+        nodes={
+            "node1": {
+                'groups': {
+                    "group1",
+                    "group3",
+                },
+            },
+        },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': {
                         'baz': 1,
@@ -251,9 +261,7 @@ def test_group_metadata_collision_subgroups(tmpdir):
                 },
                 'subgroups': ["group1", "group3"],
             },
-            "group3": {
-                'members': ["node1"],
-            },
+            "group3": {},
         },
     )
     assert run("bw test -M", path=str(tmpdir))[2] == 0
@@ -262,16 +270,21 @@ def test_group_metadata_collision_subgroups(tmpdir):
 def test_group_metadata_collision_list(tmpdir):
     make_repo(
         tmpdir,
-        nodes={"node1": {}},
+        nodes={
+            "node1": {
+                'groups': {
+                    "group1",
+                    "group2",
+                },
+            },
+        },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': [1],
                 },
             },
             "group2": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': [2],
                 },
@@ -284,16 +297,21 @@ def test_group_metadata_collision_list(tmpdir):
 def test_group_metadata_collision_dict(tmpdir):
     make_repo(
         tmpdir,
-        nodes={"node1": {}},
+        nodes={
+            "node1": {
+                'groups': {
+                    "group1",
+                    "group2",
+                },
+            },
+        },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': {'bar': 1},
                 },
             },
             "group2": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': 2,
                 },
@@ -306,16 +324,21 @@ def test_group_metadata_collision_dict(tmpdir):
 def test_group_metadata_collision_dict_ok(tmpdir):
     make_repo(
         tmpdir,
-        nodes={"node1": {}},
+        nodes={
+            "node1": {
+                'groups': {
+                    "group1",
+                    "group2",
+                },
+            },
+        },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': {'bar': 1},
                 },
             },
             "group2": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': {'baz': 2},
                 },
@@ -328,16 +351,21 @@ def test_group_metadata_collision_dict_ok(tmpdir):
 def test_group_metadata_collision_set(tmpdir):
     make_repo(
         tmpdir,
-        nodes={"node1": {}},
+        nodes={
+            "node1": {
+                'groups': {
+                    "group1",
+                    "group2",
+                },
+            },
+        },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': set([1]),
                 },
             },
             "group2": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': 2,
                 },
@@ -350,16 +378,21 @@ def test_group_metadata_collision_set(tmpdir):
 def test_group_metadata_collision_set_ok(tmpdir):
     make_repo(
         tmpdir,
-        nodes={"node1": {}},
+        nodes={
+            "node1": {
+                'groups': {
+                    "group1",
+                    "group2",
+                },
+            },
+        },
         groups={
             "group1": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': set([1]),
                 },
             },
             "group2": {
-                'members': ["node1"],
                 'metadata': {
                     'foo': set([2]),
                 },
@@ -661,11 +694,11 @@ def test_unknown_subgroup(tmpdir):
     make_repo(
         tmpdir,
         nodes={
-            "node1": {},
+            "node1": {'groups': {"group2"}},
         },
         groups={
             "group1": {'subgroups': ["missing-group"]},
-            "group2": {'members': ["node1"]},
+            "group2": {},
         },
     )
     assert run("bw test", path=str(tmpdir))[2] == 1
@@ -677,11 +710,11 @@ def test_empty_group(tmpdir):
     make_repo(
         tmpdir,
         nodes={
-            "node1": {},
+            "node1": {'groups': {"group2"}},
         },
         groups={
             "group1": {},
-            "group2": {'members': ["node1"]},
+            "group2": {},
         },
     )
     assert run("bw test", path=str(tmpdir))[2] == 0
