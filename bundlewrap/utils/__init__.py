@@ -16,15 +16,9 @@ from ..exceptions import DontCache, FaultUnavailable
 
 
 class NO_DEFAULT: pass
-
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
-
-try:
-    STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
-    STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
-except AttributeError:  # Python 2
-    STDERR_WRITER = getwriter('utf-8')(stderr)
-    STDOUT_WRITER = getwriter('utf-8')(stdout)
+STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
+STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
 
 
 def cached_property(prop):
