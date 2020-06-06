@@ -10,6 +10,7 @@ unreleased
 * removed `members_add/remove` attribute for groups (BACKWARDS INCOMPATIBLE)
 * removed `bw --adhoc-nodes` (BACKWARDS INCOMPATIBLE)
 * added `locking_node` node attribute
+* added `bw diff`
 * added `bw metadata -b`
 * added `bw metadata --hide-defaults`
 * added `bw metadata --hide-reactors`
@@ -19,14 +20,6 @@ unreleased
 * removed `bw metadata --table`, now done automatically (BACKWARDS INCOMPATIBLE)
 * renamed `bw test --metadata-collisions` to `bw test --metadata-conflicts` (BACKWARDS INCOMPATIBLE)
 * reworked passing multi-value options on CLI (BACKWARDS INCOMPATIBLE)
-
-
-# 3.10.0
-
-2020-05-17
-
-* added metadata defaults and reactors
-* added `bw diff`
 * `items/` is now searched recursively
 
 
