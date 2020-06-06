@@ -1,8 +1,13 @@
 import re
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
-from .utils import cached_property, names
-from .utils.dicts import hash_statedict
+from .utils import cached_property, error_context, names
+from .utils.dicts import (
+    hash_statedict,
+    validate_dict,
+    COLLECTION_OF_STRINGS,
+    TUPLE_OF_INTS,
+)
 from .utils.text import mark_for_translation as _, validate_name
 
 
@@ -29,6 +34,25 @@ GROUP_ATTR_DEFAULTS = {
     # people want.
     'os_version': (0,),
     'use_shadow_passwords': True,
+}
+
+GROUP_ATTR_TYPES = {
+    'bundles': COLLECTION_OF_STRINGS,
+    'cmd_wrapper_inner': str,
+    'cmd_wrapper_outer': str,
+    'dummy': bool,
+    'kubectl_context': (str, type(None)),
+    'locking_node': (str, type(None)),
+    'members': COLLECTION_OF_STRINGS,
+    'members_add': (type(lambda: None), type(None)),
+    'members_remove': (type(lambda: None), type(None)),
+    'member_patterns': COLLECTION_OF_STRINGS,
+    'metadata': dict,
+    'os': str,
+    'os_version': TUPLE_OF_INTS,
+    'subgroups': COLLECTION_OF_STRINGS,
+    'subgroup_patterns': COLLECTION_OF_STRINGS,
+    'use_shadow_passwords': bool,
 }
 
 
@@ -62,6 +86,9 @@ class Group:
 
         if not validate_name(group_name):
             raise RepositoryError(_("'{}' is not a valid group name.").format(group_name))
+
+        with error_context(group_name=group_name):
+            validate_dict(infodict, GROUP_ATTR_TYPES)
 
         self.name = group_name
         self.bundle_names = infodict.get('bundles', [])

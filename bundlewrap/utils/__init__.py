@@ -44,18 +44,57 @@ def cached_property(prop):
 
 
 def download(url, path):
-    if not exists(dirname(path)):
-        makedirs(dirname(path))
-    if exists(path):
-        chmod(path, MODE644)
-    with open(path, 'wb') as f:
-        r = get(url, stream=True)
-        r.raise_for_status()
-        for block in r.iter_content(1024):
-            if not block:
-                break
-            else:
-                f.write(block)
+    with error_context(url=url, path=path):
+        if not exists(dirname(path)):
+            makedirs(dirname(path))
+        if exists(path):
+            chmod(path, MODE644)
+        with open(path, 'wb') as f:
+            r = get(url, stream=True)
+            r.raise_for_status()
+            for block in r.iter_content(1024):
+                if not block:
+                    break
+                else:
+                    f.write(block)
+
+
+class ErrorContext(Exception):
+    pass
+
+
+@contextmanager
+def error_context(**kwargs):
+    """
+    This can be used to provide context for critical exceptions. Since
+    we're processing lots of different dicts, a "KeyError: foo" will
+    often not be helpful, since it's not clear which dict is missing the
+    key.
+
+
+    >>> with error_context(arbitrary_kwarg="helpful hint"):
+    ...     {}["foo"]
+    ...
+    Traceback (most recent call last):
+      [...]
+    KeyError: 'foo'
+
+    The above exception was the direct cause of the following exception:
+
+    Traceback (most recent call last):
+      [...]
+    bundlewrap.utils.ErrorContext: ACTUAL EXCEPTION ABOVE
+    {'arbitrary_kwarg': 'helpful hint'}
+
+
+    Careful though: Only use this in places where you don't expect
+    exceptions to occur, since they will indiscriminately be reraised as
+    ErrorContext.
+    """
+    try:
+        yield
+    except Exception as exc:
+        raise ErrorContext("ACTUAL EXCEPTION ABOVE\n" + repr(kwargs)) from exc
 
 
 class Fault:
@@ -166,8 +205,9 @@ for method_name in (
 
 
 def get_file_contents(path):
-    with open(path, 'rb') as f:
-        content = f.read()
+    with error_context(path=path):
+        with open(path, 'rb') as f:
+            content = f.read()
     return content
 
 

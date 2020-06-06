@@ -1,5 +1,13 @@
 from bundlewrap.metadata import atomic
-from bundlewrap.utils.dicts import map_dict_keys, reduce_dict
+from bundlewrap.utils.dicts import (
+    map_dict_keys,
+    reduce_dict,
+    validate_dict,
+    COLLECTION_OF_STRINGS,
+    TUPLE_OF_INTS,
+)
+
+from pytest import raises
 
 
 def test_dictmap():
@@ -66,3 +74,112 @@ def test_reduce_dict_nested():
         }],
         'd': 3,
     }
+
+
+def test_validate_ok():
+    validate_dict(
+        {
+            'a': 5,
+            'b': "bee",
+            'c': None,
+            'd': ("t", "u", "p", "l", "e"),
+            'e': ["l", "i", "s", "t"],
+            'f': {"s", "e", "t"},
+            'g': (1, "2"),
+            'h': [1, "2"],
+            'i': {1, "2"},
+            'j': True,
+            'k': False,
+            'l': (1, 2, 3),
+        },
+        {
+            'a': int,
+            'b': str,
+            'c': type(None),
+            'd': COLLECTION_OF_STRINGS,
+            'e': COLLECTION_OF_STRINGS,
+            'f': COLLECTION_OF_STRINGS,
+            'g': tuple,
+            'h': list,
+            'i': set,
+            'j': bool,
+            'k': (int, bool),
+            'l': TUPLE_OF_INTS,
+        },
+    )
+
+
+def test_validate_single_type_error():
+    with raises(ValueError):
+        validate_dict(
+            {
+                'a': 5,
+            },
+            {
+                'a': str,
+            },
+        )
+
+
+def test_validate_multi_type_error():
+    with raises(ValueError):
+        validate_dict(
+            {
+                'a': 5,
+            },
+            {
+                'a': (str, list),
+            },
+        )
+
+
+def test_validate_inner_type_error():
+    with raises(ValueError):
+        validate_dict(
+            {
+                'd': ("t", "u", "p", "l", "e", 47),
+            },
+            {
+                'd': COLLECTION_OF_STRINGS,
+            },
+        )
+
+
+def test_validate_inner_type_error2():
+    with raises(ValueError):
+        validate_dict(
+            {
+                'l': (1, 2, "3"),
+            },
+            {
+                'l': TUPLE_OF_INTS,
+            },
+        )
+
+
+def test_validate_missing_key():
+    with raises(ValueError):
+        validate_dict(
+            {
+                'a': 5,
+            },
+            {
+                'a': int,
+                'b': str,
+            },
+            required_keys=['a', 'b'],
+        )
+
+
+def test_validate_required_key():
+    validate_dict(
+        {
+            'a': 5,
+            'b': "bee",
+        },
+        {
+            'a': int,
+            'b': str,
+        },
+        required_keys=['a', 'b'],
+    )

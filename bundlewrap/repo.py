@@ -19,7 +19,13 @@ from .group import Group
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy, Node
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
-from .utils import cached_property, get_file_contents, names, randomize_order
+from .utils import (
+    cached_property,
+    error_context,
+    get_file_contents,
+    names,
+    randomize_order,
+)
 from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.dicts import hash_statedict
 from .utils.metastack import Metastack
@@ -311,16 +317,14 @@ class Repository:
 
         if path not in self._get_all_attr_code_cache:
             source = get_file_contents(path)
-            self._get_all_attr_code_cache[path] = \
-                compile(source, path, mode='exec')
+            with error_context(path=path):
+                self._get_all_attr_code_cache[path] = \
+                    compile(source, path, mode='exec')
 
         code = self._get_all_attr_code_cache[path]
         env = base_env.copy()
-        try:
+        with error_context(path=path):
             exec(code, env)
-        except:
-            io.stderr("Exception while executing {}".format(path))
-            raise
 
         if not base_env:
             self._get_all_attr_result_cache[path] = env
@@ -341,6 +345,11 @@ class Repository:
             raise RepositoryError(_(
                 "{} must define a '{}' variable"
             ).format(path, attribute))
+        if not isinstance(flat_dict, dict):
+            raise ValueError(_("'{v}' in '{p}' must be a dict").format(
+                v=attribute,
+                p=path,
+            ))
         for name, infodict in flat_dict.items():
             yield (name, infodict)
 

@@ -20,13 +20,18 @@ from .exceptions import (
     RepositoryError,
     SkipNode,
 )
-from .group import GROUP_ATTR_DEFAULTS
+from .group import GROUP_ATTR_DEFAULTS, GROUP_ATTR_TYPES
 from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import hash_metadata
-from .utils import cached_property, names, NO_DEFAULT
-from .utils.dicts import hash_statedict, value_at_key_path
+from .utils import cached_property, error_context, names, NO_DEFAULT
+from .utils.dicts import (
+    hash_statedict,
+    validate_dict,
+    value_at_key_path,
+    COLLECTION_OF_STRINGS,
+)
 from .utils.text import (
     blue,
     bold,
@@ -40,6 +45,11 @@ from .utils.text import (
     yellow,
 )
 from .utils.ui import io
+
+
+NODE_ATTR_TYPES = GROUP_ATTR_TYPES.copy()
+NODE_ATTR_TYPES['groups'] = COLLECTION_OF_STRINGS
+NODE_ATTR_TYPES['hostname'] = str
 
 
 class ApplyResult:
@@ -354,6 +364,9 @@ class Node:
 
         if not validate_name(name):
             raise RepositoryError(_("'{}' is not a valid node name").format(name))
+
+        with error_context(node_name=name):
+            validate_dict(attributes, NODE_ATTR_TYPES)
 
         self._add_host_keys = environ.get('BW_ADD_HOST_KEYS', False) == "1"
         self._bundles = attributes.get('bundles', [])

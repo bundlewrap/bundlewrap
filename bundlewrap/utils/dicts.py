@@ -18,21 +18,10 @@ class _Atomic:
     """
     pass
 
-
-class _AtomicDict(dict, _Atomic):
-    pass
-
-
-class _AtomicList(list, _Atomic):
-    pass
-
-
-class _AtomicSet(set, _Atomic):
-    pass
-
-
-class _AtomicTuple(tuple, _Atomic):
-    pass
+class _AtomicDict(dict, _Atomic): pass
+class _AtomicList(list, _Atomic): pass
+class _AtomicSet(set, _Atomic): pass
+class _AtomicTuple(tuple, _Atomic): pass
 
 
 ATOMIC_TYPES = {
@@ -313,6 +302,53 @@ def statedict_to_json(sdict, pretty=False):
             indent=4 if pretty else None,
             sort_keys=True,
         )
+
+
+class COLLECTION_OF_STRINGS: pass
+class TUPLE_OF_INTS: pass
+
+
+def validate_dict(candidate, schema, required_keys=None):
+    if not isinstance(candidate, dict):
+        raise ValueError(_("not a dict: {}").format(repr(candidate)))
+    for key, value in candidate.items():
+        if key not in schema:
+            raise ValueError(_("illegal key: {}").format(key))
+        allowed_types = schema[key]
+        if allowed_types == COLLECTION_OF_STRINGS:
+            if not isinstance(value, (list, set, tuple)):
+                raise ValueError(_("key '{k}' is {i}, but should be one of: {t}").format(
+                    k=key,
+                    i=type(value),
+                    t=(list, set, tuple),
+                ))
+            for inner_value in value:
+                if not isinstance(inner_value, str):
+                    raise ValueError(_("non-string member in '{k}': {v}").format(
+                        k=key,
+                        v=repr(inner_value),
+                    ))
+        elif allowed_types == TUPLE_OF_INTS:
+            if not isinstance(value, tuple):
+                raise ValueError(_("key '{k}' is {i}, but should be a tuple").format(
+                    k=key,
+                    i=type(value),
+                ))
+            for inner_value in value:
+                if not isinstance(inner_value, int):
+                    raise ValueError(_("non-int member in '{k}': {v}").format(
+                        k=key,
+                        v=repr(inner_value),
+                    ))
+        elif not isinstance(value, allowed_types):
+            raise ValueError(_("key '{k}' is {i}, but should be one of: {t}").format(
+                k=key,
+                i=type(value),
+                t=allowed_types,
+            ))
+    for key in required_keys or []:
+        if key not in candidate:
+            raise ValueError(_("missing required key: {}").format(key))
 
 
 def validate_statedict(sdict):
