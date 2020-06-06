@@ -15,8 +15,7 @@ from requests import get
 from ..exceptions import DontCache, FaultUnavailable
 
 
-NO_DEFAULT = "Very unlikely default value used by BundleWrap to indicate no default was provided"
-
+class NO_DEFAULT: pass
 
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
