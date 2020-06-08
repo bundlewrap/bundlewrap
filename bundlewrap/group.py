@@ -1,9 +1,14 @@
+from os.path import join
 import re
 
+from tomlkit import dumps as dump_toml, parse as parse_toml
+
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
-from .utils import cached_property, error_context, names
+from .utils import cached_property, error_context, get_file_contents, names
 from .utils.dicts import (
+    dict_to_toml,
     hash_statedict,
+    set_key_at_path,
     validate_dict,
     COLLECTION_OF_STRINGS,
     TUPLE_OF_INTS,
@@ -41,6 +46,7 @@ GROUP_ATTR_TYPES = {
     'cmd_wrapper_inner': str,
     'cmd_wrapper_outer': str,
     'dummy': bool,
+    'file_path': str,
     'kubectl_context': (str, type(None)),
     'locking_node': (str, type(None)),
     'member_patterns': COLLECTION_OF_STRINGS,
@@ -77,32 +83,31 @@ class Group:
     """
     A group of nodes.
     """
-    def __init__(self, group_name, infodict=None):
-        if infodict is None:
-            infodict = {}
+    def __init__(self, group_name, attributes=None):
+        if attributes is None:
+            attributes = {}
 
         if not validate_name(group_name):
             raise RepositoryError(_("'{}' is not a valid group name.").format(group_name))
 
         with error_context(group_name=group_name):
-            validate_dict(infodict, GROUP_ATTR_TYPES)
+            validate_dict(attributes, GROUP_ATTR_TYPES)
 
+        self._attributes = attributes
+        self._immediate_subgroup_patterns = {
+            re.compile(pattern) for pattern in
+            set(attributes.get('subgroup_patterns', set()))
+        }
+        self._member_patterns = {
+            re.compile(pattern) for pattern in
+            set(attributes.get('member_patterns', set()))
+        }
         self.name = group_name
-        self.bundle_names = infodict.get('bundles', [])
-        self.immediate_subgroup_names = infodict.get('subgroups', [])
-        self.immediate_subgroup_patterns = {
-            re.compile(pattern) for pattern in
-            infodict.get('subgroup_patterns', [])
-        }
-        self.metadata = infodict.get('metadata', {})
-        self.member_patterns = {
-            re.compile(pattern) for pattern in
-            infodict.get('member_patterns', [])
-        }
+        self.file_path = attributes.get('file_path')
 
         for attr in GROUP_ATTR_DEFAULTS:
             # defaults are applied in node.py
-            setattr(self, attr, infodict.get(attr))
+            setattr(self, attr, attributes.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name
@@ -140,7 +145,7 @@ class Group:
 
     @property
     def _subgroup_names_from_patterns(self):
-        for pattern in self.immediate_subgroup_patterns:
+        for pattern in self._immediate_subgroup_patterns:
             for group in self.repo.groups:
                 if pattern.search(group.name) is not None and group != self:
                     yield group.name
@@ -150,7 +155,7 @@ class Group:
         Recursively finds subgroups and checks for loops.
         """
         for name in set(
-            list(self.immediate_subgroup_names) +
+            list(self._attributes.get('subgroups', set())) +
             list(self._subgroup_names_from_patterns)
         ):
             if name not in visited_names:
@@ -205,12 +210,34 @@ class Group:
             yield self.repo.get_group(group_name)
 
     @cached_property
+    def toml(self):
+        if not self.file_path or not self.file_path.endswith(".toml"):
+            raise ValueError(_("group {} not in TOML format").format(self.name))
+        return parse_toml(get_file_contents(self.file_path))
+
+    def toml_save(self):
+        try:
+            toml_doc = self.toml
+        except ValueError:
+            attributes = self._attributes.copy()
+            del attributes['file_path']
+            toml_doc = dict_to_toml(attributes)
+            self.file_path = join(self.repo.path, "groups", self.name + ".toml")
+        with open(self.file_path, 'w') as f:
+            f.write(dump_toml(toml_doc))
+
+    def toml_set(self, path, value):
+        if not isinstance(path, tuple):
+            path = path.split("/")
+        set_key_at_path(self.toml, path, value)
+
+    @cached_property
     def immediate_subgroups(self):
         """
         Iterator over all immediate subgroups as group objects.
         """
         for group_name in set(
-            list(self.immediate_subgroup_names) +
+            list(self._attributes.get('subgroups', set())) +
             list(self._subgroup_names_from_patterns)
         ):
             try:

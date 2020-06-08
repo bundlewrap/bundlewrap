@@ -2,6 +2,8 @@ from difflib import unified_diff
 from hashlib import sha1
 from json import dumps, JSONEncoder
 
+from tomlkit import document as toml_document
+
 from . import Fault
 from .text import bold, green, red
 from .text import force_text, mark_for_translation as _
@@ -30,6 +32,20 @@ ATOMIC_TYPES = {
     set: _AtomicSet,
     tuple: _AtomicTuple,
 }
+
+
+def dict_to_toml(dict_obj):
+    toml_doc = toml_document()
+    for key, value in dict_obj.items():
+        if isinstance(value, tuple):
+            toml_doc[key] = list(value)
+        elif isinstance(value, set):
+            toml_doc[key] = sorted(value)
+        elif isinstance(value, dict):
+            toml_doc[key] = dict_to_toml(value)
+        else:
+            toml_doc[key] = value
+    return toml_doc
 
 
 def diff_keys(sdict1, sdict2):
@@ -398,6 +414,8 @@ def set_key_at_path(d, path, value):
     if len(path) == 1:
         d[path[0]] = value
     else:
+        if path[0] not in d:  # setdefault doesn't work with tomlkit
+            d[path[0]] = {}
         set_key_at_path(d[path[0]], path[1:], value)
 
 

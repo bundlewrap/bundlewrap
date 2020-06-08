@@ -5,6 +5,7 @@ from os.path import abspath, dirname, isdir, isfile, join
 from threading import Lock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
+from tomlkit import parse as parse_toml
 
 from . import items, VERSION_STRING
 from .bundle import FILENAME_BUNDLE
@@ -323,11 +324,12 @@ class Repository:
 
         return env
 
-    def nodes_or_groups_from_file(self, path, attribute):
+    def nodes_or_groups_from_file(self, path, attribute, preexisting):
         try:
             flat_dict = self.get_all_attrs_from_file(
                 path,
                 base_env={
+                    attribute: preexisting,
                     'libs': self.libs,
                     'repo_path': self.path,
                     'vault': self.vault,
@@ -343,7 +345,23 @@ class Repository:
                 p=path,
             ))
         for name, infodict in flat_dict.items():
+            infodict.setdefault('file_path', path)
             yield (name, infodict)
+
+    def nodes_or_groups_from_dir(self, directory):
+        path = join(self.path, directory)
+        if not isdir(path):
+            return
+        for root_dir, _dirs, files in walk(path):
+            for filename in files:
+                filepath = join(root_dir, filename)
+                if not filename.endswith(".toml") or \
+                        not isfile(filepath) or \
+                        filename.startswith("_"):
+                    continue
+                infodict = dict(parse_toml(get_file_contents(filepath)))
+                infodict['file_path'] = filepath
+                yield filename[:-5], infodict
 
     def items_from_dir(self, path):
         """
@@ -579,13 +597,13 @@ class Repository:
                     for group_name in group_order:
                         self._metastacks[node_name]._set_layer(
                             "group:{}".format(group_name),
-                            self.get_group(group_name).metadata,
+                            self.get_group(group_name)._attributes.get('metadata', {}),
                         )
 
                 with io.job(_("{node}  adding node metadata").format(node=bold(node.name))):
                     self._metastacks[node_name]._set_layer(
                         "node:{}".format(node_name),
-                        node._node_metadata,
+                        node._attributes.get('metadata', {}),
                     )
 
                 # This will ensure node/group metadata and defaults are
@@ -737,8 +755,9 @@ class Repository:
                 self.bundle_names.append(dir_entry)
 
         # populate groups
+        toml_groups = dict(self.nodes_or_groups_from_dir("groups"))
         self.group_dict = {}
-        for group in self.nodes_or_groups_from_file(self.groups_file, 'groups'):
+        for group in self.nodes_or_groups_from_file(self.groups_file, 'groups', toml_groups):
             self.add_group(Group(*group))
 
         # populate items
@@ -747,8 +766,9 @@ class Repository:
             self.item_classes.append(item_class)
 
         # populate nodes
+        toml_nodes = dict(self.nodes_or_groups_from_dir("nodes"))
         self.node_dict = {}
-        for node in self.nodes_or_groups_from_file(self.nodes_file, 'nodes'):
+        for node in self.nodes_or_groups_from_file(self.nodes_file, 'nodes', toml_nodes):
             self.add_node(Node(*node))
 
     @cached_property
