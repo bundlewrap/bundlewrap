@@ -4,7 +4,7 @@ from os import environ
 from os.path import join
 from threading import Lock
 
-from tomlkit import dumps as dump_toml, parse as parse_toml
+from tomlkit import dumps as toml_dump, parse as toml_parse
 
 from . import operations
 from .bundle import Bundle
@@ -46,6 +46,7 @@ from .utils.text import (
     green,
     mark_for_translation as _,
     red,
+    toml_clean,
     validate_name,
     yellow,
 )
@@ -749,7 +750,7 @@ class Node:
     def toml(self):
         if not self.file_path or not self.file_path.endswith(".toml"):
             raise ValueError(_("node {} not in TOML format").format(self.name))
-        return parse_toml(get_file_contents(self.file_path))
+        return toml_parse(get_file_contents(self.file_path))
 
     def toml_save(self):
         try:
@@ -760,7 +761,7 @@ class Node:
             toml_doc = dict_to_toml(attributes)
             self.file_path = join(self.repo.path, "nodes", self.name + ".toml")
         with open(self.file_path, 'w') as f:
-            f.write(dump_toml(toml_doc))
+            f.write(toml_clean(toml_dump(toml_doc)))
 
     def toml_set(self, path, value):
         if not isinstance(path, tuple):

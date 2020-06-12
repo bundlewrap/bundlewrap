@@ -1,7 +1,7 @@
 from os.path import join
 import re
 
-from tomlkit import dumps as dump_toml, parse as parse_toml
+from tomlkit import dumps as toml_dump, parse as toml_parse
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .utils import cached_property, error_context, get_file_contents, names
@@ -13,7 +13,7 @@ from .utils.dicts import (
     COLLECTION_OF_STRINGS,
     TUPLE_OF_INTS,
 )
-from .utils.text import mark_for_translation as _, validate_name
+from .utils.text import mark_for_translation as _, toml_clean, validate_name
 
 
 GROUP_ATTR_DEFAULTS = {
@@ -213,7 +213,7 @@ class Group:
     def toml(self):
         if not self.file_path or not self.file_path.endswith(".toml"):
             raise ValueError(_("group {} not in TOML format").format(self.name))
-        return parse_toml(get_file_contents(self.file_path))
+        return toml_parse(get_file_contents(self.file_path))
 
     def toml_save(self):
         try:
@@ -224,7 +224,7 @@ class Group:
             toml_doc = dict_to_toml(attributes)
             self.file_path = join(self.repo.path, "groups", self.name + ".toml")
         with open(self.file_path, 'w') as f:
-            f.write(dump_toml(toml_doc))
+            f.write(toml_clean(toml_dump(toml_doc)))
 
     def toml_set(self, path, value):
         if not isinstance(path, tuple):

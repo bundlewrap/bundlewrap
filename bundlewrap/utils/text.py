@@ -254,3 +254,27 @@ def parse_duration(duration):
         else:
             raise ValueError(_("{} is not a valid duration string").format(repr(duration)))
     return timedelta(days=days, seconds=seconds)
+
+
+def toml_clean(s):
+    """
+    Removes duplicate sections from TOML, e.g.:
+
+        [foo]     <--- this line will be removed since it's redundant
+        [foo.bar]
+        baz = 1
+    """
+    lines = list(s.splitlines())
+    result = []
+    previous = ""
+    for line in lines.copy():
+        print("line: " + line)
+        print("prev: " + previous)
+        if line.startswith("[") and line.endswith("]"):
+            if line[1:].startswith(previous + "."):
+                print("pop: " + result.pop())
+            previous = line[1:-1]
+        else:
+            previous = ""
+        result.append(line)
+    return "\n".join(result)
