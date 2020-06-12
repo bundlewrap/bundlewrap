@@ -22,6 +22,7 @@ nav:
   - Writing plugins: guide/dev_plugin.md
   - Python API: guide/api.md
   - OS compatibility: guide/os_compatibility.md
+  - TOML nodes and groups: guide/toml.md
   - Migrating to 2.0: guide/migrate_12.md
   - Migrating to 3.0: guide/migrate_23.md
 - Repository:

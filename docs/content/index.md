@@ -28,6 +28,8 @@ Should you already know your way around, just click on the part of your repo tha
 <a href="/repo/libs">libs/</a>
 <a href="/guide/secrets">.secrets.cfg</a>
 <a href="/repo/groups.py">groups.py</a>
+nodes/
+     <a href="/guide/toml">nodename.toml</a>
 <a href="/repo/nodes.py">nodes.py</a>
 <a href="/repo/plugins">plugins.json</a>
 <a href="/repo/requirements.txt">requirements.txt</a>
