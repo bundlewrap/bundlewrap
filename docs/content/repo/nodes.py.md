@@ -52,6 +52,8 @@ Node files would then append `nodes`, like this:
 		'hostname': "node-1.example.com",
 	}
 
+Alternatively, consider using [TOML nodes](../guide/toml.md).
+
 <br>
 
 # Node attribute reference

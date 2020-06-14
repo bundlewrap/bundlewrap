@@ -136,7 +136,7 @@ def plot_group(groups, nodes, show_nodes):
         yield "\"{}\" [fontcolor=\"#303030\",shape=box,style=rounded];".format(node.name)
 
     for group in groups:
-        for subgroup in sorted(group.immediate_subgroup_names):
+        for subgroup in sorted(group._attributes.get('subgroups', set())):
             yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
         for subgroup in sorted(group._subgroup_names_from_patterns):
             yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(group.name, subgroup)
@@ -148,7 +148,7 @@ def plot_group(groups, nodes, show_nodes):
                     yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                         group.name, node.name)
                 else:
-                    for pattern in sorted(group.member_patterns):
+                    for pattern in sorted(group._member_patterns):
                         if pattern.search(node.name) is not None:
                             yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
                                 group.name, node.name)
@@ -174,21 +174,21 @@ def plot_node_groups(node):
     yield "\"{}\" [fontcolor=\"#303030\",shape=box,style=rounded];".format(node.name)
 
     for group in sorted(node.groups):
-        for subgroup in sorted(group.immediate_subgroup_names):
+        for subgroup in sorted(group._attributes.get('subgroups', set())):
             if subgroup in names(node.groups):
                 yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(
                     group.name, subgroup)
-        for pattern in sorted(group.immediate_subgroup_patterns):
+        for pattern in sorted(group._immediate_subgroup_patterns):
             for group2 in sorted(node.groups):
                 if pattern.search(group2.name) is not None and group2 != group:
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(
                         group.name, group2.name)
 
-        if group in node._groups:
+        if group in node._attributes.get('groups', set()):
             yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                 group.name, node.name)
         else:
-            for pattern in sorted(group.member_patterns):
+            for pattern in sorted(group._member_patterns):
                 if pattern.search(node.name) is not None:
                     yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
                         group.name, node.name)

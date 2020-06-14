@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta
 from hashlib import md5
 from os import environ
+from os.path import join
 from threading import Lock
+
+from tomlkit import dumps as toml_dump, parse as toml_parse
 
 from . import operations
 from .bundle import Bundle
@@ -25,9 +28,11 @@ from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import hash_metadata
-from .utils import cached_property, error_context, names, NO_DEFAULT
+from .utils import cached_property, error_context, get_file_contents, names, NO_DEFAULT
 from .utils.dicts import (
+    dict_to_toml,
     hash_statedict,
+    set_key_at_path,
     validate_dict,
     value_at_key_path,
     COLLECTION_OF_STRINGS,
@@ -41,6 +46,7 @@ from .utils.text import (
     green,
     mark_for_translation as _,
     red,
+    toml_clean,
     validate_name,
     yellow,
 )
@@ -369,13 +375,10 @@ class Node:
             validate_dict(attributes, NODE_ATTR_TYPES)
 
         self._add_host_keys = environ.get('BW_ADD_HOST_KEYS', False) == "1"
-        self._bundles = attributes.get('bundles', [])
-        self._compiling_metadata = Lock()
-        self._groups = set(attributes.get('groups', set()))
-        self._metadata_so_far = {}
-        self._node_metadata = attributes.get('metadata', {})
+        self._attributes = attributes
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
+        self.file_path = attributes.get('file_path')
         self.hostname = attributes.get('hostname', name)
         self.name = name
 
@@ -394,10 +397,10 @@ class Node:
             added_bundles = []
             found_bundles = []
             for group in self.groups:
-                for bundle_name in group.bundle_names:
+                for bundle_name in set(group._attributes.get('bundles', set())):
                     found_bundles.append(bundle_name)
 
-            for bundle_name in found_bundles + list(self._bundles):
+            for bundle_name in found_bundles + list(self._attributes.get('bundles', set())):
                 if bundle_name not in added_bundles:
                     added_bundles.append(bundle_name)
                     try:
@@ -441,14 +444,14 @@ class Node:
     def groups(self):
         _groups = set()
 
-        for group_name in self._groups:
+        for group_name in set(self._attributes.get('groups', set())):
             _groups.add(self.repo.get_group(group_name))
 
         for group in self.repo.groups:
             if group in _groups:
                 # we're already in this group, no need to check it again
                 continue
-            for pattern in group.member_patterns:
+            for pattern in group._member_patterns:
                 if pattern.search(self.name) is not None:
                     _groups.add(group)
 
@@ -742,6 +745,28 @@ class Node:
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
+
+    @cached_property
+    def toml(self):
+        if not self.file_path or not self.file_path.endswith(".toml"):
+            raise ValueError(_("node {} not in TOML format").format(self.name))
+        return toml_parse(get_file_contents(self.file_path))
+
+    def toml_save(self):
+        try:
+            toml_doc = self.toml
+        except ValueError:
+            attributes = self._attributes.copy()
+            del attributes['file_path']
+            toml_doc = dict_to_toml(attributes)
+            self.file_path = join(self.repo.path, "nodes", self.name + ".toml")
+        with open(self.file_path, 'w') as f:
+            f.write(toml_clean(toml_dump(toml_doc)))
+
+    def toml_set(self, path, value):
+        if not isinstance(path, tuple):
+            path = path.split("/")
+        set_key_at_path(self.toml, path, value)
 
     def upload(self, local_path, remote_path, mode=None, owner="", group="", may_fail=False):
         assert self.os in self.OS_FAMILY_UNIX

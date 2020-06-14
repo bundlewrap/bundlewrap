@@ -9,7 +9,7 @@ from ..utils.ui import io, page_lines
 from ..group import GROUP_ATTR_DEFAULTS
 
 
-NODE_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['bundles', 'groups', 'hostname'])
+NODE_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['bundles', 'file_path', 'groups', 'hostname'])
 NODE_ATTRS_LISTS = ('bundles', 'groups')
 
 
@@ -23,7 +23,7 @@ def _attribute_table(
 ):
     rows = [[entity_label], ROW_SEPARATOR]
     selected_attrs = [attr.strip() for attr in selected_attrs]
-    if selected_attrs == ['all']:
+    if 'all' in selected_attrs:
         selected_attrs = available_attrs
     for attr in selected_attrs:
         if attr not in available_attrs:

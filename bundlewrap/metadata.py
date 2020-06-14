@@ -214,7 +214,7 @@ def check_for_metadata_conflicts_between_groups(node):
     for chain in chains:
         metadata = {}
         for group in chain:
-            metadata = merge_dict(metadata, group.metadata)
+            metadata = merge_dict(metadata, group._attributes.get('metadata', {}))
         chain_metadata.append(metadata)
 
     # create a "key path map" for each chain's metadata
@@ -256,8 +256,12 @@ def find_groups_causing_metadata_conflict(node_name, chain1, chain2, keypath):
     Given two chains (lists of groups), find one group in each chain
     that has conflicting metadata with the other for the given key path.
     """
-    chain1_metadata = [list(map_dict_keys(group.metadata)) for group in chain1]
-    chain2_metadata = [list(map_dict_keys(group.metadata)) for group in chain2]
+    chain1_metadata = [
+        list(map_dict_keys(group._attributes.get('metadata', {}))) for group in chain1
+    ]
+    chain2_metadata = [
+        list(map_dict_keys(group._attributes.get('metadata', {}))) for group in chain2
+    ]
 
     bad_keypath = None
 
