@@ -1,5 +1,3 @@
-import re
-
 from . import names
 from .text import mark_for_translation as _, red
 

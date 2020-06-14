@@ -14,7 +14,6 @@ from .deps import (
     find_item,
 )
 from .exceptions import (
-    DontCache,
     GracefulApplyException,
     ItemDependencyLoop,
     NodeLockedException,
