@@ -451,6 +451,9 @@ class Node:
             if group in _groups:
                 # we're already in this group, no need to check it again
                 continue
+            if self in group._nodes_from_members:
+                _groups.add(group)
+                continue
             for pattern in group._member_patterns:
                 if pattern.search(self.name) is not None:
                     _groups.add(group)

@@ -265,13 +265,13 @@ def test_groups(tmpdir):
     make_repo(
         tmpdir,
         groups={
-            "group1": {},
-            "group2": {},
+            "group1": {'members': ["node1", "node2"]},
+            "group2": {'members': ["node3"]},
         },
         nodes={
-            "node1": {'groups': {"group1"}},
-            "node2": {'groups': {"group1"}},
-            "node3": {'groups': {"group2"}},
+            "node1": {},
+            "node2": {},
+            "node3": {},
         },
     )
 

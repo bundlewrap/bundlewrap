@@ -144,7 +144,10 @@ def plot_group(groups, nodes, show_nodes):
     if show_nodes:
         for group in groups:
             for node in nodes:
-                if group in sorted(node._groups):
+                if group in set(node._attributes.get('groups', set())):
+                    yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
+                        node.name, group.name)
+                elif node in group._nodes_from_members:
                     yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                         group.name, node.name)
                 else:
@@ -152,6 +155,7 @@ def plot_group(groups, nodes, show_nodes):
                         if pattern.search(node.name) is not None:
                             yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
                                 group.name, node.name)
+                            break
     yield "}"
 
 
@@ -185,6 +189,9 @@ def plot_node_groups(node):
                         group.name, group2.name)
 
         if group in node._attributes.get('groups', set()):
+            yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
+                node.name, group.name)
+        elif node in group._nodes_from_members:
             yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                 group.name, node.name)
         else:

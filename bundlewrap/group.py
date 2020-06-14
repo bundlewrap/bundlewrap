@@ -50,6 +50,7 @@ GROUP_ATTR_TYPES = {
     'kubectl_context': (str, type(None)),
     'locking_node': (str, type(None)),
     'member_patterns': COLLECTION_OF_STRINGS,
+    'members': COLLECTION_OF_STRINGS,
     'metadata': dict,
     'os': str,
     'os_version': TUPLE_OF_INTS,
@@ -142,6 +143,20 @@ class Group:
         for node in self.repo.nodes:
             if node.in_group(self.name):
                 yield node
+
+    @cached_property
+    def _nodes_from_members(self):
+        for node_name in self._attributes.get('members', set()):
+            try:
+                yield self.repo.get_node(node_name)
+            except NoSuchNode:
+                raise RepositoryError(_(
+                    "Group '{group}' has '{node}' listed as a member in groups.py, "
+                    "but no such node could be found."
+                ).format(
+                    group=self.name,
+                    node=node_name,
+                ))
 
     @property
     def _subgroup_names_from_patterns(self):

@@ -10,6 +10,11 @@ As with `nodes.py`, you define your groups as a dictionary:
 	            r".*",
 	        ),
 	    },
+	    'group1': {
+	        'members': (
+	            'node1',
+	        ),
+	    },
 	}
 
 All group attributes are optional.
@@ -24,6 +29,7 @@ This section is a reference for all possible attributes you can define for a gro
 	    'group1': {
 	        # THIS PART IS EXPLAINED HERE
 	        'bundles': ["bundle1", "bundle2"],
+	        'members': ["node1"],
 	        'member_patterns': [r"^cluster1\."],
 	        'metadata': {'foo': "bar"},
 	        'os': 'linux',
@@ -41,6 +47,12 @@ Note that many attributes from [nodes.py](nodes.py.md) (e.g. `bundles`) may also
 A list of regular expressions. Node names matching these expressions will be added to the group members.
 
 Matches are determined using [the search() method](http://docs.python.org/2/library/re.html#re.RegexObject.search).
+
+<br>
+
+## members
+
+A tuple or list of node names that belong to this group.
 
 <br>
 

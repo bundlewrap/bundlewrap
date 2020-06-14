@@ -18,6 +18,9 @@ def test_groups_for_node(tmpdir):
                 'subgroups': ["group-foo"],
             },
             "group-baz": {},
+            "group-frob": {
+                'members': {"node-pop"},
+            },
             "group-pop": {
                 'subgroup_patterns': [r"ba"],
             },
@@ -47,8 +50,10 @@ rankdir = LR
 node [color="#303030"; fillcolor="#303030"; fontname=Helvetica]
 edge [arrowhead=vee]
 "group-baz" [fontcolor=white,style=filled];
+"group-frob" [fontcolor=white,style=filled];
 "group-pop" [fontcolor=white,style=filled];
 "node-pop" [fontcolor="#303030",shape=box,style=rounded];
+"group-frob" -> "node-pop" [color="#D18C57",penwidth=2]
 "group-pop" -> "group-baz" [color="#6BB753",penwidth=2]
 }
 """
