@@ -268,13 +268,11 @@ def toml_clean(s):
     result = []
     previous = ""
     for line in lines.copy():
-        print("line: " + line)
-        print("prev: " + previous)
         if line.startswith("[") and line.endswith("]"):
             if line[1:].startswith(previous + "."):
-                print("pop: " + result.pop())
+                result.pop()
             previous = line[1:-1]
         else:
             previous = ""
         result.append(line)
-    return "\n".join(result)
+    return "\n".join(result) + "\n"
