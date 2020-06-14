@@ -19,6 +19,7 @@ unreleased
 * removed `bw metadata --table`, now done automatically (BACKWARDS INCOMPATIBLE)
 * renamed `bw test --metadata-collisions` to `bw test --metadata-conflicts` (BACKWARDS INCOMPATIBLE)
 * reworked passing multi-value options on CLI (BACKWARDS INCOMPATIBLE)
+* `bw apply` will now exit with return code 1 if even a single item fails
 * `items/` is now searched recursively
 
 

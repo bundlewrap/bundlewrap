@@ -95,9 +95,10 @@ def bw_apply(repo, args):
     worker_pool.run()
 
     total_duration = datetime.now() - start_time
+    totals = stats(results)
 
     if args['summary'] and results:
-        stats_summary(results, total_duration)
+        stats_summary(results, totals, total_duration)
     error_summary(errors)
 
     repo.hooks.apply_end(
@@ -107,10 +108,10 @@ def bw_apply(repo, args):
         duration=total_duration,
     )
 
-    exit(1 if errors else 0)
+    exit(1 if errors or totals['failed'] else 0)
 
 
-def stats_summary(results, total_duration):
+def stats(results):
     totals = {
         'items': 0,
         'correct': 0,
@@ -118,7 +119,14 @@ def stats_summary(results, total_duration):
         'skipped': 0,
         'failed': 0,
     }
+    for result in results:
+        totals['items'] += result.total
+        for metric in ('correct', 'fixed', 'skipped', 'failed'):
+            totals[metric] += getattr(result, metric)
+    return totals
 
+
+def stats_summary(results, totals, total_duration):
     rows = [[
         bold(_("node")),
         _("items"),
@@ -130,9 +138,6 @@ def stats_summary(results, total_duration):
     ], ROW_SEPARATOR]
 
     for result in results:
-        totals['items'] += result.total
-        for metric in ('correct', 'fixed', 'skipped', 'failed'):
-            totals[metric] += getattr(result, metric)
         rows.append([
             result.node_name,
             str(result.total),
