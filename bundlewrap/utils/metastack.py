@@ -2,10 +2,8 @@ from collections import OrderedDict
 from sys import version_info
 
 from ..metadata import deepcopy_metadata, validate_metadata, value_at_key_path
+from . import NO_DEFAULT
 from .dicts import map_dict_keys, merge_dict
-
-
-_NO_DEFAULT = "<NO METASTACK DEFAULT PROVIDED>"
 
 
 class Metastack:
@@ -23,7 +21,7 @@ class Metastack:
         else:
             self._layers = {}
 
-    def get(self, path, default=_NO_DEFAULT):
+    def get(self, path, default=NO_DEFAULT):
         """
         Get the value at the given path, merging all layers together.
 
@@ -58,7 +56,7 @@ class Metastack:
                     result = merge_dict(result, {'data': value})
 
         if undef:
-            if default != _NO_DEFAULT:
+            if default != NO_DEFAULT:
                 return default
             else:
                 raise KeyError('/'.join(path))
