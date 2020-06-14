@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from hashlib import md5
-from os import environ
-from os.path import join
+from os import environ, mkdir
+from os.path import exists, join
 from threading import Lock
 
 from tomlkit import dumps as toml_dump, parse as toml_parse
@@ -760,6 +760,8 @@ class Node:
             del attributes['file_path']
             toml_doc = dict_to_toml(attributes)
             self.file_path = join(self.repo.path, "nodes", self.name + ".toml")
+        if not exists(join(self.repo.path, "nodes")):
+            mkdir(join(self.repo.path, "nodes"))
         with open(self.file_path, 'w') as f:
             f.write(toml_clean(toml_dump(toml_doc)))
 

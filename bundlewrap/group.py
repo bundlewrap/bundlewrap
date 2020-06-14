@@ -1,4 +1,5 @@
-from os.path import join
+from os import mkdir
+from os.path import exists, join
 import re
 
 from tomlkit import dumps as toml_dump, parse as toml_parse
@@ -238,6 +239,8 @@ class Group:
             del attributes['file_path']
             toml_doc = dict_to_toml(attributes)
             self.file_path = join(self.repo.path, "groups", self.name + ".toml")
+        if not exists(join(self.repo.path, "groups")):
+            mkdir(join(self.repo.path, "groups"))
         with open(self.file_path, 'w') as f:
             f.write(toml_clean(toml_dump(toml_doc)))
 
