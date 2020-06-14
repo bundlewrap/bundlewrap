@@ -393,24 +393,22 @@ class Node:
     @cached_property
     def bundles(self):
         with io.job(_("{node}  loading bundles").format(node=bold(self.name))):
-            added_bundles = []
-            found_bundles = []
+            bundle_names = set(self._attributes.get('bundles', set()))
+
             for group in self.groups:
                 for bundle_name in set(group._attributes.get('bundles', set())):
-                    found_bundles.append(bundle_name)
+                    bundle_names.add(bundle_name)
 
-            for bundle_name in found_bundles + list(self._attributes.get('bundles', set())):
-                if bundle_name not in added_bundles:
-                    added_bundles.append(bundle_name)
-                    try:
-                        yield Bundle(self, bundle_name)
-                    except NoSuchBundle:
-                        raise NoSuchBundle(_(
-                            "Node '{node}' wants bundle '{bundle}', but it doesn't exist."
-                        ).format(
-                            bundle=bundle_name,
-                            node=self.name,
-                        ))
+            for bundle_name in bundle_names:
+                try:
+                    yield Bundle(self, bundle_name)
+                except NoSuchBundle:
+                    raise NoSuchBundle(_(
+                        "Node '{node}' wants bundle '{bundle}', but it doesn't exist."
+                    ).format(
+                        bundle=bundle_name,
+                        node=self.name,
+                    ))
 
     @cached_property
     def cdict(self):
