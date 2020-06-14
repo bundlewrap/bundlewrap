@@ -34,10 +34,10 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     tmpdir.mkdir("hooks")
 
     groupspy = tmpdir.join("groups.py")
-    groupspy.write("# -*- coding: utf-8 -*-\ngroups = {}\n".format(repr(groups)))
+    groupspy.write("groups = {}\n".format(repr(groups)))
 
     nodespy = tmpdir.join("nodes.py")
-    nodespy.write("# -*- coding: utf-8 -*-\nnodes = {}\n".format(repr(nodes)))
+    nodespy.write("nodes = {}\n".format(repr(nodes)))
 
     secrets = tmpdir.join(FILENAME_SECRETS)
     secrets.write("[generate]\nkey = {}\n\n[encrypt]\nkey = {}\n".format(
