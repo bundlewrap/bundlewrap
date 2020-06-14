@@ -603,6 +603,30 @@ def test_fault_missing(tmpdir):
     assert run("bw test -iI", path=str(tmpdir))[2] == 0
 
 
+def test_fault_missing_content(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {}
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "items.py"), 'w') as f:
+        f.write("""
+files = {
+    "/foo": {
+        'content': repo.vault.decrypt("bzzt", key="unavailable"),
+    },
+}
+""")
+    assert run("bw test -I", path=str(tmpdir))[2] == 1
+    assert run("bw test -iI", path=str(tmpdir))[2] == 0
+
+
 def test_metadata_determinism_ok(tmpdir):
     make_repo(
         tmpdir,

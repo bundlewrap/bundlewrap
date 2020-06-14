@@ -213,3 +213,30 @@ def test_text_template_content(tmpdir):
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
     assert content == b"${node.name}"
+
+
+def test_fault_content_unavailable_skipped(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {},
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "items.py"), 'w') as f:
+        f.write("""
+files = {
+    "/tmp/bw_test_faultunavailable": {
+        'content': repo.vault.password_for("fault", key="missing"),
+    },
+}
+""")
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+    assert b"file:/tmp/bw_test_faultunavailable skipped (Fault unavailable)" in stdout
+    assert not exists("/tmp/bw_test_faultunavailable")
