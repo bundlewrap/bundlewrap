@@ -13,6 +13,7 @@ The primary way to define nodes is in [nodes.py](../repo/nodes.py.md). However, 
 * Does not support [Fault objects](../api/#bundlewraputilsfault)
 * Does not support [atomic()](../repo/groups.py.md#metadata)
 * Does not support `None`
+* Does not support sets or tuples
 * More difficult to read for long, deeply nested metadata
 
 <br>
