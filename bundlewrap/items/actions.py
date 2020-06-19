@@ -183,7 +183,7 @@ class Action(Item):
             item=self.id,
             node=bold(self.node.name),
         )):
-            result = self.bundle.node.run(
+            result = super().run(
                 self.attributes['command'],
                 data_stdin=data_stdin,
                 may_fail=True,

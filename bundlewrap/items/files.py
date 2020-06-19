@@ -258,7 +258,7 @@ class File(Item):
             command = "chmod {} {}"
         else:
             command = "chmod {} -- {}"
-        self.node.run(command.format(
+        self.run(command.format(
             self.attributes['mode'],
             quote(self.name),
         ))
@@ -271,7 +271,7 @@ class File(Item):
             command = "chown {}{} {}"
         else:
             command = "chown {}{} -- {}"
-        self.node.run(command.format(
+        self.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
             quote(self.name),
@@ -280,9 +280,9 @@ class File(Item):
 
     def _fix_type(self, status):
         if status.sdict:
-            self.node.run("rm -rf -- {}".format(quote(self.name)))
+            self.run("rm -rf -- {}".format(quote(self.name)))
         if not status.must_be_deleted:
-            self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
+            self.run("mkdir -p -- {}".format(quote(dirname(self.name))))
             self._fix_content_hash(status)
 
     def get_auto_deps(self, items):

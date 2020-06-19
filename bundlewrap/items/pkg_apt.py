@@ -19,14 +19,14 @@ class AptPkg(Pkg):
     }
 
     def pkg_all_installed(self):
-        result = self.node.run("dpkg -l | grep '^ii'")
+        result = self.run("dpkg -l | grep '^ii'")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
             pkg_name = line[4:].split()[0].replace(":", "_")
             yield "{}:{}".format(self.ITEM_TYPE_NAME, pkg_name)
 
     def pkg_install(self):
         runlevel = "" if self.when_creating['start_service'] else "RUNLEVEL=1 "
-        self.node.run(
+        self.run(
             runlevel +
             "DEBIAN_FRONTEND=noninteractive "
             "apt-get -qy -o Dpkg::Options::=--force-confold --no-install-recommends "
@@ -35,7 +35,7 @@ class AptPkg(Pkg):
         )
 
     def pkg_installed(self):
-        result = self.node.run(
+        result = self.run(
             "dpkg -s {} | grep '^Status: '".format(quote(self.name.replace("_", ":"))),
             may_fail=True,
         )
@@ -55,7 +55,7 @@ class AptPkg(Pkg):
             return False
 
     def pkg_remove(self):
-        self.node.run(
+        self.run(
             "DEBIAN_FRONTEND=noninteractive "
             "apt-get -qy purge {}".format(quote(self.name.replace("_", ":")))
         )
