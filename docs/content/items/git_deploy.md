@@ -3,19 +3,17 @@
 The `git_deploy` item lets you deploy the *contents* of a git repository to a node - without requiring the node to have access to that repository or exposing the `.git/` directory to the node.
 
     directories = {
+        # git_deploy will not create this by itself
         "/var/tmp/example": {},
     }
 
     git_deploy = {
         "/var/tmp/example": {
-            'needs': ["directory:/var/tmp/example"],
             'repo': "example",
             'rev': "master",
             'use_xattrs': True,
         },
     }
-
-As illustrated in the example above, you *always* have to create a dependency on a directory item or otherwise make sure the directory you're deploying to is already there.
 
 `git_deploy` items will only upload a tarball with the data from the git repo, no part of the git history is leaked to the node.
 

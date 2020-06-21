@@ -6,10 +6,10 @@ from shutil import rmtree
 from subprocess import PIPE, Popen
 from tempfile import mkdtemp, NamedTemporaryFile
 
-from bundlewrap.exceptions import RepositoryError
+from bundlewrap.exceptions import BundleError, RepositoryError
 from bundlewrap.items import Item
 from bundlewrap.utils import cached_property
-from bundlewrap.utils.text import mark_for_translation as _, randstr
+from bundlewrap.utils.text import is_subdirectory, mark_for_translation as _, randstr
 from bundlewrap.utils.ui import io
 
 
@@ -153,6 +153,39 @@ class GitDeploy(Item):
 
     def cdict(self):
         return {'rev': self._expanded_rev}
+
+    def get_auto_deps(self, items):
+        deps = set()
+        for item in items:
+            if item == self:
+                continue
+            if ((
+                item.ITEM_TYPE_NAME == "file" and
+                is_subdirectory(item.name, self.name)
+            ) or (
+                item.ITEM_TYPE_NAME in ("file", "symlink") and
+                item.name == self.name
+            )):
+                raise BundleError(_(
+                    "{item1} (from bundle '{bundle1}') blocking path to "
+                    "{item2} (from bundle '{bundle2}')"
+                ).format(
+                    item1=item.id,
+                    bundle1=item.bundle.name,
+                    item2=self.id,
+                    bundle2=self.bundle.name,
+                ))
+            if (
+                item.ITEM_TYPE_NAME == "directory" and
+                item.name == self.name
+            ):
+                if item.attributes['purge']:
+                    raise BundleError(_(
+                        "cannot git_deploy into purged directory {}"
+                    ).format(item.name))
+                else:
+                    deps.add(item.id)
+        return deps
 
     def fix(self, status):
         archive_local = NamedTemporaryFile(delete=False)
