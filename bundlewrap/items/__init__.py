@@ -150,7 +150,7 @@ class Item:
         self.name = name
         self.node = bundle.node
         self.when_creating = {}
-        self.results = []
+        self._command_results = []
         self._faults_missing_for_attributes = set()
         self._precedes_items = []
 
@@ -618,17 +618,17 @@ class Item:
 
     def run_local(self, command, **kwargs):
         result = run_local(command, **kwargs)
-        self.results.append({
+        self._command_results.append({
             'command': command,
-            'result':  result,
+            'result': result,
         })
         return result
 
     def run(self, command, **kwargs):
         result = self.node.run(command, **kwargs)
-        self.results.append({
+        self._command_results.append({
             'command': command,
-            'result':  result,
+            'result': result,
         })
         return result
 

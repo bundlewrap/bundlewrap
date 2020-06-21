@@ -134,9 +134,10 @@ def handle_apply_result(node, item, status_code, interactive, details=None):
     if formatted_result is not None:
         if status_code == Item.STATUS_FAILED:
             io.stderr(formatted_result)
-            if item.results:
-                io.stderr(format_error_messages(item.results))
-                del item.results
+            if item._command_results:
+                io.stderr(format_item_command_results(item._command_results))
+                # free up memory
+                del item._command_results
         else:
             io.stdout(formatted_result)
 
@@ -285,7 +286,7 @@ def _flatten_group_hierarchy(groups):
     return order
 
 
-def format_error_messages(results):
+def format_item_command_results(results):
     output = ""
 
     for i in range(len(results)):
@@ -315,6 +316,7 @@ def format_error_messages(results):
 
     output += red("\n╵ ")
     return output.lstrip('\n')
+
 
 def format_item_result(result, node, bundle, item, interactive=False, details=None):
     if details is True:

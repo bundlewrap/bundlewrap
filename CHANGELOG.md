@@ -21,6 +21,7 @@ unreleased
 * reworked passing multi-value options on CLI (BACKWARDS INCOMPATIBLE)
 * `bw apply` will now exit with return code 1 if even a single item fails
 * `items/` is now searched recursively
+* failed items will now show what commands they ran and what their output was
 
 
 # 3.9.0

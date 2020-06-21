@@ -120,9 +120,9 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 Step 3: Implement methods
 -------------------------
 
-You should probably start with `sdict()`. Use `self.node.run("command")` to run shell commands on the current node and check the `stdout` property of the returned object.
+You should probably start with `sdict()`. Use `self.run("command")` to run shell commands on the current node and check the `stdout` property of the returned object.
 
-The only other method you have to implement is `fix`. It doesn't have to return anything and just uses `self.node.run()` to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.
+The only other method you have to implement is `fix`. It doesn't have to return anything and just uses `self.run()` to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.
 
 `block_concurrent()` must return a list of item types (e.g. `['pkg_apt']`) that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time).
 
