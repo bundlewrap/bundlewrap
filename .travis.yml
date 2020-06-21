@@ -4,8 +4,11 @@ python:
 - 3.7
 - 3.8
 dist: focal
-services:
-- postgresql
+addons:
+  postgresql: "12"
+  apt:
+    packages:
+     - postgresql-12
 install:
 - pip install .
 before_script:
