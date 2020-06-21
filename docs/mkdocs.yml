@@ -24,6 +24,7 @@ nav:
   - TOML nodes and groups: guide/toml.md
   - Migrating to 2.0: guide/migrate_12.md
   - Migrating to 3.0: guide/migrate_23.md
+  - Migrating to 4.0: guide/migrate_34.md
 - Repository:
   - Overview: repo/layout.md
   - nodes.py: repo/nodes.py.md
