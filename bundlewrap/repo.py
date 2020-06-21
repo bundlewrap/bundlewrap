@@ -1,4 +1,4 @@
-from imp import load_source
+from importlib.machinery import SourceFileLoader
 from inspect import isabstract
 from os import environ, listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
@@ -168,7 +168,10 @@ class LibsProxy:
             filename = attrname + ".py"
             filepath = join(self.__path, filename)
             try:
-                m = load_source('bundlewrap.repo.libs_{}'.format(attrname), filepath)
+                m = SourceFileLoader(
+                    'bundlewrap.repo.libs_{}'.format(attrname),
+                    filepath,
+                ).load_module()
             except:
                 io.stderr(_("Exception while trying to load {}:").format(filepath))
                 raise

@@ -32,6 +32,7 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
 
     tmpdir.mkdir("data")
     tmpdir.mkdir("hooks")
+    tmpdir.mkdir("libs")
 
     groupspy = tmpdir.join("groups.py")
     groupspy.write("groups = {}\n".format(repr(groups)))
