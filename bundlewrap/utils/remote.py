@@ -58,10 +58,6 @@ class PathInfo:
         return self.stat['group']
 
     @property
-    def is_binary_file(self):  # FIXME: shouldn't this be used?
-        return self.is_file and not self.is_text_file
-
-    @property
     def is_directory(self):
         return self.stat['type'] == "directory"
 
@@ -110,16 +106,6 @@ class PathInfo:
         # sha1sum adds a leading backslash to hashes of files whose name
         # contains backslash-escaped characters – we must lstrip() that
         return force_text(result.stdout).strip().lstrip("\\").split()[0]
-
-    @cached_property
-    def sha256(self):  # FIXME unused?
-        if self.node.os == 'macos':
-            result = self.node.run("shasum -a 256 -- {}".format(quote(self.path)))
-        elif self.node.os in self.node.OS_FAMILY_BSD:
-            result = self.node.run("sha256 -q -- {}".format(quote(self.path)))
-        else:
-            result = self.node.run("sha256sum -- {}".format(quote(self.path)))
-        return force_text(result.stdout).strip().split()[0]
 
     @property
     def size(self):
