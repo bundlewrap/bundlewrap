@@ -14,7 +14,7 @@ Please use the [GitHub issue tracker](https://github.com/bundlewrap/bundlewrap/i
 
 ## Contributing code
 
-<div class="alert alert-info">Before working on new features, try reaching out to one of the core authors first. We are very concerned with keeping BundleWrap lean and not introducing bloat. If your idea is not a good fit for all or most BundleWrap users, it can still be included <a href="../dev_plugins">as a plugin</a>.</div>
+<div class="alert alert-info">Before working on new features, try reaching out to one of the core authors first. We are very concerned with keeping BundleWrap lean and not introducing bloat.</div>
 
 Here are the steps:
 

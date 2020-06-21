@@ -34,7 +34,7 @@ No. BundleWrap is meant to be very push-focused. The node should not have any sa
 
 ### Is BundleWrap secure?
 
-BundleWrap is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a BundleWrap repository that could compromise your machine. You should only use trusted repositories and plugins. We also recommend following commit logs to your repos.
+BundleWrap is more concerned with safety than security. Due to its design, it is possible for your coworkers to introduce malicious code into a BundleWrap repository that could compromise your machine. You should only use trusted repositories and code. We also recommend following commit logs to your repos.
 
 <br>
 

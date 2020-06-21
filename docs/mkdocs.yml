@@ -19,7 +19,6 @@ nav:
   - Locking: guide/locks.md
   - Kubernetes: guide/kubernetes.md
   - Custom items: guide/dev_item.md
-  - Writing plugins: guide/dev_plugin.md
   - Python API: guide/api.md
   - OS compatibility: guide/os_compatibility.md
   - TOML nodes and groups: guide/toml.md
@@ -34,7 +33,6 @@ nav:
   - bundles/.../metadata.py: repo/metadata.py.md
   - hooks/: repo/hooks.md
   - libs/: repo/libs.md
-  - Plugins: repo/plugins.md
 - Items:
   - action: items/action.md
   - directory: items/directory.md

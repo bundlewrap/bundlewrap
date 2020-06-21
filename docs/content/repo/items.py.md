@@ -113,7 +113,7 @@ This attribute is an alternative way of defining dependencies. It works just lik
 
 * if you need all items of a certain type to depend on something or
 * if you need all items in a bundle to depend on something or
-* if you need an item in a bundle you can't edit (e.g. because it's provided by a community-maintained [plugin](plugins.md)) to depend on something in your bundles
+* if you need an item in a bundle you can't edit to depend on something in your bundles
 
 <br>
 

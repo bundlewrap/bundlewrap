@@ -6,7 +6,6 @@ from ..deps import DummyItem
 from ..exceptions import FaultUnavailable, ItemDependencyLoop
 from ..itemqueue import ItemTestQueue
 from ..metadata import check_for_metadata_conflicts
-from ..plugins import PluginManager
 from ..repo import Repository
 from ..utils.cmdline import count_items, get_target_nodes
 from ..utils.plot import explain_item_dependency_loop
@@ -161,31 +160,6 @@ def test_empty_groups(repo):
         exit(1)
 
 
-def test_plugin_conflicts(repo):
-    pm = PluginManager(repo.path)
-    for plugin, version in pm.list():
-        if QUIT_EVENT.is_set():
-            break
-        local_changes = pm.local_modifications(plugin)
-        if local_changes:
-            io.stderr(_("{x}  Plugin '{plugin}' has local modifications:").format(
-                plugin=plugin,
-                x=red("✘"),
-            ))
-            for path, actual_checksum, should_checksum in local_changes:
-                io.stderr(_("\t{path} ({actual_checksum}) should be {should_checksum}").format(
-                    actual_checksum=actual_checksum,
-                    path=path,
-                    should_checksum=should_checksum,
-                ))
-            exit(1)
-        else:
-            io.stdout(_("{x}  Plugin '{plugin}' has no local modifications.").format(
-                plugin=plugin,
-                x=green("✓"),
-            ))
-
-
 def test_determinism_config(repo, nodes, iterations):
     """
     Generate configuration a couple of times for every node and see if
@@ -279,7 +253,6 @@ def bw_test(repo, args):
         args['metadata_conflicts'] or
         args['orphaned_bundles'] or
         args['empty_groups'] or
-        args['plugin_conflicts'] or
         args['subgroup_loops']
     )
     if args['targets']:
@@ -301,9 +274,6 @@ def bw_test(repo, args):
 
     if args['ignore_secret_identifiers'] is not None and not QUIT_EVENT.is_set():
         test_secret_identifiers(repo, args['ignore_secret_identifiers'])
-
-    if args['plugin_conflicts'] and not QUIT_EVENT.is_set():
-        test_plugin_conflicts(repo)
 
     if args['subgroup_loops'] and not QUIT_EVENT.is_set():
         test_subgroup_loops(repo)

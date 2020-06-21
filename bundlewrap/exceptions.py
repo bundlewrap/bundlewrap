@@ -57,13 +57,6 @@ class NoSuchNode(Exception):
     pass
 
 
-class NoSuchPlugin(Exception):
-    """
-    Raised when a plugin of unknown name is requested.
-    """
-    pass
-
-
 class RemoteException(Exception):
     """
     Raised when a shell command on a node fails.
@@ -117,20 +110,6 @@ class NoSuchRepository(RepositoryError):
 class MissingRepoDependency(RepositoryError):
     """
     Raised when a dependency from requirements.txt is missing.
-    """
-    pass
-
-
-class PluginError(RepositoryError):
-    """
-    Indicates an error related to a plugin.
-    """
-    pass
-
-
-class PluginLocalConflict(PluginError):
-    """
-    Raised when a plugin tries to overwrite locally-modified files.
     """
     pass
 

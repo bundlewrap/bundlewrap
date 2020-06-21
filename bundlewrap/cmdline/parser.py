@@ -14,8 +14,7 @@ from .lock import bw_lock_add, bw_lock_remove, bw_lock_show
 from .metadata import bw_metadata
 from .nodes import bw_nodes
 from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups
-from .repo import bw_repo_bundle_create, bw_repo_create, bw_repo_plugin_install, \
-    bw_repo_plugin_list, bw_repo_plugin_search, bw_repo_plugin_remove, bw_repo_plugin_update
+from .repo import bw_repo_bundle_create, bw_repo_create
 from .run import bw_run
 from .stats import bw_stats
 from .test import bw_test
@@ -743,85 +742,6 @@ bundle:my_bundle  # items in this bundle
     parser_repo_subparsers_create = parser_repo_subparsers.add_parser("create")
     parser_repo_subparsers_create.set_defaults(func=bw_repo_create)
 
-    # bw repo plugin
-    parser_repo_subparsers_plugin = parser_repo_subparsers.add_parser("plugin")
-    parser_repo_subparsers_plugin_subparsers = parser_repo_subparsers_plugin.add_subparsers()
-
-    # bw repo plugin install
-    parser_repo_subparsers_plugin_install = parser_repo_subparsers_plugin_subparsers.add_parser("install")
-    parser_repo_subparsers_plugin_install.set_defaults(func=bw_repo_plugin_install)
-    parser_repo_subparsers_plugin_install.add_argument(
-        'plugin',
-        metavar=_("PLUGIN_NAME"),
-        type=str,
-        help=_("name of plugin to install"),
-    )
-    parser_repo_subparsers_plugin_install.add_argument(
-        "-f",
-        "--force",
-        action='store_true',
-        dest='force',
-        help=_("overwrite existing files when installing"),
-    )
-
-    # bw repo plugin list
-    parser_repo_subparsers_plugin_list = parser_repo_subparsers_plugin_subparsers.add_parser("list")
-    parser_repo_subparsers_plugin_list.set_defaults(func=bw_repo_plugin_list)
-
-    # bw repo plugin remove
-    parser_repo_subparsers_plugin_remove = parser_repo_subparsers_plugin_subparsers.add_parser("remove")
-    parser_repo_subparsers_plugin_remove.set_defaults(func=bw_repo_plugin_remove)
-    parser_repo_subparsers_plugin_remove.add_argument(
-        'plugin',
-        metavar=_("PLUGIN_NAME"),
-        type=str,
-        help=_("name of plugin to remove"),
-    )
-    parser_repo_subparsers_plugin_remove.add_argument(
-        "-f",
-        "--force",
-        action='store_true',
-        dest='force',
-        help=_("remove files even if locally modified"),
-    )
-
-    # bw repo plugin search
-    parser_repo_subparsers_plugin_search = parser_repo_subparsers_plugin_subparsers.add_parser("search")
-    parser_repo_subparsers_plugin_search.set_defaults(func=bw_repo_plugin_search)
-    parser_repo_subparsers_plugin_search.add_argument(
-        'term',
-        metavar=_("SEARCH_STRING"),
-        nargs='?',
-        type=str,
-        help=_("look for this string in plugin names and descriptions"),
-    )
-
-    # bw repo plugin update
-    parser_repo_subparsers_plugin_update = parser_repo_subparsers_plugin_subparsers.add_parser("update")
-    parser_repo_subparsers_plugin_update.set_defaults(func=bw_repo_plugin_update)
-    parser_repo_subparsers_plugin_update.add_argument(
-        'plugin',
-        default=None,
-        metavar=_("PLUGIN_NAME"),
-        nargs='?',
-        type=str,
-        help=_("name of plugin to update"),
-    )
-    parser_repo_subparsers_plugin_update.add_argument(
-        "-c",
-        "--check-only",
-        action='store_true',
-        dest='check_only',
-        help=_("only show what would be updated"),
-    )
-    parser_repo_subparsers_plugin_update.add_argument(
-        "-f",
-        "--force",
-        action='store_true',
-        dest='force',
-        help=_("overwrite local modifications when updating"),
-    )
-
     # bw run
     help_run = _("Run a one-off command on a number of nodes")
     parser_run = subparsers.add_parser(
@@ -914,13 +834,6 @@ bundle:my_bundle  # items in this bundle
         nargs='*',
         type=str,
         help=HELP_get_target_nodes + _("\n(defaults to all)"),
-    )
-    parser_test.add_argument(
-        "-c",
-        "--plugin-conflicts",
-        action='store_true',
-        dest='plugin_conflicts',
-        help=_("check for local modifications to files installed by plugins"),
     )
     parser_test.add_argument(
         "-d",

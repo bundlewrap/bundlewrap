@@ -17,6 +17,7 @@ unreleased
 * added `bw metadata --hide-node`
 * added paging and color-coding for metadata sources to `bw metadata`
 * removed `bw metadata --table`, now done automatically (BACKWARDS INCOMPATIBLE)
+* removed `bw repo plugin` (BACKWARDS INCOMPATIBLE)
 * renamed `bw test --metadata-collisions` to `bw test --metadata-conflicts` (BACKWARDS INCOMPATIBLE)
 * reworked passing multi-value options on CLI (BACKWARDS INCOMPATIBLE)
 * `bw apply` will now exit with return code 1 if even a single item fails
