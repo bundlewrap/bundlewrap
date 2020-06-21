@@ -1,5 +1,5 @@
 from base64 import b64encode, urlsafe_b64decode
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import hashlib
 import hmac
 from os import environ
@@ -237,7 +237,7 @@ class SecretProxy:
         return random(h.digest())
 
     def _load_keys(self):
-        config = SafeConfigParser()
+        config = ConfigParser()
         secrets_file = join(self.repo.path, FILENAME_SECRETS)
         try:
             config.read(secrets_file)
