@@ -37,6 +37,7 @@ nav:
   - action: items/action.md
   - directory: items/directory.md
   - file: items/file.md
+  - git_deploy: items/git_deploy.md
   - group: items/group.md
   - k8s_*: items/k8s.md
   - pkg_apt: items/pkg_apt.md

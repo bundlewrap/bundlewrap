@@ -15,6 +15,7 @@ unreleased
 * added `bw metadata --hide-reactors`
 * added `bw metadata --hide-groups`
 * added `bw metadata --hide-node`
+* added `git_deploy` items (formerly a plugin)
 * added paging and color-coding for metadata sources to `bw metadata`
 * removed `bw metadata --table`, now done automatically (BACKWARDS INCOMPATIBLE)
 * removed `bw repo plugin` (BACKWARDS INCOMPATIBLE)

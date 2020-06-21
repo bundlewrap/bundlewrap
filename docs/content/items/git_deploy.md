@@ -1,0 +1,67 @@
+# Deploying from git
+
+The `git_deploy` item lets you deploy the *contents* of a git repository to a node - without requiring the node to have access to that repository or exposing the `.git/` directory to the node.
+
+    directories = {
+        "/var/tmp/example": {},
+    }
+
+    git_deploy = {
+        "/var/tmp/example": {
+            'needs': ["directory:/var/tmp/example"],
+            'repo': "example",
+            'rev': "master",
+            'use_xattrs': True,
+        },
+    }
+
+As illustrated in the example above, you *always* have to create a dependency on a directory item or otherwise make sure the directory you're deploying to is already there.
+
+`git_deploy` items will only upload a tarball with the data from the git repo, no part of the git history is leaked to the node.
+
+Requires git to be installed on the machine running BundleWrap.
+
+<br>
+
+# git_deploy_repos
+
+Put this in a file called git_deploy_repos in your repository root:
+
+    example: /Users/jdoe/Projects/example
+
+This file should also be added to your `.gitignore` if you are sharing that repo with a team. Each team member must provide a mapping of the repo name used in the bundle ("example" in this case) to a local filesystem path with a git repository. It is each user's responsibility to make sure the clone in that location is up to date.
+
+<br>
+
+# Attribute reference
+
+See also: [The list of generic builtin item attributes](../repo/items.py.md#builtin-item-attributes)
+
+<hr>
+
+## repo
+
+The short name of a repo as it appears in `git_deploy_repos`.
+
+Alternatively, it can point directly to a git URL:
+
+    git_deploy = {
+        "/var/tmp/example": {
+            'repo': "https://github.com/bundlewrap/bundlewrap.git",
+            [...]
+        },
+    }
+
+Note however that this has a severe performance penalty, as a new clone of that repo has to be made every time the status of the item is checked.
+
+<br>
+
+## rev
+
+The `rev` attribute can contain anything `git rev-parse` can resolve into a commit hash (branch names, tags, first few characters of full commit hash). Note that you should probably use tags here. *Never* use HEAD (use a branch name like 'master' instead).
+
+<br>
+
+## use_xattrs
+
+BundleWrap needs to store the deployed commit hash on the node. The `use_xattrs` attribute controls how this is done. If set to `True`, the `attr` command on the node is used to store the hash as an extended file system attribute. Since `attr` might not be installed on the node, the default is to place a dotfile in the target directory instead (keep that in mind when deploying websites etc.).

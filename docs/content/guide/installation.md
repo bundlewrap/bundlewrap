@@ -63,7 +63,7 @@ While the following list might appear long, even very minimal systems should pro
 * `dpkg` (only used with [pkg_apt](../items/pkg_apt.md) items)
 * `echo`
 * `file`
-* `find` (only used with [directory purging](../items/directory.md#purge))
+* `find`
 * `grep`
 * `groupadd`
 * `groupmod`
@@ -78,6 +78,7 @@ While the following list might appear long, even very minimal systems should pro
 * `sha1sum`
 * `stat`
 * `systemctl` (only used with [svc_systemd](../items/svc_systemd.md) items)
+* `tar` (only used with [git_deploy](../items/git_deploy.md) items)
 * `useradd`
 * `usermod`
 
