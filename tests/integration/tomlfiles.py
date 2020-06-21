@@ -23,8 +23,7 @@ def test_toml_conversion(tmpdir):
     node = repo.get_node("node1")
     node.toml_save()
 
-    # str is needed on Python 3.5 for LocalPath objects
-    assert get_file_contents(join(str(tmpdir), "nodes", "node1.toml")) == \
+    assert get_file_contents(join(tmpdir, "nodes", "node1.toml")) == \
         b"""os = "ubuntu"
 
 [metadata.foo]

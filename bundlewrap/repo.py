@@ -184,8 +184,7 @@ class Repository:
         if repo_path is None:
             self.path = "/dev/null"
         else:
-            # str is needed on Python 3.5 for LocalPath objects
-            self.path = self._discover_root_path(abspath(str(repo_path)))
+            self.path = self._discover_root_path(abspath(repo_path))
 
         self._set_path(self.path)
 

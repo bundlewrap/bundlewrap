@@ -4,8 +4,9 @@ unreleased
 
 * new metadata processor API (BACKWARDS INCOMPATIBLE)
 * removed `template_node` node attribute (BACKWARDS INCOMPATIBLE)
-* removed support for Python 3.4 (BACKWARDS INCOMPATIBLE)
 * removed support for Python 2.7 (BACKWARDS INCOMPATIBLE)
+* removed support for Python 3.4 (BACKWARDS INCOMPATIBLE)
+* removed support for Python 3.5 (BACKWARDS INCOMPATIBLE)
 * removed `members_add/remove` attribute for groups (BACKWARDS INCOMPATIBLE)
 * removed `bw --adhoc-nodes` (BACKWARDS INCOMPATIBLE)
 * added `locking_node` node attribute
