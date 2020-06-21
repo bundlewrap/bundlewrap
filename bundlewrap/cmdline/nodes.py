@@ -22,14 +22,22 @@ def _attribute_table(
     inline,
 ):
     rows = [[entity_label], ROW_SEPARATOR]
-    selected_attrs = [attr.strip() for attr in selected_attrs]
-    if 'all' in selected_attrs:
+    selected_attrs = {attr.strip() for attr in selected_attrs}
+
+    if selected_attrs == {'all'}:
         selected_attrs = available_attrs
+    elif 'all' in selected_attrs:
+        io.stderr(_(
+            "{x} invalid attribute list requested ('all' and extraneous): {attr}"
+        ).format(x=red("!!!"), attr=", ".join(sorted(selected_attrs))))
+        exit(1)
+
     for attr in selected_attrs:
         if attr not in available_attrs:
             io.stderr(_("{x} unknown attribute: {attr}").format(x=red("!!!"), attr=attr))
             exit(1)
         rows[0].append(bold(attr))
+
     has_list_attrs = False
     for entity in sorted(entities):
         attr_values = [[entity.name]]
