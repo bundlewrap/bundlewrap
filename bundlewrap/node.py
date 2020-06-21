@@ -134,6 +134,9 @@ def handle_apply_result(node, item, status_code, interactive, details=None):
     if formatted_result is not None:
         if status_code == Item.STATUS_FAILED:
             io.stderr(formatted_result)
+            if item.results:
+                io.stderr(format_error_messages(item.results))
+                del item.results
         else:
             io.stdout(formatted_result)
 
@@ -281,6 +284,37 @@ def _flatten_group_hierarchy(groups):
 
     return order
 
+
+def format_error_messages(results):
+    output = ""
+
+    for i in range(len(results)):
+        stdout = results[i]['result'].stdout_text.strip()
+        stderr = results[i]['result'].stderr_text.strip()
+
+        # show command
+        output += "\n{b}".format(b=red('│'))
+        output += "\n{b} {command} (return code: {code}{no_output})".format(
+            b=red('├─'),
+            command=bold(results[i]['command']),
+            code=bold(results[i]['result'].return_code),
+            no_output='' if stdout or stderr else '; no output'
+        )
+
+        # show output
+        lines = []
+        if stdout or stderr:
+            output += "\n{b}".format(b=red("│ "))
+            if stdout:
+                lines += stdout.strip().split('\n')
+            if stderr:
+                lines += stderr.strip().split('\n')
+
+        for k in range(len(lines)):
+            output += "\n{b} {line}".format(b=red("│ "), line=lines[k])
+
+    output += red("\n╵ ")
+    return output.lstrip('\n')
 
 def format_item_result(result, node, bundle, item, interactive=False, details=None):
     if details is True:

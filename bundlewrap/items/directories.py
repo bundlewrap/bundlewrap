@@ -88,7 +88,7 @@ class Directory(Item):
             return
 
         for path in status.sdict.get('paths_to_purge', []):
-            self.node.run("rm -rf -- {}".format(quote(path)))
+            self.run("rm -rf -- {}".format(quote(path)))
 
         for fix_type in ('mode', 'owner', 'group'):
             if fix_type in status.keys_to_fix:
@@ -102,7 +102,7 @@ class Directory(Item):
             chmod_command = "chmod {} {}"
         else:
             chmod_command = "chmod {} -- {}"
-        self.node.run(chmod_command.format(
+        self.run(chmod_command.format(
             self.attributes['mode'],
             quote(self.name),
         ))
@@ -127,9 +127,9 @@ class Directory(Item):
             # one of the two special bits to be set.
             if status.sdict is not None and int(status.sdict['mode'], 8) & 0o6000:
                 if not int(self.attributes['mode'], 8) & 0o4000:
-                    self.node.run("chmod u-s {}".format(quote(self.name)))
+                    self.run("chmod u-s {}".format(quote(self.name)))
                 if not int(self.attributes['mode'], 8) & 0o2000:
-                    self.node.run("chmod g-s {}".format(quote(self.name)))
+                    self.run("chmod g-s {}".format(quote(self.name)))
 
     def _fix_owner(self, status):
         group = self.attributes['group'] or ""
@@ -139,7 +139,7 @@ class Directory(Item):
             command = "chown {}{} {}"
         else:
             command = "chown {}{} -- {}"
-        self.node.run(command.format(
+        self.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
             quote(self.name),
@@ -147,15 +147,15 @@ class Directory(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        self.node.run("rm -rf -- {}".format(quote(self.name)))
-        self.node.run("mkdir -p -- {}".format(quote(self.name)))
+        self.run("rm -rf -- {}".format(quote(self.name)))
+        self.run("mkdir -p -- {}".format(quote(self.name)))
         if self.attributes['mode']:
             self._fix_mode(status)
         if self.attributes['owner'] or self.attributes['group']:
             self._fix_owner(status)
 
     def _get_paths_to_purge(self):
-        result = self.node.run("find {} -maxdepth 1 -print0".format(quote(self.name)))
+        result = self.run("find {} -maxdepth 1 -print0".format(quote(self.name)))
         for line in result.stdout.split(b"\0"):
             line = line.decode('utf-8')
             for item_type in ('directory', 'file', 'symlink'):

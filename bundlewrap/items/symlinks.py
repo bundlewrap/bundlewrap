@@ -62,7 +62,7 @@ class Symlink(Item):
             command = "chown -h {}{} {}"
         else:
             command = "chown -h {}{} -- {}"
-        self.node.run(command.format(
+        self.run(command.format(
             quote(self.attributes['owner'] or ""),
             group,
             quote(self.name),
@@ -71,20 +71,20 @@ class Symlink(Item):
 
     def _fix_target(self, status):
         if self.node.os in self.node.OS_FAMILY_BSD:
-            self.node.run("ln -sfh -- {} {}".format(
+            self.run("ln -sfh -- {} {}".format(
                 quote(self.attributes['target']),
                 quote(self.name),
             ))
         else:
-            self.node.run("ln -sfT -- {} {}".format(
+            self.run("ln -sfT -- {} {}".format(
                 quote(self.attributes['target']),
                 quote(self.name),
             ))
 
     def _fix_type(self, status):
-        self.node.run("rm -rf -- {}".format(quote(self.name)))
-        self.node.run("mkdir -p -- {}".format(quote(dirname(self.name))))
-        self.node.run("ln -s -- {} {}".format(
+        self.run("rm -rf -- {}".format(quote(self.name)))
+        self.run("mkdir -p -- {}".format(quote(dirname(self.name))))
+        self.run("ln -s -- {} {}".format(
             quote(self.attributes['target']),
             quote(self.name),
         ))

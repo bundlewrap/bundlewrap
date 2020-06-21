@@ -60,10 +60,10 @@ class KubernetesItem(Item, metaclass=ABCMeta):
 
     def fix(self, status):
         if status.must_be_deleted:
-            result = run_local(self._kubectl + ["delete", self.KIND, self.resource_name])
+            result = self.run_local(self._kubectl + ["delete", self.KIND, self.resource_name])
             log_error(result)
         else:
-            result = run_local(
+            result = self.run_local(
                 self._kubectl + ["apply", "-f", "-"],
                 data_stdin=self.manifest.encode('utf-8'),
             )
@@ -171,7 +171,7 @@ class KubernetesItem(Item, metaclass=ABCMeta):
         return self._manifest_dict['metadata']['name']
 
     def sdict(self):
-        result = run_local(self._kubectl + ["get", "-o", "json", self.KIND, self.resource_name])
+        result = self.run_local(self._kubectl + ["get", "-o", "json", self.KIND, self.resource_name])
         if result.return_code == 0:
             full_json_response = json.loads(result.stdout.decode('utf-8'))
             if full_json_response.get("status", {}).get("phase") == "Terminating":

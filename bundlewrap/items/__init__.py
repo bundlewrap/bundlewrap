@@ -14,6 +14,7 @@ from bundlewrap.utils.dicts import diff_keys, diff_value, hash_statedict, valida
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, italic, wrap_question
 from bundlewrap.utils.ui import io
+from bundlewrap.operations import run_local
 
 
 BUILTIN_ITEM_ATTRIBUTES = {
@@ -149,6 +150,7 @@ class Item:
         self.name = name
         self.node = bundle.node
         self.when_creating = {}
+        self.results = []
         self._faults_missing_for_attributes = set()
         self._precedes_items = []
 
@@ -613,6 +615,22 @@ class Item:
             status_after=status_after,
         )
         return (status_code, details)
+
+    def run_local(self, command, **kwargs):
+        result = run_local(command, **kwargs)
+        self.results.append({
+            'command': command,
+            'result':  result,
+        })
+        return result
+
+    def run(self, command, **kwargs):
+        result = self.node.run(command, **kwargs)
+        self.results.append({
+            'command': command,
+            'result':  result,
+        })
+        return result
 
     def ask(self, status_should, status_actual, relevant_keys):
         """

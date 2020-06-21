@@ -22,7 +22,7 @@ class PacmanPkg(Pkg):
         return {'installed': self.attributes['installed']}
 
     def pkg_all_installed(self):
-        pkgs = self.node.run("pacman -Qq").stdout.decode('utf-8')
+        pkgs = self.run("pacman -Qq").stdout.decode('utf-8')
         for line in pkgs.splitlines():
             yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split())
 
@@ -31,17 +31,17 @@ class PacmanPkg(Pkg):
             local_file = join(self.item_dir, self.attributes['tarball'])
             remote_file = "/tmp/{}".format(basename(local_file))
             self.node.upload(local_file, remote_file)
-            self.node.run("pacman --noconfirm -U {}".format(quote(remote_file)), may_fail=True)
-            self.node.run("rm -- {}".format(quote(remote_file)))
+            self.run("pacman --noconfirm -U {}".format(quote(remote_file)), may_fail=True)
+            self.run("rm -- {}".format(quote(remote_file)))
         else:
-            self.node.run("pacman --noconfirm -S {}".format(quote(self.name)), may_fail=True)
+            self.run("pacman --noconfirm -S {}".format(quote(self.name)), may_fail=True)
 
     def pkg_installed(self):
-        result = self.node.run(
+        result = self.run(
             "pacman -Q {}".format(quote(self.name)),
             may_fail=True,
         )
         return result.return_code == 0
 
     def pkg_remove(self):
-        self.node.run("pacman --noconfirm -Rs {}".format(quote(self.name)), may_fail=True)
+        self.run("pacman --noconfirm -Rs {}".format(quote(self.name)), may_fail=True)

@@ -134,7 +134,7 @@ class User(Item):
 
     def fix(self, status):
         if status.must_be_deleted:
-            self.node.run("userdel {}".format(self.name), may_fail=True)
+            self.run("userdel {}".format(self.name), may_fail=True)
         else:
             command = "useradd " if status.must_be_created else "usermod "
             for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
@@ -146,7 +146,7 @@ class User(Item):
                         value = str(self.attributes[attr])
                     command += "{} {} ".format(option, quote(value))
             command += self.name
-            self.node.run(command, may_fail=True)
+            self.run(command, may_fail=True)
 
     def display_dicts(self, cdict, sdict, keys):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
@@ -197,7 +197,7 @@ class User(Item):
             password_command = "grep -ae '^{}:' /etc/master.passwd"
         else:
             password_command = "grep -ae '^{}:' /etc/passwd"
-        passwd_grep_result = self.node.run(
+        passwd_grep_result = self.run(
             password_command.format(self.name),
             may_fail=True,
         )
@@ -228,7 +228,7 @@ class User(Item):
         if self.attributes['password_hash'] is not None:
             if self.attributes['use_shadow'] and self.node.os not in self.node.OS_FAMILY_BSD:
                 # verify content of /etc/shadow unless we are on OpenBSD
-                shadow_grep_result = self.node.run(
+                shadow_grep_result = self.run(
                     "grep -e '^{}:' /etc/shadow".format(self.name),
                     may_fail=True,
                 )

@@ -58,11 +58,11 @@ class Group(Item):
                     gid=self.attributes['gid'],
                     groupname=self.name,
                 )
-            self.node.run(command, may_fail=True)
+            self.run(command, may_fail=True)
         elif status.must_be_deleted:
-            self.node.run("groupdel {}".format(self.name), may_fail=True)
+            self.run("groupdel {}".format(self.name), may_fail=True)
         else:
-            self.node.run(
+            self.run(
                 "groupmod -g {gid} {groupname}".format(
                     gid=self.attributes['gid'],
                     groupname=self.name,
@@ -72,7 +72,7 @@ class Group(Item):
 
     def sdict(self):
         # verify content of /etc/group
-        grep_result = self.node.run(
+        grep_result = self.run(
             "grep -e '^{}:' /etc/group".format(self.name),
             may_fail=True,
         )
