@@ -33,7 +33,6 @@ def graph_for_items(
     items,
     cluster=True,
     concurrency=True,
-    static=True,  # FIXME unused?
     regular=True,
     reverse=True,
     auto=True,

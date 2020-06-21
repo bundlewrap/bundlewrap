@@ -29,7 +29,6 @@ def bw_plot_node(repo, args):
         prepare_dependencies(node.items, node.os, node.os_version),
         cluster=args['cluster'],
         concurrency=args['depends_concurrency'],
-        static=args['depends_static'],
         regular=args['depends_regular'],
         reverse=args['depends_reverse'],
         auto=args['depends_auto'],

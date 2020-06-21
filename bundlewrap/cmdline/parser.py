@@ -696,12 +696,6 @@ bundle:my_bundle  # items in this bundle
         dest='depends_reverse',
         help=_("do not show reverse dependencies ('needed_by')"),
     )
-    parser_plot_subparsers_node.add_argument(
-        "--no-depends-static",
-        action='store_false',
-        dest='depends_static',
-        help=_("do not show static dependencies"),
-    )
 
     # bw plot groups-for-node
     help_plot_node_groups = _("Show where a specific node gets its groups from")
