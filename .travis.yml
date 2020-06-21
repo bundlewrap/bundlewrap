@@ -3,7 +3,7 @@ python:
 - 3.6
 - 3.7
 - 3.8
-dist: bionic
+dist: focal
 services:
 - postgresql
 install:
