@@ -42,11 +42,6 @@ def cyan(text):
 
 
 @ansi_wrapper
-def inverse(text):
-    return "\033[0m\033[7m{}\033[0m".format(text)
-
-
-@ansi_wrapper
 def italic(text):
     return "\033[3m{}\033[0m".format(text)
 

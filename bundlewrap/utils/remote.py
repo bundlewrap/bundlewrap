@@ -58,7 +58,7 @@ class PathInfo:
         return self.stat['group']
 
     @property
-    def is_binary_file(self):
+    def is_binary_file(self):  # FIXME: shouldn't this be used?
         return self.is_file and not self.is_text_file
 
     @property
@@ -112,7 +112,7 @@ class PathInfo:
         return force_text(result.stdout).strip().lstrip("\\").split()[0]
 
     @cached_property
-    def sha256(self):
+    def sha256(self):  # FIXME unused?
         if self.node.os == 'macos':
             result = self.node.run("shasum -a 256 -- {}".format(quote(self.path)))
         elif self.node.os in self.node.OS_FAMILY_BSD:

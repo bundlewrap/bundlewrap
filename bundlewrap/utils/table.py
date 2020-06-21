@@ -76,7 +76,7 @@ def _border_top(column_widths):
     return result
 
 
-def _border_center(column_widths):
+def _border_center(column_widths):  # FIXME unused?
     result = FRAME_CENTER_LEFT
     result += FRAME_CENTER_COLUMN_SEPARATOR.join(
         [FRAME_COLUMN_FILLER * width for width in column_widths]
