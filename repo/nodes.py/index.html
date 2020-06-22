@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../../guide/dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../../guide/api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../../guide/toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../../guide/migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../../guide/migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -378,6 +382,7 @@ nodes['node-1'] = {
     'hostname': "node-1.example.com",
 }
 </code></pre>
+<p>Alternatively, consider using <a href="../../guide/toml/">TOML nodes</a>.</p>
 <p><br></p>
 <h1 id="node-attribute-reference">Node attribute reference</h1>
 <p>This section is a reference for all possible attributes you can define for a node:</p>
@@ -395,6 +400,10 @@ nodes['node-1'] = {
 <p><br></p>
 <h3 id="dummy">dummy</h3>
 <p>Set this to <code>True</code> to prevent BundleWrap from creating items for and connecting to this node. This is useful for unmanaged nodes because you can still assign them bundles and metadata like regular nodes and access that from managed nodes (e.g. for monitoring).</p>
+<p><br></p>
+<h3 id="groups">groups</h3>
+<p>A list of group names this node should be added to. Be aware that you can also define group members at the group itself and you probably should not use both methods in parallel to avoid confusion.</p>
+<p>Cannot be set at group level.</p>
 <p><br></p>
 <h3 id="hostname">hostname</h3>
 <p>A string used as a DNS name when connecting to this node. May also be an IP address.</p>
@@ -427,10 +436,6 @@ nodes['node-1'] = {
 <h3 id="os_version">os_version</h3>
 <p>Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should be <code>(16, 4)</code>.</p>
 <p>Tuples of integers can be used for easy comparison of versions: <code>(12, 4) &lt; (16, 4)</code></p>
-<p><br></p>
-<h3 id="template_node">template_node</h3>
-<p>Copy all attributes and merge all metadata from this node. This is useful for temporary clones of single specific nodes, where you don't want to create a group to deduplicate all the node-level configuration.</p>
-<p>Cannot be set at group level.</p>
 <p><br></p>
 <h2 id="os-compatibility-overrides">OS compatibility overrides</h2>
 <h3 id="cmd_wrapper_outer">cmd_wrapper_outer</h3>

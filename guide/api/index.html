@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="./" class="dropdown-item active">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../../repo/libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../../repo/plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -275,7 +279,7 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../dev_plugin/" class="nav-link">
+                                <a rel="prev" href="../dev_item/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
@@ -343,7 +347,7 @@ print(uptime.stdout)
 <p><br></p>
 <h2 id="reference">Reference</h2>
 <h3 id="bundlewrapreporepositorypath">bundlewrap.repo.Repository(path)</h3>
-<p>The starting point of any interaction with BundleWrap. An object of this class represents the repository at the given path.</p>
+<p>The starting point of any interaction with BundleWrap. An object of this class represents the repository at the given path. <code>path</code> can be a subpath of your repository (e.g., <code>bundles/nginx/</code>) and will internally be resolved to the root path of said repository.</p>
 <p><br></p>
 <p><strong><code>.branch</code></strong></p>
 <p>The current git branch of this repo. <code>None</code> if not in a git repo.</p>

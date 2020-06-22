@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../../guide/dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../../guide/api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../../guide/toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../../guide/migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../../guide/migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../../repo/libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../../repo/plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown active">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -350,7 +354,11 @@
 <p><br></p>
 <p>Manage resources in Kubernetes clusters.</p>
 <pre><code>k8s_namespaces = {
-     "my-app": {},
+     "my-app": {
+        'manifest': {
+            'apiVersion': "v1",
+        },
+     },
      "my-previous-app": {'delete': True},
 }
 
@@ -366,31 +374,32 @@ k8s_deployments = {
 <p><br></p>
 <h2 id="resource-types">Resource types</h2>
 <table>
-<tr><th>Resource type</th><th>Bundle attribute</th><th>apiVersion</th></tr>
-<tr><td>Cluster Role</td><td>k8s_clusterroles</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Config Map</td><td>k8s_configmaps</td><td>v1</td></tr>
-<tr><td>Cron Job</td><td>k8s_cronjobs</td><td>batch/v1beta1</td></tr>
-<tr><td>Custom Resource Definition</td><td>k8s_crd</td><td>apiextensions.k8s.io/v1beta1</td></tr>
-<tr><td>Daemon Set</td><td>k8s_daemonsets</td><td>v1</td></tr>
-<tr><td>Deployment</td><td>k8s_deployments</td><td>extensions/v1beta1</td></tr>
-<tr><td>Ingress</td><td>k8s_ingresses</td><td>extensions/v1beta1</td></tr>
-<tr><td>Namespace</td><td>k8s_namespaces</td><td>v1</td></tr>
-<tr><td>Network Policy</td><td>k8s_networkpolicies</td><td>networking.k8s.io/v1</td></tr>
-<tr><td>Persistent Volume Claim</td><td>k8s_pvc</td><td>v1</td></tr>
-<tr><td>Role</td><td>k8s_roles</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Role Binding</td><td>k8s_rolebindings</td><td>rbac.authorization.k8s.io/v1</td></tr>
-<tr><td>Service</td><td>k8s_services</td><td>v1</td></tr>
-<tr><td>Service Account</td><td>k8s_serviceaccounts</td><td>v1</td></tr>
-<tr><td>Secret</td><td>k8s_secrets</td><td>v1</td></tr>
-<tr><td>StatefulSet</td><td>k8s_statefulsets</td><td>apps/v1</td></tr>
-<tr><td>(any)</td><td>k8s_raw</td><td>(any)</td></tr>
+<tr><th>Resource type</th><th>Bundle attribute</th></tr>
+<tr><td>Cluster Role</td><td>k8s_clusterroles</td></tr>
+<tr><td>Cluster Role Binding</td><td>k8s_clusterrolebindings</td></tr>
+<tr><td>Config Map</td><td>k8s_configmaps</td></tr>
+<tr><td>Cron Job</td><td>k8s_cronjobs</td></tr>
+<tr><td>Custom Resource Definition</td><td>k8s_crd</td></tr>
+<tr><td>Daemon Set</td><td>k8s_daemonsets</td></tr>
+<tr><td>Deployment</td><td>k8s_deployments</td></tr>
+<tr><td>Ingress</td><td>k8s_ingresses</td></tr>
+<tr><td>Namespace</td><td>k8s_namespaces</td></tr>
+<tr><td>Network Policy</td><td>k8s_networkpolicies</td></tr>
+<tr><td>Persistent Volume Claim</td><td>k8s_pvc</td></tr>
+<tr><td>Role</td><td>k8s_roles</td></tr>
+<tr><td>Role Binding</td><td>k8s_rolebindings</td></tr>
+<tr><td>Service</td><td>k8s_services</td></tr>
+<tr><td>Service Account</td><td>k8s_serviceaccounts</td></tr>
+<tr><td>Secret</td><td>k8s_secrets</td></tr>
+<tr><td>StatefulSet</td><td>k8s_statefulsets</td></tr>
+<tr><td>(any)</td><td>k8s_raw</td></tr>
 </table>
 
 <p>You can define <a href="https://kubernetes.io/docs/concepts/api-extension/custom-resources/">Custom Resources</a> like this:</p>
 <pre><code>k8s_crd = {
     "custom-thing": {
         'manifest': {
+            'apiVersion': "apiextensions.k8s.io/v1beta1",
             'spec': {
                 'names': {
                     'kind': "CustomThing",

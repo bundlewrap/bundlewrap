@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../../repo/libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../../repo/plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -381,7 +385,7 @@ k8s_deployments = {
     },
 }
 </code></pre>
-<p>All item names (except namespaces themselves) must be prefixed with the name of a namespace and a forward slash <code>/</code>. Note that BundleWrap will include defaults for the <code>apiVersion</code>, <code>Kind</code>, and <code>metadata/name</code> keys, but you can override them if you must.</p>
+<p>All item names (except namespaces themselves) must be prefixed with the name of a namespace and a forward slash <code>/</code>. Note that BundleWrap will include defaults for the <code>Kind</code> and <code>metadata/name</code> keys, but you can override them if you must.</p>
 <p>Alternatively, you can keep your resource definitions in manifest files:</p>
 <pre><code>k8s_namespaces = {
      "my-app": {},

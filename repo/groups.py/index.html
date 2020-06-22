@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../../guide/dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../../guide/api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../../guide/toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../../guide/migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../../guide/migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -320,10 +324,6 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#members_add-and-members_remove" class="nav-link">members_add and members_remove</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
             <li class="nav-item" data-level="2"><a href="#metadata" class="nav-link">metadata</a>
               <ul class="nav flex-column">
               </ul>
@@ -368,18 +368,16 @@
 <h1 id="group-attribute-reference">Group attribute reference</h1>
 <p>This section is a reference for all possible attributes you can define for a group:</p>
 <pre><code>groups = {
-     'group1': {
-         # THIS PART IS EXPLAINED HERE
-         'bundles': ["bundle1", "bundle2"],
-         'members': ["node1"],
-         'members_add': lambda node: node.os == 'debian',
-         'members_remove': lambda node: node.os == 'ubuntu',
-         'member_patterns': [r"^cluster1\."],
-         'metadata': {'foo': "bar"},
-         'os': 'linux',
-         'subgroups': ["group2", "group3"],
-         'subgroup_patterns': [r"^group.*pattern$"],
-     },
+    'group1': {
+        # THIS PART IS EXPLAINED HERE
+        'bundles': ["bundle1", "bundle2"],
+        'members': ["node1"],
+        'member_patterns': [r"^cluster1\."],
+        'metadata': {'foo': "bar"},
+        'os': 'linux',
+        'subgroups': ["group2", "group3"],
+        'subgroup_patterns': [r"^group.*pattern$"],
+    },
 }
 </code></pre>
 <p>Note that many attributes from <a href="../nodes.py/">nodes.py</a> (e.g. <code>bundles</code>) may also be set at group level, but aren't explicitly documented here again.</p>
@@ -390,11 +388,6 @@
 <p><br></p>
 <h2 id="members">members</h2>
 <p>A tuple or list of node names that belong to this group.</p>
-<p><br></p>
-<h2 id="members_add-and-members_remove">members_add and members_remove</h2>
-<p>For these attributes you can provide a function that takes a node object as its only argument. The function must return a boolean. The function will be called once for every node in the repo. If <code>True</code>, this node will be added (<code>members_add</code>) to or removed (<code>members_remove</code>) from this group.</p>
-<div class="alert alert-warning">Inside your function you may query node attributes and groups, but you will not see groups or attributes added as a result of a different <code>members_add</code> / <code>members_remove</code> function. Only attributes and groups that have been set statically will be available. You can, however, remove a node with <code>members_remove</code> that you added with <code>members_add</code> (but not vice-versa).<br>You should also avoid using <code>node.metadata</code> here. Since metadata ultimately depends on group memberships, only metadata set in <code>nodes.py</code> will be returned here.</div>
-
 <p><br></p>
 <h2 id="metadata">metadata</h2>
 <p>A dictionary that will be accessible from each node's <code>node.metadata</code>. For each node, BundleWrap will merge the metadata of all of the node's groups first, then merge in the metadata from the node itself.</p>

@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../../guide/dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../../guide/api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../../guide/toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../../guide/migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../../guide/migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -395,6 +399,7 @@ users = {
 <tr><td><a href="../../items/action">action</a></td><td><code>actions</code></td><td>Actions allow you to run commands on every <code>bw apply</code></td></tr>
 <tr><td><a href="../../items/directory">directory</a></td><td><code>directories</code></td><td>Manages permissions and ownership for directories</td></tr>
 <tr><td><a href="../../items/file">file</a></td><td><code>files</code></td><td>Manages contents, permissions, and ownership for files</td></tr>
+<tr><td><a href="../../items/git_deploy">git_deploy</a></td><td><code>git_deploy</code></td><td>Deploys the contents of a git repository</td></tr>
 <tr><td><a href="../../items/group">group</a></td><td><code>groups</code></td><td>Manages groups by wrapping <code>groupadd</code>, <code>groupmod</code> and <code>groupdel</code></td></tr>
 <tr><td><a href="../../items/k8s">k8s_*</a></td><td><code>k8s_*</code></td><td>Manages resources in Kubernetes clusters by wrapping <code>kubectl</code></td></tr>
 <tr><td><a href="../../items/pkg_apt">pkg_apt</a></td><td><code>pkg_apt</code></td><td>Installs and removes packages with APT</td></tr>
@@ -453,7 +458,7 @@ users = {
 <ul>
 <li>if you need all items of a certain type to depend on something or</li>
 <li>if you need all items in a bundle to depend on something or</li>
-<li>if you need an item in a bundle you can't edit (e.g. because it's provided by a community-maintained <a href="../plugins/">plugin</a>) to depend on something in your bundles</li>
+<li>if you need an item in a bundle you can't edit to depend on something in your bundles</li>
 </ul>
 <p><br></p>
 <h2 id="tags">tags</h2>
@@ -471,6 +476,7 @@ svc_systemd = {
 }
 </code></pre>
 <p>In this simplified example we save ourselves from duplicating the logic that gets the current MySQL version from metadata (which is probably overkill here, but you might encounter more complex situations).</p>
+<p>Tags also allow for optional dependencies, since items can depend on tags that don't exist. So for example if you need to do something after items from another bundle have been completed, but that bundle might not always be there, you can depend on a tag given to the items of the other bundle.</p>
 <p><br></p>
 <h2 id="triggers-and-triggered">triggers and triggered</h2>
 <p>In some scenarios, you may want to execute an <a href="../../items/action/">action</a> only when an item is fixed (e.g. restart a daemon after a config file has changed or run <code>postmap</code> after updating an alias file). To do this, BundleWrap has the builtin atttribute <code>triggers</code>. You can use it to point to any item that has its <code>triggered</code> attribute set to <code>True</code>. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).</p>

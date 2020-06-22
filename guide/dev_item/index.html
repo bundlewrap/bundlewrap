@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../../repo/libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../../repo/plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -280,7 +284,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../dev_plugin/" class="nav-link">
+                                <a rel="next" href="../api/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -434,8 +438,8 @@ class Foo(Item):
 </code></pre>
 <p><br></p>
 <h2 id="step-3-implement-methods">Step 3: Implement methods</h2>
-<p>You should probably start with <code>sdict()</code>. Use <code>self.node.run("command")</code> to run shell commands on the current node and check the <code>stdout</code> property of the returned object.</p>
-<p>The only other method you have to implement is <code>fix</code>. It doesn't have to return anything and just uses <code>self.node.run()</code> to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.</p>
+<p>You should probably start with <code>sdict()</code>. Use <code>self.run("command")</code> to run shell commands on the current node and check the <code>stdout</code> property of the returned object.</p>
+<p>The only other method you have to implement is <code>fix</code>. It doesn't have to return anything and just uses <code>self.run()</code> to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.</p>
 <p><code>block_concurrent()</code> must return a list of item types (e.g. <code>['pkg_apt']</code>) that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time).</p>
 <p>If you're having trouble, try looking at the <a href="https://github.com/bundlewrap/bundlewrap/tree/master/bundlewrap/items">source code for the items that come with BundleWrap</a>. The <code>pkg_*</code> items are pretty simple and easy to understand while <code>files</code> is the most complex to date. Or just drop by on <a href="irc://chat.freenode.net/bundlewrap">IRC</a>, we're glad to help.</p></div>
             </div>

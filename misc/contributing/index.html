@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../../guide/dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../../guide/api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../../guide/toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../../guide/migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../../guide/migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../../repo/libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../../repo/plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -339,7 +343,7 @@
 
 <p><br></p>
 <h2 id="contributing-code">Contributing code</h2>
-<div class="alert alert-info">Before working on new features, try reaching out to one of the core authors first. We are very concerned with keeping BundleWrap lean and not introducing bloat. If your idea is not a good fit for all or most BundleWrap users, it can still be included <a href="../dev_plugins">as a plugin</a>.</div>
+<div class="alert alert-info">Before working on new features, try reaching out to one of the core authors first. We are very concerned with keeping BundleWrap lean and not introducing bloat.</div>
 
 <p>Here are the steps:</p>
 <ol>
@@ -348,7 +352,7 @@
 <li>Same goes for documentation.</li>
 <li>Set up a <a href="http://virtualenv.readthedocs.org/en/latest/">virtualenv</a> and run <code>pip install -r requirements.txt</code>.</li>
 <li>Make sure you can connect to your localhost via <code>ssh</code> without using a password and that you are able to run <code>sudo</code>.</li>
-<li>Run <code>py.test</code>.</li>
+<li>Run <code>py.test tests/</code>.</li>
 <li>Review and sign the Copyright Assignment Agreement (CAA) by adding your name and email to the <code>AUTHORS</code> file. (This step can be skipped if your contribution is too small to be considered intellectual property, e.g. spelling fixes)</li>
 <li>Open a pull request on <a href="https://github.com/bundlewrap/bundlewrap">GitHub</a>.</li>
 <li>Feel great. Thank you.</li>

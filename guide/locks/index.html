@@ -87,10 +87,6 @@
 </li>
                                     
 <li>
-    <a href="../dev_plugin/" class="dropdown-item">Writing plugins</a>
-</li>
-                                    
-<li>
     <a href="../api/" class="dropdown-item">Python API</a>
 </li>
                                     
@@ -99,11 +95,19 @@
 </li>
                                     
 <li>
+    <a href="../toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
     <a href="../migrate_12/" class="dropdown-item">Migrating to 2.0</a>
 </li>
                                     
 <li>
     <a href="../migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
                                 </ul>
                             </li>
@@ -142,10 +146,6 @@
 <li>
     <a href="../../repo/libs/" class="dropdown-item">libs/</a>
 </li>
-                                    
-<li>
-    <a href="../../repo/plugins/" class="dropdown-item">Plugins</a>
-</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -162,6 +162,10 @@
                                     
 <li>
     <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
 </li>
                                     
 <li>
@@ -315,6 +319,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#locking-non-unix-nodes" class="nav-link">Locking non-UNIX nodes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -343,7 +351,21 @@ i node1  ID    Created              Expires              User   Items  Comment
 <pre><code class="nohighlight">$ bw lock remove node1 y1kd
 ✓ node1  lock Y1KD removed</code></pre>
 
-<p>Expired locks are automatically and silently purged whenever BundleWrap has the opportunity. Be sure to check out <code>bw lock add --help</code> for how to customize expiration time, add a short comment explaining the reason for the lock, or lock only certain items. Using <code>bw apply</code> on a soft locked node is not an error and affected items will simply be skipped.</p></div>
+<p>Expired locks are automatically and silently purged whenever BundleWrap has the opportunity. Be sure to check out <code>bw lock add --help</code> for how to customize expiration time, add a short comment explaining the reason for the lock, or lock only certain items. Using <code>bw apply</code> on a soft locked node is not an error and affected items will simply be skipped.</p>
+<h2 id="locking-non-unix-nodes">Locking non-UNIX nodes</h2>
+<p>Most of the time, BundleWrap assumes that your target system is a UNIX-like operating system. It then stores locks as files in the node's local file system.</p>
+<p>BundleWrap supports managing non-UNIX nodes, too, such as Kubernetes. You can also write your own custom item types to manage hardware. In those situations, BundleWrap has no place to store lock files.</p>
+<p>You can solve this by designating another regular UNIX node as a "locking node":</p>
+<pre><code class="nohighlight">nodes['my.k8s.cluster'] = {
+    'locking_node': 'my.openbsd.box',
+    'os': 'kubernetes',
+    'metadata': {
+        ...
+    },
+}</code></pre>
+
+<p><code>my.openbsd.box</code> is the name of another regular node, which must be managed by BundleWrap. You can now use all the usual locking mechanisms when working with <code>my.k8s.cluster</code> and its locks will be stored on <code>my.openbsd.box</code>. (They will, of course, not conflict with regular locks for <code>my.openbsd.box</code>.)</p>
+<p>A locking node can host locks for as many other nodes as you wish.</p></div>
             </div>
         </div>
 
