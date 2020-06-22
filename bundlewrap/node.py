@@ -478,7 +478,8 @@ class Node:
         _groups = set()
 
         for group_name in set(self._attributes.get('groups', set())):
-            _groups.add(self.repo.get_group(group_name))
+            with error_context(node=self.name):
+                _groups.add(self.repo.get_group(group_name))
 
         for group in self.repo.groups:
             if group in _groups:

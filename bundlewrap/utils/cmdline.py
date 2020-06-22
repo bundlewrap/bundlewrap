@@ -90,11 +90,13 @@ def get_target_nodes(repo, target_strings):
                 targets.add(repo.get_node(name))
             except NoSuchNode:
                 try:
-                    targets.update(repo.get_group(name).nodes)
+                    group = repo.get_group(name)
                 except NoSuchGroup:
                     io.stderr(_("{x} No such node or group: {name}").format(
                         x=red("!!!"),
                         name=name,
                     ))
                     exit(1)
+                else:
+                    targets.update(group.nodes)
     return targets
