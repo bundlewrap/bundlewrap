@@ -1,6 +1,6 @@
 # 4.0.0
 
-unreleased
+2020-06-22
 
 * new metadata processor API (BACKWARDS INCOMPATIBLE)
 * removed `template_node` node attribute (BACKWARDS INCOMPATIBLE)
