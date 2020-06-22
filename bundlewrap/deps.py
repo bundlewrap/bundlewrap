@@ -138,18 +138,24 @@ def _flatten_deps_for_item(item, items):
     """
     item._flattened_deps = set(item._deps)
 
-    for dep in item._deps:
+    for dep in item._deps.copy():
         try:
             dep_item = items[dep]
         except KeyError:
-            raise ItemDependencyError(_(
-                "'{item}' in bundle '{bundle}' has a dependency (needs) "
-                "on '{dep}', which doesn't exist"
-            ).format(
-                item=item.id,
-                bundle=item.bundle.name,
-                dep=dep,
-            ))
+            if dep.startswith("tag:"):
+                # sometimes it is useful to be able to depend on a tag
+                # without having to make sure it actually exists
+                item._deps.remove(dep)
+                continue
+            else:
+                raise ItemDependencyError(_(
+                    "'{item}' in bundle '{bundle}' has a dependency (needs) "
+                    "on '{dep}', which doesn't exist"
+                ).format(
+                    item=item.id,
+                    bundle=item.bundle.name,
+                    dep=dep,
+                ))
         # Don't recurse if we have already resolved nested dependencies
         # for this item. Also serves as a guard against infinite
         # recursion when there are loops.

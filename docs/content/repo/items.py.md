@@ -136,6 +136,8 @@ A list of strings to tag an item with. Tagging has no immediate effect in itself
 
 In this simplified example we save ourselves from duplicating the logic that gets the current MySQL version from metadata (which is probably overkill here, but you might encounter more complex situations).
 
+Tags also allow for optional dependencies, since items can depend on tags that don't exist. So for example if you need to do something after items from another bundle have been completed, but that bundle might not always be there, you can depend on a tag given to the items of the other bundle.
+
 <br>
 
 ## triggers and triggered

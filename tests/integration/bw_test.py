@@ -115,6 +115,30 @@ def test_circular_dep_self(tmpdir):
     assert run("bw test -I", path=str(tmpdir))[2] == 1
 
 
+def test_unknown_tag(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                "files": {
+                    "/foo": {
+                        'content': "none",
+                        'needs': {
+                            "tag:bar",
+                        },
+                    },
+                },
+            },
+        },
+    )
+    assert run("bw test -I", path=str(tmpdir))[2] == 0
+
+
 def test_circular_trigger_self(tmpdir):
     make_repo(
         tmpdir,
