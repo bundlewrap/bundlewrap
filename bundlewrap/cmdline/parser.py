@@ -906,19 +906,6 @@ bundle:my_bundle  # items in this bundle
         help=_("check for bundles not assigned to any node"),
     )
     parser_test.add_argument(
-        "-s",
-        "--secret-rotation",
-        default=None,
-        dest='ignore_secret_identifiers',
-        help=_("ensure every string passed to repo.vault.[human_]password_for() is used at least "
-               "twice (using it only once means you're probably managing only one end of an "
-               "authentication, making it dangerous to rotate your .secrets.cfg); PATTERNS is a "
-               "comma-separated list of regex patterns for strings to ignore in this check "
-               "(just pass an empty string if you don't need to ignore anything)"),
-        metavar="PATTERNS",
-        type=str,
-    )
-    parser_test.add_argument(
         "-S",
         "--subgroup-loops",
         action='store_true',

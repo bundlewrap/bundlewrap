@@ -1,5 +1,4 @@
 from copy import copy
-from re import compile as compile_regex
 from sys import exit
 
 from ..deps import DummyItem
@@ -117,33 +116,6 @@ def test_orphaned_bundles(repo):
         exit(1)
 
 
-def test_secret_identifiers(repo, ignore_patterns):
-    # create a new object to make sure we don't double-count any calls
-    # from previous tests
-    pristine_repo = Repository(repo.path)
-    pristine_repo.hash()  # shortest way to create all configuration
-    patterns = set()
-    for raw_pattern in ignore_patterns.split(","):
-        if raw_pattern:
-            patterns.add(compile_regex(raw_pattern))
-    for identifier, call_count in pristine_repo.vault._call_log.items():
-        if call_count == 1:
-            for pattern in patterns:
-                if pattern.search(identifier):
-                    break
-            else:
-                io.stderr(_(
-                    "{x} identifier passed only once to repo.vault.[human_]password_for(): {i}"
-                ).format(
-                    i=bold(identifier),
-                    x=red("✘"),
-                ))
-                exit(1)
-    io.stdout(_(
-        "{x} all arguments to repo.vault.[human_]password_for() used at least twice"
-    ).format(x=green("✓")))
-
-
 def test_empty_groups(repo):
     empty_groups = set()
     for group in repo.groups:
@@ -248,7 +220,6 @@ def bw_test(repo, args):
         args['determinism_metadata'] > 1 or
         args['hooks_node'] or
         args['hooks_repo'] or
-        args['ignore_secret_identifiers'] is not None or
         args['items'] or
         args['metadata_conflicts'] or
         args['orphaned_bundles'] or
@@ -271,9 +242,6 @@ def bw_test(repo, args):
             args['metadata_conflicts'] = True
             args['metadata_keys'] = True
             args['subgroup_loops'] = True
-
-    if args['ignore_secret_identifiers'] is not None and not QUIT_EVENT.is_set():
-        test_secret_identifiers(repo, args['ignore_secret_identifiers'])
 
     if args['subgroup_loops'] and not QUIT_EVENT.is_set():
         test_subgroup_loops(repo)
