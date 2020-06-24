@@ -906,6 +906,13 @@ bundle:my_bundle  # items in this bundle
         help=_("check for bundles not assigned to any node"),
     )
     parser_test.add_argument(
+        "-q",
+        "--quiet",
+        action='store_true',
+        dest='quiet',
+        help=_("don't show successful tests"),
+    )
+    parser_test.add_argument(
         "-S",
         "--subgroup-loops",
         action='store_true',

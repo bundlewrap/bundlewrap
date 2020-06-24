@@ -12,7 +12,7 @@ from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, QUIT_EVENT
 
 
-def test_items(nodes, ignore_missing_faults):
+def test_items(nodes, ignore_missing_faults, quiet):
     io.progress_set_total(count_items(nodes))
     for node in nodes:
         if QUIT_EVENT.is_set():
@@ -60,12 +60,13 @@ def test_items(nodes, ignore_missing_faults):
                 if item.id.count(":") < 2:
                     # don't count canned actions
                     io.progress_advance()
-                io.stdout("{x} {node}  {bundle}  {item}".format(
-                    bundle=bold(item.bundle.name),
-                    item=item.id,
-                    node=bold(node.name),
-                    x=green("✓"),
-                ))
+                if not quiet:
+                    io.stdout("{x} {node}  {bundle}  {item}".format(
+                        bundle=bold(item.bundle.name),
+                        item=item.id,
+                        node=bold(node.name),
+                        x=green("✓"),
+                    ))
         if item_queue.items_with_deps and not QUIT_EVENT.is_set():
             exception = ItemDependencyLoop(item_queue.items_with_deps)
             for line in explain_item_dependency_loop(exception, node.name):
@@ -74,7 +75,7 @@ def test_items(nodes, ignore_missing_faults):
     io.progress_set_total(0)
 
 
-def test_subgroup_loops(repo):
+def test_subgroup_loops(repo, quiet):
     checked_groups = []
     for group in repo.groups:
         if QUIT_EVENT.is_set():
@@ -83,19 +84,21 @@ def test_subgroup_loops(repo):
             continue
         with io.job(_("{group}  checking for subgroup loops").format(group=bold(group.name))):
             checked_groups.extend(group.subgroups)  # the subgroups property has the check built in
-        io.stdout(_("{x} {group}  has no subgroup loops").format(
-            x=green("✓"),
-            group=bold(group.name),
-        ))
+        if not quiet:
+            io.stdout(_("{x} {group}  has no subgroup loops").format(
+                x=green("✓"),
+                group=bold(group.name),
+            ))
 
 
-def test_metadata_conflicts(node):
+def test_metadata_conflicts(node, quiet):
     with io.job(_("{node}  checking for metadata conflicts").format(node=bold(node.name))):
         check_for_metadata_conflicts(node)
-    io.stdout(_("{x} {node}  has no metadata conflicts").format(
-        x=green("✓"),
-        node=bold(node.name),
-    ))
+    if not quiet:
+        io.stdout(_("{x} {node}  has no metadata conflicts").format(
+            x=green("✓"),
+            node=bold(node.name),
+        ))
 
 
 def test_orphaned_bundles(repo):
@@ -132,7 +135,7 @@ def test_empty_groups(repo):
         exit(1)
 
 
-def test_determinism_config(repo, nodes, iterations):
+def test_determinism_config(repo, nodes, iterations, quiet):
     """
     Generate configuration a couple of times for every node and see if
     anything changes between iterations
@@ -167,13 +170,14 @@ def test_determinism_config(repo, nodes, iterations):
                 exit(1)
             io.progress_advance()
     io.progress_set_total(0)
-    io.stdout(_("{x} Configuration remained the same after being generated {n} times").format(
-        n=iterations,
-        x=green("✓"),
-    ))
+    if not quiet:
+        io.stdout(_("{x} Configuration remained the same after being generated {n} times").format(
+            n=iterations,
+            x=green("✓"),
+        ))
 
 
-def test_determinism_metadata(repo, nodes, iterations):
+def test_determinism_metadata(repo, nodes, iterations, quiet):
     """
     Generate metadata a couple of times for every node and see if
     anything changes between iterations
@@ -208,10 +212,11 @@ def test_determinism_metadata(repo, nodes, iterations):
                 exit(1)
             io.progress_advance()
     io.progress_set_total(0)
-    io.stdout(_("{x} Metadata remained the same after being generated {n} times").format(
-        n=iterations,
-        x=green("✓"),
-    ))
+    if not quiet:
+        io.stdout(_("{x} Metadata remained the same after being generated {n} times").format(
+            n=iterations,
+            x=green("✓"),
+        ))
 
 
 def bw_test(repo, args):
@@ -244,7 +249,7 @@ def bw_test(repo, args):
             args['subgroup_loops'] = True
 
     if args['subgroup_loops'] and not QUIT_EVENT.is_set():
-        test_subgroup_loops(repo)
+        test_subgroup_loops(repo, args['quiet'])
 
     if args['empty_groups'] and not QUIT_EVENT.is_set():
         test_empty_groups(repo)
@@ -257,18 +262,18 @@ def bw_test(repo, args):
         for node in nodes:
             if QUIT_EVENT.is_set():
                 break
-            test_metadata_conflicts(node)
+            test_metadata_conflicts(node, args['quiet'])
             io.progress_advance()
         io.progress_set_total(0)
 
     if args['items']:
-        test_items(nodes, args['ignore_missing_faults'])
+        test_items(nodes, args['ignore_missing_faults'], args['quiet'])
 
     if args['determinism_metadata'] > 1 and not QUIT_EVENT.is_set():
-        test_determinism_metadata(repo, nodes, args['determinism_metadata'])
+        test_determinism_metadata(repo, nodes, args['determinism_metadata'], args['quiet'])
 
     if args['determinism_config'] > 1 and not QUIT_EVENT.is_set():
-        test_determinism_config(repo, nodes, args['determinism_config'])
+        test_determinism_config(repo, nodes, args['determinism_config'], args['quiet'])
 
     if args['hooks_node'] and not QUIT_EVENT.is_set():
         io.progress_set_total(len(nodes))
