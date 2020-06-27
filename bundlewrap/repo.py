@@ -3,6 +3,7 @@ from inspect import isabstract
 from os import environ, listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 from threading import Lock
+from traceback import TracebackException
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 from tomlkit import parse as parse_toml
@@ -13,6 +14,7 @@ from .exceptions import (
     NoSuchGroup,
     NoSuchNode,
     NoSuchRepository,
+    MetadataPersistentKeyError,
     MissingRepoDependency,
     RepositoryError,
 )
@@ -695,14 +697,17 @@ class Repository:
                     break
 
         if keyerrors:
-            reactors = ""
+            msg = _(
+                "These metadata reactors raised a KeyError "
+                "even after all other reactors were done:"
+            )
             for source, exc in keyerrors.items():
                 node_name, reactor = source
-                reactors += "{}  {}  {}\n".format(node_name, reactor, exc)
-            raise ValueError(_(
-                "These metadata reactors raised a KeyError "
-                "even after all other reactors were done:\n"
-            ) + reactors)
+                msg += f"\n\n  {node_name} {reactor}\n\n"
+                for line in TracebackException.from_exception(exc).format():
+                    msg += "    " + line
+            raise MetadataPersistentKeyError(msg)
+
 
     def metadata_hash(self):
         repo_dict = {}

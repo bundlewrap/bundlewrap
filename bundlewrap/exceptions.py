@@ -107,6 +107,13 @@ class NoSuchRepository(RepositoryError):
     pass
 
 
+class MetadataPersistentKeyError(RepositoryError):
+    """
+    Raised when metadata reactors keep raising KeyErrors indefinitely.
+    """
+    pass
+
+
 class MissingRepoDependency(RepositoryError):
     """
     Raised when a dependency from requirements.txt is missing.
