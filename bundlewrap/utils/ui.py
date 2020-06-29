@@ -1,12 +1,11 @@
 from contextlib import contextmanager
 from datetime import datetime
-import fcntl
 from functools import wraps
 from os import _exit, environ, getpid, kill
 from os.path import join
 from select import select
+from shutil import get_terminal_size
 from signal import signal, SIG_DFL, SIGINT, SIGQUIT, SIGTERM
-import struct
 from subprocess import PIPE, Popen
 import sys
 import termios
@@ -100,15 +99,6 @@ def spinner():
     while True:
         for c in "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏":
             yield c
-
-
-def term_width():
-    if not TTY:
-        return 0
-
-    fd = sys.stdout.fileno()
-    _, width = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, 'aaaa'))
-    return width
 
 
 def page_lines(lines):
@@ -423,7 +413,7 @@ class IOManager:
                 progress_text = "{:.1f}%  ".format(progress * 100)
                 line += bold(progress_text)
                 visible_length += len(progress_text)
-            line += self.jobs[-1][:term_width() - 1 - visible_length]
+            line += self.jobs[-1][:get_terminal_size().columns - 1 - visible_length]
             write_to_stream(STDOUT_WRITER, line)
             self._status_line_present = True
 
