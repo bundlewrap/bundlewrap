@@ -531,7 +531,7 @@ bundle:my_bundle  # items in this bundle
     )
 
     # bw metadata
-    help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red) or a table of selected metadata keys from multiple nodes")
+    help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red, uncolored if mixed-source) or a table of selected metadata keys from multiple nodes")
     parser_metadata = subparsers.add_parser(
         "metadata",
         description=help_metadata,
