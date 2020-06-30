@@ -36,7 +36,7 @@ def clone_to_dir(remote_url, rev):
     Returns the path to the directory.
     """
     tmpdir = mkdtemp()
-    if is_ref(rev):
+    if is_ref(rev) and not remote_url.startswith('http'):
         git_cmdline = ["clone", "--bare", "--depth", "1", "--no-single-branch", remote_url, "."]
     else:
         git_cmdline = ["clone", "--bare", remote_url, "."]
