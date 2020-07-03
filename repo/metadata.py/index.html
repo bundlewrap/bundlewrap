@@ -319,6 +319,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#priority" class="nav-link">Priority</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -356,7 +360,20 @@ def foo(metadata):
     else:
         raise DoNotRunAgain
 </code></pre>
-<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_reactors</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div></div>
+<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_reactors</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div>
+
+<h2 id="priority">Priority</h2>
+<p>For atomic ("primitive") data types like <code>int</code> or <code>bool</code>:</p>
+<ol>
+<li>Nodes</li>
+<li>Groups</li>
+<li>Reactors</li>
+<li>Defaults</li>
+</ol>
+<p>Node metadata wins over group metadata, groups win over reactors, reactors win over defaults.</p>
+<p>This also applies to type conflicts: For example, specifying a boolean flag in node metadata will win over a list returned by a metadata reactor. (You should probably avoid situations like this entirely.)</p>
+<p>Set-like data types will be merged recursively.</p>
+<div class="alert alert-info">Also see the <a href="../nodes.py#metadata">documentation for node.metadata</a> and <a href="../groups.py#metadata">group.metadata</a> for more information.</div></div>
             </div>
         </div>
 
