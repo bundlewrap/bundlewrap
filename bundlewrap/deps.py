@@ -7,6 +7,7 @@ from .utils.ui import io
 
 class DummyItem:
     bundle = None
+    cascade_skip = True
     triggered = False
 
     def __init__(self, *args, **kwargs):
@@ -668,9 +669,12 @@ def remove_item_dependents(items, dep_item, skipped=False):
 
     all_recursively_removed_items = []
     for removed_item in removed_items:
-        items, recursively_removed_items = \
-            remove_item_dependents(items, removed_item, skipped=skipped)
-        all_recursively_removed_items += recursively_removed_items
+        if removed_item.cascade_skip:
+            items, recursively_removed_items = \
+                remove_item_dependents(items, removed_item, skipped=skipped)
+            all_recursively_removed_items += recursively_removed_items
+        else:
+            items = remove_dep_from_items(items, removed_item.id)
 
     return (items, removed_items + all_recursively_removed_items)
 
