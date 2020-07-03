@@ -46,3 +46,21 @@ On the other hand, if your reactor only needs to provide new metadata in *some* 
 
 
 <div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_reactors</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div>
+
+
+## Priority
+
+For atomic ("primitive") data types like `int` or `bool`:
+
+1.  Nodes
+2.  Groups
+3.  Reactors
+4.  Defaults
+
+Node metadata wins over group metadata, groups win over reactors, reactors win over defaults.
+
+This also applies to type conflicts: For example, specifying a boolean flag in node metadata will win over a list returned by a metadata reactor. (You should probably avoid situations like this entirely.)
+
+Set-like data types will be merged recursively.
+
+<div class="alert alert-info">Also see the <a href="../nodes.py#metadata">documentation for node.metadata</a> and <a href="../groups.py#metadata">group.metadata</a> for more information.</div>
