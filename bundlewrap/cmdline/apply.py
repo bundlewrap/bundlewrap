@@ -30,12 +30,19 @@ def bw_apply(repo, args):
 
     io.progress_set_total(count_items(pending_nodes))
 
-    repo.hooks.apply_start(
-        repo,
-        args['targets'],
-        target_nodes,
-        interactive=args['interactive'],
-    )
+    try:
+        repo.hooks.apply_start(
+            repo,
+            args['targets'],
+            target_nodes,
+            interactive=args['interactive'],
+        )
+    except GracefulApplyException as exc:
+        io.stderr(_("{x} apply aborted by hook ({reason})").format(
+            reason=str(exc) or _("no reason given"),
+            x=red("!!!"),
+        ))
+        exit(1)
 
     start_time = datetime.now()
     results = []

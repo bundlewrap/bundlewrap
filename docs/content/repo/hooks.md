@@ -64,6 +64,13 @@ Called when you start a `bw apply` command.
 
 `interactive` Indicates whether the apply is interactive or not.
 
+To abort the entire apply operation:
+
+```
+from bundlewrap.exceptions import GracefulApplyException
+raise GracefulApplyException("reason goes here")
+```
+
 ---
 
 **`apply_end(repo, target, nodes, duration=None, **kwargs)`**
