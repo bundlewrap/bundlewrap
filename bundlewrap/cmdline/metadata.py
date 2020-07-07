@@ -138,10 +138,13 @@ def bw_metadata(repo, args):
             table = [[bold(_("path")), bold(_("source"))], ROW_SEPARATOR]
             for path, blamed in sorted(node.metadata_blame.items()):
                 joined_path = "/".join(path)
-                for key_path in key_paths:
-                    if joined_path.startswith(key_path):
-                        table.append([joined_path, ", ".join(blamed)])
-                        break
+                if key_paths:
+                    for key_path in key_paths:
+                        if _list_starts_with(path, key_path):
+                            table.append([joined_path, ", ".join(blamed)])
+                            break
+                else:
+                    table.append([joined_path, ", ".join(blamed)])
             page_lines(render_table(table))
         else:
             metadata = deepcopy_metadata(node.metadata)
