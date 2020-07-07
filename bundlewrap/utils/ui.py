@@ -115,7 +115,10 @@ def page_lines(lines):
             env=env,
             stdin=PIPE,
         )
-        pager.stdin.write("\n".join(lines).encode('utf-8'))
+        try:
+            pager.stdin.write("\n".join(lines).encode('utf-8'))
+        except BrokenPipeError:
+            pass
         pager.stdin.close()
         pager.communicate()
         write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
