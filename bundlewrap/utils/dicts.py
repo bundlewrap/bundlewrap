@@ -432,4 +432,9 @@ def value_at_key_path(dict_obj, path):
     if not path:
         return dict_obj
     else:
-        return value_at_key_path(dict_obj[path[0]], path[1:])
+        nested_dict = dict_obj[path[0]]
+        remaining_path = path[1:]
+        if remaining_path and not isinstance(nested_dict, dict):
+            raise KeyError("/".join(path))
+        else:
+            return value_at_key_path(nested_dict, remaining_path)
