@@ -701,7 +701,7 @@ class Repository:
                 "These metadata reactors raised a KeyError "
                 "even after all other reactors were done:"
             )
-            for source, exc in keyerrors.items():
+            for source, exc in sorted(keyerrors.items()):
                 node_name, reactor = source
                 msg += f"\n\n  {node_name} {reactor}\n\n"
                 for line in TracebackException.from_exception(exc).format():
