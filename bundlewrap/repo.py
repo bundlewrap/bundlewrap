@@ -531,9 +531,9 @@ class Repository:
             # now that we have completed all metadata for this
             # node and all related nodes, copy that data over
             # to the complete dict
-            for node_name in self._nodes_we_need_metadata_for:
-                self._node_metadata_complete[node_name] = \
-                    self._metastacks[node_name]._as_dict()
+            for some_node_name in self._nodes_we_need_metadata_for:
+                self._node_metadata_complete[some_node_name] = \
+                    self._metastacks[some_node_name]._as_dict()
 
             if blame:
                 blame_result = self._metastacks[node_name]._as_blame()
