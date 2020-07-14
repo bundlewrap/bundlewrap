@@ -43,7 +43,7 @@ DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 FILENAME_REQUIREMENTS = "requirements.txt"
-MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "100"))
+MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "500"))
 
 HOOK_EVENTS = (
     'action_run_end',
@@ -557,9 +557,7 @@ class Repository:
         Builds complete metadata for all nodes that appear in
         self._nodes_we_need_metadata_for.
         """
-        # Prevents us from reassembling static metadata needlessly and
-        # helps us detect nodes pulled into self._nodes_we_need_metadata_for
-        # by node.partial_metadata.
+        # prevents us from reassembling static metadata needlessly
         nodes_with_completed_static_metadata = set()
         # these reactors have indicated that they do not need to be run again
         do_not_run_again = set()
@@ -568,6 +566,7 @@ class Repository:
         # loop detection
         iterations = 0
         reactors_that_changed_something_in_last_iteration = set()
+        stable_nodes_to_skip = set()
 
         while not QUIT_EVENT.is_set():
             iterations += 1
@@ -619,13 +618,18 @@ class Repository:
             # until none of them return changed metadata anymore.
             any_reactor_returned_changed_metadata = False
             reactors_that_changed_something_in_last_iteration = set()
+            nodes_that_did_not_change_in_this_iteration = set()
 
             # randomize order to increase chance of exposing unintended
             # non-deterministic effects of execution order
             for node_name in randomize_order(self._nodes_we_need_metadata_for):
                 if QUIT_EVENT.is_set():
                     break
+                if node_name in stable_nodes_to_skip:
+                    # this is an optimization, see comments below
+                    continue
                 node = self.get_node(node_name)
+                nodes_that_did_not_change_in_this_iteration.add(node_name)
 
                 with io.job(_("{node}  running metadata reactors").format(node=bold(node.name))):
                     for reactor_name, reactor in randomize_order(node.metadata_reactors):
@@ -637,6 +641,11 @@ class Repository:
                             keyerrors[(node_name, reactor_name)] = exc
                         except DoNotRunAgain:
                             do_not_run_again.add((node_name, reactor_name))
+                            # clear any previously stored exception
+                            try:
+                                del keyerrors[(node_name, reactor_name)]
+                            except KeyError:
+                                pass
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata reactor "
@@ -675,14 +684,32 @@ class Repository:
                                     (node_name, reactor_name),
                                 )
                                 any_reactor_returned_changed_metadata = True
+                                try:
+                                    nodes_that_did_not_change_in_this_iteration.remove(node_name)
+                                except KeyError:
+                                    # already removed previously
+                                    pass
+
+            io.debug(
+                f"end of metadata iteration #{iterations}, "
+                f"{len(self._nodes_we_need_metadata_for)} nodes total, "
+                f"{len(reactors_that_changed_something_in_last_iteration)} reactors changed, "
+                f"{len(nodes_that_did_not_change_in_this_iteration)} nodes unchanged, "
+                f"{len(stable_nodes_to_skip)} nodes skipped"
+            )
+
+            # Nodes that did not change in this iteration are unlikely
+            # to do it in the next one. So we skip them for now and let
+            # changing nodes do their thing first.
+            stable_nodes_to_skip.update(nodes_that_did_not_change_in_this_iteration)
 
             if not any_reactor_returned_changed_metadata:
-                if nodes_with_completed_static_metadata != self._nodes_we_need_metadata_for:
-                    # During metadata reactor execution, partial metadata may
-                    # have been requested for nodes we did not previously
-                    # consider. We still need to make sure to generate static
-                    # metadata for these new nodes, as that may trigger
-                    # additional results from metadata reactors.
+                if nodes_that_did_not_change_in_this_iteration != self._nodes_we_need_metadata_for:
+                    # Nothing changed, but either we pulled in new nodes
+                    # through partial_metadata or we skipped some. So
+                    # let's not skip any in the next iteration and see
+                    # if they remain stable.
+                    stable_nodes_to_skip.clear()
                     continue
                 else:
                     # Now that we're done, re-sort static metadata to
