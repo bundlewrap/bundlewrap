@@ -641,6 +641,11 @@ class Repository:
                             keyerrors[(node_name, reactor_name)] = exc
                         except DoNotRunAgain:
                             do_not_run_again.add((node_name, reactor_name))
+                            # clear any previously stored exception
+                            try:
+                                del keyerrors[(node_name, reactor_name)]
+                            except KeyError:
+                                pass
                         except Exception as exc:
                             io.stderr(_(
                                 "{x} Exception while executing metadata reactor "
