@@ -59,6 +59,7 @@ class MetadataGenerator:
                 # the interface.
                 metastack = Metastack()
                 metastack._set_layer(
+                    0,
                     "flattened",
                     self._node_metadata_complete[node_name],
                 )
@@ -182,16 +183,6 @@ class MetadataGenerator:
             # if we get here, we're done!
             break
 
-        # Now that we're done, re-sort static metadata to
-        # overrule reactors.
-        for node_name, metastack in self.__metastacks.items():
-            for identifier in list(metastack._layers.keys()):
-                if (
-                    identifier.startswith("group:") or
-                    identifier.startswith("node:")
-                ):
-                    metastack._layers[identifier] = metastack._layers.pop(identifier)
-
         if self.__keyerrors:
             msg = _(
                 "These metadata reactors raised a KeyError "
@@ -212,23 +203,28 @@ class MetadataGenerator:
             # randomize order to increase chance of exposing clashing defaults
             for defaults_name, defaults in randomize_order(node.metadata_defaults):
                 self.__metastacks[node_name]._set_layer(
+                    2,
                     defaults_name,
                     defaults,
                 )
+        self.__metastacks[node_name]._cache_partition(2)
 
         with io.job(_("{node}  adding group metadata").format(node=bold(node.name))):
             group_order = _flatten_group_hierarchy(node.groups)
             for group_name in group_order:
                 self.__metastacks[node_name]._set_layer(
+                    0,
                     "group:{}".format(group_name),
                     self.get_group(group_name)._attributes.get('metadata', {}),
                 )
 
         with io.job(_("{node}  adding node metadata").format(node=bold(node.name))):
             self.__metastacks[node_name]._set_layer(
+                0,
                 "node:{}".format(node_name),
                 node._attributes.get('metadata', {}),
             )
+        self.__metastacks[node_name]._cache_partition(0)
 
         self.__reactors_with_deps[node_name] = set()
         # run all reactors once to get started
@@ -276,6 +272,7 @@ class MetadataGenerator:
         if (node_name, reactor_name) in self.__do_not_run_again:
             return False, set()
         self.__partial_metadata_accessed_for = set()
+        self.__reactors_run += 1
         try:
             new_metadata = reactor(self.__metastacks[node_name])
         except KeyError as exc:
@@ -308,6 +305,7 @@ class MetadataGenerator:
 
             try:
                 this_changed = self.__metastacks[node_name]._set_layer(
+                    1,
                     reactor_name,
                     new_metadata,
                 )

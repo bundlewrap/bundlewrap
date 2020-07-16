@@ -15,11 +15,13 @@ class Metastack:
     in their ability to revise their own layer each time they are run.
     """
     def __init__(self):
-        # We rely heavily on insertion order in this dict.
-        if version_info < (3, 7):
-            self._layers = OrderedDict()
-        else:
-            self._layers = {}
+        self._partitions = (
+            # We rely heavily on insertion order in these dicts.
+            {} if version_info >= (3, 7) else OrderedDict(),  # node/groups
+            {} if version_info >= (3, 7) else OrderedDict(),  # reactors
+            {} if version_info >= (3, 7) else OrderedDict(),  # defaults
+        )
+        self._cached_partitions = {}
 
     def get(self, path, default=NO_DEFAULT):
         """
@@ -42,18 +44,21 @@ class Metastack:
         result = None
         undef = True
 
-        for layer in self._layers.values():
-            try:
-                value = value_at_key_path(layer, path)
-            except KeyError:
-                pass
-            else:
-                if undef:
-                    # First time we see anything.
-                    result = {'data': value}
-                    undef = False
+        for part_index, partition in enumerate(self._partitions):
+            # prefer cached partitions if available
+            partition = self._cached_partitions.get(part_index, partition)
+            for layer in partition.values():
+                try:
+                    value = value_at_key_path(layer, path)
+                except KeyError:
+                    pass
                 else:
-                    result = merge_dict(result, {'data': value})
+                    if undef:
+                        # First time we see anything.
+                        result = {'data': value}
+                        undef = False
+                    else:
+                        result = merge_dict(result, {'data': value})
 
         if undef:
             if default != NO_DEFAULT:
@@ -63,11 +68,14 @@ class Metastack:
         else:
             return deepcopy_metadata(result['data'])
 
-    def _as_dict(self):
+    def _as_dict(self, partitions=(0, 1, 2)):
         final_dict = {}
 
-        for layer in self._layers.values():
-            final_dict = merge_dict(final_dict, layer)
+        for part_index in partitions:
+            # prefer cached partitions if available
+            partition = self._cached_partitions.get(part_index, self._partitions[part_index])
+            for layer in partition.values():
+                final_dict = merge_dict(final_dict, layer)
 
         return final_dict
 
@@ -75,19 +83,23 @@ class Metastack:
         keymap = map_dict_keys(self._as_dict())
         blame = {}
         for path in keymap:
-            for identifier, layer in self._layers.items():
-                try:
-                    value_at_key_path(layer, path)
-                except KeyError:
-                    pass
-                else:
-                    blame.setdefault(path, []).append(identifier)
+            for partition in self._partitions:
+                for identifier, layer in partition.items():
+                    try:
+                        value_at_key_path(layer, path)
+                    except KeyError:
+                        pass
+                    else:
+                        blame.setdefault(path, []).append(identifier)
         return blame
 
-    def _set_layer(self, identifier, new_layer):
-        # Marked with an underscore because only the internal metadata
-        # reactor routing is supposed to call this method.
+    def _set_layer(self, partition_index, identifier, new_layer):
         validate_metadata(new_layer)
-        changed = self._layers.get(identifier, {}) != new_layer
-        self._layers[identifier] = new_layer
+        changed = self._partitions[partition_index].get(identifier, {}) != new_layer
+        self._partitions[partition_index][identifier] = new_layer
         return changed
+
+    def _cache_partition(self, partition_index):
+        self._cached_partitions[partition_index] = {
+            'merged layers': self._as_dict(partitions=[partition_index]),
+        }
