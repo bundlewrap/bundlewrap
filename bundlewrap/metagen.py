@@ -30,6 +30,9 @@ class MetadataGenerator:
         # nodes we encountered as a dependency through partial_metadata,
         # but haven't run yet
         self.__nodes_that_never_ran = set()
+        # nodes whose dependencies changed and that have to rerun their
+        # reactors depending on those nodes
+        self.__triggered_nodes = set()
         # nodes we already did initial processing on
         self.__nodes_that_ran_at_least_once = set()
         self.__reactors_run = 0
@@ -138,6 +141,19 @@ class MetadataGenerator:
 
             # at this point, we have run all relevant nodes at least once
 
+            # if we have any triggered nodes from below, run their reactors
+            # with deps to see if they become unstable
+
+            try:
+                node_name = self.__triggered_nodes.pop()
+            except KeyError:
+                pass
+            else:
+                self.__run_reactors(self.get_node(node_name), with_deps=True, without_deps=False)
+                continue
+
+            # now (re)stabilize all nodes
+
             encountered_unstable_node = False
             for node, stable in self.__node_stable.items():
                 if stable:
@@ -158,7 +174,7 @@ class MetadataGenerator:
                     # something changed on this node, mark all dependent nodes as unstable
                     encountered_unstable_node = True
                     for required_node_name in self.__node_deps.get(node.name, set()):
-                        self.__node_stable[required_node_name] = False
+                        self.__triggered_nodes.add(required_node_name)
             if encountered_unstable_node:
                 # start over until everything is stable
                 continue
