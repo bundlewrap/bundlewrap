@@ -133,7 +133,7 @@ class KubernetesItem(Item, metaclass=ABCMeta):
             user_manifest,
         )
 
-        if merged_manifest['apiVersion'] is None:
+        if merged_manifest.get('apiVersion') is None:
             raise BundleError(_(
                 "{item} from bundle '{bundle}' needs an apiVersion in its manifest"
             ).format(item=self.id, bundle=self.bundle.name))
