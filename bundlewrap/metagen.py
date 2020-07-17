@@ -203,28 +203,28 @@ class MetadataGenerator:
             # randomize order to increase chance of exposing clashing defaults
             for defaults_name, defaults in randomize_order(node.metadata_defaults):
                 self.__metastacks[node_name]._set_layer(
-                    0,
+                    2,
                     defaults_name,
                     defaults,
                 )
-        self.__metastacks[node_name]._cache_partition(0)
+        self.__metastacks[node_name]._cache_partition(2)
 
         with io.job(_("{node}  adding group metadata").format(node=bold(node.name))):
             group_order = _flatten_group_hierarchy(node.groups)
             for group_name in group_order:
                 self.__metastacks[node_name]._set_layer(
-                    2,
+                    0,
                     "group:{}".format(group_name),
                     self.get_group(group_name)._attributes.get('metadata', {}),
                 )
 
         with io.job(_("{node}  adding node metadata").format(node=bold(node.name))):
             self.__metastacks[node_name]._set_layer(
-                2,
+                0,
                 "node:{}".format(node_name),
                 node._attributes.get('metadata', {}),
             )
-        self.__metastacks[node_name]._cache_partition(2)
+        self.__metastacks[node_name]._cache_partition(0)
 
         self.__reactors_with_deps[node_name] = set()
         # run all reactors once to get started

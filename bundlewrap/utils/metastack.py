@@ -1,9 +1,12 @@
 from collections import OrderedDict
 from sys import version_info
 
-from ..metadata import deepcopy_metadata, validate_metadata, value_at_key_path
+from ..metadata import METADATA_TYPES, deepcopy_metadata, validate_metadata, value_at_key_path
 from . import NO_DEFAULT
-from .dicts import map_dict_keys, merge_dict
+from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
+
+
+UNMERGEABLE = tuple(METADATA_TYPES) + tuple(ATOMIC_TYPES.values())
 
 
 class Metastack:
@@ -17,9 +20,9 @@ class Metastack:
     def __init__(self):
         self._partitions = (
             # We rely heavily on insertion order in these dicts.
-            {} if version_info >= (3, 7) else OrderedDict(),  # defaults
-            {} if version_info >= (3, 7) else OrderedDict(),  # reactors
             {} if version_info >= (3, 7) else OrderedDict(),  # node/groups
+            {} if version_info >= (3, 7) else OrderedDict(),  # reactors
+            {} if version_info >= (3, 7) else OrderedDict(),  # defaults
         )
         self._cached_partitions = {}
 
@@ -47,18 +50,20 @@ class Metastack:
         for part_index, partition in enumerate(self._partitions):
             # prefer cached partitions if available
             partition = self._cached_partitions.get(part_index, partition)
-            for layer in partition.values():
+            for layer in reversed(partition.values()):
                 try:
                     value = value_at_key_path(layer, path)
                 except KeyError:
                     pass
                 else:
+                    if isinstance(value, UNMERGEABLE):
+                        return value
                     if undef:
                         # First time we see anything.
                         result = {'data': value}
                         undef = False
                     else:
-                        result = merge_dict(result, {'data': value})
+                        result = merge_dict({'data': value}, result)
 
         if undef:
             if default != NO_DEFAULT:
@@ -68,14 +73,19 @@ class Metastack:
         else:
             return deepcopy_metadata(result['data'])
 
-    def _as_dict(self, partitions=(0, 1, 2)):
+    def _as_dict(self, partitions=None):
         final_dict = {}
+
+        if partitions is None:
+            partitions = tuple(range(len(self._partitions)))
+        else:
+            partitions = sorted(partitions)
 
         for part_index in partitions:
             # prefer cached partitions if available
             partition = self._cached_partitions.get(part_index, self._partitions[part_index])
-            for layer in partition.values():
-                final_dict = merge_dict(final_dict, layer)
+            for layer in reversed(partition.values()):
+                final_dict = merge_dict(layer, final_dict)
 
         return final_dict
 
