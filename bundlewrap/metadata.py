@@ -108,21 +108,21 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
         for path in map_dict_keys(d):
             value = value_at_key_path(d, path)
             if isinstance(value, dict):
-                yield path, TYPE_DICT
+                yield path, value, TYPE_DICT
             elif isinstance(value, set):
-                yield path, TYPE_SET
+                yield path, value, TYPE_SET
             else:
-                yield path, TYPE_OTHER
+                yield path, value, TYPE_OTHER
 
     for prefix in ("metadata_defaults:", "metadata_reactor:"):
         paths = {}
         for identifier, layer in node._metadata_stack._layers.items():
             if identifier.startswith(prefix):
-                for path, current_type in paths_with_types(layer):
+                for path, value, current_type in paths_with_types(layer):
                     try:
-                        prev_type, prev_identifier = paths[path]
+                        prev_type, prev_identifier, prev_value = paths[path]
                     except KeyError:
-                        paths[path] = current_type, identifier
+                        paths[path] = current_type, identifier, value
                     else:
                         if (
                             prev_type == TYPE_DICT
@@ -134,7 +134,7 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
                             and current_type == TYPE_SET
                         ):
                             pass
-                        else:
+                        elif value != prev_value:
                             raise ValueError(_(
                                 "{a} and {b} are clashing over this key path: {path}"
                             ).format(
