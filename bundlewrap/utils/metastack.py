@@ -17,9 +17,9 @@ class Metastack:
     def __init__(self):
         self._partitions = (
             # We rely heavily on insertion order in these dicts.
-            {} if version_info >= (3, 7) else OrderedDict(),  # node/groups
-            {} if version_info >= (3, 7) else OrderedDict(),  # reactors
             {} if version_info >= (3, 7) else OrderedDict(),  # defaults
+            {} if version_info >= (3, 7) else OrderedDict(),  # reactors
+            {} if version_info >= (3, 7) else OrderedDict(),  # node/groups
         )
         self._cached_partitions = {}
 
