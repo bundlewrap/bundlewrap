@@ -171,11 +171,8 @@ class MetadataGenerator:
             encountered_unstable_node = False
             for node in randomize_order(self.__node_stable.keys()):
                 self.__run_reactors(node, with_deps=True, without_deps=False)
-                if self.__node_stable[node] is False:
-                    # something changed on this node, mark all dependent nodes as unstable
+                if not self.__node_stable[node]:
                     encountered_unstable_node = True
-                    for required_node_name in self.__node_deps.get(node.name, set()):
-                        self.__triggered_nodes.add(required_node_name)
             if encountered_unstable_node:
                 # start over until everything is stable
                 continue
@@ -265,6 +262,12 @@ class MetadataGenerator:
                     # again if the required node changes
                     self.__node_deps.setdefault(required_node_name, set())
                     self.__node_deps[required_node_name].add(node.name)
+
+        if any_reactor_changed:
+            # something changed on this node, mark all dependent nodes as unstable
+            for required_node_name in self.__node_deps.get(node.name, set()):
+                io.debug(f"{node.name} triggering metadata rerun on {required_node_name}")
+                self.__triggered_nodes.add(required_node_name)
 
         self.__node_stable[node] = not any_reactor_changed
 
