@@ -269,7 +269,10 @@ class MetadataGenerator:
                 io.debug(f"{node.name} triggering metadata rerun on {required_node_name}")
                 self.__triggered_nodes.add(required_node_name)
 
-        self.__node_stable[node] = not any_reactor_changed
+        if with_deps and any_reactor_changed:
+            self.__node_stable[node] = False
+        elif without_deps:
+            self.__node_stable[node] = not any_reactor_changed
 
     def __run_reactor(self, node_name, reactor_name, reactor):
         if (node_name, reactor_name) in self.__do_not_run_again:
