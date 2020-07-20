@@ -240,8 +240,8 @@ class MetadataGenerator:
             # TODO ideally, we should run the least-run reactors first
             for reactor_name, reactor in randomize_order(node.metadata_reactors):
                 if (
-                    (depsonly and reactor_name not in self.__reactors_with_deps) or
-                    (not depsonly and reactor_name in self.__reactors_with_deps)
+                    (depsonly and reactor_name not in self.__reactors_with_deps[node.name]) or
+                    (not depsonly and reactor_name in self.__reactors_with_deps[node.name])
                 ):
                     # this if makes sure we run reactors with deps first
                     continue
