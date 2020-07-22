@@ -137,11 +137,15 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
                                 pass
                             elif value != prev_value:
                                 raise ValueError(_(
-                                    "{a} and {b} are clashing over this key path: {path}"
+                                    "{node}: {a} and {b} are clashing over this key path: {path} "
+                                    "(\"{val_a}\" vs. \"{val_b}\")"
                                 ).format(
                                     a=identifier,
                                     b=prev_identifier,
+                                    node=node.name,
                                     path="/".join(path),
+                                    val_a=value,
+                                    val_b=prev_value,
                                 ))
 
 
