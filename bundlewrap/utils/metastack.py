@@ -50,7 +50,7 @@ class Metastack:
         for part_index, partition in enumerate(self._partitions):
             # prefer cached partitions if available
             partition = self._cached_partitions.get(part_index, partition)
-            for layer in reversed(partition.values()):
+            for layer in reversed(list(partition.values())):
                 try:
                     value = value_at_key_path(layer, path)
                 except KeyError:
@@ -85,7 +85,7 @@ class Metastack:
         for part_index in partitions:
             # prefer cached partitions if available
             partition = self._cached_partitions.get(part_index, self._partitions[part_index])
-            for layer in reversed(partition.values()):
+            for layer in reversed(list(partition.values())):
                 final_dict = merge_dict(layer, final_dict)
 
         return final_dict
