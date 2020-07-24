@@ -199,16 +199,16 @@ def test_atomic_in_layer():
     assert list(stack.get('list', None)) == [4]
 
 
-def test_set_layer_return_code():
+def test_pop_layer():
     stack = Metastack()
-    ret = stack._set_layer(0, 'overlay', {'foo': 'bar'})
-    assert ret is True
-    ret = stack._set_layer(0, 'overlay', {'foo': 'bar'})
-    assert ret is False
-    ret = stack._set_layer(0, 'overlay', {'foo': 'baz'})
-    assert ret is True
-    ret = stack._set_layer(0, 'overlay', {'foo': 'baz', 'bar': 1})
-    assert ret is True
+    stack._set_layer(0, 'overlay', {'foo': 'bar'})
+    stack._set_layer(0, 'overlay', {'foo': 'baz'})
+    assert stack._pop_layer(0, 'overlay') == {'foo': 'baz'}
+    with raises(KeyError):
+        stack.get('foo')
+    assert stack._pop_layer(0, 'overlay') == {}
+    assert stack._pop_layer(0, 'unknown') == {}
+    assert stack._pop_layer(47, 'unknown') == {}
 
 
 def test_as_dict():

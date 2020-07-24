@@ -104,11 +104,15 @@ class Metastack:
                         blame.setdefault(path, []).append(identifier)
         return blame
 
+    def _pop_layer(self, partition_index, identifier):
+        try:
+            return self._partitions[partition_index].pop(identifier)
+        except (KeyError, IndexError):
+            return {}
+
     def _set_layer(self, partition_index, identifier, new_layer):
         validate_metadata(new_layer)
-        changed = self._partitions[partition_index].get(identifier, {}) != new_layer
         self._partitions[partition_index][identifier] = new_layer
-        return changed
 
     def _cache_partition(self, partition_index):
         self._cached_partitions[partition_index] = {

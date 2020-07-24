@@ -286,6 +286,8 @@ class MetadataGenerator:
             return False, set()
         self.__partial_metadata_accessed_for = set()
         self.__reactors_run += 1
+        # make sure the reactor doesn't react to its own output
+        old_metadata = self.__metastacks[node_name]._pop_layer(1, reactor_name)
         try:
             new_metadata = reactor(self.__metastacks[node_name])
         except KeyError as exc:
@@ -317,7 +319,7 @@ class MetadataGenerator:
                 pass
 
             try:
-                this_changed = self.__metastacks[node_name]._set_layer(
+                self.__metastacks[node_name]._set_layer(
                     1,
                     reactor_name,
                     new_metadata,
@@ -333,4 +335,4 @@ class MetadataGenerator:
                     node=node_name,
                 ))
                 raise exc
-            return this_changed, self.__partial_metadata_accessed_for
+            return old_metadata != new_metadata, self.__partial_metadata_accessed_for
