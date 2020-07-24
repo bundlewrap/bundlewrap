@@ -677,19 +677,15 @@ class Node:
 
     @property
     def metadata(self):
-        """
-        Returns full metadata for a node. MUST NOT be used from inside a
-        metadata processor. Use .partial_metadata instead.
-        """
-        return self.repo._metadata_for_node(self.name, partial=False)
+        return self.repo._metadata_for_node(self.name)
 
     @property
     def metadata_blame(self):
-        return self.repo._metadata_for_node(self.name, partial=False, blame=True)
+        return self.repo._metadata_for_node(self.name, blame=True)
 
     @property
     def _metadata_stack(self):
-        return self.repo._metadata_for_node(self.name, partial=False, stack=True)
+        return self.repo._metadata_for_node(self.name, stack=True)
 
     def metadata_get(self, path, default=NO_DEFAULT):
         if not isinstance(path, (tuple, list)):
@@ -729,15 +725,9 @@ class Node:
     @property
     def partial_metadata(self):
         """
-        Only to be used from inside metadata reactors. Can't use the
-        normal .metadata there because it might deadlock when nodes
-        have interdependent metadata.
-
-        It's OK for metadata reactors to work with partial metadata
-        because they will be fed all metadata updates until no more
-        changes are made by any metadata reactor.
+        Deprecated, remove in 5.0.0
         """
-        return self.repo._metadata_for_node(self.name, partial=True)
+        return self.metadata
 
     def run(self, command, data_stdin=None, may_fail=False, log_output=False):
         assert self.os in self.OS_FAMILY_UNIX

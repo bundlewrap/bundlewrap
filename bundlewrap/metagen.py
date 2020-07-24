@@ -14,6 +14,9 @@ MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "5000"))
 
 
 class MetadataGenerator:
+    # are we currently executing a reactor?
+    __in_a_reactor = False
+
     def __reset(self):
         # reactors that raise DoNotRunAgain
         self.__do_not_run_again = set()
@@ -40,10 +43,10 @@ class MetadataGenerator:
         # through partial_metadata
         self.__reactors_with_deps = {}
 
-    def _metadata_for_node(self, node_name, partial=False, blame=False, stack=False):
+    def _metadata_for_node(self, node_name, blame=False, stack=False):
         """
         Returns full or partial metadata for this node. This is the
-        primary entrypoint accessed from node.[partial_]metadata.
+        primary entrypoint accessed from node.metadata.
 
         Partial metadata may only be requested from inside a metadata
         reactor.
@@ -52,7 +55,7 @@ class MetadataGenerator:
         node and all related nodes. Related meaning nodes that this node
         depends on in one of its metadata reactors.
         """
-        if partial:
+        if self.__in_a_reactor:
             if node_name in self._node_metadata_complete:
                 # We already completed metadata for this node, but partial must
                 # return a Metastack, so we build a single-layered one just for
@@ -295,6 +298,7 @@ class MetadataGenerator:
         self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
         old_metadata = self.__metastacks[node_name]._pop_layer(1, reactor_name)
+        self.__in_a_reactor = True
         try:
             new_metadata = reactor(self.__metastacks[node_name])
         except KeyError as exc:
@@ -318,28 +322,31 @@ class MetadataGenerator:
                 node=node_name,
             ))
             raise exc
-        else:
-            # reactor terminated normally, clear any previously stored exception
-            try:
-                del self.__keyerrors[(node_name, reactor_name)]
-            except KeyError:
-                pass
+        finally:
+            self.__in_a_reactor = False
 
-            try:
-                self.__metastacks[node_name]._set_layer(
-                    1,
-                    reactor_name,
-                    new_metadata,
-                )
-            except TypeError as exc:
-                # TODO catch validation errors better
-                io.stderr(_(
-                    "{x} Exception after executing metadata reactor "
-                    "{metaproc} for node {node}:"
-                ).format(
-                    x=red("!!!"),
-                    metaproc=reactor_name,
-                    node=node_name,
-                ))
-                raise exc
-            return old_metadata != new_metadata, self.__partial_metadata_accessed_for
+        # reactor terminated normally, clear any previously stored exception
+        try:
+            del self.__keyerrors[(node_name, reactor_name)]
+        except KeyError:
+            pass
+
+        try:
+            self.__metastacks[node_name]._set_layer(
+                1,
+                reactor_name,
+                new_metadata,
+            )
+        except TypeError as exc:
+            # TODO catch validation errors better
+            io.stderr(_(
+                "{x} Exception after executing metadata reactor "
+                "{metaproc} for node {node}:"
+            ).format(
+                x=red("!!!"),
+                metaproc=reactor_name,
+                node=node_name,
+            ))
+            raise exc
+        return old_metadata != new_metadata, self.__partial_metadata_accessed_for
+

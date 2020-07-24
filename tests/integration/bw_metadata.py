@@ -464,3 +464,75 @@ def reactor2(metadata):
         "broken": True,
         "again": True,
     }
+
+
+def test_own_node_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {'number': 47},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def reactor1(metadata):
+    return {'plusone': node.metadata.get('number') + 1}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 47,
+        "plusone": 48,
+    }
+
+
+def test_other_node_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {'number': 47},
+            },
+            "node2": {
+                'bundles': ["test"],
+                'metadata': {'number': 42},
+            },
+            "node3": {
+                'bundles': ["test"],
+                'metadata': {'number': 23},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def reactor1(metadata):
+    numbers = set()
+    for n in repo.nodes:
+        if n != node:
+            numbers.add(n.metadata.get('number'))
+    return {'other_numbers': numbers}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 47,
+        "other_numbers": [23, 42],
+    }
+    stdout, stderr, rcode = run("bw metadata node2", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 42,
+        "other_numbers": [23, 47],
+    }
+    stdout, stderr, rcode = run("bw metadata node3", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 23,
+        "other_numbers": [42, 47],
+    }
