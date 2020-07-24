@@ -16,7 +16,7 @@ This will simply ensure that the `"foo"` key in metadata will always be set, but
 
 ## Reactors
 
-So let's look at reactors next. Metadata reactors are functions that take the metadata generated so far as their single argument. You must then return a new dictionary with any metadata you wish to have added:
+So let's look at reactors next. Metadata reactors are functions that take the metadata generated for this node so far as their single argument. You must then return a new dictionary with any metadata you wish to have added:
 
 	@metadata_reactor
 	def bar(metadata):
@@ -30,7 +30,14 @@ The parameter `metadata` is not a dictionary but an instance of `Metastack`. You
 
 While node and group metadata and metadata defaults will always be available to reactors, you should not rely on that for the simple reason that you may one day move some metadata from those static sources into another reactor, which may be run later. Thus you may need to wait for some iterations before that data shows up in `metadata`. Note that BundleWrap will catch any `KeyError`s raised in metadata reactors and only report them if they don't go away after all other relevant reactors are done.
 
-To avoid deadlocks when accessing *other* nodes' metadata from within a metadata reactor, use `other_node.partial_metadata` instead of `other_node.metadata`. For the same reason, always use the `metadata` parameter to access the current node's metadata, never `node.metadata`.
+You can also access other nodes' metadata:
+
+	@metadata_reactor
+	def baz(metadata):
+	    frob = set()
+	    for n in repo.nodes:
+	        frob.add(n.metadata.get('sizzle'))
+	    return {'frob': frob}
 
 
 ### DoNotRunAgain

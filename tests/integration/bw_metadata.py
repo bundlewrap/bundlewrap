@@ -385,28 +385,27 @@ def test_metadatapy_reactor_keyerror_fixed(tmpdir):
         f.write(
 """
 @metadata_reactor
-def foo(metadata):
-    bar_ran = metadata.get('bar_ran', False)
-    if not bar_ran:
-        return {'foo_ran': True}
-    else:
-        return {'foo': metadata.get('bar'), 'foo_ran': True}
-
+def one(metadata):
+    return {'one': True}
 
 @metadata_reactor
-def bar(metadata):
-    foo_ran = metadata.get('foo_ran', False)
-    if not foo_ran:
-        return {'bar_ran': False}
-    else:
-        return {'bar': 47, 'bar_ran': True}
+def two(metadata):
+    return {'two': metadata.get('one')}
+
+@metadata_reactor
+def three(metadata):
+    return {'three': metadata.get('two')}
+
+@metadata_reactor
+def four(metadata):
+    return {'four': metadata.get('three')}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert loads(stdout.decode()) == {
-        "bar": 47,
-        "bar_ran": True,
-        "foo": 47,
-        "foo_ran": True,
+        "one": True,
+        "two": True,
+        "three": True,
+        "four": True,
     }
     assert stderr == b""
     assert rcode == 0
@@ -427,11 +426,113 @@ def test_metadatapy_infinite_loop(tmpdir):
 """
 @metadata_reactor
 def plusone(metadata):
-    return {'foo': metadata.get('foo', 0) + 1 }
+    return {'foo': metadata.get('bar', 0) + 1 }
 
 @metadata_reactor
 def plustwo(metadata):
-    return {'foo': metadata.get('foo', 0) + 2 }
+    return {'bar': metadata.get('foo', 0) + 2 }
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
     assert rcode == 1
+
+
+def test_metadatapy_no_self_react(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def reactor1(metadata):
+    assert not metadata.get('broken', False)
+    return {'broken': True}
+
+@metadata_reactor
+def reactor2(metadata):
+    # just to make sure reactor1 runs again
+    return {'again': True}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "broken": True,
+        "again": True,
+    }
+
+
+def test_own_node_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {'number': 47},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def reactor1(metadata):
+    return {'plusone': node.metadata.get('number') + 1}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 47,
+        "plusone": 48,
+    }
+
+
+def test_other_node_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {'number': 47},
+            },
+            "node2": {
+                'bundles': ["test"],
+                'metadata': {'number': 42},
+            },
+            "node3": {
+                'bundles': ["test"],
+                'metadata': {'number': 23},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def reactor1(metadata):
+    numbers = set()
+    for n in repo.nodes:
+        if n != node:
+            numbers.add(n.metadata.get('number'))
+    return {'other_numbers': numbers}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 47,
+        "other_numbers": [23, 42],
+    }
+    stdout, stderr, rcode = run("bw metadata node2", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 42,
+        "other_numbers": [23, 47],
+    }
+    stdout, stderr, rcode = run("bw metadata node3", path=str(tmpdir))
+    assert loads(stdout.decode()) == {
+        "number": 23,
+        "other_numbers": [42, 47],
+    }

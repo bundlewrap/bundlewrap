@@ -104,7 +104,7 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
     TYPE_SET = 2
     TYPE_OTHER = 3
 
-    def paths_with_types(d):
+    def paths_with_values_and_types(d):
         for path in map_dict_keys(d):
             value = value_at_key_path(d, path)
             if isinstance(value, dict):
@@ -116,32 +116,37 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
 
     for prefix in ("metadata_defaults:", "metadata_reactor:"):
         paths = {}
-        for identifier, layer in node._metadata_stack._layers.items():
-            if identifier.startswith(prefix):
-                for path, value, current_type in paths_with_types(layer):
-                    try:
-                        prev_type, prev_identifier, prev_value = paths[path]
-                    except KeyError:
-                        paths[path] = current_type, identifier, value
-                    else:
-                        if (
-                            prev_type == TYPE_DICT
-                            and current_type == TYPE_DICT
-                        ):
-                            pass
-                        elif (
-                            prev_type == TYPE_SET
-                            and current_type == TYPE_SET
-                        ):
-                            pass
-                        elif value != prev_value:
-                            raise ValueError(_(
-                                "{a} and {b} are clashing over this key path: {path}"
-                            ).format(
-                                a=identifier,
-                                b=prev_identifier,
-                                path="/".join(path),
-                            ))
+        for partition in node._metadata_stack._partitions:
+            for identifier, layer in partition.items():
+                if identifier.startswith(prefix):
+                    for path, value, current_type in paths_with_values_and_types(layer):
+                        try:
+                            prev_type, prev_identifier, prev_value = paths[path]
+                        except KeyError:
+                            paths[path] = current_type, identifier, value
+                        else:
+                            if (
+                                prev_type == TYPE_DICT
+                                and current_type == TYPE_DICT
+                            ):
+                                pass
+                            elif (
+                                prev_type == TYPE_SET
+                                and current_type == TYPE_SET
+                            ):
+                                pass
+                            elif value != prev_value:
+                                raise ValueError(_(
+                                    "{node}: {a} and {b} are clashing over this key path: {path} "
+                                    "(\"{val_a}\" vs. \"{val_b}\")"
+                                ).format(
+                                    a=identifier,
+                                    b=prev_identifier,
+                                    node=node.name,
+                                    path="/".join(path),
+                                    val_a=value,
+                                    val_b=prev_value,
+                                ))
 
 
 def check_for_metadata_conflicts_between_groups(node):
