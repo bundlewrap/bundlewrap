@@ -1,3 +1,4 @@
+from collections import Counter
 from os import environ
 from traceback import TracebackException
 
@@ -38,7 +39,10 @@ class MetadataGenerator:
         self.__triggered_nodes = set()
         # nodes we already did initial processing on
         self.__nodes_that_ran_at_least_once = set()
+        # how often we called reactors
         self.__reactors_run = 0
+        # how often each reactor changed
+        self.__reactor_changes = {}
         # tracks which reactors on a node have look at other nodes
         # through partial_metadata
         self.__reactors_with_deps = {}
@@ -125,20 +129,24 @@ class MetadataGenerator:
         while not QUIT_EVENT.is_set():
             iterations += 1
             if iterations > MAX_METADATA_ITERATIONS:
-                assert False
-                # TODO
-                #reactors = ""
-                #for node, reactor in sorted(reactors_that_changed_something_in_last_iteration):
-                #    reactors += node + " " + reactor + "\n"
-                #raise ValueError(_(
-                #    "Infinite loop detected between these metadata reactors:\n"
-                #) + reactors)
+                top_changers = Counter(self.__reactor_changes).most_common(25)
+                msg = _(
+                    "MAX_METADATA_ITERATIONS({m}) exceeded, "
+                    "likely an infinite loop between flip-flopping metadata reactors.\n"
+                    "These are the reactors that changed most often:\n\n"
+                ).format(m=MAX_METADATA_ITERATIONS)
+                for reactor, count in top_changers:
+                    msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
+                raise RuntimeError(msg)
+
             io.debug(f"metadata iteration #{iterations}")
 
-            jobmsg = _("{b} (iteration {i}, {nodes} nodes)").format(
+            jobmsg = _("{b} ({i} iterations, {n} nodes, {r} reactors, {e} runs)").format(
                 b=bold(_("running metadata reactors")),
                 i=iterations,
-                nodes=len(self.__nodes_that_never_ran) + len(self.__nodes_that_ran_at_least_once),
+                n=len(self.__nodes_that_never_ran) + len(self.__nodes_that_ran_at_least_once),
+                r=len(self.__reactor_changes),
+                e=self.__reactors_run,
             )
             with io.job(jobmsg):
                 try:
@@ -296,6 +304,7 @@ class MetadataGenerator:
             return False, set()
         self.__partial_metadata_accessed_for = set()
         self.__reactors_run += 1
+        self.__reactor_changes.setdefault((node_name, reactor_name), 0)
         # make sure the reactor doesn't react to its own output
         old_metadata = self.__metastacks[node_name]._pop_layer(1, reactor_name)
         self.__in_a_reactor = True
@@ -348,5 +357,9 @@ class MetadataGenerator:
                 node=node_name,
             ))
             raise exc
-        return old_metadata != new_metadata, self.__partial_metadata_accessed_for
 
+        changed = old_metadata != new_metadata
+        if changed:
+            self.__reactor_changes[(node_name, reactor_name)] += 1
+
+        return changed, self.__partial_metadata_accessed_for
