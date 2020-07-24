@@ -10,7 +10,7 @@ def get_git_branch():
             "git rev-parse --abbrev-ref HEAD",
             shell=True,
             stderr=STDOUT,
-        ).strip()
+        ).decode().strip()
     except CalledProcessError:
         return None
 
@@ -21,7 +21,7 @@ def get_git_clean():
             "git status --porcelain",
             shell=True,
             stderr=STDOUT,
-        ).strip())
+        ).decode().strip())
     except CalledProcessError:
         return None
 
@@ -32,7 +32,7 @@ def get_bzr_rev():
             "bzr revno",
             shell=True,
             stderr=STDOUT,
-        ).strip()
+        ).decode().strip()
     except CalledProcessError:
         return None
 
@@ -43,7 +43,7 @@ def get_git_rev():
             "git rev-parse HEAD",
             shell=True,
             stderr=STDOUT,
-        ).strip()
+        ).decode().strip()
     except CalledProcessError:
         return None
 
@@ -54,7 +54,7 @@ def get_hg_rev():
             "hg --debug id -i",
             shell=True,
             stderr=STDOUT,
-        ).strip().rstrip("+")
+        ).decode().strip().rstrip("+")
     except CalledProcessError:
         return None
 
