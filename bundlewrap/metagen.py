@@ -122,7 +122,7 @@ class MetadataGenerator:
         self.__nodes_that_never_ran.add(initial_node_name)
 
         iterations = 0
-        while not QUIT_EVENT.is_set():  # TODO iteration cap, QUIT_EVENT
+        while not QUIT_EVENT.is_set():
             iterations += 1
             if iterations > MAX_METADATA_ITERATIONS:
                 assert False
@@ -198,7 +198,7 @@ class MetadataGenerator:
                 # if we get here, we're done!
                 break
 
-        if self.__keyerrors:
+        if self.__keyerrors and not QUIT_EVENT.is_set():
             msg = _(
                 "These metadata reactors raised a KeyError "
                 "even after all other reactors were done:"
