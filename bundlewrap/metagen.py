@@ -130,6 +130,7 @@ class MetadataGenerator:
                 #raise ValueError(_(
                 #    "Infinite loop detected between these metadata reactors:\n"
                 #) + reactors)
+            io.debug(f"metadata iteration #{iterations}")
 
             try:
                 node_name = self.__nodes_that_never_ran.pop()
@@ -150,6 +151,7 @@ class MetadataGenerator:
             except KeyError:
                 pass
             else:
+                io.debug(f"triggered metadata run for {node_name}")
                 self.__run_reactors(self.get_node(node_name), with_deps=True, without_deps=False)
                 continue
 
@@ -160,7 +162,10 @@ class MetadataGenerator:
                 if stable:
                     continue
                 self.__run_reactors(node, with_deps=False, without_deps=True)
-                if not self.__node_stable[node]:
+                if self.__node_stable[node]:
+                    io.debug(f"metadata stabilized for {node_name}")
+                else:
+                    io.debug(f"metadata remains unstable for {node_name}")
                     encountered_unstable_node = True
             if encountered_unstable_node:
                 # start over until everything is stable
@@ -193,6 +198,7 @@ class MetadataGenerator:
             raise MetadataPersistentKeyError(msg)
 
     def __initial_run_for_node(self, node_name):
+        io.debug(f"initial metadata run for {node_name}")
         node = self.get_node(node_name)
         self.__metastacks[node_name] = Metastack()
 
@@ -246,6 +252,7 @@ class MetadataGenerator:
                     # this if makes sure we run reactors with deps first
                     continue
                 reactor_changed, deps = self.__run_reactor(node.name, reactor_name, reactor)
+                io.debug(f"{node.name}:{reactor_name} changed={reactor_changed} deps={deps}")
                 if reactor_changed:
                     any_reactor_changed = True
                 if deps:
