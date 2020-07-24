@@ -132,58 +132,68 @@ class MetadataGenerator:
                 #) + reactors)
             io.debug(f"metadata iteration #{iterations}")
 
-            try:
-                node_name = self.__nodes_that_never_ran.pop()
-            except KeyError:
-                pass
-            else:
-                self.__nodes_that_ran_at_least_once.add(node_name)
-                self.__initial_run_for_node(node_name)
-                continue
-
-            # at this point, we have run all relevant nodes at least once
-
-            # if we have any triggered nodes from below, run their reactors
-            # with deps to see if they become unstable
-
-            try:
-                node_name = self.__triggered_nodes.pop()
-            except KeyError:
-                pass
-            else:
-                io.debug(f"triggered metadata run for {node_name}")
-                self.__run_reactors(self.get_node(node_name), with_deps=True, without_deps=False)
-                continue
-
-            # now (re)stabilize all nodes
-
-            encountered_unstable_node = False
-            for node, stable in self.__node_stable.items():
-                if stable:
-                    continue
-                self.__run_reactors(node, with_deps=False, without_deps=True)
-                if self.__node_stable[node]:
-                    io.debug(f"metadata stabilized for {node_name}")
+            jobmsg = _("{b} (iteration {i}, {nodes} nodes)").format(
+                b=bold(_("running metadata reactors")),
+                i=iterations,
+                nodes=len(self.__nodes_that_never_ran) + len(self.__nodes_that_ran_at_least_once),
+            )
+            with io.job(jobmsg):
+                try:
+                    node_name = self.__nodes_that_never_ran.pop()
+                except KeyError:
+                    pass
                 else:
-                    io.debug(f"metadata remains unstable for {node_name}")
-                    encountered_unstable_node = True
-            if encountered_unstable_node:
-                # start over until everything is stable
-                continue
+                    self.__nodes_that_ran_at_least_once.add(node_name)
+                    self.__initial_run_for_node(node_name)
+                    continue
 
-            # at this point, all nodes should be stable except for their reactors with deps
+                # at this point, we have run all relevant nodes at least once
 
-            encountered_unstable_node = False
-            for node in randomize_order(self.__node_stable.keys()):
-                self.__run_reactors(node, with_deps=True, without_deps=False)
-                if not self.__node_stable[node]:
-                    encountered_unstable_node = True
-            if encountered_unstable_node:
-                # start over until everything is stable
-                continue
+                # if we have any triggered nodes from below, run their reactors
+                # with deps to see if they become unstable
 
-            # if we get here, we're done!
-            break
+                try:
+                    node_name = self.__triggered_nodes.pop()
+                except KeyError:
+                    pass
+                else:
+                    io.debug(f"triggered metadata run for {node_name}")
+                    self.__run_reactors(
+                        self.get_node(node_name),
+                        with_deps=True,
+                        without_deps=False,
+                    )
+                    continue
+
+                # now (re)stabilize all nodes
+
+                encountered_unstable_node = False
+                for node, stable in self.__node_stable.items():
+                    if stable:
+                        continue
+                    self.__run_reactors(node, with_deps=False, without_deps=True)
+                    if self.__node_stable[node]:
+                        io.debug(f"metadata stabilized for {node_name}")
+                    else:
+                        io.debug(f"metadata remains unstable for {node_name}")
+                        encountered_unstable_node = True
+                if encountered_unstable_node:
+                    # start over until everything is stable
+                    continue
+
+                # at this point, all nodes should be stable except for their reactors with deps
+
+                encountered_unstable_node = False
+                for node in randomize_order(self.__node_stable.keys()):
+                    self.__run_reactors(node, with_deps=True, without_deps=False)
+                    if not self.__node_stable[node]:
+                        encountered_unstable_node = True
+                if encountered_unstable_node:
+                    # start over until everything is stable
+                    continue
+
+                # if we get here, we're done!
+                break
 
         if self.__keyerrors:
             msg = _(
@@ -202,31 +212,28 @@ class MetadataGenerator:
         node = self.get_node(node_name)
         self.__metastacks[node_name] = Metastack()
 
-        with io.job(_("{node}  adding metadata defaults").format(node=bold(node.name))):
-            # randomize order to increase chance of exposing clashing defaults
-            for defaults_name, defaults in randomize_order(node.metadata_defaults):
-                self.__metastacks[node_name]._set_layer(
-                    2,
-                    defaults_name,
-                    defaults,
-                )
+        # randomize order to increase chance of exposing clashing defaults
+        for defaults_name, defaults in randomize_order(node.metadata_defaults):
+            self.__metastacks[node_name]._set_layer(
+                2,
+                defaults_name,
+                defaults,
+            )
         self.__metastacks[node_name]._cache_partition(2)
 
-        with io.job(_("{node}  adding group metadata").format(node=bold(node.name))):
-            group_order = _flatten_group_hierarchy(node.groups)
-            for group_name in group_order:
-                self.__metastacks[node_name]._set_layer(
-                    0,
-                    "group:{}".format(group_name),
-                    self.get_group(group_name)._attributes.get('metadata', {}),
-                )
-
-        with io.job(_("{node}  adding node metadata").format(node=bold(node.name))):
+        group_order = _flatten_group_hierarchy(node.groups)
+        for group_name in group_order:
             self.__metastacks[node_name]._set_layer(
                 0,
-                "node:{}".format(node_name),
-                node._attributes.get('metadata', {}),
+                "group:{}".format(group_name),
+                self.get_group(group_name)._attributes.get('metadata', {}),
             )
+
+        self.__metastacks[node_name]._set_layer(
+            0,
+            "node:{}".format(node_name),
+            node._attributes.get('metadata', {}),
+        )
         self.__metastacks[node_name]._cache_partition(0)
 
         self.__reactors_with_deps[node_name] = set()
