@@ -1,3 +1,20 @@
+# 4.1.0
+
+2020-07-27
+
+* added `bw test --quiet`
+* `apply_start` hook can now raise GracefulApplyException
+* performance improvements in metadata generation
+* improved reporting of persistent metadata KeyErrors
+* clashing metadata keys are now allowed for equal values
+* git_deploy: fixed attempted shallow clones over HTTP
+* k8s: improved handling of absent `apiVersion`
+* fixed `cascade_skip` not affecting recursively skipped items
+* fixed `bw metadata -b -k`
+* fixed metadata reactors seeing their own previous results
+* fixed SCM information being returned as bytes
+
+
 # 4.0.0
 
 2020-06-22
