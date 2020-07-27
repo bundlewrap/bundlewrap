@@ -362,6 +362,11 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <p><code>target</code> The group or node name you gave on the command line.</p>
 <p><code>nodes</code> A list of node objects affected (list of <code>bundlewrap.node.Node</code> instances).</p>
 <p><code>interactive</code> Indicates whether the apply is interactive or not.</p>
+<p>To abort the entire apply operation:</p>
+<pre><code>from bundlewrap.exceptions import GracefulApplyException
+raise GracefulApplyException(&quot;reason goes here&quot;)
+</code></pre>
+
 <hr />
 <p><strong><code>apply_end(repo, target, nodes, duration=None, **kwargs)</code></strong></p>
 <p>Called when a <code>bw apply</code> command completes.</p>
