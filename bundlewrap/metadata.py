@@ -64,13 +64,19 @@ def validate_metadata(metadata, _top_level=True):
     if isinstance(metadata, dict):
         for key, value in metadata.items():
             if not isinstance(key, str):
-                raise TypeError(_("metadata keys must be str, not: {}").format(repr(key)))
+                raise TypeError(_("metadata keys must be str: {value} is {type}").format(
+                    type=type(key),
+                    value=repr(key),
+                ))
             validate_metadata(value, _top_level=False)
     elif isinstance(metadata, (tuple, list, set)):
         for value in metadata:
             validate_metadata(value, _top_level=False)
     elif not isinstance(metadata, METADATA_TYPES):
-        raise TypeError(_("illegal metadata value type: {}").format(repr(metadata)))
+        raise TypeError(_("illegal metadata value type: {value} is {type}").format(
+            type=type(metadata),
+            value=repr(metadata),
+        ))
 
 
 def atomic(obj):
@@ -309,7 +315,10 @@ class MetadataJSONEncoder(JSONEncoder):
         if isinstance(obj, bytes):
             return force_text(obj)
         else:
-            raise ValueError(_("illegal metadata value type: {}").format(repr(obj)))
+            raise ValueError(_("illegal metadata value type: {value} is {type}").format(
+                type=type(metadata),
+                value=repr(metadata),
+            ))
 
 
 def metadata_to_json(metadata, sort_keys=True):
