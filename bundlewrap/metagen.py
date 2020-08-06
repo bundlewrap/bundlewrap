@@ -61,6 +61,7 @@ class MetadataGenerator:
         """
         if self.__in_a_reactor:
             if node_name in self._node_metadata_complete:
+                io.debug(f"is already complete: {node_name}")
                 # We already completed metadata for this node, but partial must
                 # return a Metastack, so we build a single-layered one just for
                 # the interface.
@@ -182,6 +183,8 @@ class MetadataGenerator:
                 for node, stable in self.__node_stable.items():
                     if stable:
                         continue
+
+                    io.debug(f"begin metadata stabilization test for {node.name}")
                     self.__run_reactors(node, with_deps=False, without_deps=True)
                     if self.__node_stable[node]:
                         io.debug(f"metadata stabilized for {node.name}")
@@ -190,17 +193,21 @@ class MetadataGenerator:
                         encountered_unstable_node = True
                 if encountered_unstable_node:
                     # start over until everything is stable
+                    io.debug("found an unstable node (without_deps=True)")
                     continue
 
                 # at this point, all nodes should be stable except for their reactors with deps
 
                 encountered_unstable_node = False
                 for node in randomize_order(self.__node_stable.keys()):
+                    io.debug(f"begin final stabilization test for {node.name}")
                     self.__run_reactors(node, with_deps=True, without_deps=False)
                     if not self.__node_stable[node]:
+                        io.debug(f"{node.name} still unstable")
                         encountered_unstable_node = True
                 if encountered_unstable_node:
                     # start over until everything is stable
+                    io.debug("found an unstable node (with_deps=True)")
                     continue
 
                 # if we get here, we're done!
@@ -217,6 +224,8 @@ class MetadataGenerator:
                 for line in TracebackException.from_exception(exc).format():
                     msg += "    " + line
             raise MetadataPersistentKeyError(msg)
+
+        io.debug("metadata generation for selected nodes finished")
 
     def __initial_run_for_node(self, node_name):
         io.debug(f"initial metadata run for {node_name}")
