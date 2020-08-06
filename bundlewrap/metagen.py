@@ -184,9 +184,9 @@ class MetadataGenerator:
                         continue
                     self.__run_reactors(node, with_deps=False, without_deps=True)
                     if self.__node_stable[node]:
-                        io.debug(f"metadata stabilized for {node_name}")
+                        io.debug(f"metadata stabilized for {node.name}")
                     else:
-                        io.debug(f"metadata remains unstable for {node_name}")
+                        io.debug(f"metadata remains unstable for {node.name}")
                         encountered_unstable_node = True
                 if encountered_unstable_node:
                     # start over until everything is stable
