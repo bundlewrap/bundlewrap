@@ -4,9 +4,10 @@ from sys import exit
 from ..deps import DummyItem
 from ..exceptions import FaultUnavailable, ItemDependencyLoop
 from ..itemqueue import ItemTestQueue
-from ..metadata import check_for_metadata_conflicts
+from ..metadata import check_for_metadata_conflicts, metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import count_items, get_target_nodes
+from ..utils.dicts import diff_value_text
 from ..utils.plot import explain_item_dependency_loop
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, QUIT_EVENT
@@ -183,6 +184,7 @@ def test_determinism_metadata(repo, nodes, iterations, quiet):
     anything changes between iterations
     """
     hashes = {}
+    metadata = {}
     io.progress_set_total(len(nodes) * iterations)
     for i in range(iterations):
         if QUIT_EVENT.is_set():
@@ -202,13 +204,16 @@ def test_determinism_metadata(repo, nodes, iterations, quiet):
                 n=iterations,
                 node=bold(node.name),
             )):
+                metadata.setdefault(node.name, node.metadata)
                 result = node.metadata_hash()
             hashes.setdefault(node.name, result)
             if hashes[node.name] != result:
                 io.stderr(_(
-                    "{x} Metadata for node {node} changed when generated repeatedly "
-                    "(use `bw hash -d {node}` to debug)"
-                ).format(node=node.name, x=red("✘")))
+                    "{x} Metadata for node {node} changed when generated repeatedly"
+                ).format(node=bold(node.name), x=red("✘")))
+                previous_json = metadata_to_json(metadata[node.name])
+                current_json = metadata_to_json(node.metadata)
+                io.stderr(diff_value_text("", previous_json, current_json))
                 exit(1)
             io.progress_advance()
     io.progress_set_total(0)
