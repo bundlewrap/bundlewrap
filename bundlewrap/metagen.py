@@ -191,6 +191,10 @@ class MetadataGenerator:
                     else:
                         io.debug(f"metadata remains unstable for {node.name}")
                         encountered_unstable_node = True
+                    if self.__nodes_that_never_ran:
+                        # we have found a new dependency, process it immediately
+                        # going wide early should be more efficient
+                        continue
                 if encountered_unstable_node:
                     # start over until everything is stable
                     io.debug("found an unstable node (without_deps=True)")
@@ -205,6 +209,10 @@ class MetadataGenerator:
                     if not self.__node_stable[node]:
                         io.debug(f"{node.name} still unstable")
                         encountered_unstable_node = True
+                    if self.__nodes_that_never_ran:
+                        # we have found a new dependency, process it immediately
+                        # going wide early should be more efficient
+                        continue
                 if encountered_unstable_node:
                     # start over until everything is stable
                     io.debug("found an unstable node (with_deps=True)")
