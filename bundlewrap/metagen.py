@@ -1,4 +1,5 @@
-from collections import Counter
+from collections import defaultdict, Counter
+from contextlib import suppress
 from os import environ
 from traceback import TracebackException
 
@@ -31,11 +32,11 @@ class MetadataGenerator:
         # reactors that raised KeyErrors (and which ones)
         self.__keyerrors = {}
         # a Metastack for every node
-        self.__metastacks = {}
+        self.__metastacks = defaultdict(Metastack)
         # mapping each node to all nodes that depend on it
-        self.__node_deps = {}
+        self.__node_deps = defaultdict(set)
         # how often __run_reactors was called for a node
-        self.__node_iterations = {}
+        self.__node_iterations = defaultdict(int)
         # A node is 'stable' when all its reactors return unchanged
         # metadata, except for those reactors that look at other nodes.
         # This dict maps node names to True/False indicating stable status.
@@ -51,10 +52,10 @@ class MetadataGenerator:
         # how often we called reactors
         self.__reactors_run = 0
         # how often each reactor changed
-        self.__reactor_changes = {}
+        self.__reactor_changes = defaultdict(int)
         # tracks which reactors on a node have look at other nodes
         # through partial_metadata
-        self.__reactors_with_deps = {}
+        self.__reactors_with_deps = defaultdict(set)
 
     def _metadata_for_node(self, node_name, blame=False, stack=False):
         """
@@ -83,28 +84,22 @@ class MetadataGenerator:
                 return metastack
             else:
                 self.__partial_metadata_accessed_for.add(node_name)
-                return self.__metastacks.setdefault(node_name, Metastack())
+                return self.__metastacks[node_name]
 
         if blame or stack:
             # cannot return cached result here, force rebuild
-            try:
+            with suppress(KeyError):
                 del self._node_metadata_complete[node_name]
-            except KeyError:
-                pass
 
-        try:
+        with suppress(KeyError):
             return self._node_metadata_complete[node_name]
-        except KeyError:
-            pass
 
         # Different worker threads might request metadata at the same time.
 
         with self._node_metadata_lock:
-            try:
+            with suppress(KeyError):
                 # maybe our metadata got completed while waiting for the lock
                 return self._node_metadata_complete[node_name]
-            except KeyError:
-                pass
 
             self.__build_node_metadata(node_name)
 
@@ -284,12 +279,10 @@ class MetadataGenerator:
         )
         self.__metastacks[node_name]._cache_partition(0)
 
-        self.__reactors_with_deps[node_name] = set()
         # run all reactors once to get started
         self.__run_reactors(node, with_deps=True, without_deps=True)
 
     def __check_iteration_count(self, node_name):
-        self.__node_iterations.setdefault(node_name, 0)
         self.__node_iterations[node_name] += 1
         if self.__node_iterations[node_name] > MAX_METADATA_ITERATIONS:
             top_changers = Counter(self.__reactor_changes).most_common(25)
@@ -337,12 +330,11 @@ class MetadataGenerator:
                         self.__nodes_that_never_ran.add(required_node_name)
                     # this is so we know the current node needs to be run
                     # again if the required node changes
-                    self.__node_deps.setdefault(required_node_name, set())
                     self.__node_deps[required_node_name].add(node.name)
 
         if any_reactor_changed:
             # something changed on this node, mark all dependent nodes as unstable
-            for required_node_name in self.__node_deps.get(node.name, set()):
+            for required_node_name in self.__node_deps[node.name]:
                 io.debug(f"{node.name} triggering metadata rerun on {required_node_name}")
                 self.__triggered_nodes.add(required_node_name)
 
@@ -356,7 +348,6 @@ class MetadataGenerator:
             return False, set()
         self.__partial_metadata_accessed_for = set()
         self.__reactors_run += 1
-        self.__reactor_changes.setdefault((node_name, reactor_name), 0)
         # make sure the reactor doesn't react to its own output
         old_metadata = self.__metastacks[node_name]._pop_layer(1, reactor_name)
         self.__in_a_reactor = True
@@ -368,10 +359,8 @@ class MetadataGenerator:
         except DoNotRunAgain:
             self.__do_not_run_again.add((node_name, reactor_name))
             # clear any previously stored exception
-            try:
+            with suppress(KeyError):
                 del self.__keyerrors[(node_name, reactor_name)]
-            except KeyError:
-                pass
             return False, set()
         except Exception as exc:
             io.stderr(_(
@@ -387,10 +376,8 @@ class MetadataGenerator:
             self.__in_a_reactor = False
 
         # reactor terminated normally, clear any previously stored exception
-        try:
+        with suppress(KeyError):
             del self.__keyerrors[(node_name, reactor_name)]
-        except KeyError:
-            pass
 
         try:
             self.__metastacks[node_name]._set_layer(
