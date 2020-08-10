@@ -11,7 +11,14 @@ from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red
 
 
-MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "5000"))
+MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "1000"))
+
+
+class _StartOver(Exception):
+    """
+    Raised when metadata processing needs to start from the top.
+    """
+    pass
 
 
 class MetadataGenerator:
@@ -27,6 +34,8 @@ class MetadataGenerator:
         self.__metastacks = {}
         # mapping each node to all nodes that depend on it
         self.__node_deps = {}
+        # how often __run_reactors was called for a node
+        self.__node_iterations = {}
         # A node is 'stable' when all its reactors return unchanged
         # metadata, except for those reactors that look at other nodes.
         # This dict maps node names to True/False indicating stable status.
@@ -122,104 +131,115 @@ class MetadataGenerator:
             else:
                 return self._node_metadata_complete[node_name]
 
+    def __run_new_nodes(self):
+        try:
+            node_name = self.__nodes_that_never_ran.pop()
+        except KeyError:
+            pass
+        else:
+            self.__nodes_that_ran_at_least_once.add(node_name)
+            self.__initial_run_for_node(node_name)
+            raise _StartOver
+
+    def __run_triggered_nodes(self):
+        try:
+            node_name = self.__triggered_nodes.pop()
+        except KeyError:
+            pass
+        else:
+            io.debug(f"triggered metadata run for {node_name}")
+            self.__run_reactors(
+                self.get_node(node_name),
+                with_deps=True,
+                without_deps=False,
+            )
+            raise _StartOver
+
+    def __run_unstable_nodes(self):
+        encountered_unstable_node = False
+        for node, stable in self.__node_stable.items():
+            if stable:
+                continue
+
+            io.debug(f"begin metadata stabilization test for {node.name}")
+            self.__run_reactors(node, with_deps=False, without_deps=True)
+            if self.__node_stable[node]:
+                io.debug(f"metadata stabilized for {node.name}")
+            else:
+                io.debug(f"metadata remains unstable for {node.name}")
+                encountered_unstable_node = True
+            if self.__nodes_that_never_ran:
+                # we have found a new dependency, process it immediately
+                # going wide early should be more efficient
+                raise _StartOver
+        if encountered_unstable_node:
+            # start over until everything is stable
+            io.debug("found an unstable node (without_deps=True)")
+            raise _StartOver
+
+    def __run_nodes_with_deps(self):
+        encountered_unstable_node = False
+        for node in randomize_order(self.__node_stable.keys()):
+            io.debug(f"begin final stabilization test for {node.name}")
+            self.__run_reactors(node, with_deps=True, without_deps=False)
+            if not self.__node_stable[node]:
+                io.debug(f"{node.name} still unstable")
+                encountered_unstable_node = True
+            if self.__nodes_that_never_ran:
+                # we have found a new dependency, process it immediately
+                # going wide early should be more efficient
+                raise _StartOver
+        if encountered_unstable_node:
+            # start over until everything is stable
+            io.debug("found an unstable node (with_deps=True)")
+            raise _StartOver
+
     def __build_node_metadata(self, initial_node_name):
         self.__reset()
         self.__nodes_that_never_ran.add(initial_node_name)
 
-        iterations = 0
         while not QUIT_EVENT.is_set():
-            iterations += 1
-            if iterations > MAX_METADATA_ITERATIONS:
-                top_changers = Counter(self.__reactor_changes).most_common(25)
-                msg = _(
-                    "MAX_METADATA_ITERATIONS({m}) exceeded, "
-                    "likely an infinite loop between flip-flopping metadata reactors.\n"
-                    "These are the reactors that changed most often:\n\n"
-                ).format(m=MAX_METADATA_ITERATIONS)
-                for reactor, count in top_changers:
-                    msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
-                raise RuntimeError(msg)
-
-            io.debug(f"metadata iteration #{iterations}")
-
-            jobmsg = _("{b} ({i} iterations, {n} nodes, {r} reactors, {e} runs)").format(
+            jobmsg = _("{b} ({n} nodes, {r} reactors, {e} runs)").format(
                 b=bold(_("running metadata reactors")),
-                i=iterations,
                 n=len(self.__nodes_that_never_ran) + len(self.__nodes_that_ran_at_least_once),
                 r=len(self.__reactor_changes),
                 e=self.__reactors_run,
             )
-            with io.job(jobmsg):
-                try:
-                    node_name = self.__nodes_that_never_ran.pop()
-                except KeyError:
-                    pass
-                else:
-                    self.__nodes_that_ran_at_least_once.add(node_name)
-                    self.__initial_run_for_node(node_name)
-                    continue
+            try:
+                with io.job(jobmsg):
+                    # Control flow here is a bit iffy. The functions in this block often raise
+                    # _StartOver in order to aggressively process new nodes first etc.
+                    # Each method represents a distinct stage of metadata processing that checks
+                    # for nodes in certain states as described below.
 
-                # at this point, we have run all relevant nodes at least once
+                    # This checks for newly discovered nodes that haven't seen any processing at
+                    # all so far. It is important that we run them as early as possible, so their
+                    # static metadata becomes available to other nodes and we recursively discover
+                    # additional nodes as quickly as possible.
+                    self.__run_new_nodes()
+                    # At this point, we have run all relevant nodes at least once.
 
-                # if we have any triggered nodes from below, run their reactors
-                # with deps to see if they become unstable
+                    # Nodes become "triggered" when they previously looked something up from a
+                    # different node and that second node changed. In this method, we try to figure
+                    # out if the change on the node we depend on actually has any effect on the
+                    # depending node.
+                    self.__run_triggered_nodes()
 
-                try:
-                    node_name = self.__triggered_nodes.pop()
-                except KeyError:
-                    pass
-                else:
-                    io.debug(f"triggered metadata run for {node_name}")
-                    self.__run_reactors(
-                        self.get_node(node_name),
-                        with_deps=True,
-                        without_deps=False,
-                    )
-                    continue
+                    # In this stage, we run all unstable nodes to the point where everything is
+                    # stable again, except for those reactors that depend on other nodes.
+                    self.__run_unstable_nodes()
 
-                # now (re)stabilize all nodes
+                    # The final step is to make sure nothing changes when we run reactors with
+                    # dependencies on other nodes. If anything changes, we need to start over so
+                    # local-only reactors on a node can react to changes caused by reactors looking
+                    # at other nodes.
+                    self.__run_nodes_with_deps()
 
-                encountered_unstable_node = False
-                for node, stable in self.__node_stable.items():
-                    if stable:
-                        continue
+                    # if we get here, we're done!
+                    break
 
-                    io.debug(f"begin metadata stabilization test for {node.name}")
-                    self.__run_reactors(node, with_deps=False, without_deps=True)
-                    if self.__node_stable[node]:
-                        io.debug(f"metadata stabilized for {node.name}")
-                    else:
-                        io.debug(f"metadata remains unstable for {node.name}")
-                        encountered_unstable_node = True
-                    if self.__nodes_that_never_ran:
-                        # we have found a new dependency, process it immediately
-                        # going wide early should be more efficient
-                        continue
-                if encountered_unstable_node:
-                    # start over until everything is stable
-                    io.debug("found an unstable node (without_deps=True)")
-                    continue
-
-                # at this point, all nodes should be stable except for their reactors with deps
-
-                encountered_unstable_node = False
-                for node in randomize_order(self.__node_stable.keys()):
-                    io.debug(f"begin final stabilization test for {node.name}")
-                    self.__run_reactors(node, with_deps=True, without_deps=False)
-                    if not self.__node_stable[node]:
-                        io.debug(f"{node.name} still unstable")
-                        encountered_unstable_node = True
-                    if self.__nodes_that_never_ran:
-                        # we have found a new dependency, process it immediately
-                        # going wide early should be more efficient
-                        continue
-                if encountered_unstable_node:
-                    # start over until everything is stable
-                    io.debug("found an unstable node (with_deps=True)")
-                    continue
-
-                # if we get here, we're done!
-                break
+            except _StartOver:
+                continue
 
         if self.__keyerrors and not QUIT_EVENT.is_set():
             msg = _(
@@ -268,7 +288,22 @@ class MetadataGenerator:
         # run all reactors once to get started
         self.__run_reactors(node, with_deps=True, without_deps=True)
 
+    def __check_iteration_count(self, node_name):
+        self.__node_iterations.setdefault(node_name, 0)
+        self.__node_iterations[node_name] += 1
+        if self.__node_iterations[node_name] > MAX_METADATA_ITERATIONS:
+            top_changers = Counter(self.__reactor_changes).most_common(25)
+            msg = _(
+                "MAX_METADATA_ITERATIONS({m}) exceeded for {node}, "
+                "likely an infinite loop between flip-flopping metadata reactors.\n"
+                "These are the reactors that changed most often:\n\n"
+            ).format(m=MAX_METADATA_ITERATIONS, node=node_name)
+            for reactor, count in top_changers:
+                msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
+            raise RuntimeError(msg)
+
     def __run_reactors(self, node, with_deps=True, without_deps=True):
+        self.__check_iteration_count(node.name)
         any_reactor_changed = False
 
         for depsonly in (True, False):
