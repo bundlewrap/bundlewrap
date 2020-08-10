@@ -131,21 +131,6 @@ class MetadataGenerator:
             else:
                 return self._node_metadata_complete[node_name]
 
-    def __check_iteration_count(self, node_name):
-        self.__node_iterations.setdefault(node_name, 0)
-        self.__node_iterations[node_name] += 1
-        for node_name, iterations in self.__node_iterations.items():
-            if iterations > MAX_METADATA_ITERATIONS:
-                top_changers = Counter(self.__reactor_changes).most_common(25)
-                msg = _(
-                    "MAX_METADATA_ITERATIONS({m}) exceeded for {node}, "
-                    "likely an infinite loop between flip-flopping metadata reactors.\n"
-                    "These are the reactors that changed most often:\n\n"
-                ).format(m=MAX_METADATA_ITERATIONS, node=node_name)
-                for reactor, count in top_changers:
-                    msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
-                raise RuntimeError(msg)
-
     def __run_new_nodes(self):
         try:
             node_name = self.__nodes_that_never_ran.pop()
@@ -302,6 +287,20 @@ class MetadataGenerator:
         self.__reactors_with_deps[node_name] = set()
         # run all reactors once to get started
         self.__run_reactors(node, with_deps=True, without_deps=True)
+
+    def __check_iteration_count(self, node_name):
+        self.__node_iterations.setdefault(node_name, 0)
+        self.__node_iterations[node_name] += 1
+        if self.__node_iterations[node_name] > MAX_METADATA_ITERATIONS:
+            top_changers = Counter(self.__reactor_changes).most_common(25)
+            msg = _(
+                "MAX_METADATA_ITERATIONS({m}) exceeded for {node}, "
+                "likely an infinite loop between flip-flopping metadata reactors.\n"
+                "These are the reactors that changed most often:\n\n"
+            ).format(m=MAX_METADATA_ITERATIONS, node=node_name)
+            for reactor, count in top_changers:
+                msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
+            raise RuntimeError(msg)
 
     def __run_reactors(self, node, with_deps=True, without_deps=True):
         self.__check_iteration_count(node.name)
