@@ -22,7 +22,7 @@ def _attribute_table(
     inline,
 ):
     rows = [[entity_label], ROW_SEPARATOR]
-    selected_attrs = {attr.strip() for attr in selected_attrs}
+    selected_attrs = sorted({attr.strip() for attr in selected_attrs})
 
     if selected_attrs == {'all'}:
         selected_attrs = available_attrs
@@ -44,7 +44,7 @@ def _attribute_table(
         for attr in selected_attrs:
             if attr in available_attrs_lists:
                 if inline:
-                    attr_values.append([",".join(names(getattr(entity, attr)))])
+                    attr_values.append([",".join(sorted(names(getattr(entity, attr))))])
                 else:
                     has_list_attrs = True
                     attr_values.append(sorted(names(getattr(entity, attr))))
