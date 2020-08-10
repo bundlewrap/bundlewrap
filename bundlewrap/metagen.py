@@ -1,4 +1,5 @@
 from collections import defaultdict, Counter
+from contextlib import suppress
 from os import environ
 from traceback import TracebackException
 
@@ -87,24 +88,18 @@ class MetadataGenerator:
 
         if blame or stack:
             # cannot return cached result here, force rebuild
-            try:
+            with suppress(KeyError):
                 del self._node_metadata_complete[node_name]
-            except KeyError:
-                pass
 
-        try:
+        with suppress(KeyError):
             return self._node_metadata_complete[node_name]
-        except KeyError:
-            pass
 
         # Different worker threads might request metadata at the same time.
 
         with self._node_metadata_lock:
-            try:
+            with suppress(KeyError):
                 # maybe our metadata got completed while waiting for the lock
                 return self._node_metadata_complete[node_name]
-            except KeyError:
-                pass
 
             self.__build_node_metadata(node_name)
 
@@ -364,10 +359,8 @@ class MetadataGenerator:
         except DoNotRunAgain:
             self.__do_not_run_again.add((node_name, reactor_name))
             # clear any previously stored exception
-            try:
+            with suppress(KeyError):
                 del self.__keyerrors[(node_name, reactor_name)]
-            except KeyError:
-                pass
             return False, set()
         except Exception as exc:
             io.stderr(_(
@@ -383,10 +376,8 @@ class MetadataGenerator:
             self.__in_a_reactor = False
 
         # reactor terminated normally, clear any previously stored exception
-        try:
+        with suppress(KeyError):
             del self.__keyerrors[(node_name, reactor_name)]
-        except KeyError:
-            pass
 
         try:
             self.__metastacks[node_name]._set_layer(
