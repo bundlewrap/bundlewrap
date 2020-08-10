@@ -11,7 +11,7 @@ from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red
 
 
-MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "5000"))
+MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "1000"))
 
 
 class MetadataGenerator:
@@ -27,6 +27,8 @@ class MetadataGenerator:
         self.__metastacks = {}
         # mapping each node to all nodes that depend on it
         self.__node_deps = {}
+        # how often __run_reactors was called for a node
+        self.__node_iterations = {}
         # A node is 'stable' when all its reactors return unchanged
         # metadata, except for those reactors that look at other nodes.
         # This dict maps node names to True/False indicating stable status.
@@ -122,29 +124,28 @@ class MetadataGenerator:
             else:
                 return self._node_metadata_complete[node_name]
 
-    def __build_node_metadata(self, initial_node_name):
-        self.__reset()
-        self.__nodes_that_never_ran.add(initial_node_name)
-
-        iterations = 0
-        while not QUIT_EVENT.is_set():
-            iterations += 1
+    def __check_iteration_count(self):
+        for node_name, iterations in self.__node_iterations.items():
             if iterations > MAX_METADATA_ITERATIONS:
                 top_changers = Counter(self.__reactor_changes).most_common(25)
                 msg = _(
-                    "MAX_METADATA_ITERATIONS({m}) exceeded, "
+                    "MAX_METADATA_ITERATIONS({m}) exceeded for {node}, "
                     "likely an infinite loop between flip-flopping metadata reactors.\n"
                     "These are the reactors that changed most often:\n\n"
-                ).format(m=MAX_METADATA_ITERATIONS)
+                ).format(m=MAX_METADATA_ITERATIONS, node=node_name)
                 for reactor, count in top_changers:
                     msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
                 raise RuntimeError(msg)
 
-            io.debug(f"metadata iteration #{iterations}")
+    def __build_node_metadata(self, initial_node_name):
+        self.__reset()
+        self.__nodes_that_never_ran.add(initial_node_name)
 
-            jobmsg = _("{b} ({i} iterations, {n} nodes, {r} reactors, {e} runs)").format(
+        while not QUIT_EVENT.is_set():
+            self.__check_iteration_count()
+
+            jobmsg = _("{b} ({n} nodes, {r} reactors, {e} runs)").format(
                 b=bold(_("running metadata reactors")),
-                i=iterations,
                 n=len(self.__nodes_that_never_ran) + len(self.__nodes_that_ran_at_least_once),
                 r=len(self.__reactor_changes),
                 e=self.__reactors_run,
@@ -270,6 +271,8 @@ class MetadataGenerator:
 
     def __run_reactors(self, node, with_deps=True, without_deps=True):
         any_reactor_changed = False
+        self.__node_iterations.setdefault(node.name, 0)
+        self.__node_iterations[node.name] += 1
 
         for depsonly in (True, False):
             if depsonly and not with_deps:
