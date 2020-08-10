@@ -22,9 +22,9 @@ def _attribute_table(
     inline,
 ):
     rows = [[entity_label], ROW_SEPARATOR]
-    selected_attrs = sorted({attr.strip() for attr in selected_attrs})
+    selected_attrs = [attr.strip() for attr in selected_attrs]
 
-    if selected_attrs == {'all'}:
+    if selected_attrs == ['all']:
         selected_attrs = available_attrs
     elif 'all' in selected_attrs:
         io.stderr(_(
