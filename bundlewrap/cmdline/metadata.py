@@ -156,15 +156,13 @@ def bw_metadata(repo, args):
             for path, blamed in blame:
                 if key_paths:
                     # remove all paths we did not ask to see
-                    path_seen = False
                     for filtered_path in key_paths:
                         if (
                             _list_starts_with(path, filtered_path) or
                             _list_starts_with(filtered_path, path)
                         ):
-                            path_seen = True
                             break
-                    if not path_seen:
+                    else:
                         delete_key_at_path(metadata, path)
                         continue
 
