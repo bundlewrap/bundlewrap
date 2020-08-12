@@ -1,3 +1,14 @@
+# 4.1.1
+
+2020-08-12
+
+* improved reporting of invalid types in metadata
+* improved error output of `bw test -m`
+* fixed recognition of JSON files as text
+* fixed a rare case of nodes not having their metadata built to completion
+* fixed a column sorting issue in `bw nodes`
+
+
 # 4.1.0
 
 2020-07-27
