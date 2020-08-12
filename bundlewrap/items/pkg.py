@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from contextlib import suppress
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
@@ -26,10 +27,8 @@ class Pkg(Item, metaclass=ABCMeta):
         )
 
     def fix(self, status):
-        try:
+        with suppress(KeyError):
             self._pkg_install_cache.get(self.node.name, set()).remove(self.id)
-        except KeyError:
-            pass
         if self.attributes['installed'] is False:
             self.pkg_remove()
         else:

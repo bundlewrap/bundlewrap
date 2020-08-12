@@ -1,3 +1,5 @@
+from contextlib import suppress
+
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
 from .items import Item
 from .items.actions import Action
@@ -347,10 +349,8 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
             # items depending *only* on the processed item to be
             # eligible for the next iteration of this loop.
             for other_item in type_items:
-                try:
+                with suppress(ValueError):
                     other_item.__deps.remove(item.id)
-                except ValueError:
-                    pass
     return items
 
 
@@ -624,10 +624,8 @@ def remove_dep_from_items(items, dep):
     dependencies of all items in the given list.
     """
     for item in items:
-        try:
+        with suppress(ValueError):
             item._deps.remove(dep)
-        except ValueError:
-            pass
     return items
 
 

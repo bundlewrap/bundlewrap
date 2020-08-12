@@ -1,3 +1,4 @@
+from contextlib import suppress
 from datetime import datetime, timedelta
 from hashlib import md5
 from os import environ, mkdir
@@ -450,10 +451,8 @@ class Node:
     def cdict(self):
         node_dict = {}
         for item in self.items:
-            try:
+            with suppress(AttributeError):  # actions have no cdict
                 node_dict[item.id] = item.hash()
-            except AttributeError:  # actions have no cdict
-                pass
         return node_dict
 
     def covered_by_autoskip_selector(self, autoskip_selector):

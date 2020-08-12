@@ -1,3 +1,4 @@
+from contextlib import suppress
 from importlib.machinery import SourceFileLoader
 from inspect import isabstract
 from os import listdir, mkdir, walk
@@ -386,11 +387,9 @@ class Repository(MetadataGenerator):
                 for name, obj in self.get_all_attrs_from_file(filepath).items():
                     if obj == items.Item or name.startswith("_"):
                         continue
-                    try:
+                    with suppress(TypeError):
                         if issubclass(obj, items.Item) and not isabstract(obj):
                             yield obj
-                    except TypeError:
-                        pass
 
     def _discover_root_path(self, path):
         while True:

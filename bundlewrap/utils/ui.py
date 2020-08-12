@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from datetime import datetime
 from functools import wraps
 from os import _exit, environ, getpid, kill
@@ -115,10 +115,8 @@ def page_lines(lines):
             env=env,
             stdin=PIPE,
         )
-        try:
+        with suppress(BrokenPipeError):
             pager.stdin.write("\n".join(lines).encode('utf-8'))
-        except BrokenPipeError:
-            pass
         pager.stdin.close()
         pager.communicate()
         write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
@@ -128,14 +126,12 @@ def page_lines(lines):
 
 
 def write_to_stream(stream, msg):
-    try:
+    with suppress(BrokenPipeError):
         if TTY:
             stream.write(msg)
         else:
             stream.write(ansi_clean(msg))
         stream.flush()
-    except BrokenPipeError:
-        pass
 
 
 class DrainableStdin:
@@ -368,10 +364,8 @@ class IOManager:
                     ))
                     for ssh_pid in self._child_pids:
                         self.debug(_("killing SSH session with PID {pid}").format(pid=ssh_pid))
-                        try:
+                        with suppress(ProcessLookupError):
                             kill(ssh_pid, SIGTERM)
-                        except ProcessLookupError:
-                            pass
                     self._clear_last_job()
                     if TTY:
                         write_to_stream(STDOUT_WRITER, SHOW_CURSOR)

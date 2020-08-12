@@ -1,6 +1,6 @@
 from base64 import b64decode
 from collections import defaultdict
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from datetime import datetime
 from os.path import basename, dirname, exists, join, normpath
 from shlex import quote
@@ -355,10 +355,8 @@ class File(Item):
             cdict['content'] = self.content
             sdict['content'] = get_remote_file_contents(self.node, self.name)
         if 'type' in keys:
-            try:
+            with suppress(ValueError):
                 keys.remove('content_hash')
-            except ValueError:
-                pass
         return (cdict, sdict, keys)
 
     def patch_attributes(self, attributes):
