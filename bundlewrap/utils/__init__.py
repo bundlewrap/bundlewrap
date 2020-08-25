@@ -113,7 +113,7 @@ class Fault:
 
         for key, value in sorted(kwargs.items()):
             self.id_list.append(hash(key))
-            self.id_list.append(value)
+            self.id_list.append(_recursive_hash(value))
 
         self._available = None
         self._exc = None
@@ -149,7 +149,7 @@ class Fault:
             return self.id_list == other.id_list
 
     def __hash__(self):
-        return _recursive_hash(self.id_list)
+        return hash(tuple(self.id_list))
 
     def __len__(self):
         return len(self.value)
