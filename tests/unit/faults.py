@@ -315,3 +315,20 @@ def test_eq_and_hash_do_not_resolve_fault():
     assert a == b
 
     s = {a, b}
+
+
+def test_kwargs_changed_after_creation():
+    def callback():
+        return 'foo'
+
+    data = {
+        'foo': 0,
+    }
+    a = Fault('id foo', callback, data=data)
+
+    data['foo'] = 1
+    b = Fault('id foo', callback, data=data)
+
+    # Both Faults reference the same dict, so they must be considered
+    # equal.
+    assert a == b
