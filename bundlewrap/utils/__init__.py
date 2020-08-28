@@ -113,7 +113,7 @@ class Fault:
 
         for key, value in sorted(kwargs.items()):
             self.id_list.append(hash(key))
-            self.id_list.append(hash(value))
+            self.id_list.append(_recursive_hash(value))
 
         self._available = None
         self._exc = None
@@ -202,6 +202,25 @@ for method_name in (
     'zfill',
 ):
     setattr(Fault, method_name, _make_method_callback(method_name))
+
+
+def _recursive_hash(obj):
+    hashes = []
+    if isinstance(obj, list):
+        for i in obj:
+            hashes.append(_recursive_hash(i))
+        return hash(tuple(hashes))
+    elif isinstance(obj, set):
+        for i in sorted(obj):
+            hashes.append(_recursive_hash(i))
+        return hash(tuple(hashes))
+    elif isinstance(obj, dict):
+        for k, v in sorted(obj.items()):
+            hashes.append(hash(k))
+            hashes.append(_recursive_hash(v))
+        return hash(tuple(hashes))
+    else:
+        return hash(obj)
 
 
 def get_file_contents(path):

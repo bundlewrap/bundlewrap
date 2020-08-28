@@ -249,6 +249,67 @@ def test_kwargs_add_to_idlist():
     a = Fault('id foo', callback, foo='bar', baz='bam', frob='glob')
     b = Fault('id foo', callback, different='kwargs')
     assert a != b
+    assert hash(a) != hash(b)
+
+
+def test_unhashable_dict_kwargs_add_to_idlist():
+    def callback():
+        return 'foo'
+
+    a = Fault('id foo', callback, foo='bar', baz={1: {2: {3: 4}}})
+    b = Fault('id foo', callback, foo='bar', baz={1: {3: {3: 4}}})
+    assert a != b
+    assert hash(a) != hash(b)
+
+
+def test_unhashable_list_kwargs_add_to_idlist():
+    def callback():
+        return 'foo'
+
+    a = Fault('id foo', callback, foo='bar', baz=[1, 2, [3, 4]])
+    b = Fault('id foo', callback, foo='bar', baz=[1, [3, 4], 2])
+    assert a != b
+    assert hash(a) != hash(b)
+
+
+def test_unhashable_set_kwargs_add_to_idlist():
+    def callback():
+        return 'foo'
+
+    a = Fault('id foo', callback, foo='bar', baz={1, 2, 3})
+    b = Fault('id foo', callback, foo='bar', baz={1, 2, 4})
+    assert a != b
+    assert hash(a) != hash(b)
+
+
+def test_unhashable_dict_kwargs_add_to_idlist_equal():
+    def callback():
+        return 'foo'
+
+    a = Fault('id foo', callback, foo='bar', baz={1: {2: {3: 4, 5: 6}}})
+    b = Fault('id foo', callback, foo='bar', baz={1: {2: {5: 6, 3: 4}}})
+    assert a == b
+    assert hash(a) == hash(b)
+
+
+def test_unhashable_list_kwargs_add_to_idlist_equal():
+    def callback():
+        return 'foo'
+
+    a = Fault('id foo', callback, foo='bar', baz=[1, 2, 3])
+    b = Fault('id foo', callback, foo='bar', baz=[1, 2, 3])
+    assert id(a) != id(b)
+    assert a == b
+
+
+def test_unhashable_set_kwargs_add_to_idlist_equal():
+    def callback():
+        return 'foo'
+
+    a = Fault('id foo', callback, foo='bar', baz={1, 2, 3})
+    b = Fault('id foo', callback, foo='bar', baz={1, 3, 2})
+    assert a == b
+    assert hash(a) == hash(b)
 
 
 def test_eq_and_hash_do_not_resolve_fault():
@@ -260,3 +321,52 @@ def test_eq_and_hash_do_not_resolve_fault():
     assert a == b
 
     s = {a, b}
+
+
+def test_kwargs_changed_after_creation():
+    def callback():
+        return 'foo'
+
+    data = {
+        'foo': 0,
+    }
+    a = Fault('id foo', callback, data=data)
+
+    data['foo'] = 1
+    b = Fault('id foo', callback, data=data)
+
+    # Even though both Faults reference the same dict, hashes are built
+    # on Fault creation based on the actual values in mutable
+    # parameters.
+    assert a != b
+    assert hash(a) != hash(b)
+
+
+def test_kwargs_not_changed_after_creation():
+    def callback():
+        return 'foo'
+
+    data = {
+        'foo': 0,
+    }
+    a = Fault('id foo', callback, data=data)
+    b = Fault('id foo', callback, data=data)
+
+    assert a == b
+    assert hash(a) == hash(b)
+
+
+def test_hash_does_not_change():
+    def callback():
+        return 'foo'
+
+    data = {
+        'foo': 0,
+    }
+    a = Fault('id foo', callback, data=data)
+    hash1 = hash(a)
+
+    data['foo'] = 1
+    hash2 = hash(a)
+
+    assert hash1 == hash2
