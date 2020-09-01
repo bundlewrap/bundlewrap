@@ -50,7 +50,7 @@ Alternatively, it can point directly to a git URL:
         },
     }
 
-Note however that this has a severe performance penalty, as a new clone of that repo has to be made every time the status of the item is checked.
+Note however that this has a performance penalty, as a new clone of that repo has to be made on every run of BundleWrap. (See section "Environment variables" below.)
 
 <br>
 
@@ -63,3 +63,17 @@ The `rev` attribute can contain anything `git rev-parse` can resolve into a comm
 ## use_xattrs
 
 BundleWrap needs to store the deployed commit hash on the node. The `use_xattrs` attribute controls how this is done. If set to `True`, the `attr` command on the node is used to store the hash as an extended file system attribute. Since `attr` might not be installed on the node, the default is to place a dotfile in the target directory instead (keep that in mind when deploying websites etc.).
+
+<br>
+
+# Environment variables
+
+## `$BW_GIT_DEPLOY_CACHE`
+
+This only affects repositories for which a URL has been specified.
+
+By default, BundleWrap will clone repos to a temporary directory. This is done once per BundleWrap process.
+
+If you *manually* launch multiple parallel processes of `bw`, each of those will clone the git repo. This can create significant overhead, since they all create redundant copies. You can set `$BW_GIT_DEPLOY_CACHE` to an absolute path: All the `bw` processes will use it as a shared cache.
+
+Note: It is not wise to use this option on your workstation. BundleWrap will only ever clone repos, not pull them. This variable is meant as a temporary cache, for example in CI builds.
