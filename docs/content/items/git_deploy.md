@@ -72,8 +72,8 @@ BundleWrap needs to store the deployed commit hash on the node. The `use_xattrs`
 
 This only affects repositories for which a URL has been specified.
 
-By default, BundleWrap will clone repos to a temporary directory. This is done once per BundleWrap process.
+With this env var unset, BundleWrap will clone repos to a temporary directory. This is done once per BundleWrap process and removed automatically when the process terminates.
 
 If you *manually* launch multiple parallel processes of `bw`, each of those will clone the git repo. This can create significant overhead, since they all create redundant copies. You can set `$BW_GIT_DEPLOY_CACHE` to an absolute path: All the `bw` processes will use it as a shared cache.
 
-Note: It is not wise to use this option on your workstation. BundleWrap will only ever clone repos, not pull them. This variable is meant as a temporary cache, for example in CI builds.
+Note: It is not wise to use this option on your workstation. BundleWrap will only ever clone repos, not pull or delete them. This variable is meant as a temporary cache, for example in CI builds, and you will have to clean it up yourself.
