@@ -213,8 +213,8 @@ class GitDeploy(Item):
     def _repo_dir(self):
         if "://" in self.attributes['repo']:
             repo_dir, remove_dir = clone_to_dir(self.attributes['repo'], self.attributes['rev'])
-            io.debug(_("registering {} for deletion on exit").format(repo_dir))
             if remove_dir is not None:
+                io.debug(_("registering {} for deletion on exit").format(remove_dir))
                 at_exit(rmtree, remove_dir, ignore_errors=True)
         else:
             repo_dir = get_local_repo_path(self.node.repo.path, self.attributes['repo'])
