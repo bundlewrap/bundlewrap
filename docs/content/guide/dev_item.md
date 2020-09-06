@@ -84,9 +84,9 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             Do whatever is necessary to correct this item. The given ItemStatus
             object has the following useful information:
 
-                status.keys     list of cdict keys that need fixing
-                status.cdict    cached copy of self.cdict()
-                status.sdict    cached copy of self.sdict()
+                status.keys_to_fix  list of cdict keys that need fixing
+                status.cdict        cached copy of self.cdict()
+                status.sdict        cached copy of self.sdict()
             """
             raise NotImplementedError
 
