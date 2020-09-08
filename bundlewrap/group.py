@@ -20,6 +20,7 @@ from .utils.text import mark_for_translation as _, toml_clean, validate_name
 GROUP_ATTR_DEFAULTS = {
     'cmd_wrapper_inner': "export LANG=C; {}",
     'cmd_wrapper_outer': "sudo sh -c {}",
+    'lock_dir': "/var/lib/bundlewrap",
     'dummy': False,
     'kubectl_context': None,
     'locking_node': None,
@@ -46,6 +47,7 @@ GROUP_ATTR_TYPES = {
     'bundles': COLLECTION_OF_STRINGS,
     'cmd_wrapper_inner': str,
     'cmd_wrapper_outer': str,
+    'lock_dir': str,
     'dummy': bool,
     'file_path': str,
     'kubectl_context': (str, type(None)),
