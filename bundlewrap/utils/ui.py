@@ -97,7 +97,7 @@ def sigquit_handler(*args, **kwargs):
 
 def spinner():
     while True:
-        for c in "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏":
+        for c in "⠁⠈⠐⠠⢀⡀⠄⠂":
             yield c
 
 
