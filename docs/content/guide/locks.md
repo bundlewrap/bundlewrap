@@ -10,7 +10,7 @@ Since very early in the history of BundleWrap, what we call "hard locks" were us
 
 Many teams these days are using a workflow based on pull requests. A common problem here is that changes from a feature branch might already have been applied to a set of nodes, while the master branch is still lacking these changes. While the pull request is open and waiting for review, other users might rightly use the master branch to apply to all nodes, reverting changes made by the feature branch. This can be a major nuisance.
 
-As of version 2.6.0, BundleWrap provides "soft locks" to prevent this. The author of a feature branch can now lock the node so only he or she can use `bw apply` on it:
+As of version 2.6.0, BundleWrap provides "soft locks" to prevent this. The author of a feature branch can now lock the node so only they can use `bw apply` on it:
 
 <pre><code class="nohighlight">$ bw lock add node1
 ✓ node1  locked with ID B9JS (expires in 8h)</code></pre>
@@ -33,7 +33,7 @@ Expired locks are automatically and silently purged whenever BundleWrap has the 
 
 ## Locking non-UNIX nodes
 
-Most of the time, BundleWrap assumes that your target system is a UNIX-like operating system. It then stores locks as files in the node's local file system.
+Most of the time, BundleWrap assumes that your target system is a UNIX-like operating system. It then stores locks as files in the node's local file system (`/var/lib/bundlewrap` by default).
 
 BundleWrap supports managing non-UNIX nodes, too, such as Kubernetes. You can also write your own custom item types to manage hardware. In those situations, BundleWrap has no place to store lock files.
 
