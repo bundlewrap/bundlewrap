@@ -162,3 +162,11 @@ You will need to override this if the shell on your node sets environment variab
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 
 This setting will affect how the [user item](../items/user.md) item operates. If set to `False`, password hashes will be written directly to `/etc/passwd` and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as `master.shadow` is always used.
+
+<br>
+
+### lock_dir
+
+Directory that will be used for creating locks on the node. Defaults to `"/var/lib/bundlewrap"` Will be created if it does not exist.
+
+You will need to override this if `/var/lib` is restricted somehow on your node (SElinux, mounted readonly, etc.).
