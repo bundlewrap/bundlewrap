@@ -22,6 +22,12 @@ Set this to an existing directory path to have BundleWrap write debug logs there
 
 <br>
 
+## `BW_GIT_DEPLOY_CACHE`
+
+Optional cache directory for <a href="../../items/git_deploy/#bw_git_deploy_cache">`git_deploy`</a> items.
+
+<br>
+
 ## `BW_HARDLOCK_EXPIRY`
 
 [Hard locks](locks.md) are automatically ignored after some time. By default, it's `"8h"`. You can use this variable to override that default.
