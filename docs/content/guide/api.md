@@ -151,8 +151,8 @@ The internal identifier for this node
 
 Downloads a file from the node.
 
-`remote_path` Which file to get from the node
-`local_path` Where to put the file
+-   `remote_path` Which file to get from the node
+-   `local_path` Where to put the file
 
 <br>
 
@@ -190,8 +190,8 @@ Get the Item object with the given ID (e.g. "file:/etc/motd").
 
 Runs a command on the node. Returns an instance of `bundlewrap.operations.RunResult`.
 
-`command` What should be executed on the node
-`may_fail` If `False`, `bundlewrap.exceptions.RemoteException` will be raised if the command does not return 0.
+-   `command` What should be executed on the node
+-   `may_fail` If `False`, `bundlewrap.exceptions.RemoteException` will be raised if the command does not return 0.
 
 <br>
 
@@ -199,11 +199,11 @@ Runs a command on the node. Returns an instance of `bundlewrap.operations.RunRes
 
 Uploads a file to the node.
 
-`local_path` Which file to upload
-`remote_path` Where to put the file on the target node
-`mode` File mode, e.g. "0644"
-`owner` Username of the file owner
-`group` Group name of the file group
+-   `local_path` Which file to upload
+-   `remote_path` Where to put the file on the target node
+-   `mode` File mode, e.g. "0644"
+-   `owner` Username of the file owner
+-   `group` Group name of the file group
 
 <br>
 
