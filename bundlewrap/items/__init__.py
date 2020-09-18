@@ -24,6 +24,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'needs': [],
     'preceded_by': [],
     'precedes': [],
+    'stage': 0,
     'error_on_missing_fault': False,
     'tags': [],
     'triggered': False,

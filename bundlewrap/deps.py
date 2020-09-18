@@ -20,6 +20,7 @@ class DummyItem:
         self.tags = []
         self.triggered_by = []
         self.triggers = []
+        self.stage = 0
         self._deps = []
         self._precedes_items = []
 
@@ -89,6 +90,24 @@ class TypeItem(DummyItem):
     def id(self):
         return "{}:".format(self.item_type)
 
+class StageItem(DummyItem):
+    """
+    This item depends on all items with the given stage
+    and on the previous stage.
+    """
+    ITEM_TYPE_NAME = 'stage'
+
+    def __init__(self, stage):
+        super(StageItem, self).__init__()
+        self.stage = stage
+        self.prev = None
+
+    def __repr__(self):
+        return "<StageItem: {}>".format(self.stage)
+
+    @property
+    def id(self):
+        return "stage:{}".format(self.stage)
 
 def find_item(item_id, items):
     """
@@ -368,6 +387,29 @@ def _inject_tag_items(items):
     items.update({item.id: item for item in tag_items.values()})
     return items
 
+def _inject_stage_items(items):
+    """
+    Takes a list of items and adds stage items depending on all
+    items of a stage and the previous stage
+    """
+    stage_items = {}
+    for item in items.values():
+        if item.stage not in stage_items:
+            stage_items[item.stage] = StageItem(item.stage)
+    if len(stage_items) == 1:
+        # Don't need to add depnedencies for only one stage
+        return items
+    prev_id = None
+    for stage_item in sorted(stage_items.values(), key=lambda stage_item: stage_item.stage):
+        if prev_id is not None:
+            stage_item.prev = prev_id
+        prev_id = stage_item.id
+    for item in items.values():
+        stage_items[item.stage]._deps.append(item.id)
+        if stage_items[item.stage].prev is not None:
+            item._deps.append(stage_items[item.stage].prev)
+    items.update({item.id: item for item in stage_items.values()})
+    return items
 
 def _inject_type_items(items):
     """
@@ -602,6 +644,7 @@ def prepare_dependencies(items, node_os, node_os_version):
 
     items = _inject_bundle_items(items)
     items = _inject_tag_items(items)
+    items = _inject_stage_items(items)
     items = _inject_type_items(items)
     items = _inject_canned_actions(items)
     items = _inject_reverse_triggers(items)
