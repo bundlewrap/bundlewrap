@@ -1,6 +1,6 @@
 # pip package items
 
-Handles Python packages installed by `pip`.
+Handles Python packages installed by `pip`. Note that you can use the [pip_command node attribute](../repo/nodes.py.md#pip_command) to use `pip3`.
 
     pkg_pip = {
         "foo": {
