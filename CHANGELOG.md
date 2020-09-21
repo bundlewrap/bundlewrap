@@ -1,3 +1,13 @@
+# 4.2.0
+
+2020-09-21
+
+* added `BW_GIT_DEPLOY_CACHE`
+* added `lock_dir` node attribute
+* added `pip_command` node attribute
+* Fault callbacks can now accept some unhashable parameters (such as dicts)
+
+
 # 4.1.1
 
 2020-08-12
