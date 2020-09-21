@@ -446,6 +446,14 @@ nodes['node-1'] = {
 <p>Used whenever a command needs to be run on a node. Defaults to <code>"export LANG=C; {}"</code>. <code>{}</code> will be replaced by the command to be run.</p>
 <p>You will need to override this if the shell on your node sets environment variables differently.</p>
 <p><br></p>
+<h3 id="lock_dir">lock_dir</h3>
+<p>Directory that will be used for creating <a href="../../guide/locks/">locks</a> on the node. Defaults to <code>"/var/lib/bundlewrap"</code>. Will be created if it does not exist.</p>
+<p>You will need to override this if <code>/var/lib</code> is restricted somehow on your node (SElinux, mounted readonly, etc.).</p>
+<p><br></p>
+<h3 id="pip_command">pip_command</h3>
+<p>This setting will affect how <a href="../../items/pkg_pip/">pkg_pip</a> will behave. By default, it will use whatever <code>pip</code> on your system defaults to.</p>
+<p>You will need to override this if you don't have <code>pip</code>, but (for example) only <code>pip3</code>. Be aware that this setting has no effect when using virtualenvs.</p>
+<p><br></p>
 <h3 id="use_shadow_passwords">use_shadow_passwords</h3>
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 

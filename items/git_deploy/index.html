@@ -335,6 +335,15 @@
             </li>
               </ul>
             </li>
+            
+            <li class="nav-item" data-level="1"><a href="#environment-variables" class="nav-link">Environment variables</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#bw_git_deploy_cache" class="nav-link">BW_GIT_DEPLOY_CACHE</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
         </ul>
     </div>
 </div></div>
@@ -378,13 +387,20 @@ git_deploy = {
     },
 }
 </code></pre>
-<p>Note however that this has a severe performance penalty, as a new clone of that repo has to be made every time the status of the item is checked.</p>
+<p>Note however that this has a performance penalty, as a new clone of that repo has to be made on every run of BundleWrap. (See section "Environment variables" below.)</p>
 <p><br></p>
 <h2 id="rev">rev</h2>
 <p>The <code>rev</code> attribute can contain anything <code>git rev-parse</code> can resolve into a commit hash (branch names, tags, first few characters of full commit hash). Note that you should probably use tags here. <em>Never</em> use HEAD (use a branch name like 'master' instead).</p>
 <p><br></p>
 <h2 id="use_xattrs">use_xattrs</h2>
-<p>BundleWrap needs to store the deployed commit hash on the node. The <code>use_xattrs</code> attribute controls how this is done. If set to <code>True</code>, the <code>attr</code> command on the node is used to store the hash as an extended file system attribute. Since <code>attr</code> might not be installed on the node, the default is to place a dotfile in the target directory instead (keep that in mind when deploying websites etc.).</p></div>
+<p>BundleWrap needs to store the deployed commit hash on the node. The <code>use_xattrs</code> attribute controls how this is done. If set to <code>True</code>, the <code>attr</code> command on the node is used to store the hash as an extended file system attribute. Since <code>attr</code> might not be installed on the node, the default is to place a dotfile in the target directory instead (keep that in mind when deploying websites etc.).</p>
+<p><br></p>
+<h1 id="environment-variables">Environment variables</h1>
+<h2 id="bw_git_deploy_cache"><code>BW_GIT_DEPLOY_CACHE</code></h2>
+<p>This only affects repositories for which a URL has been specified.</p>
+<p>With this env var unset, BundleWrap will clone repos to a temporary directory. This is done once per BundleWrap process and removed automatically when the process terminates.</p>
+<p>If you <em>manually</em> launch multiple parallel processes of <code>bw</code>, each of those will clone the git repo. This can create significant overhead, since they all create redundant copies. You can set <code>BW_GIT_DEPLOY_CACHE</code> to an absolute path: All the <code>bw</code> processes will use it as a shared cache.</p>
+<p>Note: It is not wise to use this option on your workstation. BundleWrap will only ever clone repos, not pull or delete them. This variable is meant as a temporary cache, for example in CI builds, and you will have to clean it up yourself.</p></div>
             </div>
         </div>
 

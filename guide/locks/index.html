@@ -336,7 +336,7 @@
 <p>Since very early in the history of BundleWrap, what we call "hard locks" were used to prevent multiple users from using <code>bw apply</code> on the same node at the same time. When BundleWrap finds a hard lock on a node in interactive mode, it will display information about who acquired the lock (and when) and will ask whether to ignore the lock or abort the process. In non-interactive mode, the operation is always cancelled for the node in question unless <code>--force</code> is used.</p>
 <h2 id="soft-locks">Soft locks</h2>
 <p>Many teams these days are using a workflow based on pull requests. A common problem here is that changes from a feature branch might already have been applied to a set of nodes, while the master branch is still lacking these changes. While the pull request is open and waiting for review, other users might rightly use the master branch to apply to all nodes, reverting changes made by the feature branch. This can be a major nuisance.</p>
-<p>As of version 2.6.0, BundleWrap provides "soft locks" to prevent this. The author of a feature branch can now lock the node so only he or she can use <code>bw apply</code> on it:</p>
+<p>As of version 2.6.0, BundleWrap provides "soft locks" to prevent this. The author of a feature branch can now lock the node so only they can use <code>bw apply</code> on it:</p>
 <pre><code class="nohighlight">$ bw lock add node1
 ✓ node1  locked with ID B9JS (expires in 8h)</code></pre>
 
@@ -353,7 +353,7 @@ i node1  ID    Created              Expires              User   Items  Comment
 
 <p>Expired locks are automatically and silently purged whenever BundleWrap has the opportunity. Be sure to check out <code>bw lock add --help</code> for how to customize expiration time, add a short comment explaining the reason for the lock, or lock only certain items. Using <code>bw apply</code> on a soft locked node is not an error and affected items will simply be skipped.</p>
 <h2 id="locking-non-unix-nodes">Locking non-UNIX nodes</h2>
-<p>Most of the time, BundleWrap assumes that your target system is a UNIX-like operating system. It then stores locks as files in the node's local file system.</p>
+<p>Most of the time, BundleWrap assumes that your target system is a UNIX-like operating system. It then stores locks as files in the node's local file system (<code>/var/lib/bundlewrap</code> by default).</p>
 <p>BundleWrap supports managing non-UNIX nodes, too, such as Kubernetes. You can also write your own custom item types to manage hardware. In those situations, BundleWrap has no place to store lock files.</p>
 <p>You can solve this by designating another regular UNIX node as a "locking node":</p>
 <pre><code class="nohighlight">nodes['my.k8s.cluster'] = {

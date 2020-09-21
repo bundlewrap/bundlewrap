@@ -410,8 +410,10 @@ print(uptime.stdout)
 <p><br></p>
 <p><strong><code>.download(remote_path, local_path)</code></strong></p>
 <p>Downloads a file from the node.</p>
-<p><code>remote_path</code> Which file to get from the node
-<code>local_path</code> Where to put the file</p>
+<ul>
+<li><code>remote_path</code> Which file to get from the node</li>
+<li><code>local_path</code> Where to put the file</li>
+</ul>
 <p><br></p>
 <p><strong><code>.get_item(item_id)</code></strong></p>
 <p>Get the Item object with the given ID (e.g. "file:/etc/motd").</p>
@@ -430,16 +432,20 @@ print(uptime.stdout)
 <p><br></p>
 <p><strong><code>.run(command, may_fail=False)</code></strong></p>
 <p>Runs a command on the node. Returns an instance of <code>bundlewrap.operations.RunResult</code>.</p>
-<p><code>command</code> What should be executed on the node
-<code>may_fail</code> If <code>False</code>, <code>bundlewrap.exceptions.RemoteException</code> will be raised if the command does not return 0.</p>
+<ul>
+<li><code>command</code> What should be executed on the node</li>
+<li><code>may_fail</code> If <code>False</code>, <code>bundlewrap.exceptions.RemoteException</code> will be raised if the command does not return 0.</li>
+</ul>
 <p><br></p>
 <p><strong><code>.upload(local_path, remote_path, mode=None, owner="", group="")</code></strong></p>
 <p>Uploads a file to the node.</p>
-<p><code>local_path</code> Which file to upload
-<code>remote_path</code> Where to put the file on the target node
-<code>mode</code> File mode, e.g. "0644"
-<code>owner</code> Username of the file owner
-<code>group</code> Group name of the file group</p>
+<ul>
+<li><code>local_path</code> Which file to upload</li>
+<li><code>remote_path</code> Where to put the file on the target node</li>
+<li><code>mode</code> File mode, e.g. "0644"</li>
+<li><code>owner</code> Username of the file owner</li>
+<li><code>group</code> Group name of the file group</li>
+</ul>
 <p><br></p>
 <h3 id="bundlewrapgroupgroup">bundlewrap.group.Group</h3>
 <p>A user-defined group of nodes.</p>

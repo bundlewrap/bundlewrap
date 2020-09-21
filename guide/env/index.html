@@ -323,6 +323,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#bw_git_deploy_cache" class="nav-link">BW_GIT_DEPLOY_CACHE</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#bw_hardlock_expiry" class="nav-link">BW_HARDLOCK_EXPIRY</a>
               <ul class="nav flex-column">
               </ul>
@@ -383,6 +387,9 @@
 <div class="alert alert-info">Debug logs are verbose and BundleWrap does not rotate them for you. Putting them on a tmpfs or ramdisk will save your SSD and get rid of old logs every time you reboot your machine.</div>
 
 <p><br></p>
+<h2 id="bw_git_deploy_cache"><code>BW_GIT_DEPLOY_CACHE</code></h2>
+<p>Optional cache directory for <a href="../../items/git_deploy/#bw_git_deploy_cache"><code>git_deploy</code></a> items.</p>
+<p><br></p>
 <h2 id="bw_hardlock_expiry"><code>BW_HARDLOCK_EXPIRY</code></h2>
 <p><a href="../locks/">Hard locks</a> are automatically ignored after some time. By default, it's <code>"8h"</code>. You can use this variable to override that default.</p>
 <p><br></p>
@@ -396,7 +403,7 @@
 <p>Note that you should not set these variables to very high values. First, it can cause high memory consumption on your machine. Second, not all SSH servers can handle massive parallelism. Please refer to your OpenSSH documentation on how to tune your servers for these situations.</p>
 <p><br></p>
 <h2 id="bw_max_metadata_iterations"><code>BW_MAX_METADATA_ITERATIONS</code></h2>
-<p>Sets the limit of how often metadata reactors will be run before BundleWrap calls it a loop and terminates with an exception. Defaults to <code>100</code>.</p>
+<p>Sets the limit of how often metadata reactors will be run for a node before BundleWrap calls it a loop and terminates with an exception. Defaults to <code>1000</code>.</p>
 <p><br></p>
 <h2 id="bw_repo_path"><code>BW_REPO_PATH</code></h2>
 <p>Set this to a path pointing to your BundleWrap repository. If unset, the current working directory is used. Can be overridden with <code>bw --repository PATH</code>. Keep in mind that <code>bw</code> will also look for a repository in all parent directories until it finds one.</p>
