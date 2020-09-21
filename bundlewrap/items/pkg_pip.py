@@ -9,12 +9,12 @@ from bundlewrap.utils.text import mark_for_translation as _
 def pkg_install(node, pkgname, version=None):
     if version:
         pkgname = "{}=={}".format(pkgname, version)
-    pip_path, pkgname = split_path(pkgname)
+    pip_path, pkgname = split_path(node, pkgname)
     return node.run("{} install -U {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
 
 
 def pkg_installed(node, pkgname):
-    pip_path, pkgname = split_path(pkgname)
+    pip_path, pkgname = split_path(node, pkgname)
     result = node.run(
         "{} freeze | grep -i '^{}=='".format(quote(pip_path), pkgname),
         may_fail=True,
@@ -26,7 +26,7 @@ def pkg_installed(node, pkgname):
 
 
 def pkg_remove(node, pkgname):
-    pip_path, pkgname = split_path(pkgname)
+    pip_path, pkgname = split_path(node, pkgname)
     return node.run("{} uninstall -y {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
 
 
@@ -104,7 +104,7 @@ class PipPkg(Item):
             ))
 
 
-def split_path(pkgname):
+def split_path(node, pkgname):
     virtualenv, pkgname = split(pkgname)
-    pip_path = join(virtualenv, "bin", "pip") if virtualenv else "pip"
+    pip_path = join(virtualenv, "bin", node.pip_command) if virtualenv else node.pip_command
     return pip_path, pkgname

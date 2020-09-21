@@ -165,6 +165,14 @@ You will need to override this if `/var/lib` is restricted somehow on your node 
 
 <br>
 
+### pip_command
+
+This setting will affect how [pkg_pip](../items/pkg_pip.md) will behave. By default, it will use whatever `pip` on your system defaults to.
+
+You will need to override this if you don't have `pip`, but (for example) only `pip3`. Be aware that setting this to a full path will break the virtualenv functionality of `pkg_pip`
+
+<br>
+
 ### use_shadow_passwords
 
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
