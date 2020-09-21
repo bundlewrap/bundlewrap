@@ -169,7 +169,7 @@ You will need to override this if `/var/lib` is restricted somehow on your node 
 
 This setting will affect how [pkg_pip](../items/pkg_pip.md) will behave. By default, it will use whatever `pip` on your system defaults to.
 
-You will need to override this if you don't have `pip`, but (for example) only `pip3`. Be aware that setting this to a full path will break the virtualenv functionality of `pkg_pip`.
+You will need to override this if you don't have `pip`, but (for example) only `pip3`. Be aware that this setting has no effect when using virtualenvs.
 
 <br>
 

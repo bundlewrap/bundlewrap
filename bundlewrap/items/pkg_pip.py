@@ -106,5 +106,5 @@ class PipPkg(Item):
 
 def split_path(node, pkgname):
     virtualenv, pkgname = split(pkgname)
-    pip_path = join(virtualenv, "bin", node.pip_command) if virtualenv else node.pip_command
+    pip_path = join(virtualenv, "bin", "pip") if virtualenv else node.pip_command
     return pip_path, pkgname
