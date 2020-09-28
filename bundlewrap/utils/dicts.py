@@ -1,3 +1,4 @@
+from copy import copy
 from difflib import unified_diff
 from hashlib import sha1
 from json import dumps, JSONEncoder
@@ -249,7 +250,20 @@ def merge_dict(base, update):
         ):
             merged[key] = base[key].union(set(value))
         else:
-            merged[key] = value
+            # If we don't copy here, we end up with dicts from groups in
+            # node metadata. Not an issue per se, but a nasty pitfall
+            # when users do things like this in items.py:
+            #
+            #    my_dict = node.metadata.get('foo', {})
+            #    my_dict['bar'] = 'baz'
+            #
+            # The expectation here is to be able to mangle my_dict
+            # because it is only relevant for the current node. However,
+            # if 'foo' has only been defined in a group, we end up
+            # mangling that dict for every node in the group.
+            # Since we can't really force users to .copy() in this case
+            # (although they should!), we have to do it here.
+            merged[key] = copy(value)
 
     return merged
 
