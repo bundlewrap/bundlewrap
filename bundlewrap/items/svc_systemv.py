@@ -47,7 +47,8 @@ class SvcSystemV(Item):
         return {
             'reload': {
                 'command': "/etc/init.d/{} reload".format(self.name),
-                'needs': [self.id],
+                # make sure we don't reload and restart simultaneously
+                'needs': [f"{self.id}:restart"],
             },
             'restart': {
                 'command': "/etc/init.d/{} restart".format(self.name),

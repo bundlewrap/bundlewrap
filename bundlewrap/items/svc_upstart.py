@@ -46,11 +46,13 @@ class SvcUpstart(Item):
         return {
             'reload': {
                 'command': "reload {}".format(self.name),
-                'needs': [self.id],
+                # make sure we don't reload and restart simultaneously
+                'needs': [f"{self.id}:restart"],
             },
             'restart': {
                 'command': "restart {}".format(self.name),
-                'needs': [self.id],
+                # make sure we don't restart and stopstart simultaneously
+                'needs': [f"{self.id}:restart"],
             },
             'stopstart': {
                 'command': "stop {0} && start {0}".format(self.name),

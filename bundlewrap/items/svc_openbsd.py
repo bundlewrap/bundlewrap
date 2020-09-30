@@ -68,7 +68,8 @@ class SvcOpenBSD(Item):
         return {
             'restart': {
                 'command': "/etc/rc.d/{} restart".format(self.name),
-                'needs': [self.id],
+                # make sure we don't restart and stopstart simultaneously
+                'needs': [f"{self.id}:stopstart"],
             },
             'stopstart': {
                 'command': "/etc/rc.d/{0} stop && /etc/rc.d/{0} start".format(self.name),

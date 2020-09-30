@@ -82,7 +82,8 @@ class SvcSystemd(Item):
         return {
             'reload': {
                 'command': "systemctl reload -- {}".format(self.name),
-                'needs': [self.id],
+                # make sure we don't reload and restart simultaneously
+                'needs': [f"{self.id}:restart"],
             },
             'restart': {
                 'command': "systemctl restart -- {}".format(self.name),
