@@ -45,6 +45,11 @@ class SvcOpenBSD(Item):
     }
     ITEM_TYPE_NAME = "svc_openbsd"
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        # https://github.com/bundlewrap/bundlewrap/issues/554
+        return [cls.ITEM_TYPE_NAME]
+
     def __repr__(self):
         return "<SvcOpenBSD name:{} running:{} enabled:{}>".format(
             self.name,
