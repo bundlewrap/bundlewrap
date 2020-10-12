@@ -32,6 +32,9 @@ class DummyItem:
     def apply(self, *args, **kwargs):
         return (Item.STATUS_OK, [])
 
+    def get_canned_actions(self):
+        return {}
+
     def test(self):
         pass
 
@@ -206,59 +209,21 @@ def _inject_bundle_items(items):
 
 def _inject_canned_actions(items):
     """
-    Looks for canned actions like "svc_upstart:mysql:reload" in item
-    triggers and adds them to the list of items.
+    Looks for canned actions like "svc_upstart:mysql:reload" in items,
+    created actions for them and add those to the list of items.
     """
-    added_actions = {}
-    for item in items.values():
-        for triggered_item_id in item.triggers:
-            if triggered_item_id in added_actions:
-                # action has already been triggered
-                continue
-
-            try:
-                type_name, item_name, action_name = triggered_item_id.split(":")
-            except ValueError:
-                # not a canned action
-                continue
-
-            target_item_id = "{}:{}".format(type_name, item_name)
-
-            try:
-                target_item = items[target_item_id]
-            except KeyError:
-                raise BundleError(_(
-                    "{item} in bundle '{bundle}' triggers unknown item '{target_item}'"
-                ).format(
-                    bundle=item.bundle.name,
-                    item=item.id,
-                    target_item=target_item_id,
-                ))
-
-            try:
-                action_attrs = target_item.get_canned_actions()[action_name]
-            except KeyError:
-                raise BundleError(_(
-                    "{item} in bundle '{bundle}' triggers unknown "
-                    "canned action '{action}' on {target_item}"
-                ).format(
-                    action=action_name,
-                    bundle=item.bundle.name,
-                    item=item.id,
-                    target_item=target_item_id,
-                ))
-
-            action_attrs.update({'triggered': True})
+    for item in list(items.values()):
+        for canned_action_name, canned_action_attrs in item.get_canned_actions().items():
+            canned_action_id = f"{item.id}:{canned_action_name}"
+            canned_action_attrs.update({'triggered': True})
             action = Action(
                 item.bundle,
-                triggered_item_id,
-                action_attrs,
+                canned_action_id,
+                canned_action_attrs,
                 skip_name_validation=True,
             )
             action._prepare_deps(items)
-            added_actions[triggered_item_id] = action
-
-    items.update({item.id: item for item in added_actions.values()})
+            items[canned_action_id] = action
     return items
 
 
