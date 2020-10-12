@@ -166,6 +166,9 @@ class Fault:
         else:
             return self.value > other
 
+    def __repr__(self):
+        return f"<Fault: {self.id_list}>"
+
     def __str__(self):
         return str(self.value)
 
