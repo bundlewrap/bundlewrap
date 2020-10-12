@@ -155,7 +155,16 @@ class Fault:
         return len(self.value)
 
     def __lt__(self, other):
-        return self.value < other.value
+        if isinstance(other, Fault):
+            return self.value < other.value
+        else:
+            return self.value < other
+
+    def __gt__(self, other):
+        if isinstance(other, Fault):
+            return self.value > other.value
+        else:
+            return self.value > other
 
     def __str__(self):
         return str(self.value)
