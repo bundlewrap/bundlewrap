@@ -28,8 +28,6 @@ def bw_apply(repo, args):
     target_nodes = get_target_nodes(repo, args['targets'])
     pending_nodes = target_nodes.copy()
 
-    io.progress_set_total(count_items(pending_nodes))
-
     try:
         repo.hooks.apply_start(
             repo,
@@ -43,6 +41,8 @@ def bw_apply(repo, args):
             x=red("!!!"),
         ))
         exit(1)
+
+    io.progress_set_total(count_items(pending_nodes))
 
     start_time = datetime.now()
     results = []
