@@ -1,5 +1,7 @@
 from bundlewrap.utils import Fault
 
+from pytest import raises
+
 
 def test_basic_resolve():
     def callback():
@@ -370,3 +372,44 @@ def test_hash_does_not_change():
     hash2 = hash(a)
 
     assert hash1 == hash2
+
+
+def test_sort():
+    def one():
+        return 1
+
+    def three():
+        return 3
+
+    f1 = Fault("1", one)
+    f3 = Fault("3", three)
+
+    assert sorted([2, f3, f1]) == [f1, 2, f3]
+
+
+def test_sort_typeerror():
+    def one():
+        return 1
+
+    def three():
+        return 3
+
+    f1 = Fault("1", one)
+    f3 = Fault("3", three)
+
+    with raises(TypeError):
+        sorted(["2", f3, f1])
+
+
+def test_sort_typeerror_from_fault():
+    def one():
+        return 1
+
+    def three():
+        return "3"
+
+    f1 = Fault("1", one)
+    f3 = Fault("3", three)
+
+    with raises(TypeError):
+        sorted([2, f3, f1])
