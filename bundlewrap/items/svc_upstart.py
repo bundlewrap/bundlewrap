@@ -52,7 +52,7 @@ class SvcUpstart(Item):
             'restart': {
                 'command': "restart {}".format(self.name),
                 # make sure we don't restart and stopstart simultaneously
-                'needs': [f"{self.id}:restart"],
+                'needs': [f"{self.id}:stopstart"],
             },
             'stopstart': {
                 'command': "stop {0} && start {0}".format(self.name),
