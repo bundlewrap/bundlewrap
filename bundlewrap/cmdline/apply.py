@@ -144,8 +144,9 @@ def stats_summary(results, totals, total_duration):
         _("time"),
     ], ROW_SEPARATOR]
 
+    node_rows = []
     for result in results:
-        rows.append([
+        node_rows.append([
             result.node_name,
             str(result.total),
             str(result.correct),
@@ -154,6 +155,8 @@ def stats_summary(results, totals, total_duration):
             red_unless_zero(result.failed),
             format_duration(result.duration),
         ])
+
+    rows += sorted(node_rows, key=lambda n: n[0])
 
     if len(results) > 1:
         rows.append(ROW_SEPARATOR)

@@ -73,6 +73,7 @@ def stats_summary(results, include_stdout, include_stderr):
     if include_stderr:
         rows[0].append(bold(_("stderr")))
 
+    node_rows = []
     for node_name, result in sorted(results.items()):
         row = [node_name]
         if result is None:
@@ -83,7 +84,7 @@ def stats_summary(results, include_stdout, include_stderr):
         else:
             row.append(red(str(result.return_code)))
         row.append(format_duration(result.duration, msec=True))
-        rows.append(row)
+        node_rows.append(row)
         if include_stdout or include_stderr:
             stdout = result.stdout.decode('utf-8', errors='replace').strip().split("\n")
             stderr = result.stderr.decode('utf-8', errors='replace').strip().split("\n")
@@ -97,8 +98,10 @@ def stats_summary(results, include_stdout, include_stderr):
                     continuation_row.append(stdout_line)
                 if include_stderr:
                     continuation_row.append(stderr_line)
-                rows.append(continuation_row)
-            rows.append(ROW_SEPARATOR)
+                node_rows.append(continuation_row)
+            node_rows.append(ROW_SEPARATOR)
+
+    rows += sorted(node_rows, key=lambda n: n[0])
 
     if include_stdout or include_stderr:
         # remove last ROW_SEPARATOR
