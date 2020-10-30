@@ -391,18 +391,21 @@ def validate_statedict(sdict):
         if not isinstance(force_text(key), str):
             raise ValueError(_("non-text statedict key: {}").format(key))
 
-        if type(value) not in TYPE_DIFFS and value is not None:
-            raise ValueError(
-                _("invalid statedict value for key '{k}': {v}").format(k=key, v=value)
-            )
+        if not isinstance(value, tuple(TYPE_DIFFS.keys())) and value is not None:
+            raise ValueError(_(
+                "invalid statedict value for key '{k}': {v}"
+            ).format(
+                k=key,
+                v=repr(value),
+            ))
 
-        if type(value) in (list, tuple):
+        if isinstance(value, (list, tuple)):
             for index, element in enumerate(value):
-                if type(element) not in TYPE_DIFFS and element is not None:
+                if not isinstance(element, tuple(TYPE_DIFFS.keys())) and element is not None:
                     raise ValueError(_(
                         "invalid element #{i} in statedict key '{k}': {e}"
                     ).format(
-                        e=element,
+                        e=repr(element),
                         i=index,
                         k=key,
                     ))
