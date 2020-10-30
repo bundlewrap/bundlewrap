@@ -1,3 +1,10 @@
+# 4.2.2
+
+2020-10-30
+
+* fixed tomlkit types not being accepted as statedict values
+
+
 # 4.2.1
 
 2020-10-15
