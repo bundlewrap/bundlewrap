@@ -90,6 +90,9 @@ class ApplyResult:
         self.start = None
         self.end = None
 
+    def __lt__(self, other):
+        return self.node_name < other.node_name
+
     @property
     def duration(self):
         return self.end - self.start

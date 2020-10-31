@@ -144,7 +144,7 @@ def stats_summary(results, totals, total_duration):
         _("time"),
     ], ROW_SEPARATOR]
 
-    for result in results:
+    for result in sorted(results):
         rows.append([
             result.node_name,
             str(result.total),
