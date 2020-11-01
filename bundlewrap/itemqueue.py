@@ -1,5 +1,4 @@
 from .deps import (
-    DummyItem,
     find_item,
     prepare_dependencies,
     remove_item_dependents,
@@ -33,7 +32,7 @@ class ItemQueue(BaseQueue):
         Called when an item could not be fixed. Yields all items that
         have been skipped as a result by cascading.
         """
-        for skipped_item in self.item_skipped(item, _skipped=False):
+        for skipped_item in self.item_skipped(item):
             yield skipped_item
 
     def item_fixed(self, item):
@@ -56,7 +55,7 @@ class ItemQueue(BaseQueue):
         )
         self._split()
 
-    def item_skipped(self, item, _skipped=True):
+    def item_skipped(self, item):
         """
         Called when an item has been skipped. Yields all items that have
         been skipped as a result by cascading.
@@ -68,14 +67,9 @@ class ItemQueue(BaseQueue):
             self.items_with_deps, skipped_items = remove_item_dependents(
                 self.items_with_deps,
                 item,
-                skipped=_skipped,
             )
-            # since we removed them from further processing, we
-            # fake the status of the removed items so they still
-            # show up in the result statistics
             for skipped_item in skipped_items:
-                if not isinstance(skipped_item, DummyItem):
-                    yield skipped_item
+                yield skipped_item
         else:
             self.items_with_deps = remove_dep_from_items(
                 self.items_with_deps,

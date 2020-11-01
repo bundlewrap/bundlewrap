@@ -10,10 +10,7 @@ from tomlkit import dumps as toml_dump, parse as toml_parse
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .deps import (
-    DummyItem,
-    find_item,
-)
+from .deps import find_item
 from .exceptions import (
     GracefulApplyException,
     ItemDependencyLoop,
@@ -226,8 +223,7 @@ def apply_items(
 
         handle_apply_result(node, item, status_code, interactive, details=details)
         io.progress_advance()
-        if not isinstance(item, DummyItem):
-            results.append((item.id, status_code, duration))
+        results.append((item.id, status_code, duration))
 
     worker_pool = WorkerPool(
         tasks_available,
@@ -871,7 +867,7 @@ def verify_items(node, show_all=False, workers=1):
     for item in node.items:
         if not item.triggered:
             items.append(item)
-        elif not isinstance(item, DummyItem):
+        else:
             io.progress_advance()
 
     try:

@@ -1,96 +1,29 @@
 from contextlib import suppress
 
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
-from .items import Item
 from .items.actions import Action
 from .utils.text import bold, mark_for_translation as _
 from .utils.ui import io
 
 
-class DummyItem:
-    bundle = None
-    cascade_skip = True
-    triggered = False
-
-    def __init__(self, *args, **kwargs):
-        self.needed_by = []
-        self.needs = []
-        self.preceded_by = []
-        self.precedes = []
-        self.tags = []
-        self.triggered_by = []
-        self.triggers = []
-        self._deps = []
-        self._precedes_items = []
-
-    def __lt__(self, other):
-        return self.id < other.id
-
-    def _precedes_incorrect_item(self):
-        return False
-
-    def apply(self, *args, **kwargs):
-        return (Item.STATUS_OK, [])
-
-    def get_canned_actions(self):
-        return {}
-
-    def test(self):
-        pass
-
-
-class BundleItem(DummyItem):
+def resolve_selector(selector, items):
     """
-    Represents a dependency on all items in a certain bundle.
+    Given an item selector (e.g. 'bundle:foo' or 'file:/bar'), return
+    all items matching that selector from the given list of items.
     """
-    ITEM_TYPE_NAME = 'bundle'
+    try:
+        selector_type, selector_name = selector.split(":", 1)
+    except ValueError:
+        raise ValueError(_("invalid item selector: {}").format(selector))
 
-    def __init__(self, bundle):
-        self.bundle = bundle
-        super(BundleItem, self).__init__()
-
-    def __repr__(self):
-        return "<BundleItem: {}>".format(self.bundle.name)
-
-    @property
-    def id(self):
-        return "bundle:{}".format(self.bundle.name)
-
-
-class TagItem(DummyItem):
-    """
-    This item depends on all items with the given tag.
-    """
-    ITEM_TYPE_NAME = 'tag'
-
-    def __init__(self, tag_name):
-        self.tag_name = tag_name
-        super(TagItem, self).__init__()
-
-    def __repr__(self):
-        return "<TagItem: {}>".format(self.tag_name)
-
-    @property
-    def id(self):
-        return "tag:{}".format(self.tag_name)
-
-
-class TypeItem(DummyItem):
-    """
-    Represents a dependency on all items of a certain type.
-    """
-    ITEM_TYPE_NAME = 'type'
-
-    def __init__(self, item_type):
-        self.item_type = item_type
-        super(TypeItem, self).__init__()
-
-    def __repr__(self):
-        return "<TypeItem: {}>".format(self.item_type)
-
-    @property
-    def id(self):
-        return "{}:".format(self.item_type)
+    if selector_type == "bundle":
+        return filter(lambda item: item.bundle.name == selector_name, items)
+    elif selector_type == "tag":
+        return filter(lambda item: selector_name in item.tags, items)
+    elif not selector_name:  # "file:"
+        return filter(lambda item: item.ITEM_TYPE_NAME == selector_name, items)
+    else:
+        return [find_item(selector, items)]
 
 
 def find_item(item_id, items):
@@ -105,34 +38,20 @@ def find_item(item_id, items):
     return item
 
 
-def _find_items_of_types(item_types, items, include_dummy=False):
-    """
-    Returns a subset of items with any of the given types.
-    """
-    for item_id, item in items.items():
-        if item_id.split(":", 1)[0] in item_types and (
-            include_dummy or not isinstance(item, DummyItem)
-        ):
-            yield item
-
-
 def _flatten_dependencies(items):
     """
     This will cause all dependencies - direct AND inherited - to be
     listed in item._flattened_deps.
     """
-    for item in items.values():
+    for item in items:
         if not hasattr(item, '_flattened_deps'):
             _flatten_deps_for_item(item, items)
 
-    for item in list(items.values()):
+    for item in items:
         item._incoming_deps = set()
-        for other_item in list(items.values()):
-            if isinstance(other_item, DummyItem):
-                continue
+        for other_item in items:
             if item.id in other_item._flattened_deps:
                 item._incoming_deps.add(other_item)
-    return items
 
 
 def _flatten_deps_for_item(item, items):
@@ -146,29 +65,29 @@ def _flatten_deps_for_item(item, items):
 
     for dep in item._deps.copy():
         try:
-            dep_item = items[dep]
-        except KeyError:
-            if dep.startswith("tag:"):
-                # sometimes it is useful to be able to depend on a tag
-                # without having to make sure it actually exists
-                item._deps.remove(dep)
-                continue
-            else:
-                raise ItemDependencyError(_(
-                    "'{item}' in bundle '{bundle}' has a dependency (needs) "
-                    "on '{dep}', which doesn't exist"
-                ).format(
-                    item=item.id,
-                    bundle=item.bundle.name,
-                    dep=dep,
-                ))
-        # Don't recurse if we have already resolved nested dependencies
-        # for this item. Also serves as a guard against infinite
-        # recursion when there are loops.
-        if not hasattr(dep_item, '_flattened_deps'):
-            _flatten_deps_for_item(dep_item, items)
+            dep_items = resolve_selector(dep, items)
+        except NoSuchItem:
+            raise ItemDependencyError(_(
+                "'{item}' in bundle '{bundle}' has a dependency (needs) "
+                "on '{dep}', which doesn't exist"
+            ).format(
+                item=item.id,
+                bundle=item.bundle.name,
+                dep=dep,
+            ))
+        if list(dep_items):
+            for dep_item in dep_items:
+                # Don't recurse if we have already resolved nested
+                # dependencies for this item. Also serves as a guard
+                # against infinite recursion when there are loops.
+                if not hasattr(dep_item, '_flattened_deps'):
+                    _flatten_deps_for_item(dep_item, items)
 
-        item._flattened_deps |= set(dep_item._flattened_deps)
+                item._flattened_deps |= set(dep_item._flattened_deps)
+        else:
+            # Selector resolved to nothing (e.g. non-existing tag), so
+            # we remove this dependency as it can never be satisfied.
+            item._deps.remove(dep)
 
     item._flattened_deps = sorted(item._flattened_deps)
 
@@ -192,27 +111,13 @@ def _has_trigger_path(items, item, target_item_id):
     return False
 
 
-def _inject_bundle_items(items):
-    """
-    Adds virtual items that depend on every item in a bundle.
-    """
-    bundle_items = {}
-    for item in items.values():
-        if item.bundle is None:
-            continue
-        if item.bundle.name not in bundle_items:
-            bundle_items[item.bundle.name] = BundleItem(item.bundle)
-        bundle_items[item.bundle.name]._deps.append(item.id)
-    items.update({item.id: item for item in bundle_items.values()})
-    return items
-
-
 def _inject_canned_actions(items):
     """
     Looks for canned actions like "svc_upstart:mysql:reload" in items,
     created actions for them and add those to the list of items.
     """
-    for item in list(items.values()):
+    actions = set()
+    for item in items:
         for canned_action_name, canned_action_attrs in item.get_canned_actions().items():
             canned_action_id = f"{item.id}:{canned_action_name}"
             canned_action_attrs.update({'triggered': True})
@@ -223,8 +128,8 @@ def _inject_canned_actions(items):
                 skip_name_validation=True,
             )
             action._prepare_deps(items)
-            items[canned_action_id] = action
-    return items
+            actions.add(action)
+    items.extend(actions)
 
 
 def _inject_concurrency_blockers(items, node_os, node_os_version):
@@ -234,12 +139,9 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
     """
     # find every item type that cannot be applied in parallel
     item_types = set()
-    for item in items.values():
+    for item in items:
         item._concurrency_deps = []  # used for DOT (graphviz) output only
-        if (
-            not isinstance(item, DummyItem) and
-            item.block_concurrent(node_os, node_os_version)
-        ):
+        if item.block_concurrent(node_os, node_os_version):
             item_types.add(item.__class__)
 
     # Now that we have collected all relevant types,
@@ -277,8 +179,8 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
     # dependencies between them
     for blocked_types in chain_groups:
         blocked_types = set(blocked_types)
-        type_items = list(_find_items_of_types(
-            blocked_types,
+        type_items = list(filter(
+            lambda item: item.ITEM_TYPE_NAME in blocked_types,
             items,
         ))
         processed_items = []
@@ -316,45 +218,6 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
             for other_item in type_items:
                 with suppress(ValueError):
                     other_item.__deps.remove(item.id)
-    return items
-
-
-def _inject_tag_items(items):
-    """
-    Takes a list of items and adds tag items depending on each type of
-    item in the list. Returns the appended list.
-    """
-    tag_items = {}
-    for item in items.values():
-        for tag in item.tags:
-            if tag not in tag_items:
-                tag_items[tag] = TagItem(tag)
-            tag_items[tag]._deps.append(item.id)
-    items.update({item.id: item for item in tag_items.values()})
-    return items
-
-
-def _inject_type_items(items):
-    """
-    Takes a list of items and adds dummy items depending on each type of
-    item in the list. Returns the appended list.
-    """
-    type_items = {}
-    for item in items.values():
-        # create dummy items that depend on each item of their type
-        item_type = item.id.split(":")[0]
-        if item_type not in type_items:
-            type_items[item_type] = TypeItem(item_type)
-        type_items[item_type]._deps.append(item.id)
-
-        # create DummyItem for every type
-        for dep in item._deps:
-            item_type = dep.split(":")[0]
-            if item_type not in type_items:
-                type_items[item_type] = TypeItem(item_type)
-
-    items.update({item.id: item for item in type_items.values()})
-    return items
 
 
 def _inject_reverse_dependencies(items):
@@ -367,49 +230,24 @@ def _inject_reverse_dependencies(items):
             item._deps.append(dep)
             item._reverse_deps.append(dep)
 
-    for item in items.values():
+    for item in items:
         item._reverse_deps = []
 
-    for item in items.values():
+    for item in items:
         for depending_item_id in item.needed_by:
-            # bundle items
-            if depending_item_id.startswith("bundle:"):
-                depending_bundle_name = depending_item_id.split(":")[1]
-                for depending_item in items.values():
-                    if isinstance(depending_item, DummyItem):
-                        # Type and TagItems don't have bundles
-                        continue
-                    if depending_item.bundle.name == depending_bundle_name:
-                        add_dep(depending_item, item.id)
-
-            # tag items
-            if depending_item_id.startswith("tag:"):
-                tag_name = depending_item_id.split(":")[1]
-                for depending_item in items.values():
-                    if tag_name in depending_item.tags:
-                        add_dep(depending_item, item.id)
-
-            # type items
-            if depending_item_id.endswith(":"):
-                target_type = depending_item_id[:-1]
-                for depending_item in _find_items_of_types([target_type], items):
-                    add_dep(depending_item, item.id)
-
-            # single items
-            else:
-                try:
-                    depending_item = items[depending_item_id]
-                except KeyError:
-                    raise ItemDependencyError(_(
-                        "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by) "
-                        "on '{dep}', which doesn't exist"
-                    ).format(
-                        item=item.id,
-                        bundle=item.bundle.name,
-                        dep=depending_item_id,
-                    ))
-                add_dep(depending_item, item.id)
-    return items
+            try:
+                dependent_items = resolve_selector(depending_item_id, items)
+            except NoSuchItem:
+                raise ItemDependencyError(_(
+                    "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by) "
+                    "on '{dep}', which doesn't exist"
+                ).format(
+                    item=item.id,
+                    bundle=item.bundle.name,
+                    dep=depending_item_id,
+                ))
+            for dependent_item in dependent_items:
+                add_dep(dependent_item, item.id)
 
 
 def _inject_reverse_triggers(items):
@@ -417,64 +255,36 @@ def _inject_reverse_triggers(items):
     Looks for 'triggered_by' and 'precedes' attributes and turns them
     into standard triggers (defined on the opposing end).
     """
-    for item in items.values():
-        for triggering_item_id in item.triggered_by:
+    for item in items:
+        for triggering_item_selector in item.triggered_by:
             try:
-                triggering_item = items[triggering_item_id]
-            except KeyError:
+                triggering_items = resolve_selector(triggering_item_selector, items)
+            except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a reverse trigger (triggered_by) "
                     "on '{dep}', which doesn't exist"
                 ).format(
                     item=item.id,
                     bundle=item.bundle.name,
-                    dep=triggering_item_id,
+                    dep=triggering_item_selector,
                 ))
-            if triggering_item.id.startswith("bundle:"):  # bundle items
-                bundle_name = triggering_item.id.split(":")[1]
-                for actual_triggering_item in items.values():
-                    if triggering_item.bundle.name == bundle_name:
-                        actual_triggering_item.triggers.append(item.id)
-            elif triggering_item.id.startswith("tag:"):  # tag items
-                tag_name = triggering_item.id.split(":")[1]
-                for actual_triggering_item in items.values():
-                    if tag_name in triggering_item.tags:
-                        actual_triggering_item.triggers.append(item.id)
-            elif triggering_item.id.endswith(":"):  # type items
-                target_type = triggering_item.id[:-1]
-                for actual_triggering_item in _find_items_of_types([target_type], items):
-                    actual_triggering_item.triggers.append(item.id)
-            else:
+            for triggering_item in triggering_items:
                 triggering_item.triggers.append(item.id)
-        for preceded_item_id in item.precedes:
+
+        for preceded_item_selector in item.precedes:
             try:
-                preceded_item = items[preceded_item_id]
-            except KeyError:
+                preceded_items = resolve_selector(preceded_item_selector, items)
+            except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a reverse trigger (precedes) "
                     "on '{dep}', which doesn't exist"
                 ).format(
                     item=item.id,
                     bundle=item.bundle.name,
-                    dep=preceded_item_id,
+                    dep=preceded_item_selector,
                 ))
-            if preceded_item.id.startswith("bundle:"):  # bundle items
-                bundle_name = preceded_item.id.split(":")[1]
-                for actual_preceded_item in items.values():
-                    if actual_preceded_item.bundle.name == bundle_name:
-                        actual_preceded_item.preceded_by.append(item.id)
-            elif preceded_item.id.startswith("tag:"):  # tag items
-                tag_name = preceded_item.id.split(":")[1]
-                for actual_preceded_item in items.values():
-                    if tag_name in actual_preceded_item.tags:
-                        actual_preceded_item.preceded_by.append(item.id)
-            elif preceded_item.id.endswith(":"):  # type items
-                target_type = preceded_item.id[:-1]
-                for actual_preceded_item in _find_items_of_types([target_type], items):
-                    actual_preceded_item.preceded_by.append(item.id)
-            else:
+            for preceded_item in preceded_items:
                 preceded_item.preceded_by.append(item.id)
-    return items
 
 
 def _inject_trigger_dependencies(items):
@@ -482,32 +292,33 @@ def _inject_trigger_dependencies(items):
     Injects dependencies from all triggered items to their triggering
     items.
     """
-    for item in items.values():
-        for triggered_item_id in item.triggers:
+    for item in items:
+        for triggered_item_selector in item.triggers:
             try:
-                triggered_item = items[triggered_item_id]
+                triggered_items = resolve_selector(triggered_item_selector, items)
             except KeyError:
                 raise BundleError(_(
                     "unable to find definition of '{item1}' triggered "
                     "by '{item2}' in bundle '{bundle}'"
                 ).format(
                     bundle=item.bundle.name,
-                    item1=triggered_item_id,
+                    item1=triggered_item_selector,
                     item2=item.id,
                 ))
-            if not triggered_item.triggered:
-                raise BundleError(_(
-                    "'{item1}' in bundle '{bundle1}' triggered "
-                    "by '{item2}' in bundle '{bundle2}', "
-                    "but missing 'triggered' attribute"
-                ).format(
-                    item1=triggered_item.id,
-                    bundle1=triggered_item.bundle.name,
-                    item2=item.id,
-                    bundle2=item.bundle.name,
-                ))
-            triggered_item._deps.append(item.id)
-    return items
+            for triggered_item in triggered_items:
+                if triggered_item.triggered:
+                    triggered_item._deps.append(item.id)
+                else:
+                    raise BundleError(_(
+                        "'{item1}' in bundle '{bundle1}' triggered "
+                        "by '{item2}' in bundle '{bundle2}', "
+                        "but missing 'triggered' attribute"
+                    ).format(
+                        item1=triggered_item.id,
+                        bundle1=triggered_item.bundle.name,
+                        item2=item.id,
+                        bundle2=item.bundle.name,
+                    ))
 
 
 def _inject_preceded_by_dependencies(items):
@@ -515,7 +326,7 @@ def _inject_preceded_by_dependencies(items):
     Injects dependencies from all triggering items to their
     preceded_by items and attaches triggering items to preceding items.
     """
-    for item in items.values():
+    for item in items:
         if item.preceded_by and item.triggered:
             raise BundleError(_(
                 "triggered item '{item}' in bundle '{bundle}' must not use "
@@ -524,32 +335,33 @@ def _inject_preceded_by_dependencies(items):
                     item=item.id,
                 ),
             ))
-        for triggered_item_id in item.preceded_by:
+        for triggered_item_selector in item.preceded_by:
             try:
-                triggered_item = items[triggered_item_id]
+                triggered_items = resolve_selector(triggered_item_selector, items)
             except KeyError:
                 raise BundleError(_(
                     "unable to find definition of '{item1}' preceding "
                     "'{item2}' in bundle '{bundle}'"
                 ).format(
                     bundle=item.bundle.name,
-                    item1=triggered_item_id,
+                    item1=triggered_item_selector,
                     item2=item.id,
                 ))
-            if not triggered_item.triggered:
-                raise BundleError(_(
-                    "'{item1}' in bundle '{bundle1}' precedes "
-                    "'{item2}' in bundle '{bundle2}', "
-                    "but missing 'triggered' attribute"
-                ).format(
-                    item1=triggered_item.id,
-                    bundle1=triggered_item.bundle.name,
-                    item2=item.id,
-                    bundle2=item.bundle.name if item.bundle else "N/A",
-                ))
-            triggered_item._precedes_items.append(item)
-            item._deps.append(triggered_item.id)
-    return items
+            for triggered_item in triggered_items:
+                if triggered_item.triggered:
+                    triggered_item._precedes_items.append(item)
+                    item._deps.append(triggered_item.id)
+                else:
+                    raise BundleError(_(
+                        "'{item1}' in bundle '{bundle1}' precedes "
+                        "'{item2}' in bundle '{bundle2}', "
+                        "but missing 'triggered' attribute"
+                    ).format(
+                        item1=triggered_item.id,
+                        bundle1=triggered_item.bundle.name,
+                        item2=item.id,
+                        bundle2=item.bundle.name,
+                    ))
 
 
 @io.job_wrapper(_("{}  processing dependencies").format(bold("{1}")))
@@ -562,25 +374,19 @@ def prepare_dependencies(items, node_os, node_os_version):
         item._check_loopback_dependency()
         item._prepare_deps(items)
 
-    # transform items into a dict to prevent repeated item.id lookups
-    items = {item.id: item for item in items}
+    items = list(items)  # might be a tuple from cached_property
+    _inject_canned_actions(items)
+    _inject_reverse_triggers(items)
+    _inject_reverse_dependencies(items)
+    _inject_trigger_dependencies(items)
+    _inject_preceded_by_dependencies(items)
+    _flatten_dependencies(items)
+    _inject_concurrency_blockers(items, node_os, node_os_version)
 
-    items = _inject_bundle_items(items)
-    items = _inject_tag_items(items)
-    items = _inject_type_items(items)
-    items = _inject_canned_actions(items)
-    items = _inject_reverse_triggers(items)
-    items = _inject_reverse_dependencies(items)
-    items = _inject_trigger_dependencies(items)
-    items = _inject_preceded_by_dependencies(items)
-    items = _flatten_dependencies(items)
-    items = _inject_concurrency_blockers(items, node_os, node_os_version)
+    for item in items:
+        item._check_redundant_dependencies()
 
-    for item in items.values():
-        if not isinstance(item, DummyItem):
-            item._check_redundant_dependencies()
-
-    return list(items.values())
+    return items
 
 
 def remove_dep_from_items(items, dep):
@@ -594,7 +400,7 @@ def remove_dep_from_items(items, dep):
     return items
 
 
-def remove_item_dependents(items, dep_item, skipped=False):
+def remove_item_dependents(items, dep_item):
     """
     Removes the items depending on the given item from the list of items.
     """
@@ -605,11 +411,6 @@ def remove_item_dependents(items, dep_item, skipped=False):
                 # triggered items cannot be removed here since they
                 # may yet be triggered by another item and will be
                 # skipped anyway if they aren't
-                item._deps.remove(dep_item.id)
-            elif skipped and isinstance(item, DummyItem) and \
-                    dep_item.triggered and not dep_item.has_been_triggered:
-                # don't skip dummy items because of untriggered members
-                # see issue #151; separate elif for clarity
                 item._deps.remove(dep_item.id)
             elif dep_item.id in item._concurrency_deps:
                 # don't skip items just because of concurrency deps
@@ -634,7 +435,7 @@ def remove_item_dependents(items, dep_item, skipped=False):
     for removed_item in removed_items:
         if removed_item.cascade_skip:
             items, recursively_removed_items = \
-                remove_item_dependents(items, removed_item, skipped=skipped)
+                remove_item_dependents(items, removed_item)
             all_recursively_removed_items += recursively_removed_items
         else:
             items = remove_dep_from_items(items, removed_item.id)
