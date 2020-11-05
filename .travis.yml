@@ -5,10 +5,10 @@ python:
 - 3.8
 dist: focal
 addons:
-  postgresql: "12"
+  postgresql: "13"
   apt:
     packages:
-     - postgresql-12
+     - postgresql-13
 install:
 - pip install .
 before_script:
