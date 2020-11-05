@@ -11,19 +11,30 @@ def resolve_selector(selector, items):
     Given an item selector (e.g. 'bundle:foo' or 'file:/bar'), return
     all items matching that selector from the given list of items.
     """
+    if selector.startswith("!"):
+        negate = lambda b: not b
+        selector = selector[1:]
+    else:
+        negate = lambda b: b
     try:
         selector_type, selector_name = selector.split(":", 1)
     except ValueError:
         raise ValueError(_("invalid item selector: {}").format(selector))
 
     if selector_type == "bundle":
-        return filter(lambda item: item.bundle.name == selector_name, items)
+        return filter(lambda item: negate(item.bundle.name == selector_name), items)
     elif selector_type == "tag":
-        return filter(lambda item: selector_name in item.tags, items)
+        if not selector_name:  # "tag:"
+            return filter(lambda item: negate(bool(item.tags)), items)
+        else:
+            return filter(lambda item: negate(selector_name in item.tags), items)
     elif not selector_name:  # "file:"
-        return filter(lambda item: item.ITEM_TYPE_NAME == selector_name, items)
-    else:
-        return [find_item(selector, items)]
+        return filter(lambda item: negate(item.ITEM_TYPE_NAME == selector_type), items)
+    else:  # single item
+        if negate(False):
+            return filter(lambda item: item.id != selector, items)
+        else:
+            return [find_item(selector, items)]
 
 
 def find_item(item_id, items):
