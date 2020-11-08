@@ -179,6 +179,8 @@ class Fault:
 
     def format_into(self, format_string):
         def callback():
+            if '{fault}' in format_string:
+                return format_string.format(fault=self.value)
             return format_string.format(self.value)
         return Fault(self.id_list + ['format_into ' + format_string], callback)
 
