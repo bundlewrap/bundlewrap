@@ -107,7 +107,12 @@ def page_lines(lines):
     """
     lines = list(lines)
     line_width = max([len(ansi_clean(line)) for line in lines])
-    if TTY and line_width > get_terminal_size().columns:
+    if (
+        TTY and (
+            line_width > get_terminal_size().columns or
+            len(lines) > get_terminal_size().lines
+        )
+    ):
         write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
         env = environ.copy()
         env["LESS"] = env.get("LESS", "") + " -R"
