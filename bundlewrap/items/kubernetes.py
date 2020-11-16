@@ -5,7 +5,6 @@ import re
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.metadata import metadata_to_json
-from bundlewrap.operations import run_local
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.files import content_processor_jinja2, content_processor_mako
 from bundlewrap.utils.dicts import merge_dict, reduce_dict
