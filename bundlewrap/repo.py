@@ -1,4 +1,5 @@
 from contextlib import suppress
+from hashlib import sha1
 from importlib.machinery import SourceFileLoader
 from inspect import isabstract
 from os import listdir, mkdir, walk
@@ -423,6 +424,45 @@ class Repository(MetadataGenerator):
 
     def hash(self):
         return hash_statedict(self.cdict)
+
+    @cached_property
+    def hash_for_files_changing_metadata(self):
+        if self.path is None:
+            return None
+
+        path_len = len(self.path)
+        file_hashes = []
+
+        for path, subdirs, files in walk(self.path):
+            relative_path = path[path_len:].lstrip("/")
+
+            if not relative_path:
+                # Yes, modifying subdirs here is the supported way of
+                # preventing recursion into unwanted dirs.
+                for irrelevant_dir in ("data", "hooks", "items"):
+                    with suppress(ValueError):
+                        subdirs.remove(irrelevant_dir)
+            else:
+                path_components = relative_path.split("/")
+                if len(path_components) == 2 and path_components[0] == "bundles":
+                    for irrelevant_dir in ("files", "manifests"):
+                        with suppress(ValueError):
+                            subdirs.remove(irrelevant_dir)
+
+                    with suppress(ValueError):
+                        files.remove("items.py")
+
+            for file_name in files:
+                file_path = join(path, file_name)
+                with open(file_path, 'rb') as f:
+                    file_hash = sha1(f.read()).hexdigest()
+                file_hashes.append((file_path, file_hash))
+
+        global_hash = sha1()
+        for file_path, file_hash in sorted(file_hashes):
+            global_hash.update((file_path + file_hash).encode('utf-8') + b"\x00")
+
+        return global_hash.hexdigest()
 
     @property
     def nodes(self):
