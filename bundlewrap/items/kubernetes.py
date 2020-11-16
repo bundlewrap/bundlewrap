@@ -54,7 +54,7 @@ class KubernetesItem(Item, metaclass=ABCMeta):
             return None
         else:
             return {'manifest': json.dumps(
-                self.nuke_changing_attributes(json.loads(self.manifest)),
+                self.nuke_k8s_status(json.loads(self.manifest)),
                 indent=4, sort_keys=True,
             )}
 
@@ -148,12 +148,9 @@ class KubernetesItem(Item, metaclass=ABCMeta):
     def namespace(self):
         return self.name.split("/", 1)[0] or None
 
-    def nuke_changing_attributes(self, manifest):
-        # These attributes cannot be managed by us. The cluster decides
-        # what's going on. We can't fix it.
-        for i in ('apiVersion', 'status'):
-            if i in manifest:
-                del manifest[i]
+    def nuke_k8s_status(self, manifest):
+        if 'status' in manifest:
+            del manifest['status']
         return manifest
 
     def patch_attributes(self, attributes):
@@ -179,7 +176,7 @@ class KubernetesItem(Item, metaclass=ABCMeta):
                 return None
             return {'manifest': json.dumps(reduce_dict(
                 full_json_response,
-                self.nuke_changing_attributes(json.loads(self.manifest)),
+                self.nuke_k8s_status(json.loads(self.manifest)),
             ), indent=4, sort_keys=True)}
         elif result.return_code == 1 and "NotFound" in result.stderr.decode('utf-8'):
             return None
