@@ -64,6 +64,7 @@ GROUP_ATTR_TYPES = {
     'pip_command': str,
     'subgroups': COLLECTION_OF_STRINGS,
     'subgroup_patterns': COLLECTION_OF_STRINGS,
+    'supergroups': COLLECTION_OF_STRINGS,
     'use_shadow_passwords': bool,
 }
 
@@ -173,14 +174,37 @@ class Group:
                 if pattern.search(group.name) is not None and group != self:
                     yield group.name
 
+    @cached_property
+    def _supergroups_from_attribute(self):
+        for supergroup_name in self._attributes.get('supergroups', set()):
+            try:
+                supergroup = self.repo.get_group(supergroup_name)
+            except NoSuchGroup:
+                raise RepositoryError(_(
+                    "Group '{group}' has '{supergroup}' listed as a supergroup in groups.py, "
+                    "but no such group could be found."
+                ).format(
+                    group=self.name,
+                    supergroup=supergroup_name,
+                ))
+            if self.name in (
+                list(supergroup._attributes.get('subgroups', set())) +
+                list(supergroup._subgroup_names_from_patterns)
+            ):
+                raise RepositoryError(_(
+                    "Group '{group}' has '{supergroup}' listed as a supergroup in groups.py, "
+                    "but it is already listed as a subgroup on that group (redundant)."
+                ).format(
+                    group=self.name,
+                    supergroup=supergroup_name,
+                ))
+            yield supergroup
+
     def _check_subgroup_names(self, visited_names):
         """
         Recursively finds subgroups and checks for loops.
         """
-        for name in set(
-            list(self._attributes.get('subgroups', set())) +
-            list(self._subgroup_names_from_patterns)
-        ):
+        for name in self._immediate_subgroup_names:
             if name not in visited_names:
                 try:
                     group = self.repo.get_group(name)
@@ -261,10 +285,7 @@ class Group:
         """
         Iterator over all immediate subgroups as group objects.
         """
-        for group_name in set(
-            list(self._attributes.get('subgroups', set())) +
-            list(self._subgroup_names_from_patterns)
-        ):
+        for group_name in self._immediate_subgroup_names:
             try:
                 yield self.repo.get_group(group_name)
             except NoSuchGroup:
@@ -275,3 +296,11 @@ class Group:
                     group=self.name,
                     subgroup=group_name,
                 ))
+
+    @cached_property
+    def _immediate_subgroup_names(self):
+        return set(
+            list(self._attributes.get('subgroups', set())) +
+            list(self._subgroup_names_from_patterns) +
+            [group.name for group in self.repo.groups if self in group._supergroups_from_attribute]
+        )
