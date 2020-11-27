@@ -1,7 +1,7 @@
 import platform
 from subprocess import Popen, PIPE
 
-from ..bundle import FILENAME_BUNDLE
+from ..bundle import FILENAME_BUNDLE, FILENAME_ITEMS
 from ..secrets import FILENAME_SECRETS
 
 
@@ -21,13 +21,22 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     nodes = {} if nodes is None else nodes
 
     bundles_dir = tmpdir.mkdir("bundles")
-    for bundle, items in bundles.items():
+    for bundle, attrs_and_items in bundles.items():
+        for key in attrs_and_items:
+            assert key in ("items", "attrs")
         bundle_dir = bundles_dir.mkdir(bundle)
         bundle_dir.mkdir("files")
         bundlepy = bundle_dir.join(FILENAME_BUNDLE)
-        bundle_content = "# -*- coding: utf-8 -*-\n"
-        for itemtype, itemconfig in items.items():
-            bundle_content += "{} = {}\n".format(itemtype, repr(itemconfig))
+        itemspy = bundle_dir.join(FILENAME_ITEMS)
+
+        items_content = ""
+        for itemtype, itemconfig in attrs_and_items.get('items', {}).items():
+            items_content += "{} = {}\n".format(itemtype, repr(itemconfig))
+        itemspy.write(items_content)
+
+        bundle_content = ""
+        for attrname, attrvalue in attrs_and_items.get('attrs', {}).items():
+            bundle_content += "{} = {}\n".format(attrname, repr(attrvalue))
         bundlepy.write(bundle_content)
 
     tmpdir.mkdir("data")

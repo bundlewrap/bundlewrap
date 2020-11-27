@@ -10,15 +10,17 @@ if environ.get('TRAVIS') == "true":
             tmpdir,
             bundles={
                 "test": {
-                    'postgres_dbs': {
-                        "bw-test1": {
-                            'owner': "bw-test1",
+                    'items': {
+                        'postgres_dbs': {
+                            "bw-test1": {
+                                'owner': "bw-test1",
+                            },
                         },
-                    },
-                    'postgres_roles': {
-                        "bw-test1": {
-                            'superuser': True,
-                            'password': 'potato',
+                        'postgres_roles': {
+                            "bw-test1": {
+                                'superuser': True,
+                                'password': 'potato',
+                            },
                         },
                     },
                 },

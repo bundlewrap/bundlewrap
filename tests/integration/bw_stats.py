@@ -11,12 +11,14 @@ def test_nondeterministic(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "foo",
-                    },
-                    "/test2": {
-                        'content': "foo",
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "foo",
+                        },
+                        "/test2": {
+                            'content': "foo",
+                        },
                     },
                 },
             },

@@ -25,16 +25,20 @@ def test_file_items(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/tmp/test": {
-                        'content': "one",
+                'items': {
+                    "files": {
+                        "/tmp/test": {
+                            'content': "one",
+                        },
                     },
                 },
             },
             "bundle2": {
-                "files": {
-                    "/tmp/test": {
-                        'content': "two",
+                'items': {
+                    "files": {
+                        "/tmp/test": {
+                            'content': "two",
+                        },
                     },
                 },
             },
@@ -56,23 +60,29 @@ def test_whole_node(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/tmp/foo": {
-                        'content': "one",
+                'items': {
+                    "files": {
+                        "/tmp/foo": {
+                            'content': "one",
+                        },
                     },
                 },
             },
             "bundle2": {
-                "files": {
-                    "/tmp/foo": {
-                        'content': "two",
+                'items': {
+                    "files": {
+                        "/tmp/foo": {
+                            'content': "two",
+                        },
                     },
                 },
             },
             "bundle3": {
-                "files": {
-                    "/tmp/bar": {
-                        'content': "common",
+                'items': {
+                    "files": {
+                        "/tmp/bar": {
+                            'content': "common",
+                        },
                     },
                 },
             },

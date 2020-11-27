@@ -8,9 +8,11 @@ def test_empty_verify(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content_type': 'any',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'any',
+                        },
                     },
                 },
             },

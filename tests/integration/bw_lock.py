@@ -18,9 +18,11 @@ def test_add_lock_apply_remove(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/tmp/bw_test_lock_add": {
-                        'content': "foo",
+                'items': {
+                    'files': {
+                        "/tmp/bw_test_lock_add": {
+                            'content': "foo",
+                        },
                     },
                 },
             },

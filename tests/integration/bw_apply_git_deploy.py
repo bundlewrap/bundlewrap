@@ -8,14 +8,16 @@ def test_deploy_from_url(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'git_deploy': {
-                    join(str(tmpdir), "git_deployed_bw"): {
-                        'repo': "https://github.com/bundlewrap/bundlewrap.git",
-                        'rev': "master",
+                'items': {
+                    'git_deploy': {
+                        join(str(tmpdir), "git_deployed_bw"): {
+                            'repo': "https://github.com/bundlewrap/bundlewrap.git",
+                            'rev': "master",
+                        },
                     },
-                },
-                'directories': {
-                    join(str(tmpdir), "git_deployed_bw"): {},
+                    'directories': {
+                        join(str(tmpdir), "git_deployed_bw"): {},
+                    },
                 },
             },
         },
@@ -39,15 +41,17 @@ def test_cannot_deploy_into_purged(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'git_deploy': {
-                    join(str(tmpdir), "git_deployed_bw"): {
-                        'repo': "https://github.com/bundlewrap/bundlewrap.git",
-                        'rev': "master",
+                'items': {
+                    'git_deploy': {
+                        join(str(tmpdir), "git_deployed_bw"): {
+                            'repo': "https://github.com/bundlewrap/bundlewrap.git",
+                            'rev': "master",
+                        },
                     },
-                },
-                'directories': {
-                    join(str(tmpdir), "git_deployed_bw"): {
-                        'purge': True,
+                    'directories': {
+                        join(str(tmpdir), "git_deployed_bw"): {
+                            'purge': True,
+                        },
                     },
                 },
             },

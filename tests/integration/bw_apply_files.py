@@ -9,9 +9,11 @@ def test_any_content_create(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content_type': 'any',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'any',
+                        },
                     },
                 },
             },
@@ -35,9 +37,11 @@ def test_any_content_exists(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content_type': 'any',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'any',
+                        },
                     },
                 },
             },
@@ -63,10 +67,12 @@ def test_binary_inline_content(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo.bin"): {
-                        'content_type': 'base64',
-                        'content': b64encode("ö".encode('latin-1')),
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo.bin"): {
+                            'content_type': 'base64',
+                            'content': b64encode("ö".encode('latin-1')),
+                        },
                     },
                 },
             },
@@ -89,9 +95,11 @@ def test_binary_template_content(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo.bin"): {
-                        'encoding': 'latin-1',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo.bin"): {
+                            'encoding': 'latin-1',
+                        },
                     },
                 },
             },
@@ -119,9 +127,11 @@ def test_delete(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'delete': True,
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'delete': True,
+                        },
                     },
                 },
             },
@@ -142,10 +152,12 @@ def test_mako_template_content(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content_type': 'mako',
-                        'content': "${node.name}",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'mako',
+                            'content': "${node.name}",
+                        },
                     },
                 },
             },
@@ -168,10 +180,12 @@ def test_mako_template_content_with_secret(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content_type': 'mako',
-                        'content': "${repo.vault.password_for('testing')}",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'mako',
+                            'content': "${repo.vault.password_for('testing')}",
+                        },
                     },
                 },
             },
@@ -194,10 +208,12 @@ def test_text_template_content(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content_type': 'text',
-                        'content': "${node.name}",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'text',
+                            'content': "${node.name}",
+                        },
                     },
                 },
             },
@@ -219,7 +235,9 @@ def test_fault_content_unavailable_skipped(tmpdir):
     make_repo(
         tmpdir,
         bundles={
-            "test": {},
+            "test": {
+                'items': {},
+            },
         },
         nodes={
             "localhost": {

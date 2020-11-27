@@ -8,9 +8,11 @@ def test_skip_bundle(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content': "nope",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "nope",
+                        },
                     },
                 },
             },
@@ -32,9 +34,11 @@ def test_skip_group(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content': "nope",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "nope",
+                        },
                     },
                 },
             },
@@ -60,9 +64,11 @@ def test_skip_id(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content': "nope",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "nope",
+                        },
                     },
                 },
             },
@@ -84,9 +90,11 @@ def test_skip_node(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content': "nope",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "nope",
+                        },
                     },
                 },
             },
@@ -108,10 +116,12 @@ def test_skip_tag(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content': "nope",
-                        'tags': ["nope"],
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "nope",
+                            'tags': ["nope"],
+                        },
                     },
                 },
             },
@@ -133,9 +143,11 @@ def test_skip_type(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content': "nope",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "nope",
+                        },
                     },
                 },
             },
@@ -157,15 +169,17 @@ def test_skip_trigger(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content': "nope",
-                        'tags': ["nope"],
-                        'triggers': ["file:{}".format(join(str(tmpdir), "bar"))],
-                    },
-                    join(str(tmpdir), "bar"): {
-                        'content': "nope",
-                        'triggered': True,
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "nope",
+                            'tags': ["nope"],
+                            'triggers': ["file:{}".format(join(str(tmpdir), "bar"))],
+                        },
+                        join(str(tmpdir), "bar"): {
+                            'content': "nope",
+                            'triggered': True,
+                        },
                     },
                 },
             },

@@ -9,7 +9,7 @@ from pkg_resources import DistributionNotFound, require, VersionConflict
 from tomlkit import parse as parse_toml
 
 from . import items, VERSION_STRING
-from .bundle import FILENAME_BUNDLE
+from .bundle import FILENAME_ITEMS
 from .exceptions import (
     NoSuchGroup,
     NoSuchNode,
@@ -296,7 +296,7 @@ class Repository(MetadataGenerator):
         mkdir(bundle_dir)
         mkdir(join(bundle_dir, "files"))
 
-        open(join(bundle_dir, FILENAME_BUNDLE), 'a').close()
+        open(join(bundle_dir, FILENAME_ITEMS), 'a').close()
 
     def get_all_attrs_from_file(self, path, base_env=None):
         """
