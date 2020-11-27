@@ -335,3 +335,50 @@ def test_groups_node_dict(tmpdir):
     stdout, stderr, rcode = run("bw hash -dg node1", path=str(tmpdir))
     assert rcode == 0
     assert stdout == b"group1\n"
+
+
+def test_metadata_caching(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    # has to be in data dir to not invalidate cache
+    runlog = join(tmpdir, "data", "runlog.txt")
+    with open(join(tmpdir, "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor
+def reactor1(metadata):
+    with open("{}", "a") as f:
+        f.write("ping\\n")
+    return {{'foo': 1}}
+""".format(runlog))
+    # cache has to be in data dir to not invalidate itself
+    stdout, stderr, rcode = run(
+        f"BW_METADATA_CACHE_DIR={join(tmpdir, 'data', 'cache')} bw hash -m node1",
+        path=str(tmpdir),
+    )
+    assert rcode == 0
+    assert stdout == b"d1788c382248bc384e1a6bf7b98425c6d278eeab\n"
+    with open(runlog) as f:
+        assert f.read() == "ping\nping\n"
+    # run a second time to make sure reactor doesn't run again
+    stdout, stderr, rcode = run(
+        f"BW_METADATA_CACHE_DIR={join(tmpdir, 'data', 'cache')} bw hash -m node1",
+        path=str(tmpdir),
+    )
+    assert rcode == 0
+    assert stdout == b"d1788c382248bc384e1a6bf7b98425c6d278eeab\n"
+    with open(runlog) as f:
+        assert f.read() == "ping\nping\n"
+    # once more without caching to validate our test method
+    stdout, stderr, rcode = run("bw hash -m node1", path=str(tmpdir))
+    assert rcode == 0
+    assert stdout == b"d1788c382248bc384e1a6bf7b98425c6d278eeab\n"
+    with open(runlog) as f:
+        assert f.read() == "ping\nping\nping\nping\n"

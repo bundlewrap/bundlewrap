@@ -1,8 +1,9 @@
 from collections import defaultdict, Counter
 from contextlib import suppress
+from json import load
 from os import environ, makedirs
 from os.path import dirname, exists, join
-from json import load
+from shutil import rmtree
 from traceback import TracebackException
 
 from .exceptions import MetadataPersistentKeyError
@@ -137,22 +138,32 @@ class MetadataGenerator:
             else:
                 return self._node_metadata_complete[node_name]
 
-    def __disk_cache_node_filename(self, node_name):
-        cache_dir = environ.get("BW_METADATA_CACHE_DIR")
-        if not cache_dir:
+    @property
+    def __disk_cache_dir(self):
+        return environ.get("BW_METADATA_CACHE_DIR")
+
+    @property
+    def __disk_cache_hash_dir(self):
+        if not self.__disk_cache_dir:
             return None
-        cache_hash_dir = join(cache_dir, self.hash_for_files_changing_metadata)
-        return join(cache_hash_dir, node_name)
+        return join(self.__disk_cache_dir, self.hash_for_files_changing_metadata)
+
+    def clear_metadata_cache(self):
+        if self.__disk_cache_hash_dir:
+            io.debug(f"removing {self.__disk_cache_hash_dir}")
+            rmtree(self.__disk_cache_hash_dir)
+
+    def __disk_cache_node_filename(self, node_name):
+        if not self.__disk_cache_hash_dir:
+            return None
+        else:
+            return join(self.__disk_cache_hash_dir, node_name)
 
     def __read_disk_cache(self, node_name):
-        cache_dir = environ.get("BW_METADATA_CACHE_DIR")
-        if not cache_dir:
+        if not self.__disk_cache_hash_dir:
             raise FileNotFoundError
-        cache_hash_dir = join(cache_dir, self.hash_for_files_changing_metadata)
-        node_file = join(cache_hash_dir, node_name)
 
-        with open(node_file, 'rb') as f:
-            io.stdout(f"read {node_name}")
+        with open(self.__disk_cache_node_filename(node_name), 'rb') as f:
             return load(f)
 
     def __write_disk_cache(self, node_name, metadata):
@@ -161,7 +172,6 @@ class MetadataGenerator:
             makedirs(dirname(node_file), mode=0o770, exist_ok=True)
             with open(node_file, 'w') as f:
                 f.write(metadata_to_json(metadata))
-            io.stdout(f"wrote {node_name}")
 
     def __run_new_nodes(self):
         try:

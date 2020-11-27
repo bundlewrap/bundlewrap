@@ -689,9 +689,16 @@ n = randint(1, 99999)
 
 @metadata_reactor
 def test(metadata):
-    return {'test': n}
+    return {'findme': n}
 """)
-    assert run("bw test -m 3", path=str(tmpdir))[2] == 1
+    # make sure caching doesn't interfere
+    # cache has to be in data dir to not invalidate itself
+    stdout, stderr, rcode = run(
+        f"BW_METADATA_CACHE_DIR={join(tmpdir, 'data', 'cache')} bw test -m 3",
+        path=str(tmpdir),
+    )
+    assert rcode == 1
+    assert b"findme" in stderr
 
 
 def test_config_determinism_ok(tmpdir):
