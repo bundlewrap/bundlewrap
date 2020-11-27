@@ -11,8 +11,8 @@ from .utils.ui import io
 
 
 class BaseQueue:
-    def __init__(self, items, node_os, node_os_version):
-        self.items_with_deps = prepare_dependencies(items, node_os, node_os_version)
+    def __init__(self, node):
+        self.items_with_deps = prepare_dependencies(node)
         self.items_without_deps = []
         self._split()
         self.pending_items = []

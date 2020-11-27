@@ -375,24 +375,55 @@ def _inject_preceded_by_dependencies(items):
                     ))
 
 
-@io.job_wrapper(_("{}  processing dependencies").format(bold("{1}")))
-def prepare_dependencies(items, node_os, node_os_version):
+def _inject_tag_attrs(items, bundles):
+    """
+    Applies the tag-level attributes from bundle.py to all matching
+    items.
+    """
+    for bundle in bundles:
+        for tag, attrs in bundle.bundle_attrs.get('tags', {}).items():
+            items_with_tag = resolve_selector(f"tag:{tag}", items)
+            if not items_with_tag:
+                raise BundleError(_(
+                    "{file} tries to modify items with tag:{tag}, "
+                    "but none found on {node}. "
+                    "Add the tag to at least one item."
+                ).format(
+                    file=bundle.bundle_file,
+                    tag=tag,
+                    node=bundle.node.name,
+                ))
+            for item in items_with_tag:
+                for attr in (
+                    "needs",
+                    "needed_by",
+                    "precedes",
+                    "preceded_by",
+                    "triggers",
+                    "triggered_by",
+                ):
+                    getattr(item, attr).extend(attrs.get(attr, []))
+
+
+@io.job_wrapper(_("{}  processing dependencies").format(bold("{0.name}")))
+def prepare_dependencies(node):
     """
     Performs all dependency preprocessing on a list of items.
     """
-    for item in items:
-        item._check_bundle_collisions(items)
+    for item in node.items:
+        item._check_bundle_collisions(node.items)
         item._check_loopback_dependency()
-        item._prepare_deps(items)
+        item._prepare_deps(node.items)
 
-    items = list(items)  # might be a tuple from cached_property
+    items = list(node.items)  # might be a tuple from cached_property
     _inject_canned_actions(items)
+    _inject_tag_attrs(items, node.bundles)
     _inject_reverse_triggers(items)
     _inject_reverse_dependencies(items)
     _inject_trigger_dependencies(items)
     _inject_preceded_by_dependencies(items)
     _flatten_dependencies(items)
-    _inject_concurrency_blockers(items, node_os, node_os_version)
+    _inject_concurrency_blockers(items, node.os, node.os_version)
 
     for item in items:
         item._check_redundant_dependencies()
