@@ -339,6 +339,7 @@ class IOManager:
 
     def job_wrapper(self, job_text):
         def outer_wrapper(wrapped_function):
+            @wraps(wrapped_function)
             def inner_wrapper(*args, **kwargs):
                 with self.job(job_text.format(*args, **kwargs)):
                     return wrapped_function(*args, **kwargs)
