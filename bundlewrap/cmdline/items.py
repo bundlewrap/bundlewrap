@@ -1,12 +1,16 @@
-from os import makedirs
+from collections.abc import Collection
+from os import environ, makedirs
 from os.path import dirname, exists, join
 from sys import exit
 
+from ..deps import prepare_dependencies
 from ..exceptions import FaultUnavailable
+from ..items import BUILTIN_ITEM_ATTRIBUTES
 from ..utils.cmdline import get_item, get_node
 from ..utils.dicts import statedict_to_json
+from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
-from ..utils.ui import io
+from ..utils.ui import io, page_lines
 
 
 def write_preview(file_item, base_path):
@@ -95,17 +99,35 @@ def bw_items(repo, args):
                 ).format(x=red("!!!"), item=item.id, node=node.name))
                 exit(1)
         else:
-            if args['show_sdict']:
-                statedict = item.sdict()
+            if args['show_attrs']:
+                prepare_dependencies(node)
+                table = [[bold(_("attribute")), bold(_("value"))]]
+                for attribute in BUILTIN_ITEM_ATTRIBUTES:
+                    table.append(ROW_SEPARATOR)
+                    value = getattr(item, attribute)
+                    if isinstance(value, Collection):
+                        value = sorted(value) or [""]
+                        table.append([attribute, value.pop(0)])
+                        for element in value:
+                            table.append([
+                                attribute if environ.get('BW_TABLE_STYLE') == "grep" else "",
+                                element,
+                            ])
+                    else:
+                        table.append([attribute, repr(value)])
+                page_lines(render_table(table))
             else:
-                statedict = item.cdict()
-            if statedict is None:
-                io.stdout("REMOVE")
-            else:
-                if args['attr']:
-                    io.stdout(repr(statedict[args['attr']]))
+                if args['show_sdict']:
+                    statedict = item.sdict()
                 else:
-                    io.stdout(statedict_to_json(statedict, pretty=True))
+                    statedict = item.cdict()
+                if statedict is None:
+                    io.stdout("REMOVE")
+                else:
+                    if args['attr']:
+                        io.stdout(repr(statedict[args['attr']]))
+                    else:
+                        io.stdout(statedict_to_json(statedict, pretty=True))
     else:
         for item in sorted(node.items):
             if args['show_repr']:
