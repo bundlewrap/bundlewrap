@@ -86,7 +86,7 @@ Defaults to `False`.
 
 ## needs
 
-One such attribute is `needs`. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on the users owning them). Here are two examples:
+One such attribute is `needs`. It allows for setting up dependencies between items. This is not something you will have to do very often, because there are already implicit dependencies between items types (e.g. all files automatically depend on the users owning them). Here are two examples:
 
 	my_items = {
 	    'item1': {
@@ -96,7 +96,7 @@ One such attribute is `needs`. It allows for setting up dependencies between ite
 	        ],
 	    },
 	    'item2': {
-	        ...
+	        [...]
 	        'needs': [
 	            'pkg_apt:',
 	            'bundle:foo',
@@ -105,6 +105,8 @@ One such attribute is `needs`. It allows for setting up dependencies between ite
 	}
 
 The first item (`item1`, specific attributes have been omitted) depends on a file called `/etc/foo.conf`, while `item2` depends on all APT packages being installed and every item in the foo bundle.
+
+See [Selectors](../guide/selectors.md) for a complete overview of the ways to specify items here.
 
 <br>
 
@@ -164,6 +166,8 @@ The above example will run `service daemon restart` every time BundleWrap succes
 
 Similar to `needed_by`, `triggered_by` can be used to define a `triggers` relationship from the opposite direction.
 
+See [Selectors](../guide/selectors.md) for a complete overview of the ways to specify items here.
+
 <br>
 
 ## preceded_by
@@ -189,6 +193,8 @@ Operates like `triggers`, but will apply the triggered item *before* the trigger
 In this configuration, `/etc/example.conf` will always be copied before and only if it is changed. You would probably also want to set `cascade_skip` to `False` on the action so you can skip it in interactive mode when you're sure you don't need the backup copy.
 
 Similar to `needed_by`, `precedes` can be used to define a `preceded_by` relationship from the opposite direction.
+
+See [Selectors](../guide/selectors.md) for a complete overview of the ways to specify items here.
 
 <br>
 

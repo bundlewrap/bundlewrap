@@ -18,6 +18,7 @@ Should you already know your way around, just click on the part of your repo tha
 
 <div class="terminal">bundles/
     mybundle/
+        <a href="/repo/bundle.py">bundle.py</a>
         <a href="/repo/items.py">items.py</a>
         <a href="/repo/metadata.py">metadata.py</a>
         files/
