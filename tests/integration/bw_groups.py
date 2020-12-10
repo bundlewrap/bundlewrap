@@ -49,3 +49,108 @@ group3\t
 """
     assert stderr == b""
     assert rcode == 0
+
+
+def test_supergroups(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {},
+            "group2": {'supergroups': {"group1"}},
+            "group3": {'supergroups': {"group1"}},
+            "group4": {},
+            "group5": {'subgroups': {"group1"}},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups group1", path=str(tmpdir))
+    assert stdout == b"""group1
+group2
+group3
+"""
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups group2", path=str(tmpdir))
+    assert stdout == b"group2\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_supergroups_indirect(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {},
+            "group2": {'supergroups': {"group1"}},
+            "group3": {'supergroups': {"group2"}},
+            "group4": {},
+            "group5": {'subgroups': {"group1"}},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups group1", path=str(tmpdir))
+    assert stdout == b"""group1
+group2
+group3
+"""
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups group2", path=str(tmpdir))
+    assert stdout == b"""group2
+group3
+"""
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_supergroups_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {'supergroups': {"group2"}},
+            "group2": {'supergroups': {"group1"}},
+            "group3": {},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups group1", path=str(tmpdir))
+    assert b"group1" in stderr
+    assert b"group2" in stderr
+    assert b"group3" not in stderr
+    assert rcode == 1
+
+
+def test_supergroups_loop_thru_subgroup(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {
+                'subgroups': {"group2"},
+                'supergroups': {"group3"},
+            },
+            "group2": {'subgroups': {"group3"}},
+            "group3": {},
+            "group4": {},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups group1", path=str(tmpdir))
+    assert b"group1" in stderr
+    assert b"group2" in stderr
+    assert b"group3" in stderr
+    assert b"group4" not in stderr
+    assert rcode == 1
+
+
+def test_supergroups_redundant(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {'subgroups': {"group2"}},
+            "group2": {'supergroups': {"group1"}},
+            "group3": {},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups group1", path=str(tmpdir))
+    assert b"group1" in stderr
+    assert b"group2" in stderr
+    assert b"group3" not in stderr
+    assert rcode == 1

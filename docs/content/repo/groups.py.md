@@ -111,8 +111,8 @@ Matches are determined using [the search() method](http://docs.python.org/2/libr
 
 <br>
 
-## use_shadow_passwords
+## supergroups
 
-See [node attribute documentation](nodes.py.md#use_shadow_passwords). May be overridden by subgroups or individual nodes.
+The inverse of `subgroups`. Nodes in this group will be added to all supergroups.
 
 <br>
