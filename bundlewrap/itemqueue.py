@@ -13,9 +13,9 @@ from .utils.ui import io
 class BaseQueue:
     def __init__(self, node):
         self.items_with_deps = prepare_dependencies(node)
-        self.items_without_deps = []
+        self.items_without_deps = set()
         self._split()
-        self.pending_items = []
+        self.pending_items = set()
 
     def _split(self):
         self.items_with_deps, self.items_without_deps = \
@@ -23,7 +23,7 @@ class BaseQueue:
 
     @property
     def all_items(self):
-        return self.items_with_deps + self.items_without_deps
+        return self.items_with_deps | self.items_without_deps
 
 
 class ItemQueue(BaseQueue):
@@ -51,7 +51,7 @@ class ItemQueue(BaseQueue):
         # be removed from the remaining items
         self.items_with_deps = remove_dep_from_items(
             self.items_with_deps,
-            item.id,
+            item,
         )
         self._split()
 
@@ -73,21 +73,21 @@ class ItemQueue(BaseQueue):
         else:
             self.items_with_deps = remove_dep_from_items(
                 self.items_with_deps,
-                item.id,
+                item,
             )
         self._split()
 
     def pop(self):
         """
         Gets the next item available for processing and moves it into
-        self.pending_items. Will raise IndexError if no item is
+        self.pending_items. Will raise KeyError if no item is
         available.
         """
         if not self.items_without_deps:
-            raise IndexError
+            raise KeyError
 
         item = self.items_without_deps.pop()
-        self.pending_items.append(item)
+        self.pending_items.add(item)
         return item
 
     def _fire_triggers_for_item(self, item):
@@ -115,6 +115,6 @@ class ItemTestQueue(BaseQueue):
     """
     def pop(self):
         item = self.items_without_deps.pop()
-        self.items_with_deps = remove_dep_from_items(self.items_with_deps, item.id)
+        self.items_with_deps = remove_dep_from_items(self.items_with_deps, item)
         self._split()
         return item

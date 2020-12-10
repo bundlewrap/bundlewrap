@@ -24,7 +24,7 @@ def test_items(nodes, ignore_missing_faults, quiet):
         while not QUIT_EVENT.is_set():
             try:
                 item = item_queue.pop()
-            except IndexError:  # no items left
+            except KeyError:  # no items left
                 break
             try:
                 item._test()

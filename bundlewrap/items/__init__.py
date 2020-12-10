@@ -20,15 +20,15 @@ from bundlewrap.operations import run_local
 BUILTIN_ITEM_ATTRIBUTES = {
     'cascade_skip': None,
     'comment': None,
-    'needed_by': [],
-    'needs': [],
-    'preceded_by': [],
-    'precedes': [],
+    'needed_by': set(),
+    'needs': set(),
+    'preceded_by': set(),
+    'precedes': set(),
     'error_on_missing_fault': False,
-    'tags': [],
+    'tags': set(),
     'triggered': False,
-    'triggered_by': [],
-    'triggers': [],
+    'triggered_by': set(),
+    'triggers': set(),
     'unless': "",
     'when_creating': {},
 }
@@ -83,7 +83,7 @@ def make_normalize(attribute_default):
     This is to ensure you can pass filter() results and such in place of
     lists and have them converted to the proper type automatically.
     """
-    if type(attribute_default) in (list, dict):
+    if type(attribute_default) in (set, dict):
         return type(attribute_default)
     else:
         return copy
@@ -151,7 +151,7 @@ class Item:
         self.when_creating = {}
         self._command_results = []
         self._faults_missing_for_attributes = set()
-        self._precedes_items = []
+        self._precedes_items = set()
 
         if not skip_validation:
             if not skip_name_validation:
@@ -211,6 +211,12 @@ class Item:
                 item=self.id,
             ))
 
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
     def __lt__(self, other):
         return self.id < other.id
 
@@ -245,22 +251,6 @@ class Item:
                 bundle=self.bundle.name,
                 node=self.node.name,
             ))
-
-    def _check_redundant_dependencies(self):
-        """
-        Alerts the user if they have defined a redundant dependency
-        (such as settings 'needs' on a triggered item pointing to the
-        triggering item).
-        """
-        for dep in self._deps:
-            if self._deps.count(dep) > 1:
-                raise ItemDependencyError(_(
-                    "redundant dependency of {item1} in bundle '{bundle}' on {item2}"
-                ).format(
-                    bundle=self.bundle.name,
-                    item1=self.id,
-                    item2=dep,
-                ))
 
     @cached_property
     def cached_cdict(self):
@@ -326,10 +316,6 @@ class Item:
             else:
                 return True
         return not self.cached_status.correct
-
-    def _prepare_deps(self, items):
-        # merge automatic and user-defined deps
-        self._deps = list(self.needs) + list(self.get_auto_deps(items))
 
     def _raise_for_faults(self):
         raise FaultUnavailable(_(

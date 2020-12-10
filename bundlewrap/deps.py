@@ -72,35 +72,16 @@ def _flatten_deps_for_item(item, items):
 
     This can handle loops, but will ignore them.
     """
-    item._flattened_deps = set(item._deps)
+    item._flattened_deps = {item.id for item in item._deps}
 
-    for dep in item._deps.copy():
-        try:
-            dep_items = resolve_selector(dep, items)
-        except NoSuchItem:
-            raise ItemDependencyError(_(
-                "'{item}' in bundle '{bundle}' has a dependency (needs) "
-                "on '{dep}', which doesn't exist"
-            ).format(
-                item=item.id,
-                bundle=item.bundle.name,
-                dep=dep,
-            ))
-        if list(dep_items):
-            for dep_item in dep_items:
-                # Don't recurse if we have already resolved nested
-                # dependencies for this item. Also serves as a guard
-                # against infinite recursion when there are loops.
-                if not hasattr(dep_item, '_flattened_deps'):
-                    _flatten_deps_for_item(dep_item, items)
+    for dep_item in item._deps:
+        # Don't recurse if we have already resolved nested
+        # dependencies for this item. Also serves as a guard
+        # against infinite recursion when there are loops.
+        if not hasattr(dep_item, '_flattened_deps'):
+            _flatten_deps_for_item(dep_item, items)
 
-                item._flattened_deps |= set(dep_item._flattened_deps)
-        else:
-            # Selector resolved to nothing (e.g. non-existing tag), so
-            # we remove this dependency as it can never be satisfied.
-            item._deps.remove(dep)
-
-    item._flattened_deps = sorted(item._flattened_deps)
+        item._flattened_deps.update(dep_item._flattened_deps)
 
 
 def _has_trigger_path(items, item, target_item_id):
@@ -122,6 +103,23 @@ def _has_trigger_path(items, item, target_item_id):
     return False
 
 
+def _prepare_deps(items):
+    for item in items:
+        item._deps = set()
+        for dep in list(item.needs) + list(item.get_auto_deps(items)):
+            try:
+                item._deps.update(resolve_selector(dep, items))
+            except NoSuchItem:
+                raise ItemDependencyError(_(
+                    "'{item}' in bundle '{bundle}' has a dependency (needs) "
+                    "on '{dep}', which doesn't exist"
+                ).format(
+                    item=item.id,
+                    bundle=item.bundle.name,
+                    dep=dep,
+                ))
+
+
 def _inject_canned_actions(items):
     """
     Looks for canned actions like "svc_upstart:mysql:reload" in items,
@@ -138,9 +136,8 @@ def _inject_canned_actions(items):
                 canned_action_attrs,
                 skip_name_validation=True,
             )
-            action._prepare_deps(items)
             actions.add(action)
-    items.extend(actions)
+    items.update(actions)
 
 
 def _inject_concurrency_blockers(items, node_os, node_os_version):
@@ -151,7 +148,7 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
     # find every item type that cannot be applied in parallel
     item_types = set()
     for item in items:
-        item._concurrency_deps = []  # used for DOT (graphviz) output only
+        item._concurrency_deps = set()  # used for DOT (graphviz) output only
         if item.block_concurrent(node_os, node_os_version):
             item_types.add(item.__class__)
 
@@ -176,12 +173,12 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
 
     chain_groups = []
     for item_type in item_types:
-        block_concurrent = [item_type.ITEM_TYPE_NAME]
-        block_concurrent.extend(item_type.block_concurrent(node_os, node_os_version))
+        block_concurrent = {item_type.ITEM_TYPE_NAME}
+        block_concurrent.update(item_type.block_concurrent(node_os, node_os_version))
         for blocked_types in chain_groups:
             for blocked_type in block_concurrent:
                 if blocked_type in blocked_types:
-                    blocked_types.extend(block_concurrent)
+                    blocked_types.update(block_concurrent)
                     break
         else:
             chain_groups.append(block_concurrent)
@@ -190,14 +187,14 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
     # dependencies between them
     for blocked_types in chain_groups:
         blocked_types = set(blocked_types)
-        type_items = list(filter(
+        type_items = set(filter(
             lambda item: item.ITEM_TYPE_NAME in blocked_types,
             items,
         ))
-        processed_items = []
+        processed_items = set()
         for item in type_items:
             # disregard deps to items of other types
-            item.__deps = list(filter(
+            item.__deps = set(filter(
                 lambda dep: dep.split(":", 1)[0] in blocked_types,
                 item._flattened_deps,
             ))
@@ -217,17 +214,17 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
                 break
             if previous_item is not None:  # unless we're at the first item
                 # add dep to previous item -- unless it's already in there
-                if previous_item.id not in item._deps:
-                    item._deps.append(previous_item.id)
-                    item._concurrency_deps.append(previous_item.id)
-                    item._flattened_deps.append(previous_item.id)
+                if previous_item not in item._deps:
+                    item._deps.add(previous_item)
+                    item._concurrency_deps.add(previous_item.id)
+                    item._flattened_deps.add(previous_item.id)
             previous_item = item
-            processed_items.append(item)
+            processed_items.add(item)
             # Now remove all deps on the processed item. This frees up
             # items depending *only* on the processed item to be
             # eligible for the next iteration of this loop.
             for other_item in type_items:
-                with suppress(ValueError):
+                with suppress(KeyError):
                     other_item.__deps.remove(item.id)
 
 
@@ -238,11 +235,11 @@ def _inject_reverse_dependencies(items):
     """
     def add_dep(item, dep):
         if dep not in item._deps:
-            item._deps.append(dep)
-            item._reverse_deps.append(dep)
+            item._deps.add(dep)
+            item._reverse_deps.add(dep)
 
     for item in items:
-        item._reverse_deps = []
+        item._reverse_deps = set()
 
     for item in items:
         for depending_item_id in item.needed_by:
@@ -258,7 +255,7 @@ def _inject_reverse_dependencies(items):
                     dep=depending_item_id,
                 ))
             for dependent_item in dependent_items:
-                add_dep(dependent_item, item.id)
+                add_dep(dependent_item, item)
 
 
 def _inject_reverse_triggers(items):
@@ -280,7 +277,7 @@ def _inject_reverse_triggers(items):
                     dep=triggering_item_selector,
                 ))
             for triggering_item in triggering_items:
-                triggering_item.triggers.append(item.id)
+                triggering_item.triggers.add(item.id)
 
         for preceded_item_selector in item.precedes:
             try:
@@ -295,7 +292,7 @@ def _inject_reverse_triggers(items):
                     dep=preceded_item_selector,
                 ))
             for preceded_item in preceded_items:
-                preceded_item.preceded_by.append(item.id)
+                preceded_item.preceded_by.add(item.id)
 
 
 def _inject_trigger_dependencies(items):
@@ -318,7 +315,7 @@ def _inject_trigger_dependencies(items):
                 ))
             for triggered_item in triggered_items:
                 if triggered_item.triggered:
-                    triggered_item._deps.append(item.id)
+                    triggered_item._deps.add(item)
                 else:
                     raise BundleError(_(
                         "'{item1}' in bundle '{bundle1}' triggered "
@@ -360,8 +357,8 @@ def _inject_preceded_by_dependencies(items):
                 ))
             for triggered_item in triggered_items:
                 if triggered_item.triggered:
-                    triggered_item._precedes_items.append(item)
-                    item._deps.append(triggered_item.id)
+                    triggered_item._precedes_items.add(item)
+                    item._deps.add(triggered_item)
                 else:
                     raise BundleError(_(
                         "'{item1}' in bundle '{bundle1}' precedes "
@@ -402,7 +399,7 @@ def _inject_tag_attrs(items, bundles):
                     "triggers",
                     "triggered_by",
                 ):
-                    getattr(item, attr).extend(attrs.get(attr, []))
+                    getattr(item, attr).update(attrs.get(attr, set()))
 
 
 @io.job_wrapper(_("{}  processing dependencies").format(bold("{0.name}")))
@@ -413,10 +410,10 @@ def prepare_dependencies(node):
     for item in node.items:
         item._check_bundle_collisions(node.items)
         item._check_loopback_dependency()
-        item._prepare_deps(node.items)
-
-    items = list(node.items)  # might be a tuple from cached_property
+        
+    items = set(node.items)  # might be a tuple from cached_property
     _inject_canned_actions(items)
+    _prepare_deps(items)
     _inject_tag_attrs(items, node.bundles)
     _inject_reverse_triggers(items)
     _inject_reverse_dependencies(items)
@@ -424,9 +421,6 @@ def prepare_dependencies(node):
     _inject_preceded_by_dependencies(items)
     _flatten_dependencies(items)
     _inject_concurrency_blockers(items, node.os, node.os_version)
-
-    for item in items:
-        item._check_redundant_dependencies()
 
     return items
 
@@ -437,7 +431,7 @@ def remove_dep_from_items(items, dep):
     dependencies of all items in the given list.
     """
     for item in items:
-        with suppress(ValueError):
+        with suppress(KeyError):
             item._deps.remove(dep)
     return items
 
@@ -446,20 +440,20 @@ def remove_item_dependents(items, dep_item):
     """
     Removes the items depending on the given item from the list of items.
     """
-    removed_items = []
+    removed_items = set()
     for item in items:
-        if dep_item.id in item._deps:
+        if dep_item in item._deps:
             if _has_trigger_path(items, dep_item, item.id):
                 # triggered items cannot be removed here since they
                 # may yet be triggered by another item and will be
                 # skipped anyway if they aren't
-                item._deps.remove(dep_item.id)
+                item._deps.remove(dep_item)
             elif dep_item.id in item._concurrency_deps:
                 # don't skip items just because of concurrency deps
                 # separate elif for clarity
-                item._deps.remove(dep_item.id)
+                item._deps.remove(dep_item)
             else:
-                removed_items.append(item)
+                removed_items.add(item)
 
     for item in removed_items:
         items.remove(item)
@@ -473,16 +467,16 @@ def remove_item_dependents(items, dep_item):
             )
         )
 
-    all_recursively_removed_items = []
+    all_recursively_removed_items = set()
     for removed_item in removed_items:
         if removed_item.cascade_skip:
             items, recursively_removed_items = \
                 remove_item_dependents(items, removed_item)
-            all_recursively_removed_items += recursively_removed_items
+            all_recursively_removed_items.update(recursively_removed_items)
         else:
-            items = remove_dep_from_items(items, removed_item.id)
+            items = remove_dep_from_items(items, removed_item)
 
-    return (items, removed_items + all_recursively_removed_items)
+    return (items, removed_items | all_recursively_removed_items)
 
 
 def split_items_without_deps(items):
@@ -490,11 +484,11 @@ def split_items_without_deps(items):
     Takes a list of items and extracts the ones that don't have any
     dependencies. The extracted deps are returned as a list.
     """
-    remaining_items = []
-    removed_items = []
+    remaining_items = set()
+    removed_items = set()
     for item in items:
         if item._deps:
-            remaining_items.append(item)
+            remaining_items.add(item)
         else:
-            removed_items.append(item)
+            removed_items.add(item)
     return (remaining_items, removed_items)
