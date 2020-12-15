@@ -9,9 +9,11 @@ def test_create(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'symlinks': {
-                    join(str(tmpdir), "foo"): {
-                        'target': "/dev/null",
+                'items': {
+                    'symlinks': {
+                        join(str(tmpdir), "foo"): {
+                            'target': "/dev/null",
+                        },
                     },
                 },
             },
@@ -34,9 +36,11 @@ def test_fix(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'symlinks': {
-                    join(str(tmpdir), "foo"): {
-                        'target': "/dev/null",
+                'items': {
+                    'symlinks': {
+                        join(str(tmpdir), "foo"): {
+                            'target': "/dev/null",
+                        },
                     },
                 },
             },
@@ -59,9 +63,11 @@ def test_fix_dir(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'symlinks': {
-                    join(str(tmpdir), "foo"): {
-                        'target': "/dev/null",
+                'items': {
+                    'symlinks': {
+                        join(str(tmpdir), "foo"): {
+                            'target': "/dev/null",
+                        },
                     },
                 },
             },
@@ -86,9 +92,11 @@ def test_fix_dir_target(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'symlinks': {
-                    join(str(tmpdir), "link"): {
-                        'target': join(str(tmpdir), "dir2"),
+                'items': {
+                    'symlinks': {
+                        join(str(tmpdir), "link"): {
+                            'target': join(str(tmpdir), "dir2"),
+                        },
                     },
                 },
             },

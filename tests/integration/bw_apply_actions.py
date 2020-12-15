@@ -6,9 +6,11 @@ def test_action_success(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'actions': {
-                    "success": {
-                        'command': "true",
+                'items': {
+                    'actions': {
+                        "success": {
+                            'command': "true",
+                        },
                     },
                 },
             },
@@ -28,9 +30,11 @@ def test_action_fail(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'actions': {
-                    "failure": {
-                        'command': "false",
+                'items': {
+                    'actions': {
+                        "failure": {
+                            'command': "false",
+                        },
                     },
                 },
             },
@@ -50,11 +54,13 @@ def test_action_pipe_binary(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'actions': {
-                    "pipe": {
-                        'command': "cat",
-                        'data_stdin': b"hello\000world",
-                        'expected_stdout': b"hello\000world",
+                'items': {
+                    'actions': {
+                        "pipe": {
+                            'command': "cat",
+                            'data_stdin': b"hello\000world",
+                            'expected_stdout': b"hello\000world",
+                        },
                     },
                 },
             },
@@ -74,11 +80,13 @@ def test_action_pipe_utf8(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'actions': {
-                    "pipe": {
-                        'command': "cat",
-                        'data_stdin': "hello 🐧\n",
-                        'expected_stdout': "hello 🐧\n",
+                'items': {
+                    'actions': {
+                        "pipe": {
+                            'command': "cat",
+                            'data_stdin': "hello 🐧\n",
+                            'expected_stdout': "hello 🐧\n",
+                        },
                     },
                 },
             },

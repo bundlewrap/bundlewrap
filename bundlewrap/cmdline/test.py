@@ -1,7 +1,6 @@
 from copy import copy
 from sys import exit
 
-from ..deps import DummyItem
 from ..exceptions import FaultUnavailable, ItemDependencyLoop
 from ..itemqueue import ItemTestQueue
 from ..metadata import check_for_metadata_conflicts, metadata_to_json
@@ -21,14 +20,12 @@ def test_items(nodes, ignore_missing_faults, quiet):
         if not node.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(node.name), x=yellow("!")))
             continue
-        item_queue = ItemTestQueue(node.items, node.os, node.os_version)
+        item_queue = ItemTestQueue(node)
         while not QUIT_EVENT.is_set():
             try:
                 item = item_queue.pop()
-            except IndexError:  # no items left
+            except KeyError:  # no items left
                 break
-            if isinstance(item, DummyItem):
-                continue
             try:
                 item._test()
             except FaultUnavailable:

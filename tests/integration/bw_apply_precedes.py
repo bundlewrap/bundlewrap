@@ -8,22 +8,24 @@ def test_precedes(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "file"): {
-                        'content': "1\n",
-                        'triggered': True,
-                        'precedes': ["tag:tag1"],
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["tag:tag1"],
+                        },
                     },
-                },
-                'actions': {
-                    "action2": {
-                        'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                    },
-                    "action3": {
-                        'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                        'needs': ["action:action2"],
+                    'actions': {
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'needs': ["action:action2"],
+                        },
                     },
                 },
             },
@@ -46,23 +48,25 @@ def test_precedes_unless(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "file"): {
-                        'content': "1\n",
-                        'triggered': True,
-                        'precedes': ["tag:tag1"],
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["tag:tag1"],
+                        },
                     },
-                },
-                'actions': {
-                    "action2": {
-                        'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                        'unless': 'true',
-                    },
-                    "action3": {
-                        'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                        'needs': ["action:action2"],
+                    'actions': {
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'unless': 'true',
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'needs': ["action:action2"],
+                        },
                     },
                 },
             },
@@ -85,24 +89,26 @@ def test_precedes_unless2(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "file"): {
-                        'content': "1\n",
-                        'triggered': True,
-                        'precedes': ["tag:tag1"],
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["tag:tag1"],
+                        },
                     },
-                },
-                'actions': {
-                    "action2": {
-                        'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                        'unless': 'true',
-                    },
-                    "action3": {
-                        'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                        'needs': ["action:action2"],
-                        'unless': 'true',
+                    'actions': {
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'unless': 'true',
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'needs': ["action:action2"],
+                            'unless': 'true',
+                        },
                     },
                 },
             },
@@ -123,23 +129,25 @@ def test_precedes_unless3(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "file"): {
-                        'content': "1\n",
-                        'triggered': True,
-                        'precedes': ["tag:tag1"],
-                        'unless': 'true',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["tag:tag1"],
+                            'unless': 'true',
+                        },
                     },
-                },
-                'actions': {
-                    "action2": {
-                        'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                    },
-                    "action3": {
-                        'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
-                        'tags': ["tag1"],
-                        'needs': ["action:action2"],
+                    'actions': {
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'needs': ["action:action2"],
+                        },
                     },
                 },
             },
@@ -162,21 +170,23 @@ def test_precedes_unless4(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "file"): {
-                        'content': "1\n",
-                        'triggered': True,
-                        'precedes': ["action:action3"],
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["action:action3"],
+                        },
                     },
-                },
-                'actions': {
-                    "action2": {
-                        'command': "false",
-                        'needs': ["file:{}".format(join(str(tmpdir), "file"))],
-                    },
-                    "action3": {
-                        'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
-                        'needs': ["action:action2"],
+                    'actions': {
+                        "action2": {
+                            'command': "false",
+                            'needs': ["file:{}".format(join(str(tmpdir), "file"))],
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'needs': ["action:action2"],
+                        },
                     },
                 },
             },
@@ -199,14 +209,16 @@ def test_precedes_action(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'actions': {
-                    "action1": {
-                        'command': "echo 1 > {}".format(join(str(tmpdir), "file")),
-                        'precedes': ["action:action2"],
-                        'triggered': True,
-                    },
-                    "action2": {
-                        'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                'items': {
+                    'actions': {
+                        "action1": {
+                            'command': "echo 1 > {}".format(join(str(tmpdir), "file")),
+                            'precedes': ["action:action2"],
+                            'triggered': True,
+                        },
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                        },
                     },
                 },
             },

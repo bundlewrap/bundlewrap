@@ -9,17 +9,19 @@ def test_purge(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "purgedir", "managed_file"): {
-                        'content': "content",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "purgedir", "managed_file"): {
+                            'content': "content",
+                        },
+                        join(str(tmpdir), "purgedir", "subdir1", "managed_file"): {
+                            'content': "content",
+                        },
                     },
-                    join(str(tmpdir), "purgedir", "subdir1", "managed_file"): {
-                        'content': "content",
-                    },
-                },
-                'directories': {
-                    join(str(tmpdir), "purgedir"): {
-                        'purge': True,
+                    'directories': {
+                        join(str(tmpdir), "purgedir"): {
+                            'purge': True,
+                        },
                     },
                 },
             },
@@ -55,17 +57,19 @@ def test_purge_special_chars(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "purgedir", "mänäged_file"): {
-                        'content': "content",
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "purgedir", "mänäged_file"): {
+                            'content': "content",
+                        },
+                        join(str(tmpdir), "purgedir", "managed_`id`_file"): {
+                            'content': "content",
+                        },
                     },
-                    join(str(tmpdir), "purgedir", "managed_`id`_file"): {
-                        'content': "content",
-                    },
-                },
-                'directories': {
-                    join(str(tmpdir), "purgedir"): {
-                        'purge': True,
+                    'directories': {
+                        join(str(tmpdir), "purgedir"): {
+                            'purge': True,
+                        },
                     },
                 },
             },

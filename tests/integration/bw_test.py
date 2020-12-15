@@ -53,12 +53,14 @@ def test_circular_dep_direct(tmpdir):
         },
         bundles={
             "bundle1": {
-                "pkg_apt": {
-                    "foo": {
-                        'needs': ["pkg_apt:bar"],
-                    },
-                    "bar": {
-                        'needs': ["pkg_apt:foo"],
+                'items': {
+                    "pkg_apt": {
+                        "foo": {
+                            'needs': ["pkg_apt:bar"],
+                        },
+                        "bar": {
+                            'needs': ["pkg_apt:foo"],
+                        },
                     },
                 },
             },
@@ -77,15 +79,17 @@ def test_circular_dep_indirect(tmpdir):
         },
         bundles={
             "bundle1": {
-                "pkg_apt": {
-                    "foo": {
-                        'needs': ["pkg_apt:bar"],
-                    },
-                    "bar": {
-                        'needs': ["pkg_apt:baz"],
-                    },
-                    "baz": {
-                        'needs': ["pkg_apt:foo"],
+                'items': {
+                    "pkg_apt": {
+                        "foo": {
+                            'needs': ["pkg_apt:bar"],
+                        },
+                        "bar": {
+                            'needs': ["pkg_apt:baz"],
+                        },
+                        "baz": {
+                            'needs': ["pkg_apt:foo"],
+                        },
                     },
                 },
             },
@@ -104,9 +108,11 @@ def test_circular_dep_self(tmpdir):
         },
         bundles={
             "bundle1": {
-                "pkg_apt": {
-                    "foo": {
-                        'needs': ["pkg_apt:foo"],
+                'items': {
+                    "pkg_apt": {
+                        "foo": {
+                            'needs': ["pkg_apt:foo"],
+                        },
                     },
                 },
             },
@@ -125,11 +131,13 @@ def test_unknown_tag(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/foo": {
-                        'content': "none",
-                        'needs': {
-                            "tag:bar",
+                'items': {
+                    "files": {
+                        "/foo": {
+                            'content': "none",
+                            'needs': {
+                                "tag:bar",
+                            },
                         },
                     },
                 },
@@ -149,9 +157,11 @@ def test_circular_trigger_self(tmpdir):
         },
         bundles={
             "bundle1": {
-                "pkg_apt": {
-                    "foo": {
-                        'triggers': ["pkg_apt:foo"],
+                'items': {
+                    "pkg_apt": {
+                        "foo": {
+                            'triggers': ["pkg_apt:foo"],
+                        },
                     },
                 },
             },
@@ -170,9 +180,11 @@ def test_file_invalid_attribute(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/foo": {
-                        "potato": "yes",
+                'items': {
+                    "files": {
+                        "/foo": {
+                            "potato": "yes",
+                        },
                     },
                 },
             },
@@ -191,10 +203,12 @@ def test_file_template_error(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/foo": {
-                        'content_type': 'mako',
-                        'content': "${broken",
+                'items': {
+                    "files": {
+                        "/foo": {
+                            'content_type': 'mako',
+                            'content': "${broken",
+                        },
                     },
                 },
             },
@@ -614,10 +628,12 @@ def test_fault_missing(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/foo": {
-                        'content_type': 'mako',
-                        'content': "${repo.vault.decrypt('bzzt', key='unavailable')}",
+                'items': {
+                    "files": {
+                        "/foo": {
+                            'content_type': 'mako',
+                            'content': "${repo.vault.decrypt('bzzt', key='unavailable')}",
+                        },
                     },
                 },
             },
@@ -711,10 +727,12 @@ def test_config_determinism_ok(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/test": {
-                        'content': "1",
-                        'content_type': 'mako',
+                'items': {
+                    "files": {
+                        "/test": {
+                            'content': "1",
+                            'content_type': 'mako',
+                        },
                     },
                 },
             },
@@ -733,10 +751,12 @@ def test_config_determinism_broken(tmpdir):
         },
         bundles={
             "bundle1": {
-                "files": {
-                    "/test": {
-                        'content': "<% from random import randint %>\n${randint(1, 99999)\n}",
-                        'content_type': 'mako',
+                'items': {
+                    "files": {
+                        "/test": {
+                            'content': "<% from random import randint %>\n${randint(1, 99999)\n}",
+                            'content_type': 'mako',
+                        },
                     },
                 },
             },
@@ -786,14 +806,16 @@ def test_group_user_dep_deleted(tmpdir):
         },
         bundles={
             "bundle1": {
-                "users": {
-                    "user1": {
-                        'groups': ["group1"],
+                'items': {
+                    "users": {
+                        "user1": {
+                            'groups': ["group1"],
+                        },
                     },
-                },
-                "groups": {
-                    "group1": {
-                        'delete': True,
+                    "groups": {
+                        "group1": {
+                            'delete': True,
+                        },
                     },
                 },
             },
@@ -813,11 +835,13 @@ def test_group_user_dep_ok(tmpdir):
         },
         bundles={
             "bundle1": {
-                "users": {
-                    "user1": {},
-                },
-                "groups": {
-                    "group1": {'delete': True},
+                'items': {
+                    "users": {
+                        "user1": {},
+                    },
+                    "groups": {
+                        "group1": {'delete': True},
+                    },
                 },
             },
         },
@@ -835,14 +859,16 @@ def test_group_user_dep_deleted_gid(tmpdir):
         },
         bundles={
             "bundle1": {
-                "users": {
-                    "user1": {
-                        'gid': "group1",
+                'items': {
+                    "users": {
+                        "user1": {
+                            'gid': "group1",
+                        },
                     },
-                },
-                "groups": {
-                    "group1": {
-                        'delete': True,
+                    "groups": {
+                        "group1": {
+                            'delete': True,
+                        },
                     },
                 },
             },
@@ -861,17 +887,21 @@ def test_reverse_dummy_dep(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "test",
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "test",
+                        },
                     },
                 },
             },
             "bundle2": {
-                'files': {
-                    "/test2": {
-                        'content': "test",
-                        'needed_by': ["bundle:bundle1"],
+                'items': {
+                    'files': {
+                        "/test2": {
+                            'content': "test",
+                            'needed_by': ["bundle:bundle1"],
+                        },
                     },
                 },
             },

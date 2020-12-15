@@ -8,20 +8,24 @@ def test_only_bundle_with_dep(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "foo"): {
-                        'content_type': 'any',
-                        'needs': ["file:" + join(str(tmpdir), "bar")],
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'any',
+                            'needs': ["file:" + join(str(tmpdir), "bar")],
+                        },
                     },
                 },
             },
             "test2": {
-                'files': {
-                    join(str(tmpdir), "bar"): {
-                        'content_type': 'any',
-                    },
-                    join(str(tmpdir), "baz"): {
-                        'content_type': 'any',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "bar"): {
+                            'content_type': 'any',
+                        },
+                        join(str(tmpdir), "baz"): {
+                            'content_type': 'any',
+                        },
                     },
                 },
             },

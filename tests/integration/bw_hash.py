@@ -20,10 +20,12 @@ def test_nondeterministic(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content_type': 'mako',
-                        'content': "<% import random %>${random.randint(1, 9999)}",
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content_type': 'mako',
+                            'content': "<% import random %>${random.randint(1, 9999)}",
+                        },
                     },
                 },
             },
@@ -49,11 +51,13 @@ def test_deterministic(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "${node.name}",
-                        'group': None,  # BSD has a different default and we don't want to
-                                        # deal with that here
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "${node.name}",
+                            'group': None,  # BSD has a different default and we don't want to
+                                            # deal with that here
+                        },
                     },
                 },
             },
@@ -80,11 +84,13 @@ def test_dict(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "yes please",
-                        'group': None,  # BSD has a different default and we don't want to
-                                        # deal with that here
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "yes please",
+                            'group': None,  # BSD has a different default and we don't want to
+                                            # deal with that here
+                        },
                     },
                 },
             },

@@ -24,7 +24,7 @@ def explain_item_dependency_loop(exc, node_name):
         "and their remaining dependencies:\n"
     ).format(x=red("!"))
     for item in items:
-        yield "{}\t{}".format(item.id, ",".join(item._deps))
+        yield "{}\t{}".format(item.id, ",".join([item.id for item in sorted(item._deps)]))
     yield "\n\n\n"
 
 
@@ -91,7 +91,7 @@ def graph_for_items(
 
         if auto:
             for dep in sorted(item._deps):
-                if dep not in item_ids:
+                if dep not in items:
                     continue
                 if dep in getattr(item, '_concurrency_deps', []):
                     if concurrency:
@@ -100,7 +100,7 @@ def graph_for_items(
                     if reverse:
                         yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep)
                 elif dep not in item.needs:
-                    if dep in item_ids:
+                    if dep in items:
                         yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
 
     # Global graph title
@@ -212,10 +212,12 @@ def remove_items_not_contributing_to_loop(items):
         if not item._deps:
             items_with_no_incoming_or_outgoing_deps.add(item)
         else:
+            if item in item._deps:
+                continue
             for other_item in items:
                 if item == other_item:
                     continue
-                if item.id in other_item._deps:
+                if item in other_item._deps:
                     break
             else:
                 items_with_no_incoming_or_outgoing_deps.add(item)

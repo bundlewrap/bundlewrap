@@ -37,10 +37,12 @@ def test_fault_content_mako(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "secret"): {
-                        'content': "${repo.vault.password_for('test')}",
-                        'content_type': 'mako',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "secret"): {
+                            'content': "${repo.vault.password_for('test')}",
+                            'content_type': 'mako',
+                        },
                     },
                 },
             },
@@ -64,10 +66,12 @@ def test_fault_content_mako_metadata(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "secret"): {
-                        'content': "${node.metadata['secret']}",
-                        'content_type': 'mako',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "secret"): {
+                            'content': "${node.metadata['secret']}",
+                            'content_type': 'mako',
+                        },
                     },
                 },
             },
@@ -96,10 +100,12 @@ def test_fault_content_jinja2(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "secret"): {
-                        'content': "{{ repo.vault.password_for('test') }}",
-                        'content_type': 'jinja2',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "secret"): {
+                            'content': "{{ repo.vault.password_for('test') }}",
+                            'content_type': 'jinja2',
+                        },
                     },
                 },
             },
@@ -151,10 +157,12 @@ def test_fault_content_skipped_mako(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "secret"): {
-                        'content': "${repo.vault.password_for('test', key='unavailable')}",
-                        'content_type': 'mako',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "secret"): {
+                            'content': "${repo.vault.password_for('test', key='unavailable')}",
+                            'content_type': 'mako',
+                        },
                     },
                 },
             },
@@ -177,10 +185,12 @@ def test_fault_content_skipped_jinja2(tmpdir):
         tmpdir,
         bundles={
             "test": {
-                'files': {
-                    join(str(tmpdir), "secret"): {
-                        'content': "{{ repo.vault.password_for('test', key='unavailable') }}",
-                        'content_type': 'jinja2',
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "secret"): {
+                            'content': "{{ repo.vault.password_for('test', key='unavailable') }}",
+                            'content_type': 'jinja2',
+                        },
                     },
                 },
             },

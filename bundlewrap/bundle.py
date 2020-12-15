@@ -8,7 +8,8 @@ from .utils.text import validate_name
 from .utils.ui import io
 
 
-FILENAME_BUNDLE = "items.py"
+FILENAME_BUNDLE = "bundle.py"
+FILENAME_ITEMS = "items.py"
 FILENAME_METADATA = "metadata.py"
 
 
@@ -52,18 +53,36 @@ class Bundle:
         self.bundle_dir = join(self.repo.bundles_dir, self.name)
         self.bundle_data_dir = join(self.repo.data_dir, self.name)
         self.bundle_file = join(self.bundle_dir, FILENAME_BUNDLE)
+        self.items_file = join(self.bundle_dir, FILENAME_ITEMS)
         self.metadata_file = join(self.bundle_dir, FILENAME_METADATA)
 
     def __lt__(self, other):
         return self.name < other.name
 
     @cached_property
-    @io.job_wrapper(_("{}  {}  parsing bundle").format(bold("{0.node.name}"), bold("{0.name}")))
+    @io.job_wrapper(_("{}  {}  parsing bundle attributes").format(bold("{0.node.name}"), bold("{0.name}")))
     def bundle_attrs(self):
         if not exists(self.bundle_file):
             return {}
         else:
-            base_env={
+            base_env = {
+                'node': self.node,
+                'repo': self.repo,
+            }
+
+            # TODO prevent access to node.metadata
+            return self.repo.get_all_attrs_from_file(
+                self.bundle_file,
+                base_env=base_env,
+            )
+
+    @cached_property
+    @io.job_wrapper(_("{}  {}  parsing bundle items").format(bold("{0.node.name}"), bold("{0.name}")))
+    def bundle_item_attrs(self):
+        if not exists(self.items_file):
+            return {}
+        else:
+            base_env = {
                 'node': self.node,
                 'repo': self.repo,
             }
@@ -71,7 +90,7 @@ class Bundle:
                 base_env[item_class.BUNDLE_ATTRIBUTE_NAME] = {}
 
             return self.repo.get_all_attrs_from_file(
-                self.bundle_file,
+                self.items_file,
                 base_env=base_env,
             )
 
@@ -79,7 +98,7 @@ class Bundle:
     @io.job_wrapper(_("{}  {}  creating items").format(bold("{0.node.name}"), bold("{0.name}")))
     def items(self):
         for item_class in self.repo.item_classes:
-            for item_name, item_attrs in self.bundle_attrs.get(
+            for item_name, item_attrs in self.bundle_item_attrs.get(
                 item_class.BUNDLE_ATTRIBUTE_NAME,
                 {},
             ).items():

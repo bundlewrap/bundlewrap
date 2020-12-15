@@ -11,10 +11,12 @@ def test_file_preview(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "föö",
-                        'encoding': 'latin-1',
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "föö",
+                            'encoding': 'latin-1',
+                        },
                     },
                 },
             },
@@ -36,12 +38,14 @@ def test_multiple_file_preview(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "föö",
-                    },
-                    "/testdir/test2": {
-                        'content': "bar",
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "föö",
+                        },
+                        "/testdir/test2": {
+                            'content': "bar",
+                        },
                     },
                 },
             },
@@ -64,10 +68,12 @@ def test_fault_unavailable(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "${repo.vault.password_for('test', key='404')}",
-                        'content_type': 'mako',
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "${repo.vault.password_for('test', key='404')}",
+                            'content_type': 'mako',
+                        },
                     },
                 },
             },
@@ -88,13 +94,15 @@ def test_fault_unavailable_multiple(tmpdir):
         },
         bundles={
             "bundle1": {
-                'files': {
-                    "/test": {
-                        'content': "föö",
-                    },
-                    "/testdir/test3": {
-                        'content': "${repo.vault.password_for('test', key='404')}",
-                        'content_type': 'mako',
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "föö",
+                        },
+                        "/testdir/test3": {
+                            'content': "${repo.vault.password_for('test', key='404')}",
+                            'content_type': 'mako',
+                        },
                     },
                 },
             },

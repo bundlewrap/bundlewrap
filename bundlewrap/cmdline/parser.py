@@ -389,6 +389,12 @@ bundle:my_bundle  # items in this bundle
         help=_("create DIRECTORY and fill it with rendered file previews"),
     )
     parser_items.add_argument(
+        "--attrs",
+        action='store_true',
+        dest='show_attrs',
+        help=_("show internal item attributes"),
+    )
+    parser_items.add_argument(
         "--repr",
         action='store_true',
         dest='show_repr',

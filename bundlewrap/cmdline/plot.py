@@ -26,7 +26,7 @@ def bw_plot_node(repo, args):
     node = get_node(repo, args['node'])
     for line in graph_for_items(
         node.name,
-        prepare_dependencies(node.items, node.os, node.os_version),
+        prepare_dependencies(node),
         cluster=args['cluster'],
         concurrency=args['depends_concurrency'],
         regular=args['depends_regular'],

@@ -21,8 +21,6 @@ from .utils.text import (
 from .utils.ui import io
 
 
-
-
 def identity():
     return environ.get('BW_IDENTITY', "{}@{}".format(
         getuser(),
