@@ -1,10 +1,13 @@
 from collections import defaultdict, Counter
 from contextlib import suppress
-from os import environ
+from json import load
+from os import environ, makedirs
+from os.path import dirname, exists, join
+from shutil import rmtree
 from traceback import TracebackException
 
 from .exceptions import MetadataPersistentKeyError
-from .metadata import DoNotRunAgain
+from .metadata import DoNotRunAgain, metadata_to_json
 from .node import _flatten_group_hierarchy
 from .utils import randomize_order
 from .utils.ui import io, QUIT_EVENT
@@ -75,12 +78,13 @@ class MetadataGenerator:
                 # We already completed metadata for this node, but partial must
                 # return a Metastack, so we build a single-layered one just for
                 # the interface.
+                try:
+                    metadata = self.__read_disk_cache(node_name)
+                except FileNotFoundError:
+                    metadata = self._node_metadata_complete[node_name]
+
                 metastack = Metastack()
-                metastack._set_layer(
-                    0,
-                    "flattened",
-                    self._node_metadata_complete[node_name],
-                )
+                metastack._set_layer(0, "flattened", metadata)
                 return metastack
             else:
                 self.__partial_metadata_accessed_for.add(node_name)
@@ -90,6 +94,9 @@ class MetadataGenerator:
             # cannot return cached result here, force rebuild
             with suppress(KeyError):
                 del self._node_metadata_complete[node_name]
+        else:
+            with suppress(FileNotFoundError):
+                return self.__read_disk_cache(node_name)
 
         with suppress(KeyError):
             return self._node_metadata_complete[node_name]
@@ -109,6 +116,11 @@ class MetadataGenerator:
             for some_node_name in self.__nodes_that_ran_at_least_once:
                 self._node_metadata_complete[some_node_name] = \
                     self.__metastacks[some_node_name]._as_dict()
+                if environ.get("BW_METADATA_CACHE_DIR"):
+                    self.__write_disk_cache(
+                        some_node_name,
+                        self._node_metadata_complete[some_node_name],
+                    )
 
             if blame:
                 blame_result = self.__metastacks[node_name]._as_blame()
@@ -125,6 +137,41 @@ class MetadataGenerator:
                 return stack_result
             else:
                 return self._node_metadata_complete[node_name]
+
+    @property
+    def __disk_cache_dir(self):
+        return environ.get("BW_METADATA_CACHE_DIR")
+
+    @property
+    def __disk_cache_hash_dir(self):
+        if not self.__disk_cache_dir:
+            return None
+        return join(self.__disk_cache_dir, self.hash_for_files_changing_metadata)
+
+    def clear_metadata_cache(self):
+        if self.__disk_cache_hash_dir:
+            io.debug(f"removing {self.__disk_cache_hash_dir}")
+            rmtree(self.__disk_cache_hash_dir)
+
+    def __disk_cache_node_filename(self, node_name):
+        if not self.__disk_cache_hash_dir:
+            return None
+        else:
+            return join(self.__disk_cache_hash_dir, node_name)
+
+    def __read_disk_cache(self, node_name):
+        if not self.__disk_cache_hash_dir:
+            raise FileNotFoundError
+
+        with open(self.__disk_cache_node_filename(node_name), 'rb') as f:
+            return load(f)
+
+    def __write_disk_cache(self, node_name, metadata):
+        node_file = self.__disk_cache_node_filename(node_name)
+        if not exists(node_file):
+            makedirs(dirname(node_file), mode=0o770, exist_ok=True)
+            with open(node_file, 'w') as f:
+                f.write(metadata_to_json(metadata))
 
     def __run_new_nodes(self):
         try:

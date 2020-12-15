@@ -147,11 +147,11 @@ def bw_metadata(repo, args):
                     table.append([joined_path, ", ".join(blamed)])
             page_lines(render_table(table))
         else:
-            metadata = deepcopy_metadata(node.metadata)
             blame = list(node.metadata_blame.items())
             # sort descending by key path length since we will be replacing
             # the keys and can't access paths beneath replaced keys anymore
             blame.sort(key=lambda e: len(e[0]), reverse=True)
+            metadata = deepcopy_metadata(node.metadata)
 
             for path, blamed in blame:
                 if key_paths:

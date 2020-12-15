@@ -195,6 +195,7 @@ def test_determinism_metadata(repo, nodes, iterations, quiet):
             iteration_repo = repo
         else:
             iteration_repo = Repository(repo.path)
+            iteration_repo.clear_metadata_cache()
         iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
         for node in iteration_nodes:
             if QUIT_EVENT.is_set():
