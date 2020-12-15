@@ -6,7 +6,7 @@ from .utils.text import bold, mark_for_translation as _
 from .utils.ui import io
 
 
-def resolve_selector(selector, items):
+def resolve_selector(selector, items, originating_item_id=None, originating_tag=None):
     """
     Given an item selector (e.g. 'bundle:foo' or 'file:/bar'), return
     all items matching that selector from the given list of items.
@@ -22,14 +22,30 @@ def resolve_selector(selector, items):
         raise ValueError(_("invalid item selector: {}").format(selector))
 
     if selector_type == "bundle":
-        return filter(lambda item: negate(item.bundle.name == selector_name), items)
+        return filter(
+            lambda item:
+                negate(item.bundle.name == selector_name) and
+                item.id != originating_item_id,
+            items,
+        )
     elif selector_type == "tag":
         if not selector_name:  # "tag:"
-            return filter(lambda item: negate(bool(item.tags)), items)
+            return filter(
+                lambda item: negate(bool(item.tags)) and originating_tag not in item.tags,
+                items,
+            )
         else:
-            return filter(lambda item: negate(selector_name in item.tags), items)
+            return filter(
+                lambda item: negate(selector_name in item.tags) and item.id != originating_item_id,
+                items,
+            )
     elif not selector_name:  # "file:"
-        return filter(lambda item: negate(item.ITEM_TYPE_NAME == selector_type), items)
+        return filter(
+            lambda item:
+                negate(item.ITEM_TYPE_NAME == selector_type) and
+                item.id != originating_item_id,
+            items,
+        )
     else:  # single item
         if negate(False):
             return filter(lambda item: item.id != selector, items)
@@ -108,7 +124,7 @@ def _prepare_deps(items):
         item._deps = set()
         for dep in list(item.needs) + list(item.get_auto_deps(items)):
             try:
-                item._deps.update(resolve_selector(dep, items))
+                item._deps.update(resolve_selector(dep, items, originating_item_id=item.id))
             except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a dependency (needs) "
@@ -244,7 +260,11 @@ def _inject_reverse_dependencies(items):
     for item in items:
         for depending_item_id in item.needed_by:
             try:
-                dependent_items = resolve_selector(depending_item_id, items)
+                dependent_items = resolve_selector(
+                    depending_item_id,
+                    items,
+                    originating_item_id=item.id,
+                )
             except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by) "
@@ -266,7 +286,11 @@ def _inject_reverse_triggers(items):
     for item in items:
         for triggering_item_selector in item.triggered_by:
             try:
-                triggering_items = resolve_selector(triggering_item_selector, items)
+                triggering_items = resolve_selector(
+                    triggering_item_selector,
+                    items,
+                    originating_item_id=item.id,
+                )
             except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a reverse trigger (triggered_by) "
@@ -281,7 +305,11 @@ def _inject_reverse_triggers(items):
 
         for preceded_item_selector in item.precedes:
             try:
-                preceded_items = resolve_selector(preceded_item_selector, items)
+                preceded_items = resolve_selector(
+                    preceded_item_selector,
+                    items,
+                    originating_item_id=item.id,
+                )
             except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a reverse trigger (precedes) "
@@ -303,7 +331,11 @@ def _inject_trigger_dependencies(items):
     for item in items:
         for triggered_item_selector in item.triggers:
             try:
-                triggered_items = resolve_selector(triggered_item_selector, items)
+                triggered_items = resolve_selector(
+                    triggered_item_selector,
+                    items,
+                    originating_item_id=item.id,
+                )
             except KeyError:
                 raise BundleError(_(
                     "unable to find definition of '{item1}' triggered "
@@ -345,7 +377,11 @@ def _inject_preceded_by_dependencies(items):
             ))
         for triggered_item_selector in item.preceded_by:
             try:
-                triggered_items = resolve_selector(triggered_item_selector, items)
+                triggered_items = resolve_selector(
+                    triggered_item_selector,
+                    items,
+                    originating_item_id=item.id,
+                )
             except KeyError:
                 raise BundleError(_(
                     "unable to find definition of '{item1}' preceding "
@@ -379,7 +415,7 @@ def _inject_tag_attrs(items, bundles):
     """
     for bundle in bundles:
         for tag, attrs in bundle.bundle_attrs.get('tags', {}).items():
-            items_with_tag = resolve_selector(f"tag:{tag}", items)
+            items_with_tag = resolve_selector(f"tag:{tag}", items, originating_tag=tag)
             if not items_with_tag:
                 raise BundleError(_(
                     "{file} tries to modify items with tag:{tag}, "

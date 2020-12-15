@@ -20,3 +20,5 @@ Item selectors provide a way to address multiple items e.g. when specifying depe
 </table>
 
 All selectors can be prefixed with `!` to select the inverse (e.g. `!tag:` means "all items without any tag").
+
+Note that when you have a file item and add a dependency to `file:`, BundleWrap will resolve this to all *other* files. Similarily, when you add a dependency on `tag:` to all items with a certain tag through [bundle.py](../repo/bundle.py), this will only target *other* tags to avoid an immediate loop.
