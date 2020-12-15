@@ -46,17 +46,29 @@ class SvcUpstart(Item):
         return {
             'reload': {
                 'command': "reload {}".format(self.name),
-                # make sure we don't reload and restart simultaneously
-                'needs': [f"{self.id}:restart"],
+                'needs': {
+                    # make sure we don't restart and reload simultaneously
+                    f"{self.id}:restart",
+                    # with only the dep on restart, we might still end
+                    # up reloading if the service itself is skipped
+                    # because the restart action has cascade_skip False
+                    self.id,
+                },
             },
             'restart': {
                 'command': "restart {}".format(self.name),
-                # make sure we don't restart and stopstart simultaneously
-                'needs': [f"{self.id}:stopstart"],
+                'needs': {
+                    # make sure we don't restart and stopstart simultaneously
+                    f"{self.id}:stopstart",
+                    # with only the dep on stopstart, we might still end
+                    # up reloading if the service itself is skipped
+                    # because the stopstart action has cascade_skip False
+                    self.id,
+                },
             },
             'stopstart': {
                 'command': "stop {0} && start {0}".format(self.name),
-                'needs': [self.id],
+                'needs': {self.id},
             },
         }
 

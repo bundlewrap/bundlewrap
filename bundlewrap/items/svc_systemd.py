@@ -82,12 +82,18 @@ class SvcSystemd(Item):
         return {
             'reload': {
                 'command': "systemctl reload -- {}".format(self.name),
-                # make sure we don't reload and restart simultaneously
-                'needs': [f"{self.id}:restart"],
+                'needs': {
+                    # make sure we don't reload and restart simultaneously
+                    f"{self.id}:restart",
+                    # with only the dep on restart, we might still end
+                    # up reloading if the service itself is skipped
+                    # because the restart action has cascade_skip False
+                    self.id,
+                },
             },
             'restart': {
                 'command': "systemctl restart -- {}".format(self.name),
-                'needs': [self.id],
+                'needs': {self.id},
             },
         }
 

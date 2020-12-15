@@ -73,12 +73,18 @@ class SvcOpenBSD(Item):
         return {
             'restart': {
                 'command': "/etc/rc.d/{} restart".format(self.name),
-                # make sure we don't restart and stopstart simultaneously
-                'needs': [f"{self.id}:stopstart"],
+                'needs': {
+                    # make sure we don't restart and stopstart simultaneously
+                    f"{self.id}:stopstart",
+                    # with only the dep on stopstart, we might still end
+                    # up reloading if the service itself is skipped
+                    # because the stopstart action has cascade_skip False
+                    self.id,
+                },
             },
             'stopstart': {
                 'command': "/etc/rc.d/{0} stop && /etc/rc.d/{0} start".format(self.name),
-                'needs': [self.id],
+                'needs': {self.id},
             },
         }
 
