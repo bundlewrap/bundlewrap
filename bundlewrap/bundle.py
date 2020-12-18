@@ -32,6 +32,18 @@ def metadata_reactor_for_bundle(bundle_name):
         func._is_metadata_reactor = True
         return func
 
+    def metadata_reactor_provides(*args):
+        def provides_inner(func):
+            func._provides = set()
+            for arg in args:
+                if isinstance(arg, str):
+                    arg = arg.split("/")
+                func._provides.add(tuple(arg))
+            return metadata_reactor(func)
+        return provides_inner
+
+    metadata_reactor.provides = metadata_reactor_provides
+
     return metadata_reactor
 
 

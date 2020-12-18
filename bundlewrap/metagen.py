@@ -10,6 +10,7 @@ from .exceptions import MetadataPersistentKeyError
 from .metadata import DoNotRunAgain, metadata_to_json
 from .node import _flatten_group_hierarchy
 from .utils import randomize_order
+from .utils.dicts import extra_paths_in_dict
 from .utils.ui import io, QUIT_EVENT
 from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red
@@ -425,6 +426,19 @@ class MetadataGenerator:
         # reactor terminated normally, clear any previously stored exception
         with suppress(KeyError):
             del self.__keyerrors[(node_name, reactor_name)]
+
+        if getattr(reactor, '_provides', None):
+            extra_paths = extra_paths_in_dict(new_metadata, reactor._provides)
+            if extra_paths:
+                raise ValueError(_(
+                    "{reactor_name} on {node_name} returned the following key paths, "
+                    "but didn't declare them with @metadata_reactor.provides():\n"
+                    "{paths}"
+                ).format(
+                    node_name=node_name,
+                    reactor_name=reactor_name,
+                    paths="\n".join(["/".join(path) for path in sorted(extra_paths)]),
+                ))
 
         try:
             self.__metastacks[node_name]._set_layer(

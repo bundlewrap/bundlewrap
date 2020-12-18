@@ -1,5 +1,6 @@
 from bundlewrap.metadata import atomic
 from bundlewrap.utils.dicts import (
+    extra_paths_in_dict,
     map_dict_keys,
     reduce_dict,
     validate_dict,
@@ -183,3 +184,57 @@ def test_validate_required_key():
         },
         required_keys=['a', 'b'],
     )
+
+
+def test_extra_paths():
+    assert set(extra_paths_in_dict(
+        {
+            'a': 1,
+            'b': 1,
+        },
+        {
+            ('a',),
+        },
+    )) == {
+        ('b',),
+    }
+
+
+def test_extra_paths_nested():
+    assert set(extra_paths_in_dict(
+        {
+            'a': 1,
+            'b': {
+                'c': 1
+            },
+            'd': {
+                'e': 1
+            },
+        },
+        {
+            ('b', 'c'),
+        },
+    )) == {
+        ('a',),
+        ('d',),
+        ('d', 'e'),
+    }
+
+
+def test_extra_paths_ok():
+    assert set(extra_paths_in_dict(
+        {
+            'a': 1,
+            'b': {
+                'c': 1
+            },
+            'd': {
+                'e': 1
+            },
+        },
+        {
+            ('a',),
+            ('b', 'c'),
+            ('d',),
+        },
+    )) == set()
