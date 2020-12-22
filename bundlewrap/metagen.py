@@ -29,6 +29,8 @@ class _StartOver(Exception):
 class MetadataGenerator:
     # are we currently executing a reactor?
     __in_a_reactor = False
+    # should reactor return values be checked against their declared keys?
+    _verify_reactor_provides = False
 
     def __reset(self):
         # reactors that raise DoNotRunAgain
@@ -427,7 +429,7 @@ class MetadataGenerator:
         with suppress(KeyError):
             del self.__keyerrors[(node_name, reactor_name)]
 
-        if getattr(reactor, '_provides', None):
+        if self._verify_reactor_provides and getattr(reactor, '_provides', None):
             extra_paths = extra_paths_in_dict(new_metadata, reactor._provides)
             if extra_paths:
                 raise ValueError(_(

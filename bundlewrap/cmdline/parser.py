@@ -912,6 +912,13 @@ bundle:my_bundle  # items in this bundle
         help=_("check for bundles not assigned to any node"),
     )
     parser_test.add_argument(
+        "-p",
+        "--reactor-provides",
+        action='store_true',
+        dest='reactor_provides',
+        help=_("check for reactors returning keys other than what they declared with @metadata_reactor.provides()"),
+    )
+    parser_test.add_argument(
         "-q",
         "--quiet",
         action='store_true',
