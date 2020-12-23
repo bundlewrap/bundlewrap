@@ -1,3 +1,19 @@
+# 4.3.0
+
+2020-12-23
+
+* added support for Python 3.9
+* added supergroups as a reverse direction for the existing subgroups
+* added `bundle.py`
+* added metadata caching (EXPERIMENTAL)
+* added `@metadata_reactor.provides()` (EXPERIMENTAL)
+* reworked item selectors
+* sorted summary table for `bw apply`
+* fixed handling of k8s apiVersions
+* fixed canned actions not being skipped if their parent item is skipped
+* pipe output to `less` if there are too many lines
+
+
 # 4.2.2
 
 2020-10-30
