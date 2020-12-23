@@ -222,6 +222,18 @@ def test_determinism_metadata(repo, nodes, iterations, quiet):
         ))
 
 
+def test_reactor_provides(repo, nodes, quiet):
+    repo._verify_reactor_provides = True
+    for node in nodes:
+        if QUIT_EVENT.is_set():
+            break
+        node.metadata
+    else:
+        io.stdout(_("{x} No reactors violated their declared keys").format(
+            x=green("✓"),
+        ))
+
+
 def bw_test(repo, args):
     options_selected = (
         args['determinism_config'] > 1 or
@@ -231,6 +243,7 @@ def bw_test(repo, args):
         args['items'] or
         args['metadata_conflicts'] or
         args['orphaned_bundles'] or
+        args['reactor_provides'] or
         args['empty_groups'] or
         args['subgroup_loops']
     )
@@ -250,6 +263,9 @@ def bw_test(repo, args):
             args['metadata_conflicts'] = True
             args['metadata_keys'] = True
             args['subgroup_loops'] = True
+
+    if args['reactor_provides'] and not QUIT_EVENT.is_set():
+        test_reactor_provides(repo, nodes, args['quiet'])
 
     if args['subgroup_loops'] and not QUIT_EVENT.is_set():
         test_subgroup_loops(repo, args['quiet'])

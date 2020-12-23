@@ -200,6 +200,27 @@ def map_dict_keys(dict_obj, _base=None):
     return keys
 
 
+def extra_paths_in_dict(dict_obj, paths):
+    """
+    Returns all paths in dict_obj that don't start with any of the
+    given paths.
+
+        >>> filter_dict({'a': 1, 'b': {'c': 1}}, {('b', 'c')})
+        {('a',)}
+    """
+    result = set()
+    for actual_path in map_dict_keys(dict_obj):
+        for allowed_path in paths:
+            if (
+                actual_path[:len(allowed_path)] == allowed_path or
+                allowed_path[:len(actual_path)] == actual_path
+            ):
+                break
+        else:
+            result.add(actual_path)
+    return result
+
+
 def merge_dict(base, update):
     """
     Recursively merges the base dict into the update dict.
