@@ -434,7 +434,7 @@ users = {
 <p>Defaults to <code>False</code>.</p>
 <p><br></p>
 <h2 id="needs">needs</h2>
-<p>One such attribute is <code>needs</code>. It allows for setting up dependencies between items. This is not something you will have to to very often, because there are already implicit dependencies between items types (e.g. all files depend on the users owning them). Here are two examples:</p>
+<p>One such attribute is <code>needs</code>. It allows for setting up dependencies between items. This is not something you will have to do very often, because there are already implicit dependencies between items types (e.g. all files automatically depend on the users owning them). Here are two examples:</p>
 <pre><code>my_items = {
     'item1': {
         [...]
@@ -443,7 +443,7 @@ users = {
         ],
     },
     'item2': {
-        ...
+        [...]
         'needs': [
             'pkg_apt:',
             'bundle:foo',
@@ -452,6 +452,7 @@ users = {
 }
 </code></pre>
 <p>The first item (<code>item1</code>, specific attributes have been omitted) depends on a file called <code>/etc/foo.conf</code>, while <code>item2</code> depends on all APT packages being installed and every item in the foo bundle.</p>
+<p>See <a href="../../guide/selectors/">Selectors</a> for a complete overview of the ways to specify items here.</p>
 <p><br></p>
 <h2 id="needed_by">needed_by</h2>
 <p>This attribute is an alternative way of defining dependencies. It works just like <code>needs</code>, but in the other direction. There are only three scenarios where you should use <code>needed_by</code> over <code>needs</code>:</p>
@@ -498,6 +499,7 @@ actions = {
 </code></pre>
 <p>The above example will run <code>service daemon restart</code> every time BundleWrap successfully applies a change to <code>/etc/daemon.conf</code>. If an action is triggered multiple times, it will only be run once.</p>
 <p>Similar to <code>needed_by</code>, <code>triggered_by</code> can be used to define a <code>triggers</code> relationship from the opposite direction.</p>
+<p>See <a href="../../guide/selectors/">Selectors</a> for a complete overview of the ways to specify items here.</p>
 <p><br></p>
 <h2 id="preceded_by">preceded_by</h2>
 <p>Operates like <code>triggers</code>, but will apply the triggered item <em>before</em> the triggering item. Let's look at an example:</p>
@@ -519,6 +521,7 @@ actions = {
 </code></pre>
 <p>In this configuration, <code>/etc/example.conf</code> will always be copied before and only if it is changed. You would probably also want to set <code>cascade_skip</code> to <code>False</code> on the action so you can skip it in interactive mode when you're sure you don't need the backup copy.</p>
 <p>Similar to <code>needed_by</code>, <code>precedes</code> can be used to define a <code>preceded_by</code> relationship from the opposite direction.</p>
+<p>See <a href="../../guide/selectors/">Selectors</a> for a complete overview of the ways to specify items here.</p>
 <p><br></p>
 <h2 id="unless">unless</h2>
 <p>Another builtin item attribute is <code>unless</code>. For example, it can be used to construct a one-off file item where BundleWrap will only create the file once, but won't check or modify its contents once it exists.</p>
@@ -615,7 +618,7 @@ files = {
                 </p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
                 <div id="mkdocs-search-results"></div>

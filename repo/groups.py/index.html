@@ -336,7 +336,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#use_shadow_passwords" class="nav-link">use_shadow_passwords</a>
+            <li class="nav-item" data-level="2"><a href="#supergroups" class="nav-link">supergroups</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -430,8 +430,8 @@ groups = {
 <p>A list of regular expressions. Nodes in with group names matching these expressions will be added to the group members.</p>
 <p>Matches are determined using <a href="http://docs.python.org/2/library/re.html#re.RegexObject.search">the search() method</a>.</p>
 <p><br></p>
-<h2 id="use_shadow_passwords">use_shadow_passwords</h2>
-<p>See <a href="../nodes.py/#use_shadow_passwords">node attribute documentation</a>. May be overridden by subgroups or individual nodes.</p>
+<h2 id="supergroups">supergroups</h2>
+<p>The inverse of <code>subgroups</code>. Nodes in this group will be added to all supergroups.</p>
 <p><br></p></div>
             </div>
         </div>
@@ -462,7 +462,7 @@ groups = {
                 </p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
                 <div id="mkdocs-search-results"></div>

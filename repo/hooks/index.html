@@ -366,7 +366,6 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <pre><code>from bundlewrap.exceptions import GracefulApplyException
 raise GracefulApplyException(&quot;reason goes here&quot;)
 </code></pre>
-
 <hr />
 <p><strong><code>apply_end(repo, target, nodes, duration=None, **kwargs)</code></strong></p>
 <p>Called when a <code>bw apply</code> command completes.</p>
@@ -421,7 +420,6 @@ raise GracefulApplyException(&quot;reason goes here&quot;)
 <pre><code>from bundlewrap.exceptions import SkipNode
 raise SkipNode(&quot;reason goes here&quot;)
 </code></pre>
-
 <hr />
 <p><strong><code>node_apply_end(repo, node, duration=None, interactive=False, result=None, **kwargs)</code></strong></p>
 <p>Called each time a <code>bw apply</code> command finishes processing a node.</p>
@@ -440,7 +438,6 @@ raise SkipNode(&quot;reason goes here&quot;)
 <pre><code>from bundlewrap.exceptions import SkipNode
 raise SkipNode(&quot;reason goes here&quot;)
 </code></pre>
-
 <hr />
 <p><strong><code>node_run_end(repo, node, command, duration=None, return_code=None, stdout="", stderr="", **kwargs)</code></strong></p>
 <p>Called each time a <code>bw run</code> command finishes on a node.</p>
@@ -504,7 +501,7 @@ raise SkipNode(&quot;reason goes here&quot;)
                 </p>
                 <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
                 <div id="mkdocs-search-results"></div>

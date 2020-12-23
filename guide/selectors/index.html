@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>Handling secrets - BundleWrap</title>
+        <title>Node selectors - BundleWrap</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -46,7 +46,7 @@
                             <li class="navitem">
                                 <a href="../.." class="nav-link"><i class="fa fa-home"></i></a>
                             </li>
-                            <li class="dropdown active">
+                            <li class="dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Guides <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
@@ -71,7 +71,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">Handling secrets</a>
+    <a href="../secrets/" class="dropdown-item">Handling secrets</a>
 </li>
                                     
 <li>
@@ -279,17 +279,7 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../item_file_templates/" class="nav-link">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a rel="next" href="../locks/" class="nav-link">
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/secrets.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/selectors.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -309,28 +299,13 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#handling-secrets" class="nav-link">Handling secrets</a>
-              <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#secretscfg" class="nav-link">.secrets.cfg</a>
+            <li class="nav-item" data-level="1"><a href="#node-selectors" class="nav-link">Node selectors</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#derived-passwords" class="nav-link">Derived passwords</a>
+            
+            <li class="nav-item" data-level="1"><a href="#item-selectors" class="nav-link">Item selectors</a>
               <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#static-passwords" class="nav-link">Static passwords</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#files" class="nav-link">Files</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#key-management" class="nav-link">Key management</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
               </ul>
             </li>
         </ul>
@@ -338,91 +313,23 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="handling-secrets">Handling secrets</h1>
-<p>We strongly recommend <strong>not</strong> putting any sensitive information such as passwords or private keys into your repository. This page describes the helpers available in BundleWrap to manage those secrets without checking them into version control.</p>
-<div class="alert alert-info">Most of the functions described here return lazy <a href="../api/#bundlewraputilsfault">Fault objects</a>.</div>
-
+<h1 id="node-selectors">Node selectors</h1>
+<p>These can be used on the command line to select a number of nodes.</p>
+<p>See <code>bw apply --help</code> for a list of possible uses.</p>
 <p><br></p>
-<h2 id="secretscfg">.secrets.cfg</h2>
-<p>When you initially ran <code>bw repo create</code>, a file called <code>.secrets.cfg</code> was put into the root level of your repo. It's an INI-style file that by default contains two random keys BundleWrap uses to protect your secrets.</p>
-<div class="alert alert-danger">You should never commit <code>.secrets.cfg</code>. Immediately add it to your <code>.gitignore</code> or equivalent.</div>
+<h1 id="item-selectors">Item selectors</h1>
+<p>Item selectors provide a way to address multiple items e.g. when specifying dependencies between them.</p>
+<table>
+<tr><th>Example selector</th><th>Meaning</th></tr>
+<tr><td><code>file:/etc/motd</code></td><td>a single item</td></tr>
+<tr><td><code>file:</code></td><td>all items of that type</td></tr>
+<tr><td><code>bundle:foo</code></td><td>all items in that bundle</td></tr>
+<tr><td><code>tag:foo</code></td><td>all items with that tag</td></tr>
+<tr><td><code>tag:</code></td><td>all items with any tag</td></tr>
+</table>
 
-<p><br></p>
-<h2 id="derived-passwords">Derived passwords</h2>
-<p>In some cases, you can control (i.e. manage with BundleWrap) both ends of the authentication process. A common example is a config file for a web application that holds credentials for a database also managed by BundleWrap. In this case, you don't really care what the password is, you just want it to be the same on both sides.</p>
-<p>To accomplish that, just write this in your template (Mako syntax shown here):</p>
-<pre><code class="nohighlight">database_user = "foo"
-database_password = "${repo.vault.password_for("my database")}"
-</code></pre>
-
-<p>In your bundle, you can then configure your database user like this:</p>
-<pre><code>postgres_roles = {
-    "foo": {
-        'password': repo.vault.password_for("my database"),
-    },
-}
-</code></pre>
-<p>It doesn't really matter what string you call <code>password_for()</code> with, it just has to be the same on both ends. BundleWrap will then use that string, combine it with the default key called <code>generate</code> in your <code>.secrets.cfg</code> and derive a random password from that.</p>
-<p>This makes it easy to change all your passwords at once (e.g. when an employee leaves or when required for compliance reasons) by rotating keys.</p>
-<div class="alert alert-warning">However, it also means you have to guard your <code>.secrets.cfg</code> very closely. If it is compromised, so are <strong>all</strong> your passwords. Use your own judgement.</div>
-
-<h3 id="human-passwords">"Human" passwords</h3>
-<p>As an alternative to <code>password_for()</code>, which generates random strings, you can use <code>human_password_for()</code>.It generates strings like <code>Wiac-Kaobl-Teuh-Kumd-40</code>. They are easier to handle for human beings. You might want to use them if you have to type those passwords on a regular basis.</p>
-<h3 id="random-bytes">Random bytes</h3>
-<p><code>password_for()</code> and <code>human_password_for()</code> are meant for passwords. If you need plain random bytes, you can use <code>random_bytes_as_base64_for()</code>. As the name implies, it will return the data base64 encoded. Some examples:</p>
-<pre><code class="nohighlight">$ bw debug -c 'print(repo.vault.random_bytes_as_base64_for("foo"))'
-qczM0GUKW7YlXEuW8HGPYkjCGaX4Vu9Fja5SIZWga7w=
-$ bw debug -c 'print(repo.vault.random_bytes_as_base64_for("foo", length=1))'
-qQ==
-</code></pre>
-
-<p><br></p>
-<h2 id="static-passwords">Static passwords</h2>
-<p>When you need to store a specific password, you can encrypt it symmetrically:</p>
-<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.encrypt('my password'))"
-gAAAA[...]mrVMA==
-</code></pre>
-
-<p>You can then use this encrypted password in a template like this:</p>
-<pre><code class="nohighlight">database_user = "foo"
-database_password = "${repo.vault.decrypt("gAAAA[...]mrVMA==")}"
-</code></pre>
-
-<p><br></p>
-<h2 id="files">Files</h2>
-<p>You can also encrypt entire files:</p>
-<pre><code class="nohighlight">$ bw debug -c "repo.vault.encrypt_file('/my/secret.file', 'encrypted.file')"</code></pre>
-
-<div class="alert alert-info">Encrypted files are always read and written relative to the <code>data/</code> subdirectory of your repo.</div>
-
-<p>If the source file was encoded using UTF-8, you can then simply pass the decrypted content into a file item:</p>
-<pre><code>files = {
-    "/secret": {
-        'content': repo.vault.decrypt_file("encrypted.file"),
-    },
-}
-</code></pre>
-<p>If the source file is binary however (or any encoding other than UTF-8), you must use base64:</p>
-<pre><code>files = {
-    "/secret": {
-        'content': repo.vault.decrypt_file_as_base64("encrypted.file"),
-        'content_type': 'base64',
-    },
-}
-</code></pre>
-<p><br></p>
-<h2 id="key-management">Key management</h2>
-<h3 id="multiple-keys">Multiple keys</h3>
-<p>You can always add more keys to your <code>.secrets.cfg</code>, but you should keep the defaults around. Adding more keys makes it possible to give different keys to different teams. <strong>By default, BundleWrap will skip items it can't find the required keys for</strong>.</p>
-<p>When using <code>.password_for()</code>, <code>.encrypt()</code> etc., you can provide a <code>key</code> argument to select the key:</p>
-<pre><code>repo.vault.password_for("some database", key="devops")
-</code></pre>
-<p>The encrypted data will be prefixed by <code>yourkeyname$...</code> to indicate that the key <code>yourkeyname</code> was used for encryption. Thus, during decryption, you can omit the <code>key=</code> parameter.</p>
-<p><br></p>
-<h3 id="rotating-keys">Rotating keys</h3>
-<div class="alert alert-info">This is applicable mostly to <code>.password_for()</code>. The other methods use symmetric encryption and require manually updating the encrypted text after the key has changed.</div>
-
-<p>You can generate a new key by running <code>bw debug -c "print(repo.vault.random_key())"</code>. Place the result in your <code>.secrets.cfg</code>. Then you need to distribute the new key to your team and run <code>bw apply</code> for all your nodes.</p></div>
+<p>All selectors can be prefixed with <code>!</code> to select the inverse (e.g. <code>!tag:</code> means "all items without any tag").</p>
+<p>Note that when you have a file item and add a dependency to <code>file:</code>, BundleWrap will resolve this to all <em>other</em> files. Similarily, when you add a dependency on <code>tag:</code> to all items with a certain tag through <a href="../repo/bundle.py">bundle.py</a>, this will only target <em>other</em> tags to avoid an immediate loop.</p></div>
             </div>
         </div>
 
