@@ -83,7 +83,7 @@ def make_normalize(attribute_default):
     This is to ensure you can pass filter() results and such in place of
     lists and have them converted to the proper type automatically.
     """
-    if type(attribute_default) in (set, dict):
+    if type(attribute_default) in (dict, list, set):
         return type(attribute_default)
     else:
         return copy
