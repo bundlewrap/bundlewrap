@@ -9,7 +9,7 @@ from traceback import TracebackException
 from .exceptions import MetadataPersistentKeyError
 from .metadata import DoNotRunAgain, metadata_to_json
 from .node import _flatten_group_hierarchy
-from .utils import randomize_order
+from .utils import randomize_order, NO_DEFAULT
 from .utils.dicts import extra_paths_in_dict
 from .utils.ui import io, QUIT_EVENT
 from .utils.metastack import Metastack
@@ -17,6 +17,127 @@ from .utils.text import bold, mark_for_translation as _, red
 
 
 MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "1000"))
+
+
+class PathSet:
+    """
+    Collects metadata paths and stores only the highest levels ones.
+
+    >>> s = PathSet()
+    >>> s.add(("foo", "bar"))
+    >>> s.add(("foo",))
+    >>> s
+    {"foo"}
+    """
+
+    def __init__(self):
+        self._paths = set()
+
+    def __iter__(self):
+        for path in self._paths:
+            yield path
+
+    def __len__(self):
+        return len(self._paths)
+
+    def __repr__(self):
+        return "<PathSet: {}>".format(repr(self._paths))
+
+    def add(self, new_path):
+        if self.covers(new_path):
+            return False
+        for existing_path in self._paths.copy():
+            if existing_path[:len(new_path)] == new_path:
+                self._paths.remove(existing_path)
+        self._paths.add(new_path)
+        return True
+
+    def covers(self, candidate_path):
+        for existing_path in self._paths:
+            if candidate_path[:len(existing_path)] == existing_path:
+                return True
+        return False
+
+
+def reactors_for_paths(available_reactors, required_paths):
+    """
+    Returns only those available_reactors that might affect the
+    required_paths.
+    """
+    for reactor in available_reactors:
+        provides = getattr(reactor, '_provides', tuple())
+        if provides:
+            for path in provides:
+                if required_paths.covers(path):
+                    yield reactor
+                    break
+        else:
+            yield reactor
+
+
+class NodeMetadataProxy:
+    def __init__(self, metagen, node):
+        self._metagen = metagen
+        self._node = node
+        self._metastack = Metastack()
+        self._completed_reactors = set()
+        self._requested_paths = PathSet()
+        self.__relevant_reactors_cache = None
+
+    def __getitem__(self, key):
+        return self.get((key,))
+
+    def __iter__(self):
+        for key, value in self._metagen._metadata_for_node_at_path(self._node, tuple()).items():
+            yield key, value
+
+    @property
+    def _relevant_reactors(self):
+        """
+        All reactors that might provide some of the requested paths.
+        """
+        if self.__relevant_reactors_cache is None:
+            self.__relevant_reactors_cache = reactors_for_paths(
+                self._node.metadata_reactors,
+                self._requested_paths,
+            )
+        return self.__relevant_reactors_cache
+
+    @property
+    def _pending_reactors(self):
+        """
+        All reactors that might provide some of the requested paths and
+        have not yet been run to completion.
+        """
+        for reactor in self._relevant_reactors:
+            if reactor not in self._completed_reactors:
+                yield reactor
+
+    @property
+    def blame(self):
+        return self._metastack._as_blame()
+
+    @property
+    def stack(self):
+        return self._metastack
+
+    def get(self, path, default=NO_DEFAULT):
+        if not isinstance(path, (tuple, list)):
+            path = tuple(path.split("/"))
+        if self._requested_paths.add(path):
+            self.__relevant_reactors_cache = None
+
+        if not self._metagen._in_a_reactor:
+            with self._metagen._node_metadata_lock:
+                self._metagen._build_node_metadata(self._node.name)
+
+        try:
+            return self._metastack.get(path)
+        except KeyError:
+            if default != NO_DEFAULT:
+                return default
+            else:
+                raise
 
 
 class _StartOver(Exception):
@@ -28,22 +149,22 @@ class _StartOver(Exception):
 
 class MetadataGenerator:
     # are we currently executing a reactor?
-    __in_a_reactor = False
+    _in_a_reactor = False
     # should reactor return values be checked against their declared keys?
     _verify_reactor_provides = False
+    # a NodeMetadataProxy for every node
+    __proxies = {}
 
     def __reset(self):
-        # reactors that raise DoNotRunAgain
+        # reactors that raised DoNotRunAgain
         self.__do_not_run_again = set()
         # reactors that raised KeyErrors (and which ones)
         self.__keyerrors = {}
-        # a Metastack for every node
-        self.__metastacks = defaultdict(Metastack)
         # mapping each node to all nodes that depend on it
         self.__node_deps = defaultdict(set)
         # how often __run_reactors was called for a node
         self.__node_iterations = defaultdict(int)
-        # A node is 'stable' when all its reactors return unchanged
+        # A node is 'stable' when all its relevant reactors return unchanged
         # metadata, except for those reactors that look at other nodes.
         # This dict maps node names to True/False indicating stable status.
         self.__node_stable = {}
@@ -59,87 +180,14 @@ class MetadataGenerator:
         self.__reactors_run = 0
         # how often each reactor changed
         self.__reactor_changes = defaultdict(int)
-        # tracks which reactors on a node have look at other nodes
+        # tracks which reactors on a node have looked at other nodes
         # through partial_metadata
         self.__reactors_with_deps = defaultdict(set)
 
-    def _metadata_for_node(self, node_name, blame=False, stack=False):
-        """
-        Returns full or partial metadata for this node. This is the
-        primary entrypoint accessed from node.metadata.
-
-        Partial metadata may only be requested from inside a metadata
-        reactor.
-
-        If necessary, this method will build complete metadata for this
-        node and all related nodes. Related meaning nodes that this node
-        depends on in one of its metadata reactors.
-        """
-        if self.__in_a_reactor:
-            if node_name in self._node_metadata_complete:
-                io.debug(f"is already complete: {node_name}")
-                # We already completed metadata for this node, but partial must
-                # return a Metastack, so we build a single-layered one just for
-                # the interface.
-                try:
-                    metadata = self.__read_disk_cache(node_name)
-                except FileNotFoundError:
-                    metadata = self._node_metadata_complete[node_name]
-
-                metastack = Metastack()
-                metastack._set_layer(0, "flattened", metadata)
-                return metastack
-            else:
-                self.__partial_metadata_accessed_for.add(node_name)
-                return self.__metastacks[node_name]
-
-        if blame or stack:
-            # cannot return cached result here, force rebuild
-            with suppress(KeyError):
-                del self._node_metadata_complete[node_name]
-        else:
-            with suppress(FileNotFoundError):
-                return self.__read_disk_cache(node_name)
-
-        with suppress(KeyError):
-            return self._node_metadata_complete[node_name]
-
-        # Different worker threads might request metadata at the same time.
-
-        with self._node_metadata_lock:
-            with suppress(KeyError):
-                # maybe our metadata got completed while waiting for the lock
-                return self._node_metadata_complete[node_name]
-
-            self.__build_node_metadata(node_name)
-
-            # now that we have completed all metadata for this
-            # node and all related nodes, copy that data over
-            # to the complete dict
-            for some_node_name in self.__nodes_that_ran_at_least_once:
-                self._node_metadata_complete[some_node_name] = \
-                    self.__metastacks[some_node_name]._as_dict()
-                if environ.get("BW_METADATA_CACHE_DIR"):
-                    self.__write_disk_cache(
-                        some_node_name,
-                        self._node_metadata_complete[some_node_name],
-                    )
-
-            if blame:
-                blame_result = self.__metastacks[node_name]._as_blame()
-            elif stack:
-                stack_result = self.__metastacks[node_name]
-
-            # reset temporary vars (this isn't strictly necessary, but might
-            # free up some memory and avoid confusion)
-            self.__reset()
-
-            if blame:
-                return blame_result
-            elif stack:
-                return stack_result
-            else:
-                return self._node_metadata_complete[node_name]
+    def _metadata_proxy_for_node(self, node_name):
+        if node_name not in self.__proxies:
+            self.__proxies[node_name] = NodeMetadataProxy(self, self.get_node(node_name))
+        return self.__proxies[node_name]
 
     @property
     def __disk_cache_dir(self):
@@ -239,7 +287,7 @@ class MetadataGenerator:
             io.debug("found an unstable node (with_deps=True)")
             raise _StartOver
 
-    def __build_node_metadata(self, initial_node_name):
+    def _build_node_metadata(self, initial_node_name):
         self.__reset()
         self.__nodes_that_never_ran.add(initial_node_name)
 
@@ -280,7 +328,12 @@ class MetadataGenerator:
                     # at other nodes.
                     self.__run_nodes_with_deps()
 
-                    # if we get here, we're done!
+                    # If we get here, we're done! All that's left to do is blacklist completed
+                    # reactors so they don't get run again if additional metadata is requested.
+                    for node in self.__node_stable:
+                        self.__proxies[node.name]._completed_reactors.update(
+                            self.__proxies[node.name]._relevant_reactors
+                        )
                     break
 
             except _StartOver:
@@ -303,31 +356,30 @@ class MetadataGenerator:
     def __initial_run_for_node(self, node_name):
         io.debug(f"initial metadata run for {node_name}")
         node = self.get_node(node_name)
-        self.__metastacks[node_name] = Metastack()
 
         # randomize order to increase chance of exposing clashing defaults
         for defaults_name, defaults in randomize_order(node.metadata_defaults):
-            self.__metastacks[node_name]._set_layer(
+            node.metadata.stack._set_layer(
                 2,
                 defaults_name,
                 defaults,
             )
-        self.__metastacks[node_name]._cache_partition(2)
+        node.metadata.stack._cache_partition(2)
 
         group_order = _flatten_group_hierarchy(node.groups)
         for group_name in group_order:
-            self.__metastacks[node_name]._set_layer(
+            node.metadata.stack._set_layer(
                 0,
                 "group:{}".format(group_name),
                 self.get_group(group_name)._attributes.get('metadata', {}),
             )
 
-        self.__metastacks[node_name]._set_layer(
+        node.metadata.stack._set_layer(
             0,
             "node:{}".format(node_name),
             node._attributes.get('metadata', {}),
         )
-        self.__metastacks[node_name]._cache_partition(0)
+        node.metadata.stack._cache_partition(0)
 
         # run all reactors once to get started
         self.__run_reactors(node, with_deps=True, without_deps=True)
@@ -357,14 +409,16 @@ class MetadataGenerator:
                 # skip reactors without deps
                 continue
             # TODO ideally, we should run the least-run reactors first
-            for reactor_name, reactor in randomize_order(node.metadata_reactors):
+            for reactor_name, reactor in randomize_order(
+                self.__proxies[node.name]._pending_reactors
+            ):
                 if (
                     (depsonly and reactor_name not in self.__reactors_with_deps[node.name]) or
                     (not depsonly and reactor_name in self.__reactors_with_deps[node.name])
                 ):
                     # this if makes sure we run reactors with deps first
                     continue
-                reactor_changed, deps = self.__run_reactor(node.name, reactor_name, reactor)
+                reactor_changed, deps = self.__run_reactor(node, reactor_name, reactor)
                 io.debug(f"{node.name}:{reactor_name} changed={reactor_changed} deps={deps}")
                 if reactor_changed:
                     any_reactor_changed = True
@@ -393,24 +447,24 @@ class MetadataGenerator:
         elif without_deps:
             self.__node_stable[node] = not any_reactor_changed
 
-    def __run_reactor(self, node_name, reactor_name, reactor):
-        if (node_name, reactor_name) in self.__do_not_run_again:
+    def __run_reactor(self, node, reactor_name, reactor):
+        if (node.name, reactor_name) in self.__do_not_run_again:
             return False, set()
         self.__partial_metadata_accessed_for = set()
         self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
-        old_metadata = self.__metastacks[node_name]._pop_layer(1, reactor_name)
-        self.__in_a_reactor = True
+        old_metadata = node.metadata.stack._pop_layer(1, reactor_name)
+        self._in_a_reactor = True
         try:
-            new_metadata = reactor(self.__metastacks[node_name])
+            new_metadata = reactor(node.metadata)
         except KeyError as exc:
-            self.__keyerrors[(node_name, reactor_name)] = exc
+            self.__keyerrors[(node.name, reactor_name)] = exc
             return False, self.__partial_metadata_accessed_for
         except DoNotRunAgain:
-            self.__do_not_run_again.add((node_name, reactor_name))
+            self.__do_not_run_again.add((node.name, reactor_name))
             # clear any previously stored exception
             with suppress(KeyError):
-                del self.__keyerrors[(node_name, reactor_name)]
+                del self.__keyerrors[(node.name, reactor_name)]
             return False, set()
         except Exception as exc:
             io.stderr(_(
@@ -419,15 +473,15 @@ class MetadataGenerator:
             ).format(
                 x=red("!!!"),
                 metaproc=reactor_name,
-                node=node_name,
+                node=node.name,
             ))
             raise exc
         finally:
-            self.__in_a_reactor = False
+            self._in_a_reactor = False
 
         # reactor terminated normally, clear any previously stored exception
         with suppress(KeyError):
-            del self.__keyerrors[(node_name, reactor_name)]
+            del self.__keyerrors[(node.name, reactor_name)]
 
         if self._verify_reactor_provides and getattr(reactor, '_provides', None):
             extra_paths = extra_paths_in_dict(new_metadata, reactor._provides)
@@ -437,13 +491,13 @@ class MetadataGenerator:
                     "but didn't declare them with @metadata_reactor.provides():\n"
                     "{paths}"
                 ).format(
-                    node_name=node_name,
+                    node_name=node.name,
                     reactor_name=reactor_name,
                     paths="\n".join(["/".join(path) for path in sorted(extra_paths)]),
                 ))
 
         try:
-            self.__metastacks[node_name]._set_layer(
+            node.metadata.stack._set_layer(
                 1,
                 reactor_name,
                 new_metadata,
@@ -456,12 +510,12 @@ class MetadataGenerator:
             ).format(
                 x=red("!!!"),
                 metaproc=reactor_name,
-                node=node_name,
+                node=node.name,
             ))
             raise exc
 
         changed = old_metadata != new_metadata
         if changed:
-            self.__reactor_changes[(node_name, reactor_name)] += 1
+            self.__reactor_changes[(node.name, reactor_name)] += 1
 
         return changed, self.__partial_metadata_accessed_for

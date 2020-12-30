@@ -2,7 +2,6 @@ from collections import OrderedDict
 from sys import version_info
 
 from ..metadata import METADATA_TYPES, deepcopy_metadata, validate_metadata, value_at_key_path
-from . import NO_DEFAULT
 from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
 
 
@@ -26,24 +25,10 @@ class Metastack:
         )
         self._cached_partitions = {}
 
-    def get(self, path, default=NO_DEFAULT):
+    def get(self, path):
         """
         Get the value at the given path, merging all layers together.
-
-        Path may either be string like
-
-            'foo/bar'
-
-        accessing the 'bar' key in the dict at the 'foo' key
-        or a tuple like
-
-            ('fo/o', 'bar')
-
-        accessing the 'bar' key in the dict at the 'fo/o' key.
         """
-        if not isinstance(path, (tuple, list)):
-            path = path.split('/')
-
         result = None
         undef = True
 
@@ -67,10 +52,7 @@ class Metastack:
                         result = merge_dict({'data': value}, result)
 
         if undef:
-            if default != NO_DEFAULT:
-                return default
-            else:
-                raise KeyError('/'.join(path))
+            raise KeyError('/'.join(path))
         else:
             return deepcopy_metadata(result['data'])
 
