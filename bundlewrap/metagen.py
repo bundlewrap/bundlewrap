@@ -9,7 +9,7 @@ from traceback import TracebackException
 from .exceptions import MetadataPersistentKeyError
 from .metadata import DoNotRunAgain, metadata_to_json
 from .node import _flatten_group_hierarchy
-from .utils import randomize_order, NO_DEFAULT
+from .utils import list_starts_with, randomize_order, NO_DEFAULT
 from .utils.dicts import extra_paths_in_dict
 from .utils.ui import io, QUIT_EVENT
 from .utils.metastack import Metastack
@@ -47,14 +47,14 @@ class PathSet:
         if self.covers(new_path):
             return False
         for existing_path in self._paths.copy():
-            if existing_path[:len(new_path)] == new_path:
+            if list_starts_with(existing_path, new_path):
                 self._paths.remove(existing_path)
         self._paths.add(new_path)
         return True
 
     def covers(self, candidate_path):
         for existing_path in self._paths:
-            if candidate_path[:len(existing_path)] == existing_path:
+            if list_starts_with(candidate_path, existing_path):
                 return True
         return False
 
@@ -88,7 +88,7 @@ class NodeMetadataProxy:
         return self.get((key,))
 
     def __iter__(self):
-        for key, value in self._metagen._metadata_for_node_at_path(self._node, tuple()).items():
+        for key, value in self.get(tuple()).items():
             yield key, value
 
     @property
@@ -97,10 +97,10 @@ class NodeMetadataProxy:
         All reactors that might provide some of the requested paths.
         """
         if self.__relevant_reactors_cache is None:
-            self.__relevant_reactors_cache = reactors_for_paths(
+            self.__relevant_reactors_cache = set(reactors_for_paths(
                 self._node.metadata_reactors,
                 self._requested_paths,
-            )
+            ))
         return self.__relevant_reactors_cache
 
     @property
@@ -115,7 +115,12 @@ class NodeMetadataProxy:
 
     @property
     def blame(self):
-        return self._metastack._as_blame()
+        if self._metagen._in_a_reactor:
+            raise RuntimeError("cannot call node.metadata.blame from a reactor")
+        else:
+            with self._metagen._node_metadata_lock:
+                self._metagen._build_node_metadata(self._node.name)
+            return self._metastack._as_blame()
 
     @property
     def stack(self):
@@ -166,7 +171,7 @@ class MetadataGenerator:
         self.__node_iterations = defaultdict(int)
         # A node is 'stable' when all its relevant reactors return unchanged
         # metadata, except for those reactors that look at other nodes.
-        # This dict maps node names to True/False indicating stable status.
+        # This dict maps nodes to True/False indicating stable status.
         self.__node_stable = {}
         # nodes we encountered as a dependency through partial_metadata,
         # but haven't run yet

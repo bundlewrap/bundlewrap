@@ -316,12 +316,14 @@ class MetadataJSONEncoder(JSONEncoder):
             return force_text(obj)
         else:
             raise ValueError(_("illegal metadata value type: {value} is {type}").format(
-                type=type(metadata),
-                value=repr(metadata),
+                type=type(obj),
+                value=repr(obj),
             ))
 
 
 def metadata_to_json(metadata, sort_keys=True):
+    if not isinstance(metadata, dict):  # might be NodeMetadataProxy
+        metadata = dict(metadata)
     return dumps(
         metadata,
         cls=MetadataJSONEncoder,

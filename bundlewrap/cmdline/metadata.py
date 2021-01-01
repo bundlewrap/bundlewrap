@@ -3,7 +3,7 @@ from decimal import Decimal
 from sys import version_info
 
 from ..metadata import deepcopy_metadata, metadata_to_json
-from ..utils import Fault
+from ..utils import Fault, list_starts_with
 from ..utils.cmdline import get_target_nodes
 from ..utils.dicts import (
     delete_key_at_path,
@@ -91,21 +91,9 @@ def _sort_dict_colorblind(old_dict):
     return new_dict
 
 
-def _list_starts_with(list_a, list_b):
-    """
-    Returns True if list_a starts with list_b.
-    """
-    list_a = tuple(list_a)
-    list_b = tuple(list_b)
-    try:
-        return list_a[:len(list_b)] == list_b
-    except IndexError:
-        return False
-
-
 def bw_metadata(repo, args):
     target_nodes = get_target_nodes(repo, args['targets'])
-    key_paths = sorted([path.strip().split("/") for path in args['keys']])
+    key_paths = sorted([tuple(path.strip().split("/")) for path in args['keys']])
     if len(target_nodes) > 1:
         if not key_paths:
             io.stdout(_("{x} at least one key is required when viewing multiple nodes").format(x=red("!!!")))
@@ -118,11 +106,7 @@ def bw_metadata(repo, args):
         for node in sorted(target_nodes):
             values = []
             for key_path in key_paths:
-                metadata = node.metadata
-                try:
-                    value = value_at_key_path(metadata, key_path)
-                except KeyError:
-                    value = red(_("<missing>"))
+                value = node.metadata.get(key_path, default=red(_("<missing>")))
                 if isinstance(value, (dict, list, tuple)):
                     value = ", ".join([str(item) for item in value])
                 elif isinstance(value, set):
@@ -136,7 +120,7 @@ def bw_metadata(repo, args):
         node = target_nodes.pop()
         if args['blame']:
             table = [[bold(_("path")), bold(_("source"))], ROW_SEPARATOR]
-            for path, blamed in sorted(node.metadata_blame.items()):
+            for path, blamed in sorted(node.metadata.blame.items()):
                 joined_path = "/".join(path)
                 if key_paths:
                     for key_path in key_paths:
@@ -147,11 +131,11 @@ def bw_metadata(repo, args):
                     table.append([joined_path, ", ".join(blamed)])
             page_lines(render_table(table))
         else:
-            blame = list(node.metadata_blame.items())
+            metadata = deepcopy_metadata(node.metadata.get(tuple()))
+            blame = list(node.metadata.blame.items())
             # sort descending by key path length since we will be replacing
             # the keys and can't access paths beneath replaced keys anymore
             blame.sort(key=lambda e: len(e[0]), reverse=True)
-            metadata = deepcopy_metadata(node.metadata)
 
             for path, blamed in blame:
                 if key_paths:
