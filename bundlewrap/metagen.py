@@ -124,6 +124,11 @@ class NodeMetadataProxy:
 
     @property
     def stack(self):
+        if self._metagen._in_a_reactor:
+            raise RuntimeError("cannot call node.metadata.stack from a reactor")
+        else:
+            with self._metagen._node_metadata_lock:
+                self._metagen._build_node_metadata(self._node.name)
         return self._metastack
 
     def get(self, path, default=NO_DEFAULT):
@@ -159,8 +164,6 @@ class MetadataGenerator:
     _in_a_reactor = False
     # should reactor return values be checked against their declared keys?
     _verify_reactor_provides = False
-    # a NodeMetadataProxy for every node
-    __proxies = {}
 
     def __reset(self):
         # reactors that raised DoNotRunAgain
@@ -192,9 +195,9 @@ class MetadataGenerator:
         self.__reactors_with_deps = defaultdict(set)
 
     def _metadata_proxy_for_node(self, node_name):
-        if node_name not in self.__proxies:
-            self.__proxies[node_name] = NodeMetadataProxy(self, self.get_node(node_name))
-        return self.__proxies[node_name]
+        if node_name not in self._node_metadata_proxies:
+            self._node_metadata_proxies[node_name] = NodeMetadataProxy(self, self.get_node(node_name))
+        return self._node_metadata_proxies[node_name]
 
     @property
     def __disk_cache_dir(self):
@@ -338,8 +341,8 @@ class MetadataGenerator:
                     # If we get here, we're done! All that's left to do is blacklist completed
                     # reactors so they don't get run again if additional metadata is requested.
                     for node in self.__node_stable:
-                        self.__proxies[node.name]._completed_reactors.update(
-                            self.__proxies[node.name]._relevant_reactors
+                        self._node_metadata_proxies[node.name]._completed_reactors.update(
+                            self._node_metadata_proxies[node.name]._relevant_reactors
                         )
                     break
 
@@ -366,27 +369,27 @@ class MetadataGenerator:
 
         # randomize order to increase chance of exposing clashing defaults
         for defaults_name, defaults in randomize_order(node.metadata_defaults):
-            node.metadata.stack._set_layer(
+            node.metadata._metastack._set_layer(
                 2,
                 defaults_name,
                 defaults,
             )
-        node.metadata.stack._cache_partition(2)
+        node.metadata._metastack._cache_partition(2)
 
         group_order = _flatten_group_hierarchy(node.groups)
         for group_name in group_order:
-            node.metadata.stack._set_layer(
+            node.metadata._metastack._set_layer(
                 0,
                 "group:{}".format(group_name),
                 self.get_group(group_name)._attributes.get('metadata', {}),
             )
 
-        node.metadata.stack._set_layer(
+        node.metadata._metastack._set_layer(
             0,
             "node:{}".format(node_name),
             node._attributes.get('metadata', {}),
         )
-        node.metadata.stack._cache_partition(0)
+        node.metadata._metastack._cache_partition(0)
 
         # run all reactors once to get started
         self.__run_reactors(node, with_deps=True, without_deps=True)
@@ -417,7 +420,7 @@ class MetadataGenerator:
                 continue
             # TODO ideally, we should run the least-run reactors first
             for reactor_name, reactor in randomize_order(
-                self.__proxies[node.name]._pending_reactors
+                self._node_metadata_proxies[node.name]._pending_reactors
             ):
                 if (
                     (depsonly and reactor_name not in self.__reactors_with_deps[node.name]) or
@@ -460,7 +463,7 @@ class MetadataGenerator:
         self._partial_metadata_accessed_for = set()
         self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
-        old_metadata = node.metadata.stack._pop_layer(1, reactor_name)
+        old_metadata = node.metadata._metastack._pop_layer(1, reactor_name)
         self._in_a_reactor = True
         try:
             new_metadata = reactor(node.metadata)
@@ -504,7 +507,7 @@ class MetadataGenerator:
                 ))
 
         try:
-            node.metadata.stack._set_layer(
+            node.metadata._metastack._set_layer(
                 1,
                 reactor_name,
                 new_metadata,

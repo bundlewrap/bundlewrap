@@ -122,7 +122,7 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
 
     for prefix in ("metadata_defaults:", "metadata_reactor:"):
         paths = {}
-        for partition in node._metadata_stack._partitions:
+        for partition in node.metadata.stack._partitions:
             for identifier, layer in partition.items():
                 if identifier.startswith(prefix):
                     for path, value, current_type in paths_with_values_and_types(layer):

@@ -202,7 +202,7 @@ def test_determinism_metadata(repo, nodes, iterations, quiet):
                 n=iterations,
                 node=bold(node.name),
             )):
-                metadata.setdefault(node.name, node.metadata)
+                metadata.setdefault(node.name, dict(node.metadata))
                 result = node.metadata_hash()
             hashes.setdefault(node.name, result)
             if hashes[node.name] != result:

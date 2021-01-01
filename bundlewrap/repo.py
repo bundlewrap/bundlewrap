@@ -194,7 +194,7 @@ class Repository(MetadataGenerator):
         self._get_all_attr_result_cache = {}
 
         # required by MetadataGenerator
-        self._node_metadata_complete = {}
+        self._node_metadata_proxies = {}
         self._node_metadata_lock = Lock()
 
         if repo_path is not None:
