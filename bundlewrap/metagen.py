@@ -132,7 +132,9 @@ class NodeMetadataProxy:
         if self._requested_paths.add(path):
             self.__relevant_reactors_cache = None
 
-        if not self._metagen._in_a_reactor:
+        if self._metagen._in_a_reactor:
+            self._metagen._partial_metadata_accessed_for.add(self._node.name)
+        else:
             with self._metagen._node_metadata_lock:
                 self._metagen._build_node_metadata(self._node.name)
 
@@ -455,7 +457,7 @@ class MetadataGenerator:
     def __run_reactor(self, node, reactor_name, reactor):
         if (node.name, reactor_name) in self.__do_not_run_again:
             return False, set()
-        self.__partial_metadata_accessed_for = set()
+        self._partial_metadata_accessed_for = set()
         self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
         old_metadata = node.metadata.stack._pop_layer(1, reactor_name)
@@ -464,7 +466,7 @@ class MetadataGenerator:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
             self.__keyerrors[(node.name, reactor_name)] = exc
-            return False, self.__partial_metadata_accessed_for
+            return False, self._partial_metadata_accessed_for
         except DoNotRunAgain:
             self.__do_not_run_again.add((node.name, reactor_name))
             # clear any previously stored exception
@@ -523,4 +525,4 @@ class MetadataGenerator:
         if changed:
             self.__reactor_changes[(node.name, reactor_name)] += 1
 
-        return changed, self.__partial_metadata_accessed_for
+        return changed, self._partial_metadata_accessed_for
