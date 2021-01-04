@@ -563,9 +563,11 @@ def reactor2(metadata):
     assert rcode == 1
     assert "AssertionError" in stderr.decode()
 
-    stdout, stderr, rcode = run("bw debug -n node1 -c 'print(node.metadata.get(\"foo\"))'", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw metadata node1 -k foo", path=str(tmpdir))
     assert rcode == 0
-    assert stdout.decode().strip() == "1"
+    assert loads(stdout.decode()) == {
+        'foo': 1,
+    }
 
 
 def test_reactor_provides_chain(tmpdir):
@@ -605,6 +607,10 @@ def reactor4(metadata):
     assert rcode == 1
     assert "AssertionError" in stderr.decode()
 
-    stdout, stderr, rcode = run("bw debug -n node1 -c 'print(node.metadata.get(\"foo\"))'", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw metadata node1 -k foo", path=str(tmpdir))
     assert rcode == 0
-    assert stdout.decode().strip() == "{'baz': 2}"
+    assert loads(stdout.decode()) == {
+        'foo': {
+            'baz': 2,
+        },
+    }

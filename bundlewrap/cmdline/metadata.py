@@ -1,13 +1,15 @@
 from collections import OrderedDict
+from contextlib import suppress
 from decimal import Decimal
 from sys import version_info
 
-from ..metadata import deepcopy_metadata, metadata_to_json
-from ..utils import Fault
+from ..metadata import metadata_to_json
+from ..utils import Fault, list_starts_with
 from ..utils.cmdline import get_target_nodes
 from ..utils.dicts import (
     delete_key_at_path,
     replace_key_at_path,
+    set_key_at_path,
     value_at_key_path,
 )
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -124,31 +126,37 @@ def bw_metadata(repo, args):
                 joined_path = "/".join(path)
                 if key_paths:
                     for key_path in key_paths:
-                        if _list_starts_with(path, key_path):
+                        if list_starts_with(path, key_path):
                             table.append([joined_path, ", ".join(blamed)])
                             break
                 else:
                     table.append([joined_path, ", ".join(blamed)])
             page_lines(render_table(table))
         else:
-            metadata = deepcopy_metadata(node.metadata.get(tuple()))
+            if not key_paths:
+                key_paths = [tuple()]
+
+            metadata = {}
+            for key_path in key_paths:
+                set_key_at_path(metadata, key_path, node.metadata.get(key_path))
+
             blame = list(node.metadata.blame.items())
             # sort descending by key path length since we will be replacing
             # the keys and can't access paths beneath replaced keys anymore
             blame.sort(key=lambda e: len(e[0]), reverse=True)
 
             for path, blamed in blame:
-                if key_paths:
-                    # remove all paths we did not ask to see
-                    for filtered_path in key_paths:
-                        if (
-                            _list_starts_with(path, filtered_path) or
-                            _list_starts_with(filtered_path, path)
-                        ):
-                            break
-                    else:
+                # remove all paths we did not ask to see
+                for filtered_path in key_paths:
+                    if (
+                        list_starts_with(path, filtered_path) or
+                        list_starts_with(filtered_path, path)
+                    ):
+                        break
+                else:
+                    with suppress(KeyError):
                         delete_key_at_path(metadata, path)
-                        continue
+                    continue
 
                 colorized_key = _colorize_path(
                     metadata,
