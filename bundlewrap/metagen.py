@@ -368,11 +368,11 @@ class MetadataGenerator:
                         )
                         proxy._satisfied = True
                         proxy._metastack_came_from_cache = False
-                        if (
-                            environ.get("BW_METADATA_CACHE_DIR") and
-                            proxy._requested_paths.covers(tuple())  # full metadata
-                        ):
-                            proxy._write_disk_cache()
+                        if proxy._requested_paths.covers(tuple()):  # full metadata
+                            proxy._metastack.cache_partition(1)
+
+                            if environ.get("BW_METADATA_CACHE_DIR"):
+                                proxy._write_disk_cache()
                     break
 
             except _StartOver:
