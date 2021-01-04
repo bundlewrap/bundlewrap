@@ -95,9 +95,11 @@ def _sort_dict_colorblind(old_dict):
 
 def bw_metadata(repo, args):
     target_nodes = get_target_nodes(repo, args['targets'])
-    key_paths = sorted([tuple(path.strip().split("/")) for path in args['keys']])
+    key_paths = sorted([
+        tuple(path.strip().split("/")) for path in args['keys'] if path
+    ]) or [tuple()]
     if len(target_nodes) > 1:
-        if not key_paths:
+        if key_paths == [tuple()]:
             io.stdout(_("{x} at least one key is required when viewing multiple nodes").format(x=red("!!!")))
             exit(1)
         if args['blame']:
@@ -122,20 +124,17 @@ def bw_metadata(repo, args):
         node = target_nodes.pop()
         if args['blame']:
             table = [[bold(_("path")), bold(_("source"))], ROW_SEPARATOR]
+            for key_path in key_paths:
+                # ensure all paths have been generated and will be present in .blame
+                node.metadata.get(key_path)
             for path, blamed in sorted(node.metadata.blame.items()):
                 joined_path = "/".join(path)
-                if key_paths:
-                    for key_path in key_paths:
-                        if list_starts_with(path, key_path):
-                            table.append([joined_path, ", ".join(blamed)])
-                            break
-                else:
-                    table.append([joined_path, ", ".join(blamed)])
+                for key_path in key_paths:
+                    if list_starts_with(path, key_path):
+                        table.append([joined_path, ", ".join(blamed)])
+                        break
             page_lines(render_table(table))
         else:
-            if not key_paths:
-                key_paths = [tuple()]
-
             metadata = {}
             for key_path in key_paths:
                 set_key_at_path(metadata, key_path, node.metadata.get(key_path))
