@@ -64,15 +64,15 @@ def reactors_for_paths(available_reactors, required_paths):
     Returns only those available_reactors that might affect the
     required_paths.
     """
-    for reactor in available_reactors:
+    for name, reactor in available_reactors:
         provides = getattr(reactor, '_provides', tuple())
         if provides:
             for path in provides:
                 if required_paths.covers(path):
-                    yield reactor
+                    yield name, reactor
                     break
         else:
-            yield reactor
+            yield name, reactor
 
 
 class NodeMetadataProxy:
@@ -164,6 +164,8 @@ class NodeMetadataProxy:
         if self._requested_paths.add(path):
             self._satisfied = False
             self.__relevant_reactors_cache = None
+            if self._metagen._in_a_reactor:
+                self._metagen._additional_path_requested = True
 
         if self._metastack_came_from_cache is None:
             try:
@@ -232,6 +234,8 @@ class MetadataGenerator:
         # tracks which reactors on a node have looked at other nodes
         # through partial_metadata
         self.__reactors_with_deps = defaultdict(set)
+        # set when a reactor requests an additional path
+        self._additional_path_requested = False
 
     def _metadata_proxy_for_node(self, node_name):
         if node_name not in self._node_metadata_proxies:
@@ -439,6 +443,7 @@ class MetadataGenerator:
     def __run_reactors(self, node, with_deps=True, without_deps=True):
         self.__check_iteration_count(node.name)
         any_reactor_changed = False
+        self._additional_path_requested = False
 
         for depsonly in (True, False):
             if depsonly and not with_deps:
@@ -481,7 +486,7 @@ class MetadataGenerator:
                 io.debug(f"{node.name} triggering metadata rerun on {required_node_name}")
                 self.__triggered_nodes.add(required_node_name)
 
-        if with_deps and any_reactor_changed:
+        if (with_deps and any_reactor_changed) or self._additional_path_requested:
             self.__node_stable[node] = False
         elif without_deps:
             self.__node_stable[node] = not any_reactor_changed
