@@ -193,7 +193,7 @@ class IOManager:
         # the thread once the soft shutdown has completed
         self._signal_handler_thread.daemon = True
         self._signal_handler_thread.start()
-        #signal(SIGINT, sigint_handler)
+        signal(SIGINT, sigint_handler)
         signal(SIGQUIT, sigquit_handler)
         if TTY:
             write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
