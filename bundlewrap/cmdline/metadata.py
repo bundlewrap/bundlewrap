@@ -3,7 +3,7 @@ from decimal import Decimal
 from sys import version_info
 
 from ..metadata import deepcopy_metadata, metadata_to_json
-from ..utils import Fault, list_starts_with
+from ..utils import Fault
 from ..utils.cmdline import get_target_nodes
 from ..utils.dicts import (
     delete_key_at_path,
