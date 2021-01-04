@@ -130,7 +130,7 @@ class NodeMetadataProxy:
         if not exists(node_file):
             makedirs(dirname(node_file), mode=0o770, exist_ok=True)
             with open(node_file, 'w') as f:
-                f.write(metadata_to_json(self._metastack._as_dict()))
+                f.write(metadata_to_json(self._metastack.as_dict()))
 
     def __ensure_uncached_metastack(self):
         """
@@ -148,7 +148,7 @@ class NodeMetadataProxy:
             raise RuntimeError("cannot call node.metadata.blame from a reactor")
         else:
             self.__ensure_uncached_metastack()
-            return self._metastack._as_blame()
+            return self._metastack.as_blame()
 
     @property
     def stack(self):
@@ -172,7 +172,7 @@ class NodeMetadataProxy:
                 pass
             else:
                 self._metastack = Metastack()
-                self._metastack._set_layer(0, "flattened", metadata)
+                self._metastack.set_layer(0, "flattened", metadata)
                 self._metastack_came_from_cache = True
                 self._satisfied = True
 
@@ -398,27 +398,27 @@ class MetadataGenerator:
 
         # randomize order to increase chance of exposing clashing defaults
         for defaults_name, defaults in randomize_order(node.metadata_defaults):
-            node.metadata._metastack._set_layer(
+            node.metadata._metastack.set_layer(
                 2,
                 defaults_name,
                 defaults,
             )
-        node.metadata._metastack._cache_partition(2)
+        node.metadata._metastack.cache_partition(2)
 
         group_order = _flatten_group_hierarchy(node.groups)
         for group_name in group_order:
-            node.metadata._metastack._set_layer(
+            node.metadata._metastack.set_layer(
                 0,
                 "group:{}".format(group_name),
                 self.get_group(group_name)._attributes.get('metadata', {}),
             )
 
-        node.metadata._metastack._set_layer(
+        node.metadata._metastack.set_layer(
             0,
             "node:{}".format(node_name),
             node._attributes.get('metadata', {}),
         )
-        node.metadata._metastack._cache_partition(0)
+        node.metadata._metastack.cache_partition(0)
 
         # run all reactors once to get started
         self.__run_reactors(node, with_deps=True, without_deps=True)
@@ -492,7 +492,7 @@ class MetadataGenerator:
         self._partial_metadata_accessed_for = set()
         self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
-        old_metadata = node.metadata._metastack._pop_layer(1, reactor_name)
+        old_metadata = node.metadata._metastack.pop_layer(1, reactor_name)
         self._in_a_reactor = True
         try:
             new_metadata = reactor(node.metadata)
@@ -536,7 +536,7 @@ class MetadataGenerator:
                 ))
 
         try:
-            node.metadata._metastack._set_layer(
+            node.metadata._metastack.set_layer(
                 1,
                 reactor_name,
                 new_metadata,

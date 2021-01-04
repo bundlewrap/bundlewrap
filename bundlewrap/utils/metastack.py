@@ -16,6 +16,7 @@ class Metastack:
     the node itself, or a metadata reactor. Metadata reactors are unique
     in their ability to revise their own layer each time they are run.
     """
+
     def __init__(self):
         self._partitions = (
             # We rely heavily on insertion order in these dicts.
@@ -56,7 +57,7 @@ class Metastack:
         else:
             return deepcopy_metadata(result['data'])
 
-    def _as_dict(self, partitions=None):
+    def as_dict(self, partitions=None):
         final_dict = {}
 
         if partitions is None:
@@ -72,8 +73,8 @@ class Metastack:
 
         return final_dict
 
-    def _as_blame(self):
-        keymap = map_dict_keys(self._as_dict())
+    def as_blame(self):
+        keymap = map_dict_keys(self.as_dict())
         blame = {}
         for path in keymap:
             for partition in self._partitions:
@@ -86,17 +87,17 @@ class Metastack:
                         blame.setdefault(path, []).append(identifier)
         return blame
 
-    def _pop_layer(self, partition_index, identifier):
+    def pop_layer(self, partition_index, identifier):
         try:
             return self._partitions[partition_index].pop(identifier)
         except (KeyError, IndexError):
             return {}
 
-    def _set_layer(self, partition_index, identifier, new_layer):
+    def set_layer(self, partition_index, identifier, new_layer):
         validate_metadata(new_layer)
         self._partitions[partition_index][identifier] = new_layer
 
-    def _cache_partition(self, partition_index):
+    def cache_partition(self, partition_index):
         self._cached_partitions[partition_index] = {
-            'merged layers': self._as_dict(partitions=[partition_index]),
+            'merged layers': self.as_dict(partitions=[partition_index]),
         }

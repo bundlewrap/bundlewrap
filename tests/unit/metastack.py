@@ -11,57 +11,57 @@ def test_has_no_top():
 
 def test_has_no_subpath():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'in': {}}})
+    stack.set_layer(0, 'base', {'something': {'in': {}}})
     with raises(KeyError):
         stack.get(('something', 'in', 'a', 'path'))
 
 
 def test_get_top():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': 123})
+    stack.set_layer(0, 'base', {'something': 123})
     assert stack.get(('something',)) == 123
 
 
 def test_get_subpath():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'in': {'a': 'subpath'}}})
+    stack.set_layer(0, 'base', {'something': {'in': {'a': 'subpath'}}})
     assert stack.get(('something', 'in', 'a')) == 'subpath'
 
 
 def test_overlay_value():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    stack._set_layer(0, 'overlay', {'something': {'a_value': 10}})
+    stack.set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack.set_layer(0, 'overlay', {'something': {'a_value': 10}})
     assert stack.get(('something', 'a_value')) == 10
 
 
 def test_merge_lists():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    stack._set_layer(0, 'overlay', {'something': {'a_list': [3]}})
+    stack.set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack.set_layer(0, 'overlay', {'something': {'a_list': [3]}})
     assert sorted(stack.get(('something', 'a_list'))) == sorted([1, 2, 3])
 
 
 def test_merge_sets():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
-    stack._set_layer(0, 'overlay', {'something': {'a_set': {3}}})
+    stack.set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
+    stack.set_layer(0, 'overlay', {'something': {'a_set': {3}}})
     assert stack.get(('something', 'a_set')) == {1, 2, 3}
 
 
 def test_overlay_value_multi_layers():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    stack._set_layer(0, 'overlay', {'something': {'a_value': 10}})
-    stack._set_layer(0, 'unrelated', {'something': {'another_value': 10}})
+    stack.set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack.set_layer(0, 'overlay', {'something': {'a_value': 10}})
+    stack.set_layer(0, 'unrelated', {'something': {'another_value': 10}})
     assert stack.get(('something', 'a_value')) == 10
 
 
 def test_merge_lists_multi_layers():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    stack._set_layer(0, 'overlay', {'something': {'a_list': [3]}})
-    stack._set_layer(0, 'unrelated', {'something': {'another_value': 10}})
+    stack.set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack.set_layer(0, 'overlay', {'something': {'a_list': [3]}})
+    stack.set_layer(0, 'unrelated', {'something': {'another_value': 10}})
 
     # Objects in Metastacks are frozen. This converts lists to tuples.
     # Unlike set and frozenset, list and tuple doesn't naturally support
@@ -79,53 +79,53 @@ def test_merge_lists_multi_layers():
 
 def test_merge_sets_multi_layers():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
-    stack._set_layer(0, 'overlay', {'something': {'a_set': {3}}})
-    stack._set_layer(0, 'unrelated', {'something': {'another_value': 10}})
+    stack.set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
+    stack.set_layer(0, 'overlay', {'something': {'a_set': {3}}})
+    stack.set_layer(0, 'unrelated', {'something': {'another_value': 10}})
     assert stack.get(('something', 'a_set')) == {1, 2, 3}
 
 
 def test_merge_lists_with_empty_layer():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    stack._set_layer(0, 'overlay1', {'something': {'a_list': []}})
-    stack._set_layer(0, 'overlay2', {'something': {'a_list': [3]}})
+    stack.set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack.set_layer(0, 'overlay1', {'something': {'a_list': []}})
+    stack.set_layer(0, 'overlay2', {'something': {'a_list': [3]}})
     assert sorted(stack.get(('something', 'a_list'))) == sorted([1, 2, 3])
 
 
 def test_merge_sets_with_empty_layer():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
-    stack._set_layer(0, 'overlay1', {'something': {'a_set': set()}})
-    stack._set_layer(0, 'overlay2', {'something': {'a_set': {3}}})
+    stack.set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
+    stack.set_layer(0, 'overlay1', {'something': {'a_set': set()}})
+    stack.set_layer(0, 'overlay2', {'something': {'a_set': {3}}})
     assert stack.get(('something', 'a_set')) == {1, 2, 3}
 
 
 def test_merge_lists_with_multiple_used_layers():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    stack._set_layer(0, 'overlay1', {'something': {'a_list': [3]}})
-    stack._set_layer(0, 'overlay2', {'something': {'a_list': [4]}})
-    stack._set_layer(0, 'overlay3', {'something': {'a_list': [6, 5]}})
+    stack.set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack.set_layer(0, 'overlay1', {'something': {'a_list': [3]}})
+    stack.set_layer(0, 'overlay2', {'something': {'a_list': [4]}})
+    stack.set_layer(0, 'overlay3', {'something': {'a_list': [6, 5]}})
     assert sorted(stack.get(('something', 'a_list'))) == sorted([1, 2, 3, 4, 5, 6])
 
 
 def test_merge_sets_with_multiple_used_layers():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
-    stack._set_layer(0, 'overlay1', {'something': {'a_set': {3}}})
-    stack._set_layer(0, 'overlay2', {'something': {'a_set': {4}}})
-    stack._set_layer(0, 'overlay3', {'something': {'a_set': {6, 5}}})
+    stack.set_layer(0, 'base', {'something': {'a_set': {1, 2}, 'a_value': 5}})
+    stack.set_layer(0, 'overlay1', {'something': {'a_set': {3}}})
+    stack.set_layer(0, 'overlay2', {'something': {'a_set': {4}}})
+    stack.set_layer(0, 'overlay3', {'something': {'a_set': {6, 5}}})
     assert stack.get(('something', 'a_set')) == {1, 2, 3, 4, 5, 6}
 
 
 def test_merge_dicts():
     stack = Metastack()
-    stack._set_layer(0, 'overlay1', {'something': {'a_value': 3}})
-    stack._set_layer(0, 'overlay2', {'something': {'another_value': 5}})
-    stack._set_layer(0, 'overlay3', {'something': {'this': {'and': 'that'}}})
-    stack._set_layer(0, 'overlay4', {'something': {'a_set': {1, 2}}})
-    stack._set_layer(0, 'overlay5', {'something': {'a_set': {3, 4}}})
+    stack.set_layer(0, 'overlay1', {'something': {'a_value': 3}})
+    stack.set_layer(0, 'overlay2', {'something': {'another_value': 5}})
+    stack.set_layer(0, 'overlay3', {'something': {'this': {'and': 'that'}}})
+    stack.set_layer(0, 'overlay4', {'something': {'a_set': {1, 2}}})
+    stack.set_layer(0, 'overlay5', {'something': {'a_set': {3, 4}}})
     assert stack.get(('something',)) == {
         'a_set': {1, 2, 3, 4},
         'a_value': 3,
@@ -138,21 +138,21 @@ def test_merge_dicts():
 
 def test_requesting_empty_path():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'foo': {'bar': 'baz'}})
+    stack.set_layer(0, 'base', {'foo': {'bar': 'baz'}})
     assert stack.get(tuple()) == {'foo': {'bar': 'baz'}}
 
 
 def test_update_layer_for_new_value():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'foo': 'bar'})
+    stack.set_layer(0, 'base', {'foo': 'bar'})
 
-    stack._set_layer(0, 'overlay', {'something': 123})
+    stack.set_layer(0, 'overlay', {'something': 123})
     assert stack.get(('foo',)) == 'bar'
     with raises(KeyError):
         assert stack.get(('boing',))
     assert stack.get(('something',)) == 123
 
-    stack._set_layer(0, 'overlay', {'something': 456})
+    stack.set_layer(0, 'overlay', {'something': 456})
     assert stack.get(('foo',)) == 'bar'
     with raises(KeyError):
         assert stack.get(('boing',))
@@ -161,7 +161,7 @@ def test_update_layer_for_new_value():
 
 def test_deepcopy():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'foo': {'bar': {1, 2, 3}}})
+    stack.set_layer(0, 'base', {'foo': {'bar': {1, 2, 3}}})
     foo = stack.get(('foo',))
     foo['bar'].add(4)
     assert stack.get(('foo', 'bar')) == {1, 2, 3}
@@ -171,33 +171,33 @@ def test_deepcopy():
 
 def test_atomic_in_base():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'list': atomic([1, 2, 3])})
-    stack._set_layer(0, 'overlay', {'list': [4]})
+    stack.set_layer(0, 'base', {'list': atomic([1, 2, 3])})
+    stack.set_layer(0, 'overlay', {'list': [4]})
     assert list(stack.get(('list',))) == [4]
 
 
 def test_atomic_in_layer():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'list': [1, 2, 3]})
-    stack._set_layer(0, 'overlay', {'list': atomic([4])})
+    stack.set_layer(0, 'base', {'list': [1, 2, 3]})
+    stack.set_layer(0, 'overlay', {'list': atomic([4])})
     assert list(stack.get(('list',))) == [4]
 
 
 def test_pop_layer():
     stack = Metastack()
-    stack._set_layer(0, 'overlay', {'foo': 'bar'})
-    stack._set_layer(0, 'overlay', {'foo': 'baz'})
-    assert stack._pop_layer(0, 'overlay') == {'foo': 'baz'}
+    stack.set_layer(0, 'overlay', {'foo': 'bar'})
+    stack.set_layer(0, 'overlay', {'foo': 'baz'})
+    assert stack.pop_layer(0, 'overlay') == {'foo': 'baz'}
     with raises(KeyError):
         stack.get(('foo',))
-    assert stack._pop_layer(0, 'overlay') == {}
-    assert stack._pop_layer(0, 'unknown') == {}
-    assert stack._pop_layer(47, 'unknown') == {}
+    assert stack.pop_layer(0, 'overlay') == {}
+    assert stack.pop_layer(0, 'unknown') == {}
+    assert stack.pop_layer(47, 'unknown') == {}
 
 
 def test_as_dict():
     stack = Metastack()
-    stack._set_layer(0, 'base', {
+    stack.set_layer(0, 'base', {
         'bool': True,
         'bytes': b'howdy',
         'dict': {'1': 2},
@@ -208,10 +208,10 @@ def test_as_dict():
         'str': 'howdy',
         'tuple': (1, 2),
     })
-    stack._set_layer(0, 'overlay1', {'int': 1000})
-    stack._set_layer(0, 'overlay2', {'list': [2]})
-    stack._set_layer(0, 'overlay3', {'new_element': True})
-    assert stack._as_dict() == {
+    stack.set_layer(0, 'overlay1', {'int': 1000})
+    stack.set_layer(0, 'overlay2', {'list': [2]})
+    stack.set_layer(0, 'overlay3', {'new_element': True})
+    assert stack.as_dict() == {
         'bool': True,
         'bytes': b'howdy',
         'dict': {'1': 2},
@@ -227,10 +227,10 @@ def test_as_dict():
 
 def test_as_blame():
     stack = Metastack()
-    stack._set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
-    stack._set_layer(0, 'overlay', {'something': {'a_list': [3]}})
-    stack._set_layer(0, 'unrelated', {'something': {'another_value': 10}})
-    assert stack._as_blame() == {
+    stack.set_layer(0, 'base', {'something': {'a_list': [1, 2], 'a_value': 5}})
+    stack.set_layer(0, 'overlay', {'something': {'a_list': [3]}})
+    stack.set_layer(0, 'unrelated', {'something': {'another_value': 10}})
+    assert stack.as_blame() == {
         ('something',): ['base', 'overlay', 'unrelated'],
         ('something', 'a_list'): ['base', 'overlay'],
         ('something', 'a_value'): ['base'],
