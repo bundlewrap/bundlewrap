@@ -58,6 +58,12 @@ class PathSet:
                 return True
         return False
 
+    def needs(self, candidate_path):
+        for existing_path in self._paths:
+            if list_starts_with(existing_path, candidate_path):
+                return True
+        return False
+
 
 def reactors_for_paths(available_reactors, required_paths):
     """
@@ -68,7 +74,7 @@ def reactors_for_paths(available_reactors, required_paths):
         provides = getattr(reactor, '_provides', tuple())
         if provides:
             for path in provides:
-                if required_paths.covers(path):
+                if required_paths.covers(path) or required_paths.needs(path):
                     yield name, reactor
                     break
         else:
