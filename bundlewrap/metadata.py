@@ -337,3 +337,9 @@ def hash_metadata(sdict):
     Returns a canonical SHA1 hash to describe this dict.
     """
     return sha1(metadata_to_json(sdict).encode('utf-8')).hexdigest()
+
+
+def path_to_tuple(path):
+    if isinstance(path, str):
+        path = [None if comp == "*" else comp for comp in path.split("/")]
+    return tuple(path)

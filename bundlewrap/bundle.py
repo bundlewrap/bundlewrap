@@ -1,7 +1,7 @@
 from os.path import exists, join
 
 from .exceptions import BundleError, NoSuchBundle, RepositoryError
-from .metadata import DoNotRunAgain
+from .metadata import DoNotRunAgain, path_to_tuple
 from .utils import cached_property
 from .utils.text import bold, mark_for_translation as _
 from .utils.text import validate_name
@@ -36,9 +36,7 @@ def metadata_reactor_for_bundle(bundle_name):
         def provides_inner(func):
             func._provides = set()
             for arg in args:
-                if isinstance(arg, str):
-                    arg = arg.split("/")
-                func._provides.add(tuple(arg))
+                func._provides.add(path_to_tuple(arg))
             return metadata_reactor(func)
         return provides_inner
 
