@@ -93,13 +93,13 @@ def graph_for_items(
             for dep in sorted(item._deps):
                 if dep not in items:
                     continue
-                if dep in getattr(item, '_concurrency_deps', []):
+                if dep.id in getattr(item, '_concurrency_deps', []):
                     if concurrency:
                         yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)
                 elif dep in item._reverse_deps:
                     if reverse:
                         yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep)
-                elif dep not in item.needs:
+                elif dep.id not in item.needs:
                     if dep in items:
                         yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
 
