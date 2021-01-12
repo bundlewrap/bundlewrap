@@ -92,6 +92,14 @@ class NodeMetadataProxy:
         self._satisfied = False  # has this node completed all required reactors?
         self.__relevant_reactors_cache = None
 
+    def __contains__(self, key):
+        try:
+            self.get(key, _backwards_compatibility_default=False)
+        except KeyError:
+            return False
+        else:
+            return True
+
     def __getitem__(self, key):
         return self.get((key,))
 
@@ -164,7 +172,16 @@ class NodeMetadataProxy:
             self.__ensure_uncached_metastack()
             return self._metastack
 
-    def get(self, path, default=NO_DEFAULT):
+    def get(self, path, default=NO_DEFAULT, _backwards_compatibility_default=True):
+        if (
+            default == NO_DEFAULT and
+            _backwards_compatibility_default and
+            not self._metagen._in_a_reactor and
+            "/" not in path
+        ):
+            # make node.metadata.get('foo') work as if it was still a dict
+            # TODO remove in 5.0
+            default = None
         if not isinstance(path, (tuple, list)):
             path = tuple(path.split("/"))
         if self._requested_paths.add(path):

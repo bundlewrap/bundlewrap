@@ -678,7 +678,7 @@ class Node:
 
     def metadata_get(self, *args, **kwargs):
         # TODO remove in 5.0
-        return self.metadata.get(*args, **kwargs)
+        return self.metadata.get(*args, _backwards_compatibility_default=False, **kwargs)
 
     def metadata_hash(self):
         return hash_metadata(self.metadata)
