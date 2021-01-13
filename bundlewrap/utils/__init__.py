@@ -5,6 +5,7 @@ import hashlib
 from inspect import isgenerator
 from os import chmod, close, makedirs, remove
 from os.path import dirname, exists
+from passlib.hash import apr_md5_crypt
 from random import shuffle
 import stat
 from sys import stderr, stdout
@@ -181,6 +182,17 @@ class Fault:
         def callback():
             return format_string.format(self.value)
         return Fault(self.id_list + ['format_into ' + format_string], callback)
+
+    def as_htpasswd_entry(self, username):
+        def callback():
+            return '{}:{}'.format(
+                username,
+                apr_md5_crypt.encrypt(
+                    self.value,
+                    salt=hashlib.sha512(self.id_list[0].encode('utf-8')).hexdigest()[:8],
+                ),
+            )
+        return Fault(self.id_list + ['as_htpasswd_entry ' + username], callback)
 
     @property
     def is_available(self):
