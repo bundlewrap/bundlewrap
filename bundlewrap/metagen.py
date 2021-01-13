@@ -255,9 +255,6 @@ class MetadataGenerator:
         self.__reactors_run = 0
         # how often each reactor changed
         self.__reactor_changes = defaultdict(int)
-        # tracks which reactors on a node have looked at other nodes
-        # through partial_metadata
-        self.__reactors_with_deps = defaultdict(set)
         # set when a reactor requests an additional path
         self._additional_path_requested = False
 
@@ -297,40 +294,14 @@ class MetadataGenerator:
             pass
         else:
             io.debug(f"triggered metadata run for {node_name}")
-            self.__run_reactors(
-                self.get_node(node_name),
-                with_deps=True,
-                without_deps=False,
-            )
+            self.__run_reactors(self.get_node(node_name))
             raise _StartOver
 
-    def __run_unstable_nodes(self):
-        encountered_unstable_node = False
-        for node, stable in self._node_stable.items():
-            if stable:
-                continue
-
-            io.debug(f"begin metadata stabilization test for {node.name}")
-            self.__run_reactors(node, with_deps=False, without_deps=True)
-            if self._node_stable[node]:
-                io.debug(f"metadata stabilized for {node.name}")
-            else:
-                io.debug(f"metadata remains unstable for {node.name}")
-                encountered_unstable_node = True
-            if self.__nodes_that_never_ran:
-                # we have found a new dependency, process it immediately
-                # going wide early should be more efficient
-                raise _StartOver
-        if encountered_unstable_node or self._additional_path_requested:
-            # start over until everything is stable
-            io.debug("found an unstable node (without_deps=True)")
-            raise _StartOver
-
-    def __run_nodes_with_deps(self):
+    def __run_nodes(self):
         encountered_unstable_node = False
         for node in randomize_order(self._node_stable.keys()):
-            io.debug(f"begin final stabilization test for {node.name}")
-            self.__run_reactors(node, with_deps=True, without_deps=False)
+            io.debug(f"begin stabilization test for {node.name}")
+            self.__run_reactors(node)
             if not self._node_stable[node]:
                 io.debug(f"{node.name} still unstable")
                 encountered_unstable_node = True
@@ -339,8 +310,6 @@ class MetadataGenerator:
                 # going wide early should be more efficient
                 raise _StartOver
         if encountered_unstable_node:
-            # start over until everything is stable
-            io.debug("found an unstable node (with_deps=True)")
             raise _StartOver
 
     def _build_node_metadata(self, initial_node_name):
@@ -377,15 +346,11 @@ class MetadataGenerator:
                     # depending node.
                     self.__run_triggered_nodes()
 
-                    # In this stage, we run all unstable nodes to the point where everything is
-                    # stable again, except for those reactors that depend on other nodes.
-                    self.__run_unstable_nodes()
-
                     # The final step is to make sure nothing changes when we run reactors with
                     # dependencies on other nodes. If anything changes, we need to start over so
                     # local-only reactors on a node can react to changes caused by reactors looking
                     # at other nodes.
-                    self.__run_nodes_with_deps()
+                    self.__run_nodes()
 
                     # If we get here, we're done! All that's left to do is blacklist completed
                     # reactors so they don't get run again if additional metadata is requested.
@@ -448,8 +413,8 @@ class MetadataGenerator:
         )
         node.metadata._metastack.cache_partition(0)
 
-        # run all reactors once to get started
-        self.__run_reactors(node, with_deps=True, without_deps=True)
+        # run all reactors once to get started  TODO is this necessary?
+        self.__run_reactors(node)
 
     def __check_iteration_count(self, node_name):
         self.__node_iterations[node_name] += 1
@@ -464,45 +429,26 @@ class MetadataGenerator:
                 msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
             raise RuntimeError(msg)
 
-    def __run_reactors(self, node, with_deps=True, without_deps=True):
+    def __run_reactors(self, node):
         self.__check_iteration_count(node.name)
         any_reactor_changed = False
         self._additional_path_requested = False
 
-        for depsonly in (True, False):
-            if depsonly and not with_deps:
-                # skip reactors with deps
-                continue
-            if not depsonly and not without_deps:
-                # skip reactors without deps
-                continue
-            # TODO ideally, we should run the least-run reactors first
-            for reactor_name, reactor in randomize_order(
-                self._node_metadata_proxies[node.name]._pending_reactors
-            ):
-                if (
-                    (depsonly and reactor_name not in self.__reactors_with_deps[node.name]) or
-                    (not depsonly and reactor_name in self.__reactors_with_deps[node.name])
-                ):
-                    # this if makes sure we run reactors with deps first
-                    continue
-                reactor_changed, deps = self.__run_reactor(node, reactor_name, reactor)
-                io.debug(f"{node.name}:{reactor_name} changed={reactor_changed} deps={deps}")
-                if reactor_changed:
-                    any_reactor_changed = True
-                if deps:
-                    # record that this reactor has dependencies
-                    self.__reactors_with_deps[node.name].add(reactor_name)
-                    # we could also remove this marker if we end up without
-                    # deps again in future iterations, but that is too
-                    # unlikely and the housekeeping cost too great
-                for required_node_name in deps:
-                    if required_node_name not in self.__nodes_that_ran_at_least_once:
-                        # we found a node that we didn't need until now
-                        self.__nodes_that_never_ran.add(required_node_name)
-                    # this is so we know the current node needs to be run
-                    # again if the required node changes
-                    self.__node_deps[required_node_name].add(node.name)
+        # TODO ideally, we should run the least-run reactors first
+        for reactor_name, reactor in randomize_order(
+            self._node_metadata_proxies[node.name]._pending_reactors
+        ):
+            reactor_changed, deps = self.__run_reactor(node, reactor_name, reactor)
+            io.debug(f"{node.name}:{reactor_name} changed={reactor_changed} deps={deps}")
+            if reactor_changed:
+                any_reactor_changed = True
+            for required_node_name in deps:
+                if required_node_name not in self.__nodes_that_ran_at_least_once:
+                    # we found a node that we didn't need until now
+                    self.__nodes_that_never_ran.add(required_node_name)
+                # this is so we know the current node needs to be run
+                # again if the required node changes
+                self.__node_deps[required_node_name].add(node.name)
 
         if any_reactor_changed:
             # something changed on this node, mark all dependent nodes as unstable
@@ -510,9 +456,9 @@ class MetadataGenerator:
                 io.debug(f"{node.name} triggering metadata rerun on {required_node_name}")
                 self.__triggered_nodes.add(required_node_name)
 
-        if (with_deps and any_reactor_changed) or self._additional_path_requested:
+        if self._additional_path_requested:
             self._node_stable[node] = False
-        elif without_deps:
+        else:
             self._node_stable[node] = not any_reactor_changed
 
     def __run_reactor(self, node, reactor_name, reactor):
