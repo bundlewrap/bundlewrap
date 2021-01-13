@@ -5,12 +5,12 @@ import hashlib
 from inspect import isgenerator
 from os import chmod, close, makedirs, remove
 from os.path import dirname, exists
-from passlib.hash import apr_md5_crypt
 from random import shuffle
 import stat
 from sys import stderr, stdout
 from tempfile import mkstemp
 
+from passlib.hash import apr_md5_crypt
 from requests import get
 
 from ..exceptions import DontCache, FaultUnavailable
