@@ -101,7 +101,7 @@ class NodeMetadataProxy:
             return True
 
     def __getitem__(self, key):
-        return self.get((key,))
+        return self.get((key,), _backwards_compatibility_default=False)
 
     def __iter__(self):
         for key, value in self.get(tuple()).items():
