@@ -910,3 +910,44 @@ def test_reverse_dummy_dep(tmpdir):
 
     stdout, stderr, rcode = run("bw test", path=str(tmpdir))
     assert rcode == 0
+
+
+def test_bundlepy_tag_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'attrs': {
+                    'tags': {
+                        "a": {
+                            'needs': {"tag:b"},
+                        },
+                        "b": {
+                            'needs': {"tag:a"},
+                        },
+                    },
+                },
+                'items': {
+                    'actions': {
+                        "one": {
+                            'command': "true",
+                            'tags': {"a"},
+                        },
+                        "two": {
+                            'command': "true",
+                            'tags': {"b"},
+                        },
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw test -I", path=str(tmpdir))
+    assert rcode == 1
+    assert "action:one" in stderr.decode()
+    assert "action:two" in stderr.decode()

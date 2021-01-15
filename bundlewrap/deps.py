@@ -449,8 +449,8 @@ def prepare_dependencies(node):
         
     items = set(node.items)  # might be a tuple from cached_property
     _inject_canned_actions(items)
-    _prepare_deps(items)
     _inject_tag_attrs(items, node.bundles)
+    _prepare_deps(items)
     _inject_reverse_triggers(items)
     _inject_reverse_dependencies(items)
     _inject_trigger_dependencies(items)
