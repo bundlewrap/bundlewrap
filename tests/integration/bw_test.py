@@ -951,3 +951,52 @@ def test_bundlepy_tag_loop(tmpdir):
     assert rcode == 1
     assert "action:one" in stderr.decode()
     assert "action:two" in stderr.decode()
+
+
+def test_bundlepy_tag_loop2(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'attrs': {
+                    'tags': {
+                        "one": {
+                            'needed_by': {"tag:two"},
+                        },
+                        "two": {
+                            'needed_by': {"action:late"},
+                        },
+                    },
+                },
+                'items': {
+                    'actions': {
+                        "early": {
+                            'command': "true",
+                            'needed_by': {"tag:one"},
+                        },
+                        "fill_tag_one": {
+                            'command': "true",
+                            'tags': {"one"},
+                        },
+                        "fill_tag_two": {
+                            'command': "true",
+                            'tags': {"two"},
+                        },
+                        "late": {
+                            'command': "true",
+                            'needed_by': {"action:early"},  # this makes the loop
+                        },
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw test -I", path=str(tmpdir))
+    assert rcode == 1
+    assert "action:one" in stderr.decode()
+    assert "action:two" in stderr.decode()
