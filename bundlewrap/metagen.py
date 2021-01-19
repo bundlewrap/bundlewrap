@@ -189,7 +189,6 @@ class NodeMetadataProxy:
             self.__relevant_reactors_cache = None
             if self._metagen._in_a_reactor:
                 self._metagen._additional_path_requested = True
-                self._metagen._node_stable[self._node] = False
 
         if self._metastack_came_from_cache is None:
             try:
@@ -239,10 +238,6 @@ class MetadataGenerator:
         self.__node_deps = defaultdict(set)
         # how often __run_reactors was called for a node
         self.__node_iterations = defaultdict(int)
-        # A node is 'stable' when all its relevant reactors return unchanged
-        # metadata, except for those reactors that look at other nodes.
-        # This dict maps nodes to True/False indicating stable status.
-        self._node_stable = {}
         # nodes we encountered as a dependency through partial_metadata,
         # but haven't run yet
         self.__nodes_that_never_ran = set()
@@ -298,18 +293,19 @@ class MetadataGenerator:
             raise _StartOver
 
     def __run_nodes(self):
-        encountered_unstable_node = False
-        for node in randomize_order(self._node_stable.keys()):
-            io.debug(f"begin stabilization test for {node.name}")
+        encountered_unsatisfied_node = False
+        for proxy in randomize_order(self._node_metadata_proxies.values()):
+            node = proxy._node
+            io.debug(f"running reactors for {node.name}")
             self.__run_reactors(node)
-            if not self._node_stable[node]:
-                io.debug(f"{node.name} still unstable")
-                encountered_unstable_node = True
+            if not proxy._satisfied:
+                io.debug(f"{node.name} still not satisfied")
+                encountered_unsatisfied_node = True
             if self.__nodes_that_never_ran:
                 # we have found a new dependency, process it immediately
                 # going wide early should be more efficient
                 raise _StartOver
-        if encountered_unstable_node:
+        if encountered_unsatisfied_node:
             raise _StartOver
 
     def _build_node_metadata(self, initial_node_name):
@@ -354,12 +350,11 @@ class MetadataGenerator:
 
                     # If we get here, we're done! All that's left to do is blacklist completed
                     # reactors so they don't get run again if additional metadata is requested.
-                    for node in self._node_stable:
-                        proxy = self._node_metadata_proxies[node.name]
+                    for proxy in self._node_metadata_proxies.values():
                         proxy._completed_reactors.update(
                             proxy._relevant_reactors
                         )
-                        proxy._satisfied = True
+                        #proxy._satisfied = True
                         proxy._metastack_came_from_cache = False
                         if proxy._requested_paths.covers(tuple()):  # full metadata
                             proxy._metastack.cache_partition(1)
@@ -456,10 +451,8 @@ class MetadataGenerator:
                 io.debug(f"{node.name} triggering metadata rerun on {required_node_name}")
                 self.__triggered_nodes.add(required_node_name)
 
-        if self._additional_path_requested:
-            self._node_stable[node] = False
-        else:
-            self._node_stable[node] = not any_reactor_changed
+        if not self._additional_path_requested and not any_reactor_changed:
+            self._node_metadata_proxies[node.name]._satisfied = True
 
     def __run_reactor(self, node, reactor_name, reactor):
         if (node.name, reactor_name) in self.__do_not_run_again:
