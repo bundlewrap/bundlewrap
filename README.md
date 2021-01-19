@@ -9,7 +9,7 @@ For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and
 </a>
 &nbsp;
 <a href="https://github.com/bundlewrap/bundlewrap/actions">
-    <img src="https://github.com/bundlewrap/bundlewrap/workflows/Run%20tests/badge.svg" alt="Build status">
+    <img src="https://github.com/bundlewrap/bundlewrap/workflows/Tests/badge.svg" alt="Build status">
 </a>
 &nbsp;
 <a href="https://pypi.python.org/pypi/bundlewrap/">
