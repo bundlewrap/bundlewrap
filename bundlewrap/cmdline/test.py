@@ -151,7 +151,6 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
             break
 
         iteration_repo = Repository(repo.path)
-        iteration_repo.clear_metadata_cache()
 
         iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
         for node in iteration_nodes:

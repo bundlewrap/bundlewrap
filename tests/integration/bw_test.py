@@ -753,12 +753,7 @@ n = randint(1, 99999)
 def test(metadata):
     return {'findme': n}
 """)
-    # make sure caching doesn't interfere
-    # cache has to be in data dir to not invalidate itself
-    stdout, stderr, rcode = run(
-        f"BW_METADATA_CACHE_DIR={join(tmpdir, 'data', 'cache')} bw test -m 3",
-        path=str(tmpdir),
-    )
+    stdout, stderr, rcode = run("bw test -m 3", path=str(tmpdir))
     assert rcode == 1
     assert b"findme" in stderr
 

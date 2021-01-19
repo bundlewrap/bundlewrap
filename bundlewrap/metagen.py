@@ -1,13 +1,10 @@
 from collections import defaultdict, Counter
 from contextlib import suppress
-from json import load
-from os import environ, makedirs
-from os.path import dirname, exists, join
-from shutil import rmtree
+from os import environ
 from traceback import TracebackException
 
 from .exceptions import MetadataPersistentKeyError
-from .metadata import DoNotRunAgain, metadata_to_json
+from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy
 from .utils import list_starts_with, randomize_order, NO_DEFAULT
 from .utils.dicts import extra_paths_in_dict
@@ -86,7 +83,6 @@ class NodeMetadataProxy:
         self._metagen = metagen
         self._node = node
         self._metastack = Metastack()
-        self._metastack_came_from_cache = None
         self._completed_reactors = set()
         self._requested_paths = PathSet()
         self._satisfied = False  # has this node completed all required reactors?
@@ -129,39 +125,11 @@ class NodeMetadataProxy:
             if reactor not in self._completed_reactors:
                 yield reactor
 
-    def __disk_cache_node_filename(self):
-        return join(self._metagen._disk_cache_hash_dir, self._node.name)
-
-    def __read_disk_cache(self):
-        if not environ.get("BW_METADATA_CACHE_DIR"):
-            raise FileNotFoundError
-
-        with open(self.__disk_cache_node_filename(), 'rb') as f:
-            return load(f)
-
-    def _write_disk_cache(self):
-        node_file = self.__disk_cache_node_filename()
-        if not exists(node_file):
-            makedirs(dirname(node_file), mode=0o770, exist_ok=True)
-            with open(node_file, 'w') as f:
-                f.write(metadata_to_json(self._metastack.as_dict()))
-
-    def __ensure_uncached_metastack(self):
-        """
-        Cached stacks are flat and useless for .blame and .stack
-        """
-        if self._metastack_came_from_cache:
-            self._metastack = Metastack()
-            self._satisfied = False
-        with self._metagen._node_metadata_lock:
-            self._metagen._build_node_metadata(self._node.name)
-
     @property
     def blame(self):
         if self._metagen._in_a_reactor:
             raise RuntimeError("cannot call node.metadata.blame from a reactor")
         else:
-            self.__ensure_uncached_metastack()
             return self._metastack.as_blame()
 
     @property
@@ -169,7 +137,6 @@ class NodeMetadataProxy:
         if self._metagen._in_a_reactor:
             raise RuntimeError("cannot call node.metadata.stack from a reactor")
         else:
-            self.__ensure_uncached_metastack()
             return self._metastack
 
     def get(self, path, default=NO_DEFAULT, _backwards_compatibility_default=True):
@@ -189,17 +156,6 @@ class NodeMetadataProxy:
             self.__relevant_reactors_cache = None
             if self._metagen._in_a_reactor:
                 self._metagen._additional_path_requested = True
-
-        if self._metastack_came_from_cache is None:
-            try:
-                metadata = self.__read_disk_cache()
-            except FileNotFoundError:
-                pass
-            else:
-                self._metastack = Metastack()
-                self._metastack.set_layer(0, "flattened", metadata)
-                self._metastack_came_from_cache = True
-                self._satisfied = True
 
         if self._metagen._in_a_reactor:
             self._metagen._partial_metadata_accessed_for.add(self._node.name)
@@ -257,20 +213,6 @@ class MetadataGenerator:
         if node_name not in self._node_metadata_proxies:
             self._node_metadata_proxies[node_name] = NodeMetadataProxy(self, self.get_node(node_name))
         return self._node_metadata_proxies[node_name]
-
-    @property
-    def _disk_cache_hash_dir(self):
-        if not environ.get("BW_METADATA_CACHE_DIR"):
-            return None
-        return join(
-            environ.get("BW_METADATA_CACHE_DIR"),
-            self.hash_for_files_changing_metadata,
-        )
-
-    def clear_metadata_cache(self):
-        if self._disk_cache_hash_dir:
-            io.debug(f"removing {self._disk_cache_hash_dir}")
-            rmtree(self._disk_cache_hash_dir)
 
     def __run_new_nodes(self):
         try:
@@ -354,13 +296,8 @@ class MetadataGenerator:
                         proxy._completed_reactors.update(
                             proxy._relevant_reactors
                         )
-                        #proxy._satisfied = True
-                        proxy._metastack_came_from_cache = False
                         if proxy._requested_paths.covers(tuple()):  # full metadata
                             proxy._metastack.cache_partition(1)
-
-                            if environ.get("BW_METADATA_CACHE_DIR"):
-                                proxy._write_disk_cache()
                     break
 
             except _StartOver:

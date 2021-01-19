@@ -58,14 +58,6 @@ Sets the limit of how often metadata reactors will be run for a node before Bund
 
 <br>
 
-## `BW_METADATA_CACHE_DIR`
-
-**Experimental**
-
-Set this to a directory path to have BundleWrap store JSON dumps of node metadata there. The directory will be created if it does not exist. BundleWrap will hash the contents of all files (with some exceptions like the `data/` dir) to determine the lifetime of the cache. Note: BundleWrap will *not* clean up invalidated caches. So best put this in `/tmp` or create a cron job to delete subdirectories after a certain age.
-
-<br>
-
 ## `BW_REPO_PATH`
 
 Set this to a path pointing to your BundleWrap repository. If unset, the current working directory is used. Can be overridden with `bw --repository PATH`. Keep in mind that `bw` will also look for a repository in all parent directories until it finds one.
