@@ -1,0 +1,36 @@
+name: Run tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
+        python -m pip install .
+    - name: Set up SSH
+      run: |
+        ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
+        cp ~/.ssh/id_ed25519.pub ~/.ssh/authorized_keys
+        chmod og-rw ~
+        ssh -o StrictHostKeyChecking=no localhost id
+    - name: Test with pytest
+      run: |
+        pytest tests
