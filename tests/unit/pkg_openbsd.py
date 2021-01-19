@@ -57,7 +57,7 @@ def test_dashall_not_found():
     assert found is False
 
 
-def test_dashall_not_found():
+def test_dashall_not_found_dash_in_pkgname():
     found, version, flavor = parse_pkg_name("graphical-vim", "graphical-vim-8.0.0987p0-gtk2-lua")
     assert found is True
     assert version == "8.0.0987p0"
