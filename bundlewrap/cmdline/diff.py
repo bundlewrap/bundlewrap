@@ -246,7 +246,7 @@ def bw_diff(repo, args):
         ).format(x=red("!!!")))
         exit(1)
 
-    target_nodes = get_target_nodes(repo, args['targets'])
+    target_nodes = sorted(get_target_nodes(repo, args['targets']))
 
     if args['branch'] or args['cmd_change'] or args['cmd_reset'] or args['prompt']:
         intermissions = []
