@@ -8,8 +8,8 @@ For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and
     <img src="http://img.shields.io/pypi/v/bundlewrap.svg" alt="Latest Version">
 </a>
 &nbsp;
-<a href="https://travis-ci.org/bundlewrap/bundlewrap">
-    <img src="http://img.shields.io/travis/bundlewrap/bundlewrap/master.svg" alt="Build status">
+<a href="https://github.com/bundlewrap/bundlewrap/actions">
+    <img src="https://github.com/bundlewrap/bundlewrap/workflows/Run%20tests/badge.svg" alt="Build status">
 </a>
 &nbsp;
 <a href="https://pypi.python.org/pypi/bundlewrap/">
