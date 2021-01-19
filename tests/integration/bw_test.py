@@ -1039,5 +1039,4 @@ def test_bundlepy_tag_loop2(tmpdir):
     )
     stdout, stderr, rcode = run("bw test -I", path=str(tmpdir))
     assert rcode == 1
-    assert "action:one" in stderr.decode()
-    assert "action:two" in stderr.decode()
+    assert "action:late" in stderr.decode()
