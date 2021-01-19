@@ -618,6 +618,52 @@ def foo(metadata):
     assert b"foo/bar" in stderr
 
 
+def test_reactor_provides_ok(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor.provides("foo")
+def foo(metadata):
+    return {"foo": 1}
+""")
+    stdout, stderr, rcode = run("bw test -p", path=str(tmpdir))
+    assert rcode == 0
+
+
+def test_reactor_provides_violated(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': {"bundle1"},
+            },
+        },
+        bundles={
+            "bundle1": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor.provides("foo")
+def foo(metadata):
+    return {"bar": 1}
+""")
+    stdout, stderr, rcode = run("bw test -p", path=str(tmpdir))
+    assert rcode == 1
+    assert "foo" in stderr.decode()
+    assert "bar" in stderr.decode()
+
+
 def test_fault_missing(tmpdir):
     make_repo(
         tmpdir,

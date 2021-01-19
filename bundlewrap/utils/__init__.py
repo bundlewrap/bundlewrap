@@ -261,6 +261,18 @@ def hash_local_file(path):
     return sha1(get_file_contents(path))
 
 
+def list_starts_with(list_a, list_b):
+    """
+    Returns True if list_a starts with list_b.
+    """
+    list_a = tuple(list_a)
+    list_b = tuple(list_b)
+    try:
+        return list_a[:len(list_b)] == list_b
+    except IndexError:
+        return False
+
+
 def names(obj_list):
     """
     Iterator over the name properties of a given list of objects.

@@ -2,7 +2,6 @@ from collections import OrderedDict
 from sys import version_info
 
 from ..metadata import METADATA_TYPES, deepcopy_metadata, validate_metadata, value_at_key_path
-from . import NO_DEFAULT
 from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
 
 
@@ -17,6 +16,7 @@ class Metastack:
     the node itself, or a metadata reactor. Metadata reactors are unique
     in their ability to revise their own layer each time they are run.
     """
+
     def __init__(self):
         self._partitions = (
             # We rely heavily on insertion order in these dicts.
@@ -26,24 +26,10 @@ class Metastack:
         )
         self._cached_partitions = {}
 
-    def get(self, path, default=NO_DEFAULT):
+    def get(self, path):
         """
         Get the value at the given path, merging all layers together.
-
-        Path may either be string like
-
-            'foo/bar'
-
-        accessing the 'bar' key in the dict at the 'foo' key
-        or a tuple like
-
-            ('fo/o', 'bar')
-
-        accessing the 'bar' key in the dict at the 'fo/o' key.
         """
-        if not isinstance(path, (tuple, list)):
-            path = path.split('/')
-
         result = None
         undef = True
 
@@ -67,14 +53,11 @@ class Metastack:
                         result = merge_dict({'data': value}, result)
 
         if undef:
-            if default != NO_DEFAULT:
-                return default
-            else:
-                raise KeyError('/'.join(path))
+            raise KeyError('/'.join(path))
         else:
             return deepcopy_metadata(result['data'])
 
-    def _as_dict(self, partitions=None):
+    def as_dict(self, partitions=None):
         final_dict = {}
 
         if partitions is None:
@@ -90,8 +73,8 @@ class Metastack:
 
         return final_dict
 
-    def _as_blame(self):
-        keymap = map_dict_keys(self._as_dict())
+    def as_blame(self):
+        keymap = map_dict_keys(self.as_dict())
         blame = {}
         for path in keymap:
             for partition in self._partitions:
@@ -104,17 +87,17 @@ class Metastack:
                         blame.setdefault(path, []).append(identifier)
         return blame
 
-    def _pop_layer(self, partition_index, identifier):
+    def pop_layer(self, partition_index, identifier):
         try:
             return self._partitions[partition_index].pop(identifier)
         except (KeyError, IndexError):
             return {}
 
-    def _set_layer(self, partition_index, identifier, new_layer):
+    def set_layer(self, partition_index, identifier, new_layer):
         validate_metadata(new_layer)
         self._partitions[partition_index][identifier] = new_layer
 
-    def _cache_partition(self, partition_index):
+    def cache_partition(self, partition_index):
         self._cached_partitions[partition_index] = {
-            'merged layers': self._as_dict(partitions=[partition_index]),
+            'merged layers': self.as_dict(partitions=[partition_index]),
         }

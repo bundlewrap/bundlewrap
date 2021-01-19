@@ -25,13 +25,12 @@ from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import hash_metadata
-from .utils import cached_property, error_context, get_file_contents, names, NO_DEFAULT
+from .utils import cached_property, error_context, get_file_contents, names
 from .utils.dicts import (
     dict_to_toml,
     hash_statedict,
     set_key_at_path,
     validate_dict,
-    value_at_key_path,
     COLLECTION_OF_STRINGS,
 )
 from .utils.text import (
@@ -675,26 +674,11 @@ class Node:
 
     @property
     def metadata(self):
-        return self.repo._metadata_for_node(self.name)
+        return self.repo._metadata_proxy_for_node(self.name)
 
-    @property
-    def metadata_blame(self):
-        return self.repo._metadata_for_node(self.name, blame=True)
-
-    @property
-    def _metadata_stack(self):
-        return self.repo._metadata_for_node(self.name, stack=True)
-
-    def metadata_get(self, path, default=NO_DEFAULT):
-        if not isinstance(path, (tuple, list)):
-            path = path.split("/")
-        try:
-            return value_at_key_path(self.metadata, path)
-        except KeyError:
-            if default != NO_DEFAULT:
-                return default
-            else:
-                raise
+    def metadata_get(self, *args, **kwargs):
+        # TODO remove in 5.0
+        return self.metadata.get(*args, _backwards_compatibility_default=False, **kwargs)
 
     def metadata_hash(self):
         return hash_metadata(self.metadata)

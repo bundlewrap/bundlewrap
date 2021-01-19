@@ -536,3 +536,81 @@ def reactor1(metadata):
         "number": 23,
         "other_numbers": [42, 47],
     }
+
+
+def test_reactor_provides_not_run(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor.provides('foo')
+def reactor1(metadata):
+    return {'foo': 1}
+
+@metadata_reactor.provides('bar')
+def reactor2(metadata):
+    assert False
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
+    assert "AssertionError" in stderr.decode()
+
+    stdout, stderr, rcode = run("bw metadata node1 -k foo", path=str(tmpdir))
+    assert rcode == 0
+    assert loads(stdout.decode()) == {
+        'foo': 1,
+    }
+
+
+def test_reactor_provides_chain(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor.provides('foo')
+def reactor1(metadata):
+    return {
+        'foo': {
+            'baz': metadata.get('bar'),
+        },
+    }
+
+@metadata_reactor.provides('bar')
+def reactor2(metadata):
+    return {'bar': 2}
+
+@metadata_reactor.provides('something irrelevant')
+def reactor3(metadata):
+    assert False
+
+@metadata_reactor
+def reactor4(metadata):
+    return {}
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
+    assert "AssertionError" in stderr.decode()
+
+    stdout, stderr, rcode = run("bw metadata node1 -k foo", path=str(tmpdir))
+    assert rcode == 0
+    assert loads(stdout.decode()) == {
+        'foo': {
+            'baz': 2,
+        },
+    }

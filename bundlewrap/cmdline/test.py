@@ -133,93 +133,83 @@ def test_empty_groups(repo):
         exit(1)
 
 
-def test_determinism_config(repo, nodes, iterations, quiet):
+def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet):
     """
     Generate configuration a couple of times for every node and see if
     anything changes between iterations
     """
-    hashes = {}
-    io.progress_set_total(len(nodes) * iterations)
-    for i in range(iterations):
-        if QUIT_EVENT.is_set():
-            break
-        if i == 0:
-            # optimization: for the first iteration, just use the repo
-            # we already have
-            iteration_repo = repo
-        else:
-            iteration_repo = Repository(repo.path)
-        iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
-        for node in iteration_nodes:
-            if QUIT_EVENT.is_set():
-                break
-            with io.job(_("{node}  generating configuration ({i}/{n})").format(
-                i=i + 1,
-                n=iterations,
-                node=bold(node.name),
-            )):
-                result = node.hash()
-            hashes.setdefault(node.name, result)
-            if hashes[node.name] != result:
-                io.stderr(_(
-                    "{x} Configuration for node {node} changed when generated repeatedly "
-                    "(use `bw hash -d {node}` to debug)"
-                ).format(node=node.name, x=red("✘")))
-                exit(1)
-            io.progress_advance()
-    io.progress_set_total(0)
-    if not quiet:
-        io.stdout(_("{x} Configuration remained the same after being generated {n} times").format(
-            n=iterations,
-            x=green("✓"),
-        ))
-
-
-def test_determinism_metadata(repo, nodes, iterations, quiet):
-    """
-    Generate metadata a couple of times for every node and see if
-    anything changes between iterations
-    """
-    hashes = {}
+    hashes_config = {}
+    hashes_metadata = {}
     metadata = {}
-    io.progress_set_total(len(nodes) * iterations)
-    for i in range(iterations):
+    io.progress_set_total(len(nodes) * (iterations_config + iterations_metadata))
+
+    iter_config_todo = iterations_config
+    iter_metadata_todo = iterations_metadata
+
+    while iter_config_todo > 0 or iter_metadata_todo > 0:
         if QUIT_EVENT.is_set():
             break
-        if i == 0:
-            # optimization: for the first iteration, just use the repo
-            # we already have
-            iteration_repo = repo
-        else:
-            iteration_repo = Repository(repo.path)
-            iteration_repo.clear_metadata_cache()
+
+        iteration_repo = Repository(repo.path)
+        iteration_repo.clear_metadata_cache()
+
         iteration_nodes = [iteration_repo.get_node(node.name) for node in nodes]
         for node in iteration_nodes:
             if QUIT_EVENT.is_set():
                 break
-            with io.job(_("{node}  generating metadata ({i}/{n})").format(
-                i=i + 1,
-                n=iterations,
-                node=bold(node.name),
-            )):
-                metadata.setdefault(node.name, node.metadata)
-                result = node.metadata_hash()
-            hashes.setdefault(node.name, result)
-            if hashes[node.name] != result:
-                io.stderr(_(
-                    "{x} Metadata for node {node} changed when generated repeatedly"
-                ).format(node=bold(node.name), x=red("✘")))
-                previous_json = metadata_to_json(metadata[node.name])
-                current_json = metadata_to_json(node.metadata)
-                io.stderr(diff_value_text("", previous_json, current_json))
-                exit(1)
-            io.progress_advance()
+
+            if iter_config_todo > 0:
+                with io.job(_("{node}  generating configuration ({i}/{n})").format(
+                    i=iterations_config - iter_config_todo,
+                    n=iterations_config,
+                    node=bold(node.name),
+                )):
+                    result = node.hash()
+                hashes_config.setdefault(node.name, result)
+                if hashes_config[node.name] != result:
+                    io.stderr(_(
+                        "{x} Configuration for node {node} changed when generated repeatedly "
+                        "(use `bw hash -d {node}` to debug)"
+                    ).format(node=node.name, x=red("✘")))
+                    exit(1)
+                io.progress_advance()
+
+            if iter_metadata_todo > 0:
+                with io.job(_("{node}  generating metadata ({i}/{n})").format(
+                    i=iterations_metadata - iter_metadata_todo,
+                    n=iterations_metadata,
+                    node=bold(node.name),
+                )):
+                    metadata.setdefault(node.name, dict(node.metadata))
+                    result = node.metadata_hash()
+                hashes_metadata.setdefault(node.name, result)
+                if hashes_metadata[node.name] != result:
+                    io.stderr(_(
+                        "{x} Metadata for node {node} changed when generated repeatedly"
+                    ).format(node=bold(node.name), x=red("✘")))
+                    previous_json = metadata_to_json(metadata[node.name])
+                    current_json = metadata_to_json(node.metadata)
+                    io.stderr(diff_value_text("", previous_json, current_json))
+                    exit(1)
+                io.progress_advance()
+
+        if iter_config_todo > 0:
+            iter_config_todo -= 1
+        if iter_metadata_todo > 0:
+            iter_metadata_todo -= 1
+
     io.progress_set_total(0)
     if not quiet:
-        io.stdout(_("{x} Metadata remained the same after being generated {n} times").format(
-            n=iterations,
-            x=green("✓"),
-        ))
+        if iterations_config > 0:
+            io.stdout(_("{x} Configuration remained the same after being generated {n} times").format(
+                n=iterations_config,
+                x=green("✓"),
+            ))
+        if iterations_metadata > 0:
+            io.stdout(_("{x} Metadata remained the same after being generated {n} times").format(
+                n=iterations_metadata,
+                x=green("✓"),
+            ))
 
 
 def test_reactor_provides(repo, nodes, quiet):
@@ -227,7 +217,7 @@ def test_reactor_provides(repo, nodes, quiet):
     for node in nodes:
         if QUIT_EVENT.is_set():
             break
-        node.metadata
+        node.metadata.get(tuple())
     else:
         io.stdout(_("{x} No reactors violated their declared keys").format(
             x=green("✓"),
@@ -288,11 +278,17 @@ def bw_test(repo, args):
     if args['items']:
         test_items(nodes, args['ignore_missing_faults'], args['quiet'])
 
-    if args['determinism_metadata'] > 1 and not QUIT_EVENT.is_set():
-        test_determinism_metadata(repo, nodes, args['determinism_metadata'], args['quiet'])
-
-    if args['determinism_config'] > 1 and not QUIT_EVENT.is_set():
-        test_determinism_config(repo, nodes, args['determinism_config'], args['quiet'])
+    if (
+        (args['determinism_config'] > 1 or args['determinism_metadata'] > 1) and
+        not QUIT_EVENT.is_set()
+    ):
+        test_determinism(
+            repo,
+            nodes,
+            args['determinism_config'],
+            args['determinism_metadata'],
+            args['quiet'],
+        )
 
     if args['hooks_node'] and not QUIT_EVENT.is_set():
         io.progress_set_total(len(nodes))

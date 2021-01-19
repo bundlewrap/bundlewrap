@@ -449,7 +449,9 @@ def replace_key_at_path(d, path, new_key):
 
 
 def set_key_at_path(d, path, value):
-    if len(path) == 1:
+    if len(path) == 0:
+        d.update(value)
+    elif len(path) == 1:
         d[path[0]] = value
     else:
         if path[0] not in d:  # setdefault doesn't work with tomlkit

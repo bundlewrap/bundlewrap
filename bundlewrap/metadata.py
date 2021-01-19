@@ -122,7 +122,7 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
 
     for prefix in ("metadata_defaults:", "metadata_reactor:"):
         paths = {}
-        for partition in node._metadata_stack._partitions:
+        for partition in node.metadata.stack._partitions:
             for identifier, layer in partition.items():
                 if identifier.startswith(prefix):
                     for path, value, current_type in paths_with_values_and_types(layer):
@@ -316,12 +316,14 @@ class MetadataJSONEncoder(JSONEncoder):
             return force_text(obj)
         else:
             raise ValueError(_("illegal metadata value type: {value} is {type}").format(
-                type=type(metadata),
-                value=repr(metadata),
+                type=type(obj),
+                value=repr(obj),
             ))
 
 
 def metadata_to_json(metadata, sort_keys=True):
+    if not isinstance(metadata, dict):  # might be NodeMetadataProxy
+        metadata = dict(metadata)
     return dumps(
         metadata,
         cls=MetadataJSONEncoder,
