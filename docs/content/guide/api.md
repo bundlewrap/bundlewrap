@@ -250,5 +250,7 @@ Faults also support some rudimentary string operations such as appending a strin
 	'Password: VOd5PC'
 	>>> repo.vault.password_for("1").b64encode().value
 	'Vk9kNVA='
+	>>> repo.vault.password_for("1").as_htpasswd_entry("username").value
+	'username:$apr1$8be694c7…'
 
 These string methods are supported on Faults: `format`, `lower`, `lstrip`, `replace`, `rstrip`, `strip`, `upper`, `zfill`
