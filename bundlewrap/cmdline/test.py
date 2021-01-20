@@ -218,9 +218,10 @@ def test_reactor_provides(repo, nodes, quiet):
             break
         node.metadata.get(tuple())
     else:
-        io.stdout(_("{x} No reactors violated their declared keys").format(
-            x=green("✓"),
-        ))
+        if not quiet:
+            io.stdout(_("{x} No reactors violated their declared keys").format(
+                x=green("✓"),
+            ))
 
 
 def bw_test(repo, args):

@@ -6,7 +6,6 @@ from bundlewrap.utils.testing import make_repo, run
 def test_empty(tmpdir):
     make_repo(tmpdir)
     stdout, stderr, rcode = run("bw test", path=str(tmpdir))
-    assert stdout == b""
     assert stderr == b""
     assert rcode == 0
 
