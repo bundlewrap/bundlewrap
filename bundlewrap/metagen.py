@@ -171,6 +171,15 @@ class NodeMetadataProxy:
             else:
                 raise
 
+    def items(self):
+        return self.get(tuple()).items()
+
+    def keys(self):
+        return self.get(tuple()).keys()
+
+    def values(self):
+        return self.get(tuple()).values()
+
 
 class _StartOver(Exception):
     """
