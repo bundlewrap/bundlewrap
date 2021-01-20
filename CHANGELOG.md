@@ -1,3 +1,12 @@
+# 4.4.1
+
+2021-01-20
+
+* fixed `bw test -p` quietness
+* fixed dependency loop detection between empty tags
+* fixed missing dict methods on `node.metadata`
+
+
 # 4.4.0
 
 2021-01-20
