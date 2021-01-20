@@ -454,6 +454,33 @@ def _inject_tag_attrs(items, bundles):
                     getattr(item, attr).update(attrs.get(attr, set()))
 
 
+def _add_inherited_tags(items, bundles):
+    """
+    This will apply tags to items based on the tags in bundle.py.
+
+    tags = {
+        "foo": {
+            "tags": {"bar"},  # will cause all items with tag:foo
+                              # to also have tag:bar
+        },
+    }
+    """
+    tags_added = True
+    while tags_added:
+        tags_added = False
+        for bundle in bundles:
+            for tag, attrs in bundle.bundle_attrs.get('tags', {}).items():
+                inherited_tags = attrs.get('tags', set())
+                if not inherited_tags:
+                    # just an optimization to avoid needlessly calling resolve_selector()
+                    continue
+                for item in resolve_selector(f"tag:{tag}", items):
+                    len_before = len(item.tags)
+                    item.tags.update(inherited_tags)
+                    if len_before < len(item.tags):
+                        tags_added = True
+
+
 @io.job_wrapper(_("{}  processing dependencies").format(bold("{0.name}")))
 def prepare_dependencies(node):
     """
@@ -465,6 +492,7 @@ def prepare_dependencies(node):
         
     items = set(node.items)  # might be a tuple from cached_property
     _inject_canned_actions(items)
+    _add_inherited_tags(items, node.bundles)
     _inject_tag_filler_items(items, node.bundles)
     _inject_tag_attrs(items, node.bundles)
     _prepare_deps(items)

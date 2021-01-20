@@ -22,6 +22,7 @@ Supported item attributes are:
 * `needed_by`
 * `precedes`
 * `preceded_by`
+* `tags`
 * `triggers`
 * `triggered_by`
 

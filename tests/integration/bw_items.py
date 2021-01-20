@@ -113,3 +113,81 @@ def test_fault_unavailable_multiple(tmpdir):
     assert rcode == 0
     assert tmpdir.join("itemprev/test").exists()
     assert not tmpdir.join("itemprev/testdir/test3").exists()
+
+
+def test_tag_inheritance(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'attrs': {
+                    'tags': {
+                        "directly": {
+                            'tags': {"inherited"},
+                        },
+                    },
+                },
+                'items': {
+                    'actions': {
+                        "test": {
+                            'command': "true",
+                            'tags': {"directly"},
+                        },
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw items --attrs node1 action:test", path=str(tmpdir))
+    assert rcode == 0
+    assert "inherited" in stdout.decode()
+
+
+def test_tag_inheritance_loop(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'attrs': {
+                    'tags': {
+                        "directly": {
+                            'tags': {"inherited"},
+                        },
+                        "inherited": {
+                            'tags': {"looped"},
+                        },
+                        "looped": {
+                            'tags': {"inherited"},
+                            'needs': {"action:dep"},
+                        },
+                    },
+                },
+                'items': {
+                    'actions': {
+                        "test": {
+                            'command': "true",
+                            'tags': {"directly"},
+                        },
+                        "dep": {
+                            'command': "true",
+                        },
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw items --attrs node1 action:test", path=str(tmpdir))
+    assert rcode == 0
+    assert "inherited" in stdout.decode()
+    assert "looped" in stdout.decode()
+    assert "action:dep" in stdout.decode()
