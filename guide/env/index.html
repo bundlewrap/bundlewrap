@@ -18,16 +18,7 @@
         <script src="../../js/jquery-1.10.2.min.js" defer></script>
         <script src="../../js/bootstrap.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script>
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-            ga('create', 'UA-33891245-2', 'docs.bundlewrap.org');
-            ga('send', 'pageview');
-        </script> 
+        <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
     <body>
@@ -343,10 +334,6 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#bw_metadata_cache_dir" class="nav-link">BW_METADATA_CACHE_DIR</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
             <li class="nav-item" data-level="2"><a href="#bw_repo_path" class="nav-link">BW_REPO_PATH</a>
               <ul class="nav flex-column">
               </ul>
@@ -408,10 +395,6 @@
 <p><br></p>
 <h2 id="bw_max_metadata_iterations"><code>BW_MAX_METADATA_ITERATIONS</code></h2>
 <p>Sets the limit of how often metadata reactors will be run for a node before BundleWrap calls it a loop and terminates with an exception. Defaults to <code>1000</code>.</p>
-<p><br></p>
-<h2 id="bw_metadata_cache_dir"><code>BW_METADATA_CACHE_DIR</code></h2>
-<p><strong>Experimental</strong></p>
-<p>Set this to a directory path to have BundleWrap store JSON dumps of node metadata there. The directory will be created if it does not exist. BundleWrap will hash the contents of all files (with some exceptions like the <code>data/</code> dir) to determine the lifetime of the cache. Note: BundleWrap will <em>not</em> clean up invalidated caches. So best put this in <code>/tmp</code> or create a cron job to delete subdirectories after a certain age.</p>
 <p><br></p>
 <h2 id="bw_repo_path"><code>BW_REPO_PATH</code></h2>
 <p>Set this to a path pointing to your BundleWrap repository. If unset, the current working directory is used. Can be overridden with <code>bw --repository PATH</code>. Keep in mind that <code>bw</code> will also look for a repository in all parent directories until it finds one.</p>
