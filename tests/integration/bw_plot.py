@@ -59,3 +59,82 @@ edge [arrowhead=vee]
 """
     assert stderr == b""
     assert rcode == 0
+
+
+def test_empty_tags(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'attrs': {
+                    'tags': {
+                        "empty": {
+                            'needs': {"action:early"},
+                        },
+                    },
+                },
+                'items': {
+                    'actions': {
+                        "early": {
+                            'command': "true",
+                        },
+                        "late": {
+                            'command': "true",
+                            'needs': {"tag:empty"},
+                        },
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw plot node node1", path=str(tmpdir))
+    assert rcode == 0
+    assert '"action:late" -> "empty_tag:empty"' in stdout.decode()
+    assert '"empty_tag:empty" -> "action:early"' in stdout.decode()
+
+
+def test_no_empty_tags(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'attrs': {
+                    'tags': {
+                        "notempty": {
+                            'needs': {"action:early"},
+                        },
+                    },
+                },
+                'items': {
+                    'actions': {
+                        "early": {
+                            'command': "true",
+                        },
+                        "middle": {
+                            'command': "true",
+                            'tags': {"notempty"},
+                        },
+                        "late": {
+                            'command': "true",
+                            'needs': {"tag:notempty"},
+                        },
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw plot node node1", path=str(tmpdir))
+    assert rcode == 0
+    assert '"action:late" -> "action:middle"' in stdout.decode()
+    assert '"action:middle" -> "action:early"' in stdout.decode()
+    assert "empty_tag" not in stdout.decode()

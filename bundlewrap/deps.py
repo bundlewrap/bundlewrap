@@ -1,9 +1,18 @@
 from contextlib import suppress
 
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
+from .items import Item
 from .items.actions import Action
 from .utils.text import bold, mark_for_translation as _
 from .utils.ui import io
+
+
+class TagFillerItem(Item):
+    BUNDLE_ATTRIBUTE_NAME = "__tagfiller__"
+    ITEM_TYPE_NAME = "empty_tag"
+
+    def sdict(self):
+        return {}
 
 
 def resolve_selector(selector, items, originating_item_id=None, originating_tag=None):
@@ -154,6 +163,24 @@ def _inject_canned_actions(items):
             )
             actions.add(action)
     items.update(actions)
+
+
+def _inject_tag_filler_items(items, bundles):
+    """
+    Creates TagFillerItems to ensure each tag has at least one item.
+    This is important so even if there are no user-defined items with
+    a tag, that tag can still be used to chain dependencies.
+
+        [item:A] --needs--> [tag:B] --needs--> [item:C]
+
+    Users will assume that item:A will implicitly depend on item:C, but
+    if tag:B doesn't resolve to any items, that connection won't be
+    made.
+    """
+    for bundle in bundles:
+        for tag, attrs in bundle.bundle_attrs.get('tags', {}).items():
+            if not tuple(resolve_selector(f"tag:{tag}", items)):
+                items.add(TagFillerItem(bundle, tag, {'tags': {tag}}))
 
 
 def _inject_concurrency_blockers(items, node_os, node_os_version):
@@ -415,18 +442,7 @@ def _inject_tag_attrs(items, bundles):
     """
     for bundle in bundles:
         for tag, attrs in bundle.bundle_attrs.get('tags', {}).items():
-            items_with_tag = resolve_selector(f"tag:{tag}", items, originating_tag=tag)
-            if not items_with_tag:
-                raise BundleError(_(
-                    "{file} tries to modify items with tag:{tag}, "
-                    "but none found on {node}. "
-                    "Add the tag to at least one item."
-                ).format(
-                    file=bundle.bundle_file,
-                    tag=tag,
-                    node=bundle.node.name,
-                ))
-            for item in items_with_tag:
+            for item in resolve_selector(f"tag:{tag}", items, originating_tag=tag):
                 for attr in (
                     "needs",
                     "needed_by",
@@ -449,6 +465,7 @@ def prepare_dependencies(node):
         
     items = set(node.items)  # might be a tuple from cached_property
     _inject_canned_actions(items)
+    _inject_tag_filler_items(items, node.bundles)
     _inject_tag_attrs(items, node.bundles)
     _prepare_deps(items)
     _inject_reverse_triggers(items)
