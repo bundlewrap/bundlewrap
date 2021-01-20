@@ -137,13 +137,12 @@ class Item:
         bundle,
         name,
         attributes,
-        has_been_triggered=False,
         skip_validation=False,
         skip_name_validation=False,
     ):
         self.attributes = {}
         self.bundle = bundle
-        self.has_been_triggered = has_been_triggered
+        self.has_been_triggered = False
         self.item_dir = join(bundle.bundle_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.item_data_dir = join(bundle.bundle_data_dir, self.BUNDLE_ATTRIBUTE_NAME)
         self.name = name
