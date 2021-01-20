@@ -243,6 +243,7 @@ def bw_test(repo, args):
             args['items'] = True
             args['metadata_conflicts'] = True
             args['metadata_keys'] = True
+            args['reactor_provides'] = True
     else:
         nodes = copy(list(repo.nodes))
         if not options_selected:
@@ -251,6 +252,7 @@ def bw_test(repo, args):
             args['items'] = True
             args['metadata_conflicts'] = True
             args['metadata_keys'] = True
+            args['reactor_provides'] = True
             args['subgroup_loops'] = True
 
     if args['reactor_provides'] and not QUIT_EVENT.is_set():

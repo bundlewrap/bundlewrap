@@ -817,8 +817,8 @@ bundle:my_bundle  # items in this bundle
                   "If *any* options other than -i are given, *only* the "
                   "tests selected by those options will be run. Otherwise, a "
                   "default selection of tests will be run (that selection may "
-                  "change in future releases). Currently, the default is -IJKM "
-                  "if specific nodes are given and -HIJKMS if testing the "
+                  "change in future releases). Currently, the default is -IJKMp "
+                  "if specific nodes are given and -HIJKMSp if testing the "
                   "entire repo.")
     parser_test = subparsers.add_parser(
         "test",
