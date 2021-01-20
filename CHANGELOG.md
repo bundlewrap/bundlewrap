@@ -1,3 +1,16 @@
+# 4.4.0
+
+2021-01-20
+
+* added `Fault.as_htpasswd_entry()`
+* added tag inheritance through `bundle.py`
+* optimized performance of metadata generation based on `@metadata_reactor.provides()`
+* fixed `TypeError` in `bw plot`
+* fixed `needs` from tags not being applied to items
+* fixed unused tags not passing on their dependencies
+* removed experimental metadata caching
+
+
 # 4.3.0
 
 2020-12-23
