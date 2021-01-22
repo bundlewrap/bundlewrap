@@ -268,7 +268,7 @@ class User(Item):
                 self.ITEM_ATTRIBUTES['hash_method'],
             )]
             salt = attributes.get('salt', None)
-            if self.node.os in self.node.OS_FAMILY_BSD:
+            if self.node.os == 'openbsd':
                 attributes['password_hash'] = bcrypt.encrypt(
                     force_text(attributes['password']),
                     rounds=8,  # default rounds for OpenBSD accounts
