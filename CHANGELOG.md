@@ -1,3 +1,11 @@
+# 4.4.2
+
+2021-01-22
+
+* full tracebacks are now shown by default for exceptions in file templates
+* fixed a `RuntimeError` related to a metadata concurrency issue
+
+
 # 4.4.1
 
 2021-01-20
