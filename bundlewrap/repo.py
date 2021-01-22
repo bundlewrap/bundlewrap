@@ -3,7 +3,7 @@ from importlib.machinery import SourceFileLoader
 from inspect import isabstract
 from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
-from threading import Lock
+from threading import RLock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 from tomlkit import parse as parse_toml
@@ -194,7 +194,7 @@ class Repository(MetadataGenerator):
 
         # required by MetadataGenerator
         self._node_metadata_proxies = {}
-        self._node_metadata_lock = Lock()
+        self._node_metadata_lock = RLock()
 
         if repo_path is not None:
             self.populate_from_path(self.path)

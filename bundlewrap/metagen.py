@@ -151,25 +151,34 @@ class NodeMetadataProxy:
             default = None
         if not isinstance(path, (tuple, list)):
             path = tuple(path.split("/"))
-        if self._requested_paths.add(path):
-            self._satisfied = False
-            self.__relevant_reactors_cache = None
-            if self._metagen._in_a_reactor:
-                self._metagen._additional_path_requested = True
 
-        if self._metagen._in_a_reactor:
-            self._metagen._partial_metadata_accessed_for.add(self._node.name)
-        else:
-            with self._metagen._node_metadata_lock:
+        with self._metagen._node_metadata_lock:
+            # The lock is required because there are several thread-unsafe things going on here:
+            #
+            #   self._requested_paths
+            #   self._metagen._build_node_metadata
+            #   self._metastack
+            #
+            # It needs to be an RLock because this method will be recursively
+            # called from _build_node_metadata (when reactors call node.metadata.get()).
+            if self._requested_paths.add(path):
+                self._satisfied = False
+                self.__relevant_reactors_cache = None
+                if self._metagen._in_a_reactor:
+                    self._metagen._additional_path_requested = True
+
+            if self._metagen._in_a_reactor:
+                self._metagen._partial_metadata_accessed_for.add(self._node.name)
+            else:
                 self._metagen._build_node_metadata(self._node.name)
 
-        try:
-            return self._metastack.get(path)
-        except KeyError:
-            if default != NO_DEFAULT:
-                return default
-            else:
-                raise
+            try:
+                return self._metastack.get(path)
+            except KeyError:
+                if default != NO_DEFAULT:
+                    return default
+                else:
+                    raise
 
     def items(self):
         return self.get(tuple()).items()
