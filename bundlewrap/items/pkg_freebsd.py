@@ -4,11 +4,13 @@ from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
+
 def parse_pkg_name(pkgname, line):
     # Contains the assumption that version may not contain '-', which is covered
     # according to the FreeBSD docs (Section 5.2.4, "PKGNAMEPREFIX and PKGNAMESUFFIX")
-    installed_package, _, installed_version = line.rpartition('-')
-    assert installed_package != "", _("Unexpected FreeBSD package name: {line}").format(line=line)
+    installed_package, _sep, installed_version = line.rpartition('-')
+    assert installed_package != "", _(
+        "Unexpected FreeBSD package name: {line}").format(line=line)
     return installed_package == pkgname, installed_version
 
 
