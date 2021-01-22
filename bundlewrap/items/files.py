@@ -53,7 +53,7 @@ def content_processor_jinja2(item):
     except FaultUnavailable:
         raise
     except Exception as e:
-        io.debug("".join(format_exception(*exc_info())))
+        io.stderr("".join(format_exception(*exc_info())))
         raise TemplateError(_(
             "Error while rendering template for {node}:{bundle}:{item}: {error}"
         ).format(
@@ -96,7 +96,7 @@ def content_processor_mako(item):
     except FaultUnavailable:
         raise
     except Exception as e:
-        io.debug("".join(format_exception(*exc_info())))
+        io.stderr("".join(format_exception(*exc_info())))
         if isinstance(e, NameError) and str(e) == "Undefined":
             # Mako isn't very verbose here. Try to give a more useful
             # error message - even though we can't pinpoint the excat
