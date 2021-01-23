@@ -532,7 +532,12 @@ class Item:
                 )):
                     self.fix(status_before)
             else:
-                if status_before.must_be_created:
+                # In order to display new files which are created we have to
+                # ignore the default `must_be_created` behaviour for files.
+                #
+                # See https://github.com/bundlewrap/bundlewrap/pull/587 for
+                # more information.
+                if status_before.must_be_created and self.ITEM_TYPE_NAME != 'file':
                     question_text = _("Doesn't exist. Will be created.")
                 elif status_before.must_be_deleted:
                     question_text = _("Found on node. Will be removed.")

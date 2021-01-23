@@ -341,19 +341,31 @@ class File(Item):
             }
 
     def display_dicts(self, cdict, sdict, keys):
-        if (
-            'content_hash' in keys and
-            self.attributes['content_type'] not in ('base64', 'binary') and
-            sdict['size'] < DIFF_MAX_FILE_SIZE and
-            len(self.content) < DIFF_MAX_FILE_SIZE and
-            PathInfo(self.node, self.name).is_text_file
-        ):
-            keys.remove('content_hash')
-            keys.append('content')
-            del cdict['content_hash']
-            del sdict['content_hash']
-            cdict['content'] = self.content
-            sdict['content'] = get_remote_file_contents(self.node, self.name)
+        if sdict is None:  # The target file does not exist
+            if (
+                self.attributes['content_type'] not in ('base64', 'binary') and
+                len(self.content) < DIFF_MAX_FILE_SIZE
+            ):
+                keys = ['owner', 'group', 'mode', 'content']
+                with suppress(KeyError):  # happens for content_type any
+                    del cdict['content_hash']
+                cdict['content'] = self.content
+                sdict = {'content': b'', 'mode': '', 'owner': '', 'group': ''}
+        else:
+            if (
+                'content_hash' in keys and
+                self.attributes['content_type'] not in ('base64', 'binary') and
+                sdict['size'] < DIFF_MAX_FILE_SIZE and
+                len(self.content) < DIFF_MAX_FILE_SIZE and
+                PathInfo(self.node, self.name).is_text_file
+            ):
+                keys.remove('content_hash')
+                keys.append('content')
+                del cdict['content_hash']
+                del sdict['content_hash']
+                cdict['content'] = self.content
+                sdict['content'] = get_remote_file_contents(
+                    self.node, self.name)
         if 'type' in keys:
             with suppress(ValueError):
                 keys.remove('content_hash')
