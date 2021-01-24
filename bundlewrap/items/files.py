@@ -341,7 +341,7 @@ class File(Item):
             }
 
     def display_dicts(self, cdict, sdict, keys):
-        if sdict is None:  # The target file does not exist
+        if sdict is None and not self.attributes.get('delete', False):
             if (
                 self.attributes['content_type'] not in ('base64', 'binary') and
                 len(self.content) < DIFF_MAX_FILE_SIZE
