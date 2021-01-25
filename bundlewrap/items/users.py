@@ -108,7 +108,7 @@ class User(Item):
     @classmethod
     def block_concurrent(cls, node_os, node_os_version):
         # https://github.com/bundlewrap/bundlewrap/issues/367
-        if node_os == 'openbsd':
+        if node_os == 'openbsd' or node_os == 'freebsd':
             return [cls.ITEM_TYPE_NAME]
         else:
             return []
@@ -134,18 +134,33 @@ class User(Item):
 
     def fix(self, status):
         if status.must_be_deleted:
-            self.run("userdel {}".format(self.name), may_fail=True)
+            if self.node.os == 'freebsd':
+                command = "pw userdel {}"
+            else:
+                command = "userdel {}"
+            self.run(command.format(self.name), may_fail=True)
         else:
-            command = "useradd " if status.must_be_created else "usermod "
+            if self.node.os == 'freebsd':
+                command = "pw useradd " if status.must_be_created else "pw usermod "
+                command += self.name + " "
+            else:
+                command = "useradd " if status.must_be_created else "usermod "
             for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
                 if (attr in status.keys_to_fix or status.must_be_created) and \
                         self.attributes[attr] is not None:
                     if attr == 'groups':
                         value = ",".join(self.attributes[attr])
+                    elif attr == 'password_hash' and self.node.os == 'freebsd':
+                        # On FreeBSD, pw useradd/usermod -p sets the password expiry time.
+                        # Using -H <n> we pass the password hash using file descriptor <n> instead.
+                        option = '-H'
+                        value = '0'
+                        command = "printf '%s' '{}' | ".format(self.attributes[attr]) + command
                     else:
                         value = str(self.attributes[attr])
                     command += "{} {} ".format(option, quote(value))
-            command += self.name
+            if self.node.os != 'freebsd':
+                command += self.name
             self.run(command, may_fail=True)
 
     def display_dicts(self, cdict, sdict, keys):
