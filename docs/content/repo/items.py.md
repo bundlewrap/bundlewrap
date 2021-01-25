@@ -53,6 +53,7 @@ This table lists all item types included in BundleWrap along with the bundle att
 <tr><td><a href="../../items/postgres_db">postgres_db</a></td><td><code>postgres_dbs</code></td><td>Manages Postgres databases</td></tr>
 <tr><td><a href="../../items/postgres_role">postgres_role</a></td><td><code>postgres_roles</code></td><td>Manages Postgres roles</td></tr>
 <tr><td><a href="../../items/pkg_pip">pkg_pip</a></td><td><code>pkg_pip</code></td><td>Installs and removes Python packages with pip</td></tr>
+<tr><td><a href="../../items/pkg_freebsd">pkg_freebsd</a></td><td><code>pkg_freebsd</code></td><td>Installs and removes FreeBSD packages with pkg</td></tr>
 <tr><td><a href="../../items/pkg_openbsd">pkg_openbsd</a></td><td><code>pkg_openbsd</code></td><td>Installs and removes OpenBSD packages with pkg_add/pkg_delete</td></tr>
 <tr><td><a href="../../items/svc_openbsd">svc_openbsd</a></td><td><code>svc_openbsd</code></td><td>Starts and stops services with OpenBSD's rc</td></tr>
 <tr><td><a href="../../items/svc_systemd">svc_systemd</a></td><td><code>svc_systemd</code></td><td>Starts and stops services with systemd</td></tr>
