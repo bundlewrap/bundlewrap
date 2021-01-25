@@ -1,4 +1,5 @@
 from bundlewrap.items.pkg_openbsd import parse_pkg_name
+
 from pytest import raises
 
 
