@@ -108,7 +108,7 @@ class User(Item):
     @classmethod
     def block_concurrent(cls, node_os, node_os_version):
         # https://github.com/bundlewrap/bundlewrap/issues/367
-        if node_os == 'openbsd' or node_os == 'freebsd':
+        if node_os in ('openbsd', 'freebsd'):
             return [cls.ITEM_TYPE_NAME]
         else:
             return []
@@ -133,18 +133,20 @@ class User(Item):
         return cdict
 
     def fix(self, status):
+        if self.node.os == 'freebsd':
+            # FreeBSD implements the user{add,mod,del} commands using pw(8).
+            command = "pw "
+        else:
+            command = ""
+
         if status.must_be_deleted:
-            if self.node.os == 'freebsd':
-                command = "pw userdel {}"
-            else:
-                command = "userdel {}"
+            command += "userdel {}"
             self.run(command.format(self.name), may_fail=True)
         else:
-            if self.node.os == 'freebsd':
-                command = "pw useradd " if status.must_be_created else "pw usermod "
-                command += self.name + " "
-            else:
-                command = "useradd " if status.must_be_created else "usermod "
+            command += "useradd " if status.must_be_created else "usermod "
+            command += f"{self.name} "
+
+            stdin = None
             for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
                 if (attr in status.keys_to_fix or status.must_be_created) and \
                         self.attributes[attr] is not None:
@@ -154,14 +156,12 @@ class User(Item):
                         # On FreeBSD, pw useradd/usermod -p sets the password expiry time.
                         # Using -H <n> we pass the password hash using file descriptor <n> instead.
                         option = '-H'
-                        value = '0'
-                        command = "printf '%s' '{}' | ".format(self.attributes[attr]) + command
+                        value = '0'  # FD 0 = stdin
+                        stdin = self.attributes[attr].encode()
                     else:
                         value = str(self.attributes[attr])
                     command += "{} {} ".format(option, quote(value))
-            if self.node.os != 'freebsd':
-                command += self.name
-            self.run(command, may_fail=True)
+            self.run(command, data_stdin=stdin, may_fail=True)
 
     def display_dicts(self, cdict, sdict, keys):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
@@ -268,7 +268,7 @@ class User(Item):
                 self.ITEM_ATTRIBUTES['hash_method'],
             )]
             salt = attributes.get('salt', None)
-            if self.node.os in self.node.OS_FAMILY_BSD:
+            if self.node.os == 'openbsd':
                 attributes['password_hash'] = bcrypt.encrypt(
                     force_text(attributes['password']),
                     rounds=8,  # default rounds for OpenBSD accounts
