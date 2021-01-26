@@ -45,6 +45,14 @@ class SvcSystemV(Item):
 
     def get_canned_actions(self):
         return {
+            'stop': {
+                'command': "/etc/init.d/{} stop".format(self.name),
+                'needed_by': {self.id},
+            },
+            'restart': {
+                'command': "/etc/init.d/{} restart".format(self.name),
+                'needs': {self.id},
+            },
             'reload': {
                 'command': "/etc/init.d/{} reload".format(self.name),
                 'needs': {
@@ -55,10 +63,6 @@ class SvcSystemV(Item):
                     # because the restart action has cascade_skip False
                     self.id,
                 },
-            },
-            'restart': {
-                'command': "/etc/init.d/{} restart".format(self.name),
-                'needs': {self.id},
             },
         }
 

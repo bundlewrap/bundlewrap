@@ -71,6 +71,14 @@ class SvcOpenBSD(Item):
 
     def get_canned_actions(self):
         return {
+            'stop': {
+                'command': "/etc/rc.d/{0} stop".format(self.name),
+                'needed_by': {self.id},
+            },
+            'stopstart': {
+                'command': "/etc/rc.d/{0} stop && /etc/rc.d/{0} start".format(self.name),
+                'needs': {self.id},
+            },
             'restart': {
                 'command': "/etc/rc.d/{} restart".format(self.name),
                 'needs': {
@@ -81,10 +89,6 @@ class SvcOpenBSD(Item):
                     # because the stopstart action has cascade_skip False
                     self.id,
                 },
-            },
-            'stopstart': {
-                'command': "/etc/rc.d/{0} stop && /etc/rc.d/{0} start".format(self.name),
-                'needs': {self.id},
             },
         }
 
