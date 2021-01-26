@@ -33,7 +33,7 @@ class Group(Item):
     @classmethod
     def block_concurrent(cls, node_os, node_os_version):
         # https://github.com/bundlewrap/bundlewrap/issues/367
-        if node_os == 'openbsd':
+        if node_os in ('freebsd', 'openbsd'):
             return [cls.ITEM_TYPE_NAME]
         else:
             return []
@@ -50,25 +50,20 @@ class Group(Item):
         return cdict
 
     def fix(self, status):
-        if status.must_be_created:
-            if self.attributes['gid'] is None:
-                command = "groupadd {}".format(self.name)
-            else:
-                command = "groupadd -g {gid} {groupname}".format(
-                    gid=self.attributes['gid'],
-                    groupname=self.name,
-                )
-            self.run(command, may_fail=True)
-        elif status.must_be_deleted:
-            self.run("groupdel {}".format(self.name), may_fail=True)
+        if self.node.os == 'freebsd':
+            command = "pw "
         else:
-            self.run(
-                "groupmod -g {gid} {groupname}".format(
-                    gid=self.attributes['gid'],
-                    groupname=self.name,
-                ),
-                may_fail=True,
-            )
+            command = ""
+
+        if status.must_be_deleted:
+            command += f"groupdel {self.name}"
+        else:
+            command += "groupadd " if status.must_be_created else "groupmod "
+            command += f"{self.name} "
+
+            if self.attributes['gid'] is not None:
+                command += "-g {}".format(self.attributes['gid'])
+        self.run(command, may_fail=True)
 
     def sdict(self):
         # verify content of /etc/group
