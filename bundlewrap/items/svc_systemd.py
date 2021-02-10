@@ -80,6 +80,14 @@ class SvcSystemd(Item):
 
     def get_canned_actions(self):
         return {
+            'stop': {
+                'command': "systemctl stop -- {}".format(self.name),
+                'needed_by': {self.id},
+            },
+            'restart': {
+                'command': "systemctl restart -- {}".format(self.name),
+                'needs': {self.id},
+            },
             'reload': {
                 'command': "systemctl reload -- {}".format(self.name),
                 'needs': {
@@ -90,10 +98,6 @@ class SvcSystemd(Item):
                     # because the restart action has cascade_skip False
                     self.id,
                 },
-            },
-            'restart': {
-                'command': "systemctl restart -- {}".format(self.name),
-                'needs': {self.id},
             },
         }
 

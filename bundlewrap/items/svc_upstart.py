@@ -44,16 +44,13 @@ class SvcUpstart(Item):
 
     def get_canned_actions(self):
         return {
-            'reload': {
-                'command': "reload {}".format(self.name),
-                'needs': {
-                    # make sure we don't restart and reload simultaneously
-                    f"{self.id}:restart",
-                    # with only the dep on restart, we might still end
-                    # up reloading if the service itself is skipped
-                    # because the restart action has cascade_skip False
-                    self.id,
-                },
+            'stop': {
+                'command': "stop {0}".format(self.name),
+                'needed_by': {self.id},
+            },
+            'stopstart': {
+                'command': "stop {0} && start {0}".format(self.name),
+                'needs': {self.id},
             },
             'restart': {
                 'command': "restart {}".format(self.name),
@@ -66,9 +63,16 @@ class SvcUpstart(Item):
                     self.id,
                 },
             },
-            'stopstart': {
-                'command': "stop {0} && start {0}".format(self.name),
-                'needs': {self.id},
+            'reload': {
+                'command': "reload {}".format(self.name),
+                'needs': {
+                    # make sure we don't restart and reload simultaneously
+                    f"{self.id}:restart",
+                    # with only the dep on restart, we might still end
+                    # up reloading if the service itself is skipped
+                    # because the restart action has cascade_skip False
+                    self.id,
+                },
             },
         }
 
