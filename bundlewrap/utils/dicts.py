@@ -4,6 +4,12 @@ from hashlib import sha1
 from json import dumps, JSONEncoder
 
 from tomlkit import document as toml_document
+from tomlkit.items import (
+    Bool as TOMLBool,
+    Float as TOMLFloat,
+    Integer as TOMLInteger,
+    String as TOMLString,
+)
 
 from . import Fault
 from .text import bold, green, red
@@ -154,20 +160,23 @@ TYPE_DIFFS = {
     set: diff_value_list,
     str: diff_value_text,
     tuple: diff_value_list,
+    TOMLBool: diff_value_bool,
+    TOMLFloat: diff_value_int,
+    TOMLInteger: diff_value_int,
+    TOMLString: diff_value_text,
 }
 
 
 def diff_value(title, value1, value2):
-    value1_type = type(value1)
-    value2_type = type(value2)
-    if value1_type != value2_type:
+    diff_func = TYPE_DIFFS[type(value1)]
+    diff_func2 = TYPE_DIFFS[type(value2)]
+    if diff_func != diff_func2:
         raise TypeError(_("cannot compare {} ({}) with {} ({})").format(
             repr(value1),
-            value1_type,
+            type(value1),
             repr(value2),
-            value2_type,
+            type(value2),
         ))
-    diff_func = TYPE_DIFFS[value1_type]
     return diff_func(title, value1, value2)
 
 
