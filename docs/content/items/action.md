@@ -32,7 +32,7 @@ You can pipe data directly to the command running on the node. To do so, use thi
 
 ## expected_return_code
 
-Defaults to `0`. If the return code of your command is anything else, the action is considered failed. You can also set this to `None` and any return code will be accepted.
+Defaults to `0`. If the return code of your command is anything else, the action is considered failed. You can also specify a list, set or tuple and the action is considered failed if the command's return code is not contained in that enumeration. You can also set this to `None` and any return code will be accepted.
 
 <hr>
 
