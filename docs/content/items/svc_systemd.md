@@ -6,6 +6,7 @@ Handles services managed by systemd.
         "fcron.service": {
             "enabled": True,  # default
             "running": True,  # default
+            "masked": False,  # default
         },
         "sgopherd.socket": {
             "running": False,
@@ -29,6 +30,12 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 ## running
 
 `True` if the service is expected to be running on the system; `False` if it should be stopped. `None` makes BundleWrap ignore this setting.
+
+<hr>
+
+## masked
+
+`True` if the service is expected to be masked; `False` if it should be unmasked. `None` makes BundleWrap ignore this setting.
 
 <hr>
 

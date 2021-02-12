@@ -39,6 +39,22 @@ def svc_enabled(node, svcname):
 def svc_disable(node, svcname):
     return node.run("systemctl disable -- {}".format(quote(svcname)), may_fail=True)
 
+def svc_mask(node, svcname):
+    return node.run("systemctl mask -- {}".format(quote(svcname)), may_fail=True)
+
+def svc_masked(node, svcname):
+    result = node.run(
+        "systemctl is-enabled -- {}".format(quote(svcname)),
+        may_fail=True,
+    )
+    return (
+        result.return_code == 1 and
+        force_text(result.stdout).strip() == "masked"
+    )
+
+def svc_unmask(node, svcname):
+    return node.run("systemctl unmask -- {}".format(quote(svcname)), may_fail=True)
+
 
 class SvcSystemd(Item):
     """
@@ -48,14 +64,16 @@ class SvcSystemd(Item):
     ITEM_ATTRIBUTES = {
         'enabled': True,
         'running': True,
+        'masked': False,
     }
     ITEM_TYPE_NAME = "svc_systemd"
 
     def __repr__(self):
-        return "<SvcSystemd name:{} enabled:{} running:{}>".format(
+        return "<SvcSystemd name:{} enabled:{} running:{} masked:{}>".format(
             self.name,
             self.attributes['enabled'],
             self.attributes['running'],
+            self.attributes['masked'],
         )
 
     def cdict(self):
@@ -66,6 +84,12 @@ class SvcSystemd(Item):
         return cdict
 
     def fix(self, status):
+        if 'masked' in status.keys_to_fix:
+            if self.attributes['masked']:
+                svc_mask(self.node, self.name)
+            else:
+                svc_unmask(self.node, self.name)
+
         if 'enabled' in status.keys_to_fix:
             if self.attributes['enabled']:
                 svc_enable(self.node, self.name)
@@ -105,6 +129,7 @@ class SvcSystemd(Item):
         return {
             'enabled': svc_enabled(self.node, self.name),
             'running': svc_running(self.node, self.name),
+            'masked': svc_masked(self.node, self.name),
         }
 
     @classmethod
