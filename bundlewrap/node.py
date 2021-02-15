@@ -28,6 +28,7 @@ from .metadata import hash_metadata
 from .utils import cached_property, error_context, get_file_contents, names
 from .utils.dicts import (
     dict_to_toml,
+    diff_value,
     hash_statedict,
     set_key_at_path,
     validate_dict,
@@ -794,14 +795,14 @@ class Node:
             wrapper_outer=self.cmd_wrapper_outer,
         )
 
-    def verify(self, show_all=False, workers=4):
+    def verify(self, show_all=False, show_diff=False, workers=4):
         result = []
         start = datetime.now()
 
         if not self.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
         else:
-            result = verify_items(self, show_all=show_all, workers=workers)
+            result = verify_items(self, show_all=show_all, show_diff=show_diff, workers=workers)
 
         return {
             'good': result.count(True),
@@ -846,7 +847,7 @@ for attr, default in GROUP_ATTR_DEFAULTS.items():
     setattr(Node, attr, build_attr_property(attr, default))
 
 
-def verify_items(node, show_all=False, workers=1):
+def verify_items(node, show_all=False, show_diff=False, workers=1):
     items = []
     for item in node.items:
         if not item.triggered:
@@ -924,7 +925,7 @@ def verify_items(node, show_all=False, workers=1):
 
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
-        unless_result, item_status = return_value
+        unless_result, item_status, display = return_value
         node_name, bundle_name, item_id = task_id.split(":", 2)
         if not unless_result and not item_status.correct:
             if item_status.must_be_created:
@@ -932,14 +933,27 @@ def verify_items(node, show_all=False, workers=1):
             elif item_status.must_be_deleted:
                 details_text = _("remove")
             else:
-                details_text = ", ".join(sorted(item_status.display_keys_to_fix))
-            io.stderr("{x} {node}  {bundle}  {item} ({details})".format(
+                details_text = ", ".join(sorted(display[2]))
+            io.stderr("{x} {node}  {bundle}  {item}  ({details})".format(
                 bundle=bold(bundle_name),
-                details=details_text,
+                details=bold(details_text),
                 item=item_id,
                 node=bold(node_name),
                 x=red("✘"),
             ))
+            if show_diff:
+                diff = "\n"
+                if item_status.must_be_created or item_status.must_be_deleted:
+                    for key, value in sorted(display.items()):
+                        diff += f"{bold(key)}  {value}\n\n"
+                    diff += "\n"
+                else:
+                    for key in sorted(display[2]):
+                        diff += diff_value(key, display[0][key], display[1][key]) + "\n\n"
+                for line in diff.splitlines():
+                    io.stderr("  {line}".format(
+                        line=line,
+                    ))
             return False
         else:
             if show_all:

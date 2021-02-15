@@ -956,6 +956,13 @@ bundle:my_bundle  # items in this bundle
         dest='show_all',
         help=_("show correct items as well as incorrect ones"),
     )
+    parser_verify.add_argument(
+        "-d",
+        "--show-diff",
+        action='store_true',
+        dest='show_diff',
+        help=_("show diff for incorrect items"),
+    )
     bw_verify_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_verify.add_argument(
         "-p",

@@ -214,6 +214,6 @@ class Action(Item):
 
     def verify(self):
         if self.unless and self.cached_unless_result:
-            return self.cached_unless_result, None
+            return self.cached_unless_result, None, None
         else:
             raise NotImplementedError

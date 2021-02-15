@@ -739,7 +739,18 @@ class Item:
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
     def verify(self):
-        return self.cached_unless_result, self.cached_status
+        if self.cached_status.must_be_created:
+            display = self.display_on_create(self.cached_status.cdict)
+        elif self.cached_status.must_be_deleted:
+            display = self.display_on_delete(self.cached_status.sdict)
+        else:
+            display = self.display_dicts(
+                copy(self.cached_status.cdict),
+                copy(self.cached_status.sdict),
+                # TODO remove sorted() in 5.0 to pass a set
+                sorted(copy(self.cached_status.keys_to_fix)),
+            )
+        return self.cached_unless_result, self.cached_status, display
 
     def display_on_create(self, cdict):
         """

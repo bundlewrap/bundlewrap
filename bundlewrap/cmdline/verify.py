@@ -127,6 +127,7 @@ def bw_verify(repo, args):
             'task_id': node.name,
             'kwargs': {
                 'show_all': args['show_all'],
+                'show_diff': args['show_diff'],
                 'workers': args['item_workers'],
             },
         }
