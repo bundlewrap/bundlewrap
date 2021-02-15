@@ -55,7 +55,7 @@ class ItemStatus:
     fixing and what's broken.
     """
 
-    def __init__(self, cdict, sdict, display_dicts):
+    def __init__(self, cdict, sdict):
         self.cdict = cdict
         self.sdict = sdict
         self.keys_to_fix = []
@@ -63,12 +63,6 @@ class ItemStatus:
         self.must_be_created = (self.cdict is not None and self.sdict is None)
         if not self.must_be_deleted and not self.must_be_created:
             self.keys_to_fix = diff_keys(cdict, sdict)
-
-        self.display_cdict, self.display_sdict, self.display_keys_to_fix = display_dicts(
-            copy(cdict),
-            copy(sdict),
-            copy(self.keys_to_fix),
-        )
 
     def __repr__(self):
         return "<ItemStatus correct:{}>".format(self.correct)
@@ -533,21 +527,38 @@ class Item:
                     self.fix(status_before)
             else:
                 if status_before.must_be_created:
-                    question_text = _("Doesn't exist. Will be created.")
-                elif status_before.must_be_deleted:
-                    question_text = _("Found on node. Will be removed.")
-                else:
-                    question_text = self.ask(
-                        status_before.display_cdict,
-                        status_before.display_sdict,
-                        status_before.display_keys_to_fix,
+                    question_text = "\n\n".join(
+                        f"{bold(key)}  {value}"
+                        for key, value in sorted(self.display_on_create(status_before.cdict).items())
                     )
+                    prompt = _("Create {}?").format(bold(self.id))
+                elif status_before.must_be_deleted:
+                    question_text = "\n\n".join(
+                        f"{bold(key)}  {value}"
+                        for key, value in sorted(self.display_on_delete(status_before.sdict).items())
+                    )
+                    prompt = _("Delete {}?").format(bold(self.id))
+                else:
+                    display_cdict, display_sdict, display_keys_to_fix = self.display_dicts(
+                        copy(status_before.cdict),
+                        copy(status_before.sdict),
+                        sorted(copy(status_before.keys_to_fix)),  # TODO remove sorted() in 5.0 to pass a set
+                    )
+                    question_text = "\n\n".join(
+                        diff_value(
+                            key,
+                            display_sdict[key],
+                            display_cdict[key],
+                        )
+                        for key in sorted(display_keys_to_fix)
+                    )
+                    prompt = _("Fix {}?").format(bold(self.id))
                 if self.comment:
                     question_text += format_comment(self.comment)
                 question = wrap_question(
                     self.id,
                     question_text,
-                    _("Fix {}?").format(bold(self.id)),
+                    prompt,
                     prefix="{x} {node} ".format(
                         node=bold(self.node.name),
                         x=blue("?"),
@@ -615,16 +626,6 @@ class Item:
             'result': result,
         })
         return result
-
-    def ask(self, status_should, status_actual, relevant_keys):
-        """
-        Returns a string asking the user if this item should be
-        implemented.
-        """
-        result = []
-        for key in relevant_keys:
-            result.append(diff_value(key, status_actual[key], status_should[key]))
-        return "\n\n".join(result)
 
     def cdict(self):
         """
@@ -725,7 +726,7 @@ class Item:
         )):
             if not cached:
                 del self._cache['cached_sdict']
-            return ItemStatus(self.cached_cdict, self.cached_sdict, self.display_dicts)
+            return ItemStatus(self.cached_cdict, self.cached_sdict)
 
     def hash(self):
         return hash_statedict(self.cached_cdict)
@@ -740,6 +741,16 @@ class Item:
     def verify(self):
         return self.cached_unless_result, self.cached_status
 
+    def display_on_create(self, cdict):
+        """
+        Given a cdict as implemented above, modify it to better suit
+        interactive presentation when an item is created.
+
+        MAY be overridden by subclasses.
+        """
+        return cdict
+
+    # TODO rename to display_on_fix in 5.0
     def display_dicts(self, cdict, sdict, keys):
         """
         Given cdict and sdict as implemented above, modify them to
@@ -749,6 +760,15 @@ class Item:
         MAY be overridden by subclasses.
         """
         return (cdict, sdict, keys)
+
+    def display_on_delete(self, sdict):
+        """
+        Given an sdict as implemented above, modify it to better suit
+        interactive presentation when an item is deleted.
+
+        MAY be overridden by subclasses.
+        """
+        return sdict
 
     def patch_attributes(self, attributes):
         """

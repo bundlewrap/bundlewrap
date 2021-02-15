@@ -41,6 +41,10 @@ class Symlink(Item):
                 cdict[optional_attr] = self.attributes[optional_attr]
         return cdict
 
+    def display_on_create(self, cdict):
+        del cdict['type']
+        return cdict
+
     def fix(self, status):
         if status.must_be_created or 'type' in status.keys_to_fix:
             # fixing the type fixes everything

@@ -64,13 +64,13 @@ def diff_keys(sdict1, sdict2):
     only exists in the second one, it is disregarded.
     """
     if sdict1 is None:
-        return []
+        return set()
     if sdict2 is None:
-        return sdict1.keys()
-    differing_keys = []
+        return set(sdict1.keys())
+    differing_keys = set()
     for key, value in sdict1.items():
         if value != sdict2[key]:
-            differing_keys.append(key)
+            differing_keys.add(key)
     return differing_keys
 
 

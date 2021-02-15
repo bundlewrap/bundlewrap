@@ -163,6 +163,16 @@ class User(Item):
                     command += "{} {} ".format(option, quote(value))
             self.run(command, data_stdin=stdin, may_fail=True)
 
+    def display_on_create(self, cdict):
+        for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
+            if attr_name == attr_display_name:
+                # Don't change anything; the `del` below would
+                # always remove the key entirely!
+                continue
+            cdict[attr_display_name] = cdict[attr_name]
+            del cdict[attr_name]
+        return cdict
+
     def display_dicts(self, cdict, sdict, keys):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
             if attr_name == attr_display_name:

@@ -68,6 +68,10 @@ class Directory(Item):
                 cdict[optional_attr] = self.attributes[optional_attr]
         return cdict
 
+    def display_on_create(self, cdict):
+        del cdict['type']
+        return cdict
+
     def display_dicts(self, cdict, sdict, keys):
         try:
             keys.remove('paths_to_purge')

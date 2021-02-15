@@ -69,6 +69,15 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             """
             raise NotImplementedError
 
+        def display_on_create(self, cdict):
+            """
+            Given a cdict as implemented above, modify it to better suit
+            interactive presentation when an item is created.
+
+            Implementing this method is optional.
+            """
+            return cdict
+
         def display_dicts(self, cdict, sdict, keys):
             """
             Given cdict and sdict as implemented above, modify them to
@@ -78,6 +87,15 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             Implementing this method is optional.
             """
             return (cdict, sdict, keys)
+
+        def display_on_delete(self, sdict):
+            """
+            Given an sdict as implemented above, modify it to better suit
+            interactive presentation when an item is deleted.
+
+            Implementing this method is optional.
+            """
+            return sdict
 
         def fix(self, status):
             """
