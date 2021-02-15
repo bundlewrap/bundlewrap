@@ -596,9 +596,17 @@ class Item:
         elif status_before.must_be_deleted:
             details = False
         elif status_code == self.STATUS_FAILED:
-            details = status_after.display_keys_to_fix
+            details = self.display_dicts(
+                copy(status_after.cdict),
+                copy(status_after.sdict),
+                sorted(copy(status_before.keys_to_fix)),  # TODO remove sorted() in 5.0 to pass a set
+            )[2]
         else:
-            details = status_before.display_keys_to_fix
+            details = self.display_dicts(
+                copy(status_before.cdict),
+                copy(status_before.sdict),
+                sorted(copy(status_before.keys_to_fix)),  # TODO remove sorted() in 5.0 to pass a set
+            )[2]
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
