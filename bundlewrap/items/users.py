@@ -267,7 +267,7 @@ class User(Item):
                 'hash_method',
                 self.ITEM_ATTRIBUTES['hash_method'],
             )]
-            salt = attributes.get('salt', None)
+            salt = force_text(attributes.get('salt', None))
             if self.node.os == 'openbsd':
                 attributes['password_hash'] = bcrypt.encrypt(
                     force_text(attributes['password']),
