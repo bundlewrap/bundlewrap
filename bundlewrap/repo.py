@@ -271,6 +271,11 @@ class Repository(MetadataGenerator):
         Creates and returns a repository at path, which must exist and
         be empty.
         """
+        if listdir(path):
+            raise ValueError(_("'{}' is not an empty directory".format(
+                path
+            )))
+
         for filename, content in INITIAL_CONTENT.items():
             if callable(content):
                 content = content()
