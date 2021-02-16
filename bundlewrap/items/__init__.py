@@ -529,13 +529,13 @@ class Item:
                 if status_before.must_be_created:
                     question_text = "\n\n".join(
                         f"{bold(key)}  {value}"
-                        for key, value in sorted(self.display_on_create(status_before.cdict).items())
+                        for key, value in sorted(self.display_on_create(copy(status_before.cdict)).items())
                     )
                     prompt = _("Create {}?").format(bold(self.id))
                 elif status_before.must_be_deleted:
                     question_text = "\n\n".join(
                         f"{bold(key)}  {value}"
-                        for key, value in sorted(self.display_on_delete(status_before.sdict).items())
+                        for key, value in sorted(self.display_on_delete(copy(status_before.sdict)).items())
                     )
                     prompt = _("Delete {}?").format(bold(self.id))
                 else:
@@ -748,9 +748,9 @@ class Item:
 
     def verify(self):
         if self.cached_status.must_be_created:
-            display = self.display_on_create(self.cached_status.cdict)
+            display = self.display_on_create(copy(self.cached_status.cdict))
         elif self.cached_status.must_be_deleted:
-            display = self.display_on_delete(self.cached_status.sdict)
+            display = self.display_on_delete(copy(self.cached_status.sdict))
         else:
             display = self.display_dicts(
                 copy(self.cached_status.cdict),
