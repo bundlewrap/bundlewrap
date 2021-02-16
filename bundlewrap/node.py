@@ -121,6 +121,7 @@ def handle_apply_result(
     node,
     item,
     status_code,
+    interactive=False,
     details=None,
     show_diff=True,
     created=None,
@@ -137,6 +138,7 @@ def handle_apply_result(
         node.name,
         item.bundle.name,
         item.id,
+        interactive=interactive,
         details=details,
         show_diff=show_diff,
         created=created,
@@ -201,6 +203,7 @@ def apply_items(
                     node,
                     skipped_item,
                     Item.STATUS_SKIPPED,
+                    interactive=interactive,
                     details=Item.SKIP_REASON_DEP_FAILED,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
@@ -220,6 +223,7 @@ def apply_items(
                     node,
                     skipped_item,
                     Item.STATUS_SKIPPED,
+                    interactive=interactive,
                     details=skip_reason,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
@@ -235,6 +239,7 @@ def apply_items(
             node,
             item,
             status_code,
+            interactive=interactive,
             details=details,
             show_diff=show_diff,
             created=created,
@@ -341,6 +346,7 @@ def format_item_result(
     node,
     bundle,
     item,
+    interactive=False,
     details=None,
     show_diff=True,
     created=None,
@@ -410,7 +416,7 @@ def format_item_result(
             status = green(_("deleted"))
         else:
             status = green(_("fixed"))
-        if show_diff:
+        if not interactive and show_diff:
             output = "{x} {node}  {bundle}  {item}  {status}\n".format(
                 bundle=bold(bundle),
                 item=item,
