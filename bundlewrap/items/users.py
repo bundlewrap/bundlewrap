@@ -169,8 +169,9 @@ class User(Item):
                 # Don't change anything; the `del` below would
                 # always remove the key entirely!
                 continue
-            cdict[attr_display_name] = cdict[attr_name]
-            del cdict[attr_name]
+            if attr_name in cdict:
+                cdict[attr_display_name] = cdict[attr_name]
+                del cdict[attr_name]
         return cdict
 
     def display_dicts(self, cdict, sdict, keys):
