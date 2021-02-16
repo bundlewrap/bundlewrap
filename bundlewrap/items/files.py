@@ -343,7 +343,7 @@ class File(Item):
 
     def display_on_create(self, cdict):
         if (
-            self.attributes['content_type'] not in ('base64', 'binary') and
+            self.attributes['content_type'] not in ('any', 'base64', 'binary') and
             len(self.content) < DIFF_MAX_FILE_SIZE
         ):
             del cdict['content_hash']

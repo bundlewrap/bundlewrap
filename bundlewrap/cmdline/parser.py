@@ -89,6 +89,13 @@ def build_parser_bw():
         help=HELP_get_target_nodes,
     )
     parser_apply.add_argument(
+        "-D",
+        "--no-diff",
+        action='store_false',
+        dest='show_diff',
+        help=_("hide diff for incorrect items when NOT using --interactive"),
+    )
+    parser_apply.add_argument(
         "-f",
         "--force",
         action='store_true',

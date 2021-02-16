@@ -424,6 +424,7 @@ class Item:
         other_peoples_soft_locks=(),
         interactive=False,
         interactive_default=True,
+        show_diff=True,
     ):
         self.node.repo.hooks.item_apply_start(
             self.node.repo,
@@ -433,6 +434,7 @@ class Item:
         status_code = None
         status_before = None
         status_after = None
+        details = None
         start_time = datetime.now()
 
         if not self.covered_by_autoonly_selector(autoonly_selector):
@@ -440,18 +442,18 @@ class Item:
                 "autoonly does not match {item} on {node}"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
-            skip_reason = self.SKIP_REASON_CMDLINE
+            details = self.SKIP_REASON_CMDLINE
 
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(
                 "autoskip matches {item} on {node}"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
-            skip_reason = self.SKIP_REASON_CMDLINE
+            details = self.SKIP_REASON_CMDLINE
 
         if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
             status_code = self.STATUS_SKIPPED
-            skip_reason = self.SKIP_REASON_SOFTLOCK
+            details = self.SKIP_REASON_SOFTLOCK
 
         for item in self._precedes_items:
             if item._triggers_preceding_items(interactive=interactive):
@@ -470,14 +472,14 @@ class Item:
                 "skipping {item} on {node} because it wasn't triggered"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
-            skip_reason = self.SKIP_REASON_NO_TRIGGER
+            details = self.SKIP_REASON_NO_TRIGGER
 
         if status_code is None and self.cached_unless_result and status_code is None:
             io.debug(_(
                 "'unless' for {item} on {node} succeeded, not fixing"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
-            skip_reason = self.SKIP_REASON_UNLESS
+            details = self.SKIP_REASON_UNLESS
 
         if self._faults_missing_for_attributes and status_code is None:
             if self.error_on_missing_fault:
@@ -494,7 +496,7 @@ class Item:
                     node=self.node.name,
                 ))
                 status_code = self.STATUS_SKIPPED
-                skip_reason = self.SKIP_REASON_FAULT_UNAVAILABLE
+                details = self.SKIP_REASON_FAULT_UNAVAILABLE
 
         if status_code is None:
             try:
@@ -512,10 +514,22 @@ class Item:
                         node=self.node.name,
                     ))
                     status_code = self.STATUS_SKIPPED
-                    skip_reason = self.SKIP_REASON_FAULT_UNAVAILABLE
+                    details = self.SKIP_REASON_FAULT_UNAVAILABLE
             else:
                 if status_before.correct:
                     status_code = self.STATUS_OK
+                elif show_diff or interactive:
+                    if status_before.must_be_created:
+                        details = self.display_on_create(copy(status_before.cdict))
+                    elif status_before.must_be_deleted:
+                        details = self.display_on_delete(copy(status_before.sdict))
+                    else:
+                        details = self.display_dicts(
+                            copy(status_before.cdict),
+                            copy(status_before.sdict),
+                            # TODO remove sorted() in 5.0 to pass a set
+                            sorted(copy(status_before.keys_to_fix)),
+                        )
 
         if status_code is None:
             if not interactive:
@@ -529,21 +543,17 @@ class Item:
                 if status_before.must_be_created:
                     question_text = "\n".join(
                         f"{bold(key)}  {value}"
-                        for key, value in sorted(self.display_on_create(copy(status_before.cdict)).items())
+                        for key, value in sorted(details.items())
                     )
                     prompt = _("Create {}?").format(bold(self.id))
                 elif status_before.must_be_deleted:
                     question_text = "\n".join(
                         f"{bold(key)}  {value}"
-                        for key, value in sorted(self.display_on_delete(copy(status_before.sdict)).items())
+                        for key, value in sorted(details.items())
                     )
                     prompt = _("Delete {}?").format(bold(self.id))
                 else:
-                    display_cdict, display_sdict, display_keys_to_fix = self.display_dicts(
-                        copy(status_before.cdict),
-                        copy(status_before.sdict),
-                        sorted(copy(status_before.keys_to_fix)),  # TODO remove sorted() in 5.0 to pass a set
-                    )
+                    display_cdict, display_sdict, display_keys_to_fix = details
                     question_text = "\n".join(
                         diff_value(
                             key,
@@ -581,32 +591,11 @@ class Item:
                         self.fix(status_before)
                 else:
                     status_code = self.STATUS_SKIPPED
-                    skip_reason = self.SKIP_REASON_INTERACTIVE
+                    details = self.SKIP_REASON_INTERACTIVE
 
         if status_code is None:
             status_after = self.get_status(cached=False)
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
-
-        if status_code == self.STATUS_OK:
-            details = None
-        elif status_code == self.STATUS_SKIPPED:
-            details = skip_reason
-        elif status_before.must_be_created:
-            details = True
-        elif status_before.must_be_deleted:
-            details = False
-        elif status_code == self.STATUS_FAILED:
-            details = self.display_dicts(
-                copy(status_after.cdict),
-                copy(status_after.sdict),
-                sorted(copy(status_before.keys_to_fix)),  # TODO remove sorted() in 5.0 to pass a set
-            )[2]
-        else:
-            details = self.display_dicts(
-                copy(status_before.cdict),
-                copy(status_before.sdict),
-                sorted(copy(status_before.keys_to_fix)),  # TODO remove sorted() in 5.0 to pass a set
-            )[2]
 
         self.node.repo.hooks.item_apply_end(
             self.node.repo,
@@ -617,7 +606,12 @@ class Item:
             status_before=status_before,
             status_after=status_after,
         )
-        return (status_code, details)
+        return (
+            status_code,
+            details,
+            status_before.must_be_created if status_before else None,
+            status_before.must_be_deleted if status_before else None,
+        )
 
     def run_local(self, command, **kwargs):
         result = run_local(command, **kwargs)

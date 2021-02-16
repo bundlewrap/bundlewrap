@@ -32,6 +32,7 @@ class Action(Item):
         other_peoples_soft_locks=(),
         interactive=False,
         interactive_default=True,
+        show_diff=True,
     ):
         if self._faults_missing_for_attributes:
             if self.error_on_missing_fault:
@@ -47,25 +48,25 @@ class Action(Item):
                     item=self.id,
                     node=self.node.name,
                 ))
-                return (self.STATUS_SKIPPED, self.SKIP_REASON_FAULT_UNAVAILABLE)
+                return (self.STATUS_SKIPPED, self.SKIP_REASON_FAULT_UNAVAILABLE, None, None)
 
         if not self.covered_by_autoonly_selector(autoonly_selector):
             io.debug(_(
                 "autoonly does not match {item} on {node}"
             ).format(item=self.id, node=self.node.name))
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE, None, None)
 
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(
                 "autoskip matches {item} on {node}"
             ).format(item=self.id, node=self.node.name))
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE, None, None)
 
         if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_SOFTLOCK)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_SOFTLOCK, None, None)
 
         if interactive is False and self.attributes['interactive'] is True:
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE_ONLY)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE_ONLY, None, None)
 
         for item in self._precedes_items:
             if item._triggers_preceding_items(interactive=interactive):
@@ -81,7 +82,7 @@ class Action(Item):
 
         if self.triggered and not self.has_been_triggered:
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_NO_TRIGGER)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_NO_TRIGGER, None, None)
 
         if self.unless:
             with io.job(_("{node}  {bundle}  {item}  checking 'unless' condition").format(
@@ -99,7 +100,7 @@ class Action(Item):
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
-                return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS)
+                return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS, None, None)
 
         question_body = ""
         if self.attributes['data_stdin'] is not None:
@@ -130,12 +131,12 @@ class Action(Item):
                 ),
             )
         ):
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE, None, None)
         try:
             self.run()
-            return (self.STATUS_ACTION_SUCCEEDED, None)
+            return (self.STATUS_ACTION_SUCCEEDED, None, None, None)
         except ActionFailure as exc:
-            return (self.STATUS_FAILED, [str(exc)])
+            return (self.STATUS_FAILED, [str(exc)], None, None)
 
     def apply(self, *args, **kwargs):
         return self.get_result(*args, **kwargs)
@@ -151,17 +152,17 @@ class Action(Item):
         )
         start_time = datetime.now()
 
-        status_code = self._get_result(*args, **kwargs)
+        result = self._get_result(*args, **kwargs)
 
         self.node.repo.hooks.action_run_end(
             self.node.repo,
             self.node,
             self,
             duration=datetime.now() - start_time,
-            status=status_code[0],
+            status=result[0],
         )
 
-        return status_code
+        return result
 
     def run(self):
         if self.attributes['data_stdin'] is not None:

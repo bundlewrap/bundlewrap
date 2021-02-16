@@ -117,7 +117,15 @@ def format_node_result(result):
     return ", ".join(output)
 
 
-def handle_apply_result(node, item, status_code, interactive, details=None):
+def handle_apply_result(
+    node,
+    item,
+    status_code,
+    details=None,
+    show_diff=True,
+    created=None,
+    deleted=None,
+):
     if status_code == Item.STATUS_SKIPPED and details in (
         Item.SKIP_REASON_NO_TRIGGER,
         Item.SKIP_REASON_UNLESS,
@@ -127,10 +135,12 @@ def handle_apply_result(node, item, status_code, interactive, details=None):
     formatted_result = format_item_result(
         status_code,
         node.name,
-        item.bundle.name if item.bundle else "",  # dummy items don't have bundles
+        item.bundle.name,
         item.id,
-        interactive=interactive,
         details=details,
+        show_diff=show_diff,
+        created=created,
+        deleted=deleted,
     )
     if formatted_result is not None:
         if status_code == Item.STATUS_FAILED:
@@ -151,6 +161,7 @@ def apply_items(
     other_peoples_soft_locks=(),
     workers=1,
     interactive=False,
+    show_diff=True,
 ):
     item_queue = ItemQueue(node)
     # the item queue might contain new generated items (canned actions)
@@ -174,6 +185,7 @@ def apply_items(
                 'my_soft_locks': my_soft_locks,
                 'other_peoples_soft_locks': other_peoples_soft_locks,
                 'interactive': interactive,
+                'show_diff': show_diff,
             },
         }
 
@@ -181,7 +193,7 @@ def apply_items(
         item_id = task_id.split(":", 1)[1]
         item = find_item(item_id, item_queue.pending_items)
 
-        status_code, details = return_value
+        status_code, details, created, deleted = return_value
 
         if status_code == Item.STATUS_FAILED:
             for skipped_item in item_queue.item_failed(item):
@@ -189,7 +201,6 @@ def apply_items(
                     node,
                     skipped_item,
                     Item.STATUS_SKIPPED,
-                    interactive,
                     details=Item.SKIP_REASON_DEP_FAILED,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
@@ -209,7 +220,6 @@ def apply_items(
                     node,
                     skipped_item,
                     Item.STATUS_SKIPPED,
-                    interactive,
                     details=skip_reason,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
@@ -221,7 +231,15 @@ def apply_items(
                 ),
             ))
 
-        handle_apply_result(node, item, status_code, interactive, details=details)
+        handle_apply_result(
+            node,
+            item,
+            status_code,
+            details=details,
+            show_diff=show_diff,
+            created=created,
+            deleted=deleted,
+        )
         io.progress_advance()
         results.append((item.id, status_code, duration))
 
@@ -318,28 +336,58 @@ def format_item_command_results(results):
     return output.lstrip('\n')
 
 
-def format_item_result(result, node, bundle, item, interactive=False, details=None):
-    if details is True:
-        details_text = "({})".format(_("create"))
-    elif details is False:
-        details_text = "({})".format(_("remove"))
-    elif details is None:
+def format_item_result(
+    result,
+    node,
+    bundle,
+    item,
+    details=None,
+    show_diff=True,
+    created=None,
+    deleted=None,
+):
+    if created or deleted or details is None:
         details_text = ""
     elif result == Item.STATUS_SKIPPED:
         details_text = "({})".format(Item.SKIP_REASON_DESC[details])
     else:
-        details_text = "({})".format(", ".join(sorted(details)))
+        details_text = "({})".format(", ".join(sorted(details[2])))
     if result == Item.STATUS_FAILED:
-        return "{x} {node}  {bundle}  {item} {status} {details}".format(
-            bundle=bold(bundle),
-            details=details_text,
-            item=item,
-            node=bold(node),
-            status=red(_("failed")),
-            x=bold(red("✘")),
-        )
+        if created:
+            status = red(_("failed to create"))
+        elif deleted:
+            status = red(_("failed to delete"))
+        else:
+            status = red(_("failed"))
+        if show_diff and not created and not deleted:
+            output = "{x} {node}  {bundle}  {item}  {status}\n".format(
+                bundle=bold(bundle),
+                item=item,
+                node=bold(node),
+                status=status,
+                x=bold(red("✘")),
+            )
+            diff = "\n"
+            for key in sorted(details[2]):
+                diff += diff_value(key, details[0][key], details[1][key]) + "\n"
+            for line in diff.splitlines():
+                output += "{x} {line}\n".format(
+                    line=line,
+                    x=red("│"),
+                )
+            output += red("╵")
+            return output
+        else:
+            return "{x} {node}  {bundle}  {item}  {status} {details}".format(
+                bundle=bold(bundle),
+                details=details_text,
+                item=item,
+                node=bold(node),
+                status=status,
+                x=bold(red("✘")),
+            )
     elif result == Item.STATUS_ACTION_SUCCEEDED:
-        return "{x} {node}  {bundle}  {item} {status}".format(
+        return "{x} {node}  {bundle}  {item}  {status}".format(
             bundle=bold(bundle),
             item=item,
             node=bold(node),
@@ -347,7 +395,7 @@ def format_item_result(result, node, bundle, item, interactive=False, details=No
             x=bold(green("✓")),
         )
     elif result == Item.STATUS_SKIPPED:
-        return "{x} {node}  {bundle}  {item} {status} {details}".format(
+        return "{x} {node}  {bundle}  {item}  {status} {details}".format(
             bundle=bold(bundle),
             details=details_text,
             item=item,
@@ -356,14 +404,42 @@ def format_item_result(result, node, bundle, item, interactive=False, details=No
             status=yellow(_("skipped")),
         )
     elif result == Item.STATUS_FIXED:
-        return "{x} {node}  {bundle}  {item} {status} {details}".format(
-            bundle=bold(bundle),
-            details=details_text,
-            item=item,
-            node=bold(node),
-            x=bold(green("✓")),
-            status=green(_("fixed")),
-        )
+        if created:
+            status = green(_("created"))
+        elif deleted:
+            status = green(_("deleted"))
+        else:
+            status = green(_("fixed"))
+        if show_diff:
+            output = "{x} {node}  {bundle}  {item}  {status}\n".format(
+                bundle=bold(bundle),
+                item=item,
+                node=bold(node),
+                x=bold(green("✓")),
+                status=status,
+            )
+            diff = "\n"
+            if created or deleted:
+                for key, value in sorted(details.items()):
+                    diff += f"{bold(key)}  {value}\n"
+            else:
+                for key in sorted(details[2]):
+                    diff += diff_value(key, details[0][key], details[1][key]) + "\n"
+            for line in diff.splitlines():
+                output += "{x} {line}\n".format(
+                    line=line,
+                    x=green("│"),
+                )
+            output += green("╵")
+            return output
+        else:
+            return "{x} {node}  {bundle}  {item}  {status}".format(
+                bundle=bold(bundle),
+                item=item,
+                node=bold(node),
+                x=bold(green("✓")),
+                status=status,
+            )
 
 
 class Node:
@@ -548,6 +624,7 @@ class Node:
         autoonly_selector="",
         interactive=False,
         force=False,
+        show_diff=True,
         skip_list=tuple(),
         workers=4,
     ):
@@ -620,6 +697,7 @@ class Node:
                         other_peoples_soft_locks=lock.other_peoples_soft_locks,
                         workers=workers,
                         interactive=interactive,
+                        show_diff=show_diff,
                     )
             except NodeLockedException as e:
                 if not interactive:
