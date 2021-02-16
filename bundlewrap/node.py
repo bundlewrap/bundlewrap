@@ -375,7 +375,7 @@ def format_item_result(
             )
             diff = "\n"
             for key in sorted(details[2]):
-                diff += diff_value(key, details[0][key], details[1][key]) + "\n"
+                diff += diff_value(key, details[1][key], details[0][key]) + "\n"
             for line in diff.splitlines():
                 output += "{x} {line}\n".format(
                     line=line,
@@ -430,7 +430,7 @@ def format_item_result(
                     diff += f"{bold(key)}  {value}\n"
             else:
                 for key in sorted(details[2]):
-                    diff += diff_value(key, details[0][key], details[1][key]) + "\n"
+                    diff += diff_value(key, details[1][key], details[0][key]) + "\n"
             for line in diff.splitlines():
                 output += "{x} {line}\n".format(
                     line=line,
