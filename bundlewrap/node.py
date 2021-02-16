@@ -795,7 +795,7 @@ class Node:
             wrapper_outer=self.cmd_wrapper_outer,
         )
 
-    def verify(self, show_all=False, show_diff=False, workers=4):
+    def verify(self, show_all=False, show_diff=True, workers=4):
         result = []
         start = datetime.now()
 
@@ -847,7 +847,7 @@ for attr, default in GROUP_ATTR_DEFAULTS.items():
     setattr(Node, attr, build_attr_property(attr, default))
 
 
-def verify_items(node, show_all=False, show_diff=False, workers=1):
+def verify_items(node, show_all=False, show_diff=True, workers=1):
     items = []
     for item in node.items:
         if not item.triggered:
