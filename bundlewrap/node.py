@@ -945,14 +945,15 @@ def verify_items(node, show_all=False, show_diff=True, workers=1):
                 diff = "\n"
                 if item_status.must_be_created or item_status.must_be_deleted:
                     for key, value in sorted(display.items()):
-                        diff += f"{bold(key)}  {value}\n\n"
+                        diff += f"{bold(key)}  {value}\n"
                     diff += "\n"
                 else:
                     for key in sorted(display[2]):
-                        diff += diff_value(key, display[0][key], display[1][key]) + "\n\n"
+                        diff += diff_value(key, display[0][key], display[1][key]) + "\n"
                 for line in diff.splitlines():
-                    io.stderr("  {line}".format(
+                    io.stderr("{x} {line}".format(
                         line=line,
+                        x=red("│"),
                     ))
             return False
         else:

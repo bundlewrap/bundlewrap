@@ -45,7 +45,7 @@ def format_comment(comment):
     result = "\n\n"
     for line in wrapper.wrap(cleandoc(comment)):
         for inlineline in line.split("\n"):
-            result += "# {}\n".format(italic(inlineline))
+            result += "{} {}\n".format(bold("#"), italic(inlineline))
     return result
 
 
@@ -527,13 +527,13 @@ class Item:
                     self.fix(status_before)
             else:
                 if status_before.must_be_created:
-                    question_text = "\n\n".join(
+                    question_text = "\n".join(
                         f"{bold(key)}  {value}"
                         for key, value in sorted(self.display_on_create(copy(status_before.cdict)).items())
                     )
                     prompt = _("Create {}?").format(bold(self.id))
                 elif status_before.must_be_deleted:
-                    question_text = "\n\n".join(
+                    question_text = "\n".join(
                         f"{bold(key)}  {value}"
                         for key, value in sorted(self.display_on_delete(copy(status_before.sdict)).items())
                     )
@@ -544,7 +544,7 @@ class Item:
                         copy(status_before.sdict),
                         sorted(copy(status_before.keys_to_fix)),  # TODO remove sorted() in 5.0 to pass a set
                     )
-                    question_text = "\n\n".join(
+                    question_text = "\n".join(
                         diff_value(
                             key,
                             display_sdict[key],

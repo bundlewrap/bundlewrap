@@ -43,7 +43,7 @@ def diff_item(node_a, node_b, item):
         item_b_dict['content'] = item_b.content
 
     relevant_keys = diff_keys(item_a_dict, item_b_dict)
-    io.stdout("\n\n".join(
+    io.stdout("\n".join(
         diff_value(key, item_a_dict[key], item_b_dict[key])
         for key in relevant_keys
     ))
