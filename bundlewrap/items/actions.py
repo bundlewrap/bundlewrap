@@ -18,7 +18,7 @@ class Action(Item):
         'data_stdin': None,
         'expected_stderr': None,
         'expected_stdout': None,
-        'expected_return_code': 0,
+        'expected_return_code': {0},
         'interactive': None,
     }
     ITEM_TYPE_NAME = 'action'
