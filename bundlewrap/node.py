@@ -1018,27 +1018,34 @@ def verify_items(node, show_all=False, show_diff=True, workers=1):
                 details_text = _("remove")
             else:
                 details_text = ", ".join(sorted(display[2]))
-            io.stderr("{x} {node}  {bundle}  {item}  ({details})".format(
-                bundle=bold(bundle_name),
-                details=bold(details_text),
-                item=item_id,
-                node=bold(node_name),
-                x=red("✘"),
-            ))
             if show_diff:
                 diff = "\n"
                 if item_status.must_be_created or item_status.must_be_deleted:
                     for key, value in sorted(display.items()):
                         diff += f"{bold(key)}  {value}\n"
-                    diff += "\n"
                 else:
                     for key in sorted(display[2]):
                         diff += diff_value(key, display[1][key], display[0][key]) + "\n"
+                output = "{x} {node}  {bundle}  {item}\n".format(
+                    bundle=bold(bundle_name),
+                    item=item_id,
+                    node=bold(node_name),
+                    x=red("✘"),
+                )
                 for line in diff.splitlines():
-                    io.stderr("{x} {line}".format(
+                    output += "{x} {line}\n".format(
                         line=line,
                         x=red("│"),
-                    ))
+                    )
+                io.stderr(output + red("╵"))
+            else:
+                io.stderr("{x} {node}  {bundle}  {item}  ({details})".format(
+                    bundle=bold(bundle_name),
+                    details=bold(details_text),
+                    item=item_id,
+                    node=bold(node_name),
+                    x=red("✘"),
+                ))
             return False
         else:
             if show_all:
