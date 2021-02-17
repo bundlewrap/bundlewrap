@@ -148,7 +148,7 @@ def diff_value_text(title, value1, value2):
         elif line.startswith("-"):
             line = red(line)
         output += line + suffix + "\n"
-    return output
+    return output.rstrip("\n")
 
 
 TYPE_DIFFS = {
