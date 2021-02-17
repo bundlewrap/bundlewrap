@@ -186,9 +186,13 @@ class Action(Item):
                 may_fail=True,
             )
 
-        if self.attributes['expected_return_code'] is not None and \
-                not result.return_code == self.attributes['expected_return_code']:
-            raise ActionFailure(_("wrong return code: {}").format(result.return_code))
+        if self.attributes['expected_return_code'] is not None:
+            if isinstance(self.attributes['expected_return_code'], (list, set, tuple)):
+                if not result.return_code in self.attributes['expected_return_code']:
+                    raise ActionFailure(_("wrong return code: {}").format(result.return_code))
+            else:
+                if not result.return_code == self.attributes['expected_return_code']:
+                    raise ActionFailure(_("wrong return code: {}").format(result.return_code))
 
         if self.attributes['expected_stderr'] is not None and \
                 result.stderr_text != self.attributes['expected_stderr']:
