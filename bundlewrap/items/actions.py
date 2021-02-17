@@ -186,13 +186,9 @@ class Action(Item):
                 may_fail=True,
             )
 
-        if self.attributes['expected_return_code'] is not None:
-            if isinstance(self.attributes['expected_return_code'], (list, set, tuple)):
-                if not result.return_code in self.attributes['expected_return_code']:
-                    raise ActionFailure(_("wrong return code: {}").format(result.return_code))
-            else:
-                if not result.return_code == self.attributes['expected_return_code']:
-                    raise ActionFailure(_("wrong return code: {}").format(result.return_code))
+        if self.attributes['expected_return_code'] is not None and \
+                result.return_code not in self.attributes['expected_return_code']:
+            raise ActionFailure(_("wrong return code: {}").format(result.return_code))
 
         if self.attributes['expected_stderr'] is not None and \
                 result.stderr_text != self.attributes['expected_stderr']:
@@ -203,6 +199,11 @@ class Action(Item):
             raise ActionFailure(_("wrong stdout"))
 
         return result
+
+    def patch_attributes(self, attributes):
+        if isinstance(attributes.get('expected_return_code'), int):
+            attributes['expected_return_code'] = {attributes['expected_return_code']}
+        return attributes
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
