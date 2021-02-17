@@ -357,7 +357,11 @@ def format_item_result(
     elif result == Item.STATUS_SKIPPED:
         details_text = "({})".format(Item.SKIP_REASON_DESC[details])
     else:
-        details_text = "({})".format(", ".join(sorted(details[2])))
+        try:
+            details_text = "({})".format(", ".join(sorted(details[2])))
+        except IndexError:  # FIXME
+            io.stderr("YOU HAVE HIT A KNOWN BUG, PLEASE REPORT THIS:\n" + str(locals()))
+            raise
     if result == Item.STATUS_FAILED:
         if created:
             status = red(_("failed to create"))
