@@ -1033,7 +1033,7 @@ def verify_items(node, show_all=False, show_diff=True, workers=1):
                     diff += "\n"
                 else:
                     for key in sorted(display[2]):
-                        diff += diff_value(key, display[0][key], display[1][key]) + "\n"
+                        diff += diff_value(key, display[1][key], display[0][key]) + "\n"
                 for line in diff.splitlines():
                     io.stderr("{x} {line}".format(
                         line=line,
