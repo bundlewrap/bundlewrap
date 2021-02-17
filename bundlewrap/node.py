@@ -1013,9 +1013,11 @@ def verify_items(node, show_all=False, show_diff=True, workers=1):
         node_name, bundle_name, item_id = task_id.split(":", 2)
         if not unless_result and not item_status.correct:
             if item_status.must_be_created:
-                details_text = _("create")
+                details_text = red(_("missing"))
             elif item_status.must_be_deleted:
-                details_text = _("remove")
+                details_text = red(_("found"))
+            elif show_diff:
+                details_text = ""
             else:
                 details_text = ", ".join(sorted(display[2]))
             if show_diff:
@@ -1026,8 +1028,9 @@ def verify_items(node, show_all=False, show_diff=True, workers=1):
                 else:
                     for key in sorted(display[2]):
                         diff += diff_value(key, display[1][key], display[0][key]) + "\n"
-                output = "{x} {node}  {bundle}  {item}\n".format(
+                output = "{x} {node}  {bundle}  {item}  {details}\n".format(
                     bundle=bold(bundle_name),
+                    details=details_text,
                     item=item_id,
                     node=bold(node_name),
                     x=red("✘"),
@@ -1039,9 +1042,9 @@ def verify_items(node, show_all=False, show_diff=True, workers=1):
                     )
                 io.stderr(output + red("╵"))
             else:
-                io.stderr("{x} {node}  {bundle}  {item}  ({details})".format(
+                io.stderr("{x} {node}  {bundle}  {item}  {details}".format(
                     bundle=bold(bundle_name),
-                    details=bold(details_text),
+                    details=details_text,
                     item=item_id,
                     node=bold(node_name),
                     x=red("✘"),
