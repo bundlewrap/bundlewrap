@@ -4,7 +4,7 @@ from ..items.files import DIFF_MAX_FILE_SIZE
 from ..metadata import metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
-from ..utils.dicts import diff_keys
+from ..utils.dicts import diff_keys, diff_value
 from ..utils.scm import get_git_branch, get_git_rev, set_git_rev
 from ..utils.text import force_text, mark_for_translation as _, red, blue, yellow
 from ..utils.ui import io, QUIT_EVENT
@@ -43,7 +43,10 @@ def diff_item(node_a, node_b, item):
         item_b_dict['content'] = item_b.content
 
     relevant_keys = diff_keys(item_a_dict, item_b_dict)
-    io.stdout(item_a.ask(item_b_dict, item_a_dict, relevant_keys))
+    io.stdout("\n".join(
+        diff_value(key, item_a_dict[key], item_b_dict[key])
+        for key in relevant_keys
+    ))
 
 
 def diff_node(node_a, node_b):

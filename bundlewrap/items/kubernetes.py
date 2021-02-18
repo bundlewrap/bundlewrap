@@ -7,7 +7,7 @@ from bundlewrap.exceptions import BundleError
 from bundlewrap.metadata import metadata_to_json
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.files import content_processor_jinja2, content_processor_mako
-from bundlewrap.utils.dicts import merge_dict, reduce_dict
+from bundlewrap.utils.dicts import diff_value_text, merge_dict, reduce_dict
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 import yaml
@@ -56,6 +56,14 @@ class KubernetesItem(Item, metaclass=ABCMeta):
                 self.nuke_k8s_status(json.loads(self.manifest)),
                 indent=4, sort_keys=True,
             )}
+
+    def display_on_create(self, cdict):
+        cdict['manifest'] = diff_value_text("", "", force_text(cdict['manifest'])).rstrip("\n")
+        return cdict
+
+    def display_on_delete(self, sdict):
+        sdict['manifest'] = diff_value_text("", force_text(sdict['manifest']), "").rstrip("\n")
+        return sdict
 
     def fix(self, status):
         if status.must_be_deleted:

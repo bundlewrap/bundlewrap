@@ -256,5 +256,5 @@ files = {
 """)
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
-    assert b"file:/tmp/bw_test_faultunavailable skipped (Fault unavailable)" in stdout
+    assert b"file:/tmp/bw_test_faultunavailable  skipped (Fault unavailable)" in stdout
     assert not exists("/tmp/bw_test_faultunavailable")

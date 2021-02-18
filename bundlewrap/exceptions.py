@@ -1,10 +1,3 @@
-class ActionFailure(Exception):
-    """
-    Raised when an action failes to meet the expected rcode/output.
-    """
-    pass
-
-
 class DontCache(Exception):
     """
     Used in the cached_property decorator to temporily prevent caching

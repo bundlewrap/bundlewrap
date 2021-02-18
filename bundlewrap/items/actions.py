@@ -1,11 +1,20 @@
 from datetime import datetime
 
-from bundlewrap.exceptions import ActionFailure, BundleError
+from bundlewrap.exceptions import BundleError
 from bundlewrap.items import format_comment, Item
 from bundlewrap.utils import Fault
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, wrap_question
+
+
+class ActionFailure(Exception):
+    """
+    Raised when an action failes to meet the expected rcode/output.
+    """
+
+    def __init__(self, failed_expectations):
+        self.failed_expectations = failed_expectations
 
 
 class Action(Item):
@@ -32,6 +41,7 @@ class Action(Item):
         other_peoples_soft_locks=(),
         interactive=False,
         interactive_default=True,
+        show_diff=True,
     ):
         if self._faults_missing_for_attributes:
             if self.error_on_missing_fault:
@@ -47,25 +57,25 @@ class Action(Item):
                     item=self.id,
                     node=self.node.name,
                 ))
-                return (self.STATUS_SKIPPED, self.SKIP_REASON_FAULT_UNAVAILABLE)
+                return (self.STATUS_SKIPPED, self.SKIP_REASON_FAULT_UNAVAILABLE, None, None)
 
         if not self.covered_by_autoonly_selector(autoonly_selector):
             io.debug(_(
                 "autoonly does not match {item} on {node}"
             ).format(item=self.id, node=self.node.name))
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE, None, None)
 
         if self.covered_by_autoskip_selector(autoskip_selector):
             io.debug(_(
                 "autoskip matches {item} on {node}"
             ).format(item=self.id, node=self.node.name))
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_CMDLINE, None, None)
 
         if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_SOFTLOCK)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_SOFTLOCK, None, None)
 
         if interactive is False and self.attributes['interactive'] is True:
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE_ONLY)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE_ONLY, None, None)
 
         for item in self._precedes_items:
             if item._triggers_preceding_items(interactive=interactive):
@@ -81,7 +91,7 @@ class Action(Item):
 
         if self.triggered and not self.has_been_triggered:
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_NO_TRIGGER)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_NO_TRIGGER, None, None)
 
         if self.unless:
             with io.job(_("{node}  {bundle}  {item}  checking 'unless' condition").format(
@@ -99,7 +109,7 @@ class Action(Item):
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
-                return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS)
+                return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS, None, None)
 
         question_body = ""
         if self.attributes['data_stdin'] is not None:
@@ -130,12 +140,12 @@ class Action(Item):
                 ),
             )
         ):
-            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE)
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_INTERACTIVE, None, None)
         try:
             self.run()
-            return (self.STATUS_ACTION_SUCCEEDED, None)
+            return (self.STATUS_ACTION_SUCCEEDED, None, None, None)
         except ActionFailure as exc:
-            return (self.STATUS_FAILED, [str(exc)])
+            return (self.STATUS_FAILED, exc.failed_expectations, None, None)
 
     def apply(self, *args, **kwargs):
         return self.get_result(*args, **kwargs)
@@ -151,17 +161,17 @@ class Action(Item):
         )
         start_time = datetime.now()
 
-        status_code = self._get_result(*args, **kwargs)
+        result = self._get_result(*args, **kwargs)
 
         self.node.repo.hooks.action_run_end(
             self.node.repo,
             self.node,
             self,
             duration=datetime.now() - start_time,
-            status=status_code[0],
+            status=result[0],
         )
 
-        return status_code
+        return result
 
     def run(self):
         if self.attributes['data_stdin'] is not None:
@@ -186,17 +196,28 @@ class Action(Item):
                 may_fail=True,
             )
 
+        failed_expectations = ({}, {}, [])
+
         if self.attributes['expected_return_code'] is not None and \
                 result.return_code not in self.attributes['expected_return_code']:
-            raise ActionFailure(_("wrong return code: {}").format(result.return_code))
+            failed_expectations[0][_("return code")] = str(self.attributes['expected_return_code'])
+            failed_expectations[1][_("return code")] = str(result.return_code)
+            failed_expectations[2].append(_("return code"))
 
         if self.attributes['expected_stderr'] is not None and \
                 result.stderr_text != self.attributes['expected_stderr']:
-            raise ActionFailure(_("wrong stderr"))
+            failed_expectations[0][_("stderr")] = self.attributes['expected_stderr']
+            failed_expectations[1][_("stderr")] = result.stderr_text
+            failed_expectations[2].append(_("stderr"))
 
         if self.attributes['expected_stdout'] is not None and \
                 result.stdout_text != self.attributes['expected_stdout']:
-            raise ActionFailure(_("wrong stdout"))
+            failed_expectations[0][_("stdout")] = self.attributes['expected_stdout']
+            failed_expectations[1][_("stdout")] = result.stdout_text
+            failed_expectations[2].append(_("stdout"))
+
+        if failed_expectations[2]:
+            raise ActionFailure(failed_expectations)
 
         return result
 
@@ -214,6 +235,6 @@ class Action(Item):
 
     def verify(self):
         if self.unless and self.cached_unless_result:
-            return self.cached_unless_result, None
+            return self.cached_unless_result, None, None
         else:
             raise NotImplementedError

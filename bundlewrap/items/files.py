@@ -16,6 +16,7 @@ from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, sha1, tempfile
+from bundlewrap.utils.dicts import diff_value_text
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
@@ -340,6 +341,16 @@ class File(Item):
                 'size': path_info.size,
             }
 
+    def display_on_create(self, cdict):
+        if (
+            self.attributes['content_type'] not in ('any', 'base64', 'binary') and
+            len(self.content) < DIFF_MAX_FILE_SIZE
+        ):
+            del cdict['content_hash']
+            cdict['content'] = diff_value_text("", "", force_text(self.content)).rstrip("\n")
+        del cdict['type']
+        return cdict
+
     def display_dicts(self, cdict, sdict, keys):
         if (
             'content_hash' in keys and
@@ -358,6 +369,22 @@ class File(Item):
             with suppress(ValueError):
                 keys.remove('content_hash')
         return (cdict, sdict, keys)
+
+    def display_on_delete(self, sdict):
+        del sdict['content_hash']
+        path_info = PathInfo(self.node, self.name)
+        if (
+            sdict['size'] < DIFF_MAX_FILE_SIZE and
+            path_info.is_text_file
+        ):
+            sdict['content'] = diff_value_text(
+                "",
+                get_remote_file_contents(self.node, self.name),
+                "",
+            ).rstrip("\n")
+        if path_info.is_file:
+            sdict['size'] = f"{sdict['size']} bytes"
+        return sdict
 
     def patch_attributes(self, attributes):
         if (

@@ -89,6 +89,13 @@ def build_parser_bw():
         help=HELP_get_target_nodes,
     )
     parser_apply.add_argument(
+        "-D",
+        "--no-diff",
+        action='store_false',
+        dest='show_diff',
+        help=_("hide diff for incorrect items when NOT using --interactive"),
+    )
+    parser_apply.add_argument(
         "-f",
         "--force",
         action='store_true',
@@ -955,6 +962,13 @@ bundle:my_bundle  # items in this bundle
         action='store_true',
         dest='show_all',
         help=_("show correct items as well as incorrect ones"),
+    )
+    parser_verify.add_argument(
+        "-D",
+        "--no-diff",
+        action='store_false',
+        dest='show_diff',
+        help=_("hide diff for incorrect items"),
     )
     bw_verify_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_verify.add_argument(

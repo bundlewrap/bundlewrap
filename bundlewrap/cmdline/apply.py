@@ -61,6 +61,7 @@ def bw_apply(repo, args):
                 'autoonly_selector': args['autoonly'],
                 'force': args['force'],
                 'interactive': args['interactive'],
+                'show_diff': args['show_diff'],
                 'skip_list': skip_list,
                 'workers': args['item_workers'],
             },
