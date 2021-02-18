@@ -42,6 +42,13 @@ Restarts the service.
 
 <hr>
 
+## stop
+
+Stops the service.
+
+<hr>
+
 ## stopstart
 
 Stops and starts the service.
+

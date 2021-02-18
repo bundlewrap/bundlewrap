@@ -52,3 +52,9 @@ Reloads the service.
 ## restart
 
 Restarts the service.
+
+<hr>
+
+## stop
+
+Stops the service.

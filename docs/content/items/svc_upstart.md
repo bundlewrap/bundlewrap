@@ -41,6 +41,12 @@ Restarts the service.
 
 <hr>
 
+## stop
+
+Stops the service.
+
+<hr>
+
 ## stopstart
 
 Stops and then starts the service. This is different from `restart` in that Upstart will pick up changes to the `/etc/init/SERVICENAME.conf` file, while `restart` will continue to use the version of that file that the service was originally started with. See [http://askubuntu.com/a/238069](http://askubuntu.com/a/238069).
