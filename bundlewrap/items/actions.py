@@ -1,11 +1,20 @@
 from datetime import datetime
 
-from bundlewrap.exceptions import ActionFailure, BundleError
+from bundlewrap.exceptions import BundleError
 from bundlewrap.items import format_comment, Item
 from bundlewrap.utils import Fault
 from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, wrap_question
+
+
+class ActionFailure(Exception):
+    """
+    Raised when an action failes to meet the expected rcode/output.
+    """
+
+    def __init__(self, failed_expectations):
+        self.failed_expectations = failed_expectations
 
 
 class Action(Item):
@@ -136,7 +145,7 @@ class Action(Item):
             self.run()
             return (self.STATUS_ACTION_SUCCEEDED, None, None, None)
         except ActionFailure as exc:
-            return (self.STATUS_FAILED, [str(exc)], None, None)
+            return (self.STATUS_FAILED, exc.failed_expectations, None, None)
 
     def apply(self, *args, **kwargs):
         return self.get_result(*args, **kwargs)
@@ -187,17 +196,28 @@ class Action(Item):
                 may_fail=True,
             )
 
+        failed_expectations = ({}, {}, [])
+
         if self.attributes['expected_return_code'] is not None and \
                 result.return_code not in self.attributes['expected_return_code']:
-            raise ActionFailure(_("wrong return code: {}").format(result.return_code))
+            failed_expectations[0][_("return code")] = str(self.attributes['expected_return_code'])
+            failed_expectations[1][_("return code")] = str(result.return_code)
+            failed_expectations[2].append(_("return code"))
 
         if self.attributes['expected_stderr'] is not None and \
                 result.stderr_text != self.attributes['expected_stderr']:
-            raise ActionFailure(_("wrong stderr"))
+            failed_expectations[0][_("stderr")] = self.attributes['expected_stderr']
+            failed_expectations[1][_("stderr")] = result.stderr_text
+            failed_expectations[2].append(_("stderr"))
 
         if self.attributes['expected_stdout'] is not None and \
                 result.stdout_text != self.attributes['expected_stdout']:
-            raise ActionFailure(_("wrong stdout"))
+            failed_expectations[0][_("stdout")] = self.attributes['expected_stdout']
+            failed_expectations[1][_("stdout")] = result.stdout_text
+            failed_expectations[2].append(_("stdout"))
+
+        if failed_expectations[2]:
+            raise ActionFailure(failed_expectations)
 
         return result
 
