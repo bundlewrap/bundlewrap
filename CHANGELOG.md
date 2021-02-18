@@ -1,3 +1,21 @@
+# 4.5.0
+
+2021-02-19
+
+* added diffs to the default output of `bw apply` and `bw verify`
+* added `bw apply --no-diff`
+* added `bw verify --no-diff`
+* added `pkg_freebsd`
+* added canned `stop` actions for services
+* added `masked` attribute for `svc_systemd`
+* added multiple expected return codes for actions
+* improved error message for incompatible types in diff
+* fixed group management on FreeBSD
+* fixed types from tomlkit not being diffable
+* fixed using Faults for user password salts
+* fixed `bw repo create` clobbering existing repos
+
+
 # 4.4.2
 
 2021-01-22
