@@ -78,7 +78,12 @@ def make_normalize(attribute_default):
     lists and have them converted to the proper type automatically.
     """
     if type(attribute_default) in (dict, list, set, tuple):
-        return type(attribute_default)
+        def normalize(attribute_value):
+            if attribute_value is None:
+                return attribute_value
+            else:
+                return type(attribute_default)(attribute_value)
+        return normalize
     else:
         return copy
 
