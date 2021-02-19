@@ -2,6 +2,13 @@
 
 2021-02-19
 
+* fixed actions that set `None` as `expected_return_code`
+
+
+# 4.5.0
+
+2021-02-19
+
 * added diffs to the default output of `bw apply` and `bw verify`
 * added `bw apply --no-diff`
 * added `bw verify --no-diff`
