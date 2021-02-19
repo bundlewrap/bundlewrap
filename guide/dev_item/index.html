@@ -176,6 +176,10 @@
 </li>
                                     
 <li>
+    <a href="../../items/pkg_freebsd/" class="dropdown-item">pkg_freebsd</a>
+</li>
+                                    
+<li>
     <a href="../../items/pkg_openbsd/" class="dropdown-item">pkg_openbsd</a>
 </li>
                                     
@@ -391,6 +395,15 @@ class Foo(Item):
         """
         raise NotImplementedError
 
+    def display_on_create(self, cdict):
+        """
+        Given a cdict as implemented above, modify it to better suit
+        interactive presentation when an item is created.
+
+        Implementing this method is optional.
+        """
+        return cdict
+
     def display_dicts(self, cdict, sdict, keys):
         """
         Given cdict and sdict as implemented above, modify them to
@@ -400,6 +413,15 @@ class Foo(Item):
         Implementing this method is optional.
         """
         return (cdict, sdict, keys)
+
+    def display_on_delete(self, sdict):
+        """
+        Given an sdict as implemented above, modify it to better suit
+        interactive presentation when an item is deleted.
+
+        Implementing this method is optional.
+        """
+        return sdict
 
     def fix(self, status):
         """

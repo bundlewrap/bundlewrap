@@ -176,6 +176,10 @@
 </li>
                                     
 <li>
+    <a href="../pkg_freebsd/" class="dropdown-item">pkg_freebsd</a>
+</li>
+                                    
+<li>
     <a href="../pkg_openbsd/" class="dropdown-item">pkg_openbsd</a>
 </li>
                                     
@@ -315,6 +319,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#masked" class="nav-link">masked</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#canned-actions" class="nav-link">Canned actions</a>
               <ul class="nav flex-column">
               </ul>
@@ -324,6 +332,10 @@
               </ul>
             </li>
             <li class="nav-item" data-level="2"><a href="#restart" class="nav-link">restart</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#stop" class="nav-link">stop</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -340,6 +352,7 @@
     "fcron.service": {
         "enabled": True,  # default
         "running": True,  # default
+        "masked": False,  # default
     },
     "sgopherd.socket": {
         "running": False,
@@ -359,6 +372,10 @@
 <p><code>True</code> if the service is expected to be running on the system; <code>False</code> if it should be stopped. <code>None</code> makes BundleWrap ignore this setting.</p>
 <hr>
 
+<h2 id="masked">masked</h2>
+<p><code>True</code> if the service is expected to be masked; <code>False</code> if it should be unmasked. <code>None</code> makes BundleWrap ignore this setting.</p>
+<hr>
+
 <h2 id="canned-actions">Canned actions</h2>
 <p>See also: <a href="../../repo/items.py/#canned-actions">Explanation of how canned actions work</a></p>
 <h2 id="reload">reload</h2>
@@ -366,7 +383,11 @@
 <hr>
 
 <h2 id="restart">restart</h2>
-<p>Restarts the service.</p></div>
+<p>Restarts the service.</p>
+<hr>
+
+<h2 id="stop">stop</h2>
+<p>Stops the service.</p></div>
             </div>
         </div>
 

@@ -176,6 +176,10 @@
 </li>
                                     
 <li>
+    <a href="../pkg_freebsd/" class="dropdown-item">pkg_freebsd</a>
+</li>
+                                    
+<li>
     <a href="../pkg_openbsd/" class="dropdown-item">pkg_openbsd</a>
 </li>
                                     
@@ -362,7 +366,7 @@
 <hr>
 
 <h2 id="expected_return_code">expected_return_code</h2>
-<p>Defaults to <code>0</code>. If the return code of your command is anything else, the action is considered failed. You can also set this to <code>None</code> and any return code will be accepted.</p>
+<p>Defaults to <code>0</code>. If the return code of your command is anything else, the action is considered failed. You can also specify a list, set or tuple and the action is considered failed if the command's return code is not contained in that enumeration. You can also set this to <code>None</code> and any return code will be accepted.</p>
 <hr>
 
 <h2 id="expected_stdout">expected_stdout</h2>

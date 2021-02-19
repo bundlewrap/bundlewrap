@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>directory - BundleWrap</title>
+        <title>pkg_freebsd - BundleWrap</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -148,7 +148,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">directory</a>
+    <a href="../directory/" class="dropdown-item">directory</a>
 </li>
                                     
 <li>
@@ -176,7 +176,7 @@
 </li>
                                     
 <li>
-    <a href="../pkg_freebsd/" class="dropdown-item">pkg_freebsd</a>
+    <a href="./" class="dropdown-item active">pkg_freebsd</a>
 </li>
                                     
 <li>
@@ -274,17 +274,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../action/" class="nav-link">
+                                <a rel="prev" href="../pkg_dnf/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../file/" class="nav-link">
+                                <a rel="next" href="../pkg_openbsd/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/items/directory.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/items/pkg_freebsd.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -304,26 +304,18 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#directory-items" class="nav-link">Directory items</a>
+            <li class="nav-item" data-level="1"><a href="#freebsd-package-items" class="nav-link">FreeBSD package items</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             
             <li class="nav-item" data-level="1"><a href="#attribute-reference" class="nav-link">Attribute reference</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#group" class="nav-link">group</a>
+            <li class="nav-item" data-level="2"><a href="#installed" class="nav-link">installed</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#mode" class="nav-link">mode</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#owner" class="nav-link">owner</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#purge" class="nav-link">purge</a>
+            <li class="nav-item" data-level="2"><a href="#version" class="nav-link">version</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -334,12 +326,18 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="directory-items">Directory items</h1>
-<pre><code>directories = {
-    "/path/to/directory": {
-        "mode": "0755",
-        "owner": "root",
-        "group": "root",
+<h1 id="freebsd-package-items">FreeBSD package items</h1>
+<p>Handles packages installed by <code>pkg</code> on FreeBSD systems.</p>
+<pre><code>pkg_freebsd = {
+    "foo": {
+        "installed": True,  # default
+    },
+    "bar": {
+        "installed": True,
+        "version": "1.0",
+    },
+    "baz": {
+        "installed": False,
     },
 }
 </code></pre>
@@ -348,20 +346,13 @@
 <p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <hr>
 
-<h2 id="group">group</h2>
-<p>Name of the group this directory belongs to. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
+<h2 id="installed">installed</h2>
+<p><code>True</code> when the package is expected to be present on the system; <code>False</code> if it should be purged.</p>
 <hr>
 
-<h2 id="mode">mode</h2>
-<p>Directory mode as returned by <code>stat -c %a &lt;directory&gt;</code>. Defaults to <code>755</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<hr>
-
-<h2 id="owner">owner</h2>
-<p>Username of the directory's owner. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
-<hr>
-
-<h2 id="purge">purge</h2>
-<p>Set this to <code>True</code> to remove everything from this directory that is not managed by BundleWrap. Defaults to <code>False</code>.</p></div>
+<h2 id="version">version</h2>
+<p>Optional version string. Can be used to select one specific version of a package.</p>
+<p>Ignored when <code>installed</code> is <code>False</code>.</p></div>
             </div>
         </div>
 
