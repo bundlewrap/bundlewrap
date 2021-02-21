@@ -131,9 +131,19 @@ def _has_trigger_path(items, item, target_item_id):
 def _prepare_deps(items):
     for item in items:
         item._deps = set()
+        item._noskip_deps = set()
+
         for dep in list(item.needs) + list(item.get_auto_deps(items)):
             try:
-                item._deps.update(resolve_selector(dep, items, originating_item_id=item.id))
+                noskip = False
+                if dep.endswith(":noskip"):
+                    dep = dep[:-7]
+                    noskip = True
+
+                deps = set(resolve_selector(dep, items, originating_item_id=item.id))
+                item._deps.update(deps)
+                if noskip:
+                    item._noskip_deps.update(map(lambda item: item.id, deps))
             except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a dependency (needs) "
@@ -276,22 +286,29 @@ def _inject_reverse_dependencies(items):
     Looks for 'needed_by' deps and creates standard dependencies
     accordingly.
     """
-    def add_dep(item, dep):
+    def add_dep(item, dep, noskip):
         if dep not in item._deps:
             item._deps.add(dep)
             item._reverse_deps.add(dep)
+            if noskip:
+                item._noskip_deps.add(dep.id)
 
     for item in items:
         item._reverse_deps = set()
 
     for item in items:
         for depending_item_id in item.needed_by:
+            noskip = False
+            if depending_item_id.endswith(":noskip"):
+                depending_item_id = depending_item_id[:-7]
+                noskip = True
+
             try:
-                dependent_items = resolve_selector(
+                dependent_items = set(resolve_selector(
                     depending_item_id,
                     items,
                     originating_item_id=item.id,
-                )
+                ))
             except NoSuchItem:
                 raise ItemDependencyError(_(
                     "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by) "
@@ -302,7 +319,7 @@ def _inject_reverse_dependencies(items):
                     dep=depending_item_id,
                 ))
             for dependent_item in dependent_items:
-                add_dep(dependent_item, item)
+                add_dep(dependent_item, item, noskip)
 
 
 def _inject_reverse_triggers(items):
@@ -489,7 +506,7 @@ def prepare_dependencies(node):
     for item in node.items:
         item._check_bundle_collisions(node.items)
         item._check_loopback_dependency()
-        
+
     items = set(node.items)  # might be a tuple from cached_property
     _inject_canned_actions(items)
     _inject_tag_filler_items(items, node.bundles)
@@ -532,6 +549,8 @@ def remove_item_dependents(items, dep_item):
             elif dep_item.id in item._concurrency_deps:
                 # don't skip items just because of concurrency deps
                 # separate elif for clarity
+                item._deps.remove(dep_item)
+            elif dep_item.id in item._noskip_deps:
                 item._deps.remove(dep_item)
             else:
                 removed_items.add(item)
