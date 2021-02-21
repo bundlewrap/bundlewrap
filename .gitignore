@@ -1,5 +1,6 @@
+# Please add only project-specific paths here and make use of your
+# global gitignore for everything else:
+# https://docs.github.com/en/github/using-git/ignoring-files#configuring-ignored-files-for-all-repositories-on-your-computer
+/build/
 /dist/
 /docs/build/
-
-*.egg-info
-__pycache__/
