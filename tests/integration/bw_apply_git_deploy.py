@@ -12,7 +12,7 @@ def test_deploy_from_url(tmpdir):
                     'git_deploy': {
                         join(str(tmpdir), "git_deployed_bw"): {
                             'repo': "https://github.com/bundlewrap/bundlewrap.git",
-                            'rev': "master",
+                            'rev': "main",
                         },
                     },
                     'directories': {
@@ -45,7 +45,7 @@ def test_cannot_deploy_into_purged(tmpdir):
                     'git_deploy': {
                         join(str(tmpdir), "git_deployed_bw"): {
                             'repo': "https://github.com/bundlewrap/bundlewrap.git",
-                            'rev': "master",
+                            'rev': "main",
                         },
                     },
                     'directories': {
