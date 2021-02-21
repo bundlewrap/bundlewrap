@@ -194,7 +194,10 @@ def _inject_canned_actions(items):
     for item in items:
         for canned_action_name, canned_action_attrs in item.get_canned_actions().items():
             canned_action_id = f"{item.id}:{canned_action_name}"
-            canned_action_attrs.update({'triggered': True})
+            canned_action_attrs.update({
+                'triggered': True,
+                'tags': item.tags,
+            })
             action = Action(
                 item.bundle,
                 canned_action_id,
