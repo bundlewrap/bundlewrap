@@ -117,7 +117,9 @@ def bw_items(repo, args):
                         table.append([attribute, repr(value)])
                 page_lines(render_table(table))
             else:
-                if args['show_sdict']:
+                if item.ITEM_TYPE_NAME == "action":
+                    statedict = item.attributes
+                elif args['show_sdict']:
                     statedict = item.sdict()
                 else:
                     statedict = item.cdict()
