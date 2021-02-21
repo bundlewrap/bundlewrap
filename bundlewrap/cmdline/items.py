@@ -105,7 +105,9 @@ def bw_items(repo, args):
                 for attribute in BUILTIN_ITEM_ATTRIBUTES:
                     table.append(ROW_SEPARATOR)
                     value = getattr(item, attribute)
-                    if isinstance(value, Collection):
+                    if isinstance(value, str):
+                        table.append([attribute, value])
+                    elif isinstance(value, Collection):
                         value = sorted(value) or [""]
                         table.append([attribute, value.pop(0)])
                         for element in value:
