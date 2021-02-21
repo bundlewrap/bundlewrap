@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -31,6 +31,8 @@ jobs:
         cp ~/.ssh/id_ed25519.pub ~/.ssh/authorized_keys
         chmod og-rw ~
         ssh -o StrictHostKeyChecking=no localhost id
+        mkdir -p ~/.ssh/controlmasters
+        echo -e "Host localhost\n  ControlPath ~/.ssh/controlmasters/%C\n  ControlPersist 1h\n  ControlMaster auto" > ~/.ssh/config
     - name: Test with pytest
       run: |
         pytest tests
