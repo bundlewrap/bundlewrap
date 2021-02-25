@@ -1,3 +1,13 @@
+# 4.6.0
+
+2021-02-25
+
+* added `pkg_apk` and `svc_openrc` items
+* actions can now be inspected with `bw items`
+* `bw test -d` now shows a diff for config changes
+* fixed display of strings in `bw items --attrs`
+
+
 # 4.5.1
 
 2021-02-19
