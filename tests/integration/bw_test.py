@@ -794,7 +794,7 @@ def test_config_determinism_broken(tmpdir):
                 'items': {
                     "files": {
                         "/test": {
-                            'content': "<% from random import randint %>\n${randint(1, 99999)\n}",
+                            'content': "<% from random import randint %>\nfindme${randint(1, 99999)\n}",
                             'content_type': 'mako',
                         },
                     },
@@ -802,7 +802,9 @@ def test_config_determinism_broken(tmpdir):
             },
         },
     )
-    assert run("bw test -d 3", path=str(tmpdir))[2] == 1
+    stdout, stderr, rcode = run("bw test -d 3", path=str(tmpdir))
+    assert rcode == 1
+    assert b"findme" in stderr
 
 
 def test_unknown_subgroup(tmpdir):

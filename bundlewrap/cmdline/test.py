@@ -6,7 +6,7 @@ from ..itemqueue import ItemTestQueue
 from ..metadata import check_for_metadata_conflicts, metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import count_items, get_target_nodes
-from ..utils.dicts import diff_value_text
+from ..utils.dicts import diff_value, diff_value_text
 from ..utils.plot import explain_item_dependency_loop
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, QUIT_EVENT
@@ -138,9 +138,7 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
     Generate configuration a couple of times for every node and see if
     anything changes between iterations
     """
-    hashes_config = {}
-    hashes_metadata = {}
-    metadata = {}
+    first_run_nodes = {}
     io.progress_set_total(len(nodes) * (iterations_config + iterations_metadata))
 
     iter_config_todo = iterations_config
@@ -157,6 +155,8 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
             if QUIT_EVENT.is_set():
                 break
 
+            first_run_nodes.setdefault(node.name, node)
+
             if iter_config_todo > 0:
                 with io.job(_("{node}  generating configuration ({i}/{n})").format(
                     i=iterations_config - iter_config_todo,
@@ -164,12 +164,55 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
                     node=bold(node.name),
                 )):
                     result = node.hash()
-                hashes_config.setdefault(node.name, result)
-                if hashes_config[node.name] != result:
+                if first_run_nodes[node.name].hash() != result:
                     io.stderr(_(
-                        "{x} Configuration for node {node} changed when generated repeatedly "
-                        "(use `bw hash -d {node}` to debug)"
+                        "{x} Configuration for node {node} changed when generated repeatedly"
                     ).format(node=node.name, x=red("✘")))
+                    heisenitems = set(node.items).symmetric_difference(
+                        set(first_run_nodes[node.name].items))
+                    if heisenitems:
+                        io.stderr(_(
+                            "{x} These items appeared or disappeared on {node} between runs:\n"
+                            "\t{items}"
+                        ).format(
+                            x=red("✘"),
+                            node=node.name,
+                            items="\n\t".join(sorted({item.id for item in heisenitems})),
+                        ))
+                        exit(1)
+                    for item in node.items:
+                        previous_item = first_run_nodes[node.name].get_item(item.id)
+                        if item.ITEM_TYPE_NAME == "action":
+                            continue  # actions don't hash :'(
+                        if item.hash() != previous_item.hash():
+                            current_cdict = item.display_on_create(item.cdict().copy())
+                            current_cdict_keys = set(current_cdict.keys())
+                            previous_cdict = previous_item.display_on_create(previous_item.cdict().copy())
+                            previous_cdict_keys = set(previous_cdict.keys())
+                            assert current_cdict_keys == previous_cdict_keys, \
+                                "cdict mismatch: " + str(
+                                    current_cdict_keys.symmetric_difference(previous_cdict_keys)
+                                )
+                            output = _("{x} {node}  {item} changed:\n").format(
+                                x=red("✘"),
+                                node=bold(node.name),
+                                item=item.id,
+                            )
+                            diff = "\n"
+                            for key in sorted(current_cdict_keys):
+                                if current_cdict[key] != previous_cdict[key]:
+                                    diff += diff_value(
+                                        key,
+                                        current_cdict[key],
+                                        previous_cdict[key],
+                                    ) + "\n"
+                            for line in diff.splitlines():
+                                output += "{x} {line}\n".format(
+                                    line=line,
+                                    x=red("│"),
+                                )
+                            output += red("╵")
+                            io.stderr(output)
                     exit(1)
                 io.progress_advance()
 
@@ -179,14 +222,12 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
                     n=iterations_metadata,
                     node=bold(node.name),
                 )):
-                    metadata.setdefault(node.name, dict(node.metadata))
                     result = node.metadata_hash()
-                hashes_metadata.setdefault(node.name, result)
-                if hashes_metadata[node.name] != result:
+                if first_run_nodes[node.name].metadata_hash() != result:
                     io.stderr(_(
                         "{x} Metadata for node {node} changed when generated repeatedly"
                     ).format(node=bold(node.name), x=red("✘")))
-                    previous_json = metadata_to_json(metadata[node.name])
+                    previous_json = metadata_to_json(first_run_nodes[node.name].metadata)
                     current_json = metadata_to_json(node.metadata)
                     io.stderr(diff_value_text("", previous_json, current_json))
                     exit(1)
