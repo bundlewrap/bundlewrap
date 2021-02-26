@@ -28,7 +28,7 @@ def validator_mode(item_id, value):
             raise BundleError(_(
                 "invalid mode for {item}: '{value}'"
             ).format(item=item_id, value=value))
-    if len(value) != 3 and len(value) != 4:
+    if len(value) not in (3, 4):
         raise BundleError(_(
             "mode for {item} should be three or four digits long, was: '{value}'"
         ).format(item=item_id, value=value))
