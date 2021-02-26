@@ -203,8 +203,8 @@ def test_faults_equality_decrypt(tmpdir):
     enc_bar = stdout.decode('utf-8').strip()
 
     stdout, stderr, rcode = run(
-        "bw debug -c 'print(repo.vault.decrypt(\"{}\") == repo.vault.decrypt(\"{}\"))'".format(
-            enc_foo, enc_foo,
+        "bw debug -c 'print(repo.vault.decrypt(\"{0}\") == repo.vault.decrypt(\"{0}\"))'".format(
+            enc_foo,
         ),
         path=str(tmpdir),
     )
