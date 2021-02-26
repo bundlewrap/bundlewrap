@@ -242,8 +242,7 @@ def check_for_metadata_conflicts_between_groups(node):
                 else:
                     if keypath in keymap2:
                         if (
-                            type(value_at_key_path(chain_metadata[index1], keypath)) ==
-                            type(value_at_key_path(chain_metadata[index2], keypath)) and
+                            type(value_at_key_path(chain_metadata[index1], keypath)) is type(value_at_key_path(chain_metadata[index2], keypath)) and
                             type(value_at_key_path(chain_metadata[index2], keypath)) in
                             (set, dict)
                         ):
