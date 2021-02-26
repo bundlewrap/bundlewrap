@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from contextlib import suppress
 from decimal import Decimal
-from sys import version_info
+from sys import exit, version_info
 
 from ..metadata import metadata_to_json
 from ..utils import Fault, list_starts_with

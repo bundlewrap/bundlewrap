@@ -1,4 +1,5 @@
 from difflib import unified_diff
+from sys import exit
 
 from ..items.files import DIFF_MAX_FILE_SIZE
 from ..metadata import metadata_to_json
