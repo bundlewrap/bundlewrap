@@ -206,7 +206,7 @@ def map_dict_keys(dict_obj, _base=None):
     """
     if _base is None:
         _base = ()
-    keys = set([_base + (key,) for key in dict_obj.keys()])
+    keys = {_base + (key,) for key in dict_obj.keys()}
     for key, value in dict_obj.items():
         if isinstance(value, dict):
             keys.update(map_dict_keys(value, _base=_base + (key,)))
