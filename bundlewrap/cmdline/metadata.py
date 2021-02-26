@@ -84,7 +84,7 @@ def _sort_dict_colorblind(old_dict):
     else:
         new_dict = {}
 
-    for key in sorted(old_dict.keys(), key=lambda k: ansi_clean(k)):
+    for key in sorted(old_dict.keys(), key=ansi_clean):
         if isinstance(old_dict[key], dict):
             new_dict[key] = _sort_dict_colorblind(old_dict[key])
         else:
@@ -97,9 +97,9 @@ def bw_metadata(repo, args):
     target_nodes = get_target_nodes(repo, args['targets'])
     key_paths = sorted([
         tuple(path.strip().split("/")) for path in args['keys'] if path
-    ]) or [tuple()]
+    ]) or [()]
     if len(target_nodes) > 1:
-        if key_paths == [tuple()]:
+        if key_paths == [()]:
             io.stdout(_("{x} at least one key is required when viewing multiple nodes").format(x=red("!!!")))
             exit(1)
         if args['blame']:

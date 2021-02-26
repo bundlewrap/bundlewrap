@@ -257,7 +257,7 @@ def test_reactor_provides(repo, nodes, quiet):
     for node in nodes:
         if QUIT_EVENT.is_set():
             break
-        node.metadata.get(tuple())
+        node.metadata.get(())
     else:
         if not quiet:
             io.stdout(_("{x} No reactors violated their declared keys").format(

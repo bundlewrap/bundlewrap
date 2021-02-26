@@ -277,7 +277,7 @@ def _flatten_group_hierarchy(groups):
 
     # dict mapping groups to parent groups
     parent_groups = {}
-    for child_group in child_groups.keys():
+    for child_group in child_groups:
         parent_groups[child_group] = []
         for parent_group, subgroups in child_groups.items():
             if child_group in subgroups:
@@ -302,7 +302,7 @@ def _flatten_group_hierarchy(groups):
                 break
         order.append(top_level_group)
         del parent_groups[top_level_group]
-        for group in parent_groups.keys():
+        for group in parent_groups:
             if top_level_group in parent_groups[group]:
                 parent_groups[group].remove(top_level_group)
 
@@ -632,7 +632,7 @@ class Node:
         interactive=False,
         force=False,
         show_diff=True,
-        skip_list=tuple(),
+        skip_list=(),
         workers=4,
     ):
         if not list(self.items):

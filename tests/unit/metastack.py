@@ -139,7 +139,7 @@ def test_merge_dicts():
 def test_requesting_empty_path():
     stack = Metastack()
     stack.set_layer(0, 'base', {'foo': {'bar': 'baz'}})
-    assert stack.get(tuple()) == {'foo': {'bar': 'baz'}}
+    assert stack.get(()) == {'foo': {'bar': 'baz'}}
 
 
 def test_update_layer_for_new_value():
