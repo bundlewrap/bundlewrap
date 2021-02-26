@@ -205,7 +205,7 @@ def map_dict_keys(dict_obj, _base=None):
         set([('foo', 'bar'), ('baz',)])
     """
     if _base is None:
-        _base = tuple()
+        _base = ()
     keys = set([_base + (key,) for key in dict_obj.keys()])
     for key, value in dict_obj.items():
         if isinstance(value, dict):
@@ -254,11 +254,7 @@ def merge_dict(base, update):
         elif (
             merge and
             isinstance(base[key], list) and
-            (
-                isinstance(value, list) or
-                isinstance(value, set) or
-                isinstance(value, tuple)
-            )
+            isinstance(value, (list, set, tuple))
         ):
             extended = base[key][:]
             extended.extend(value)
@@ -266,21 +262,13 @@ def merge_dict(base, update):
         elif (
             merge and
             isinstance(base[key], tuple) and
-            (
-                isinstance(value, list) or
-                isinstance(value, set) or
-                isinstance(value, tuple)
-            )
+            isinstance(value, (list, set, tuple))
         ):
             merged[key] = base[key] + tuple(value)
         elif (
             merge and
             isinstance(base[key], set) and
-            (
-                isinstance(value, list) or
-                isinstance(value, set) or
-                isinstance(value, tuple)
-            )
+            isinstance(value, (list, set, tuple))
         ):
             merged[key] = base[key].union(set(value))
         else:
