@@ -10,10 +10,6 @@ class OpkgPkg(Pkg):
     BUNDLE_ATTRIBUTE_NAME = "pkg_opkg"
     ITEM_TYPE_NAME = "pkg_opkg"
 
-    @classmethod
-    def block_concurrent(cls, node_os, node_os_version):
-        return ["pkg_opkg"]
-
     def pkg_all_installed(self):
         result = self.run("opkg list-installed")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
