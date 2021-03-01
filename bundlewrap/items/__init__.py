@@ -25,6 +25,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'preceded_by': set(),
     'precedes': set(),
     'error_on_missing_fault': False,
+    'skip': False,
     'tags': set(),
     'triggered': False,
     'triggered_by': set(),
@@ -105,6 +106,7 @@ class Item:
     SKIP_REASON_SOFTLOCK = 7
     SKIP_REASON_UNLESS = 8
     SKIP_REASON_DEP_SKIPPED = 9
+    SKIP_REASON_ATTR = 10
     SKIP_REASON_DESC = {
         SKIP_REASON_CMDLINE: _("cmdline"),
         SKIP_REASON_DEP_FAILED: _("dependency failed"),
@@ -115,6 +117,7 @@ class Item:
         SKIP_REASON_SOFTLOCK: _("soft locked"),
         SKIP_REASON_UNLESS: _("unless"),
         SKIP_REASON_DEP_SKIPPED: _("dependency skipped"),
+        SKIP_REASON_ATTR: _("attribute"),
     }
     STATUS_OK = 1
     STATUS_FIXED = 2
@@ -199,7 +202,7 @@ class Item:
                 self._faults_missing_for_attributes.add('when_creating/' + attribute_name)
 
         if self.cascade_skip is None:
-            self.cascade_skip = not (self.unless or self.triggered)
+            self.cascade_skip = not (self.skip or self.triggered or self.unless)
 
         if self.id in self.triggers:
             raise BundleError(_(
@@ -441,6 +444,10 @@ class Item:
         status_after = None
         details = None
         start_time = datetime.now()
+
+        if self.skip:
+            status_code = self.STATUS_SKIPPED
+            details = self.SKIP_REASON_ATTR
 
         if not self.covered_by_autoonly_selector(autoonly_selector):
             io.debug(_(

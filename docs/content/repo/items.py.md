@@ -199,6 +199,12 @@ See [Selectors](../guide/selectors.md) for a complete overview of the ways to sp
 
 <br>
 
+## skip
+
+Set this to `True` to always skip this item. This is useful if you just want to quickly disable this item to try something or if it's sitting somewhere in a dependency chain and it would be too cumbersome to remove entirely under certain conditions. Note that setting this to `True` will also change the default for `cascade_skip` to `False`.
+
+<br>
+
 ## unless
 
 Another builtin item attribute is `unless`. For example, it can be used to construct a one-off file item where BundleWrap will only create the file once, but won't check or modify its contents once it exists.
@@ -237,9 +243,14 @@ If `action:download_thing` would not set `cascade_skip` to `False`, `action:run_
 There are some situations where you don't want to default behavior of skipping everything that depends on a skipped item. That's where `cascade_skip` comes in. Set it to `False` and skipping an item won't skip those that depend on it. Note that items can be skipped
 
 * interactively or
+* because of `bw apply --only` or `bw apply --skip` or
+* because a Fault was unavailable or
+* they were soft-locked on the node or
 * because they haven't been triggered or
+* because one of their dependencies was skipped or
 * because one of their dependencies failed or
 * they failed their `unless` condition or
+* the `skip` attribute was set or
 * because an [action](../items/action.md) had its `interactive` attribute set to `True` during a non-interactive run
 
 The following example will offer to run an `apt-get update` before installing a package, but continue to install the package even if the update is declined interactively.
@@ -257,7 +268,7 @@ The following example will offer to run an `apt-get update` before installing a 
 	    },
 	}
 
-`cascade_skip` defaults to `True`. However, if the item uses the `unless` attribute or is triggered, the default changes to `False`. Most of the time, this is what you'll want.
+`cascade_skip` defaults to `True`. However, if the item uses the `unless` or `skip` attributes or is triggered, the default changes to `False`. Most of the time, this is what you'll want.
 
 <br>
 

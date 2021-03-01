@@ -43,6 +43,9 @@ class Action(Item):
         interactive_default=True,
         show_diff=True,
     ):
+        if self.skip:
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_ATTR, None, None)
+
         if self._faults_missing_for_attributes:
             if self.error_on_missing_fault:
                 self._raise_for_faults()
