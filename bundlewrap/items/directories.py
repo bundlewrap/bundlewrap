@@ -60,7 +60,7 @@ class Directory(Item):
 
     def cdict(self):
         cdict = {
-            'paths_to_purge': [],
+            'paths_to_purge': set(),
             'type': 'directory',
         }
         for optional_attr in ('group', 'mode', 'owner'):
@@ -79,8 +79,8 @@ class Directory(Item):
             pass
         else:
             keys.append(UNMANAGED_PATH_DESC)
-            cdict[UNMANAGED_PATH_DESC] = cdict['paths_to_purge']
-            sdict[UNMANAGED_PATH_DESC] = sdict['paths_to_purge']
+            cdict[UNMANAGED_PATH_DESC] = sorted(cdict['paths_to_purge'])
+            sdict[UNMANAGED_PATH_DESC] = sorted(sdict['paths_to_purge'])
             del cdict['paths_to_purge']
             del sdict['paths_to_purge']
         return (cdict, sdict, keys)
@@ -91,7 +91,7 @@ class Directory(Item):
             self._fix_type(status)
             return
 
-        for path in status.sdict.get('paths_to_purge', []):
+        for path in status.sdict.get('paths_to_purge', set()):
             self.run("rm -rf -- {}".format(quote(path)))
 
         for fix_type in ('mode', 'owner', 'group'):
@@ -241,9 +241,9 @@ class Directory(Item):
         if not path_info.exists:
             return None
         else:
-            paths_to_purge = []
+            paths_to_purge = set()
             if self.attributes['purge']:
-                paths_to_purge = list(self._get_paths_to_purge())
+                paths_to_purge = set(self._get_paths_to_purge())
             return {
                 'type': 'directory' if path_info.is_directory else path_info.stat['type'],
                 'mode': path_info.mode,
