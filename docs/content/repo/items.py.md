@@ -71,6 +71,32 @@ There are also attributes that can be applied to any kind of item.
 
 <br>
 
+## after
+
+This lets you control execution order of items. This is not something you will have to do very often, because there are already implicit dependencies between item types (e.g. all files automatically depend on the users owning them).
+
+	actions = {
+		'a': {
+			'command': 'true',
+		},
+		'b': {
+			'command': 'true',
+			'after': {'action:a'},
+		},
+	}
+
+When set up like this, `action:b` will only run after `action:a` has been completed. Note that it doesn't matter if `action:a` is successful or not, that what `needs` is for.
+
+See [Selectors](../guide/selectors.md) for a complete overview of the ways to specify items here.
+
+<br>
+
+## before
+
+Just like `after`, but in the opposite direction.
+
+<br>
+
 ## comment
 
 This is a string that will be displayed in interactive mode (`bw apply -i`) whenever the item is to be changed in any way. You can use it to warn users before they start disruptive actions.
@@ -87,7 +113,7 @@ Defaults to `False`.
 
 ## needs
 
-One such attribute is `needs`. It allows for setting up dependencies between items. This is not something you will have to do very often, because there are already implicit dependencies between items types (e.g. all files automatically depend on the users owning them). Here are two examples:
+This allows for setting up dependencies between items. Here are two examples:
 
 	my_items = {
 	    'item1': {
@@ -106,6 +132,8 @@ One such attribute is `needs`. It allows for setting up dependencies between ite
 	}
 
 The first item (`item1`, specific attributes have been omitted) depends on a file called `/etc/foo.conf`, while `item2` depends on all APT packages being installed and every item in the foo bundle.
+
+Note that unlike `after`, with `needs` the depending item will be skipped if the item it depends on fails or is skipped (unless `cascade_skip` is set to `False` on that item).
 
 See [Selectors](../guide/selectors.md) for a complete overview of the ways to specify items here.
 
@@ -239,6 +267,8 @@ If `action:download_thing` would not set `cascade_skip` to `False`, `action:run_
 <br>
 
 ## cascade_skip
+
+DEPRECATED: Use `before` and `after` instead.
 
 There are some situations where you don't want to default behavior of skipping everything that depends on a skipped item. That's where `cascade_skip` comes in. Set it to `False` and skipping an item won't skip those that depend on it. Note that items can be skipped
 

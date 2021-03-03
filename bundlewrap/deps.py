@@ -130,8 +130,8 @@ def _has_trigger_path(items, item, target_item_id):
 
 def _prepare_deps(items):
     for item in items:
-        item._deps = set()
-        for dep in list(item.needs) + list(item.get_auto_deps(items)):
+        item._deps = set()  # holds all item ids blocking execution of that item
+        for dep in set(item.after) | set(item.needs) | set(item.get_auto_deps(items)):
             try:
                 item._deps.update(resolve_selector(dep, items, originating_item_id=item.id))
             except NoSuchItem:
@@ -273,19 +273,18 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
 
 def _inject_reverse_dependencies(items):
     """
-    Looks for 'needed_by' deps and creates standard dependencies
-    accordingly.
+    Looks for 'before' and 'needed_by' deps and creates standard 
+    dependencies accordingly.
     """
     def add_dep(item, dep):
-        if dep not in item._deps:
-            item._deps.add(dep)
-            item._reverse_deps.add(dep)
+        item._deps.add(dep)
+        item._reverse_deps.add(dep)
 
     for item in items:
         item._reverse_deps = set()
 
     for item in items:
-        for depending_item_id in item.needed_by:
+        for depending_item_id in set(item.before) | set(item.needed_by):
             try:
                 dependent_items = resolve_selector(
                     depending_item_id,
@@ -444,6 +443,8 @@ def _inject_tag_attrs(items, bundles):
         for tag, attrs in bundle.bundle_attrs.get('tags', {}).items():
             for item in resolve_selector(f"tag:{tag}", items, originating_tag=tag):
                 for attr in (
+                    "after",
+                    "before",
                     "needs",
                     "needed_by",
                     "precedes",
@@ -531,6 +532,17 @@ def remove_item_dependents(items, dep_item):
                 item._deps.remove(dep_item)
             elif dep_item.id in item._concurrency_deps:
                 # don't skip items just because of concurrency deps
+                # separate elif for clarity
+                item._deps.remove(dep_item)
+            elif (
+                (
+                    dep_item.id in item.after or
+                    item.id in dep_item.before
+                ) and
+                dep_item.id not in item.needs and
+                item.id not in dep_item.needed_by
+            ):
+                # don't skip items if they're *only* before/after deps
                 # separate elif for clarity
                 item._deps.remove(dep_item)
             else:
