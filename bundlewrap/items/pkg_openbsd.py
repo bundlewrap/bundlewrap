@@ -11,7 +11,7 @@ PKGSPEC_REGEX = re.compile(r"^(.+)-(\d.*)$")
 
 def parse_pkg_name(pkgname, line):
     matches = PKGSPEC_REGEX.match(line)
-    assert matches != None, _("Unexpected OpenBSD package name: {line}").format(line=line)
+    assert matches is not None, _("Unexpected OpenBSD package name: {line}").format(line=line)
 
     installed_package, installed_version_and_more = matches.groups()
     assert not installed_version_and_more.endswith("-"), \
