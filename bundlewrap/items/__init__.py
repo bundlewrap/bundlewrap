@@ -18,6 +18,8 @@ from bundlewrap.operations import run_local
 
 
 BUILTIN_ITEM_ATTRIBUTES = {
+    'after': set(),
+    'before': set(),
     'cascade_skip': None,
     'comment': None,
     'needed_by': set(),
@@ -244,7 +246,12 @@ class Item:
         """
         Alerts the user if they have an item depend on itself.
         """
-        if self.id in self.needs or self.id in self.needed_by:
+        if (
+            self.id in self.after or
+            self.id in self.before or
+            self.id in self.needs or 
+            self.id in self.needed_by
+        ):
             raise ItemDependencyError(_(
                 "'{item}' in bundle '{bundle}' on node '{node}' cannot depend on itself"
             ).format(

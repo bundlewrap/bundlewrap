@@ -59,9 +59,7 @@ def graph_for_items(
                  "style=\"rounded,filled\"]")
     yield "edge [arrowhead=vee]"
 
-    item_ids = []
-    for item in items:
-        item_ids.append(item.id)
+    item_ids = {item.id for item in items}
 
     if cluster:
         # Define which items belong to which bundle
@@ -88,6 +86,9 @@ def graph_for_items(
             for dep in item.needs:
                 if dep in item_ids:
                     yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep)
+            for dep in item.after:
+                if dep in item_ids:
+                    yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep)
 
         if auto:
             for dep in sorted(item._deps):
@@ -98,10 +99,12 @@ def graph_for_items(
                         yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)
                 elif dep in item._reverse_deps:
                     if reverse:
-                        yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep)
-                elif dep.id not in item.needs:
-                    if dep in items:
-                        yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
+                        if item.id in dep.before:
+                            yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep)
+                        else:
+                            yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep)
+                elif dep.id not in item.needs and dep.id not in item.after:
+                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
 
     # Global graph title
     yield "fontsize = 28"
