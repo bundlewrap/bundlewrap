@@ -95,7 +95,7 @@ nodes = {
 }
 
 
-class HooksProxy(object):
+class HooksProxy():
     def __init__(self, repo, path):
         self.repo = repo
         self.__hook_cache = {}
