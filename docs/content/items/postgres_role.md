@@ -34,3 +34,9 @@ Plaintext password to set for this role (will be hashed using MD5).
 ## password_hash
 
 As an alternative to `password`, this allows setting the raw hash as it will be stored in Postgres' internal database. Should start with "md5".
+
+<hr>
+
+## delete
+
+`True` if the role should be deleted (defaults to `False`).
