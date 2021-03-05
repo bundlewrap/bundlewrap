@@ -7,7 +7,7 @@ from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 def create_db(node, name, owner, when_creating):
     template = None
-    cmd = "sudo -u postgres createdb -wO {} ".format(owner)
+    cmd = "createdb -wO {} ".format(owner)
 
     if when_creating.get('collation') is not None:
         cmd += "--lc-collate={} ".format(when_creating['collation'])
@@ -26,15 +26,15 @@ def create_db(node, name, owner, when_creating):
 
     cmd += name
 
-    return node.run(cmd)
+    return node.run(cmd, user="postgres")
 
 
 def drop_db(node, name):
-    return node.run("sudo -u postgres dropdb -w {}".format(quote(name)))
+    return node.run("dropdb -w {}".format(quote(name)), user="postgres")
 
 
 def get_databases(node):
-    output = node.run("echo '\\l' | sudo -u postgres psql -Anqt -F '|' | grep '|'").stdout
+    output = node.run("psql -Anqt -F '|' -c '\\l' | grep '|'", user="postgres").stdout
     result = {}
     for line in force_text(output).strip().split("\n"):
         db, owner = line.strip().split("|", 2)[:2]
@@ -45,13 +45,8 @@ def get_databases(node):
 
 
 def set_owner(node, name, owner):
-    return node.run(
-        "echo 'ALTER DATABASE \"{name}\" OWNER TO \"{owner}\"' | "
-        "sudo -u postgres psql -nqw".format(
-            name=name,
-            owner=owner,
-        ),
-    )
+    sql = f"ALTER DATABASE \\\"{name}\\\" OWNER TO \\\"{owner}\\\""
+    return node.run(f"psql -nqw -c \"{sql}\"", user="postgres")
 
 
 class PostgresDB(Item):

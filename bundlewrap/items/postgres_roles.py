@@ -13,26 +13,23 @@ AUTHID_COLUMNS = {
 
 
 def delete_role(node, role):
-    node.run("sudo -u postgres dropuser -w {}".format(role))
+    node.run("dropuser -w {}".format(role), user="postgres")
 
 
 def fix_role(node, role, attrs, create=False):
     password = " PASSWORD '{}'".format(attrs['password_hash'])
-    node.run(
-        "echo \"{operation} ROLE \\\"{role}\\\" WITH LOGIN {superuser}SUPERUSER{password}\" "
-        "| sudo -u postgres psql -nqw".format(
-            operation="CREATE" if create else "ALTER",
-            password="" if attrs['password_hash'] is None else password,
-            role=role,
-            superuser="" if attrs['superuser'] is True else "NO",
-        )
+    sql = "{operation} ROLE \\\"{role}\\\" WITH LOGIN {superuser}SUPERUSER{password}".format(
+        operation="CREATE" if create else "ALTER",
+        password="" if attrs['password_hash'] is None else password,
+        role=role,
+        superuser="" if attrs['superuser'] is True else "NO",
     )
+    node.run(f"psql -nqw -c \"{sql}\"", user="postgres")
 
 
 def get_role(node, role):
-    result = node.run("echo \"SELECT rolcanlogin, rolsuper, rolpassword from pg_authid "
-                      "WHERE rolname='{}'\" "
-                      "| sudo -u postgres psql -Anqwx -F '|'".format(role))
+    sql = f"SELECT rolcanlogin, rolsuper, rolpassword from pg_authid WHERE rolname='{role}'"
+    result = node.run(f"psql -Anqwx -F '|' -c \"{sql}\"", user="postgres")
 
     role_attrs = {}
     for line in force_text(result.stdout).strip().split("\n"):
