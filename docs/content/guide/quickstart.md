@@ -36,6 +36,13 @@ At this point you will want to edit `nodes.py` and maybe change "localhost" to t
 
 <div class="alert alert-info">BundleWrap will honor your <code>~/.ssh/config</code>, so if <code>ssh mynode.example.com sudo id</code> works without any password prompts in your terminal, you're good to go.</div>
 
+If you want to keep working on "localhost", then the above still applies in that <code>ssh localhost sudo id</code> needs to work without any password prompts. Verify that:
+
+1. an SSH daemon is listening on 127.0.0.1
+2. a relevant public key is in the <code>~/.ssh/authorized_keys</code> file
+3. the <code>~/.ssh/authorized_keys</code> file is not world-writable
+4. your user or group has <code>ALL=(ALL) NOPASSWD: ALL</code> set in the <code>/etc/sudoers</code> file
+
 
 Run a command
 -------------
