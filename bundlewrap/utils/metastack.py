@@ -46,7 +46,7 @@ class Metastack:
                         # First time we see anything. If we can't merge
                         # it anyway, then return early.
                         if isinstance(value, UNMERGEABLE):
-                            return value
+                            return deepcopy_metadata(value)
                         result = {'data': value}
                         undef = False
                     else:
