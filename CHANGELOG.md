@@ -1,3 +1,14 @@
+# 4.7.0
+
+2021-03-24
+
+* added `skip` item attribute
+* added `before` and `after` soft dependencies
+* added `--only` and `--skip` to `bw verify`
+* improved `bw plot node` to properly show all 7 types of item dependencies
+* fixed metadata reactors being able to corrupt metadata in some cases
+
+
 # 4.6.0
 
 2021-02-25
