@@ -1,5 +1,5 @@
 from contextlib import suppress
-from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_file_location
 from inspect import isabstract
 from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
@@ -166,14 +166,16 @@ class LibsProxy:
             filename = attrname + ".py"
             filepath = join(self.__path, filename)
             try:
-                m = SourceFileLoader(
+                spec = spec_from_file_location(
                     'bundlewrap.repo.libs_{}'.format(attrname),
                     filepath,
-                ).load_module()
+                )
+                mod = module_from_spec(spec)
+                spec.loader.exec_module(mod)
             except:
                 io.stderr(_("Exception while trying to load {}:").format(filepath))
                 raise
-            self.__module_cache[attrname] = m
+            self.__module_cache[attrname] = mod
         return self.__module_cache[attrname]
 
 
