@@ -184,10 +184,6 @@ def bw_lock_show(repo, args):
     )
     worker_pool.run()
 
-    if errors:
-        error_summary(errors)
-        return
-
     rows = [[
         bold(_("node")),
         bold(_("ID")),
@@ -235,3 +231,5 @@ def bw_lock_show(repo, args):
         rows[:-1],  # remove trailing ROW_SEPARATOR
         alignments={1: 'center'},
     ))
+
+    error_summary(errors)
