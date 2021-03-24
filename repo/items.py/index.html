@@ -168,6 +168,10 @@
 </li>
                                     
 <li>
+    <a href="../../items/pkg_apk/" class="dropdown-item">pkg_apk</a>
+</li>
+                                    
+<li>
     <a href="../../items/pkg_apt/" class="dropdown-item">pkg_apt</a>
 </li>
                                     
@@ -217,6 +221,10 @@
                                     
 <li>
     <a href="../../items/svc_openbsd/" class="dropdown-item">svc_openbsd</a>
+</li>
+                                    
+<li>
+    <a href="../../items/svc_openrc/" class="dropdown-item">svc_openrc</a>
 </li>
                                     
 <li>
@@ -311,6 +319,14 @@
             
             <li class="nav-item" data-level="1"><a href="#builtin-item-attributes" class="nav-link">Builtin item attributes</a>
               <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#after" class="nav-link">after</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#before" class="nav-link">before</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#comment" class="nav-link">comment</a>
               <ul class="nav flex-column">
               </ul>
@@ -336,6 +352,10 @@
               </ul>
             </li>
             <li class="nav-item" data-level="2"><a href="#preceded_by" class="nav-link">preceded_by</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#skip" class="nav-link">skip</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -422,6 +442,24 @@ users = {
 <h1 id="builtin-item-attributes">Builtin item attributes</h1>
 <p>There are also attributes that can be applied to any kind of item.</p>
 <p><br></p>
+<h2 id="after">after</h2>
+<p>This lets you control execution order of items. This is not something you will have to do very often, because there are already implicit dependencies between item types (e.g. all files automatically depend on the users owning them).</p>
+<pre><code>actions = {
+    'a': {
+        'command': 'true',
+    },
+    'b': {
+        'command': 'true',
+        'after': {'action:a'},
+    },
+}
+</code></pre>
+<p>When set up like this, <code>action:b</code> will only run after <code>action:a</code> has been completed. Note that it doesn't matter if <code>action:a</code> is successful or not, that what <code>needs</code> is for.</p>
+<p>See <a href="../../guide/selectors/">Selectors</a> for a complete overview of the ways to specify items here.</p>
+<p><br></p>
+<h2 id="before">before</h2>
+<p>Just like <code>after</code>, but in the opposite direction.</p>
+<p><br></p>
 <h2 id="comment">comment</h2>
 <p>This is a string that will be displayed in interactive mode (<code>bw apply -i</code>) whenever the item is to be changed in any way. You can use it to warn users before they start disruptive actions.</p>
 <p><br></p>
@@ -430,7 +468,7 @@ users = {
 <p>Defaults to <code>False</code>.</p>
 <p><br></p>
 <h2 id="needs">needs</h2>
-<p>One such attribute is <code>needs</code>. It allows for setting up dependencies between items. This is not something you will have to do very often, because there are already implicit dependencies between items types (e.g. all files automatically depend on the users owning them). Here are two examples:</p>
+<p>This allows for setting up dependencies between items. Here are two examples:</p>
 <pre><code>my_items = {
     'item1': {
         [...]
@@ -448,6 +486,7 @@ users = {
 }
 </code></pre>
 <p>The first item (<code>item1</code>, specific attributes have been omitted) depends on a file called <code>/etc/foo.conf</code>, while <code>item2</code> depends on all APT packages being installed and every item in the foo bundle.</p>
+<p>Note that unlike <code>after</code>, with <code>needs</code> the depending item will be skipped if the item it depends on fails or is skipped (unless <code>cascade_skip</code> is set to <code>False</code> on that item).</p>
 <p>See <a href="../../guide/selectors/">Selectors</a> for a complete overview of the ways to specify items here.</p>
 <p><br></p>
 <h2 id="needed_by">needed_by</h2>
@@ -519,6 +558,9 @@ actions = {
 <p>Similar to <code>needed_by</code>, <code>precedes</code> can be used to define a <code>preceded_by</code> relationship from the opposite direction.</p>
 <p>See <a href="../../guide/selectors/">Selectors</a> for a complete overview of the ways to specify items here.</p>
 <p><br></p>
+<h2 id="skip">skip</h2>
+<p>Set this to <code>True</code> to always skip this item. This is useful if you just want to quickly disable this item to try something or if it's sitting somewhere in a dependency chain and it would be too cumbersome to remove entirely under certain conditions. Note that setting this to <code>True</code> will also change the default for <code>cascade_skip</code> to <code>False</code>.</p>
+<p><br></p>
 <h2 id="unless">unless</h2>
 <p>Another builtin item attribute is <code>unless</code>. For example, it can be used to construct a one-off file item where BundleWrap will only create the file once, but won't check or modify its contents once it exists.</p>
 <pre><code>files = {
@@ -547,12 +589,18 @@ actions = {
 
 <p><br></p>
 <h2 id="cascade_skip">cascade_skip</h2>
+<p>DEPRECATED: Use <code>before</code> and <code>after</code> instead.</p>
 <p>There are some situations where you don't want to default behavior of skipping everything that depends on a skipped item. That's where <code>cascade_skip</code> comes in. Set it to <code>False</code> and skipping an item won't skip those that depend on it. Note that items can be skipped</p>
 <ul>
 <li>interactively or</li>
+<li>because of <code>bw apply --only</code> or <code>bw apply --skip</code> or</li>
+<li>because a Fault was unavailable or</li>
+<li>they were soft-locked on the node or</li>
 <li>because they haven't been triggered or</li>
+<li>because one of their dependencies was skipped or</li>
 <li>because one of their dependencies failed or</li>
 <li>they failed their <code>unless</code> condition or</li>
+<li>the <code>skip</code> attribute was set or</li>
 <li>because an <a href="../../items/action/">action</a> had its <code>interactive</code> attribute set to <code>True</code> during a non-interactive run</li>
 </ul>
 <p>The following example will offer to run an <code>apt-get update</code> before installing a package, but continue to install the package even if the update is declined interactively.</p>
@@ -569,7 +617,7 @@ pkg_apt = {
     },
 }
 </code></pre>
-<p><code>cascade_skip</code> defaults to <code>True</code>. However, if the item uses the <code>unless</code> attribute or is triggered, the default changes to <code>False</code>. Most of the time, this is what you'll want.</p>
+<p><code>cascade_skip</code> defaults to <code>True</code>. However, if the item uses the <code>unless</code> or <code>skip</code> attributes or is triggered, the default changes to <code>False</code>. Most of the time, this is what you'll want.</p>
 <p><br></p>
 <h1 id="canned-actions">Canned actions</h1>
 <p>Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:</p>
