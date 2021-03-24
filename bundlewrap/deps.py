@@ -120,37 +120,6 @@ def _flatten_deps_for_item(item, items):
         item._flattened_deps_needs.update(dep_item._flattened_deps_needs)
 
 
-def _has_trigger_path(items, item, target_item_id, _walked_items=None):
-    """
-    Returns True if the given item is connected to the given item ID
-    through triggers, even if it's indirectly through other items.
-    """
-    if target_item_id in item.triggers:
-        return True
-    if _walked_items is None:
-        _walked_items = []
-    elif item in _walked_items:
-        raise ItemDependencyLoop(_walked_items)
-    else:
-        _walked_items.append(item)
-    for selector in item.triggers:
-        try:
-            selected_items = resolve_selector(selector, items)
-        except NoSuchItem:
-            # the referenced item may already have been skipped e.g. by
-            # `bw apply -s`
-            continue
-        for selected_item in selected_items:
-            if _has_trigger_path(
-                items,
-                selected_item,
-                target_item_id,
-                _walked_items=_walked_items.copy(),
-            ):
-                return True
-    return False
-
-
 def _add_incoming_needs(items):
     """
     For each item, records all items that need that item in
@@ -576,29 +545,10 @@ def remove_item_dependents(items, dep_item):
     """
     removed_items = set()
     for item in items:
-        if dep_item in item._deps:
-            if _has_trigger_path(items, dep_item, item.id):
-                # triggered items cannot be removed here since they
-                # may yet be triggered by another item and will be
-                # skipped anyway if they aren't
-                item._deps.remove(dep_item)
-            elif dep_item in item._deps_concurrency:
-                # don't skip items just because of concurrency deps
-                # separate elif for clarity
-                item._deps.remove(dep_item)
-            elif (
-                (
-                    dep_item.id in item.after or
-                    item.id in dep_item.before
-                ) and
-                dep_item.id not in item.needs and
-                item.id not in dep_item.needed_by
-            ):
-                # don't skip items if they're *only* before/after deps
-                # separate elif for clarity
-                item._deps.remove(dep_item)
-            else:
-                removed_items.add(item)
+        if dep_item in item._deps_needs | item._reverse_deps_needed_by:
+            removed_items.add(item)
+        with suppress(KeyError):
+            item._deps.remove(dep_item)
 
     for item in removed_items:
         items.remove(item)
