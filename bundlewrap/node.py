@@ -14,6 +14,7 @@ from .deps import find_item
 from .exceptions import (
     GracefulApplyException,
     ItemDependencyLoop,
+    ItemSkipped,
     NodeLockedException,
     NoSuchBundle,
     RemoteException,
@@ -627,8 +628,8 @@ class Node:
 
     def apply(
         self,
-        autoskip_selector="",
-        autoonly_selector="",
+        autoskip_selector=(),
+        autoonly_selector=(),
         interactive=False,
         force=False,
         show_diff=True,
@@ -880,14 +881,28 @@ class Node:
             wrapper_outer=self.cmd_wrapper_outer,
         )
 
-    def verify(self, show_all=False, show_diff=True, workers=4):
+    def verify(
+        self,
+        autoskip_selector=(),
+        autoonly_selector=(),
+        show_all=False, 
+        show_diff=True, 
+        workers=4,
+    ):
         result = []
         start = datetime.now()
 
         if not self.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
         else:
-            result = verify_items(self, show_all=show_all, show_diff=show_diff, workers=workers)
+            result = verify_items(
+                self,
+                autoskip_selector=autoskip_selector,
+                autoonly_selector=autoonly_selector,
+                show_all=show_all, 
+                show_diff=show_diff,
+                workers=workers,
+            )
 
         return {
             'good': result.count(True),
@@ -932,7 +947,14 @@ for attr, default in GROUP_ATTR_DEFAULTS.items():
     setattr(Node, attr, build_attr_property(attr, default))
 
 
-def verify_items(node, show_all=False, show_diff=True, workers=1):
+def verify_items(
+    node,
+    autoskip_selector=(),
+    autoonly_selector=(),
+    show_all=False,
+    show_diff=True,
+    workers=1,
+):
     items = []
     for item in node.items:
         if not item.triggered:
@@ -979,18 +1001,17 @@ def verify_items(node, show_all=False, show_diff=True, workers=1):
                 return {
                     'task_id': node.name + ":" + item.bundle.name + ":" + item.id,
                     'target': item.verify,
+                    'kwargs': {
+                        'autoskip_selector': autoskip_selector,
+                        'autoonly_selector': autoonly_selector,
+                    },
                 }
 
     def handle_exception(task_id, exception, traceback):
         node_name, bundle_name, item_id = task_id.split(":", 2)
         io.progress_advance()
-        if isinstance(exception, NotImplementedError):
-            io.stdout(_("{x} {node}  {bundle}  {item}  (does not support verify)").format(
-                bundle=bold(bundle_name),
-                item=item_id,
-                node=bold(node_name),
-                x=cyan("?"),
-            ))
+        if isinstance(exception, (ItemSkipped, NotImplementedError)):
+            pass
         else:
             # Unlike with `bw apply`, it is OK for `bw verify` to encounter
             # exceptions when getting an item's status. `bw verify` doesn't

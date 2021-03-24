@@ -22,6 +22,12 @@ class GracefulApplyException(Exception):
     pass
 
 
+class ItemSkipped(Exception):
+    """
+    Raised when an item is skipped during `bw verify`.
+    """
+    pass
+
 class NoSuchBundle(Exception):
     """
     Raised when a bundle of unknown name is requested.

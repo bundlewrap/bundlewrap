@@ -8,7 +8,12 @@ from inspect import cleandoc
 from os.path import join
 from textwrap import TextWrapper
 
-from bundlewrap.exceptions import BundleError, ItemDependencyError, FaultUnavailable
+from bundlewrap.exceptions import (
+    BundleError,
+    FaultUnavailable,
+    ItemDependencyError,
+    ItemSkipped,
+)
 from bundlewrap.utils import cached_property
 from bundlewrap.utils.dicts import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
@@ -433,8 +438,8 @@ class Item:
 
     def apply(
         self,
-        autoskip_selector=[],
-        autoonly_selector=[],
+        autoskip_selector=(),
+        autoonly_selector=(),
         my_soft_locks=(),
         other_peoples_soft_locks=(),
         interactive=False,
@@ -661,7 +666,7 @@ class Item:
     def covered_by_autoskip_selector(self, autoskip_selector):
         """
         True if this item should be skipped based on the given selector
-        string (e.g. "tag:foo,bundle:bar").
+        (e.g. ("tag:foo", "bundle:bar")).
         """
         components = [c.strip() for c in autoskip_selector]
         if (
@@ -676,10 +681,10 @@ class Item:
                 return True
         return False
 
-    def covered_by_autoonly_selector(self, autoonly_selector):
+    def covered_by_autoonly_selector(self, autoonly_selector, check_deps=True):
         """
         True if this item should be NOT skipped based on the given selector
-        string (e.g. "tag:foo,bundle:bar").
+        (e.g. ("tag:foo", "bundle:bar")).
         """
         if not autoonly_selector:
             return True
@@ -693,16 +698,17 @@ class Item:
         for tag in self.tags:
             if "tag:{}".format(tag) in components:
                 return True
-        for depending_item in self._incoming_deps:
-            if (
-                depending_item.id in components or
-                "bundle:{}".format(depending_item.bundle.name) in components or
-                "{}:".format(depending_item.ITEM_TYPE_NAME) in components
-            ):
-                return True
-            for tag in depending_item.tags:
-                if "tag:{}".format(tag) in components:
+        if check_deps:
+            for depending_item in self._incoming_deps:
+                if (
+                    depending_item.id in components or
+                    "bundle:{}".format(depending_item.bundle.name) in components or
+                    "{}:".format(depending_item.ITEM_TYPE_NAME) in components
+                ):
                     return True
+                for tag in depending_item.tags:
+                    if "tag:{}".format(tag) in components:
+                        return True
         return False
 
     def fix(self, status):
@@ -759,7 +765,23 @@ class Item:
             return self.name
         return "{}:{}".format(self.ITEM_TYPE_NAME, self.name)
 
-    def verify(self):
+    def verify(
+        self,
+        autoskip_selector=(),
+        autoonly_selector=(),
+    ):
+        if not self.covered_by_autoonly_selector(autoonly_selector, check_deps=False):
+            io.debug(_(
+                "autoonly does not match {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            raise ItemSkipped
+
+        if self.covered_by_autoskip_selector(autoskip_selector):
+            io.debug(_(
+                "autoskip matches {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            raise ItemSkipped
+
         if self.cached_status.must_be_created:
             display = self.display_on_create(copy(self.cached_status.cdict))
         elif self.cached_status.must_be_deleted:

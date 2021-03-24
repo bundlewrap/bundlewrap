@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from bundlewrap.exceptions import BundleError
+from bundlewrap.exceptions import BundleError, ItemSkipped
 from bundlewrap.items import format_comment, Item
 from bundlewrap.utils import Fault
 from bundlewrap.utils.ui import io
@@ -236,7 +236,19 @@ class Action(Item):
                 "invalid interactive setting for action '{item}' in bundle '{bundle}'"
             ).format(item=item_id, bundle=bundle.name))
 
-    def verify(self):
+    def verify(self, autoskip_selector=(), autoonly_selector=()):
+        if not self.covered_by_autoonly_selector(autoonly_selector, check_deps=False):
+            io.debug(_(
+                "autoonly does not match {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            raise ItemSkipped
+
+        if self.covered_by_autoskip_selector(autoskip_selector):
+            io.debug(_(
+                "autoskip matches {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            raise ItemSkipped
+
         if self.unless and self.cached_unless_result:
             return self.cached_unless_result, None, None
         else:

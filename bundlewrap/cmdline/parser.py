@@ -961,7 +961,7 @@ bundle:my_bundle  # items in this bundle
         "--show-all",
         action='store_true',
         dest='show_all',
-        help=_("show correct items as well as incorrect ones"),
+        help=_("show correct and skipped items as well as incorrect ones"),
     )
     parser_verify.add_argument(
         "-D",
@@ -970,6 +970,22 @@ bundle:my_bundle  # items in this bundle
         dest='show_diff',
         help=_("hide diff for incorrect items"),
     )
+    parser_verify.add_argument(
+        "-o",
+        "--only",
+        default=[],
+        dest='autoonly',
+        help=_("""skip all items not matching any SELECTOR:
+
+file:/my_path     # this specific item
+tag:my_tag        # items with this tag
+bundle:my_bundle  # items in this bundle
+        """),
+        metavar=_("SELECTOR"),
+        nargs='+',
+        type=str,
+    )
+
     bw_verify_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_verify.add_argument(
         "-p",
@@ -989,6 +1005,21 @@ bundle:my_bundle  # items in this bundle
         help=_("number of items to verify simultaneously on each node "
                "(defaults to {})").format(bw_verify_p_items_default),
         type=int,
+    )
+    parser_verify.add_argument(
+        "-s",
+        "--skip",
+        default=[],
+        dest='autoskip',
+        help=_("""skip items matching any SELECTOR:
+
+file:/my_path     # this specific item
+tag:my_tag        # items with this tag
+bundle:my_bundle  # items in this bundle
+        """),
+        metavar=_("SELECTOR"),
+        nargs='+',
+        type=str,
     )
     parser_verify.add_argument(
         "-S",

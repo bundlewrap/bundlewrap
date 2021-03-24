@@ -126,6 +126,8 @@ def bw_verify(repo, args):
             'target': node.verify,
             'task_id': node.name,
             'kwargs': {
+                'autoonly_selector': args['autoonly'],
+                'autoskip_selector': args['autoskip'],
                 'show_all': args['show_all'],
                 'show_diff': args['show_diff'],
                 'workers': args['item_workers'],
