@@ -294,7 +294,7 @@ def _inject_reverse_dependencies(items):
     """
     for item in items:
         for dep_type in ('before', 'needed_by'):
-            setattr(item, '_reverse_deps_' + dep_type, set())
+            setattr(item, '_deps_' + dep_type, set())
 
     for item in items:
         for dep_type in ('before', 'needed_by'):
@@ -317,7 +317,7 @@ def _inject_reverse_dependencies(items):
                     ))
                 for dependent_item in dependent_items:
                     dependent_item._deps.add(item)
-                    getattr(dependent_item, '_reverse_deps_' + dep_type).add(item)
+                    getattr(dependent_item, '_deps_' + dep_type).add(item)
 
 
 def _inject_reverse_triggers(items):
@@ -545,7 +545,7 @@ def remove_item_dependents(items, dep_item):
     """
     removed_items = set()
     for item in items:
-        if dep_item in item._deps_needs | item._reverse_deps_needed_by:
+        if dep_item in item._deps_needs | item._deps_needed_by:
             removed_items.add(item)
         with suppress(KeyError):
             item._deps.remove(dep_item)

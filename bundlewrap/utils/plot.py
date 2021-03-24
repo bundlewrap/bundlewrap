@@ -90,9 +90,9 @@ def graph_for_items(
                 yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep.id)
 
         if reverse:
-            for dep in sorted(item._reverse_deps_before):
+            for dep in sorted(item._deps_before):
                 yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep.id)
-            for dep in sorted(item._reverse_deps_needed_by):
+            for dep in sorted(item._deps_needed_by):
                 yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep.id)
 
         if auto:
