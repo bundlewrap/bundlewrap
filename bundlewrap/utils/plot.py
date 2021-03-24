@@ -1,28 +1,27 @@
 from . import names
-from .text import mark_for_translation as _, red
+from .text import mark_for_translation as _
 
 
-def explain_item_dependency_loop(exc, node_name):
+def explain_item_dependency_loop(items):
     """
-    Given an ItemDependencyLoop exception and a node name, generates
-    output lines to help users debug the issue.
+    Generates output lines to help users debug the issue.
     """
-    items = remove_items_not_contributing_to_loop(exc.items)
+    items = remove_items_not_contributing_to_loop(items)
+    node_name = items[0].node.name
 
     yield _(
-        "{x} There was a dependency problem on node '{node}'. Look at the debug.svg generated "
+        "There was a dependency problem on node '{node}'. Look at the debug.svg generated "
         "by the following command and try to find a loop:\n\n\n"
         "printf '{cmd}' | dot -Tsvg -odebug.svg\n\n\n"
     ).format(
-        x=red("!"),
         node=node_name,
         cmd="\\n".join(graph_for_items(node_name, items)),
     )
 
     yield _(
-        "{x} Additionally, here is a list of all items involved "
+        "Additionally, here is a list of all items involved "
         "and their remaining dependencies:\n"
-    ).format(x=red("!"))
+    )
     for item in items:
         yield "{}\t{}".format(item.id, ",".join([item.id for item in sorted(item._deps)]))
     yield "\n\n\n"
@@ -97,7 +96,7 @@ def graph_for_items(
                 if dep.id in getattr(item, '_concurrency_deps', []):
                     if concurrency:
                         yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)
-                elif dep in item._reverse_deps:
+                elif dep in item._reverse_deps_before | item._reverse_deps_needed_by:
                     if reverse:
                         if item.id in dep.before:
                             yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep)

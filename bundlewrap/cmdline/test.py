@@ -1,13 +1,13 @@
 from copy import copy
 from sys import exit
 
-from ..exceptions import FaultUnavailable, ItemDependencyLoop
+from ..deps import ItemDependencyLoop
+from ..exceptions import FaultUnavailable
 from ..itemqueue import ItemTestQueue
 from ..metadata import check_for_metadata_conflicts, metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import count_items, get_target_nodes
 from ..utils.dicts import diff_value, diff_value_text
-from ..utils.plot import explain_item_dependency_loop
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, QUIT_EVENT
 
@@ -66,10 +66,7 @@ def test_items(nodes, ignore_missing_faults, quiet):
                         x=green("✓"),
                     ))
         if item_queue.items_with_deps and not QUIT_EVENT.is_set():
-            exception = ItemDependencyLoop(item_queue.items_with_deps)
-            for line in explain_item_dependency_loop(exception, node.name):
-                io.stderr(line)
-            exit(1)
+            raise ItemDependencyLoop(item_queue.items_with_deps)
     io.progress_set_total(0)
 
 

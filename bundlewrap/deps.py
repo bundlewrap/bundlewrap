@@ -3,8 +3,23 @@ from contextlib import suppress
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
 from .items import Item
 from .items.actions import Action
+from .utils.plot import explain_item_dependency_loop
 from .utils.text import bold, mark_for_translation as _
 from .utils.ui import io
+
+
+class ItemDependencyLoop(ItemDependencyError):
+    """
+    Raised when there is a loop in item dependencies.
+    """
+    def __init__(self, items):
+        self.items = items
+
+    def __repr__(self):
+        return "<ItemDependencyLoop between {} items>".format(len(self.items))
+
+    def __str__(self):
+        return "\n".join(explain_item_dependency_loop(self.items))
 
 
 class TagFillerItem(Item):
@@ -83,12 +98,6 @@ def _flatten_dependencies(items):
         if not hasattr(item, '_flattened_deps'):
             _flatten_deps_for_item(item, items)
 
-    for item in items:
-        item._incoming_deps = set()
-        for other_item in items:
-            if item.id in other_item._flattened_deps:
-                item._incoming_deps.add(other_item)
-
 
 def _flatten_deps_for_item(item, items):
     """
@@ -98,6 +107,7 @@ def _flatten_deps_for_item(item, items):
     This can handle loops, but will ignore them.
     """
     item._flattened_deps = {item.id for item in item._deps}
+    item._flattened_deps_needs = {item.id for item in item._deps_needs}
 
     for dep_item in item._deps:
         # Don't recurse if we have already resolved nested
@@ -107,42 +117,79 @@ def _flatten_deps_for_item(item, items):
             _flatten_deps_for_item(dep_item, items)
 
         item._flattened_deps.update(dep_item._flattened_deps)
+        item._flattened_deps_needs.update(dep_item._flattened_deps_needs)
 
 
-def _has_trigger_path(items, item, target_item_id):
+def _has_trigger_path(items, item, target_item_id, _walked_items=None):
     """
-    Returns True if the given item directly or indirectly (trough
-    other items) triggers the item with the given target item id.
+    Returns True if the given item is connected to the given item ID
+    through triggers, even if it's indirectly through other items.
     """
     if target_item_id in item.triggers:
         return True
-    for triggered_id in item.triggers:
+    if _walked_items is None:
+        _walked_items = []
+    elif item in _walked_items:
+        raise ItemDependencyLoop(_walked_items)
+    else:
+        _walked_items.append(item)
+    for selector in item.triggers:
         try:
-            triggered_item = find_item(triggered_id, items)
+            selected_items = resolve_selector(selector, items)
         except NoSuchItem:
-            # the triggered item may already have been skipped by
+            # the referenced item may already have been skipped e.g. by
             # `bw apply -s`
             continue
-        if _has_trigger_path(items, triggered_item, target_item_id):
-            return True
+        for selected_item in selected_items:
+            if _has_trigger_path(
+                items,
+                selected_item,
+                target_item_id,
+                _walked_items=_walked_items.copy(),
+            ):
+                return True
     return False
+
+
+def _add_incoming_needs(items):
+    """
+    For each item, records all items that need that item in
+    ._incoming_needs.
+    """
+    for item in items:
+        item._incoming_needs = set()
+        for depending_item in items:
+            if item == depending_item:
+                continue
+            if item.id in depending_item._flattened_deps_needs:
+                item._incoming_needs.add(depending_item)
 
 
 def _prepare_deps(items):
     for item in items:
         item._deps = set()  # holds all item ids blocking execution of that item
-        for dep in set(item.after) | set(item.needs) | set(item.get_auto_deps(items)):
-            try:
-                item._deps.update(resolve_selector(dep, items, originating_item_id=item.id))
-            except NoSuchItem:
-                raise ItemDependencyError(_(
-                    "'{item}' in bundle '{bundle}' has a dependency (needs) "
-                    "on '{dep}', which doesn't exist"
-                ).format(
-                    item=item.id,
-                    bundle=item.bundle.name,
-                    dep=dep,
-                ))
+        for dep_type, deps in (
+            ('after', set(item.after)),
+            ('needs', set(item.needs)),
+            ('auto', set(item.get_auto_deps(items))),
+        ):
+            setattr(item, '_deps_' + dep_type, set())
+            for dep in deps:
+                try:
+                    resolved_deps = resolve_selector(dep, items, originating_item_id=item.id)
+                except NoSuchItem:
+                    raise ItemDependencyError(_(
+                        "'{item}' in bundle '{bundle}' has a dependency ({dep_type}) "
+                        "on '{dep}', which doesn't exist"
+                    ).format(
+                        item=item.id,
+                        bundle=item.bundle.name,
+                        dep=dep,
+                        dep_type=dep_type,
+                    ))
+                else:
+                    item._deps.update(resolved_deps)
+                    getattr(item, '_deps_' + dep_type).update(resolved_deps)
 
 
 def _inject_canned_actions(items):
@@ -276,32 +323,32 @@ def _inject_reverse_dependencies(items):
     Looks for 'before' and 'needed_by' deps and creates standard 
     dependencies accordingly.
     """
-    def add_dep(item, dep):
-        item._deps.add(dep)
-        item._reverse_deps.add(dep)
+    for item in items:
+        for dep_type in ('before', 'needed_by'):
+            setattr(item, '_reverse_deps_' + dep_type, set())
 
     for item in items:
-        item._reverse_deps = set()
-
-    for item in items:
-        for depending_item_id in set(item.before) | set(item.needed_by):
-            try:
-                dependent_items = resolve_selector(
-                    depending_item_id,
-                    items,
-                    originating_item_id=item.id,
-                )
-            except NoSuchItem:
-                raise ItemDependencyError(_(
-                    "'{item}' in bundle '{bundle}' has a reverse dependency (needed_by) "
-                    "on '{dep}', which doesn't exist"
-                ).format(
-                    item=item.id,
-                    bundle=item.bundle.name,
-                    dep=depending_item_id,
-                ))
-            for dependent_item in dependent_items:
-                add_dep(dependent_item, item)
+        for dep_type in ('before', 'needed_by'):
+            for depending_item_id in set(getattr(item, dep_type)):
+                try:
+                    dependent_items = resolve_selector(
+                        depending_item_id,
+                        items,
+                        originating_item_id=item.id,
+                    )
+                except NoSuchItem:
+                    raise ItemDependencyError(_(
+                        "'{item}' in bundle '{bundle}' has a reverse dependency ({dep_type}) "
+                        "on '{dep}', which doesn't exist"
+                    ).format(
+                        item=item.id,
+                        bundle=item.bundle.name,
+                        dep=depending_item_id,
+                        dep_type=dep_type,
+                    ))
+                for dependent_item in dependent_items:
+                    dependent_item._deps.add(item)
+                    getattr(dependent_item, '_reverse_deps_' + dep_type).add(item)
 
 
 def _inject_reverse_triggers(items):
@@ -355,6 +402,9 @@ def _inject_trigger_dependencies(items):
     items.
     """
     for item in items:
+        item._deps_triggers = set()
+
+    for item in items:
         for triggered_item_selector in item.triggers:
             try:
                 triggered_items = resolve_selector(
@@ -374,6 +424,7 @@ def _inject_trigger_dependencies(items):
             for triggered_item in triggered_items:
                 if triggered_item.triggered:
                     triggered_item._deps.add(item)
+                    triggered_item._deps_triggers.add(item)
                 else:
                     raise BundleError(_(
                         "'{item1}' in bundle '{bundle1}' triggered "
@@ -502,6 +553,7 @@ def prepare_dependencies(node):
     _inject_trigger_dependencies(items)
     _inject_preceded_by_dependencies(items)
     _flatten_dependencies(items)
+    _add_incoming_needs(items)
     _inject_concurrency_blockers(items, node.os, node.os_version)
 
     return items

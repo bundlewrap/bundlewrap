@@ -10,10 +10,9 @@ from tomlkit import dumps as toml_dump, parse as toml_parse
 from . import operations
 from .bundle import Bundle
 from .concurrency import WorkerPool
-from .deps import find_item
+from .deps import find_item, ItemDependencyLoop
 from .exceptions import (
     GracefulApplyException,
-    ItemDependencyLoop,
     ItemSkipped,
     NodeLockedException,
     NoSuchBundle,

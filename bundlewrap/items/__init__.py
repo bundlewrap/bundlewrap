@@ -699,7 +699,7 @@ class Item:
             if "tag:{}".format(tag) in components:
                 return True
         if check_deps:
-            for depending_item in self._incoming_deps:
+            for depending_item in self._incoming_needs:
                 if (
                     depending_item.id in components or
                     "bundle:{}".format(depending_item.bundle.name) in components or

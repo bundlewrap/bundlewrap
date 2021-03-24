@@ -2,10 +2,9 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..exceptions import GracefulApplyException, ItemDependencyLoop
+from ..exceptions import GracefulApplyException
 from ..utils import SkipList
 from ..utils.cmdline import count_items, get_target_nodes
-from ..utils.plot import explain_item_dependency_loop
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -79,11 +78,7 @@ def bw_apply(repo, args):
             msg=exception,
             x=red("!"),
         )
-        if isinstance(exception, ItemDependencyLoop):
-            for line in explain_item_dependency_loop(exception, task_id):
-                io.stderr(line)
-                errors.append(line)
-        elif isinstance(exception, GracefulApplyException):
+        if isinstance(exception, GracefulApplyException):
             errors.append(msg)
         else:
             io.stderr(traceback)
