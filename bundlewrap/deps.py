@@ -176,7 +176,7 @@ def _prepare_deps(items):
             setattr(item, '_deps_' + dep_type, set())
             for dep in deps:
                 try:
-                    resolved_deps = resolve_selector(dep, items, originating_item_id=item.id)
+                    resolved_deps = tuple(resolve_selector(dep, items, originating_item_id=item.id))
                 except NoSuchItem:
                     raise ItemDependencyError(_(
                         "'{item}' in bundle '{bundle}' has a dependency ({dep_type}) "
@@ -238,7 +238,7 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
     # find every item type that cannot be applied in parallel
     item_types = set()
     for item in items:
-        item._concurrency_deps = set()  # used for DOT (graphviz) output only
+        item._deps_concurrency = set()
         if item.block_concurrent(node_os, node_os_version):
             item_types.add(item.__class__)
 
@@ -306,7 +306,7 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
                 # add dep to previous item -- unless it's already in there
                 if previous_item not in item._deps:
                     item._deps.add(previous_item)
-                    item._concurrency_deps.add(previous_item.id)
+                    item._deps_concurrency.add(previous_item)
                     item._flattened_deps.add(previous_item.id)
             previous_item = item
             processed_items.add(item)
@@ -582,7 +582,7 @@ def remove_item_dependents(items, dep_item):
                 # may yet be triggered by another item and will be
                 # skipped anyway if they aren't
                 item._deps.remove(dep_item)
-            elif dep_item.id in item._concurrency_deps:
+            elif dep_item in item._deps_concurrency:
                 # don't skip items just because of concurrency deps
                 # separate elif for clarity
                 item._deps.remove(dep_item)

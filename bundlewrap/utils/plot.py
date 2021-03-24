@@ -71,8 +71,6 @@ def graph_for_items(
             bundle_number += 1
             yield "{"
             yield "label = \"{}\"".format(item.bundle.name)
-            if "bundle:{}".format(item.bundle.name) in item_ids:
-                yield "\"bundle:{}\"".format(item.bundle.name)
             for bitem in item.bundle.items:
                 if bitem.id in item_ids:
                     yield "\"{}\"".format(bitem.id)
@@ -82,28 +80,27 @@ def graph_for_items(
     # Define dependencies between items
     for item in items:
         if regular:
-            for dep in item.needs:
-                if dep in item_ids:
-                    yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep)
-            for dep in item.after:
-                if dep in item_ids:
-                    yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep)
+            for dep in sorted(item._deps_needs):
+                yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep.id)
+            for dep in sorted(item._deps_after):
+                yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
+
+        if concurrency:
+            for dep in sorted(item._deps_concurrency):
+                yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep.id)
+
+        if reverse:
+            for dep in sorted(item._reverse_deps_before):
+                yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep.id)
+            for dep in sorted(item._reverse_deps_needed_by):
+                yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep.id)
 
         if auto:
-            for dep in sorted(item._deps):
-                if dep not in items:
-                    continue
-                if dep.id in getattr(item, '_concurrency_deps', []):
-                    if concurrency:
-                        yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep)
-                elif dep in item._reverse_deps_before | item._reverse_deps_needed_by:
-                    if reverse:
-                        if item.id in dep.before:
-                            yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep)
-                        else:
-                            yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep)
-                elif dep.id not in item.needs and dep.id not in item.after:
-                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep)
+            for dep in sorted(item._deps_auto):
+                yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
+
+            for dep in sorted(item._deps_triggers):
+                yield "\"{}\" -> \"{}\" [color=\"#fca7f7\",penwidth=2]".format(item.id, dep.id)
 
     # Global graph title
     yield "fontsize = 28"

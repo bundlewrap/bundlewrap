@@ -666,7 +666,17 @@ bundle:my_bundle  # items in this bundle
     )
 
     # bw plot node
-    help_plot_node = _("Plot items and their dependencies for the given node")
+    help_plot_node = _(
+        "Plot items and their dependencies for the given node. "
+        "Color guide: "
+        "needs in red, "
+        "after in blue, "
+        "concurrency blockers in purple, "
+        "before in yellow, "
+        "needed_by in orange, "
+        "auto in green, "
+        "triggers in pink"
+    )
     parser_plot_subparsers_node = parser_plot_subparsers.add_parser(
         "node",
         description=help_plot_node,
@@ -689,7 +699,7 @@ bundle:my_bundle  # items in this bundle
         "--no-depends-auto",
         action='store_false',
         dest='depends_auto',
-        help=_("do not show auto-generated dependencies and items"),
+        help=_("do not show auto-generated and trigger dependencies"),
     )
     parser_plot_subparsers_node.add_argument(
         "--no-depends-conc",
@@ -701,13 +711,13 @@ bundle:my_bundle  # items in this bundle
         "--no-depends-regular",
         action='store_false',
         dest='depends_regular',
-        help=_("do not show regular user-defined dependencies"),
+        help=_("do not show after/needs dependencies"),
     )
     parser_plot_subparsers_node.add_argument(
         "--no-depends-reverse",
         action='store_false',
         dest='depends_reverse',
-        help=_("do not show reverse dependencies ('needed_by')"),
+        help=_("do not show before/needed_by dependencies"),
     )
 
     # bw plot groups-for-node
