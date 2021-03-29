@@ -1,3 +1,11 @@
+# 4.7.1
+
+2021-03-29
+
+* fixed `bw lock show` hiding output if it failed to connect to any host
+* fixed `bw test -m` not handling cdict mismatches properly
+
+
 # 4.7.0
 
 2021-03-24
