@@ -186,22 +186,20 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
                             current_cdict_keys = set(current_cdict.keys())
                             previous_cdict = previous_item.display_on_create(previous_item.cdict().copy())
                             previous_cdict_keys = set(previous_cdict.keys())
-                            assert current_cdict_keys == previous_cdict_keys, \
-                                "cdict mismatch: " + str(
-                                    current_cdict_keys.symmetric_difference(previous_cdict_keys)
-                                )
                             output = _("{x} {node}  {item} changed:\n").format(
                                 x=red("✘"),
                                 node=bold(node.name),
                                 item=item.id,
                             )
                             diff = "\n"
-                            for key in sorted(current_cdict_keys):
-                                if current_cdict[key] != previous_cdict[key]:
+                            for key in sorted(current_cdict_keys | previous_cdict_keys):
+                                current_value = current_cdict.get(key, "<not present>")
+                                previous_value = previous_cdict.get(key, "<not present>")
+                                if current_value != previous_value:
                                     diff += diff_value(
                                         key,
-                                        current_cdict[key],
-                                        previous_cdict[key],
+                                        current_value,
+                                        previous_value,
                                     ) + "\n"
                             for line in diff.splitlines():
                                 output += "{x} {line}\n".format(
