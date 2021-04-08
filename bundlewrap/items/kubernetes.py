@@ -175,7 +175,21 @@ class KubernetesItem(Item, metaclass=ABCMeta):
         return self._manifest_dict['metadata']['name']
 
     def sdict(self):
-        result = self.run_local(self._kubectl + ["get", "-o", "json", self.KIND, self.resource_name])
+        # Include apiVersion in object name to stop k8s from chosing an
+        # apiVersion randomly.
+        version_spec = [self.KIND]
+        if '/' in self._manifest_dict['apiVersion']:
+            group, version = self._manifest_dict['apiVersion'].split('/')
+            version_spec.append(version)
+            version_spec.append(group)
+        else:
+            version_spec.append(self._manifest_dict['apiVersion'])
+            # Yes, it has to be something like:
+            # kubectl ... get -o json Secret.v1./token
+            version_spec.append('')
+        request_name = '{}/{}'.format('.'.join(version_spec), self.resource_name)
+
+        result = self.run_local(self._kubectl + ["get", "-o", "json", request_name])
         if result.return_code == 0:
             full_json_response = json.loads(result.stdout.decode('utf-8'))
             if full_json_response.get("status", {}).get("phase") == "Terminating":
