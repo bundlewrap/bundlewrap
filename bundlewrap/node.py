@@ -480,7 +480,7 @@ class Node:
         OS_FAMILY_REDHAT
 
     OS_FAMILY_UNIX = OS_FAMILY_BSD + OS_FAMILY_LINUX
-    OS_KNOWN = OS_FAMILY_UNIX + ('kubernetes',)
+    OS_KNOWN = OS_FAMILY_UNIX + ('kubernetes', 'routeros')
 
     def __init__(self, name, attributes=None):
         if attributes is None:

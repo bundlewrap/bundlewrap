@@ -14,7 +14,7 @@ from bundlewrap.exceptions import (
     ItemDependencyError,
     ItemSkipped,
 )
-from bundlewrap.utils import cached_property
+from bundlewrap.utils import cached_property, Fault
 from bundlewrap.utils.dicts import diff_keys, diff_value, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import blue, bold, italic, wrap_question
@@ -103,6 +103,7 @@ class Item:
     BUNDLE_ATTRIBUTE_NAME = None
     ITEM_ATTRIBUTES = {}
     ITEM_TYPE_NAME = None
+    REJECT_UNKNOWN_ATTRIBUTES = True
     REQUIRED_ATTRIBUTES = []
     SKIP_REASON_CMDLINE = 1
     SKIP_REASON_DEP_FAILED = 2
@@ -207,6 +208,18 @@ class Item:
                 ))
             except FaultUnavailable:
                 self._faults_missing_for_attributes.add('when_creating/' + attribute_name)
+
+        if not self.REJECT_UNKNOWN_ATTRIBUTES:
+            for key, value in attributes.items():
+                if key in BUILTIN_ITEM_ATTRIBUTES:
+                    continue
+                if isinstance(value, Fault):
+                    try:
+                        value = value.value
+                    except FaultUnavailable:
+                        self._faults_missing_for_attributes.add(key)
+                        continue
+                self.attributes.setdefault(key, value)
 
         if self.cascade_skip is None:
             self.cascade_skip = not (self.skip or self.triggered or self.unless)
@@ -384,31 +397,33 @@ class Item:
                 item=item_id,
                 bundle=bundle.name,
             ))
-        invalid_attributes = set(attributes.keys()).difference(
-            set(cls.ITEM_ATTRIBUTES.keys()).union(
-                set(BUILTIN_ITEM_ATTRIBUTES.keys())
-            ),
-        )
-        if invalid_attributes:
-            raise BundleError(_(
-                "invalid attribute(s) for '{item}' in bundle '{bundle}': {attrs}"
-            ).format(
-                item=item_id,
-                bundle=bundle.name,
-                attrs=", ".join(invalid_attributes),
-            ))
 
-        invalid_attributes = set(attributes.get('when_creating', {}).keys()).difference(
-            set(cls.WHEN_CREATING_ATTRIBUTES.keys())
-        )
-        if invalid_attributes:
-            raise BundleError(_(
-                "invalid when_creating attribute(s) for '{item}' in bundle '{bundle}': {attrs}"
-            ).format(
-                item=item_id,
-                bundle=bundle.name,
-                attrs=", ".join(invalid_attributes),
-            ))
+        if cls.REJECT_UNKNOWN_ATTRIBUTES:
+            invalid_attributes = set(attributes.keys()).difference(
+                set(cls.ITEM_ATTRIBUTES.keys()).union(
+                    set(BUILTIN_ITEM_ATTRIBUTES.keys())
+                ),
+            )
+            if invalid_attributes:
+                raise BundleError(_(
+                    "invalid attribute(s) for '{item}' in bundle '{bundle}': {attrs}"
+                ).format(
+                    item=item_id,
+                    bundle=bundle.name,
+                    attrs=", ".join(invalid_attributes),
+                ))
+
+            invalid_attributes = set(attributes.get('when_creating', {}).keys()).difference(
+                set(cls.WHEN_CREATING_ATTRIBUTES.keys())
+            )
+            if invalid_attributes:
+                raise BundleError(_(
+                    "invalid when_creating attribute(s) for '{item}' in bundle '{bundle}': {attrs}"
+                ).format(
+                    item=item_id,
+                    bundle=bundle.name,
+                    attrs=", ".join(invalid_attributes),
+                ))
 
     @classmethod
     def _validate_name(cls, bundle, name):

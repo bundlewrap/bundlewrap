@@ -53,6 +53,7 @@ nav:
   - pkg_zypper: items/pkg_zypper.md
   - postgres_db: items/postgres_db.md
   - postgres_role: items/postgres_role.md
+  - routeros: items/routeros.md
   - svc_openbsd: items/svc_openbsd.md
   - svc_openrc: items/svc_openrc.md
   - svc_systemd: items/svc_systemd.md

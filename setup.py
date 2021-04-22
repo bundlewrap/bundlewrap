@@ -42,6 +42,7 @@ setup(
         "passlib",
         "pyyaml",
         "requests >= 1.0.0",
+        "routeros",
         "tomlkit",
     ],
     zip_safe=False,

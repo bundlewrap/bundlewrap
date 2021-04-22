@@ -40,11 +40,13 @@ GROUP_ATTR_DEFAULTS = {
     # soon as it appears in the repo - which is probably not what
     # people want.
     'os_version': (0,),
+    'password': None,
     # On some nodes, we maybe have pip2 and pip3 installed, but there's
     # no way of knowing which one the user wants. Or maybe there's only
     # one of them, but there's no symlink to pip, only pip3.
     'pip_command': 'pip',
     'use_shadow_passwords': True,
+    'username': None,
 }
 
 GROUP_ATTR_TYPES = {
@@ -61,11 +63,13 @@ GROUP_ATTR_TYPES = {
     'metadata': dict,
     'os': str,
     'os_version': TUPLE_OF_INTS,
+    'password': (str, type(None)),
     'pip_command': str,
     'subgroups': COLLECTION_OF_STRINGS,
     'subgroup_patterns': COLLECTION_OF_STRINGS,
     'supergroups': COLLECTION_OF_STRINGS,
     'use_shadow_passwords': bool,
+    'username': (str, type(None)),
 }
 
 

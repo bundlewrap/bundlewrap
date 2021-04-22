@@ -139,6 +139,12 @@ Tuples of integers can be used for easy comparison of versions: `(12, 4) < (16, 
 
 <br>
 
+### username and password
+
+Currently only used for RouterOS.
+
+<br>
+
 ## OS compatibility overrides
 
 ### cmd_wrapper_outer
