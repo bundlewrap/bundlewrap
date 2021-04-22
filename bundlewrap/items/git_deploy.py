@@ -30,7 +30,7 @@ def is_ref(rev):
     return False
 
 
-def clone_to_dir(remote_url, rev):
+def clone_to_dir(remote_url, rev, init_submodules: bool = False):
     """
     Clones the given URL to a temporary directory, using a shallow clone
     if the given revision is definitely not a commit hash. Clones to
@@ -100,6 +100,25 @@ def clone_to_dir(remote_url, rev):
                 repo_dir=repo_dir,
                 pid=getpid(),
             ))
+
+            if init_submodules:
+                io.debug(_("{pid}: Updating submodules for {repo_dir}").format(
+                    repo_dir=repo_dir,
+                    pid=getpid(),
+                ))
+                git_command(
+                    ['submodule', 'init'],
+                    repo_dir,
+                )
+                git_command(
+                    ['submodule', 'update'],
+                    repo_dir,
+                )
+                io.debug(_("{pid}: Updated submodules for {repo_dir}").format(
+                    repo_dir=repo_dir,
+                    pid=getpid(),
+                ))
+
     finally:
         rmdir(lock_dir)
         io.debug(_("{pid}: Released lock on {lock_dir}").format(
@@ -212,7 +231,11 @@ class GitDeploy(Item):
     @cached_property
     def _repo_dir(self):
         if "://" in self.attributes['repo']:
-            repo_dir, remove_dir = clone_to_dir(self.attributes['repo'], self.attributes['rev'])
+            repo_dir, remove_dir = clone_to_dir(
+                self.attributes['repo'],
+                self.attributes['rev'],
+                self.attributes.get('init_submodules', False),
+            )
             if remove_dir is not None:
                 io.debug(_("registering {} for deletion on exit").format(remove_dir))
                 at_exit(rmtree, remove_dir, ignore_errors=True)
