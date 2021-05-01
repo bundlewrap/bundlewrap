@@ -39,6 +39,7 @@ def download(
     remote_path,
     local_path,
     add_host_keys=False,
+    username=None,
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
@@ -52,6 +53,7 @@ def download(
         hostname,
         "cat {}".format(quote(remote_path)),  # See issue #39.
         add_host_keys=add_host_keys,
+        username=username,
         wrapper_inner=wrapper_inner,
         wrapper_outer=wrapper_outer,
     )
@@ -200,6 +202,7 @@ def run(
         255,  # SSH error
     ),
     log_function=None,
+    username=None,  # SSH auth
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
@@ -212,6 +215,8 @@ def run(
         "-o", "PasswordAuthentication=no",
         "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
     ]
+    if username:
+        ssh_command += ["-l", str(username)]
     extra_args = environ.get("BW_SSH_ARGS", "").strip()
     if extra_args:
         ssh_command.extend(split(extra_args))
@@ -249,6 +254,7 @@ def upload(
     mode=None,
     owner="",
     ignore_failure=False,
+    username=None,
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
@@ -268,7 +274,10 @@ def upload(
     if extra_args:
         scp_command.extend(split(extra_args))
     scp_command.append(local_path)
-    scp_command.append("{}:{}".format(hostname, temp_filename))
+    if username:
+        scp_command.append(f"{username}@{hostname}:{temp_filename}")
+    else:
+        scp_command.append(f"{hostname}:{temp_filename}")
 
     scp_process = run_local(scp_command)
 
