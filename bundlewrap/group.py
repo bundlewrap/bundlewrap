@@ -5,7 +5,7 @@ import re
 from tomlkit import dumps as toml_dump, parse as toml_parse
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
-from .utils import cached_property, error_context, get_file_contents, names
+from .utils import cached_property, error_context, Fault, get_file_contents, names
 from .utils.dicts import (
     dict_to_toml,
     hash_statedict,
@@ -63,13 +63,13 @@ GROUP_ATTR_TYPES = {
     'metadata': dict,
     'os': str,
     'os_version': TUPLE_OF_INTS,
-    'password': (str, type(None)),
+    'password': (Fault, str, type(None)),
     'pip_command': str,
     'subgroups': COLLECTION_OF_STRINGS,
     'subgroup_patterns': COLLECTION_OF_STRINGS,
     'supergroups': COLLECTION_OF_STRINGS,
     'use_shadow_passwords': bool,
-    'username': (str, type(None)),
+    'username': (Fault, str, type(None)),
 }
 
 
