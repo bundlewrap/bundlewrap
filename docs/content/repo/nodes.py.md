@@ -139,9 +139,15 @@ Tuples of integers can be used for easy comparison of versions: `(12, 4) < (16, 
 
 <br>
 
-### username and password
+### password
 
-Currently only used for RouterOS.
+Which password to use when connecting to the node. Currently only supported for RouterOS.
+
+<br>
+
+### username
+
+Which username to use when connecting to the node. Leave this unset to use SSH configuration instead (recommended).
 
 <br>
 
