@@ -1,3 +1,11 @@
+# 4.8.0
+
+2021-05-02
+
+* added support for RouterOS
+* fixed k8s objects not being retrieved with the correct apiVersion
+
+
 # 4.7.1
 
 2021-03-29
