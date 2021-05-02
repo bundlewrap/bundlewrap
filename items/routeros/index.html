@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>action - BundleWrap</title>
+        <title>routeros - BundleWrap</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -144,7 +144,7 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="./" class="dropdown-item active">action</a>
+    <a href="../action/" class="dropdown-item">action</a>
 </li>
                                     
 <li>
@@ -220,7 +220,7 @@
 </li>
                                     
 <li>
-    <a href="../routeros/" class="dropdown-item">routeros</a>
+    <a href="./" class="dropdown-item active">routeros</a>
 </li>
                                     
 <li>
@@ -286,17 +286,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../../repo/libs/" class="nav-link">
+                                <a rel="prev" href="../postgres_role/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../directory/" class="nav-link">
+                                <a rel="next" href="../svc_openbsd/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/items/action.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/items/routeros.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -316,34 +316,14 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#actions" class="nav-link">Actions</a>
+            <li class="nav-item" data-level="1"><a href="#routeros-items" class="nav-link">RouterOS items</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             
             <li class="nav-item" data-level="1"><a href="#attribute-reference" class="nav-link">Attribute reference</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#command" class="nav-link">command</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#data_stdin" class="nav-link">data_stdin</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#expected_return_code" class="nav-link">expected_return_code</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#expected_stdout" class="nav-link">expected_stdout</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#expected_stderr" class="nav-link">expected_stderr</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#interactive" class="nav-link">interactive</a>
+            <li class="nav-item" data-level="2"><a href="#delete" class="nav-link">delete</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -354,44 +334,58 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="actions">Actions</h1>
-<p>Actions will be run on every <code>bw apply</code>. They differ from regular items in that they cannot be "correct" in the first place. They can only succeed or fail.</p>
-<pre><code>actions = {
-    'check_if_its_still_linux': {
-        'command': "uname",
-        'expected_return_code': 0,
-        'expected_stdout': "Linux\n",
+<h1 id="routeros-items">RouterOS items</h1>
+<p>Manages RouterOS configuration through the API (port 8728). You can address every configuration exposed by the API by constructing the item name and attributes accordingly. If you haven't already, familiarize yourself with the CLI over SSH first. Use it as a reference when composing items in your bundles. <strong>Don't forget to set the <code>os</code> attribute of your node to <code>routeros</code> and also set the <code>username</code> and <code>password</code> attributes.</strong></p>
+<pre><code>routeros = {
+    "/ip/dns": {
+        "servers": "8.8.8.8",
+    },
+    "/interface/vlan?name=vlan6": {
+        "vlan-id": "6",
+        "interface": "bridge",
+        "needs": {
+            "routeros:/interface/bridge?name=bridge",
+        },
+    },
+    "/interface/vlan?name=vlan7": {
+        "delete": True,
+    },
+    "/interface/bridge?name=bridge": {},
+    "/interface/bridge/port?interface=ether8": {
+        "bridge": "bridge",
+        "needs": {
+            "routeros:/interface/bridge?name=bridge",
+        },
+    },
+    "/interface/bridge/vlan?vlan-ids=6": {
+        "bridge": "bridge",
+        "needs": {
+            "routeros:/interface/bridge?name=bridge",
+        },
+        "tagged": {
+            "ether10",
+            "ether11",
+            "ether12",
+        },
+        "untagged": {
+            "ether13",
+            "ether14",
+            "ether15",
+        },
     },
 }
 </code></pre>
+<p>Note that when you're dealing with a list of things, item names have two parts, separated by a <code>?</code> character. The first part determines which kind of item is addressed, the second part is a simple <code>key=value</code> query that MUST return exactly one entry.</p>
 <p><br><br></p>
 <h1 id="attribute-reference">Attribute reference</h1>
 <p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <hr>
 
-<h2 id="command">command</h2>
-<p>The only required attribute. This is the command that will be run on the node with root privileges.</p>
+<p><strong>BundleWrap will accept any attributes for these items and pass them through to the RouterOS API.</strong> All attribute values can be passed as strings. If given as integers or booleans, BundleWrap will convert them to strings for you. If given a set, list, or tuple of strings, BundleWrap will join those strings with commas.</p>
 <hr>
 
-<h2 id="data_stdin">data_stdin</h2>
-<p>You can pipe data directly to the command running on the node. To do so, use this attribute. If it's a string or unicode object, it will always be encoded as UTF-8. Alternatively, you can use raw bytes.</p>
-<hr>
-
-<h2 id="expected_return_code">expected_return_code</h2>
-<p>Defaults to <code>0</code>. If the return code of your command is anything else, the action is considered failed. You can also specify a list, set or tuple and the action is considered failed if the command's return code is not contained in that enumeration. You can also set this to <code>None</code> and any return code will be accepted.</p>
-<hr>
-
-<h2 id="expected_stdout">expected_stdout</h2>
-<p>If this is given, the stdout output of the command must match the given string or the action is considered failed.</p>
-<hr>
-
-<h2 id="expected_stderr">expected_stderr</h2>
-<p>Same as <code>expected_stdout</code>, but with stderr.</p>
-<hr>
-
-<h2 id="interactive">interactive</h2>
-<p>If set to <code>True</code>, this action will be skipped in non-interactive mode. If set to <code>False</code>, this action will always be executed without asking (even in interactive mode). Defaults to <code>None</code>.</p>
-<div class="alert alert-warning">Think hard before setting this to <code>False</code>. People might assume that interactive mode won't do anything without their consent.</div></div>
+<h2 id="delete">delete</h2>
+<p>When set to <code>True</code>, this item will be removed from the system. When using <code>delete</code>, no other attributes are allowed.</p></div>
             </div>
         </div>
 

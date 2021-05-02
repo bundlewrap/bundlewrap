@@ -220,6 +220,10 @@
 </li>
                                     
 <li>
+    <a href="../../items/routeros/" class="dropdown-item">routeros</a>
+</li>
+                                    
+<li>
     <a href="../../items/svc_openbsd/" class="dropdown-item">svc_openbsd</a>
 </li>
                                     
@@ -439,6 +443,12 @@ nodes['node-1'] = {
 <h3 id="os_version">os_version</h3>
 <p>Set this to your OS version. Note that it must be a tuple of integers, e.g. if you're running Ubuntu 16.04 LTS, it should be <code>(16, 4)</code>.</p>
 <p>Tuples of integers can be used for easy comparison of versions: <code>(12, 4) &lt; (16, 4)</code></p>
+<p><br></p>
+<h3 id="password">password</h3>
+<p>Which password to use when connecting to the node. Currently only supported for RouterOS.</p>
+<p><br></p>
+<h3 id="username">username</h3>
+<p>Which username to use when connecting to the node. Leave this unset to use SSH configuration instead (recommended).</p>
 <p><br></p>
 <h2 id="os-compatibility-overrides">OS compatibility overrides</h2>
 <h3 id="cmd_wrapper_outer">cmd_wrapper_outer</h3>
