@@ -49,8 +49,8 @@ def _colorize_path(
     hide_node,
 ):
     if not isinstance(value_at_key_path(metadata, path), (dict, list, tuple, set)):
-        # only last source relevant for atomic types
-        sources = [sources[-1]]
+        # only highest-priority source relevant for atomic types
+        sources = [sources[0]]
     sources_filtered = False
     for src in sources.copy():
         if (
