@@ -211,6 +211,7 @@ def run(
     """
     ssh_command = [
         "ssh",
+        "-o", "BatchMode=yes",
         "-o", "KbdInteractiveAuthentication=no",
         "-o", "PasswordAuthentication=no",
         "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
@@ -267,6 +268,7 @@ def upload(
 
     scp_command = [
         "scp",
+        "-o", "BatchMode=yes",
         "-o",
         "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
     ]
