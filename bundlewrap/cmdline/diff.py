@@ -232,6 +232,46 @@ def hooked_diff_single_item(repo, node, item, intermissions, epilogues):
         ))
 
 
+def hooked_diff_config_single_node(repo, node, intermissions, epilogues):
+    item_hashes_before = {
+        item.id: item.hash() for item in node.items
+        if item.ITEM_TYPE_NAME != 'action'
+    }
+
+    for intermission in intermissions:
+        intermission()
+
+    after_repo = Repository(repo.path)
+    after_node = after_repo.get_node(node.name)
+
+    item_hashes_after = {
+        item.id: item.hash() for item in after_node.items
+        if item.ITEM_TYPE_NAME != 'action'
+    }
+
+    for epilogue in epilogues:
+        epilogue()
+
+    item_hashes_before = sorted(
+        ["{}\t{}".format(i, h) for i, h in item_hashes_before.items()]
+    )
+    item_hashes_after = sorted(
+        ["{}\t{}".format(i, h) for i, h in item_hashes_after.items()]
+    )
+    io.stdout("\n".join(
+        filter(
+            lambda line: line.startswith("+") or line.startswith("-"),
+            unified_diff(
+                item_hashes_before,
+                item_hashes_after,
+                fromfile=_("before"),
+                tofile=_("after"),
+                lineterm='',
+                n=0,
+            ),
+        ),
+    ))
+
 
 def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):
     nodes_config_before = {}
@@ -331,6 +371,15 @@ def bw_diff(repo, args):
             if args['prompt']:
                 intermissions.append(intermission)
             hooked_diff_single_item(repo, target_nodes[0], args['item'], intermissions, epilogues)
+        elif len(target_nodes) == 1:
+            def intermission():
+                io.stdout(_("{x} Took a snapshot of that node.").format(x=blue("i")))
+                io.stdout(_("{x} You may now make changes to your repo.").format(x=blue("i")))
+                if not io.ask(_("{x} Ready to proceed? (n to cancel)").format(x=blue("?")), True):
+                    exit(1)
+            if args['prompt']:
+                intermissions.append(intermission)
+            hooked_diff_config_single_node(repo, target_nodes[0], intermissions, epilogues)
         else:
             def intermission():
                 io.stdout(_("{x} Took a snapshot of those nodes.").format(x=blue("i")))
