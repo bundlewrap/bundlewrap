@@ -320,8 +320,8 @@ def format_item_command_results(results):
         stderr = results[i]['result'].stderr_text.strip()
 
         # show command
-        output += "\n{b}".format(b=red('│'))
-        output += "\n{b} {command} (return code: {code}{no_output})".format(
+        output += "{b}".format(b=red('│'))
+        output += "\n{b} {command} (return code: {code}{no_output})\n".format(
             b=red('├─'),
             command=bold(results[i]['command']),
             code=bold(results[i]['result'].return_code),
@@ -331,7 +331,7 @@ def format_item_command_results(results):
         # show output
         lines = ""
         if stdout or stderr:
-            output += "\n{b}".format(b=red("│ "))
+            lines += "\n"
             if stdout:
                 lines += stdout.strip()
             if stderr:
@@ -339,7 +339,7 @@ def format_item_command_results(results):
 
         output += prefix_lines(lines, red("│ "))
 
-    output += red("\n╵ ")
+    output += red("╵")
     return output.lstrip('\n')
 
 
@@ -1023,15 +1023,20 @@ def verify_items(
             # care about dependencies and therefore cannot know that looking
             # up a database user requires the database to be installed in
             # the first place.
-            io.debug("exception while verifying {}:".format(task_id))
-            io.debug(traceback)
-            io.debug(repr(exception))
-            io.stdout(_("{x} {node}  {bundle}  {item}  (unable to get status, check --debug for details)").format(
+            item = node.get_item(task_id.split(":", 2)[2])
+            output = _("{x} {node}  {bundle}  {item}  (unable to get status)\n").format(
                 bundle=bold(bundle_name),
                 item=item_id,
                 node=bold(node_name),
-                x=cyan("?"),
-            ))
+                x=bold(cyan("?")),
+            )
+            output += prefix_lines(traceback, cyan("│ "))
+            output += prefix_lines(repr(exception), cyan("│ "))
+            if item._command_results:
+                output += format_item_command_results(item._command_results)
+                # free up memory
+                del item._command_results
+            io.stderr(output)
         return None  # count this result as "unknown"
 
     def handle_result(task_id, return_value, duration):
