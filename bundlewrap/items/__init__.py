@@ -471,28 +471,6 @@ class Item:
         details = None
         start_time = datetime.now()
 
-        if self.skip:
-            status_code = self.STATUS_SKIPPED
-            details = self.SKIP_REASON_ATTR
-
-        if not self.covered_by_autoonly_selector(autoonly_selector):
-            io.debug(_(
-                "autoonly does not match {item} on {node}"
-            ).format(item=self.id, node=self.node.name))
-            status_code = self.STATUS_SKIPPED
-            details = self.SKIP_REASON_CMDLINE
-
-        if self.covered_by_autoskip_selector(autoskip_selector):
-            io.debug(_(
-                "autoskip matches {item} on {node}"
-            ).format(item=self.id, node=self.node.name))
-            status_code = self.STATUS_SKIPPED
-            details = self.SKIP_REASON_CMDLINE
-
-        if self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
-            status_code = self.STATUS_SKIPPED
-            details = self.SKIP_REASON_SOFTLOCK
-
         for item in self._precedes_items:
             if item._triggers_preceding_items(interactive=interactive):
                 io.debug(_(
@@ -505,21 +483,43 @@ class Item:
                     "preceding item {item} on {node} has NOT been triggered by {other_item}"
                 ).format(item=self.id, node=self.node.name, other_item=item.id))
 
-        if self.triggered and not self.has_been_triggered and status_code is None:
+        if self.skip:
+            status_code = self.STATUS_SKIPPED
+            details = self.SKIP_REASON_ATTR
+
+        elif self.triggered and not self.has_been_triggered:
             io.debug(_(
                 "skipping {item} on {node} because it wasn't triggered"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             details = self.SKIP_REASON_NO_TRIGGER
 
-        if status_code is None and self.cached_unless_result and status_code is None:
+        elif not self.covered_by_autoonly_selector(autoonly_selector):
+            io.debug(_(
+                "autoonly does not match {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            status_code = self.STATUS_SKIPPED
+            details = self.SKIP_REASON_CMDLINE
+
+        elif self.covered_by_autoskip_selector(autoskip_selector):
+            io.debug(_(
+                "autoskip matches {item} on {node}"
+            ).format(item=self.id, node=self.node.name))
+            status_code = self.STATUS_SKIPPED
+            details = self.SKIP_REASON_CMDLINE
+
+        elif self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
+            status_code = self.STATUS_SKIPPED
+            details = self.SKIP_REASON_SOFTLOCK
+
+        elif self.cached_unless_result:
             io.debug(_(
                 "'unless' for {item} on {node} succeeded, not fixing"
             ).format(item=self.id, node=self.node.name))
             status_code = self.STATUS_SKIPPED
             details = self.SKIP_REASON_UNLESS
 
-        if self._faults_missing_for_attributes and status_code is None:
+        elif self._faults_missing_for_attributes:
             if self.error_on_missing_fault:
                 self._raise_for_faults()
             else:
@@ -536,7 +536,7 @@ class Item:
                 status_code = self.STATUS_SKIPPED
                 details = self.SKIP_REASON_FAULT_UNAVAILABLE
 
-        if status_code is None:
+        else:
             try:
                 status_before = self.cached_status
             except FaultUnavailable:
@@ -569,7 +569,7 @@ class Item:
                             sorted(copy(status_before.keys_to_fix)),
                         )
 
-        if status_code is None:
+        if status_code is None:  # item not skipped or OK
             if not interactive:
                 with io.job(_("{node}  {bundle}  {item}").format(
                     bundle=bold(self.bundle.name),
@@ -618,7 +618,7 @@ class Item:
                     status_code = self.STATUS_SKIPPED
                     details = self.SKIP_REASON_INTERACTIVE
 
-        if status_code is None:
+        if status_code is None:  # item not skipped or OK
             status_after = self.get_status(cached=False)
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
