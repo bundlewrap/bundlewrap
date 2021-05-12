@@ -27,8 +27,9 @@ from .lock import NodeLock
 from .metadata import hash_metadata
 from .utils import cached_property, error_context, get_file_contents, names
 from .utils.dicts import (
+    dict_to_text,
     dict_to_toml,
-    diff_value,
+    diff_dict,
     hash_statedict,
     set_key_at_path,
     validate_dict,
@@ -42,6 +43,7 @@ from .utils.text import (
     format_duration,
     green,
     mark_for_translation as _,
+    prefix_lines,
     red,
     toml_clean,
     validate_name,
@@ -326,16 +328,15 @@ def format_item_command_results(results):
         )
 
         # show output
-        lines = []
+        lines = ""
         if stdout or stderr:
             output += "\n{b}".format(b=red("│ "))
             if stdout:
-                lines += stdout.strip().split('\n')
+                lines += stdout.strip()
             if stderr:
-                lines += stderr.strip().split('\n')
+                lines += stderr.strip()
 
-        for k in range(len(lines)):
-            output += "\n{b} {line}".format(b=red("│ "), line=lines[k])
+        output += prefix_lines(lines, red("│ "))
 
     output += red("\n╵ ")
     return output.lstrip('\n')
@@ -373,14 +374,8 @@ def format_item_result(
                 status=status,
                 x=bold(red("✘")),
             )
-            diff = "\n"
-            for key in sorted(details[2]):
-                diff += diff_value(key, details[1][key], details[0][key]) + "\n"
-            for line in diff.splitlines():
-                output += "{x} {line}\n".format(
-                    line=line,
-                    x=red("│"),
-                )
+            diff = diff_dict(details[1], details[0])
+            output += prefix_lines(diff, f"{red('│')} ")
             output += red("╵")
             return output
         else:
@@ -425,17 +420,13 @@ def format_item_result(
                 status=status,
             )
             diff = "\n"
-            if created or deleted:
-                for key, value in sorted(details.items()):
-                    diff += f"{bold(key)}  {value}\n"
+            if created:
+                diff += dict_to_text(details, value_color=green)
+            elif deleted:
+                diff += dict_to_text(details, value_color=red)
             else:
-                for key in sorted(details[2]):
-                    diff += diff_value(key, details[1][key], details[0][key]) + "\n"
-            for line in diff.splitlines():
-                output += "{x} {line}\n".format(
-                    line=line,
-                    x=green("│"),
-                )
+                diff += diff_dict(details[1], details[0])
+            output += prefix_lines(diff, f"{green('│')} ")
             output += green("╵")
             return output
         else:
@@ -1046,12 +1037,12 @@ def verify_items(
                 details_text = ", ".join(sorted(display[2]))
             if show_diff:
                 diff = "\n"
-                if item_status.must_be_created or item_status.must_be_deleted:
-                    for key, value in sorted(display.items()):
-                        diff += f"{bold(key)}  {value}\n"
+                if item_status.must_be_created:
+                    diff += dict_to_text(display, value_color=green)
+                elif item_status.must_be_deleted:
+                    diff += dict_to_text(display, value_color=red)
                 else:
-                    for key in sorted(display[2]):
-                        diff += diff_value(key, display[1][key], display[0][key]) + "\n"
+                    diff += diff_dict(display[1], display[0])
                 output = "{x} {node}  {bundle}  {item}  {details}\n".format(
                     bundle=bold(bundle_name),
                     details=details_text,
@@ -1059,11 +1050,7 @@ def verify_items(
                     node=bold(node_name),
                     x=red("✘"),
                 )
-                for line in diff.splitlines():
-                    output += "{x} {line}\n".format(
-                        line=line,
-                        x=red("│"),
-                    )
+                output += prefix_lines(diff, red('│ '))
                 io.stderr(output + red("╵"))
             else:
                 io.stderr("{x} {node}  {bundle}  {item}  {details}".format(

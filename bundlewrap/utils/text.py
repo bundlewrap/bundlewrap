@@ -146,6 +146,13 @@ def mark_for_translation(s):
 _ = mark_for_translation
 
 
+def prefix_lines(lines, prefix):
+    output = ""
+    for line in lines.splitlines():
+        output += prefix + line + "\n"
+    return output
+
+
 def randstr(length=24):
     """
     Returns a random alphanumeric string of the given length.

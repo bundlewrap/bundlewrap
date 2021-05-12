@@ -7,8 +7,8 @@ from ..itemqueue import ItemTestQueue
 from ..metadata import check_for_metadata_conflicts, metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import count_items, get_target_nodes
-from ..utils.dicts import diff_value, diff_value_text
-from ..utils.text import bold, green, mark_for_translation as _, red, yellow
+from ..utils.dicts import diff_dict, diff_text
+from ..utils.text import bold, green, mark_for_translation as _, prefix_lines, red, yellow
 from ..utils.ui import io, QUIT_EVENT
 
 
@@ -183,29 +183,14 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
                             continue  # actions don't hash :'(
                         if item.hash() != previous_item.hash():
                             current_cdict = item.display_on_create(item.cdict().copy())
-                            current_cdict_keys = set(current_cdict.keys())
                             previous_cdict = previous_item.display_on_create(previous_item.cdict().copy())
-                            previous_cdict_keys = set(previous_cdict.keys())
                             output = _("{x} {node}  {item} changed:\n").format(
                                 x=red("✘"),
                                 node=bold(node.name),
                                 item=item.id,
                             )
-                            diff = "\n"
-                            for key in sorted(current_cdict_keys | previous_cdict_keys):
-                                current_value = current_cdict.get(key, "<not present>")
-                                previous_value = previous_cdict.get(key, "<not present>")
-                                if current_value != previous_value:
-                                    diff += diff_value(
-                                        key,
-                                        current_value,
-                                        previous_value,
-                                    ) + "\n"
-                            for line in diff.splitlines():
-                                output += "{x} {line}\n".format(
-                                    line=line,
-                                    x=red("│"),
-                                )
+                            diff = diff_dict(current_cdict, previous_cdict)
+                            output += prefix_lines(diff, red("│ "))
                             output += red("╵")
                             io.stderr(output)
                     exit(1)
@@ -224,7 +209,7 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
                     ).format(node=bold(node.name), x=red("✘")))
                     previous_json = metadata_to_json(first_run_nodes[node.name].metadata)
                     current_json = metadata_to_json(node.metadata)
-                    io.stderr(diff_value_text("", previous_json, current_json))
+                    io.stderr(diff_text(previous_json, current_json))
                     exit(1)
                 io.progress_advance()
 

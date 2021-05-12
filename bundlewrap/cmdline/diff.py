@@ -1,13 +1,23 @@
+from copy import copy
 from difflib import unified_diff
 from sys import exit
 
-from ..items.files import DIFF_MAX_FILE_SIZE
+from ..exceptions import NoSuchItem
 from ..metadata import metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
-from ..utils.dicts import diff_keys, diff_value
+from ..utils.dicts import diff_dict, dict_to_text
 from ..utils.scm import get_git_branch, get_git_rev, set_git_rev
-from ..utils.text import force_text, mark_for_translation as _, red, blue, yellow
+from ..utils.text import (
+    bold,
+    force_text,
+    green,
+    mark_for_translation as _,
+    prefix_lines,
+    red,
+    blue,
+    yellow,
+)
 from ..utils.ui import io, QUIT_EVENT
 
 from subprocess import check_call
@@ -27,27 +37,10 @@ def diff_metadata(node_a, node_b):
 
 def diff_item(node_a, node_b, item):
     item_a = node_a.get_item(item)
-    item_a_dict = item_a.cdict()
+    item_a_dict = item_a.display_on_create(item_a.cdict().copy())
     item_b = node_b.get_item(item)
-    item_b_dict = item_b.cdict()
-
-    if (
-        item.startswith("file:")
-        and item_a.attributes['content_type'] not in ('base64', 'binary')
-        and item_b.attributes['content_type'] not in ('base64', 'binary')
-        and len(item_a.content) < DIFF_MAX_FILE_SIZE
-        and len(item_b.content) < DIFF_MAX_FILE_SIZE
-    ):
-        del item_a_dict['content_hash']
-        del item_b_dict['content_hash']
-        item_a_dict['content'] = item_a.content
-        item_b_dict['content'] = item_b.content
-
-    relevant_keys = diff_keys(item_a_dict, item_b_dict)
-    io.stdout("\n".join(
-        diff_value(key, item_a_dict[key], item_b_dict[key])
-        for key in relevant_keys
-    ))
+    item_b_dict = item_b.display_on_create(item_b.cdict().copy())
+    io.stdout(diff_dict(item_a_dict, item_b_dict))
 
 
 def diff_node(node_a, node_b):
@@ -88,10 +81,11 @@ def command_closure(command):
 def git_checkout_closure(rev, detach=False):
     def run_it():
         io.stderr(_(
-            "{x} Switching to git rev: {rev}"
+            "{x} {git}  switching to rev: {rev}"
         ).format(
+            x=blue("i"),
+            git=bold("git"),
             rev=rev,
-            x=yellow("i"),
         ))
         set_git_rev(rev, detach=detach)
 
@@ -162,43 +156,81 @@ def hooked_diff_metadata_multiple_nodes(repo, nodes, intermissions, epilogues):
 
 
 def hooked_diff_single_item(repo, node, item, intermissions, epilogues):
-    item_before = node.get_item(item)
-    item_before_dict = item_before.cdict()
-    item_before_diffable = False
-    item_before_content = None
-
-    if (
-        item.startswith("file:")
-        and item_before.attributes['content_type'] not in ('base64', 'binary')
-        and len(item_before.content) < DIFF_MAX_FILE_SIZE
-    ):
-        item_before_diffable = True
-        item_before_content = item_before.content
+    try:
+        item_before = node.get_item(item)
+    except NoSuchItem:
+        item_before = None
+        item_before_dict = None
+    else:
+        item_before_dict = item_before.cdict()
+        if item_before_dict:
+            item_before_dict = item_before.display_on_create(copy(item_before_dict))
 
     for intermission in intermissions:
         intermission()
 
     repo_after = Repository(repo.path)
     node_after = repo_after.get_node(node.name)
-    item_after = node_after.get_item(item)
-    item_after_dict = item_after.cdict()
-
-    if (
-        item.startswith("file:")
-        and item_before_diffable
-        and item_after.attributes['content_type'] not in ('base64', 'binary')
-        and len(item_after.content) < DIFF_MAX_FILE_SIZE
-    ):
-        del item_before_dict['content_hash']
-        del item_after_dict['content_hash']
-        item_before_dict['content'] = item_before_content
-        item_after_dict['content'] = item_after.content
-
-    relevant_keys = diff_keys(item_before_dict, item_after_dict)
-    io.stdout(item_before.ask(item_after_dict, item_before_dict, relevant_keys))
+    try:
+        item_after = node_after.get_item(item)
+    except NoSuchItem:
+        item_after = None
+        item_after_dict = None
+    else:
+        item_after_dict = item_after.cdict()
+        if item_after_dict:
+            item_after_dict = item_after.display_on_create(copy(item_after_dict))
 
     for epilogue in epilogues:
         epilogue()
+
+    if item_before is None and item_after is None:
+        io.stderr(_("{x} {node}  {item}  not found anywhere").format(
+            x=bold(red("!")),
+            node=bold(node.name),
+            item=bold(item),
+        ))
+        exit(1)
+    if item_before is None:
+        io.stdout(_("{x} {node}  {item}  not found previously").format(
+            x=bold(yellow("!")),
+            node=bold(node.name),
+            item=bold(item),
+        ))
+    if item_before_dict and item_after_dict:
+        io.stdout(
+            f"{bold(blue('i'))} {bold(node.name)}  {bold(item_before.bundle.name)}  {item}\n" +
+            prefix_lines(
+                "\n" + diff_dict(item_before_dict, item_after_dict),
+                yellow("│ "),
+            ).rstrip("\n") +
+            "\n" + yellow("╵")
+        )
+    elif item_before_dict:
+        io.stdout(
+            f"{bold(red('-'))} {bold(node.name)}  {bold(item_before.bundle.name)}  {item}\n" +
+            prefix_lines(
+                "\n" + dict_to_text(item_before_dict, value_color=red),
+                red("│ "),
+            ).rstrip("\n") +
+            "\n" + red("╵")
+        )
+    elif item_after_dict:
+        io.stdout(
+            f"{bold(green('+'))} {bold(node.name)}  {bold(item_after.bundle.name)}  {item}\n" +
+            prefix_lines(
+                "\n" + dict_to_text(item_after_dict),
+                green("│ "),
+            ).rstrip("\n") +
+            "\n" + green("╵")
+        )
+    if item_after is None:
+        io.stdout(_("{x} {node}  {item}  not found after").format(
+            x=bold(yellow("!")),
+            node=bold(node.name),
+            item=bold(item),
+        ))
+
 
 
 def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):

@@ -15,9 +15,9 @@ from bundlewrap.exceptions import (
     ItemSkipped,
 )
 from bundlewrap.utils import cached_property, Fault
-from bundlewrap.utils.dicts import diff_keys, diff_value, hash_statedict, validate_statedict
+from bundlewrap.utils.dicts import dict_to_text, diff_dict, hash_statedict, validate_statedict
 from bundlewrap.utils.text import force_text, mark_for_translation as _
-from bundlewrap.utils.text import blue, bold, italic, wrap_question
+from bundlewrap.utils.text import blue, bold, green, italic, red, wrap_question
 from bundlewrap.utils.ui import io
 from bundlewrap.operations import run_local
 
@@ -57,6 +57,18 @@ def format_comment(comment):
     return result
 
 
+def keys_to_fix(cdict, sdict):
+    if cdict is None:
+        return set()
+    if sdict is None:
+        return set(cdict.keys())
+    differing_keys = set()
+    for key, value in cdict.items():
+        if value != sdict[key]:
+            differing_keys.add(key)
+    return differing_keys
+
+
 class ItemStatus:
     """
     Holds information on a particular Item such as whether it needs
@@ -70,7 +82,7 @@ class ItemStatus:
         self.must_be_deleted = (self.sdict is not None and self.cdict is None)
         self.must_be_created = (self.cdict is not None and self.sdict is None)
         if not self.must_be_deleted and not self.must_be_created:
-            self.keys_to_fix = diff_keys(cdict, sdict)
+            self.keys_to_fix = keys_to_fix(cdict, sdict)
 
     def __repr__(self):
         return "<ItemStatus correct:{}>".format(self.correct)
@@ -580,27 +592,14 @@ class Item:
                     self.fix(status_before)
             else:
                 if status_before.must_be_created:
-                    question_text = "\n".join(
-                        f"{bold(key)}  {value}"
-                        for key, value in sorted(details.items())
-                    )
+                    question_text = dict_to_text(details, value_color=green)
                     prompt = _("Create {}?").format(bold(self.id))
                 elif status_before.must_be_deleted:
-                    question_text = "\n".join(
-                        f"{bold(key)}  {value}"
-                        for key, value in sorted(details.items())
-                    )
+                    question_text = dict_to_text(details, value_color=red)
                     prompt = _("Delete {}?").format(bold(self.id))
                 else:
                     display_cdict, display_sdict, display_keys_to_fix = details
-                    question_text = "\n".join(
-                        diff_value(
-                            key,
-                            display_sdict[key],
-                            display_cdict[key],
-                        )
-                        for key in sorted(display_keys_to_fix)
-                    )
+                    question_text = diff_dict(display_sdict, display_cdict)
                     prompt = _("Fix {}?").format(bold(self.id))
                 if self.comment:
                     question_text += format_comment(self.comment)

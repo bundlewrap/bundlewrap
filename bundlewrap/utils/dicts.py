@@ -12,12 +12,16 @@ from tomlkit.items import (
 )
 
 from . import Fault
-from .text import bold, green, red
+from .text import bold, green, red, yellow
 from .text import force_text, mark_for_translation as _
 
 
 DIFF_MAX_INLINE_LENGTH = 36
 DIFF_MAX_LINE_LENGTH = 1024
+
+
+class _MISSING_KEY:
+    pass
 
 
 class _Atomic:
@@ -55,64 +59,69 @@ def dict_to_toml(dict_obj):
     return toml_doc
 
 
-def diff_keys(sdict1, sdict2):
-    """
-    Compares the keys of two statedicts and returns the keys with
-    differing values.
-
-    Note that only keys in the first statedict are considered. If a key
-    only exists in the second one, it is disregarded.
-    """
-    if sdict1 is None:
-        return set()
-    if sdict2 is None:
-        return set(sdict1.keys())
+def diff_keys(dict1, dict2):
     differing_keys = set()
-    for key, value in sdict1.items():
-        if value != sdict2[key]:
+    for key in set(dict1.keys()) | set(dict2.keys()):
+        try:
+            if dict1[key] != dict2[key]:
+                differing_keys.add(key)
+        except KeyError:
             differing_keys.add(key)
     return differing_keys
 
 
-def diff_value_bool(title, value1, value2):
-    return diff_value_text(
-        title,
-        "yes" if value1 else "no",
-        "yes" if value2 else "no",
-    )
+def diff_normalize_bool(value):
+    return "yes" if value else "no"
 
 
-def diff_value_int(title, value1, value2):
-    return diff_value_text(
-        title,
-        "{}".format(value1),
-        "{}".format(value2),
-    )
+def diff_normalize_bytes(value):
+    return value.decode('utf-8', 'backslashreplace')
 
 
-def diff_value_list(title, value1, value2):
-    if isinstance(value1, set):
-        value1 = sorted(value1)
-        value2 = sorted(value2)
+def diff_normalize_list(value):
+    if isinstance(value, set):
+        value = sorted(value)
     else:
         # convert tuples and create copies of lists before possibly
         # appending stuff later on (see below)
-        value1 = list(value1)
-        value2 = list(value2)
+        value = list(value)
     # make sure that *if* we have lines, the last one will also end with
     # a newline
-    if value1:
-        value1.append("")
-    if value2:
-        value2.append("")
-    return diff_value_text(
-        title,
-        "\n".join([str(i) for i in value1]),
-        "\n".join([str(i) for i in value2]),
-    )
+    if value:
+        value.append("")
+    return "\n".join([str(i) for i in value])
 
 
-def diff_value_text(title, value1, value2):
+TYPE_DIFF_NORMALIZE = {
+    bool: diff_normalize_bool,
+    bytes: diff_normalize_bytes,
+    float: str,
+    int: str,
+    list: diff_normalize_list,
+    set: diff_normalize_list,
+    tuple: diff_normalize_list,
+    TOMLBool: diff_normalize_bool,
+    TOMLFloat: str,
+    TOMLInteger: str,
+    TOMLString: str,
+}
+VALID_STATEDICT_TYPES = tuple(TYPE_DIFF_NORMALIZE.keys()) + (str,)
+
+
+def diff_normalize(value):
+    if isinstance(value, str):
+        return value
+    try:
+        normalize = TYPE_DIFF_NORMALIZE[type(value)]
+    except KeyError:
+        raise TypeError(_("unable to diff {} ({})").format(
+            repr(value),
+            type(value),
+        ))
+    return normalize(value)
+
+
+def diff_text(value1, value2):
     max_length = max(len(value1), len(value2))
     value1, value2 = force_text(value1), force_text(value2)
     if (
@@ -120,19 +129,16 @@ def diff_value_text(title, value1, value2):
         "\n" not in value2
     ):
         if max_length < DIFF_MAX_INLINE_LENGTH:
-            return "{}  {} → {}".format(
-                bold(title),
+            return "{} → {}".format(
                 red(value1),
                 green(value2),
             )
         elif max_length < DIFF_MAX_LINE_LENGTH:
-            return "{}  {}\n{}→  {}".format(
-                bold(title),
+            return "  {}\n→ {}".format(
                 red(value1),
-                " " * (len(title) - 1),
                 green(value2),
             )
-    output = bold(title) + "\n"
+    output = ""
     for line in tuple(unified_diff(
         value1.splitlines(True),
         value2.splitlines(True),
@@ -151,33 +157,51 @@ def diff_value_text(title, value1, value2):
     return output.rstrip("\n")
 
 
-TYPE_DIFFS = {
-    bool: diff_value_bool,
-    bytes: diff_value_text,
-    float: diff_value_int,
-    int: diff_value_int,
-    list: diff_value_list,
-    set: diff_value_list,
-    str: diff_value_text,
-    tuple: diff_value_list,
-    TOMLBool: diff_value_bool,
-    TOMLFloat: diff_value_int,
-    TOMLInteger: diff_value_int,
-    TOMLString: diff_value_text,
-}
+def diff_value(value1, value2):
+    if value1 == _MISSING_KEY:
+        value1 = yellow(_("<missing>"))
+    if value2 == _MISSING_KEY:
+        value2 = yellow(_("<missing>"))
+    return diff_text(diff_normalize(value1), diff_normalize(value2))
 
 
-def diff_value(title, value1, value2):
-    diff_func = TYPE_DIFFS[type(value1)]
-    diff_func2 = TYPE_DIFFS[type(value2)]
-    if diff_func != diff_func2:
-        raise TypeError(_("cannot compare {} ({}) with {} ({})").format(
-            repr(value1),
-            type(value1),
-            repr(value2),
-            type(value2),
-        ))
-    return diff_func(title, value1, value2)
+def diff_dict(dict1, dict2):
+    def handle_multiline(key, diff):
+        if "\n" in diff:
+            return bold(key) + "\n" + diff + "\n"
+        else:
+            return bold(key) + "  " + diff + "\n"
+
+    output = ""
+    if dict1 is None and dict2 is None:
+        return ""
+    elif dict1 is None:
+        for key, value in sorted(dict2.items()):
+            output += handle_multiline(key, green(str(value)))
+    elif dict2 is None:
+        for key, value in sorted(dict1.items()):
+            output += handle_multiline(key, red(str(value)))
+    else:
+        for key in sorted(diff_keys(dict1, dict2)):
+            value1 = dict1.get(key, _MISSING_KEY)
+            value2 = dict2.get(key, _MISSING_KEY)
+            diff = diff_value(value1, value2)
+            output += handle_multiline(key, diff)
+
+    return output
+
+
+def dict_to_text(dict_obj, value_color=str):
+    output = ""
+    for key, value in sorted(dict_obj.items()):
+        value = diff_normalize(value)
+        if "\n" in value:
+            output += bold(key) + "\n"
+            for line in value.splitlines():
+                output += value_color(line) + "\n"
+        else:
+            output += bold(key) + "  " + value_color(value) + "\n"
+    return output.rstrip("\n")
 
 
 class FaultResolvingJSONEncoder(JSONEncoder):
@@ -413,7 +437,7 @@ def validate_statedict(sdict):
         if not isinstance(force_text(key), str):
             raise ValueError(_("non-text statedict key: {}").format(key))
 
-        if not isinstance(value, tuple(TYPE_DIFFS.keys())) and value is not None:
+        if not isinstance(value, VALID_STATEDICT_TYPES) and value is not None:
             raise ValueError(_(
                 "invalid statedict value for key '{k}': {v}"
             ).format(
@@ -423,7 +447,7 @@ def validate_statedict(sdict):
 
         if isinstance(value, (list, tuple)):
             for index, element in enumerate(value):
-                if not isinstance(element, tuple(TYPE_DIFFS.keys())) and element is not None:
+                if not isinstance(element, VALID_STATEDICT_TYPES) and element is not None:
                     raise ValueError(_(
                         "invalid element #{i} in statedict key '{k}': {e}"
                     ).format(

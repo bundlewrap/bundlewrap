@@ -16,7 +16,6 @@ from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
 from bundlewrap.utils import cached_property, hash_local_file, sha1, tempfile
-from bundlewrap.utils.dicts import diff_value_text
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
@@ -347,7 +346,7 @@ class File(Item):
             len(self.content) < DIFF_MAX_FILE_SIZE
         ):
             del cdict['content_hash']
-            cdict['content'] = diff_value_text("", "", force_text(self.content)).rstrip("\n")
+            cdict['content'] = force_text(self.content)
         del cdict['type']
         return cdict
 
@@ -363,11 +362,19 @@ class File(Item):
             keys.append('content')
             del cdict['content_hash']
             del sdict['content_hash']
-            cdict['content'] = self.content
-            sdict['content'] = get_remote_file_contents(self.node, self.name)
+            cdict['content'] = self.content.decode(self.attributes['encoding'])
+            sdict['content'] = get_remote_file_contents(
+                self.node,
+                self.name,
+            ).decode('utf-8', 'backslashreplace')
         if 'type' in keys:
             with suppress(ValueError):
                 keys.remove('content_hash')
+        if sdict:
+            del sdict['size']
+            if self.attributes['content_type'] == 'any':
+                with suppress(KeyError):
+                    del sdict['content_hash']
         return (cdict, sdict, keys)
 
     def display_on_delete(self, sdict):
@@ -377,11 +384,7 @@ class File(Item):
             sdict['size'] < DIFF_MAX_FILE_SIZE and
             path_info.is_text_file
         ):
-            sdict['content'] = diff_value_text(
-                "",
-                get_remote_file_contents(self.node, self.name),
-                "",
-            ).rstrip("\n")
+            sdict['content'] = get_remote_file_contents(self.node, self.name)
         if path_info.is_file:
             sdict['size'] = f"{sdict['size']} bytes"
         return sdict
