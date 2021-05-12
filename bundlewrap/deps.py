@@ -508,7 +508,6 @@ def prepare_dependencies(node):
     Performs all dependency preprocessing on a list of items.
     """
     for item in node.items:
-        item._check_bundle_collisions(node.items)
         item._check_loopback_dependency()
         
     items = set(node.items)  # might be a tuple from cached_property

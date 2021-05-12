@@ -191,3 +191,39 @@ def test_tag_inheritance_loop(tmpdir):
     assert "inherited" in stdout.decode()
     assert "looped" in stdout.decode()
     assert "action:dep" in stdout.decode()
+
+
+def test_duplicate_items(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1", "bundle2"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'items': {
+                    'actions': {
+                        "dupl": {
+                            'command': "true",
+                        },
+                    },
+                },
+            },
+            "bundle2": {
+                'items': {
+                    'actions': {
+                        "dupl": {
+                            'command': "true",
+                        },
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw items node1", path=str(tmpdir))
+    assert rcode == 1
+    assert "action:dupl" in stderr.decode()
+    assert "bundle1" in stderr.decode()
+    assert "bundle2" in stderr.decode()

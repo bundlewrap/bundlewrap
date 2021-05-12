@@ -259,19 +259,6 @@ class Item:
     def __repr__(self):
         return "<Item {}>".format(self.id)
 
-    def _check_bundle_collisions(self, items):
-        for item in items:
-            if item == self:
-                continue
-            if item.id == self.id:
-                raise BundleError(_(
-                    "duplicate definition of {item} in bundles '{bundle1}' and '{bundle2}'"
-                ).format(
-                    item=item.id,
-                    bundle1=item.bundle.name,
-                    bundle2=self.bundle.name,
-                ))
-
     def _check_loopback_dependency(self):
         """
         Alerts the user if they have an item depend on itself.

@@ -12,6 +12,7 @@ from .bundle import Bundle
 from .concurrency import WorkerPool
 from .deps import find_item, ItemDependencyLoop
 from .exceptions import (
+    BundleError,
     GracefulApplyException,
     ItemSkipped,
     NodeLockedException,
@@ -607,10 +608,21 @@ class Node:
 
     @cached_property
     def items(self):
+        items = {}
         if not self.dummy:
             for bundle in self.bundles:
                 for item in bundle.items:
-                    yield item
+                    if item.id in items:
+                        raise BundleError(_(
+                            "duplicate definition of {item} in bundles '{bundle1}' and '{bundle2}'"
+                        ).format(
+                            item=item.id,
+                            bundle1=item.bundle.name,
+                            bundle2=items[item.id].bundle.name,
+                        ))
+                    else:
+                        items[item.id] = item
+        return set(items.values())
 
     @cached_property
     def magic_number(self):
