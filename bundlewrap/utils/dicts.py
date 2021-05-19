@@ -98,6 +98,7 @@ TYPE_DIFF_NORMALIZE = {
     float: str,
     int: str,
     list: diff_normalize_list,
+    type(None): str,
     set: diff_normalize_list,
     tuple: diff_normalize_list,
     TOMLBool: diff_normalize_bool,
