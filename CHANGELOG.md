@@ -1,3 +1,16 @@
+# 4.8.1
+
+2021-05-19
+
+* improved exception reporting for `bw verify` and `git_deploy`
+* fixed metadata source attribution in `bw metadata -b`
+* fixed `AttributeError` in `bw diff -i -b`
+* fixed late detection of duplicate items
+* fixed `bw diff` not showing anything useful for single nodes
+* fixed and optimized checking order of item skip conditions
+* fixed garbled output in files produced by `BW_DEBUG_LOG_DIR`
+
+
 # 4.8.0
 
 2021-05-02
