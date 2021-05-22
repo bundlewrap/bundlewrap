@@ -1,10 +1,13 @@
 from base64 import b64encode, urlsafe_b64decode
 from configparser import ConfigParser
+from functools import lru_cache
 import hashlib
 import hmac
 from os import environ
 from os.path import join
+from shlex import quote
 from string import ascii_letters, punctuation, digits
+from subprocess import run, PIPE, CalledProcessError
 
 from cryptography.fernet import Fernet
 
@@ -24,6 +27,7 @@ HUMAN_CHARS_CONS = HUMAN_CHARS_START + ["bb", "bl", "cc", "ch", "ck", "dd", "dr"
                                         "ss", "st", "tl", "ts", "tt"]
 
 FILENAME_SECRETS = ".secrets.cfg"
+FILENAME_REPO_CONFIG = "repo.cfg"
 
 
 def choice_prng(lst, prng):
@@ -235,18 +239,53 @@ class SecretProxy:
         h.update(identifier.encode('utf-8'))
         return random(h.digest())
 
-    def _load_keys(self):
+    def _load_config(self, filename):
         config = ConfigParser()
-        secrets_file = join(self.repo.path, FILENAME_SECRETS)
+        config_path = join(self.repo.path, filename)
         try:
-            config.read(secrets_file)
+            config.read(config_path)
+            return config
         except IOError:
-            io.debug(_("unable to read {}").format(secrets_file))
-            return {}
+            io.debug(_("unable to read {}").format(config_path))
+            raise
+
+    def _load_keys(self):
+        config = self._load_config(FILENAME_SECRETS)
+
         result = {}
         for section in config.sections():
             result[section] = config.get(section, 'key').encode('utf-8')
         return result
+
+    def _get_password_provider(self, provider=None):
+        config = self._load_config(FILENAME_REPO_CONFIG)
+
+        if not provider:
+            provider = config['DEFAULT'].get('password_provider', None)
+
+        provider_cmd = None
+        if 'password_providers' in config:
+            provider_cmd = config['password_providers'].get(provider, None)
+
+        return provider_cmd
+
+    @lru_cache(maxsize=None)
+    def _load_password(self, identifier, provider=None, strip_whitespace=True):
+        provider_cmd = self._get_password_provider(provider)
+        if not provider_cmd:
+            raise FaultUnavailable(_(f'Password provider {provider} does not exist'))
+
+        cmd = provider_cmd.format(quote(identifier))
+        io.debug(f'calling password provider command for {identifier}: {cmd}')
+        try:
+            result = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, check=True)
+        except CalledProcessError as error:
+            raise FaultUnavailable(_(f'Password provider command failed: {error.stderr}'))
+
+        password = result.stdout.decode('utf-8')
+        if strip_whitespace:
+            password = password.strip()
+        return password
 
     def decrypt(self, cryptotext, key=None):
         return Fault(
@@ -345,4 +384,21 @@ class SecretProxy:
             identifier=identifier,
             key=key,
             length=length,
+        )
+
+    def password_from(self, identifier, provider=None, strip_whitespace=True):
+        """
+        Loads a password from an external tool (for example, pass). The external
+        provider must be specified in the repo.cfg file under the `password_providers`
+        section. The provider should specify a string which can be formatted with
+        the identifier to produce a command that will return the requested password
+        when executed. If provider is None and a default password provider is
+        specified in the repo.cfg file, the default provider will be used.
+        """
+        return Fault(
+            'bw secrets password_from',
+            self._load_password,
+            identifier=identifier,
+            provider=provider,
+            strip_whitespace=strip_whitespace,
         )
