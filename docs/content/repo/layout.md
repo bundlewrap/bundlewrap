@@ -11,6 +11,10 @@ This page describes the various subdirectories and files than can exist inside a
 
 <table>
 <tr>
+<td><a href="/repo/repo.cfg">repo.cfg</a></td>
+<td>This file contains repository-wide configuration, for example external password providers.</td>
+</tr>
+<tr>
 <td><a href="/repo/nodes.py">nodes.py</a></td>
 <td>This file tells BundleWrap what nodes (servers, VMs, ...) there are in your environment and lets you configure options such as hostnames.</td>
 </tr>

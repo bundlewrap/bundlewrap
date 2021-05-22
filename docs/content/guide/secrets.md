@@ -70,6 +70,18 @@ database_password = "${repo.vault.decrypt("gAAAA[...]mrVMA==")}"
 
 <br>
 
+## External password providers
+
+BundleWrap can also inject passwords loaded from external password providers (for example, [pass](https://www.passwordstore.org/)). The external password provider should be a script that can be called with an identifier to return the password associated with that identifier. This can be accomplished by using the `password_from` vault method:
+
+<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.password_from('my_password', provider='pass'))"
+very_secure_password
+</code></pre>
+
+The `provider` must be configured in the [repo.cfg](/repo/repo.cfg) configuration. If a provider name is not explicitly set, BundleWrap will try to use the default password provider. The `password_from` method will strip leading and trailing whitespace from the output of the provider by default; if this behavior is not desired, use the argument `strip_whitespace=False`.
+
+<br>
+
 ## Files
 
 You can also encrypt entire files:

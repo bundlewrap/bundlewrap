@@ -27,6 +27,7 @@ Should you already know your way around, just click on the part of your repo tha
 <a href="/repo/hooks">hooks/</a>
 <a href="/guide/dev_item">items/</a>
 <a href="/repo/libs">libs/</a>
+<a href="/repo/repo.cfg">repo.cfg</a>
 <a href="/guide/secrets">.secrets.cfg</a>
 <a href="/repo/groups.py">groups.py</a>
 nodes/

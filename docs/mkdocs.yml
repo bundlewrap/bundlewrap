@@ -26,6 +26,7 @@ nav:
   - Migrating to 4.0: guide/migrate_34.md
 - Repository:
   - Overview: repo/layout.md
+  - repo.cfg: repo/repo.cfg.md
   - nodes.py: repo/nodes.py.md
   - groups.py: repo/groups.py.md
   - requirements.txt: repo/requirements.txt.md
