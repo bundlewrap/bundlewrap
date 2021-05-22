@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 from contextlib import suppress
 from importlib.util import module_from_spec, spec_from_file_location
 from inspect import isabstract
@@ -40,6 +41,8 @@ DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
 FILENAME_NODES = "nodes.py"
 FILENAME_REQUIREMENTS = "requirements.txt"
+FILENAME_REPO_CONFIG = "repo.cfg"
+
 
 HOOK_EVENTS = (
     'action_run_end',
@@ -92,6 +95,11 @@ nodes = {
     """),
     FILENAME_REQUIREMENTS: "bundlewrap>={}\n".format(VERSION_STRING),
     FILENAME_SECRETS: generate_initial_secrets_cfg,
+    FILENAME_REPO_CONFIG: """
+[DEFAULT]
+
+[password_providers]
+"""
 }
 
 
@@ -548,6 +556,26 @@ class Repository(MetadataGenerator):
         self.groups_file = join(self.path, FILENAME_GROUPS)
         self.libs_dir = join(self.path, DIRNAME_LIBS)
         self.nodes_file = join(self.path, FILENAME_NODES)
+        self.secrets_file = join(self.path, FILENAME_SECRETS)
+        self.config_file = join(self.path, FILENAME_REPO_CONFIG)
 
         self.hooks = HooksProxy(self, self.hooks_dir)
         self.libs = LibsProxy(self.libs_dir)
+
+    @staticmethod
+    def _load_config(path):
+        config = ConfigParser()
+        try:
+            config.read(path)
+            return config
+        except IOError:
+            io.debug(_("unable to read {}").format(path))
+            raise
+
+    @cached_property
+    def repo_config(self):
+        return self._load_config(self.config_file)
+
+    @cached_property
+    def secrets_config(self):
+        return self._load_config(self.secrets_file)

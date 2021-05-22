@@ -1,5 +1,4 @@
 from base64 import b64encode, urlsafe_b64decode
-from configparser import ConfigParser
 from functools import lru_cache
 import hashlib
 import hmac
@@ -27,7 +26,6 @@ HUMAN_CHARS_CONS = HUMAN_CHARS_START + ["bb", "bl", "cc", "ch", "ck", "dd", "dr"
                                         "ss", "st", "tl", "ts", "tt"]
 
 FILENAME_SECRETS = ".secrets.cfg"
-FILENAME_REPO_CONFIG = "repo.cfg"
 
 
 def choice_prng(lst, prng):
@@ -239,18 +237,8 @@ class SecretProxy:
         h.update(identifier.encode('utf-8'))
         return random(h.digest())
 
-    def _load_config(self, filename):
-        config = ConfigParser()
-        config_path = join(self.repo.path, filename)
-        try:
-            config.read(config_path)
-            return config
-        except IOError:
-            io.debug(_("unable to read {}").format(config_path))
-            raise
-
     def _load_keys(self):
-        config = self._load_config(FILENAME_SECRETS)
+        config = self.repo.secrets_config
 
         result = {}
         for section in config.sections():
@@ -258,7 +246,7 @@ class SecretProxy:
         return result
 
     def _get_password_provider(self, provider=None):
-        config = self._load_config(FILENAME_REPO_CONFIG)
+        config = self.repo.repo_config
 
         if not provider:
             provider = config['DEFAULT'].get('password_provider', None)
