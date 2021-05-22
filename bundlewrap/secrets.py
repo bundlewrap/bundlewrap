@@ -261,7 +261,7 @@ class SecretProxy:
     def _load_password(self, identifier, provider=None, strip_whitespace=True):
         provider_cmd = self._get_password_provider(provider)
         if not provider_cmd:
-            raise FaultUnavailable(_(f'Password provider {provider} does not exist'))
+            raise FaultUnavailable(_(f'Password provider `{provider}` does not exist'))
 
         cmd = provider_cmd.format(quote(identifier))
         io.debug(f'calling password provider command for {identifier}: {cmd}')

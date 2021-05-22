@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE
 
 from ..bundle import FILENAME_BUNDLE, FILENAME_ITEMS
 from ..secrets import FILENAME_SECRETS
+from ..repo import FILENAME_REPO_CONFIG
 
 
 HOST_OS = {
@@ -54,6 +55,15 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
         "Fl53iG1czBcaAPOKhSiJE7RjFU9nIAGkiKDy0k_LoTc=",
         "DbYiUu5VMfrdeSiKYiAH4rDOAUISipvLSBJI-T0SpeY=",
     ))
+
+    repo_config = tmpdir.join(FILENAME_REPO_CONFIG)
+    repo_config.write("""
+[DEFAULT]
+password_provider = echo
+
+[password_providers]
+echo = echo {}
+""")
 
 
 def run(command, path=None):

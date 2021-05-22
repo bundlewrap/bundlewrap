@@ -420,3 +420,31 @@ def test_faults_equality_random_bytes_as_base64(tmpdir):
     assert stdout == b"False\n"
     assert stderr == b""
     assert rcode == 0
+
+
+def test_faults_password_from(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.password_from(\"test\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"test\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.password_from(\"test\", provider=\"echo\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"test\n"
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.password_from(\"test\", provider=\"missing\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b""
+    assert b"Password provider `missing` does not exist" in stderr
+    assert rcode == 1
