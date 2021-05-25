@@ -38,7 +38,7 @@ How the file pointed to by `source` or the string given to `content` should be i
 <tr><td><code>binary</code></td><td>file is uploaded verbatim, no content processing occurs</td></tr>
 <tr><td><code>jinja2</code></td><td>content is interpreted by the Jinja2 template engine</td></tr>
 <tr><td><code>mako</code></td><td>content is interpreted by the Mako template engine</td></tr>
-<tr><td><code>text</code> (default)</td><td>like <code>binary</code>, but will be diffed in interactive mode</td></tr>
+<tr><td><code>text</code> (default)</td><td>will be read and diffed as UTF-8, but offers no template logic</td></tr>
 </table>
 
 <hr>
@@ -57,7 +57,7 @@ When set to `True`, the path of this file will be removed. It doesn't matter if 
 
 ## encoding
 
-Encoding of the target file. Note that this applies to the remote file only, your template is still conveniently written in UTF-8 and will be converted by BundleWrap. Defaults to "utf-8". Other possible values (e.g. "latin-1") can be found [here](http://docs.python.org/2/library/codecs.html#standard-encodings).
+Encoding of the target file. Note that this applies to the remote file only, your template is still conveniently written in UTF-8 and will be converted by BundleWrap. Defaults to "utf-8". Other possible values (e.g. "latin-1") can be found [here](http://docs.python.org/2/library/codecs.html#standard-encodings). Only allowed with `content_type` `jinja2`, `mako`, or `text`.
 
 <hr>
 
