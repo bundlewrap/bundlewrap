@@ -103,6 +103,15 @@ class PipPkg(Item):
                 item=item_id,
             ))
 
+    @classmethod
+    def validate_name(cls, bundle, name):
+        if "_" in split(name)[1]:
+            raise BundleError(
+                f"Underscores are not allowed in pkg_pip names "
+                f"because pip will convert them to dashes anyway. "
+                f"Just use dashes. (pkg_pip:{name} in bundle {bundle})"
+            )
+
 
 def split_path(node, pkgname):
     virtualenv, pkgname = split(pkgname)
