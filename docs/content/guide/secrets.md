@@ -74,7 +74,7 @@ database_password = "${repo.vault.decrypt("gAAAA[...]mrVMA==")}"
 
 You can also encrypt entire files:
 
-<pre><code class="nohighlight">$ bw debug -c "repo.vault.encrypt_file('/my/secret.file', 'encrypted.file')"</code></pre>
+<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.encrypt_file('/my/secret.file', 'encrypted.file'))"</code></pre>
 
 <div class="alert alert-info">Encrypted files are always read and written relative to the <code>data/</code> subdirectory of your repo.</div>
 
@@ -94,6 +94,20 @@ If the source file is binary however (or any encoding other than UTF-8), you mus
 	        'content_type': 'base64',
 	    },
 	}
+
+<br>
+
+## External commands
+
+To retrieve secrets using a local shell command, use `vault.cmd`:
+
+<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.cmd('uname'))"
+Linux</code></pre>
+
+By default, the stdout of the given command will be decoded to text using UTF-8 and have leading and trailing whitespace stripped. To prevent this, use the `as_text` and `strip` parameters:
+
+<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.cmd('uname', as_text=False, strip=False))"
+b'Linux\n'</code></pre>
 
 <br>
 

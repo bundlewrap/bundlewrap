@@ -420,3 +420,38 @@ def test_faults_equality_random_bytes_as_base64(tmpdir):
     assert stdout == b"False\n"
     assert stderr == b""
     assert rcode == 0
+
+
+def test_cmd(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.cmd(\"echo hi\"))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"hi\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_cmd_binary_nostrip(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.cmd(\"echo hi\", as_text=False, strip=False))'",
+        path=str(tmpdir),
+    )
+    assert stdout == b"b'hi\\n'\n"
+    assert stderr == b""
+    assert rcode == 0
+
+
+def test_cmd_fail(tmpdir):
+    make_repo(tmpdir)
+
+    stdout, stderr, rcode = run(
+        "bw debug -c 'print(repo.vault.cmd(\"false\"))'",
+        path=str(tmpdir),
+    )
+    assert b"CalledProcessError" in stderr
+    assert rcode == 1
