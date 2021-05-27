@@ -1,6 +1,6 @@
 from atexit import register as at_exit
 from hashlib import md5
-from os import getenv, getpid, makedirs, mkdir, remove, rmdir, setpgrp
+from os import environ, getenv, getpid, makedirs, mkdir, remove, rmdir, setpgrp
 from os.path import isfile, join
 from shlex import quote
 from shutil import rmtree
@@ -204,6 +204,8 @@ class GitDeploy(Item):
 
         Returns stdout of the command.
         """
+        git_env = environ.copy()
+        git_env['GIT_TERMINAL_PROMPT'] = '0'
         cmdline = ["git"] + cmdline
         io.debug(_("running '{}' in {}").format(
             " ".join(cmdline),
@@ -212,7 +214,7 @@ class GitDeploy(Item):
         git_process = Popen(
             cmdline,
             cwd=repo_dir,
-            env={'GIT_TERMINAL_PROMPT': '0'},
+            env=git_env,
             preexec_fn=setpgrp,
             stderr=PIPE,
             stdout=PIPE,
