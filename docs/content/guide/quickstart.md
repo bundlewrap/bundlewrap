@@ -147,4 +147,4 @@ Here are some suggestions on what to do next:
 * explore the [command line interface](cli.md)
 * follow [@bundlewrap](https://twitter.com/bundlewrap) on Twitter
 
-Have fun! If you have any questions, feel free to drop by [on IRC](irc://irc.libera.chat/bundlewrap).
+Have fun! If you have any questions, feel free to drop by [on IRC](irc://irc.libera.chat/bundlewrap) or [GitHub](https://github.com/bundlewrap/bundlewrap/discussions).
