@@ -205,10 +205,13 @@ def run(
     username=None,  # SSH auth
     wrapper_inner="{}",
     wrapper_outer="{}",
+    user="root",  # remote user running the command
 ):
     """
     Runs a command on a remote system.
     """
+    shell_command = wrapper_outer.format(quote(wrapper_inner.format(command)), user)
+
     ssh_command = [
         "ssh",
         "-o", "BatchMode=yes",
@@ -222,7 +225,7 @@ def run(
     if extra_args:
         ssh_command.extend(split(extra_args))
     ssh_command.append(hostname)
-    ssh_command.append(wrapper_outer.format(quote(wrapper_inner.format(command))))
+    ssh_command.append(shell_command)
 
     result = run_local(
         ssh_command,

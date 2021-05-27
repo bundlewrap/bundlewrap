@@ -801,7 +801,7 @@ class Node:
         """
         return self.metadata
 
-    def run(self, command, data_stdin=None, may_fail=False, log_output=False):
+    def run(self, command, data_stdin=None, may_fail=False, log_output=False, user="root"):
         assert self.os in self.OS_FAMILY_UNIX
 
         if log_output:
@@ -844,6 +844,7 @@ class Node:
             username=self.username,
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
+            user=user,
         )
 
     @cached_property
@@ -890,8 +891,8 @@ class Node:
         self,
         autoskip_selector=(),
         autoonly_selector=(),
-        show_all=False, 
-        show_diff=True, 
+        show_all=False,
+        show_diff=True,
         workers=4,
     ):
         result = []
@@ -904,7 +905,7 @@ class Node:
                 self,
                 autoskip_selector=autoskip_selector,
                 autoonly_selector=autoonly_selector,
-                show_all=show_all, 
+                show_all=show_all,
                 show_diff=show_diff,
                 workers=workers,
             )

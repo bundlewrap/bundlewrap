@@ -19,7 +19,7 @@ from .utils.text import mark_for_translation as _, toml_clean, validate_name
 
 GROUP_ATTR_DEFAULTS = {
     'cmd_wrapper_inner': "export LANG=C; {}",
-    'cmd_wrapper_outer': "sudo sh -c {}",
+    'cmd_wrapper_outer': "sudo -u {1} sh -c {0}",
     'lock_dir': "/var/lib/bundlewrap",
     'dummy': False,
     'kubectl_context': None,
