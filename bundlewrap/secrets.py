@@ -5,12 +5,13 @@ import hmac
 from os import environ
 from os.path import join
 from string import ascii_letters, punctuation, digits
+from subprocess import PIPE, run
 
 from cryptography.fernet import Fernet
 
 from .exceptions import FaultUnavailable
 from .utils import Fault, get_file_contents
-from .utils.text import mark_for_translation as _
+from .utils.text import force_text, mark_for_translation as _
 from .utils.ui import io
 
 
@@ -247,6 +248,27 @@ class SecretProxy:
         for section in config.sections():
             result[section] = config.get(section, 'key').encode('utf-8')
         return result
+
+    @staticmethod
+    def cmd(cmdline, as_text=True, strip=True):
+        def callback():
+            output = run(
+                cmdline,
+                check=True,
+                shell=True,
+                stdout=PIPE,  # replace with capture_output=True
+                              # when dropping support for Python 3.6
+            ).stdout
+            if as_text:
+                output = force_text(output)
+            if strip:
+                output = output.strip()
+            return output
+
+        return Fault(
+            'bw secrets cmd ' + cmdline,
+            callback,
+        )
 
     def decrypt(self, cryptotext, key=None):
         return Fault(
