@@ -109,7 +109,7 @@ class PipPkg(Item):
             raise BundleError(
                 f"Underscores are not allowed in pkg_pip names "
                 f"because pip will convert them to dashes anyway. "
-                f"Just use dashes. (pkg_pip:{name} in bundle {bundle})"
+                f"Just use dashes. (pkg_pip:{name} in bundle {bundle.name})"
             )
 
 
