@@ -1,3 +1,11 @@
+# 4.8.2
+
+2021-05-27
+
+* fixed clobbered env vars for `git_deploy`
+* fixed `pkg_pip` failing with underscores in package names
+
+
 # 4.8.1
 
 2021-05-19
