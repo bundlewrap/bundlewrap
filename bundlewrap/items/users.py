@@ -144,7 +144,6 @@ class User(Item):
             self.run(command.format(self.name), may_fail=True)
         else:
             command += "useradd " if status.must_be_created else "usermod "
-            command += f"{self.name} "
 
             stdin = None
             for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
@@ -161,6 +160,8 @@ class User(Item):
                     else:
                         value = str(self.attributes[attr])
                     command += "{} {} ".format(option, quote(value))
+
+            command += f"{self.name}"
             self.run(command, data_stdin=stdin, may_fail=True)
 
     def display_on_create(self, cdict):
