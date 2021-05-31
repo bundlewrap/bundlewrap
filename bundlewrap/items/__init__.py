@@ -684,7 +684,7 @@ class Item:
 
     def covered_by_autoonly_selector(self, autoonly_selector, check_deps=True):
         """
-        True if this item should be NOT skipped based on the given selector
+        True if this item should NOT be skipped based on the given selector
         (e.g. ("tag:foo", "bundle:bar")).
         """
         if not autoonly_selector:
