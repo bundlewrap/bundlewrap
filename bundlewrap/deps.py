@@ -107,7 +107,7 @@ def _flatten_deps_for_item(item, items):
     This can handle loops, but will ignore them.
     """
     item._flattened_deps = {item.id for item in item._deps}
-    item._flattened_deps_needs = {item.id for item in item._deps_needs}
+    item._flattened_deps_needs = {item.id for item in item._deps_needs | item._deps_needed_by}
 
     for dep_item in item._deps:
         # Don't recurse if we have already resolved nested
