@@ -330,9 +330,11 @@ def upload(
         if result.return_code != 0:
             return False
 
-    result = run(
+    cp_result = run(
         hostname,
-        "mv -f {} {}".format(
+        # cp preserves the target permissions by default. On Debian, cp -f
+        # also preserves ownership but this is not the case on e.g. FreeBSD
+        "cp {} {}".format(
             quote(temp_filename),
             quote(remote_path),
         ),
@@ -341,4 +343,17 @@ def upload(
         wrapper_inner=wrapper_inner,
         wrapper_outer=wrapper_outer,
     )
-    return result.return_code == 0
+
+    # Always run this step, even if the above command fails to ensure that we
+    # do not clutter the target system's disk.
+    result = run(
+        hostname,
+        "rm -f {}".format(
+            quote(temp_filename),
+        ),
+        add_host_keys=add_host_keys,
+        ignore_failure=ignore_failure,
+        wrapper_inner=wrapper_inner,
+        wrapper_outer=wrapper_outer,
+    )
+    return cp_result.return_code == 0 and result.return_code == 0
