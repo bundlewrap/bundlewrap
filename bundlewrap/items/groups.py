@@ -60,16 +60,16 @@ class Group(Item):
         else:
             command += "groupadd " if status.must_be_created else "groupmod "
 
+            if self.attributes['gid'] is not None:
+                command += "-g {} ".format(self.attributes['gid'])
+
             if self.node.os == 'freebsd':
                 # FreeBSD expects <name> to be the first argument to
                 # `pw groupadd/mod`, however we can also pass it using -n
                 # instead. Then it is positionally independent.
                 command += "-n "
 
-            command += f"{self.name} "
-
-            if self.attributes['gid'] is not None:
-                command += "-g {}".format(self.attributes['gid'])
+            command += f"{self.name}"
         self.run(command, may_fail=True)
 
     def sdict(self):
