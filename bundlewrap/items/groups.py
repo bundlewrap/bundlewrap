@@ -59,6 +59,13 @@ class Group(Item):
             command += f"groupdel {self.name}"
         else:
             command += "groupadd " if status.must_be_created else "groupmod "
+
+            if self.node.os == 'freebsd':
+                # FreeBSD expects <name> to be the first argument to
+                # `pw groupadd/mod`, however we can also pass it using -n
+                # instead. Then it is positionally independent.
+                command += "-n "
+
             command += f"{self.name} "
 
             if self.attributes['gid'] is not None:

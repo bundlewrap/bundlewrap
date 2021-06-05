@@ -161,6 +161,12 @@ class User(Item):
                         value = str(self.attributes[attr])
                     command += "{} {} ".format(option, quote(value))
 
+            if self.node.os == 'freebsd':
+                # FreeBSD expects <name> to be the first argument to
+                # `pw useradd/mod`, however we can also pass it using -n
+                # instead. Then it is positionally independent.
+                command += "-n "
+
             command += f"{self.name}"
             self.run(command, data_stdin=stdin, may_fail=True)
 
