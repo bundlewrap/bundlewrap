@@ -369,7 +369,7 @@ class Repository(MetadataGenerator):
                         not isfile(filepath) or \
                         filename.startswith("_"):
                     continue
-                infodict = dict(parse_toml(get_file_contents(filepath)))
+                infodict = parse_toml(get_file_contents(filepath)).value
                 infodict['file_path'] = filepath
                 yield filename[:-5], infodict
 
