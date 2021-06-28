@@ -1,3 +1,14 @@
+# 4.9.0
+
+2021-06-28
+
+* added `repo.vault.cmd()`
+* postgres items can now be used with `doas` instead of `sudo`
+* improved error reporting of `git_deploy`
+* fixed dependencies being skipped when using `bw apply -o`
+* fixed user and group management on BSD
+
+
 # 4.8.2
 
 2021-05-27
