@@ -230,9 +230,16 @@ class GitDeploy(Item):
         })
 
         if result.return_code != 0:
-            raise RuntimeError(_("`git {command}` failed in {dir}").format(
+            raise RuntimeError(_(
+                "`git {command}` failed in {dir} for {item} from bundle {bundle}:\n"
+                "{stdout}\n{stderr}"
+            ).format(
                 command=" ".join(cmdline[1:]),
                 dir=repo_dir,
+                item=self.id,
+                bundle=self.bundle.name,
+                stdout=result.stdout.decode('utf-8'),
+                stderr=result.stderr.decode('utf-8'),
             ))
         return stdout.decode('utf-8').strip()
 
