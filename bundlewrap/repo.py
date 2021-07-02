@@ -6,7 +6,7 @@ from os.path import abspath, dirname, isdir, isfile, join
 from threading import RLock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
-from tomlkit import parse as parse_toml
+from tomlkit import parse as toml_parse
 
 from . import items, VERSION_STRING
 from .bundle import FILENAME_ITEMS
@@ -369,7 +369,7 @@ class Repository(MetadataGenerator):
                         not isfile(filepath) or \
                         filename.startswith("_"):
                     continue
-                infodict = parse_toml(get_file_contents(filepath)).value
+                infodict = toml_parse(get_file_contents(filepath)).value
                 infodict['file_path'] = filepath
                 yield filename[:-5], infodict
 
