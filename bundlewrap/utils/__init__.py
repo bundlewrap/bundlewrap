@@ -152,6 +152,9 @@ class Fault:
     def __hash__(self):
         return hash(tuple(self.id_list))
 
+    def __iter__(self):
+        yield from self.value
+
     def __len__(self):
         return len(self.value)
 
