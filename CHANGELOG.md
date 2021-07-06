@@ -1,3 +1,11 @@
+# 4.10.0
+
+2021-07-06
+
+* enable iteration over Faults
+* fixed using sets as metadata in TOML nodes
+
+
 # 4.9.0
 
 2021-06-28

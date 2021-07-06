@@ -1,2 +1,2 @@
-VERSION = (4, 9, 0)
+VERSION = (4, 10, 0)
 VERSION_STRING = ".".join([str(v) for v in VERSION])
