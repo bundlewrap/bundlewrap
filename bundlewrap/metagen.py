@@ -253,20 +253,17 @@ class MetadataGenerator:
             raise _StartOver
 
     def __run_nodes(self):
-        encountered_unsatisfied_node = False
         for proxy in randomize_order(self._node_metadata_proxies.values()):
             node = proxy._node
             io.debug(f"running reactors for {node.name}")
-            self.__run_reactors(node)
-            if not proxy._satisfied:
-                io.debug(f"{node.name} still not satisfied")
-                encountered_unsatisfied_node = True
+            self.__run_reactors(node)  # might unsatisfy OTHER node
             if self.__nodes_that_never_ran:
                 # we have found a new dependency, process it immediately
                 # going wide early should be more efficient
                 raise _StartOver
-        if encountered_unsatisfied_node:
-            raise _StartOver
+        for proxy in self._node_metadata_proxies.values():
+            if not proxy._satisfied:
+                raise _StartOver
 
     def _build_node_metadata(self, initial_node_name):
         if self._node_metadata_proxies[initial_node_name]._satisfied:
