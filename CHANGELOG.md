@@ -1,3 +1,10 @@
+# 4.10.1
+
+2021-07-07
+
+* fixed a premature `MetadataPersistentKeyError`
+
+
 # 4.10.0
 
 2021-07-06
