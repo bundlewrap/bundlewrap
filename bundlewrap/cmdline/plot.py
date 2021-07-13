@@ -1,5 +1,10 @@
 from ..deps import prepare_dependencies
-from ..utils.plot import graph_for_items, plot_group, plot_node_groups
+from ..utils.plot import (
+    graph_for_items,
+    plot_group,
+    plot_node_groups,
+    plot_reactors,
+)
 from ..utils.cmdline import get_group, get_node
 from ..utils.ui import io
 
@@ -39,4 +44,13 @@ def bw_plot_node(repo, args):
 def bw_plot_node_groups(repo, args):
     node = get_node(repo, args['node'])
     for line in plot_node_groups(node):
+        io.stdout(line)
+
+
+def bw_plot_reactors(repo, args):
+    node = get_node(repo, args['node'])
+    key_paths = sorted([
+        tuple(path.strip().split("/")) for path in args['keys'] if path
+    ]) or [()]
+    for line in plot_reactors(repo, node, key_paths):
         io.stdout(line)

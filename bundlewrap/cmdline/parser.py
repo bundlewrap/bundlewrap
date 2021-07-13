@@ -13,7 +13,7 @@ from .items import bw_items
 from .lock import bw_lock_add, bw_lock_remove, bw_lock_show
 from .metadata import bw_metadata
 from .nodes import bw_nodes
-from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups
+from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups, bw_plot_reactors
 from .repo import bw_repo_bundle_create, bw_repo_create
 from .run import bw_run
 from .stats import bw_stats
@@ -733,6 +733,35 @@ bundle:my_bundle  # items in this bundle
         metavar=_("NODE"),
         type=str,
         help=_("node to plot"),
+    )
+
+    # bw plot reactors
+    help_plot_node_reactors = _(
+        "Show metadata reactor interactions for a node. "
+        "Accesses to other nodes' metadata are truncated and shown in red. "
+        "Numbers behind reactor names indicate how often the reactor result "
+        "changed vs. how often the reactor was run (0/1 is perfect efficiency)."
+    )
+    parser_plot_subparsers_node_reactors = parser_plot_subparsers.add_parser(
+        "reactors",
+        description=help_plot_node_reactors,
+        help=help_plot_node_reactors,
+    )
+    parser_plot_subparsers_node_reactors.set_defaults(func=bw_plot_reactors)
+    parser_plot_subparsers_node_reactors.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("node to plot"),
+    )
+    parser_plot_subparsers_node_reactors.add_argument(
+        "-k", "--keys",
+        default=[],
+        dest='keys',
+        metavar=_("KEY"),
+        nargs='*',
+        type=str,
+        help=_("request only partial metadata from the given key paths (e.g. `bw plot reactors mynode -k users/jdoe` to show `mynode.metadata['users']['jdoe']`)"),
     )
 
     # bw repo

@@ -152,6 +152,14 @@ class NodeMetadataProxy:
         if not isinstance(path, (tuple, list)):
             path = tuple(path.split("/"))
 
+        if self._metagen._in_a_reactor and self._metagen._record_reactor_call_graph:
+            for provided_path in self._metagen._current_reactor_provides:
+                self._metagen._reactor_call_graph.add((
+                    (self._metagen._current_reactor[0], provided_path),
+                    (self._node.name, path),
+                    self._metagen._current_reactor,
+                ))
+
         with self._metagen._node_metadata_lock:
             # The lock is required because there are several thread-unsafe things going on here:
             #
@@ -202,6 +210,8 @@ class MetadataGenerator:
     _in_a_reactor = False
     # should reactor return values be checked against their declared keys?
     _verify_reactor_provides = False
+    # should we collect information for `bw plot reactors`?
+    _record_reactor_call_graph = False
 
     def __reset(self):
         # reactors that raised DoNotRunAgain
@@ -223,9 +233,13 @@ class MetadataGenerator:
         # how often we called reactors
         self.__reactors_run = 0
         # how often each reactor changed
-        self.__reactor_changes = defaultdict(int)
+        self._reactor_changes = defaultdict(int)
+        # how often each reactor ran
+        self._reactor_runs = defaultdict(int)
         # set when a reactor requests an additional path
         self._additional_path_requested = False
+        # bw plot reactors
+        self._reactor_call_graph = set()
 
     def _metadata_proxy_for_node(self, node_name):
         if node_name not in self._node_metadata_proxies:
@@ -276,7 +290,7 @@ class MetadataGenerator:
             jobmsg = _("{b} ({n} nodes, {r} reactors, {e} runs)").format(
                 b=bold(_("running metadata reactors")),
                 n=len(self.__nodes_that_never_ran) + len(self.__nodes_that_ran_at_least_once),
-                r=len(self.__reactor_changes),
+                r=len(self._reactor_changes),
                 e=self.__reactors_run,
             )
             try:
@@ -366,7 +380,7 @@ class MetadataGenerator:
     def __check_iteration_count(self, node_name):
         self.__node_iterations[node_name] += 1
         if self.__node_iterations[node_name] > MAX_METADATA_ITERATIONS:
-            top_changers = Counter(self.__reactor_changes).most_common(25)
+            top_changers = Counter(self._reactor_changes).most_common(25)
             msg = _(
                 "MAX_METADATA_ITERATIONS({m}) exceeded for {node}, "
                 "likely an infinite loop between flip-flopping metadata reactors.\n"
@@ -414,16 +428,18 @@ class MetadataGenerator:
         # make sure the reactor doesn't react to its own output
         old_metadata = node.metadata._metastack.pop_layer(1, reactor_name)
         self._in_a_reactor = True
+        self._current_reactor = (node.name, reactor_name)
+        self._current_reactor_provides = getattr(reactor, '_provides', (("/",),))  # used in .get()
         try:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
-            self.__keyerrors[(node.name, reactor_name)] = exc
+            self.__keyerrors[self._current_reactor] = exc
             return False, self._partial_metadata_accessed_for
         except DoNotRunAgain:
-            self.__do_not_run_again.add((node.name, reactor_name))
+            self.__do_not_run_again.add(self._current_reactor)
             # clear any previously stored exception
             with suppress(KeyError):
-                del self.__keyerrors[(node.name, reactor_name)]
+                del self.__keyerrors[self._current_reactor]
             return False, set()
         except Exception as exc:
             io.stderr(_(
@@ -440,7 +456,7 @@ class MetadataGenerator:
 
         # reactor terminated normally, clear any previously stored exception
         with suppress(KeyError):
-            del self.__keyerrors[(node.name, reactor_name)]
+            del self.__keyerrors[self._current_reactor]
 
         if self._verify_reactor_provides and getattr(reactor, '_provides', None):
             extra_paths = extra_paths_in_dict(new_metadata, reactor._provides)
@@ -475,6 +491,7 @@ class MetadataGenerator:
 
         changed = old_metadata != new_metadata
         if changed:
-            self.__reactor_changes[(node.name, reactor_name)] += 1
+            self._reactor_changes[self._current_reactor] += 1
+        self._reactor_runs[self._current_reactor] += 1
 
         return changed, self._partial_metadata_accessed_for
