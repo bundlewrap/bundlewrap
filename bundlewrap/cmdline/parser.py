@@ -737,7 +737,8 @@ bundle:my_bundle  # items in this bundle
 
     # bw plot reactors
     help_plot_node_reactors = _(
-        "Show metadata reactor interactions for a node. "
+        "Show metadata reactor information flow for a node. "
+        "Boxes are reactors, ovals are metadata paths provided or needed by reactors. "
         "Accesses to other nodes' metadata are truncated and shown in red. "
         "Numbers behind reactor names indicate how often the reactor result "
         "changed vs. how often the reactor was run (0/1 is perfect efficiency)."

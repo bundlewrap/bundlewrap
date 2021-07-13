@@ -224,6 +224,7 @@ def plot_reactors(repo, node, key_paths):
            "fontname=Helvetica]")
 
     styles = set()
+    edges = set()
 
     for provided_path, required_path, reactor in repo._reactor_call_graph:
         origin_node_name = provided_path[0]
@@ -233,15 +234,21 @@ def plot_reactors(repo, node, key_paths):
         provided_path = '/'.join(provided_path[1])
         reactor_changes = repo._reactor_changes[reactor]
         reactor_runs = repo._reactor_runs[reactor]
+        reactor_label = f"{reactor[1][17:]} ({reactor_changes}/{reactor_runs})"
+        styles.add(f"\"{reactor_label}\" [shape=box]")
+        edges.add(f"\"{reactor_label}\" -> \"{provided_path}\"")
         if target_node_name != node.name:
             full_required_path = f"{required_path[0]}:{'/'.join(required_path[1])}"
             styles.add(f"\"{full_required_path}\" [color=\"#FF0000\"]")
-            yield f"\"{provided_path}\" -> \"{full_required_path}\" [label=\"{reactor[1][17:]} ({reactor_changes}/{reactor_runs})\"; color=\"#FF0000\"]"
+            edges.add(f"\"{full_required_path}\" -> \"{reactor_label}\" [color=\"#FF0000\"]")
         else:
-            yield f"\"{provided_path}\" -> \"{'/'.join(required_path[1])}\" [label=\"{reactor[1][17:]} ({reactor_changes}/{reactor_runs})\"]"
+            edges.add(f"\"{'/'.join(required_path[1])}\" -> \"{reactor_label}\"")
 
     for style in sorted(styles):
         yield style
+
+    for edge in sorted(edges):
+        yield edge
 
     yield "}"
 
