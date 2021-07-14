@@ -1,5 +1,7 @@
+from ..exceptions import MetadataPersistentKeyError
 from . import names
-from .text import mark_for_translation as _
+from .text import bold, mark_for_translation as _, yellow
+from .ui import io
 
 
 def explain_item_dependency_loop(items):
@@ -195,6 +197,59 @@ def plot_node_groups(node):
                 if pattern.search(node.name) is not None:
                     yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
                         group.name, node.name)
+    yield "}"
+
+
+def plot_reactors(repo, node, key_paths):
+    repo._record_reactor_call_graph = True
+    try:
+        for key_path in key_paths:
+            node.metadata.get(key_path)
+    except MetadataPersistentKeyError:
+        io.stderr(_(
+            "{x} MetadataPersistentKeyError was raised, ignoring (use `bw metadata` to see it)"
+        ).format(x=bold(yellow("!"))))
+
+    yield "digraph bundlewrap"
+    yield "{"
+
+    # Print subgraphs *below* each other
+    yield "rankdir = LR"
+
+    # Global attributes
+    yield ("node [color=\"#303030\"; "
+           "fillcolor=\"#303030\"; "
+           "fontname=Helvetica]")
+    yield ("edge [arrowhead=vee; "
+           "fontname=Helvetica]")
+
+    styles = set()
+    edges = set()
+
+    for provided_path, required_path, reactor in repo._reactor_call_graph:
+        origin_node_name = provided_path[0]
+        target_node_name = required_path[0]
+        if origin_node_name != node.name:
+            continue
+        provided_path = '/'.join(provided_path[1])
+        reactor_changes = repo._reactor_changes[reactor]
+        reactor_runs = repo._reactor_runs[reactor]
+        reactor_label = f"{reactor[1][17:]} ({reactor_changes}/{reactor_runs})"
+        styles.add(f"\"{reactor_label}\" [shape=box]")
+        edges.add(f"\"{reactor_label}\" -> \"{provided_path}\"")
+        if target_node_name != node.name:
+            full_required_path = f"{required_path[0]}:{'/'.join(required_path[1])}"
+            styles.add(f"\"{full_required_path}\" [color=\"#FF0000\"]")
+            edges.add(f"\"{full_required_path}\" -> \"{reactor_label}\" [color=\"#FF0000\"]")
+        else:
+            edges.add(f"\"{'/'.join(required_path[1])}\" -> \"{reactor_label}\"")
+
+    for style in sorted(styles):
+        yield style
+
+    for edge in sorted(edges):
+        yield edge
+
     yield "}"
 
 

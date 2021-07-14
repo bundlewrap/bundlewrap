@@ -1,3 +1,5 @@
+from os.path import join
+
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -138,3 +140,29 @@ def test_no_empty_tags(tmpdir):
     assert '"action:late" -> "action:middle"' in stdout.decode()
     assert '"action:middle" -> "action:early"' in stdout.decode()
     assert "empty_tag" not in stdout.decode()
+
+
+def test_plot_reactors(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+@metadata_reactor.provides('foo')
+def reactor1(metadata):
+    return {'foo': metadata.get('bar')}
+
+@metadata_reactor.provides('bar')
+def reactor2(metadata):
+    return {'bar': 47}
+""")
+    stdout, stderr, rcode = run("bw plot reactors node1", path=str(tmpdir))
+    assert rcode == 0
+    assert "reactor1" in stdout.decode()
