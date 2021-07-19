@@ -253,12 +253,14 @@ class File(Item):
     def _fix_mode(self, status):
         if self.node.os in self.node.OS_FAMILY_BSD:
             command = "chmod {} {}"
+            mode = self.attributes['mode']
         else:
             command = "chmod {} -- {}"
-        self.run(command.format(
-            self.attributes['mode'],
-            quote(self.name),
-        ))
+            # GNU chmod refuses to set some modes (e.g., "chmod 0755 dir"
+            # when "dir" is a directory which currently has mode "2755")
+            # unless there's an additional leading zero.
+            mode = '0' + self.attributes['mode'].zfill(4)
+        self.run(command.format(mode, quote(self.name)))
 
     def _fix_owner(self, status):
         group = self.attributes['group'] or ""
