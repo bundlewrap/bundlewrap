@@ -285,6 +285,7 @@ class MetadataGenerator:
 
         self.__reset()
         self.__nodes_that_never_ran.add(initial_node_name)
+        self._some_reactor_ran = False
 
         while not QUIT_EVENT.is_set():
             jobmsg = _("{b} ({n} nodes, {r} reactors, {e} runs)").format(
@@ -317,7 +318,12 @@ class MetadataGenerator:
                     # dependencies on other nodes. If anything changes, we need to start over so
                     # local-only reactors on a node can react to changes caused by reactors looking
                     # at other nodes.
-                    self.__run_nodes()
+                    #
+                    # However, if no reactor ran during the steps above,
+                    # then there is no chance that something could have
+                    # changed.
+                    if self._some_reactor_ran:
+                        self.__run_nodes()
 
                     # If we get here, we're done! All that's left to do is blacklist completed
                     # reactors so they don't get run again if additional metadata is requested.
@@ -421,6 +427,7 @@ class MetadataGenerator:
             self._node_metadata_proxies[node.name]._satisfied = True
 
     def __run_reactor(self, node, reactor_name, reactor):
+        self._some_reactor_ran = True
         if (node.name, reactor_name) in self.__do_not_run_again:
             return False, set()
         self._partial_metadata_accessed_for = set()

@@ -197,6 +197,7 @@ class Repository(MetadataGenerator):
         # required by MetadataGenerator
         self._node_metadata_proxies = {}
         self._node_metadata_lock = RLock()
+        self._some_reactor_ran = False
 
         if repo_path is not None:
             self.populate_from_path(self.path)
