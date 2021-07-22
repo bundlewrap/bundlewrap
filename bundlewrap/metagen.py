@@ -1,6 +1,7 @@
 from collections import defaultdict, Counter
 from contextlib import suppress
 from os import environ
+from threading import RLock
 from traceback import TracebackException
 
 from .exceptions import MetadataPersistentKeyError
@@ -27,8 +28,10 @@ class PathSet:
     {"foo"}
     """
 
-    def __init__(self):
+    def __init__(self, paths=tuple()):
         self._paths = set()
+        for path in paths:
+            self.add(path)
 
     def __iter__(self):
         for path in self._paths:
@@ -55,6 +58,12 @@ class PathSet:
                 return True
         return False
 
+    def intersects(self, other_pathset):
+        for path in other_pathset:
+            if self.covers(path) or self.needs(path):
+                return True
+        return False
+
     def needs(self, candidate_path):
         for existing_path in self._paths:
             if list_starts_with(existing_path, candidate_path):
@@ -62,31 +71,11 @@ class PathSet:
         return False
 
 
-def reactors_for_paths(available_reactors, required_paths):
-    """
-    Returns only those available_reactors that might affect the
-    required_paths.
-    """
-    for name, reactor in available_reactors:
-        provides = getattr(reactor, '_provides', tuple())
-        if provides:
-            for path in provides:
-                if required_paths.covers(path) or required_paths.needs(path):
-                    yield name, reactor
-                    break
-        else:
-            yield name, reactor
-
-
 class NodeMetadataProxy:
     def __init__(self, metagen, node):
         self._metagen = metagen
         self._node = node
         self._metastack = Metastack()
-        self._completed_reactors = set()
-        self._requested_paths = PathSet()
-        self._satisfied = False  # has this node completed all required reactors?
-        self.__relevant_reactors_cache = None
 
     def __contains__(self, key):
         try:
@@ -102,28 +91,6 @@ class NodeMetadataProxy:
     def __iter__(self):
         for key, value in self.get(tuple()).items():
             yield key, value
-
-    @property
-    def _relevant_reactors(self):
-        """
-        All reactors that might provide some of the requested paths.
-        """
-        if self.__relevant_reactors_cache is None:
-            self.__relevant_reactors_cache = set(reactors_for_paths(
-                self._node.metadata_reactors,
-                self._requested_paths,
-            ))
-        return self.__relevant_reactors_cache
-
-    @property
-    def _pending_reactors(self):
-        """
-        All reactors that might provide some of the requested paths and
-        have not yet been run to completion.
-        """
-        for reactor in self._relevant_reactors:
-            if reactor not in self._completed_reactors:
-                yield reactor
 
     @property
     def blame(self):
@@ -163,22 +130,29 @@ class NodeMetadataProxy:
         with self._metagen._node_metadata_lock:
             # The lock is required because there are several thread-unsafe things going on here:
             #
-            #   self._requested_paths
+            #   self._metagen._current_reactor_requested_paths
+            #   self._metagen._current_reactor_newly_requested_paths
             #   self._metagen._build_node_metadata
             #   self._metastack
             #
             # It needs to be an RLock because this method will be recursively
             # called from _build_node_metadata (when reactors call node.metadata.get()).
-            if self._requested_paths.add(path):
-                self._satisfied = False
-                self.__relevant_reactors_cache = None
-                if self._metagen._in_a_reactor:
-                    self._metagen._additional_path_requested = True
-
+            if self._node not in self._metagen._relevant_nodes:
+                self._metagen._initialize_node(self._node)
             if self._metagen._in_a_reactor:
-                self._metagen._partial_metadata_accessed_for.add(self._node.name)
+                self._metagen._current_reactor_requested_paths.add((self._node.name, path))
+                if self._metagen._reactors[self._metagen._current_reactor]['requested_paths'].add(
+                    (self._node.name,) + path
+                ):
+                    self._metagen._current_reactor_newly_requested_paths.add((self._node.name, path))
             else:
-                self._metagen._build_node_metadata(self._node.name)
+                io.debug(f"metagen triggered by request for {path} on {self._node.name}")
+                self._metagen._trigger_reactors_for_path(
+                    self._node.name,
+                    path,
+                    f"initial request for {path}",
+                )
+                self._metagen._build_node_metadata(self._node)
 
             try:
                 return self._metastack.get(path)
@@ -186,6 +160,10 @@ class NodeMetadataProxy:
                 if default != NO_DEFAULT:
                     return default
                 else:
+                    if self._metagen._in_a_reactor:
+                        self._metagen._reactors[
+                            self._metagen._current_reactor
+                        ]['raised_keyerror_for'] = (self._node.name, path)
                     raise
 
     def items(self):
@@ -198,139 +176,50 @@ class NodeMetadataProxy:
         return self.get(tuple()).values()
 
 
-class _StartOver(Exception):
-    """
-    Raised when metadata processing needs to start from the top.
-    """
-    pass
-
-
 class MetadataGenerator:
-    # are we currently executing a reactor?
-    _in_a_reactor = False
-    # should reactor return values be checked against their declared keys?
-    _verify_reactor_provides = False
-    # should we collect information for `bw plot reactors`?
-    _record_reactor_call_graph = False
-
-    def __reset(self):
-        # reactors that raised DoNotRunAgain
-        self.__do_not_run_again = set()
+    def __init__(self):
+        # node.metadata calls these
+        self._node_metadata_proxies = {}
+        # metadata access is multi-threaded, but generation can't be
+        self._node_metadata_lock = RLock()
         # reactors that raised KeyErrors (and which ones)
         self.__keyerrors = {}
-        # mapping each node to all nodes that depend on it
-        self.__node_deps = defaultdict(set)
-        # how often __run_reactors was called for a node
-        self.__node_iterations = defaultdict(int)
-        # nodes we encountered as a dependency through partial_metadata,
-        # but haven't run yet
-        self.__nodes_that_never_ran = set()
-        # nodes whose dependencies changed and that have to rerun their
-        # reactors depending on those nodes
-        self.__triggered_nodes = set()
-        # nodes we already did initial processing on
-        self.__nodes_that_ran_at_least_once = set()
+        # all nodes involved with currently requested metadata
+        self._relevant_nodes = set()
+        # keep track of reactors and their dependencies
+        self._reactors = {}
         # how often we called reactors
         self.__reactors_run = 0
         # how often each reactor changed
         self._reactor_changes = defaultdict(int)
         # how often each reactor ran
         self._reactor_runs = defaultdict(int)
-        # set when a reactor requests an additional path
-        self._additional_path_requested = False
         # bw plot reactors
         self._reactor_call_graph = set()
+        # are we currently executing a reactor?
+        self._in_a_reactor = False
+        # all paths requested during the current run
+        self._current_reactor_requested_paths = set()
+        # all new paths not requested before by the current reactor
+        self._current_reactor_newly_requested_paths = set()
+        # should reactor return values be checked against their declared keys?
+        self._verify_reactor_provides = False
+        # should we collect information for `bw plot reactors`?
+        self._record_reactor_call_graph = False
 
     def _metadata_proxy_for_node(self, node_name):
         if node_name not in self._node_metadata_proxies:
             self._node_metadata_proxies[node_name] = NodeMetadataProxy(self, self.get_node(node_name))
         return self._node_metadata_proxies[node_name]
 
-    def __run_new_nodes(self):
-        try:
-            node_name = self.__nodes_that_never_ran.pop()
-        except KeyError:
-            pass
-        else:
-            self.__nodes_that_ran_at_least_once.add(node_name)
-            self.__initial_run_for_node(node_name)
-            raise _StartOver
-
-    def __run_triggered_nodes(self):
-        try:
-            node_name = self.__triggered_nodes.pop()
-        except KeyError:
-            pass
-        else:
-            io.debug(f"triggered metadata run for {node_name}")
-            self.__run_reactors(self.get_node(node_name))
-            raise _StartOver
-
-    def __run_nodes(self):
-        for proxy in randomize_order(self._node_metadata_proxies.values()):
-            node = proxy._node
-            io.debug(f"running reactors for {node.name}")
-            self.__run_reactors(node)  # might unsatisfy OTHER node
-            if self.__nodes_that_never_ran:
-                # we have found a new dependency, process it immediately
-                # going wide early should be more efficient
-                raise _StartOver
-        for proxy in self._node_metadata_proxies.values():
-            if not proxy._satisfied:
-                raise _StartOver
-
     def _build_node_metadata(self, initial_node_name):
-        if self._node_metadata_proxies[initial_node_name]._satisfied:
-            return
-
-        self.__reset()
-        self.__nodes_that_never_ran.add(initial_node_name)
-
         while not QUIT_EVENT.is_set():
-            jobmsg = _("{b} ({n} nodes, {r} reactors, {e} runs)").format(
-                b=bold(_("running metadata reactors")),
-                n=len(self.__nodes_that_never_ran) + len(self.__nodes_that_ran_at_least_once),
-                r=len(self._reactor_changes),
-                e=self.__reactors_run,
-            )
-            try:
-                with io.job(jobmsg):
-                    # Control flow here is a bit iffy. The functions in this block often raise
-                    # _StartOver in order to aggressively process new nodes first etc.
-                    # Each method represents a distinct stage of metadata processing that checks
-                    # for nodes in certain states as described below.
-
-                    # This checks for newly discovered nodes that haven't seen any processing at
-                    # all so far. It is important that we run them as early as possible, so their
-                    # static metadata becomes available to other nodes and we recursively discover
-                    # additional nodes as quickly as possible.
-                    self.__run_new_nodes()
-                    # At this point, we have run all relevant nodes at least once.
-
-                    # Nodes become "triggered" when they previously looked something up from a
-                    # different node and that second node changed. In this method, we try to figure
-                    # out if the change on the node we depend on actually has any effect on the
-                    # depending node.
-                    self.__run_triggered_nodes()
-
-                    # The final step is to make sure nothing changes when we run reactors with
-                    # dependencies on other nodes. If anything changes, we need to start over so
-                    # local-only reactors on a node can react to changes caused by reactors looking
-                    # at other nodes.
-                    self.__run_nodes()
-
-                    # If we get here, we're done! All that's left to do is blacklist completed
-                    # reactors so they don't get run again if additional metadata is requested.
-                    for proxy in self._node_metadata_proxies.values():
-                        proxy._completed_reactors.update(
-                            proxy._relevant_reactors
-                        )
-                        if proxy._requested_paths.covers(tuple()):  # full metadata
-                            proxy._metastack.cache_partition(1)
-                    break
-
-            except _StartOver:
-                continue
+            io.debug("starting reactor run")
+            if not self.__run_reactors():
+                io.debug("reactor run completed, no reactors ran")
+                # TODO maybe proxy._metastack.cache_partition(1) for COMPLETE nodes
+                break
+            io.debug("reactor run completed, rerunning relevant reactors")
 
         if self.__keyerrors and not QUIT_EVENT.is_set():
             msg = _(
@@ -344,40 +233,81 @@ class MetadataGenerator:
                     msg += "    " + line
             raise MetadataPersistentKeyError(msg)
 
-        io.debug("metadata generation for selected nodes finished")
+        io.debug("metadata generation finished")
 
-    def __initial_run_for_node(self, node_name):
-        io.debug(f"initial metadata run for {node_name}")
-        node = self.get_node(node_name)
+    def _initialize_node(self, node):
+        io.debug(f"initializing metadata for {node.name}")
 
-        # randomize order to increase chance of exposing clashing defaults
-        for defaults_name, defaults in randomize_order(node.metadata_defaults):
-            node.metadata._metastack.set_layer(
-                2,
-                defaults_name,
-                defaults,
-            )
-        node.metadata._metastack.cache_partition(2)
+        with io.job(_("{}  assembling static metadata").format(bold(node.name))):
+            # randomize order to increase chance of exposing clashing defaults
+            for defaults_name, defaults in randomize_order(node.metadata_defaults):
+                node.metadata._metastack.set_layer(
+                    2,
+                    defaults_name,
+                    defaults,
+                )
+            node.metadata._metastack.cache_partition(2)
 
-        group_order = _flatten_group_hierarchy(node.groups)
-        for group_name in group_order:
+            group_order = _flatten_group_hierarchy(node.groups)
+            for group_name in group_order:
+                node.metadata._metastack.set_layer(
+                    0,
+                    "group:{}".format(group_name),
+                    self.get_group(group_name)._attributes.get('metadata', {}),
+                )
+
             node.metadata._metastack.set_layer(
                 0,
-                "group:{}".format(group_name),
-                self.get_group(group_name)._attributes.get('metadata', {}),
+                "node:{}".format(node.name),
+                node._attributes.get('metadata', {}),
             )
+            node.metadata._metastack.cache_partition(0)
 
-        node.metadata._metastack.set_layer(
-            0,
-            "node:{}".format(node_name),
-            node._attributes.get('metadata', {}),
-        )
-        node.metadata._metastack.cache_partition(0)
+        with io.job(_("{}  preparing metadata reactors").format(bold(node.name))):
+            io.debug(f"adding {len(list(node.metadata_reactors))} reactors for {node.name}")
+            for reactor_name, reactor in node.metadata_reactors:
+                self._reactors[(node.name, reactor_name)] = {
+                    'raised_keyerror_for': None,
+                    'raised_donotrunagain': False,
+                    'reactor': reactor,
+                    'requested_paths': PathSet(),
+                    'triggering_reactors': set(),
+                    'triggered_by': set(),
+                    'provides': PathSet(getattr(reactor, '_provides', (tuple(),))),
+                }
 
-        # run all reactors once to get started  TODO is this necessary?
-        self.__run_reactors(node)
+        self._relevant_nodes.add(node)
 
-    def __check_iteration_count(self, node_name):
+    def _trigger_reactors_for_path(self, node_name, path, source, only_new=False):
+        for reactor_id, reactor_dict in self._reactors.items():
+            if reactor_id[0] != node_name:
+                continue
+            if only_new and self._reactor_runs[reactor_id] > 0:
+                continue
+            if (
+                reactor_dict['provides'].needs(path) or
+                reactor_dict['provides'].covers(path)  # really needed?
+            ):
+                io.debug(f"{source} triggers {reactor_id}")
+                reactor_dict['triggered_by'].add(source)
+
+    def _update_triggering_reactors(self, reactor, new_paths):
+        """
+        The given reactor just added something to its requested paths,
+        so we need to look for any other reactors that might provide
+        this new path.
+        """
+        with io.job(_("{}  updating dependencies of {}").format(bold(reactor[0]), reactor[1])):
+            for node_name, path in new_paths:
+                for other_reactor_id, other_reactor_dict in self._reactors.items():
+                    if other_reactor_id[0] != node_name:
+                        continue
+                    if other_reactor_id == reactor:
+                        continue
+                    if other_reactor_dict['provides'].covers(path):
+                        self._reactors[reactor]['triggering_reactors'].add(other_reactor_id)
+
+    def __check_iteration_count(self, node_name): # XXX TODO FIXME
         self.__node_iterations[node_name] += 1
         if self.__node_iterations[node_name] > MAX_METADATA_ITERATIONS:
             top_changers = Counter(self._reactor_changes).most_common(25)
@@ -390,57 +320,56 @@ class MetadataGenerator:
                 msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
             raise RuntimeError(msg)
 
-    def __run_reactors(self, node):
-        self.__check_iteration_count(node.name)
-        any_reactor_changed = False
-        self._additional_path_requested = False
-
-        # TODO ideally, we should run the least-run reactors first
-        for reactor_name, reactor in randomize_order(
-            self._node_metadata_proxies[node.name]._pending_reactors
-        ):
-            reactor_changed, deps = self.__run_reactor(node, reactor_name, reactor)
-            io.debug(f"{node.name}:{reactor_name} changed={reactor_changed} deps={deps}")
-            if reactor_changed:
-                any_reactor_changed = True
-            for required_node_name in deps:
-                if required_node_name not in self.__nodes_that_ran_at_least_once:
-                    # we found a node that we didn't need until now
-                    self.__nodes_that_never_ran.add(required_node_name)
-                # this is so we know the current node needs to be run
-                # again if the required node changes
-                self.__node_deps[required_node_name].add(node.name)
-
-        if any_reactor_changed:
-            # something changed on this node, mark all dependent nodes as unstable
-            for required_node_name in self.__node_deps[node.name]:
-                io.debug(f"{node.name} triggering metadata rerun on {required_node_name}")
-                self.__triggered_nodes.add(required_node_name)
-
-        if not self._additional_path_requested and not any_reactor_changed:
-            self._node_metadata_proxies[node.name]._satisfied = True
+    def __run_reactors(self):
+        any_reactor_ran = False
+        for reactor_id, reactor_dict in randomize_order(self._reactors.items()):
+            node_name, reactor_name = reactor_id
+            if reactor_dict['raised_donotrunagain']:
+                continue
+            if reactor_dict['raised_keyerror_for']:
+                io.debug(f"running reactor {reactor_id} because it previously raised a KeyError for: {reactor_dict['raised_keyerror_for']}")
+            elif reactor_dict['triggered_by']:
+                io.debug(f"running reactor {reactor_id} because it was triggered by: {reactor_dict['triggered_by']}")
+            else:
+                continue
+            any_reactor_ran = True
+            if self.__run_reactor(
+                self.get_node(node_name),
+                reactor_name,
+                reactor_dict['reactor'],
+            ):
+                # reactor changed return value
+                for other_reactor, other_reactor_dict in self._reactors.items():
+                    if reactor_id in other_reactor_dict['triggering_reactors']:
+                        other_reactor_dict['triggered_by'].add(reactor_id)
+                        io.debug(f"rerun of {other_reactor} triggered by {reactor_id}")
+        return any_reactor_ran
 
     def __run_reactor(self, node, reactor_name, reactor):
-        if (node.name, reactor_name) in self.__do_not_run_again:
-            return False, set()
-        self._partial_metadata_accessed_for = set()
+
         self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
         old_metadata = node.metadata._metastack.pop_layer(1, reactor_name)
         self._in_a_reactor = True
         self._current_reactor = (node.name, reactor_name)
         self._current_reactor_provides = getattr(reactor, '_provides', (("/",),))  # used in .get()
+        self._current_reactor_requested_paths = set()
+        self._current_reactor_newly_requested_paths = set()
+        self._reactor_runs[self._current_reactor] += 1
         try:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
+            if not self._reactors[self._current_reactor]['raised_keyerror_for']:
+                self._reactors[self._current_reactor]['raised_keyerror_for'] = 'UNKNOWN'
             self.__keyerrors[self._current_reactor] = exc
-            return False, self._partial_metadata_accessed_for
+            return False
         except DoNotRunAgain:
-            self.__do_not_run_again.add(self._current_reactor)
+            self._reactors[self._current_reactor]['raised_donotrunagain'] = True
             # clear any previously stored exception
             with suppress(KeyError):
                 del self.__keyerrors[self._current_reactor]
-            return False, set()
+            self._current_reactor_newly_requested_paths.clear()
+            return False
         except Exception as exc:
             io.stderr(_(
                 "{x} Exception while executing metadata reactor "
@@ -453,8 +382,25 @@ class MetadataGenerator:
             raise exc
         finally:
             self._in_a_reactor = False
+            self._reactors[self._current_reactor]['triggered_by'].clear()
+            if self._current_reactor_newly_requested_paths:
+                self._update_triggering_reactors(
+                    self._current_reactor,
+                    self._current_reactor_newly_requested_paths,
+                )
+            # now trigger any reactors providing stuff this reactor needed
+            # but only if that reactor didn't run yet (otherwise it would
+            # trigger this reactor anyway)
+            for node_name, path in self._current_reactor_requested_paths:
+                self._trigger_reactors_for_path(
+                    node_name,
+                    path,
+                    self._current_reactor,
+                    only_new=True,
+                )
 
         # reactor terminated normally, clear any previously stored exception
+        self._reactors[self._current_reactor]['raised_keyerror_for'] = None
         with suppress(KeyError):
             del self.__keyerrors[self._current_reactor]
 
@@ -492,6 +438,5 @@ class MetadataGenerator:
         changed = old_metadata != new_metadata
         if changed:
             self._reactor_changes[self._current_reactor] += 1
-        self._reactor_runs[self._current_reactor] += 1
 
-        return changed, self._partial_metadata_accessed_for
+        return changed

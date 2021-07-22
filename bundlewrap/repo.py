@@ -3,7 +3,6 @@ from importlib.util import module_from_spec, spec_from_file_location
 from inspect import isabstract
 from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
-from threading import RLock
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
 from tomlkit import parse as toml_parse
@@ -181,6 +180,8 @@ class LibsProxy:
 
 class Repository(MetadataGenerator):
     def __init__(self, repo_path=None):
+        super().__init__()
+
         if repo_path is None:
             self.path = "/dev/null"
         else:
@@ -193,10 +194,6 @@ class Repository(MetadataGenerator):
         self.node_dict = {}
         self._get_all_attr_code_cache = {}
         self._get_all_attr_result_cache = {}
-
-        # required by MetadataGenerator
-        self._node_metadata_proxies = {}
-        self._node_metadata_lock = RLock()
 
         if repo_path is not None:
             self.populate_from_path(self.path)
