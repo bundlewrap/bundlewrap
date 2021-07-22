@@ -63,7 +63,7 @@ def content_processor_jinja2(item):
             node=item.node.name,
         ))
     duration = datetime.now() - start
-    io.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
+    io.debug("{node}:{bundle}:{item}: rendered in {time:.09f} s".format(
         bundle=item.bundle.name,
         item=item.id,
         node=item.node.name,
@@ -113,7 +113,7 @@ def content_processor_mako(item):
             node=item.node.name,
         ))
     duration = datetime.now() - start
-    io.debug("{node}:{bundle}:{item}: rendered in {time}s".format(
+    io.debug("{node}:{bundle}:{item}: rendered in {time:.09f} s".format(
         bundle=item.bundle.name,
         item=item.id,
         node=item.node.name,
