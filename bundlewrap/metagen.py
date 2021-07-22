@@ -213,6 +213,10 @@ class MetadataGenerator:
     # should we collect information for `bw plot reactors`?
     _record_reactor_call_graph = False
 
+    # This only exists to make DeepSource happy
+    def __init__(self):
+        self._some_reactor_ran = False
+
     def __reset(self):
         # reactors that raised DoNotRunAgain
         self.__do_not_run_again = set()
@@ -240,6 +244,8 @@ class MetadataGenerator:
         self._additional_path_requested = False
         # bw plot reactors
         self._reactor_call_graph = set()
+        # To find out if we can skip a final "__run_nodes()"
+        self._some_reactor_ran = False
 
     def _metadata_proxy_for_node(self, node_name):
         if node_name not in self._node_metadata_proxies:
@@ -285,7 +291,6 @@ class MetadataGenerator:
 
         self.__reset()
         self.__nodes_that_never_ran.add(initial_node_name)
-        self._some_reactor_ran = False
 
         while not QUIT_EVENT.is_set():
             jobmsg = _("{b} ({n} nodes, {r} reactors, {e} runs)").format(
