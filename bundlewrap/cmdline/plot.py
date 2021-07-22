@@ -52,5 +52,5 @@ def bw_plot_reactors(repo, args):
     key_paths = sorted([
         tuple(path.strip().split("/")) for path in args['keys'] if path
     ]) or [()]
-    for line in plot_reactors(repo, node, key_paths):
+    for line in plot_reactors(repo, node, key_paths, recursive=args['recursive']):
         io.stdout(line)

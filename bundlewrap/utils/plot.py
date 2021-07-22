@@ -200,7 +200,7 @@ def plot_node_groups(node):
     yield "}"
 
 
-def plot_reactors(repo, node, key_paths):
+def plot_reactors(repo, node, key_paths, recursive=False):
     repo._record_reactor_call_graph = True
     try:
         for key_path in key_paths:
@@ -229,7 +229,7 @@ def plot_reactors(repo, node, key_paths):
     for provided_path, required_path, reactor in repo._reactor_call_graph:
         origin_node_name = provided_path[0]
         target_node_name = required_path[0]
-        if origin_node_name != node.name:
+        if not recursive and origin_node_name != node.name:
             continue
         provided_path = '/'.join(provided_path[1])
         reactor_changes = repo._reactor_changes[reactor]
