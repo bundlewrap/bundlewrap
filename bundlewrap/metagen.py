@@ -7,7 +7,7 @@ from .exceptions import MetadataPersistentKeyError
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy
 from .utils import list_starts_with, randomize_order, NO_DEFAULT
-from .utils.dicts import extra_paths_in_dict
+from .utils.dicts import extra_paths_in_dict, path_type_mismatches
 from .utils.ui import io, QUIT_EVENT
 from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red
@@ -469,6 +469,19 @@ class MetadataGenerator:
                     node_name=node.name,
                     reactor_name=reactor_name,
                     paths="\n".join(["/".join(path) for path in sorted(extra_paths)]),
+                ))
+
+            mismatches = set(path_type_mismatches(new_metadata, reactor._provides))
+            if mismatches:
+                raise ValueError(_(
+                    "{reactor_name} on {node_name} returned the following key paths, "
+                    "but they are not dictionaries, which conflicts with the "
+                    "declaration in @metadata_reactor.provides():\n"
+                    "{mismatches}"
+                ).format(
+                    node_name=node.name,
+                    reactor_name=reactor_name,
+                    mismatches="\n".join(sorted(mismatches)),
                 ))
 
         try:

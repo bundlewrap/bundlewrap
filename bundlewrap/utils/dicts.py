@@ -315,6 +315,27 @@ def merge_dict(base, update):
     return merged
 
 
+def path_type_mismatches(dict_obj, paths):
+    if not isinstance(dict_obj, dict):
+        yield '<the root object>'
+        return
+
+    for path in paths:
+        if len(path) == 1:
+            continue
+
+        path_so_far = []
+        obj = dict_obj
+        for component in path[:-1]:
+            path_so_far.append(component)
+
+            if not isinstance(obj[component], dict):
+                yield '/'.join(path_so_far)
+                break
+
+            obj = obj[component]
+
+
 def reduce_dict(full_dict, template_dict):
     """
     Take a large dict and recursively remove all keys that are not
