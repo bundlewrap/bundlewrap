@@ -222,7 +222,7 @@ def hash_statedict(sdict):
     return sha1(statedict_to_json(sdict).encode('utf-8')).hexdigest()
 
 
-def map_dict_keys(dict_obj, _base=None):
+def map_dict_keys(dict_obj, leaves_only=False, _base=None,):
     """
     Return a set of key paths for the given dict. E.g.:
 
@@ -231,10 +231,17 @@ def map_dict_keys(dict_obj, _base=None):
     """
     if _base is None:
         _base = ()
-    keys = {_base + (key,) for key in dict_obj.keys()}
+    keys = set()
     for key, value in dict_obj.items():
-        if isinstance(value, dict):
-            keys.update(map_dict_keys(value, _base=_base + (key,)))
+        is_dict = isinstance(value, dict)
+        if is_dict:
+            keys.update(map_dict_keys(
+                value,
+                leaves_only=leaves_only,
+                _base=_base + (key,),
+            ))
+        if not is_dict or not leaves_only:
+            keys.add(_base + (key,))
     return keys
 
 
@@ -243,16 +250,13 @@ def extra_paths_in_dict(dict_obj, paths):
     Returns all paths in dict_obj that don't start with any of the
     given paths.
 
-        >>> filter_dict({'a': 1, 'b': {'c': 1}}, {('b', 'c')})
+        >>> extra_paths_in_dict({'a': 1, 'b': {'c': 1}}, {('b', 'c')})
         {('a',)}
     """
     result = set()
-    for actual_path in map_dict_keys(dict_obj):
+    for actual_path in map_dict_keys(dict_obj, leaves_only=True):
         for allowed_path in paths:
-            if (
-                actual_path[:len(allowed_path)] == allowed_path or
-                allowed_path[:len(actual_path)] == actual_path
-            ):
+            if actual_path[:len(allowed_path)] == allowed_path:
                 break
         else:
             result.add(actual_path)
