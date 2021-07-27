@@ -426,6 +426,13 @@ class Item:
 
     @classmethod
     def _validate_name(cls, bundle, name):
+        if not name:
+            raise BundleError(_(
+                "invalid name for {type} in bundle '{bundle}': must not be empty string"
+            ).format(
+                bundle=bundle.name,
+                type=cls.ITEM_TYPE_NAME,
+            ))
         if ":" in name:
             raise BundleError(_(
                 "invalid name for {type} in bundle '{bundle}': {name} (must not contain colon)"
