@@ -216,7 +216,6 @@ def test_extra_paths_nested():
         },
     )) == {
         ('a',),
-        ('d',),
         ('d', 'e'),
     }
 
