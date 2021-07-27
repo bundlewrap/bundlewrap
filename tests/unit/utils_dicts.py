@@ -33,6 +33,26 @@ def test_dictmap():
     ])
 
 
+def test_dictmap_leaves():
+    assert set(map_dict_keys({
+        'key1': 1,
+        'key2': {
+            'key3': [3, 3, 3],
+            'key4': atomic([4, 4, 4]),
+            'key5': {
+                'key6': "6",
+            },
+            'key7': set((7, 7, 7)),
+        },
+    }, leaves_only=True)) == set([
+        ("key1",),
+        ("key2", "key3"),
+        ("key2", "key4"),
+        ("key2", "key5", "key6"),
+        ("key2", "key7"),
+    ])
+
+
 def test_reduce_dict_two_lists():
     assert reduce_dict(
         [1, 2, 3],
