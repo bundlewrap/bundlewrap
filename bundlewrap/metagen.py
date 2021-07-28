@@ -53,20 +53,26 @@ class PathSet:
         return True
 
     def covers(self, candidate_path):
+        """
+        Returns True if the given path is already included.
+        """
         for existing_path in self._paths:
             if list_starts_with(candidate_path, existing_path):
                 return True
         return False
 
-    def intersects(self, other_pathset):
-        for path in other_pathset:
-            if self.covers(path) or self.needs(path):
-                return True
-        return False
-
-    def needs(self, candidate_path):
+    def relevant_for(self, candidate_path):
+        """
+        Returns True if any path in this set is required to provide
+        the requested path.
+        """
         for existing_path in self._paths:
-            if list_starts_with(existing_path, candidate_path):
+            # when requesting 'foo/bar', we need to run reactors
+            # providing 'foo' as well as 'foo/bar/baz'
+            if (
+                list_starts_with(candidate_path, existing_path) or
+                list_starts_with(existing_path, candidate_path)
+            ):
                 return True
         return False
 
@@ -281,18 +287,13 @@ class MetadataGenerator:
 
         self._relevant_nodes.add(node)
 
-    def _trigger_reactors_for_path(self, node_name, path, source, only_new=False):
+    def _trigger_reactors_for_path(self, node_name, path, source):
         for reactor_id, reactor_dict in self._reactors.items():
             if reactor_id == source:
                 continue
             if reactor_id[0] != node_name:
                 continue
-            if only_new and self._reactor_runs[reactor_id] > 0:
-                continue
-            if (
-                reactor_dict['provides'].needs(path) or
-                reactor_dict['provides'].covers(path)  # really needed?
-            ):
+            if reactor_dict['provides'].relevant_for(path):
                 io.debug(f"{source} triggers {reactor_id}")
                 reactor_dict['triggered_by'].add(source)
 
@@ -311,10 +312,7 @@ class MetadataGenerator:
                         continue
                     if other_reactor_id == reactor:
                         continue
-                    if (
-                        other_reactor_dict['provides'].covers(path) or  # TODO do we need both?
-                        other_reactor_dict['provides'].needs(path)
-                    ):
+                    if other_reactor_dict['provides'].relevant_for(path):
                         io.debug(
                             f"registering {other_reactor_id} "
                             f"as triggering reactor for {reactor}"
