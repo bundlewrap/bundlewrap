@@ -337,33 +337,41 @@ class MetadataGenerator:
 
     def __run_reactors(self):
         any_reactor_ran = False
-        for reactor_id, reactor_dict in randomize_order(self._reactors.items()):
-            node_name, reactor_name = reactor_id
-            if reactor_dict['raised_donotrunagain']:
-                continue
-            if reactor_dict['raised_keyerror_for']:
-                io.debug(
-                    f"running reactor {reactor_id} because "
-                    f"it previously raised a KeyError for: {reactor_dict['raised_keyerror_for']}"
-                )
-            elif reactor_dict['triggered_by']:
-                io.debug(
-                    f"running reactor {reactor_id} because "
-                    f"it was triggered by: {reactor_dict['triggered_by']}"
-                )
-            else:
-                continue
-            any_reactor_ran = True
-            if self.__run_reactor(
-                self.get_node(node_name),
-                reactor_name,
-                reactor_dict['reactor'],
-            ):
-                # reactor changed return value
-                for other_reactor, other_reactor_dict in self._reactors.items():
-                    if reactor_id in other_reactor_dict['triggering_reactors']:
-                        other_reactor_dict['triggered_by'].add(reactor_id)
-                        io.debug(f"rerun of {other_reactor} triggered by {reactor_id}")
+        for with_keyerrors in (False, True):
+            # make sure we run reactors that raised KeyError *after*
+            # those that didn't to increase the chance of finding what
+            # those KeyErrors were looking for
+            for reactor_id, reactor_dict in randomize_order(self._reactors.items()):
+                node_name, reactor_name = reactor_id
+                if reactor_dict['raised_donotrunagain']:
+                    continue
+                if reactor_dict['raised_keyerror_for']:
+                    if not with_keyerrors:
+                        continue
+                    io.debug(
+                        f"running reactor {reactor_id} because "
+                        f"it previously raised a KeyError for: {reactor_dict['raised_keyerror_for']}"
+                    )
+                elif reactor_dict['triggered_by']:
+                    if with_keyerrors:
+                        continue
+                    io.debug(
+                        f"running reactor {reactor_id} because "
+                        f"it was triggered by: {reactor_dict['triggered_by']}"
+                    )
+                else:
+                    continue
+                any_reactor_ran = True
+                if self.__run_reactor(
+                    self.get_node(node_name),
+                    reactor_name,
+                    reactor_dict['reactor'],
+                ):
+                    # reactor changed return value
+                    for other_reactor, other_reactor_dict in self._reactors.items():
+                        if reactor_id in other_reactor_dict['triggering_reactors']:
+                            other_reactor_dict['triggered_by'].add(reactor_id)
+                            io.debug(f"rerun of {other_reactor} triggered by {reactor_id}")
         return any_reactor_ran
 
     def __run_reactor(self, node, reactor_name, reactor):
