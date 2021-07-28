@@ -190,6 +190,8 @@ class MetadataGenerator:
         self._node_metadata_proxies = {}
         # metadata access is multi-threaded, but generation can't be
         self._node_metadata_lock = RLock()
+        # guard against infinite loops
+        self.__iterations = 0
         # reactors that raised KeyErrors (and which ones)
         self.__keyerrors = {}
         # all nodes involved with currently requested metadata
@@ -224,9 +226,13 @@ class MetadataGenerator:
     def _build_node_metadata(self, initial_node_name):
         while not QUIT_EVENT.is_set():
             io.debug("starting reactor run")
-            if not self.__run_reactors():
+            any_reactor_ran, only_keyerrors = self.__run_reactors()
+            if not any_reactor_ran:
                 io.debug("reactor run completed, no reactors ran")
                 # TODO maybe proxy._metastack.cache_partition(1) for COMPLETE nodes
+                break
+            elif only_keyerrors:
+                io.debug("reactor run completed, all threw KeyErrors")
                 break
             io.debug("reactor run completed, rerunning relevant reactors")
 
@@ -320,21 +326,23 @@ class MetadataGenerator:
                         self._reactors[reactor]['triggering_reactors'].add(other_reactor_id)
                         yield other_reactor_id
 
-    def __check_iteration_count(self, node_name): # XXX TODO FIXME
-        self.__node_iterations[node_name] += 1
-        if self.__node_iterations[node_name] > MAX_METADATA_ITERATIONS:
+    def __check_iteration_count(self):
+        self.__iterations += 1
+        if self.__iterations > MAX_METADATA_ITERATIONS:
             top_changers = Counter(self._reactor_changes).most_common(25)
             msg = _(
-                "MAX_METADATA_ITERATIONS({m}) exceeded for {node}, "
+                "MAX_METADATA_ITERATIONS({m}) exceeded, "
                 "likely an infinite loop between flip-flopping metadata reactors.\n"
                 "These are the reactors that changed most often:\n\n"
-            ).format(m=MAX_METADATA_ITERATIONS, node=node_name)
+            ).format(m=MAX_METADATA_ITERATIONS)
             for reactor, count in top_changers:
                 msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
             raise RuntimeError(msg)
 
     def __run_reactors(self):
+        self.__check_iteration_count()
         any_reactor_ran = False
+        only_keyerrors = True
         for with_keyerrors in (False, True):
             # make sure we run reactors that raised KeyError *after*
             # those that didn't to increase the chance of finding what
@@ -370,7 +378,9 @@ class MetadataGenerator:
                         if reactor_id in other_reactor_dict['triggering_reactors']:
                             other_reactor_dict['triggered_by'].add(reactor_id)
                             io.debug(f"rerun of {other_reactor} triggered by {reactor_id}")
-        return any_reactor_ran
+                if not self._reactors[(node_name, reactor_name)]['raised_keyerror_for']:
+                    only_keyerrors = False
+        return any_reactor_ran, only_keyerrors
 
     def __run_reactor(self, node, reactor_name, reactor):
 
