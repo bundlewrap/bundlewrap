@@ -298,6 +298,8 @@ class MetadataGenerator:
         The given reactor just added something to its requested paths,
         so we need to look for any other reactors that might provide
         this new path.
+
+        Yields all those reactors.
         """
         with io.job(_("{}  updating dependencies of {}").format(bold(reactor[0]), reactor[1])):
             for node_name, path in new_paths:
@@ -309,6 +311,7 @@ class MetadataGenerator:
                     if other_reactor_dict['provides'].covers(path) or other_reactor_dict['provides'].needs(path):
                         io.debug(f"registering {other_reactor_id} as triggering reactor for {reactor}")
                         self._reactors[reactor]['triggering_reactors'].add(other_reactor_id)
+                        yield other_reactor_id
 
     def __check_iteration_count(self, node_name): # XXX TODO FIXME
         self.__node_iterations[node_name] += 1
@@ -387,14 +390,13 @@ class MetadataGenerator:
             self._in_a_reactor = False
             self._reactors[self._current_reactor]['triggered_by'].clear()
             if self._current_reactor_newly_requested_paths:
-                self._update_triggering_reactors(
+                for reactor in self._update_triggering_reactors(
                     self._current_reactor,
                     self._current_reactor_newly_requested_paths,
-                )
-                for other_reactor, other_reactor_dict in self._reactors.items():
-                    if self._current_reactor in other_reactor_dict['triggering_reactors']:
-                        other_reactor_dict['triggered_by'].add(self._current_reactor)
-                        io.debug(f"rerun2 of {other_reactor} triggered by {self._current_reactor}")
+                ):
+                    # make sure these newly required reactors run at least once
+                    io.debug(f"triggering {reactor} as new dependency of {self._current_reactor}")
+                    self._reactors[reactor]['triggered_by'].add(self._current_reactor)
 
         # reactor terminated normally, clear any previously stored exception
         self._reactors[self._current_reactor]['raised_keyerror_for'] = None
