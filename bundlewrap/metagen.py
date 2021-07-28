@@ -144,7 +144,9 @@ class NodeMetadataProxy:
                 if self._metagen._reactors[self._metagen._current_reactor]['requested_paths'].add(
                     (self._node.name,) + path
                 ):
-                    self._metagen._current_reactor_newly_requested_paths.add((self._node.name, path))
+                    self._metagen._current_reactor_newly_requested_paths.add(
+                        (self._node.name, path)
+                    )
             else:
                 io.debug(f"metagen triggered by request for {path} on {self._node.name}")
                 self._metagen._trigger_reactors_for_path(
@@ -209,7 +211,8 @@ class MetadataGenerator:
 
     def _metadata_proxy_for_node(self, node_name):
         if node_name not in self._node_metadata_proxies:
-            self._node_metadata_proxies[node_name] = NodeMetadataProxy(self, self.get_node(node_name))
+            self._node_metadata_proxies[node_name] = \
+                NodeMetadataProxy(self, self.get_node(node_name))
         return self._node_metadata_proxies[node_name]
 
     def _build_node_metadata(self, initial_node_name):
@@ -308,8 +311,14 @@ class MetadataGenerator:
                         continue
                     if other_reactor_id == reactor:
                         continue
-                    if other_reactor_dict['provides'].covers(path) or other_reactor_dict['provides'].needs(path):
-                        io.debug(f"registering {other_reactor_id} as triggering reactor for {reactor}")
+                    if (
+                        other_reactor_dict['provides'].covers(path) or  # TODO do we need both?
+                        other_reactor_dict['provides'].needs(path)
+                    ):
+                        io.debug(
+                            f"registering {other_reactor_id} "
+                            f"as triggering reactor for {reactor}"
+                        )
                         self._reactors[reactor]['triggering_reactors'].add(other_reactor_id)
                         yield other_reactor_id
 
@@ -333,9 +342,15 @@ class MetadataGenerator:
             if reactor_dict['raised_donotrunagain']:
                 continue
             if reactor_dict['raised_keyerror_for']:
-                io.debug(f"running reactor {reactor_id} because it previously raised a KeyError for: {reactor_dict['raised_keyerror_for']}")
+                io.debug(
+                    f"running reactor {reactor_id} because "
+                    f"it previously raised a KeyError for: {reactor_dict['raised_keyerror_for']}"
+                )
             elif reactor_dict['triggered_by']:
-                io.debug(f"running reactor {reactor_id} because it was triggered by: {reactor_dict['triggered_by']}")
+                io.debug(
+                    f"running reactor {reactor_id} because "
+                    f"it was triggered by: {reactor_dict['triggered_by']}"
+                )
             else:
                 continue
             any_reactor_ran = True
@@ -368,6 +383,10 @@ class MetadataGenerator:
             if not self._reactors[self._current_reactor]['raised_keyerror_for']:
                 self._reactors[self._current_reactor]['raised_keyerror_for'] = 'UNKNOWN'
             self.__keyerrors[self._current_reactor] = exc
+            io.debug(
+                f"{self._current_reactor} raised KeyError: "
+                f"{self._reactors[self._current_reactor]['raised_keyerror_for']}"
+            )
             return False
         except DoNotRunAgain:
             self._reactors[self._current_reactor]['raised_donotrunagain'] = True
@@ -375,6 +394,7 @@ class MetadataGenerator:
             with suppress(KeyError):
                 del self.__keyerrors[self._current_reactor]
             self._current_reactor_newly_requested_paths.clear()
+            io.debug(f"{self._current_reactor} raised DoNotRunAgain")
             return False
         except Exception as exc:
             io.stderr(_(
@@ -437,5 +457,7 @@ class MetadataGenerator:
         changed = old_metadata != new_metadata
         if changed:
             self._reactor_changes[self._current_reactor] += 1
+
+        io.debug(f"{self._current_reactor} returned changed result: {changed}")
 
         return changed
