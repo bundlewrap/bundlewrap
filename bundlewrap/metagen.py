@@ -276,7 +276,7 @@ class MetadataGenerator:
 
         with io.job(_("{}  preparing metadata reactors").format(bold(node.name))):
             io.debug(f"adding {len(list(node.metadata_reactors))} reactors for {node.name}")
-            for reactor_name, reactor in node.metadata_reactors:
+            for reactor_name, reactor in randomize_order(node.metadata_reactors):
                 self._reactors[(node.name, reactor_name)] = {
                     'raised_keyerror_for': None,
                     'raised_donotrunagain': False,
@@ -354,7 +354,7 @@ class MetadataGenerator:
             # make sure we run reactors that raised KeyError *after*
             # those that didn't to increase the chance of finding what
             # those KeyErrors were looking for
-            for reactor_id, reactor_dict in randomize_order(self._reactors.items()):
+            for reactor_id, reactor_dict in list(self._reactors.items()):
                 node_name, reactor_name = reactor_id
                 if reactor_dict['raised_donotrunagain']:
                     continue
