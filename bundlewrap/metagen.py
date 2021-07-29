@@ -136,7 +136,6 @@ class NodeMetadataProxy:
         with self._metagen._node_metadata_lock:
             # The lock is required because there are several thread-unsafe things going on here:
             #
-            #   self._metagen._current_reactor_requested_paths
             #   self._metagen._current_reactor_newly_requested_paths
             #   self._metagen._build_node_metadata
             #   self._metastack
@@ -146,7 +145,6 @@ class NodeMetadataProxy:
             if self._node not in self._metagen._relevant_nodes:
                 self._metagen._initialize_node(self._node)
             if self._metagen._in_a_reactor:
-                self._metagen._current_reactor_requested_paths.add((self._node.name, path))
                 if self._metagen._reactors[self._metagen._current_reactor]['requested_paths'].add(
                     (self._node.name,) + path
                 ):
@@ -202,14 +200,10 @@ class MetadataGenerator:
         self.__reactors_run = 0
         # how often each reactor changed
         self._reactor_changes = defaultdict(int)
-        # how often each reactor ran
-        self._reactor_runs = defaultdict(int)
         # bw plot reactors
         self._reactor_call_graph = set()
         # are we currently executing a reactor?
         self._in_a_reactor = False
-        # all paths requested during the current run
-        self._current_reactor_requested_paths = set()
         # all new paths not requested before by the current reactor
         self._current_reactor_newly_requested_paths = set()
         # should reactor return values be checked against their declared keys?
@@ -390,9 +384,7 @@ class MetadataGenerator:
         self._in_a_reactor = True
         self._current_reactor = (node.name, reactor_name)
         self._current_reactor_provides = getattr(reactor, '_provides', (("/",),))  # used in .get()
-        self._current_reactor_requested_paths = set()
         self._current_reactor_newly_requested_paths = set()
-        self._reactor_runs[self._current_reactor] += 1
         try:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
