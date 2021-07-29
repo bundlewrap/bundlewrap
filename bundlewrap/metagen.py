@@ -29,6 +29,7 @@ class PathSet:
     """
 
     def __init__(self, paths=tuple()):
+        self._covers_cache = {}
         self._paths = set()
         for path in paths:
             self.add(path)
@@ -49,6 +50,7 @@ class PathSet:
         for existing_path in self._paths.copy():
             if list_starts_with(existing_path, new_path):
                 self._paths.remove(existing_path)
+        self._covers_cache = {}
         self._paths.add(new_path)
         return True
 
@@ -56,10 +58,16 @@ class PathSet:
         """
         Returns True if the given path is already included.
         """
-        for existing_path in self._paths:
-            if list_starts_with(candidate_path, existing_path):
-                return True
-        return False
+        try:
+            return self._covers_cache[candidate_path]
+        except KeyError:
+            result = False
+            for existing_path in self._paths:
+                if list_starts_with(candidate_path, existing_path):
+                    result = True
+                    break
+            self._covers_cache[candidate_path] = result
+            return result
 
     def relevant_for(self, candidate_path):
         """
