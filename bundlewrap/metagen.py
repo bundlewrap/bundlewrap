@@ -290,14 +290,13 @@ class MetadataGenerator:
         self._relevant_nodes.add(node)
 
     def _trigger_reactors_for_path(self, node_name, path, source):
-        for reactor_id, reactor_dict in self._reactors.items():
-            if reactor_id == source:
-                continue
-            if reactor_id[0] != node_name:
-                continue
-            if reactor_dict['provides'].relevant_for(path):
-                io.debug(f"{source} triggers {reactor_id}")
-                reactor_dict['triggered_by'].add(source)
+        reactors = self._reactors_for_path(node_name, path)
+        with suppress(KeyError):
+            # we don't want to trigger ourselves
+            reactors.remove(source)
+        for reactor_id in reactors:
+            io.debug(f"{source} triggers {reactor_id}")
+            self._reactors[reactor_id]['triggered_by'].add(source)
 
     def _reactors_for_path(self, node_name, path):
         try:
