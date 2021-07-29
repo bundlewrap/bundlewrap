@@ -200,6 +200,8 @@ class MetadataGenerator:
         self.__reactors_run = 0
         # how often each reactor changed
         self._reactor_changes = defaultdict(int)
+        # caches reactors providing paths
+        self._provides_cache = {}
         # bw plot reactors
         self._reactor_call_graph = set()
         # are we currently executing a reactor?
@@ -297,6 +299,19 @@ class MetadataGenerator:
                 io.debug(f"{source} triggers {reactor_id}")
                 reactor_dict['triggered_by'].add(source)
 
+    def _reactors_for_path(self, node_name, path):
+        try:
+            return self._provides_cache[(node_name, path)]
+        except KeyError:
+            result = set()
+            for other_reactor_id, other_reactor_dict in self._reactors.items():
+                if other_reactor_id[0] != node_name:
+                    continue
+                if other_reactor_dict['provides'].relevant_for(path):
+                    result.add(other_reactor_id)
+            self._provides_cache[(node_name, path)] = result
+            return result
+
     def _update_triggering_reactors(self, reactor, new_paths):
         """
         The given reactor just added something to its requested paths,
@@ -307,18 +322,17 @@ class MetadataGenerator:
         """
         with io.job(_("{}  updating dependencies of {}").format(bold(reactor[0]), reactor[1])):
             for node_name, path in new_paths:
-                for other_reactor_id, other_reactor_dict in self._reactors.items():
-                    if other_reactor_id[0] != node_name:
-                        continue
-                    if other_reactor_id == reactor:
-                        continue
-                    if other_reactor_dict['provides'].relevant_for(path):
-                        io.debug(
-                            f"registering {other_reactor_id} "
-                            f"as triggering reactor for {reactor}"
-                        )
-                        self._reactors[reactor]['triggering_reactors'].add(other_reactor_id)
-                        yield other_reactor_id
+                reactors = self._reactors_for_path(node_name, path)
+                with suppress(KeyError):
+                    # we don't want to trigger ourselves
+                    reactors.remove(reactor)
+                for other_reactor_id in reactors:
+                    io.debug(
+                        f"registering {other_reactor_id} "
+                        f"as triggering reactor for {reactor}"
+                    )
+                    self._reactors[reactor]['triggering_reactors'].add(other_reactor_id)
+                    yield other_reactor_id
 
     def __check_iteration_count(self):
         self.__iterations += 1
