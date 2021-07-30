@@ -17,6 +17,36 @@ from .utils.text import bold, mark_for_translation as _, red
 MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "1000"))
 
 
+class ReactorTree:
+    def __init__(self, path_location=None):
+        self._path_location = path_location
+        self._children = {}
+        self._reactors = set()
+
+    def add(self, reactor, path):
+        if path:
+            self._children.setdefault(
+                path[0],
+                ReactorTree(path_location=path[0]),
+            ).add(reactor, path[1:])
+        else:
+            self._reactors.add(reactor)
+
+    def reactors_for(self, path=None):
+        yield from self._reactors
+        if path:
+            try:
+                child = self._children[path[0]]
+            except KeyError:
+                pass
+            else:
+                yield from child.reactors_for(path[1:])
+        else:
+            # yield entire subtree
+            for child in self._children.values():
+                yield from child.reactors_for()
+
+
 class PathSet:
     """
     Collects metadata paths and stores only the highest levels ones.
@@ -68,21 +98,6 @@ class PathSet:
                     break
             self._covers_cache[candidate_path] = result
             return result
-
-    def relevant_for(self, candidate_path):
-        """
-        Returns True if any path in this set is required to provide
-        the requested path.
-        """
-        for existing_path in self._paths:
-            # when requesting 'foo/bar', we need to run reactors
-            # providing 'foo' as well as 'foo/bar/baz'
-            if (
-                list_starts_with(candidate_path, existing_path) or
-                list_starts_with(existing_path, candidate_path)
-            ):
-                return True
-        return False
 
 
 class NodeMetadataProxy:
@@ -157,7 +172,7 @@ class NodeMetadataProxy:
                     (self._node.name,) + path
                 ):
                     self._metagen._current_reactor_newly_requested_paths.add(
-                        (self._node.name, path)
+                        (self._node.name,) + path
                     )
             else:
                 io.debug(f"metagen triggered by request for {path} on {self._node.name}")
@@ -204,12 +219,12 @@ class MetadataGenerator:
         self._relevant_nodes = set()
         # keep track of reactors and their dependencies
         self._reactors = {}
+        # maps provided paths to their reactors
+        self._provides_tree = ReactorTree()
         # how often we called reactors
         self.__reactors_run = 0
         # how often each reactor changed
         self._reactor_changes = defaultdict(int)
-        # caches reactors providing paths
-        self._provides_cache = {}
         # bw plot reactors
         self._reactor_call_graph = set()
         # are we currently executing a reactor?
@@ -285,61 +300,29 @@ class MetadataGenerator:
         with io.job(_("{}  preparing metadata reactors").format(bold(node.name))):
             io.debug(f"adding {len(list(node.metadata_reactors))} reactors for {node.name}")
             for reactor_name, reactor in randomize_order(node.metadata_reactors):
+                # randomizing insertion order increases the chance of
+                # exposing weird reactors that depend on execution order
                 self._reactors[(node.name, reactor_name)] = {
                     'raised_keyerror_for': None,
                     'raised_donotrunagain': False,
                     'reactor': reactor,
                     'requested_paths': PathSet(),
-                    'triggering_reactors': set(),
+                    'trigger_on_change': set(),
                     'triggered_by': set(),
-                    'provides': PathSet(getattr(reactor, '_provides', (tuple(),))),
                 }
+                for path in getattr(reactor, '_provides', (tuple(),)):
+                    self._provides_tree.add(
+                        (node.name, reactor_name),
+                        (node.name,) + path,
+                    )
 
         self._relevant_nodes.add(node)
 
     def _trigger_reactors_for_path(self, node_name, path, source):
-        reactors = self._reactors_for_path(node_name, path)
-        with suppress(KeyError):
-            # we don't want to trigger ourselves
-            reactors.remove(source)
-        for reactor_id in reactors:
-            io.debug(f"{source} triggers {reactor_id}")
-            self._reactors[reactor_id]['triggered_by'].add(source)
-
-    def _reactors_for_path(self, node_name, path):
-        try:
-            return self._provides_cache[(node_name, path)]
-        except KeyError:
-            result = set()
-            for other_reactor_id, other_reactor_dict in self._reactors.items():
-                if other_reactor_id[0] != node_name:
-                    continue
-                if other_reactor_dict['provides'].relevant_for(path):
-                    result.add(other_reactor_id)
-            self._provides_cache[(node_name, path)] = result
-            return result
-
-    def _update_triggering_reactors(self, reactor, new_paths):
-        """
-        The given reactor just added something to its requested paths,
-        so we need to look for any other reactors that might provide
-        this new path.
-
-        Yields all those reactors.
-        """
-        with io.job(_("{}  updating dependencies of {}").format(bold(reactor[0]), reactor[1])):
-            for node_name, path in new_paths:
-                reactors = self._reactors_for_path(node_name, path)
-                with suppress(KeyError):
-                    # we don't want to trigger ourselves
-                    reactors.remove(reactor)
-                for other_reactor_id in reactors:
-                    io.debug(
-                        f"registering {other_reactor_id} "
-                        f"as triggering reactor for {reactor}"
-                    )
-                    self._reactors[reactor]['triggering_reactors'].add(other_reactor_id)
-                    yield other_reactor_id
+        for reactor in self._provides_tree.reactors_for((node_name,) + path):
+            if reactor != source:  # we don't want to trigger ourselves
+                io.debug(f"{source} triggers {reactor}")
+                self._reactors[reactor]['triggered_by'].add(source)
 
     def __check_iteration_count(self):
         self.__iterations += 1
@@ -389,10 +372,10 @@ class MetadataGenerator:
                     reactor_dict['reactor'],
                 ):
                     # reactor changed return value
-                    for other_reactor, other_reactor_dict in self._reactors.items():
-                        if reactor_id in other_reactor_dict['triggering_reactors']:
-                            other_reactor_dict['triggered_by'].add(reactor_id)
-                            io.debug(f"rerun of {other_reactor} triggered by {reactor_id}")
+                    reactor_id = (node_name, reactor_name)
+                    for triggered_reactor in self._reactors[reactor_id]['trigger_on_change']:
+                        io.debug(f"rerun of {triggered_reactor} triggered by {reactor_id}")
+                        self._reactors[triggered_reactor]['triggered_by'].add(reactor_id)
                 if not self._reactors[(node_name, reactor_name)]['raised_keyerror_for']:
                     only_keyerrors = False
         return any_reactor_ran, only_keyerrors
@@ -438,13 +421,11 @@ class MetadataGenerator:
         finally:
             self._in_a_reactor = False
             self._reactors[self._current_reactor]['triggered_by'].clear()
-            if self._current_reactor_newly_requested_paths:
-                for reactor in self._update_triggering_reactors(
-                    self._current_reactor,
-                    self._current_reactor_newly_requested_paths,
-                ):
+            for path in self._current_reactor_newly_requested_paths:
+                for reactor in self._provides_tree.reactors_for(path):
                     # make sure these newly required reactors run at least once
                     io.debug(f"triggering {reactor} as new dependency of {self._current_reactor}")
+                    self._reactors[reactor]['trigger_on_change'].add(self._current_reactor)
                     self._reactors[reactor]['triggered_by'].add(self._current_reactor)
 
         # reactor terminated normally, clear any previously stored exception
