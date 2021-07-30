@@ -181,7 +181,8 @@ class NodeMetadataProxy:
                     path,
                     f"initial request for {path}",
                 )
-                self._metagen._build_node_metadata(self._node)
+                with io.job(bold(_("building metadata..."))):
+                    self._metagen._build_node_metadata(self._node)
 
             try:
                 return self._metastack.get(path)
@@ -366,12 +367,16 @@ class MetadataGenerator:
                 else:
                     continue
                 any_reactor_ran = True
-                if self.__run_reactor(
-                    self.get_node(node_name),
-                    reactor_name,
-                    reactor_dict['reactor'],
-                ):
-                    # reactor changed return value
+                with io.job(_("{node}  running {reactor}...").format(
+                    node=bold(node_name),
+                    reactor=bold(reactor_name),
+                )):
+                    reactor_changed_return_value = self.__run_reactor(
+                        self.get_node(node_name),
+                        reactor_name,
+                        reactor_dict['reactor'],
+                    )
+                if reactor_changed_return_value:
                     reactor_id = (node_name, reactor_name)
                     for triggered_reactor in self._reactors[reactor_id]['trigger_on_change']:
                         io.debug(f"rerun of {triggered_reactor} triggered by {reactor_id}")
