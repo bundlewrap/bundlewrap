@@ -186,15 +186,14 @@ class NodeMetadataProxy:
 
             try:
                 return self._metastack.get(path)
-            except KeyError:
+            except KeyError as exc:
                 if default != NO_DEFAULT:
                     return default
                 else:
                     if self._metagen._in_a_reactor:
-                        self._metagen._reactors[
-                            self._metagen._current_reactor
-                        ]['raised_keyerror_for'] = (self._node.name, path)
-                    raise
+                        self._metagen._reactors_with_keyerrors[self._metagen._current_reactor] = \
+                            ((self._node.name, path), exc)
+                    raise exc
 
     def items(self):
         return self.get(tuple()).items()
@@ -214,12 +213,14 @@ class MetadataGenerator:
         self._node_metadata_lock = RLock()
         # guard against infinite loops
         self.__iterations = 0
-        # reactors that raised KeyErrors (and which ones)
-        self.__keyerrors = {}
         # all nodes involved with currently requested metadata
         self._relevant_nodes = set()
         # keep track of reactors and their dependencies
         self._reactors = {}
+        # which reactors are currently triggered (and by what)
+        self._reactors_triggered = defaultdict(set)
+        # which reactors raised a KeyError (and for what)
+        self._reactors_with_keyerrors = {}
         # maps provided paths to their reactors
         self._provides_tree = ReactorTree()
         # how often we called reactors
@@ -256,14 +257,15 @@ class MetadataGenerator:
                 break
             io.debug("reactor run completed, rerunning relevant reactors")
 
-        if self.__keyerrors and not QUIT_EVENT.is_set():
+        if self._reactors_with_keyerrors and not QUIT_EVENT.is_set():
             msg = _(
                 "These metadata reactors raised a KeyError "
                 "even after all other reactors were done:"
             )
-            for source, exc in sorted(self.__keyerrors.items()):
+            for source, path_exc in sorted(self._reactors_with_keyerrors.items()):
                 node_name, reactor = source
-                msg += f"\n\n  {node_name} {reactor}\n\n"
+                path, exc = path_exc
+                msg += f"\n\n  {node_name} {reactor}\n  accessing {path}\n\n"
                 for line in TracebackException.from_exception(exc).format():
                     msg += "    " + line
             raise MetadataPersistentKeyError(msg)
@@ -304,12 +306,10 @@ class MetadataGenerator:
                 # randomizing insertion order increases the chance of
                 # exposing weird reactors that depend on execution order
                 self._reactors[(node.name, reactor_name)] = {
-                    'raised_keyerror_for': None,
                     'raised_donotrunagain': False,
                     'reactor': reactor,
                     'requested_paths': PathSet(),
                     'trigger_on_change': set(),
-                    'triggered_by': set(),
                 }
                 for path in getattr(reactor, '_provides', (tuple(),)):
                     self._provides_tree.add(
@@ -323,7 +323,7 @@ class MetadataGenerator:
         for reactor in self._provides_tree.reactors_for((node_name,) + path):
             if reactor != source:  # we don't want to trigger ourselves
                 io.debug(f"{source} triggers {reactor}")
-                self._reactors[reactor]['triggered_by'].add(source)
+                self._reactors_triggered[reactor].add(source)
 
     def __check_iteration_count(self):
         self.__iterations += 1
@@ -342,47 +342,57 @@ class MetadataGenerator:
         self.__check_iteration_count()
         any_reactor_ran = False
         only_keyerrors = True
-        for with_keyerrors in (False, True):
-            # make sure we run reactors that raised KeyError *after*
-            # those that didn't to increase the chance of finding what
-            # those KeyErrors were looking for
-            for reactor_id, reactor_dict in list(self._reactors.items()):
-                node_name, reactor_name = reactor_id
-                if reactor_dict['raised_donotrunagain']:
-                    continue
-                if reactor_dict['raised_keyerror_for']:
-                    if not with_keyerrors:
-                        continue
-                    io.debug(
-                        f"running reactor {reactor_id} because "
-                        f"it previously raised a KeyError for: {reactor_dict['raised_keyerror_for']}"
-                    )
-                elif reactor_dict['triggered_by']:
-                    if with_keyerrors:
-                        continue
-                    io.debug(
-                        f"running reactor {reactor_id} because "
-                        f"it was triggered by: {reactor_dict['triggered_by']}"
-                    )
-                else:
-                    continue
-                any_reactor_ran = True
-                with io.job(_("{node}  running {reactor}...").format(
-                    node=bold(node_name),
-                    reactor=bold(reactor_name),
-                )):
-                    reactor_changed_return_value = self.__run_reactor(
-                        self.get_node(node_name),
-                        reactor_name,
-                        reactor_dict['reactor'],
-                    )
-                if reactor_changed_return_value:
-                    reactor_id = (node_name, reactor_name)
-                    for triggered_reactor in self._reactors[reactor_id]['trigger_on_change']:
-                        io.debug(f"rerun of {triggered_reactor} triggered by {reactor_id}")
-                        self._reactors[triggered_reactor]['triggered_by'].add(reactor_id)
-                if not self._reactors[(node_name, reactor_name)]['raised_keyerror_for']:
-                    only_keyerrors = False
+
+        reactors_triggered = self._reactors_triggered
+        self._reactors_triggered = defaultdict(set)
+
+        reactors_with_keyerrors = self._reactors_with_keyerrors
+        self._reactors_with_keyerrors = {}
+
+        for reactor_id, triggers in reactors_triggered.items():
+            if self._reactors[reactor_id]['raised_donotrunagain']:
+                continue
+            any_reactor_ran = True
+            node_name, reactor_name = reactor_id
+            io.debug(
+                f"running reactor {reactor_id} because "
+                f"it was triggered by: {triggers}"
+            )
+            with io.job(_("{node}  running {reactor}...").format(
+                node=bold(node_name),
+                reactor=bold(reactor_name),
+            )):
+                self.__run_reactor(
+                    self.get_node(node_name),
+                    reactor_name,
+                    self._reactors[reactor_id]['reactor'],
+                )
+
+            if (node_name, reactor_name) not in self._reactors_with_keyerrors:
+                only_keyerrors = False
+
+        for reactor_id, path_exc in reactors_with_keyerrors.items():
+            if self._reactors[reactor_id]['raised_donotrunagain']:
+                continue
+            any_reactor_ran = True
+            node_name, reactor_name = reactor_id
+            io.debug(
+                f"running reactor {reactor_id} because "
+                f"it previously raised a KeyError for: {path_exc[0]}"
+            )
+            with io.job(_("{node}  running {reactor}...").format(
+                node=bold(node_name),
+                reactor=bold(reactor_name),
+            )):
+                self.__run_reactor(
+                    self.get_node(node_name),
+                    reactor_name,
+                    self._reactors[reactor_id]['reactor'],
+                )
+
+            if (node_name, reactor_name) not in self._reactors_with_keyerrors:
+                only_keyerrors = False
+
         return any_reactor_ran, only_keyerrors
 
     def __run_reactor(self, node, reactor_name, reactor):
@@ -397,19 +407,32 @@ class MetadataGenerator:
         try:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
-            if not self._reactors[self._current_reactor]['raised_keyerror_for']:
-                self._reactors[self._current_reactor]['raised_keyerror_for'] = 'UNKNOWN'
-            self.__keyerrors[self._current_reactor] = exc
+            if self._current_reactor not in self._reactors_with_keyerrors:
+                # Uncomment this in 5.0 and remove the rest of this block
+                # # this is a KeyError that didn't result from metadata.get()
+                # io.stderr(_(
+                #     "{x} KeyError while executing metadata reactor "
+                #     "{metaproc} for node {node}:"
+                # ).format(
+                #     x=red("!!!"),
+                #     metaproc=reactor_name,
+                #     node=node.name,
+                # ))
+                # raise exc
+                self._reactors_with_keyerrors[self._current_reactor] = (
+                    ('UNKNOWN', ('UNKNOWN',)),
+                    exc,
+                )
             io.debug(
                 f"{self._current_reactor} raised KeyError: "
-                f"{self._reactors[self._current_reactor]['raised_keyerror_for']}"
+                f"{self._reactors_with_keyerrors[self._current_reactor]}"
             )
             return False
         except DoNotRunAgain:
             self._reactors[self._current_reactor]['raised_donotrunagain'] = True
             # clear any previously stored exception
             with suppress(KeyError):
-                del self.__keyerrors[self._current_reactor]
+                del self._reactors_with_keyerrors[self._current_reactor]
             self._current_reactor_newly_requested_paths.clear()
             io.debug(f"{self._current_reactor} raised DoNotRunAgain")
             return False
@@ -425,18 +448,18 @@ class MetadataGenerator:
             raise exc
         finally:
             self._in_a_reactor = False
-            self._reactors[self._current_reactor]['triggered_by'].clear()
+            with suppress(KeyError):
+                del self._reactors_triggered[self._current_reactor]
             for path in self._current_reactor_newly_requested_paths:
                 for reactor in self._provides_tree.reactors_for(path):
                     # make sure these newly required reactors run at least once
                     io.debug(f"triggering {reactor} as new dependency of {self._current_reactor}")
                     self._reactors[reactor]['trigger_on_change'].add(self._current_reactor)
-                    self._reactors[reactor]['triggered_by'].add(self._current_reactor)
+                    self._reactors_triggered[reactor].add(self._current_reactor)
 
         # reactor terminated normally, clear any previously stored exception
-        self._reactors[self._current_reactor]['raised_keyerror_for'] = None
         with suppress(KeyError):
-            del self.__keyerrors[self._current_reactor]
+            del self._reactors_with_keyerrors[self._current_reactor]
 
         if self._verify_reactor_provides and getattr(reactor, '_provides', None):
             extra_paths = extra_paths_in_dict(new_metadata, reactor._provides)
@@ -469,10 +492,11 @@ class MetadataGenerator:
             ))
             raise exc
 
-        changed = old_metadata != new_metadata
-        if changed:
+        if old_metadata != new_metadata:
+            io.debug(f"{self._current_reactor} returned changed result")
             self._reactor_changes[self._current_reactor] += 1
-
-        io.debug(f"{self._current_reactor} returned changed result: {changed}")
-
-        return changed
+            for triggered_reactor in self._reactors[self._current_reactor]['trigger_on_change']:
+                io.debug(f"rerun of {triggered_reactor} triggered by {self._current_reactor}")
+                self._reactors_triggered[triggered_reactor].add(self._current_reactor)
+        else:
+            io.debug(f"{self._current_reactor} returned same result")
