@@ -222,12 +222,11 @@ class MetadataGenerator:
         self._reactors_with_keyerrors = {}
         # maps provided paths to their reactors
         self._provides_tree = ReactorTree()
-        # how often we called reactors
-        self.__reactors_run = 0
         # how often each reactor changed
         self._reactor_changes = defaultdict(int)
         # bw plot reactors
         self._reactor_call_graph = set()
+        self._reactor_runs = defaultdict(int)
         # are we currently executing a reactor?
         self._in_a_reactor = False
         # all new paths not requested before by the current reactor
@@ -388,13 +387,13 @@ class MetadataGenerator:
         return any_reactor_ran, only_keyerrors
 
     def __run_reactor(self, node, reactor_name, reactor):
-        self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
         old_metadata = node.metadata._metastack.pop_layer(1, reactor_name)
         self._in_a_reactor = True
         self._current_reactor = (node.name, reactor_name)
         self._current_reactor_provides = getattr(reactor, '_provides', (("/",),))  # used in .get()
         self._current_reactor_newly_requested_paths = set()
+        self._reactor_runs[self._current_reactor] += 1
         try:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
