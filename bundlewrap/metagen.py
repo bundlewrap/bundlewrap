@@ -177,8 +177,7 @@ class NodeMetadataProxy:
             else:
                 io.debug(f"metagen triggered by request for {path} on {self._node.name}")
                 self._metagen._trigger_reactors_for_path(
-                    self._node.name,
-                    path,
+                    (self._node.name,) + path,
                     f"initial request for {path}",
                 )
                 with io.job(bold(_("building metadata..."))):
@@ -319,11 +318,16 @@ class MetadataGenerator:
 
         self._relevant_nodes.add(node)
 
-    def _trigger_reactors_for_path(self, node_name, path, source):
-        for reactor in self._provides_tree.reactors_for((node_name,) + path):
+    def _trigger_reactors_for_path(self, path, source):
+        result = set()
+        for reactor in self._provides_tree.reactors_for(path):
+            if self._reactors[reactor]['raised_donotrunagain']:
+                continue
             if reactor != source:  # we don't want to trigger ourselves
                 io.debug(f"{source} triggers {reactor}")
                 self._reactors_triggered[reactor].add(source)
+                result.add(reactor)
+        return result
 
     def __check_iteration_count(self):
         self.__iterations += 1
@@ -338,11 +342,7 @@ class MetadataGenerator:
                 msg += f"  {count}\t{reactor[0]}\t{reactor[1]}\n"
             raise RuntimeError(msg)
 
-    def __run_reactors(self):
-        self.__check_iteration_count()
-        any_reactor_ran = False
-        only_keyerrors = True
-
+    def __reactors_to_run(self):
         reactors_triggered = self._reactors_triggered
         self._reactors_triggered = defaultdict(set)
 
@@ -350,36 +350,28 @@ class MetadataGenerator:
         self._reactors_with_keyerrors = {}
 
         for reactor_id, triggers in reactors_triggered.items():
-            if self._reactors[reactor_id]['raised_donotrunagain']:
-                continue
-            any_reactor_ran = True
-            node_name, reactor_name = reactor_id
-            io.debug(
+            yield (
+                reactor_id,
                 f"running reactor {reactor_id} because "
-                f"it was triggered by: {triggers}"
+                f"it was triggered by: {triggers}",
             )
-            with io.job(_("{node}  running {reactor}...").format(
-                node=bold(node_name),
-                reactor=bold(reactor_name),
-            )):
-                self.__run_reactor(
-                    self.get_node(node_name),
-                    reactor_name,
-                    self._reactors[reactor_id]['reactor'],
-                )
-
-            if (node_name, reactor_name) not in self._reactors_with_keyerrors:
-                only_keyerrors = False
 
         for reactor_id, path_exc in reactors_with_keyerrors.items():
-            if self._reactors[reactor_id]['raised_donotrunagain']:
-                continue
-            any_reactor_ran = True
-            node_name, reactor_name = reactor_id
-            io.debug(
+            yield (
+                reactor_id,
                 f"running reactor {reactor_id} because "
                 f"it previously raised a KeyError for: {path_exc[0]}"
             )
+
+    def __run_reactors(self):
+        self.__check_iteration_count()
+        any_reactor_ran = False
+        only_keyerrors = True
+
+        for reactor_id, debug_msg in self.__reactors_to_run():
+            any_reactor_ran = True
+            node_name, reactor_name = reactor_id
+            io.debug(debug_msg)
             with io.job(_("{node}  running {reactor}...").format(
                 node=bold(node_name),
                 reactor=bold(reactor_name),
@@ -396,7 +388,6 @@ class MetadataGenerator:
         return any_reactor_ran, only_keyerrors
 
     def __run_reactor(self, node, reactor_name, reactor):
-
         self.__reactors_run += 1
         # make sure the reactor doesn't react to its own output
         old_metadata = node.metadata._metastack.pop_layer(1, reactor_name)
@@ -451,11 +442,8 @@ class MetadataGenerator:
             with suppress(KeyError):
                 del self._reactors_triggered[self._current_reactor]
             for path in self._current_reactor_newly_requested_paths:
-                for reactor in self._provides_tree.reactors_for(path):
-                    # make sure these newly required reactors run at least once
-                    io.debug(f"triggering {reactor} as new dependency of {self._current_reactor}")
+                for reactor in self._trigger_reactors_for_path(path, self._current_reactor):
                     self._reactors[reactor]['trigger_on_change'].add(self._current_reactor)
-                    self._reactors_triggered[reactor].add(self._current_reactor)
 
         # reactor terminated normally, clear any previously stored exception
         with suppress(KeyError):
