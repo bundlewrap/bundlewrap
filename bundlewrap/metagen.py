@@ -58,7 +58,7 @@ class PathSet:
     {"foo"}
     """
 
-    def __init__(self, paths=tuple()):
+    def __init__(self, paths=()):
         self._covers_cache = {}
         self._paths = set()
         for path in paths:
@@ -313,7 +313,7 @@ class MetadataGenerator:
                     'requested_paths': PathSet(),
                     'trigger_on_change': set(),
                 }
-                for path in getattr(reactor, '_provides', (tuple(),)):
+                for path in getattr(reactor, '_provides', ((),)):
                     self._provides_tree.add(
                         (node.name, reactor_name),
                         (node.name,) + path,
