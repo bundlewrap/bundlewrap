@@ -245,7 +245,7 @@ class MetadataGenerator:
     def _build_node_metadata(self, initial_node_name):
         self.__iterations = 0
 
-        while not QUIT_EVENT.is_set():
+        while True:
             self.__check_iteration_count()
 
             io.debug("starting reactor run")
@@ -259,7 +259,7 @@ class MetadataGenerator:
                 break
             io.debug("reactor run completed, rerunning relevant reactors")
 
-        if self._reactors_with_keyerrors and not QUIT_EVENT.is_set():
+        if self._reactors_with_keyerrors:
             msg = _(
                 "These metadata reactors raised a KeyError "
                 "even after all other reactors were done:"
@@ -371,6 +371,11 @@ class MetadataGenerator:
         only_keyerrors = True
 
         for reactor_id, debug_msg in self.__reactors_to_run():
+            if QUIT_EVENT.is_set():
+                # It's important that we don't just `break` here and
+                # end up returning incomplete metadata.
+                raise KeyboardInterrupt
+
             any_reactor_ran = True
             node_name, reactor_name = reactor_id
             io.debug(debug_msg)

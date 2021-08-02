@@ -251,10 +251,40 @@ def apply_items(
         io.progress_advance()
         results.append((item.id, status_code, duration))
 
+    def handle_exception(task_id, exc, traceback):
+        item_id = task_id.split(":", 1)[1]
+        item = find_item(item_id, item_queue.pending_items)
+
+        for skipped_item in item_queue.item_failed(item):
+            handle_apply_result(
+                node,
+                skipped_item,
+                Item.STATUS_SKIPPED,
+                interactive=interactive,
+                details=Item.SKIP_REASON_DEP_FAILED,
+            )
+            results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
+
+        handle_apply_result(
+            node,
+            item,
+            Item.STATUS_FAILED,
+            interactive=interactive,
+            details=None,
+            show_diff=False,
+        )
+        results.append((item.id, Item.STATUS_FAILED, timedelta(0)))
+        output = prefix_lines(traceback, red("│ "))
+        output += prefix_lines(repr(exc), red("│ "))
+        output += red("╵")
+        io.stderr(output)
+        io.progress_advance()
+
     worker_pool = WorkerPool(
         tasks_available,
         next_task,
         handle_result=handle_result,
+        handle_exception=handle_exception,
         pool_id="apply_{}".format(node.name),
         workers=workers,
     )
@@ -315,16 +345,16 @@ def _flatten_group_hierarchy(groups):
 def format_item_command_results(results):
     output = ""
 
-    for i in range(len(results)):
-        stdout = results[i]['result'].stdout_text.strip()
-        stderr = results[i]['result'].stderr_text.strip()
+    for result in results:
+        stdout = result['result'].stdout_text.strip()
+        stderr = result['result'].stderr_text.strip()
 
         # show command
         output += "{b}".format(b=red('│'))
         output += "\n{b} {command} (return code: {code}{no_output})\n".format(
             b=red('├─'),
-            command=bold(results[i]['command']),
-            code=bold(results[i]['result'].return_code),
+            command=bold(result['command']),
+            code=bold(result['result'].return_code),
             no_output='' if stdout or stderr else '; no output'
         )
 
