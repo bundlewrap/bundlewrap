@@ -243,7 +243,11 @@ class MetadataGenerator:
         return self._node_metadata_proxies[node_name]
 
     def _build_node_metadata(self, initial_node_name):
+        self.__iterations = 0
+
         while not QUIT_EVENT.is_set():
+            self.__check_iteration_count()
+
             io.debug("starting reactor run")
             any_reactor_ran, only_keyerrors = self.__run_reactors()
             if not any_reactor_ran:
@@ -363,7 +367,6 @@ class MetadataGenerator:
             )
 
     def __run_reactors(self):
-        self.__check_iteration_count()
         any_reactor_ran = False
         only_keyerrors = True
 
