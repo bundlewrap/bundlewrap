@@ -444,8 +444,8 @@ class MetadataGenerator:
             with suppress(KeyError):
                 del self._reactors_triggered[self._current_reactor]
             for path in self._current_reactor_newly_requested_paths:
-                for reactor in self._trigger_reactors_for_path(path, self._current_reactor):
-                    self._reactors[reactor]['trigger_on_change'].add(self._current_reactor)
+                for needed_reactor in self._trigger_reactors_for_path(path, self._current_reactor):
+                    self._reactors[needed_reactor]['trigger_on_change'].add(self._current_reactor)
 
         # reactor terminated normally, clear any previously stored exception
         with suppress(KeyError):
