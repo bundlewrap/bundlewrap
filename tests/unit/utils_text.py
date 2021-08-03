@@ -6,6 +6,7 @@ from bundlewrap.utils.text import (
     format_duration,
     red,
     parse_duration,
+    trim_visible_len_to,
 )
 
 
@@ -45,3 +46,12 @@ def test_parse_format_inverse():
         "1d 4h 7s",
     ):
         assert format_duration(parse_duration(duration)) == duration
+
+
+def test_trim_visible_len_to():
+    assert trim_visible_len_to("foo bar", 10) == "foo bar"
+    assert trim_visible_len_to("foo bar", 3) == "foo"
+    assert trim_visible_len_to("\033[1mfoo bar", 3) == "\033[1mfoo"
+    assert trim_visible_len_to("foo \033[1mbar\033[0m", 4) == "foo "
+    assert trim_visible_len_to("foo \033[1mbar\033[0m", 5) == "foo \033[1mb"
+    assert trim_visible_len_to("föö \033[1mbär\033[0m", 7) == "föö \033[1mbär"

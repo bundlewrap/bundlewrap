@@ -22,6 +22,7 @@ from .text import (
     bold,
     format_duration,
     mark_for_translation as _,
+    trim_visible_len_to,
 )
 
 
@@ -408,8 +409,6 @@ class IOManager:
     def _write_current_job(self):
         if self.jobs and TTY:
             line = "{} ".format(blue(self._spinner_character()))
-            # must track line length manually as len() will count ANSI escape codes
-            visible_length = 2
             try:
                 progress = (self.progress / float(self.progress_total))
             except ZeroDivisionError:
@@ -417,9 +416,11 @@ class IOManager:
             else:
                 progress_text = "{:.1f}%  ".format(progress * 100)
                 line += bold(progress_text)
-                visible_length += len(progress_text)
-            line += self.jobs[-1][:get_terminal_size().columns - 1 - visible_length]
-            write_to_stream(STDOUT_WRITER, line)
+            line += self.jobs[-1]
+            write_to_stream(
+                STDOUT_WRITER,
+                trim_visible_len_to(line, get_terminal_size().columns),
+            )
             self._status_line_present = True
 
 
