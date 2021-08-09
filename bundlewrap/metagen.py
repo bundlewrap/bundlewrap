@@ -180,7 +180,7 @@ class NodeMetadataProxy:
                     (self._node.name,) + path,
                     f"initial request for {path}",
                 )
-                with io.job(bold(_("building metadata..."))):
+                with io.job(_("building metadata...")):
                     self._metagen._build_node_metadata(self._node)
 
             try:
@@ -379,9 +379,10 @@ class MetadataGenerator:
             any_reactor_ran = True
             node_name, reactor_name = reactor_id
             io.debug(debug_msg)
-            with io.job(_("{node}  running {reactor}...").format(
-                node=bold(node_name),
-                reactor=bold(reactor_name),
+            with io.job(_("building metadata ({} nodes, {} reactors, {} iterations)...").format(
+                len(self._relevant_nodes),
+                len(self._reactors),
+                self.__iterations,
             )):
                 self.__run_reactor(
                     self.get_node(node_name),

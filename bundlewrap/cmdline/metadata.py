@@ -5,7 +5,7 @@ from sys import exit, version_info
 
 from ..metadata import metadata_to_json
 from ..utils import Fault, list_starts_with
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import exit_on_keyboardinterrupt, get_target_nodes
 from ..utils.dicts import (
     delete_key_at_path,
     replace_key_at_path,
@@ -93,6 +93,7 @@ def _sort_dict_colorblind(old_dict):
     return new_dict
 
 
+@exit_on_keyboardinterrupt
 def bw_metadata(repo, args):
     target_nodes = get_target_nodes(repo, args['targets'])
     key_paths = sorted([
