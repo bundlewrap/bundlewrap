@@ -278,3 +278,19 @@ def toml_clean(s):
             previous = ""
         result.append(line)
     return "\n".join(result) + "\n"
+
+
+def trim_visible_len_to(line, target_len):
+    use_until = 0
+    visible_len = 0
+    in_sequence = False
+    while use_until < len(line) and visible_len < target_len:
+        if line[use_until] == "\033":
+            in_sequence = True
+        elif in_sequence and line[use_until] == "m":
+            in_sequence = False
+        elif not in_sequence:
+            visible_len += 1
+        use_until += 1
+
+    return line[:use_until]
