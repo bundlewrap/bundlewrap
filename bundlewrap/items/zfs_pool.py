@@ -174,12 +174,14 @@ class ZFSPool(Item):
                     node=bundle.node.name,
                 ))
 
-            if config.get('type') == 'log':
-                if not 0 < len(config['devices']) < 3:
-                    raise BundleError(_(
-                        "{item} on node {node} type 'log' must use exactly "
-                        "one or two devices"
-                    ).format(
-                        item=item_id,
-                        node=bundle.node.name,
-                    ))
+            if (
+                config.get('type') == 'log' and
+                len(config['devices']) not in (1, 2)
+            ):
+                raise BundleError(_(
+                    "{item} on node {node} type 'log' must use exactly "
+                    "one or two devices"
+                ).format(
+                    item=item_id,
+                    node=bundle.node.name,
+                ))
