@@ -60,7 +60,10 @@ class ZFSPool(Item):
                     res = self.run("lsblk -rndo fstype {}".format(quote(device)))
                     detected = res.stdout.decode('UTF-8').strip()
                     if detected != "":
-                        raise BundleError(_("Node {}, ZFSPool {}: Device {} to be used for ZFS, but it is not empty! Has '{}'.").format(self.node.name, self.name, device, detected))
+                        raise BundleError(_(
+                            "Node {}, ZFSPool {}: Device {} to be used for ZFS, "
+                            "but it is not empty! Has '{}'."
+                        ).format(self.node.name, self.name, device, detected))
 
                     cmdline.append(quote(device))
 
@@ -84,7 +87,10 @@ class ZFSPool(Item):
             return {}
 
         pool_status = {}
-        for line in self.run('zpool get all -H -o all {}'.format(quote(self.name)), may_fail=True).stdout.decode().splitlines():
+        for line in self.run(
+            'zpool get all -H -o all {}'.format(quote(self.name)),
+            may_fail=True,
+        ).stdout.decode().splitlines():
             try:
                 pname, prop, value, source = line.split()
                 pool_status[prop.strip()] = value.strip()
@@ -125,7 +131,9 @@ class ZFSPool(Item):
                     self=self.name,
                     other=item.name,
                     node=self.node.name,
-                    devices=_(" and ").join(set(item.devices_used).intersection(set(self.devices_used))),
+                    devices=_(" and ").join(
+                        set(item.devices_used).intersection(set(self.devices_used)),
+                    ),
                 ))
 
     @classmethod
@@ -139,7 +147,15 @@ class ZFSPool(Item):
             ))
 
         for config in attributes['config']:
-            if config.get('type', None) not in {None, 'mirror', 'raidz', 'raidz2', 'raidz3', 'cache', 'log'}:
+            if config.get('type', None) not in {
+                None,
+                'mirror',
+                'raidz',
+                'raidz2',
+                'raidz3',
+                'cache',
+                'log',
+            }:
                 raise BundleError(_(
                     "{item} on node {node} has invalid type '{type}', "
                     "must be one of (unset), 'mirror', 'raidz', 'raidz2', "
