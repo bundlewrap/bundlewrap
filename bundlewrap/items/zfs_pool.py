@@ -57,7 +57,7 @@ class ZFSPool(Item):
                         cmdline.append('mirror')
 
                 for device in sorted(option['devices']):
-                    res = node.run("lsblk -rndo fstype {}".format(quote(device)))
+                    res = self.run("lsblk -rndo fstype {}".format(quote(device)))
                     detected = res.stdout.decode('UTF-8').strip()
                     if detected != "":
                         raise BundleError(_("Node {}, ZFSPool {}: Device {} to be used for ZFS, but it is not empty! Has '{}'.").format(self.node.name, self.name, device, detected))
