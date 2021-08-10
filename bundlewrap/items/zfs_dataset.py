@@ -132,7 +132,7 @@ class ZFSDataset(Item):
             return None
 
         sdict = {}
-        for option, value in self.attributes.items():
+        for option in self.attributes:
             sdict[option] = self.__get_option(self.name, option)
         sdict['mounted'] = self.__get_option(self.name, 'mounted')
         return sdict
