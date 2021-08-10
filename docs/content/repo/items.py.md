@@ -62,6 +62,8 @@ This table lists all item types included in BundleWrap along with the bundle att
 <tr><td><a href="../../items/svc_upstart">svc_upstart</a></td><td><code>svc_upstart</code></td><td>Starts and stops services with Upstart</td></tr>
 <tr><td><a href="../../items/symlink">symlink</a></td><td><code>symlinks</code></td><td>Manages symbolic links and their ownership</td></tr>
 <tr><td><a href="../../items/user">user</a></td><td><code>users</code></td><td>Manages users by wrapping <code>useradd</code>, <code>usermod</code> and <code>userdel</code></td></tr>
+<tr><td><a href="../../items/zfs_dataset">zfs_dataset</a></td><td><code>zfs_datasets</code></td><td>Manages ZFS datasets</td></tr>
+<tr><td><a href="../../items/zfs_pool">zfs_pool</a></td><td><code>zfs_pools</code></td><td>Manages ZFS pools</td></tr>
 </table>
 
 <br>

@@ -1,8 +1,8 @@
 # ZFS datasets
 
-Manages ZFS dataset.
+Manages ZFS datasets.
 
-    zfs_datasetss = {
+    zfs_datasets = {
         "tank/mydataset": {
             "acltype": "posixacl",
             "atime": "on",

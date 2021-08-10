@@ -81,5 +81,6 @@ While the following list might appear long, even very minimal systems should pro
 * `tar` (only used with [git_deploy](../items/git_deploy.md) items)
 * `useradd`
 * `usermod`
+* `zfs` and `zpool` (only used with [zfs_dataset](../items/zfs_dataset.md) and [zfs_pool](../items/zfs_pool.md) items)
 
 Additionally, you need to pre-configure your SSH client so that it can connect to your nodes without having to type a password (including `sudo` on the node, which also must *not* have the `requiretty` option set).
