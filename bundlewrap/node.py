@@ -405,7 +405,7 @@ def format_item_result(
                 status=status,
                 x=bold(red("✘")),
             )
-            diff = diff_dict(details[1], details[0])
+            diff = diff_dict(details[1], details[0], skip_missing_in_target=True)
             output += prefix_lines(diff, f"{red('│')} ")
             output += red("╵")
             return output
@@ -456,7 +456,7 @@ def format_item_result(
             elif deleted:
                 diff += dict_to_text(details, value_color=red)
             else:
-                diff += diff_dict(details[1], details[0])
+                diff += diff_dict(details[1], details[0], skip_missing_in_target=True)
             output += prefix_lines(diff, f"{green('│')} ")
             output += green("╵")
             return output
@@ -1090,7 +1090,7 @@ def verify_items(
                 elif item_status.must_be_deleted:
                     diff += dict_to_text(display, value_color=red)
                 else:
-                    diff += diff_dict(display[1], display[0])
+                    diff += diff_dict(display[1], display[0], skip_missing_in_target=True)
                 output = "{x} {node}  {bundle}  {item}  {details}\n".format(
                     bundle=bold(bundle_name),
                     details=details_text,

@@ -166,7 +166,7 @@ def diff_value(value1, value2):
     return diff_text(diff_normalize(value1), diff_normalize(value2))
 
 
-def diff_dict(dict1, dict2):
+def diff_dict(dict1, dict2, skip_missing_in_target=False):
     def handle_multiline(key, diff):
         if "\n" in diff:
             return bold(key) + "\n" + diff + "\n"
@@ -184,6 +184,10 @@ def diff_dict(dict1, dict2):
             output += handle_multiline(key, red(str(value)))
     else:
         for key in sorted(diff_keys(dict1, dict2)):
+            if skip_missing_in_target and key not in dict2:
+                # this is used to hide anything not present in a cdict
+                # and thus not relevant to the diff/user
+                continue
             value1 = dict1.get(key, _MISSING_KEY)
             value2 = dict2.get(key, _MISSING_KEY)
             diff = diff_value(value1, value2)

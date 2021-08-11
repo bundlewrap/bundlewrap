@@ -593,7 +593,11 @@ class Item:
                     prompt = _("Delete {}?").format(bold(self.id))
                 else:
                     display_cdict, display_sdict, display_keys_to_fix = details
-                    question_text = diff_dict(display_sdict, display_cdict)
+                    question_text = diff_dict(
+                        display_sdict,
+                        display_cdict,
+                        skip_missing_in_target=True,
+                    )
                     prompt = _("Fix {}?").format(bold(self.id))
                 if self.comment:
                     question_text += format_comment(self.comment)
