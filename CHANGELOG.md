@@ -1,4 +1,13 @@
+# 4.11.1
+
+2021-08-11
+
+* fixed another premature `MetadataPersistentKeyError`
+
+
 # 4.11.0
+
+2021-08-11
 
 * added `zfs_pool` and `zfs_dataset` items
 * added `bw plot reactors`
