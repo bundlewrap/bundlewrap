@@ -331,6 +331,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#delete" class="nav-link">delete</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -363,7 +367,11 @@
 <h2 id="when_creating">when_creating</h2>
 <h3 id="encoding-collation-and-ctype">encoding, collation, and ctype</h3>
 <p>By default, BundleWrap will only create a database using your default PostgreSQL template, which most likely is <code>template1</code>. This means it will use the same encoding and collation that <code>template1</code> uses. By specifying any of the attributes <code>encoding</code>, <code>collation</code>, or <code>ctype</code>, BundleWrap will instead create a new database from <code>template0</code>, thus allowing you to override said database attributes.</p>
-<p>These options are creation-time only.</p></div>
+<p>These options are creation-time only.</p>
+<hr>
+
+<h2 id="delete">delete</h2>
+<p><code>True</code> if the database should be deleted (defaults to <code>False</code>).</p></div>
             </div>
         </div>
 

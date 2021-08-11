@@ -419,15 +419,15 @@
 <hr>
 
 <h2 id="group">group</h2>
-<p>Name of the group this file belongs to. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
+<p>Name of the group this file belongs to. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node. If <code>group</code> is set to <code>None</code> and the file does not exist yet, <code>group</code> will be the primary group of the ssh user.</p>
 <hr>
 
 <h2 id="mode">mode</h2>
-<p>File mode as returned by <code>stat -c %a &lt;file&gt;</code>. Defaults to <code>644</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
+<p>File mode as returned by <code>stat -c %a &lt;file&gt;</code>. Defaults to <code>644</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node. If <code>mode</code> is set to <code>None</code> and the file does not exist yet, <code>mode</code> will be <code>0644</code>.</p>
 <hr>
 
 <h2 id="owner">owner</h2>
-<p>Username of the file's owner. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.</p>
+<p>Username of the file's owner. Defaults to <code>'root'</code>. Set to <code>None</code> if you don't want BundleWrap to change whatever is set on the node.  If <code>owner</code> is set to <code>None</code> and the file does not exist yet, <code>owner</code> will be the ssh user.</p>
 <hr>
 
 <h2 id="source">source</h2>
