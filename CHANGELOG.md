@@ -1,3 +1,18 @@
+# 4.11.0
+
+* added `zfs_pool` and `zfs_dataset` items
+* added `bw plot reactors`
+* added `bw lock show -i`
+* improved metadata reactor performance and debug logging
+* improved exception handlung during `bw apply`
+* CTRL+C now results in exit code 130
+* fixed directory permissions not being applied reliably with GNU `chmod`
+* fixed `bw test -p` not catching some invalid returns
+* fixed item name validation allowing empty names
+* fixed display of "missing" attributes
+* fixed display of created directories
+
+
 # 4.10.1
 
 2021-07-07
