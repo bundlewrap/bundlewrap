@@ -104,6 +104,7 @@ class NodeMetadataProxy:
     def __init__(self, metagen, node):
         self._metagen = metagen
         self._node = node
+        self._completed_paths = PathSet()
         self._metastack = Metastack()
 
     def __contains__(self, key):
@@ -174,7 +175,7 @@ class NodeMetadataProxy:
                     self._metagen._current_reactor_newly_requested_paths.add(
                         (self._node.name,) + path
                     )
-            else:
+            elif not self._completed_paths.covers(path):
                 io.debug(f"metagen triggered by request for {path} on {self._node.name}")
                 self._metagen._trigger_reactors_for_path(
                     (self._node.name,) + path,
@@ -182,6 +183,7 @@ class NodeMetadataProxy:
                 )
                 with io.job(_("building metadata...")):
                     self._metagen._build_node_metadata(self._node)
+                self._completed_paths.add(path)
 
             try:
                 return self._metastack.get(path)
