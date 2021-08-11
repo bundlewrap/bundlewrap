@@ -251,14 +251,17 @@ class MetadataGenerator:
             self.__check_iteration_count()
 
             io.debug("starting reactor run")
-            any_reactor_ran, only_keyerrors = self.__run_reactors()
-            if not any_reactor_ran:
+            reactors_run, only_keyerrors = self.__run_reactors()
+            if not reactors_run:
                 io.debug("reactor run completed, no reactors ran")
                 # TODO maybe proxy._metastack.cache_partition(1) for COMPLETE nodes
                 break
             elif only_keyerrors:
-                io.debug("reactor run completed, all threw KeyErrors")
-                break
+                if set(self._reactors_triggered.keys()).difference(reactors_run):
+                    io.debug("all reactors raised KeyErrors, but new ones were triggered")
+                else:
+                    io.debug("reactor run completed, all threw KeyErrors")
+                    break
             io.debug("reactor run completed, rerunning relevant reactors")
 
         if self._reactors_with_keyerrors:
@@ -369,7 +372,7 @@ class MetadataGenerator:
             )
 
     def __run_reactors(self):
-        any_reactor_ran = False
+        reactors_run = set()
         only_keyerrors = True
 
         for reactor_id, debug_msg in self.__reactors_to_run():
@@ -378,7 +381,7 @@ class MetadataGenerator:
                 # end up returning incomplete metadata.
                 raise KeyboardInterrupt
 
-            any_reactor_ran = True
+            reactors_run.add(reactor_id)
             node_name, reactor_name = reactor_id
             io.debug(debug_msg)
             with io.job(_("building metadata ({} nodes, {} reactors, {} iterations)...").format(
@@ -395,7 +398,7 @@ class MetadataGenerator:
             if (node_name, reactor_name) not in self._reactors_with_keyerrors:
                 only_keyerrors = False
 
-        return any_reactor_ran, only_keyerrors
+        return reactors_run, only_keyerrors
 
     def __run_reactor(self, node, reactor_name, reactor):
         # make sure the reactor doesn't react to its own output
