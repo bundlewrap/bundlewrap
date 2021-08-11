@@ -378,7 +378,7 @@ class IOManager:
                     self._clear_last_job()
                     if TTY:
                         write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
-                    _exit(1)
+                    _exit(130)  # https://tldp.org/LDP/abs/html/exitcodes.html
             else:
                 if SHUTDOWN_EVENT_SOFT.wait(0.1):
                     QUIT_EVENT.set()

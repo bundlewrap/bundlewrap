@@ -14,7 +14,7 @@ def exit_on_keyboardinterrupt(f):
         try:
             return f(*args, **kwargs)
         except KeyboardInterrupt:
-            exit(1)
+            exit(130)  # https://tldp.org/LDP/abs/html/exitcodes.html
     return wrapper
 
 
