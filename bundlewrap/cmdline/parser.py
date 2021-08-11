@@ -532,6 +532,23 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=HELP_get_target_nodes,
     )
+    parser_lock_show.add_argument(
+        "-i",
+        "--items",
+        default=None,
+        dest='items',
+        help=_("""check locks against items matching any SELECTOR:
+
+file:/my_path     # this specific item
+tag:my_tag        # items with this tag
+bundle:my_bundle  # items in this bundle
+
+will exit with code 47 if any matching items are locked
+        """),
+        metavar=_("SELECTOR"),
+        nargs='+',
+        type=str,
+    )
     bw_lock_show_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_lock_show.add_argument(
         "-p",

@@ -1,4 +1,5 @@
 from os import environ
+from sys import exit
 
 from ..concurrency import WorkerPool
 from ..lock import softlock_add, softlock_list, softlock_remove
@@ -151,6 +152,7 @@ def bw_lock_show(repo, args):
     target_nodes = remove_dummy_nodes(target_nodes)
     pending_nodes = target_nodes[:]
     locks_on_node = {}
+    exit_code = 0
 
     def tasks_available():
         return bool(pending_nodes)
@@ -227,9 +229,43 @@ def bw_lock_show(repo, args):
             ])
         rows.append(ROW_SEPARATOR)
 
-    page_lines(render_table(
+    output = list(render_table(
         rows[:-1],  # remove trailing ROW_SEPARATOR
         alignments={1: 'center'},
     ))
 
+    if args['items']:
+        rows = [[
+            bold(_("node")),
+            bold(_("item")),
+            bold(_("locked")),
+            bold(_("ID")),
+        ], ROW_SEPARATOR]
+        for node_name, locks in sorted(locks_on_node.items()):
+            node = repo.get_node(node_name)
+            for item in sorted(node.items):
+                if not item.covered_by_autoskip_selector(args['items']):
+                    continue
+                locked_by = None
+                for lock in locks:
+                    if item.covered_by_autoskip_selector(lock['items']):
+                        locked_by = lock['id']
+                        exit_code = 47
+                        break
+                rows.append([
+                    node.name,
+                    item.id,
+                    red(_("YES")) if locked_by else green(_("NO")),
+                    locked_by or "",
+                ])
+            if rows[-1] != ROW_SEPARATOR:
+                rows.append(ROW_SEPARATOR)
+
+        output += list(render_table(
+            rows[:-1],  # remove trailing ROW_SEPARATOR
+        ))
+
+    page_lines(output)
     error_summary(errors)
+
+    exit(exit_code)
