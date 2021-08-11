@@ -69,6 +69,7 @@ class Directory(Item):
         return cdict
 
     def display_on_create(self, cdict):
+        del cdict['paths_to_purge']
         del cdict['type']
         return cdict
 
