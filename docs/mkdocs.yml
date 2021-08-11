@@ -21,6 +21,7 @@ nav:
   - Python API: guide/api.md
   - OS compatibility: guide/os_compatibility.md
   - TOML nodes and groups: guide/toml.md
+  - Selectors: guide/selectors.md
   - Migrating to 2.0: guide/migrate_12.md
   - Migrating to 3.0: guide/migrate_23.md
   - Migrating to 4.0: guide/migrate_34.md
@@ -29,6 +30,7 @@ nav:
   - nodes.py: repo/nodes.py.md
   - groups.py: repo/groups.py.md
   - requirements.txt: repo/requirements.txt.md
+  - bundles/.../bundle.py: repo/bundle.py.md
   - bundles/.../items.py: repo/items.py.md
   - bundles/.../metadata.py: repo/metadata.py.md
   - hooks/: repo/hooks.md
@@ -61,6 +63,8 @@ nav:
   - svc_upstart: items/svc_upstart.md
   - symlink: items/symlink.md
   - user: items/user.md
+  - zfs_dataset: items/zfs_dataset.md
+  - zfs_pool: items/zfs_pool.md
 - Misc:
   - About: misc/about.md
   - Why BundleWrap: misc/deciding.md
