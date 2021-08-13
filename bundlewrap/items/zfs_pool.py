@@ -84,7 +84,7 @@ class ZFSPool(Item):
     def sdict(self):
         status_result = self.run('zpool list {}'.format(quote(self.name)), may_fail=True)
         if status_result.return_code != 0:
-            return {}
+            return None
 
         pool_status = {}
         for line in self.run(
