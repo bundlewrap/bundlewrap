@@ -71,6 +71,10 @@ class ZFSPool(Item):
             if self.attributes['ashift']:
                 options.add('-o ashift={}'.format(self.attributes['ashift']))
 
+            for opt, value in status.cdict.items():
+                state_str = 'on' if value else 'off'
+                options.add('-o {}={}'.format(opt, state_str))
+
             self.run('zpool create {} {} {}'.format(
                 ' '.join(sorted(options)),
                 quote(self.name),
