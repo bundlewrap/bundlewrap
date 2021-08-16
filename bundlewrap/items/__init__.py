@@ -565,9 +565,9 @@ class Item:
                     status_code = self.STATUS_OK
                 elif show_diff or interactive:
                     if status_before.must_be_created:
-                        details = self.display_on_create(
-                            copy(status_before.cdict).update(self.when_creating),
-                        )
+                        cdict = copy(status_before.cdict)
+                        cdict.update(self.when_creating)
+                        details = self.display_on_create(cdict)
                     elif status_before.must_be_deleted:
                         details = self.display_on_delete(copy(status_before.sdict))
                     else:
