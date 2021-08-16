@@ -35,7 +35,7 @@ class ZFSPool(Item):
     def cdict(self):
         ret = {}
         for i in self.attributes:
-            if self.attributes.get(i):
+            if self.attributes.get(i, None) is not None:
                 ret[i] = self.attributes[i]
         return ret
 
