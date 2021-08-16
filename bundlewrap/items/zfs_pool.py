@@ -35,7 +35,7 @@ class ZFSPool(Item):
     def cdict(self):
         ret = {}
         for i in self.attributes:
-            if self.attributes.get(i, None) is not None:
+            if self.attributes.get(i) is not None:
                 ret[i] = self.attributes[i]
         return ret
 
@@ -69,7 +69,7 @@ class ZFSPool(Item):
 
             options = set()
             if self.when_creating['ashift']:
-                options.add('-o ashift={}'.format(self.attributes['ashift']))
+                options.add('-o ashift={}'.format(self.when_creating['ashift']))
 
             for opt, value in status.cdict.items():
                 state_str = 'on' if value else 'off'
