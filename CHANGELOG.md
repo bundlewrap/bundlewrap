@@ -1,3 +1,12 @@
+# 4.11.2
+
+2021-08-16
+
+* fixed detection of non-existing `zfs_pools`
+* fixed `config` and `ashift` attributes of `zfs_pool` items not being marked as `when_creating`
+* fixed `when_creating` attributes not being shown in diffs on apply
+
+
 # 4.11.1
 
 2021-08-11
