@@ -141,7 +141,7 @@ class ZFSPool(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if not 'config' in attributes.get('when_creating', {}):
+        if 'config' not in attributes.get('when_creating', {}):
             raise BundleError(_(
                 "{item} on node {node}: required option 'config' missing"
             ).format(
