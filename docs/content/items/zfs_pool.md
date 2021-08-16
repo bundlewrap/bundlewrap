@@ -4,16 +4,18 @@ Manages ZFS pools.
 
     zfs_pools = {
         "tank": {
-            "config": [
-                {
-                    "type": "mirror",
-                    "devices": {
-                        "/dev/sda",
-                        "/dev/sdb",
+            "when_creating": {
+                "config": [
+                    {
+                        "type": "mirror",
+                        "devices": {
+                            "/dev/sda",
+                            "/dev/sdb",
+                        },
                     },
-                },
-            ],
-            "ashift": 12,
+                ],
+                "ashift": 12,
+            },
             "autoexpand": False,
             "autoreplace": False,
             "autotrim": True,

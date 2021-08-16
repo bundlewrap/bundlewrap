@@ -12,10 +12,12 @@ class ZFSPool(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "zfs_pools"
     ITEM_ATTRIBUTES = {
-        'ashift': None,
         'autoexpand': None,
         'autoreplace': None,
         'autotrim': None,
+    }
+    WHEN_CREATING_ATTRIBUTES = {
+        'ashift': None,
         'config': None,
     }
     ITEM_TYPE_NAME = "zfs_pool"
@@ -26,23 +28,21 @@ class ZFSPool(Item):
             self.attributes['autoexpand'],
             self.attributes['autoreplace'],
             self.attributes['autotrim'],
-            self.attributes['ashift'],
-            self.attributes['config'],
+            self.when_creating['ashift'],
+            self.when_creating['config'],
         )
 
     def cdict(self):
         ret = {}
-        # ashift can only be set at pool creation, that's why it's missing
-        # here.
-        for i in {'autoexpand', 'autoreplace', 'autotrim'}:
-            if self.attributes.get(i):
+        for i in self.attributes:
+            if self.attributes.get(i) is not None:
                 ret[i] = self.attributes[i]
         return ret
 
     @property
     def devices_used(self):
         devices = set()
-        for option in self.attributes['config']:
+        for option in self.when_creating['config']:
             for device in option['devices']:
                 devices.add(device)
         return sorted(devices)
@@ -50,7 +50,7 @@ class ZFSPool(Item):
     def fix(self, status):
         if status.must_be_created:
             cmdline = []
-            for option in self.attributes['config']:
+            for option in self.when_creating['config']:
                 if option.get('type'):
                     cmdline.append(option['type'])
                     if option['type'] == 'log' and len(option['devices']) > 1:
@@ -68,18 +68,22 @@ class ZFSPool(Item):
                     cmdline.append(quote(device))
 
             options = set()
-            if self.attributes['ashift']:
-                options.add('-o ashift={}'.format(self.attributes['ashift']))
+            if self.when_creating['ashift']:
+                options.add('-o ashift={}'.format(self.when_creating['ashift']))
+
+            for opt, value in status.cdict.items():
+                state_str = 'on' if value else 'off'
+                options.add('-o {}={}'.format(opt, state_str))
 
             self.run('zpool create {} {} {}'.format(
                 ' '.join(sorted(options)),
                 quote(self.name),
                 ' '.join(cmdline),
             ))
-
-        for attr in status.keys_to_fix:
-            state_str = 'on' if status.cdict[attr] else 'off'
-            self.run('zpool set {}={} {}'.format(attr, state_str, quote(self.name)))
+        elif status.keys_to_fix:
+            for attr in status.keys_to_fix:
+                state_str = 'on' if status.cdict[attr] else 'off'
+                self.run('zpool set {}={} {}'.format(attr, state_str, quote(self.name)))
 
     def sdict(self):
         status_result = self.run('zpool list {}'.format(quote(self.name)), may_fail=True)
@@ -97,11 +101,10 @@ class ZFSPool(Item):
             except (IndexError, ValueError):
                 continue
 
-        return {
-            'autoexpand': (pool_status.get('autoexpand') == 'on'),
-            'autoreplace': (pool_status.get('autoreplace') == 'on'),
-            'autotrim': (pool_status.get('autotrim') == 'on'),
-        }
+        sdict = {}
+        for attr in self.attributes:
+            sdict[attr] = (pool_status.get(attr) == 'on')
+        return sdict
 
     def test(self):
         duplicate_devices = [
@@ -138,7 +141,14 @@ class ZFSPool(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if not isinstance(attributes['config'], list):
+        if 'config' not in attributes.get('when_creating', {}):
+            raise BundleError(_(
+                "{item} on node {node}: required option 'config' missing"
+            ).format(
+                item=item_id,
+                node=bundle.node.name,
+            ))
+        elif not isinstance(attributes['when_creating']['config'], list):
             raise BundleError(_(
                 "{item} on node {node}: option 'config' must be a list"
             ).format(
@@ -146,7 +156,7 @@ class ZFSPool(Item):
                 node=bundle.node.name,
             ))
 
-        for config in attributes['config']:
+        for config in attributes['when_creating']['config']:
             if config.get('type', None) not in {
                 None,
                 'mirror',
