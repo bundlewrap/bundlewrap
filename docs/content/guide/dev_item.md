@@ -72,7 +72,9 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
         def display_on_create(self, cdict):
             """
             Given a cdict as implemented above, modify it to better suit
-            interactive presentation when an item is created.
+            interactive presentation when an item is created. If there are
+            any when_creating attributes, they will be added to the cdict
+            before it is passed to this method.
 
             Implementing this method is optional.
             """

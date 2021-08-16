@@ -565,7 +565,9 @@ class Item:
                     status_code = self.STATUS_OK
                 elif show_diff or interactive:
                     if status_before.must_be_created:
-                        details = self.display_on_create(copy(status_before.cdict))
+                        details = self.display_on_create(
+                            copy(status_before.cdict).update(self.when_creating),
+                        )
                     elif status_before.must_be_deleted:
                         details = self.display_on_delete(copy(status_before.sdict))
                     else:
@@ -810,7 +812,9 @@ class Item:
     def display_on_create(self, cdict):
         """
         Given a cdict as implemented above, modify it to better suit
-        interactive presentation when an item is created.
+        interactive presentation when an item is created. If there are
+        any when_creating attributes, they will be added to the cdict
+        before it is passed to this method.
 
         MAY be overridden by subclasses.
         """
