@@ -4,7 +4,7 @@ from contextlib import contextmanager, suppress
 from datetime import datetime
 from os.path import basename, dirname, exists, join, normpath
 from shlex import quote
-from subprocess import call
+from subprocess import check_output, CalledProcessError, STDOUT
 from sys import exc_info
 from traceback import format_exception
 
@@ -177,6 +177,7 @@ class File(Item):
         'owner': "root",
         'source': None,
         'verify_with': None,
+        'test_with': None,
     }
     ITEM_TYPE_NAME = "file"
 
@@ -429,8 +430,31 @@ class File(Item):
             ))
 
         if not self.attributes['delete'] and not self.attributes['content_type'] == 'any':
-            with self._write_local_file():
-                pass
+            with self._write_local_file() as local_path:
+                if self.attributes['test_with']:
+                    cmd = self.attributes['test_with'].format(quote(local_path))
+                    exitcode, stdout = self._run_validator(cmd)
+                    if exitcode == 0:
+                        io.debug("{i} passed local validation".format(i=self.id))
+                    elif exitcode in (126, 127, 255):
+                        io.debug("{i} failed local validation with code {c}, ignoring".format(i=self.id, c=exitcode))
+                    else:
+                        raise BundleError(_(
+                            "{i} failed local validation using: {c}\n\n{out}"
+                        ).format(
+                            c=cmd,
+                            i=self.id,
+                            out=stdout,
+                        ))
+
+    def _run_validator(self, cmd):
+        io.debug("calling local validator for {i}: {c}".format(c=cmd, i=self.id))
+        try:
+            p = check_output(cmd, shell=True, stderr=STDOUT)
+        except CalledProcessError as e:
+            return e.returncode, e.output.decode()
+        else:
+            return 0, p.decode()
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
@@ -509,12 +533,16 @@ class File(Item):
 
             if self.attributes['verify_with']:
                 cmd = self.attributes['verify_with'].format(quote(local_path))
-                io.debug("calling local verify command for {i}: {c}".format(c=cmd, i=self.id))
-                if call(cmd, shell=True) == 0:
+                exitcode, stdout = self._run_validator(cmd)
+                if exitcode == 0:
                     io.debug("{i} passed local validation".format(i=self.id))
                 else:
                     raise BundleError(_(
-                        "{i} failed local validation using: {c}"
-                    ).format(c=cmd, i=self.id))
+                        "{i} failed local validation using: {c}\n\n{out}"
+                    ).format(
+                        c=cmd,
+                        i=self.id,
+                        out=stdout,
+                    ))
 
             yield local_path
