@@ -94,3 +94,10 @@ This can be used to run external validation commands on a file before it is appl
 <pre><code class="nohighlight">visudo -cf {}</code></pre>
 
 Keep in mind that all team members will have to have the verification command installed on their machines.
+<hr>
+
+## test_with
+
+Same as `verify_with`, but called when running `bw test`. You may want to use this if you don't want all your team members to have to have a large suite of tools installed, but still want to verify file integrity with another tool.
+
+The file is verified locally on the machine running BundleWrap. Verification is considered successful when the exit code of the verification command is 0. Use `{}` as a placeholder for the shell-quoted path to the temporary file.

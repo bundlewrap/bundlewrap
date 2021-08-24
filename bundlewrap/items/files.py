@@ -177,6 +177,7 @@ class File(Item):
         'owner': "root",
         'source': None,
         'verify_with': None,
+        'test_with': None,
     }
     ITEM_TYPE_NAME = "file"
 
@@ -429,8 +430,16 @@ class File(Item):
             ))
 
         if not self.attributes['delete'] and not self.attributes['content_type'] == 'any':
-            with self._write_local_file():
-                pass
+            with self._write_local_file() as local_path:
+                if self.attributes['test_with']:
+                    cmd = self.attributes['test_with'].format(quote(local_path))
+                    io.debug("calling local test command for {i}: {c}".format(c=cmd, i=self.id))
+                    if call(cmd, shell=True) == 0:
+                        io.debug("{i} passed local validation".format(i=self.id))
+                    else:
+                        raise BundleError(_(
+                            "{i} failed local validation using: {c}"
+                        ).format(c=cmd, i=self.id))
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
