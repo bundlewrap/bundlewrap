@@ -1,6 +1,6 @@
 from os.path import join
 
-from bundlewrap.utils.testing import make_repo, run
+from bundlewrap.utils.testing import host_os, make_repo, run
 
 
 def test_empty(tmpdir):
@@ -1041,3 +1041,57 @@ def test_bundlepy_tag_loop2(tmpdir):
     stdout, stderr, rcode = run("bw test -I", path=str(tmpdir))
     assert rcode == 1
     assert "action:late" in stderr.decode()
+
+
+def test_file_test_with_fails(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "does not matter",
+                            'test_with': 'false'
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw test localhost", path=str(tmpdir))
+    assert rcode != 0
+    assert b'failed local validation using: false' in stderr
+
+
+def test_file_test_with_succeds(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content': "does not matter",
+                            'test_with': 'true'
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw test localhost", path=str(tmpdir))
+    assert rcode == 0
+    assert b'failed local validation using: true' not in stderr
