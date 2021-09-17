@@ -1,11 +1,14 @@
+from atexit import register as at_exit
 from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime
 from os.path import basename, dirname, exists, join, normpath
 from shlex import quote
+from shutil import rmtree
 from subprocess import check_output, CalledProcessError, STDOUT
 from sys import exc_info
+from tempfile import NamedTemporaryFile
 from traceback import format_exception
 
 from jinja2 import Environment, FileSystemLoader
@@ -133,7 +136,38 @@ CONTENT_PROCESSORS = {
     'jinja2': content_processor_jinja2,
     'mako': content_processor_mako,
     'text': content_processor_text,
+    'download': None,
 }
+
+
+def download_file(item):
+    local_path = NamedTemporaryFile(delete=False).name
+    verify_ssl = item.attributes.get('verify_ssl', True) # TODO
+
+    item.run_local([
+        'curl',
+        '-L'
+        '' if verify_ssl else '-k',
+        '-s',
+        '-o',
+        quote(local_path),
+        '--',
+        quote(item.attributes['source']),
+    ])
+
+    if item.attributes['content_hash']:
+        local_hash = hash_local_file(local_path)
+        if local_hash != item.attributes['content_hash']:
+            raise BundleError(_(
+                "could not download correct file from {} - sha1sum mismatch "
+                "(expected {}, got {})"
+            ).format(
+                item.attributes['source'],
+                item.attributes['content_hash'],
+                local_hash
+            ))
+
+    return local_path
 
 
 def get_remote_file_contents(node, path):
@@ -169,6 +203,7 @@ class File(Item):
     ITEM_ATTRIBUTES = {
         'content': None,
         'content_type': 'text',
+        'content_hash': None,
         'context': None,
         'delete': False,
         'encoding': "utf-8",
@@ -201,13 +236,18 @@ class File(Item):
 
     @cached_property
     def content_hash(self):
-        if self.attributes['content_type'] == 'binary':
+        if self.attributes['content_type'] in ('binary', 'download'):
             return hash_local_file(self.template)
         else:
             return sha1(self.content)
 
     @cached_property
     def template(self):
+        if self.attributes['content_type'] == 'download':
+            download_path = download_file(self)
+            io.debug(_("registering {} for deletion on exit").format(download_path))
+            at_exit(rmtree, download_path, ignore_errors=True)
+            return download_path
         data_template = join(self.item_data_dir, self.attributes['source'])
         if exists(data_template):
             return data_template
@@ -218,7 +258,11 @@ class File(Item):
             return None
         cdict = {'type': 'file'}
         if self.attributes['content_type'] != 'any':
-            cdict['content_hash'] = self.content_hash
+            if self.attributes['content_type'] == 'download' and \
+                self.attributes['content_hash']:
+                cdict['content_hash'] = self.attributes['content_hash']
+            else:
+                cdict['content_hash'] = self.content_hash
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
                 cdict[optional_attr] = self.attributes[optional_attr]
@@ -345,18 +389,20 @@ class File(Item):
 
     def display_on_create(self, cdict):
         if (
-            self.attributes['content_type'] not in ('any', 'base64', 'binary') and
+            self.attributes['content_type'] not in ('any', 'base64', 'binary', 'download') and
             len(self.content) < DIFF_MAX_FILE_SIZE
         ):
             del cdict['content_hash']
             cdict['content'] = force_text(self.content)
+        if self.attributes['content_type'] == 'download':
+            cdict['source'] = self.attributes['source']
         del cdict['type']
         return cdict
 
     def display_dicts(self, cdict, sdict, keys):
         if (
             'content_hash' in keys and
-            self.attributes['content_type'] not in ('base64', 'binary') and
+            self.attributes['content_type'] not in ('base64', 'binary', 'download') and
             sdict['size'] < DIFF_MAX_FILE_SIZE and
             len(self.content) < DIFF_MAX_FILE_SIZE and
             PathInfo(self.node, self.name).is_text_file
@@ -373,6 +419,8 @@ class File(Item):
         if 'type' in keys:
             with suppress(ValueError):
                 keys.remove('content_hash')
+        if self.attributes['content_type'] == 'download':
+            cdict['source'] = self.attributes['source']
         if sdict:
             del sdict['size']
             if self.attributes['content_type'] == 'any':
@@ -465,6 +513,7 @@ class File(Item):
                         "{item} from bundle '{bundle}' cannot have other "
                         "attributes besides 'delete'"
                     ).format(item=item_id, bundle=bundle.name))
+
         if 'content' in attributes and 'source' in attributes:
             raise BundleError(_(
                 "{item} from bundle '{bundle}' cannot have both 'content' and 'source'"
@@ -476,10 +525,29 @@ class File(Item):
                 "(use content_type 'base64' instead)"
             ).format(item=item_id, bundle=bundle.name))
 
+        if 'content_hash' in attributes and attributes.get('content_type') != 'download':
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' specified 'content_hash', but is "
+                "not of type 'download'"
+            ).format(item=item_id, bundle=bundle.name))
+
+        if attributes.get('content_type') == 'download':
+            if 'source' not in attributes:
+                raise BundleError(_(
+                    "{item} from bundle '{bundle}' is of type 'download', but missing "
+                    "required attribute 'source'"
+                ).format(item=item_id, bundle=bundle.name))
+            elif '://' not in attributes['source']:
+                raise BundleError(_(
+                    "{item} from bundle '{bundle}' is of type 'download', but {source} "
+                    "does not look like an url"
+                ).format(item=item_id, bundle=bundle.name, source=attributes['source']))
+
         if 'encoding' in attributes and attributes.get('content_type') in (
             'any',
             'base64',
             'binary',
+            'download',
         ):
             raise BundleError(_(
                 "content_type of {item} from bundle '{bundle}' cannot provide different encoding "
@@ -524,7 +592,7 @@ class File(Item):
         the returned path (only if not a binary).
         """
         with tempfile() as tmp_file:
-            if self.attributes['content_type'] == 'binary':
+            if self.attributes['content_type'] in ('binary', 'download'):
                 local_path = self.template
             else:
                 local_path = tmp_file
