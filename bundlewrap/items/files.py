@@ -421,6 +421,7 @@ class File(Item):
                 keys.remove('content_hash')
         if self.attributes['content_type'] == 'download':
             cdict['source'] = self.attributes['source']
+            sdict['source'] = ''
         if sdict:
             del sdict['size']
             if self.attributes['content_type'] == 'any':
