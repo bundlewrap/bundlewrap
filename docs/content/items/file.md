@@ -39,6 +39,7 @@ How the file pointed to by `source` or the string given to `content` should be i
 <tr><td><code>jinja2</code></td><td>content is interpreted by the Jinja2 template engine</td></tr>
 <tr><td><code>mako</code></td><td>content is interpreted by the Mako template engine</td></tr>
 <tr><td><code>text</code> (default)</td><td>will be read and diffed as UTF-8, but offers no template logic</td></tr>
+<tr><td><code>download</code></td><td>File will be downloaded from the URL specified in <code>source</code></td></tr>
 </table>
 
 <hr>
@@ -84,6 +85,16 @@ Username of the file's owner. Defaults to `'root'`. Set to `None` if you don't w
 File name of the file template. If this says `my_template`, BundleWrap will look in `data/my_bundle/files/my_template` and then `bundles/my_bundle/files/my_template`. Most of the time, you will want to put config templates into the latter directory. The `data/` subdirectory is meant for files that are very specific to your infrastructure (e.g. DNS zone files). This separation allows you to write your bundles in a generic way so that they could be open-sourced and shared with other people. Defaults to the filename of this item (e.g. `foo.conf` when this item is `/etc/foo.conf`).
 
 See also: [Writing file templates](../guide/item_file_templates.md)
+
+If using `'content_type': 'download'`, this specifies the URL from which the file will be downloaded.
+
+<hr>
+
+## content_hash
+
+Only valid if `content_type` is set to `download`. Specifies a `sha1sum` to compare the downloaded file to. If set, the file will only be downloaded if the remote hash does not match. Hash will be verified after downloading and after uploading to the node.
+
+If not set, bundlewrap will always download the file, then compare the `sha1sum` of the downloaded file to the one currently on the node.
 
 <hr>
 
