@@ -3,12 +3,14 @@ from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime
-from os.path import basename, dirname, exists, join, normpath
+from hashlib import md5
+from os import getenv, getpid, makedirs, mkdir, rmdir
+from os.path import basename, dirname, exists, isfile, join, normpath
 from shlex import quote
 from shutil import rmtree
 from subprocess import check_output, CalledProcessError, STDOUT
 from sys import exc_info
-from tempfile import NamedTemporaryFile
+from tempfile import gettempdir
 from traceback import format_exception
 
 from jinja2 import Environment, FileSystemLoader
@@ -141,33 +143,67 @@ CONTENT_PROCESSORS = {
 
 
 def download_file(item):
-    local_path = NamedTemporaryFile(delete=False).name
+    file_name_hashed = md5(item.attributes['source'].encode('UTF-8')).hexdigest()
+
+    cache_path = getenv('BW_FILE_DOWNLOAD_CACHE')
+    if cache_path:
+        remove_dir = None
+        file_path = join(cache_path, file_name_hashed)
+        lock_dir = join(cache_path, '{}.bw_lock'.format(file_name_hashed))
+
+        makedirs(cache_path, exist_ok=True)
+    else:
+        remove_dir = join(gettempdir(), 'bw-file-download-cache-{}'.format(getpid()))
+        file_path = join(remove_dir, file_name_hashed)
+        lock_dir = join(remove_dir, '{}.bw_lock'.format(file_name_hashed))
+
+        makedirs(remove_dir, exist_ok=True)
+
+    io.debug(_('lock dir for {} is {}'.format(item.name, lock_dir)))
+
+    while True:
+        try:
+            mkdir(lock_dir)
+            io.debug(_('{}: have lock'.format(item.name)))
+            break
+        except FileExistsError:
+            io.debug(_('{}: waiting for lock'.format(item.name)))
+            sleep(1)
+
     verify_ssl = item.attributes.get('verify_ssl', True) # TODO
 
-    item.run_local([
-        'curl',
-        '-L'
-        '' if verify_ssl else '-k',
-        '-s',
-        '-o',
-        quote(local_path),
-        '--',
-        quote(item.attributes['source']),
-    ])
+    try:
+        if not isfile(file_path):
+            io.debug(_('{}: downloading from {}'.format(item.name, item.attributes['source'])))
 
-    if item.attributes['content_hash']:
-        local_hash = hash_local_file(local_path)
-        if local_hash != item.attributes['content_hash']:
-            raise BundleError(_(
-                "could not download correct file from {} - sha1sum mismatch "
-                "(expected {}, got {})"
-            ).format(
-                item.attributes['source'],
-                item.attributes['content_hash'],
-                local_hash
-            ))
+            item.run_local([
+                'curl',
+                '-L'
+                '' if verify_ssl else '-k',
+                '-s',
+                '-o',
+                quote(file_path),
+                '--',
+                quote(item.attributes['source']),
+            ])
 
-    return local_path
+        # Always do hash verification, if requested.
+        if item.attributes['content_hash']:
+            local_hash = hash_local_file(file_path)
+            if local_hash != item.attributes['content_hash']:
+                raise BundleError(_(
+                    "could not download correct file from {} - sha1sum mismatch "
+                    "(expected {}, got {})"
+                ).format(
+                    item.attributes['source'],
+                    item.attributes['content_hash'],
+                    local_hash
+                ))
+    finally:
+        rmdir(lock_dir)
+        io.debug(_('{}: released lock'.format(item.name)))
+
+    return file_path, remove_dir
 
 
 def get_remote_file_contents(node, path):
@@ -244,10 +280,11 @@ class File(Item):
     @cached_property
     def template(self):
         if self.attributes['content_type'] == 'download':
-            download_path = download_file(self)
-            io.debug(_("registering {} for deletion on exit").format(download_path))
-            at_exit(rmtree, download_path, ignore_errors=True)
-            return download_path
+            file_path, remove_dir = download_file(self)
+            if remove_dir:
+                io.debug(_("registering {} for deletion on exit").format(remove_dir))
+                at_exit(rmtree, remove_dir, ignore_errors=True)
+            return file_path
         data_template = join(self.item_data_dir, self.attributes['source'])
         if exists(data_template):
             return data_template
