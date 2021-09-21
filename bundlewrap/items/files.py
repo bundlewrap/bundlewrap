@@ -11,6 +11,7 @@ from shutil import rmtree
 from subprocess import check_output, CalledProcessError, STDOUT
 from sys import exc_info
 from tempfile import gettempdir
+from time import sleep
 from traceback import format_exception
 
 from jinja2 import Environment, FileSystemLoader
@@ -20,9 +21,9 @@ from mako.template import Template
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
-from bundlewrap.utils import cached_property, hash_local_file, sha1, tempfile
+from bundlewrap.utils import cached_property, download, hash_local_file, sha1, tempfile
 from bundlewrap.utils.remote import PathInfo
-from bundlewrap.utils.text import force_text, mark_for_translation as _
+from bundlewrap.utils.text import bold, force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
 from bundlewrap.utils.ui import io
 
@@ -159,46 +160,46 @@ def download_file(item):
 
         makedirs(remove_dir, exist_ok=True)
 
-    io.debug(_('lock dir for {} is {}'.format(item.name, lock_dir)))
+    io.debug(_('{}:{}: lock dir is {}'.format(item.node.name, item.id, lock_dir)))
 
-    while True:
-        try:
-            mkdir(lock_dir)
-            io.debug(_('{}: have lock'.format(item.name)))
-            break
-        except FileExistsError:
-            io.debug(_('{}: waiting for lock'.format(item.name)))
-            sleep(1)
-
-    verify_ssl = item.attributes.get('verify_ssl', True) # TODO
+    # Since we only download the file once per process, there's no point
+    # in displaying the node name here. The file may be used on multiple
+    # nodes.
+    with io.job(_('{}  waiting for download'.format(bold(item.id)))):
+        while True:
+            try:
+                mkdir(lock_dir)
+                io.debug(_('{}:{}: have lock'.format(item.node.name, item.id)))
+                break
+            except FileExistsError:
+                io.debug(_('{}:{}: waiting for lock'.format(item.node.name, item.name)))
+                sleep(1)
 
     try:
         if not isfile(file_path):
-            io.debug(_('{}: downloading from {}'.format(item.name, item.attributes['source'])))
-
-            item.run_local([
-                'curl',
-                '-L'
-                '' if verify_ssl else '-k',
-                '-s',
-                '-o',
-                quote(file_path),
-                '--',
-                quote(item.attributes['source']),
-            ])
+            io.debug(_('{}:{}: starting download from {}'.format(item.node.name, item.name, item.attributes['source'])))
+            with io.job(_('{}  downloading file'.format(bold(item.id)))):
+                download(
+                    item.attributes['source'],
+                    file_path,
+                )
+            io.debug(_('{}:{}: finished download from {}'.format(item.node.name, item.name, item.attributes['source'])))
 
         # Always do hash verification, if requested.
         if item.attributes['content_hash']:
-            local_hash = hash_local_file(file_path)
-            if local_hash != item.attributes['content_hash']:
-                raise BundleError(_(
-                    "could not download correct file from {} - sha1sum mismatch "
-                    "(expected {}, got {})"
-                ).format(
-                    item.attributes['source'],
-                    item.attributes['content_hash'],
-                    local_hash
-                ))
+            with io.job(_('{}  checking file integrity'.format(bold(item.id)))):
+                local_hash = hash_local_file(file_path)
+                io.debug(_('{}:{}: content hash is {}'.format(item.node.name, item.name, local_hash)))
+                if local_hash != item.attributes['content_hash']:
+                    raise BundleError(_(
+                        "could not download correct file from {} - sha1sum mismatch "
+                        "(expected {}, got {})"
+                    ).format(
+                        item.attributes['source'],
+                        item.attributes['content_hash'],
+                        local_hash
+                    ))
+                io.debug(_('{}:{}: content hash matches'.format(item.node.name, item.name)))
     finally:
         rmdir(lock_dir)
         io.debug(_('{}: released lock'.format(item.name)))
@@ -578,7 +579,7 @@ class File(Item):
             elif '://' not in attributes['source']:
                 raise BundleError(_(
                     "{item} from bundle '{bundle}' is of type 'download', but {source} "
-                    "does not look like an url"
+                    "does not look like a URL"
                 ).format(item=item_id, bundle=bundle.name, source=attributes['source']))
 
         if 'encoding' in attributes and attributes.get('content_type') in (
