@@ -86,7 +86,7 @@ File name of the file template. If this says `my_template`, BundleWrap will look
 
 See also: [Writing file templates](../guide/item_file_templates.md)
 
-If using `'content_type': 'download'`, this specifies the URL from which the file will be downloaded.
+If using `'content_type': 'download'`, this specifies the URL from which the file will be downloaded. The download is done on the machine running `bw` and then uploaded to the node, so the node doesn't need to have access to the URL.
 
 <hr>
 
