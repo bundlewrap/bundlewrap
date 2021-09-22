@@ -35,11 +35,11 @@ How the file pointed to by `source` or the string given to `content` should be i
 <tr><th>Value</th><th>Effect</th></tr>
 <tr><td><code>any</code></td><td>only cares about file owner, group, and mode</td></tr>
 <tr><td><code>base64</code></td><td>content is decoded from base64</td></tr>
+<tr><td><code>download</code></td><td>file will be downloaded from the URL specified in <code>source</code></td></tr>
 <tr><td><code>binary</code></td><td>file is uploaded verbatim, no content processing occurs</td></tr>
 <tr><td><code>jinja2</code></td><td>content is interpreted by the Jinja2 template engine</td></tr>
 <tr><td><code>mako</code></td><td>content is interpreted by the Mako template engine</td></tr>
 <tr><td><code>text</code> (default)</td><td>will be read and diffed as UTF-8, but offers no template logic</td></tr>
-<tr><td><code>download</code></td><td>File will be downloaded from the URL specified in <code>source</code></td></tr>
 </table>
 
 <hr>

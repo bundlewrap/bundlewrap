@@ -42,11 +42,7 @@ def content_processor_jinja2(item):
 
     template = env.from_string(item._template_content)
 
-    io.debug("{node}:{bundle}:{item}: rendering with Jinja2...".format(
-        bundle=item.bundle.name,
-        item=item.id,
-        node=item.node.name,
-    ))
+    io.debug(f"{item.node.name}:{item.id}: rendering with Jinja2...")
     start = datetime.now()
     try:
         content = template.render(
@@ -85,11 +81,7 @@ def content_processor_mako(item):
         lookup=TemplateLookup(directories=[item.item_data_dir, item.item_dir]),
         output_encoding=item.attributes['encoding'],
     )
-    io.debug("{node}:{bundle}:{item}: rendering with Mako...".format(
-        bundle=item.bundle.name,
-        item=item.id,
-        node=item.node.name,
-    ))
+    io.debug(f"{item.node.name}:{item.id}: rendering with Mako...")
     start = datetime.now()
     try:
         content = template.render(
@@ -119,12 +111,7 @@ def content_processor_mako(item):
             node=item.node.name,
         ))
     duration = datetime.now() - start
-    io.debug("{node}:{bundle}:{item}: rendered in {time:.09f} s".format(
-        bundle=item.bundle.name,
-        item=item.id,
-        node=item.node.name,
-        time=duration.total_seconds(),
-    ))
+    io.debug(f"{item.node.name}:{item.id}: rendered in {duration.total_seconds():.09f} s")
     return content
 
 
@@ -146,50 +133,56 @@ CONTENT_PROCESSORS = {
 def download_file(item):
     file_name_hashed = md5(item.attributes['source'].encode('UTF-8')).hexdigest()
 
-    cache_path = getenv('BW_FILE_DOWNLOAD_CACHE')
+    cache_path = getenv("BW_FILE_DOWNLOAD_CACHE")
     if cache_path:
         remove_dir = None
         file_path = join(cache_path, file_name_hashed)
-        lock_dir = join(cache_path, '{}.bw_lock'.format(file_name_hashed))
+        lock_dir = join(cache_path, "{}.bw_lock".format(file_name_hashed))
 
         makedirs(cache_path, exist_ok=True)
     else:
-        remove_dir = join(gettempdir(), 'bw-file-download-cache-{}'.format(getpid()))
+        remove_dir = join(gettempdir(), "bw-file-download-cache-{}".format(getpid()))
         file_path = join(remove_dir, file_name_hashed)
-        lock_dir = join(remove_dir, '{}.bw_lock'.format(file_name_hashed))
+        lock_dir = join(remove_dir, "{}.bw_lock".format(file_name_hashed))
 
         makedirs(remove_dir, exist_ok=True)
 
-    io.debug(_('{}:{}: lock dir is {}'.format(item.node.name, item.id, lock_dir)))
+    io.debug(f"{item.node.name}:{item.id}: download lock dir is {lock_dir}")
 
     # Since we only download the file once per process, there's no point
     # in displaying the node name here. The file may be used on multiple
     # nodes.
-    with io.job(_('{}  waiting for download'.format(bold(item.id)))):
+    with io.job(_("{}  {}  waiting for download".format(bold(item.node.name), bold(item.id)))):
         while True:
             try:
                 mkdir(lock_dir)
-                io.debug(_('{}:{}: have lock'.format(item.node.name, item.id)))
+                io.debug(f"{item.node.name}:{item.id}: have download lock")
                 break
             except FileExistsError:
-                io.debug(_('{}:{}: waiting for lock'.format(item.node.name, item.name)))
+                io.debug(f"{item.node.name}:{item.id}: waiting for download lock")
                 sleep(1)
 
     try:
         if not isfile(file_path):
-            io.debug(_('{}:{}: starting download from {}'.format(item.node.name, item.name, item.attributes['source'])))
-            with io.job(_('{}  downloading file'.format(bold(item.id)))):
-                download(
-                    item.attributes['source'],
-                    file_path,
-                )
-            io.debug(_('{}:{}: finished download from {}'.format(item.node.name, item.name, item.attributes['source'])))
+            io.debug(
+                f"{item.node.name}:{item.id}: "
+                f"starting download from {item.attributes['source']}"
+            )
+            with io.job(_("{}  {}  downloading file".format(bold(item.node.name), bold(item.id)))):
+                download(item.attributes['source'], file_path)
+            io.debug(
+                f"{item.node.name}:{item.id}: "
+                f"finished download from {item.attributes['source']}"
+            )
 
         # Always do hash verification, if requested.
         if item.attributes['content_hash']:
-            with io.job(_('{}  checking file integrity'.format(bold(item.id)))):
+            with io.job(_("{}  {}  checking file integrity".format(
+                bold(item.node.name),
+                bold(item.id),
+            ))):
                 local_hash = hash_local_file(file_path)
-                io.debug(_('{}:{}: content hash is {}'.format(item.node.name, item.name, local_hash)))
+                io.debug(f"{item.node.name}:{item.id}: content hash is {local_hash}")
                 if local_hash != item.attributes['content_hash']:
                     raise BundleError(_(
                         "could not download correct file from {} - sha1sum mismatch "
@@ -199,10 +192,10 @@ def download_file(item):
                         item.attributes['content_hash'],
                         local_hash
                     ))
-                io.debug(_('{}:{}: content hash matches'.format(item.node.name, item.name)))
+                io.debug(f"{item.node.name}:{item.id}: content hash matches")
     finally:
         rmdir(lock_dir)
-        io.debug(_('{}: released lock'.format(item.name)))
+        io.debug(f"{item.node.name}:{item.id}: released download lock")
 
     return file_path, remove_dir
 
@@ -296,8 +289,7 @@ class File(Item):
             return None
         cdict = {'type': 'file'}
         if self.attributes['content_type'] != 'any':
-            if self.attributes['content_type'] == 'download' and \
-                self.attributes['content_hash']:
+            if self.attributes['content_type'] == 'download' and self.attributes['content_hash']:
                 cdict['content_hash'] = self.attributes['content_hash']
             else:
                 cdict['content_hash'] = self.content_hash
@@ -370,7 +362,7 @@ class File(Item):
     def get_auto_deps(self, items):
         deps = []
         for item in items:
-            if item.ITEM_TYPE_NAME == "file" and is_subdirectory(item.name, self.name):
+            if item.ITEM_TYPE_NAME == 'file' and is_subdirectory(item.name, self.name):
                 raise BundleError(_(
                     "{item1} (from bundle '{bundle1}') blocking path to "
                     "{item2} (from bundle '{bundle2}')"
@@ -380,7 +372,7 @@ class File(Item):
                     item2=self.id,
                     bundle2=self.bundle.name,
                 ))
-            elif item.ITEM_TYPE_NAME == "user" and item.name == self.attributes['owner']:
+            elif item.ITEM_TYPE_NAME == 'user' and item.name == self.attributes['owner']:
                 if item.attributes['delete']:
                     raise BundleError(_(
                         "{item1} (from bundle '{bundle1}') depends on item "
@@ -393,7 +385,7 @@ class File(Item):
                     ))
                 else:
                     deps.append(item.id)
-            elif item.ITEM_TYPE_NAME == "group" and item.name == self.attributes['group']:
+            elif item.ITEM_TYPE_NAME == 'group' and item.name == self.attributes['group']:
                 if item.attributes['delete']:
                     raise BundleError(_(
                         "{item1} (from bundle '{bundle1}') depends on item "
@@ -406,7 +398,7 @@ class File(Item):
                     ))
                 else:
                     deps.append(item.id)
-            elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
+            elif item.ITEM_TYPE_NAME in ('directory', 'symlink'):
                 if is_subdirectory(item.name, self.name):
                     deps.append(item.id)
         return deps
@@ -522,9 +514,9 @@ class File(Item):
                     cmd = self.attributes['test_with'].format(quote(local_path))
                     exitcode, stdout = self._run_validator(cmd)
                     if exitcode == 0:
-                        io.debug("{i} passed local validation".format(i=self.id))
+                        io.debug(f"{self.id} passed local validation")
                     elif exitcode in (126, 127, 255):
-                        io.debug("{i} failed local validation with code {c}, ignoring".format(i=self.id, c=exitcode))
+                        io.debug(f"{self.id} failed local validation with code {exitcode}, ignoring")
                     else:
                         raise BundleError(_(
                             "{i} failed local validation using: {c}\n\n{out}"
@@ -535,7 +527,7 @@ class File(Item):
                         ))
 
     def _run_validator(self, cmd):
-        io.debug("calling local validator for {i}: {c}".format(c=cmd, i=self.id))
+        io.debug(f"calling local validator for {self.node.name}:{self.id}: {cmd}")
         try:
             p = check_output(cmd, shell=True, stderr=STDOUT)
         except CalledProcessError as e:
@@ -642,7 +634,7 @@ class File(Item):
                 cmd = self.attributes['verify_with'].format(quote(local_path))
                 exitcode, stdout = self._run_validator(cmd)
                 if exitcode == 0:
-                    io.debug("{i} passed local validation".format(i=self.id))
+                    io.debug(f"{self.id} passed local validation")
                 else:
                     raise BundleError(_(
                         "{i} failed local validation using: {c}\n\n{out}"
