@@ -354,8 +354,7 @@ def reduce_dict(full_dict, template_dict):
         if not isinstance(template_dict, list):
             return full_dict
         result = []
-        for index in range(len(full_dict)):
-            full_dict_element = full_dict[index]
+        for index, full_dict_element in enumerate(full_dict):
             try:
                 template_dict_element = template_dict[index]
             except IndexError:
