@@ -404,8 +404,8 @@ class Foo(Item):
     def cdict(self):
         """
         Return a statedict that describes the target state of this item
-        as configured in the repo. An empty dict means that the item
-        should not exist.
+        as configured in the repo. Returning `None` instead means that
+        the item should not exist.
 
         Implementing this method is optional. The default implementation
         uses the attributes as defined in the bundle.
@@ -415,8 +415,8 @@ class Foo(Item):
     def sdict(self):
         """
         Return a statedict that describes the actual state of this item
-        on the node. An empty dict means that the item does not exist
-        on the node.
+        on the node. Returning `None` instead means that the item does
+        not exist on the node.
 
         For the item to validate as correct, the values for all keys in
         self.cdict() have to match this statedict.
@@ -426,7 +426,9 @@ class Foo(Item):
     def display_on_create(self, cdict):
         """
         Given a cdict as implemented above, modify it to better suit
-        interactive presentation when an item is created.
+        interactive presentation when an item is created. If there are
+        any when_creating attributes, they will be added to the cdict
+        before it is passed to this method.
 
         Implementing this method is optional.
         """

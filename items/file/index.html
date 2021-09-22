@@ -375,7 +375,15 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#content_hash" class="nav-link">content_hash</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#verify_with" class="nav-link">verify_with</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#test_with" class="nav-link">test_with</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -414,6 +422,7 @@
 <tr><th>Value</th><th>Effect</th></tr>
 <tr><td><code>any</code></td><td>only cares about file owner, group, and mode</td></tr>
 <tr><td><code>base64</code></td><td>content is decoded from base64</td></tr>
+<tr><td><code>download</code></td><td>file will be downloaded from the URL specified in <code>source</code></td></tr>
 <tr><td><code>binary</code></td><td>file is uploaded verbatim, no content processing occurs</td></tr>
 <tr><td><code>jinja2</code></td><td>content is interpreted by the Jinja2 template engine</td></tr>
 <tr><td><code>mako</code></td><td>content is interpreted by the Mako template engine</td></tr>
@@ -449,13 +458,25 @@
 <h2 id="source">source</h2>
 <p>File name of the file template. If this says <code>my_template</code>, BundleWrap will look in <code>data/my_bundle/files/my_template</code> and then <code>bundles/my_bundle/files/my_template</code>. Most of the time, you will want to put config templates into the latter directory. The <code>data/</code> subdirectory is meant for files that are very specific to your infrastructure (e.g. DNS zone files). This separation allows you to write your bundles in a generic way so that they could be open-sourced and shared with other people. Defaults to the filename of this item (e.g. <code>foo.conf</code> when this item is <code>/etc/foo.conf</code>).</p>
 <p>See also: <a href="../../guide/item_file_templates/">Writing file templates</a></p>
+<p>If using <code>'content_type': 'download'</code>, this specifies the URL from which the file will be downloaded. The download is done on the machine running <code>bw</code> and then uploaded to the node, so the node doesn't need to have access to the URL.</p>
+<hr>
+
+<h2 id="content_hash">content_hash</h2>
+<p>Only valid if <code>content_type</code> is set to <code>download</code>. Specifies a <code>sha1sum</code> to compare the downloaded file to. If set, the file will only be downloaded if the remote hash does not match. Hash will be verified after downloading and after uploading to the node.</p>
+<p>If not set, bundlewrap will always download the file, then compare the <code>sha1sum</code> of the downloaded file to the one currently on the node.</p>
 <hr>
 
 <h2 id="verify_with">verify_with</h2>
-<p>This can be used to run external validation commands on a file before it is applied to a node. The file is verified locally on the machine running BundleWrap. Verification is considered successful when the exit code of the verification command is 0. Use <code>{}</code> as a placeholder for the shell-quoted path to the temporary file. Here is an example for verifying sudoers files:</p>
+<p>This can be used to run external validation commands on a file before it is applied to a node. The file is verified locally on the machine running BundleWrap. Verification is considered successful if the exit code of the verification command is 0. Use <code>{}</code> as a placeholder for the shell-quoted path to the temporary file. Here is an example for verifying sudoers files:</p>
 <pre><code class="nohighlight">visudo -cf {}</code></pre>
 
-<p>Keep in mind that all team members will have to have the verification command installed on their machines.</p></div>
+<p>Keep in mind that all team members will have to have the verification command installed on their machines.</p>
+<hr>
+
+<h2 id="test_with">test_with</h2>
+<p>Same as <code>verify_with</code>, but called when running <code>bw test</code>. You may want to use this if you don't want all your team members to have to have a large suite of tools installed, but still want to verify file integrity with another tool.</p>
+<p>The file is verified locally on the machine running BundleWrap. Verification is considered successful if the exit code of the verification command is 0. Use <code>{}</code> as a placeholder for the shell-quoted path to the temporary file.</p>
+<p>Please note that <code>bw test</code> will call both <code>verify_with</code> and <code>test_with</code>, so there's no need to set both.</p></div>
             </div>
         </div>
 
