@@ -45,7 +45,7 @@ def test_encrypt_file(tmpdir):
     assert rcode == 0
 
     stdout, stderr, rcode = run(
-        f"bw pw -d -f decrypted encrypted",
+        "bw pw -d -f decrypted encrypted",
         path=str(tmpdir),
     )
     assert stdout == b""
@@ -70,7 +70,7 @@ def test_encrypt_file_different_key_autodetect(tmpdir):
     assert rcode == 0
 
     stdout, stderr, rcode = run(
-        f"bw pw -d -f decrypted encrypted",
+        "bw pw -d -f decrypted encrypted",
         path=str(tmpdir),
     )
     assert stdout == b""
