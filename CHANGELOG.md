@@ -1,3 +1,12 @@
+# 4.12.0
+
+2021-09-22
+
+* added `test_with` to `file` items
+* added `download` `content_type` to `file` items
+* added `bw pw`
+
+
 # 4.11.2
 
 2021-08-16
