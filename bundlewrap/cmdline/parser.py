@@ -14,6 +14,7 @@ from .lock import bw_lock_add, bw_lock_remove, bw_lock_show
 from .metadata import bw_metadata
 from .nodes import bw_nodes
 from .plot import bw_plot_group, bw_plot_node, bw_plot_node_groups, bw_plot_reactors
+from .pw import bw_pw
 from .repo import bw_repo_bundle_create, bw_repo_create
 from .run import bw_run
 from .stats import bw_stats
@@ -791,6 +792,76 @@ will exit with code 47 if any matching items are locked
         action='store_true',
         dest='recursive',
         help=_("do not truncate plot when crossing to other nodes (result might be huge)"),
+    )
+
+    # bw pw
+    help_pw = _("Generate passwords and encrypt/decrypt secrets")
+    parser_pw = subparsers.add_parser(
+        "pw",
+        description=help_pw,
+        help=help_pw,
+    )
+    parser_pw.set_defaults(func=bw_pw)
+    parser_pw.add_argument(
+        'string',
+        metavar=_("STRING"),
+        type=str,
+    )
+    parser_pw.add_argument(
+        "-b", "--bytes",
+        action='store_true',
+        dest='bytes',
+        help=_("derive random bytes as base64 from STRING (`repo.vault.random_bytes_as_base64_for()`)"),
+    )
+    parser_pw.add_argument(
+        "-d", "--decrypt",
+        action='store_true',
+        dest='decrypt',
+        help=_("decrypt secret given as STRING (`repo.vault.decrypt()`)"),
+    )
+    parser_pw.add_argument(
+        "-e", "--encrypt",
+        action='store_true',
+        dest='encrypt',
+        help=_("encrypt secret in STRING (`repo.vault.encrypt()`)"),
+    )
+    parser_pw.add_argument(
+        "-f", "--file",
+        dest='file',
+        metavar=_("TARGET_PATH"),
+        type=str,
+        help=_("treat STRING as source filename for -d and -e, write result to TARGET_PATH (relative to data/)"),
+    )
+    parser_pw.add_argument(
+        "-H", "--human",
+        action='store_true',
+        dest='human',
+        help=_("derive human-friendly password from STRING (`repo.vault.human_password_for()`)"),
+    )
+    parser_pw.add_argument(
+        "-k", "--key",
+        dest='key',
+        metavar=_("NAME"),
+        type=str,
+        help=_(
+            "which key from .secrets.cfg to use "
+            "(defaults to 'encrypt' for -d and -e, 'generate' otherwise; "
+            "overrides key name embedded in STRING)"
+        ),
+    )
+    parser_pw.add_argument(
+        "-l", "--length",
+        default=32,
+        dest='length',
+        metavar=_("INT"),
+        type=int,
+        help=_("length for --password and --bytes (defaults to 32)"),
+    )
+    parser_pw.add_argument(
+        "-p", "--password",
+        action='store_true',
+        dest='password',
+        help=_("derive password from STRING (`repo.vault.password_for()`)"),
     )
 
     # bw repo

@@ -8,7 +8,7 @@ We strongly recommend **not** putting any sensitive information such as password
 
 ## .secrets.cfg
 
-When you initially ran `bw repo create`, a file called `.secrets.cfg` was put into the root level of your repo. It's an INI-style file that by default contains two random keys BundleWrap uses to protect your secrets.
+When you initially ran `bw repo create`, a file called `.secrets.cfg` was put into the root level of your repo. It's an INI-style file that by default contains two random keys BundleWrap uses to protect your secrets. One for randomly generated passwords, one for symmetric encryption.
 
 <div class="alert alert-danger">You should never commit <code>.secrets.cfg</code>. Immediately add it to your <code>.gitignore</code> or equivalent.</div>
 
@@ -56,9 +56,9 @@ qQ==
 
 ## Static passwords
 
-When you need to store a specific password, you can encrypt it symmetrically:
+When you need to store a specific password, you can encrypt it symmetrically. The `bw pw` utility provides command line access to the functions attached to `repo.vault`, so we'll use it here to generate the encrypted string:
 
-<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.encrypt('my password'))"
+<pre><code class="nohighlight">$ bw pw --encrypt 'my password'
 gAAAA[...]mrVMA==
 </code></pre>
 
@@ -74,7 +74,7 @@ database_password = "${repo.vault.decrypt("gAAAA[...]mrVMA==")}"
 
 You can also encrypt entire files:
 
-<pre><code class="nohighlight">$ bw debug -c "print(repo.vault.encrypt_file('/my/secret.file', 'encrypted.file'))"</code></pre>
+<pre><code class="nohighlight">$ bw pw --encrypt --file /my/secret.file encrypted.file</code></pre>
 
 <div class="alert alert-info">Encrypted files are always read and written relative to the <code>data/</code> subdirectory of your repo.</div>
 
@@ -109,6 +109,8 @@ By default, the stdout of the given command will be decoded to text using UTF-8 
 <pre><code class="nohighlight">$ bw debug -c "print(repo.vault.cmd('uname', as_text=False, strip=False))"
 b'Linux\n'</code></pre>
 
+The point of using `repo.vault.cmd()` is that (like the other functions introduced on this page) it will return a lazy `Fault` object that will call the command only if and when the value is actually needed (e.g. when rendering a file template).
+
 <br>
 
 ## Key management
@@ -121,12 +123,14 @@ When using `.password_for()`, `.encrypt()` etc., you can provide a `key` argumen
 
 	repo.vault.password_for("some database", key="devops")
 
+On the command line, `bw pw` also accepts `--key` for this purpose.
+
 The encrypted data will be prefixed by `yourkeyname$...` to indicate that the key `yourkeyname` was used for encryption. Thus, during decryption, you can omit the `key=` parameter.
 
 <br>
 
 ### Rotating keys
 
-<div class="alert alert-info">This is applicable mostly to <code>.password_for()</code>. The other methods use symmetric encryption and require manually updating the encrypted text after the key has changed.</div>
-
 You can generate a new key by running `bw debug -c "print(repo.vault.random_key())"`. Place the result in your `.secrets.cfg`. Then you need to distribute the new key to your team and run `bw apply` for all your nodes.
+
+<div class="alert alert-info">Note that `encrypt()` and `decrypt()` (plus their `file_` counterparts) use symmetric encryption and require manually updating the encrypted text after the key has changed.</div>
