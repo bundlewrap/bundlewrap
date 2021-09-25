@@ -6,30 +6,6 @@ from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
-def pkg_install(node, pkgname, version=None):
-    if version:
-        pkgname = "{}=={}".format(pkgname, version)
-    pip_path, pkgname = split_path(node, pkgname)
-    return node.run("{} install -U {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
-
-
-def pkg_installed(node, pkgname):
-    pip_path, pkgname = split_path(node, pkgname)
-    result = node.run(
-        "{} freeze | grep -i '^{}=='".format(quote(pip_path), pkgname),
-        may_fail=True,
-    )
-    if result.return_code != 0:
-        return False
-    else:
-        return result.stdout_text.split("=")[-1].strip()
-
-
-def pkg_remove(node, pkgname):
-    pip_path, pkgname = split_path(node, pkgname)
-    return node.run("{} uninstall -y {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
-
-
 class PipPkg(Item):
     """
     A package installed by pip.
@@ -74,12 +50,12 @@ class PipPkg(Item):
 
     def fix(self, status):
         if self.attributes['installed'] is False:
-            pkg_remove(self.node, self.name)
+            self._pkg_remove(self.name)
         else:
-            pkg_install(self.node, self.name, version=self.attributes['version'])
+            self._pkg_install(self.name, version=self.attributes['version'])
 
     def sdict(self):
-        install_status = pkg_installed(self.node, self.name)
+        install_status = self._pkg_installed(self.name)
         return {
             'installed': bool(install_status),
             'version': None if install_status is False else install_status,
@@ -112,8 +88,31 @@ class PipPkg(Item):
                 f"Just use dashes. (pkg_pip:{name} in bundle {bundle.name})"
             )
 
+    def _pkg_install(self, pkgname, version=None):
+        if version:
+            pkgname = "{}=={}".format(pkgname, version)
+        pip_path, pkgname = self._split_path(pkgname)
+        return self.run("{} install -U {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
 
-def split_path(node, pkgname):
-    virtualenv, pkgname = split(pkgname)
-    pip_path = join(virtualenv, "bin", "pip") if virtualenv else node.pip_command
-    return pip_path, pkgname
+    def _pkg_installed(self, pkgname):
+        pip_path, pkgname = self._split_path(pkgname)
+        result = self.run(
+            "{} freeze | grep -i '^{}=='".format(quote(pip_path), pkgname),
+            may_fail=True,
+        )
+        if result.return_code != 0:
+            return False
+        else:
+            return result.stdout_text.split("=")[-1].strip()
+
+    def _pkg_remove(self, pkgname):
+        pip_path, pkgname = self._split_path(pkgname)
+        return self.run(
+            "{} uninstall -y {}".format(quote(pip_path), quote(pkgname)),
+            may_fail=True,
+        )
+
+    def _split_path(self, pkgname):
+        virtualenv, pkgname = split(pkgname)
+        pip_path = join(virtualenv, "bin", "pip") if virtualenv else self.node.pip_command
+        return pip_path, pkgname
