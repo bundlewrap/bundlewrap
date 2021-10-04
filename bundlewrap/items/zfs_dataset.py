@@ -108,14 +108,20 @@ class ZFSDataset(Item):
                 yield pool_item
             elif (
                 item.ITEM_TYPE_NAME == "zfs_dataset" and
-                self.name != item.name and
-                self.name.startswith(item.name + "/")
+                self.name != item.name
             ):
                 # Find all other datasets that are parents of this
                 # dataset.
                 # XXX Could be optimized by finding the "largest"
                 # parent only.
-                yield item.id
+                if self.name.startswith(item.name + "/"):
+                    yield item.id
+                elif (
+                    self.attributes['mountpoint'] and
+                    item.attributes['mountpoint'] and
+                    self.attributes['mountpoint'].startswith(item.attributes['mountpoint'])
+                ):
+                    yield item.id
 
         if not pool_item_found:
             raise BundleError(_(
