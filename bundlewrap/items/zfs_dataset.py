@@ -13,11 +13,14 @@ class ZFSDataset(Item):
     ITEM_ATTRIBUTES = {
         'acltype': None,
         'atime': None,
+        'relatime': None,
         'compression': None,
         'dedup': None,
         'mountpoint': None,
+        'readonly': None,
         'quota': None,
         'recordsize': None,
+        'logbias': None,
     }
     ITEM_TYPE_NAME = "zfs_dataset"
 
