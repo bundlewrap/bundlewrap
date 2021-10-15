@@ -36,4 +36,4 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 ## aur
 
 `True` when the package should be installed from AUR; `False` if package should be installed from official sources. Defaults to `False`.  
-This attribute will only be read when creating the item on the node, e.g. when the desired package will be installed for the first time. In subsequent runs, this item will be ignored. See [when_creating documentation](../repo/items.py.md#when_creating)
+This attribute will only be read when creating the item on the node, e.g. when the desired package will be installed for the first time. In subsequent runs, this item will be ignored. See [when\_creating documentation](../repo/items.py.md#when_creating)
