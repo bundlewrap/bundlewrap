@@ -28,7 +28,7 @@ class PacmanPkg(Pkg):
             yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split())
 
     def pkg_install(self):
-        if self.attributes['aur']:
+        if self.when_creating['aur']:
             self.run("pamac build --no-keep --no-confirm {}".format(quote(self.name)), may_fail=True)
         else:
             self.run("pamac install --no-upgrade --no-confirm {}".format(quote(self.name)), may_fail=True)
