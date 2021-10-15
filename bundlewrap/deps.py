@@ -1,7 +1,7 @@
 from contextlib import suppress
 
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
-from .items import Item
+from .items import ALLOWED_ITEM_AUTO_ATTRIBUTES, Item
 from .items.actions import Action
 from .utils.plot import explain_item_dependency_loop
 from .utils.text import bold, mark_for_translation as _
@@ -134,13 +134,26 @@ def _add_incoming_needs(items):
                 item._incoming_needs.add(depending_item)
 
 
+def _prepare_auto_attrs(items):
+    for item in items:
+        auto_attrs = item.get_auto_attrs(items)
+        # remove next line in 5.0 when killing get_auto_deps
+        auto_attrs['needs'] = set(auto_attrs.get('needs', set())) | set(item.get_auto_deps(items))
+        for key, value in auto_attrs.items():
+            if key not in ALLOWED_ITEM_AUTO_ATTRIBUTES:
+                raise ValueError(_("get_auto_attrs() on {item} returned illegal key {key}").format(
+                    item=item.id,
+                    key=repr(key),
+                ))
+            setattr(item, key, set(getattr(item, key)) | set(value))
+
+
 def _prepare_deps(items):
     for item in items:
         item._deps = set()  # holds all item ids blocking execution of that item
         for dep_type, deps in (
             ('after', set(item.after)),
             ('needs', set(item.needs)),
-            ('auto', set(item.get_auto_deps(items))),
         ):
             setattr(item, '_deps_' + dep_type, set())
             for dep in deps:
@@ -519,6 +532,7 @@ def prepare_dependencies(node):
     _inject_tag_filler_items(items, node.bundles)
     _add_inherited_tags(items, node.bundles)
     _inject_tag_attrs(items, node.bundles)
+    _prepare_auto_attrs(items)
     _prepare_deps(items)
     _inject_reverse_triggers(items)
     _inject_reverse_dependencies(items)

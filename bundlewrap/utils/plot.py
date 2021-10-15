@@ -81,26 +81,31 @@ def graph_for_items(
 
     # Define dependencies between items
     for item in items:
+        auto_attrs = item.get_auto_attrs(items)
         if regular:
             for dep in sorted(item._deps_needs):
-                yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep.id)
+                if dep in auto_attrs.get('needs', set()) and auto:
+                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
+                else:
+                    yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep.id)
             for dep in sorted(item._deps_after):
-                yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
+                if dep in auto_attrs.get('after', set()) and auto:
+                    yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
+                else:
+                    yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
 
         if concurrency:
             for dep in sorted(item._deps_concurrency):
                 yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep.id)
 
         if reverse:
+            # FIXME this is not filtering auto deps, but we should rethink filters anyway in 5.0
             for dep in sorted(item._deps_before):
                 yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep.id)
             for dep in sorted(item._deps_needed_by):
                 yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep.id)
 
         if auto:
-            for dep in sorted(item._deps_auto):
-                yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
-
             for dep in sorted(item._deps_triggers):
                 yield "\"{}\" -> \"{}\" [color=\"#fca7f7\",penwidth=2]".format(item.id, dep.id)
 

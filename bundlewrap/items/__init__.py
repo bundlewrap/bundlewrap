@@ -22,6 +22,12 @@ from bundlewrap.utils.ui import io
 from bundlewrap.operations import run_local
 
 
+ALLOWED_ITEM_AUTO_ATTRIBUTES = {
+    'after',
+    'before',
+    'needed_by',
+    'needs',
+}
 BUILTIN_ITEM_ATTRIBUTES = {
     'after': set(),
     'before': set(),
@@ -733,8 +739,26 @@ class Item:
         """
         raise NotImplementedError()
 
+    def get_auto_attrs(self, items):
+        """
+        Return a dict with any number of attributes. The respective
+        sets will be merged with the user-supplied values. For example:
+
+            return {
+                'needs': {
+                    'file:/foo',
+                },
+            }
+
+        Note that only attributes from ALLOWED_ITEM_AUTO_ATTRIBUTES are
+        allowed.
+        """
+        return {}
+
     def get_auto_deps(self, items):
         """
+        DEPRECATED remove in 5.0, use get_auto_attrs instead
+
         Return a list of item IDs this item should have dependencies on.
 
         Be very careful when using this. There are few circumstances

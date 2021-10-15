@@ -227,3 +227,31 @@ def test_duplicate_items(tmpdir):
     assert "action:dupl" in stderr.decode()
     assert "bundle1" in stderr.decode()
     assert "bundle2" in stderr.decode()
+
+
+def test_show_auto_needs(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'items': {
+                    'directories': {
+                        "/foo": {},
+                        "/foo/bar": {'needs': {"action:"}},
+                    },
+                },
+            },
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw items --attr node1 directory:/foo/bar needs", path=str(tmpdir))
+    assert stdout.decode() == """attribute\tvalue
+needs\taction:
+needs\tdirectory:/foo
+"""
+    assert stderr.decode() == ""
+    assert rcode == 0

@@ -185,8 +185,8 @@ class Directory(Item):
                 ))
                 yield line
 
-    def get_auto_deps(self, items):
-        deps = []
+    def get_auto_attrs(self, items):
+        deps = set()
         for item in items:
             if item == self:
                 continue
@@ -218,7 +218,7 @@ class Directory(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
+                    deps.add(item.id)
             elif item.ITEM_TYPE_NAME == "group" and item.name == self.attributes['group']:
                 if item.attributes['delete']:
                     raise BundleError(_(
@@ -231,11 +231,11 @@ class Directory(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
+                    deps.add(item.id)
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
-                    deps.append(item.id)
-        return deps
+                    deps.add(item.id)
+        return {'needs': deps}
 
     def sdict(self):
         path_info = PathInfo(self.node, self.name)
