@@ -1,6 +1,7 @@
 # Pamac package items
 
-Handles packages installed by `pacman` (e.g. Arch Linux), with AUR support by switching to `pamac` when package is told to be installed from AUR.
+Handles packages installed by `pacman` (e.g. Arch Linux) and `pamac`. Uses `pamac` to install, build and remove packages. Needs `pacman` to determine if a package is installed.
+`Pacman` is only used to read information from the node, all action is handeled by `pamac`.
 
     pkg_pamac = {
         "foopkg": {
@@ -14,7 +15,7 @@ Handles packages installed by `pacman` (e.g. Arch Linux), with AUR support by sw
         }
     }
 
-<div class="alert alert-warning">System updates on Arch Linux should <strong>always</strong> be performed manually and with great care. Thus, this item type installs packages with a simple <code>pacman -S $pkgname</code> instead of the commonly recommended <code>pacman -Syu $pkgname</code>. You should <strong>manually</strong> do a full system update before installing new packages via BundleWrap!</div>
+<div class="alert alert-warning">System updates on Arch Linux should <strong>always</strong> be performed manually and with great care. Thus, this item type installs packages with <code>pamac install --no-upgrade $pkgname</code>. You should <strong>manually</strong> do a full system update before installing new packages via BundleWrap!</div>
 
 <br><br>
 
