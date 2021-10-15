@@ -46,6 +46,7 @@ This table lists all item types included in BundleWrap along with the bundle att
 <tr><td><a href="../../items/pkg_dnf">pkg_dnf</a></td><td><code>pkg_dnf</code></td><td>Installs and removes packages with dnf</td></tr>
 <tr><td><a href="../../items/pkg_opkg">pkg_opkg</a></td><td><code>pkg_opkg</code></td><td>Installs and removes packages with opkg</td></tr>
 <tr><td><a href="../../items/pkg_pacman">pkg_pacman</a></td><td><code>pkg_pacman</code></td><td>Installs and removes packages with pacman</td></tr>
+<tr><td><a href="../../items/pkg_pamac">pkg_pamac</a></td><td><code>pkg_pamac</code></td><td>Installs and removes packages with pamac</td></tr>
 <tr><td><a href="../../items/pkg_pip">pkg_pip</a></td><td><code>pkg_pip</code></td><td>Installs and removes Python packages with pip</td></tr>
 <tr><td><a href="../../items/pkg_snap">pkg_snap</a></td><td><code>pkg_snap</code></td><td>Installs and removes packages with snap</td></tr>
 <tr><td><a href="../../items/pkg_yum">pkg_yum</a></td><td><code>pkg_yum</code></td><td>Installs and removes packages with yum</td></tr>
@@ -304,6 +305,10 @@ The following example will offer to run an `apt-get update` before installing a 
 `cascade_skip` defaults to `True`. However, if the item uses the `unless` or `skip` attributes or is triggered, the default changes to `False`. Most of the time, this is what you'll want.
 
 <br>
+
+## when\_creating
+
+These attributes are only enforced during the creation of the item on the node (this means the first run of `bw apply` after adding this item to config). They are ignored in subsequent runs of `bw apply`, and when other (non-when\_creating) attributes are changed.
 
 # Canned actions
 
