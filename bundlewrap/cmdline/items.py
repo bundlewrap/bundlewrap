@@ -103,6 +103,8 @@ def bw_items(repo, args):
                 prepare_dependencies(node)
                 table = [[bold(_("attribute")), bold(_("value"))]]
                 for attribute in BUILTIN_ITEM_ATTRIBUTES:
+                    if args['attr'] and attribute != args['attr']:
+                        continue
                     table.append(ROW_SEPARATOR)
                     value = getattr(item, attribute)
                     if isinstance(value, str):
