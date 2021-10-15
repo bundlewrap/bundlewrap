@@ -41,7 +41,7 @@ class PacmanPkg(Pkg):
         return result.return_code == 0
 
     def pkg_remove(self):
-        self.run("pamac --no-confirm --unneeded --orphans {}".format(quote(self.name)), may_fail=True)
+        self.run("pamac remove --no-confirm --unneeded --orphans {}".format(quote(self.name)), may_fail=True)
 
     def get_auto_deps(self, items):
         deps = []
