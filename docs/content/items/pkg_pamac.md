@@ -12,7 +12,7 @@ Handles packages installed by `pacman` (e.g. Arch Linux) and `pamac`. Uses `pama
         },
         "somethingelse": {
 			"when_creating": {
-	            "aur": True,   # installs package from AUR instead of official repos. Defaults to `false`
+	            "aur": True,   # installs package from AUR instead of official repos. Defaults to `False`
 			},
         }.
     }
