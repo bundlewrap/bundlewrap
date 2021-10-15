@@ -11,6 +11,8 @@ class PacmanPkg(Pkg):
     BUNDLE_ATTRIBUTE_NAME = "pkg_pamac"
     ITEM_ATTRIBUTES = {
         'installed': True,
+    }
+    WHEN_CREATING_ATTRIBUTES = {
         'aur': False,
     }
     ITEM_TYPE_NAME = "pkg_pamac"
