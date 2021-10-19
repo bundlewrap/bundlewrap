@@ -33,7 +33,7 @@ will get mounted if you specify a mountpoint.
 
 <hr>
 
-## acltype, atime, compression, dedup, quota and the remaining options
+## Any other attribute
 
-Sets the corresponding dataset options `acltype`, `atime`, `relatime`, 
-`compression`, `dedup`, `readonly`, `quota`, `recordsize` and `logbias`.
+Sets the corresponding dataset properties. Make sure the property is available
+in our pool.
