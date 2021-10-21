@@ -10,15 +10,7 @@ class ZFSDataset(Item):
     Creates ZFS datasets and manages their options.
     """
     BUNDLE_ATTRIBUTE_NAME = "zfs_datasets"
-    ITEM_ATTRIBUTES = {
-        'acltype': None,
-        'atime': None,
-        'compression': None,
-        'dedup': None,
-        'mountpoint': None,
-        'quota': None,
-        'recordsize': None,
-    }
+    REJECT_UNKNOWN_ATTRIBUTES = False
     ITEM_TYPE_NAME = "zfs_dataset"
 
     def __repr__(self):

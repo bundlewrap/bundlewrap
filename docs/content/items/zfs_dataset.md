@@ -6,11 +6,14 @@ Manages ZFS datasets.
         "tank/mydataset": {
             "acltype": "posixacl",
             "atime": "on",
+            "relatime": "on",
             "compression": "on",
             "dedup": "off",
             "mountpoint": "/mnt/mydataset",
+            "readonly": "off",
             "quota": "1G",
             "recordsize": "131072",
+            "logbias": "throughput",
         },
     }
 
@@ -30,7 +33,7 @@ will get mounted if you specify a mountpoint.
 
 <hr>
 
-## acltype, atime, compression, dedup, quota, and recordsize
+## Any other attribute
 
-Sets the corresponding dataset options `acltype`, `atime`, `compression`,
-`dedup`, `quota` and `recordsize`.
+Sets the corresponding dataset properties. Make sure the property is available
+in our pool.
