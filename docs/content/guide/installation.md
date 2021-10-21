@@ -72,6 +72,7 @@ While the following list might appear long, even very minimal systems should pro
 * `mkdir`
 * `mv`
 * `pacman` (only used with [pkg_pacman](../items/pkg_pacman.md) items)
+* `pamac` (only used with [pkg_pamac](../items/pkg_pamac.md) items)
 * `rm`
 * sftp-enabled SSH server (your home directory must be writable)
 * `sudo`

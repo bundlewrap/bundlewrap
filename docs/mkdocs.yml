@@ -49,6 +49,7 @@ nav:
   - pkg_openbsd: items/pkg_openbsd.md
   - pkg_opkg: items/pkg_opkg.md
   - pkg_pacman: items/pkg_pacman.md
+  - pkg_pamac: items/pkg_pamac.md
   - pkg_pip: items/pkg_pip.md
   - pkg_snap: items/pkg_snap.md
   - pkg_yum: items/pkg_yum.md
