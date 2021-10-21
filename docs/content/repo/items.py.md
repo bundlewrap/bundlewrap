@@ -306,6 +306,10 @@ The following example will offer to run an `apt-get update` before installing a 
 
 <br>
 
+## when\_creating
+
+These attributes are only enforced during the creation of the item on the node (this means the first run of `bw apply` after adding this item to config). They are ignored in subsequent runs of `bw apply`, and when other (non-when\_creating) attributes are changed.
+
 # Canned actions
 
 Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:
