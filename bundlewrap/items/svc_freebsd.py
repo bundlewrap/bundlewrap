@@ -44,7 +44,7 @@ class SvcFreeBSD(Item):
 
     @classmethod
     def block_concurrent(cls, node_os, node_os_version):
-		# SH: This should apply here as well
+        # SH: This should apply here as well
         # https://github.com/bundlewrap/bundlewrap/issues/554
         return [cls.ITEM_TYPE_NAME]
 
