@@ -32,32 +32,17 @@ def deepcopy_metadata(obj):
     if isinstance(obj, METADATA_TYPES):
         return obj
     elif isinstance(obj, dict):
-        if isinstance(obj, ATOMIC_TYPES[dict]):
-            new_obj = atomic({})
-        else:
-            new_obj = {}
-        for key, value in obj.items():
-            new_key = copy(key)
-            new_obj[new_key] = deepcopy_metadata(value)
-    elif isinstance(obj, (list, tuple)):
-        if isinstance(obj, (ATOMIC_TYPES[list], ATOMIC_TYPES[tuple])):
-            new_obj = atomic([])
-        else:
-            new_obj = []
-        for member in obj:
-            new_obj.append(deepcopy_metadata(member))
-        if isinstance(obj, tuple):
-            new_obj = tuple(new_obj)
-    elif isinstance(obj, set):
-        if isinstance(obj, ATOMIC_TYPES[set]):
-            new_obj = atomic(set())
-        else:
-            new_obj = set()
-        for member in obj:
-            new_obj.add(deepcopy_metadata(member))
+        new_obj = {
+            copy(key): deepcopy_metadata(value) for key, value in obj.items()
+        }
+    elif isinstance(obj, (list, tuple, set)):
+        new_obj = [
+            deepcopy_metadata(value) for value in obj
+        ]
     else:
         assert False  # there should be no other types
-    return new_obj
+
+    return type(obj)(new_obj)
 
 
 def validate_metadata(metadata, _top_level=True):
