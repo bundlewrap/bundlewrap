@@ -46,6 +46,8 @@ def deepcopy_metadata(obj):
             new_obj = []
         for member in obj:
             new_obj.append(deepcopy_metadata(member))
+        if isinstance(obj, tuple):
+            new_obj = tuple(new_obj)
     elif isinstance(obj, set):
         if isinstance(obj, ATOMIC_TYPES[set]):
             new_obj = atomic(set())
