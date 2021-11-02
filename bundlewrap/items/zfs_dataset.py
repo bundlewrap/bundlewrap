@@ -88,16 +88,17 @@ class ZFSDataset(Item):
             for option in status.keys_to_fix:
                 self.__set_option(self.name, option, status.cdict[option])
 
-    def get_auto_deps(self, items):
+    def get_auto_attrs(self, items):
         pool = self.name.split("/")[0]
         pool_item = "zfs_pool:{}".format(pool)
         pool_item_found = False
+        needs = set()
 
         for item in items:
             if item.ITEM_TYPE_NAME == "zfs_pool" and item.name == pool:
                 # Add dependency to the pool this dataset resides on.
                 pool_item_found = True
-                yield pool_item
+                needs.add(pool_item)
             elif (
                 item.ITEM_TYPE_NAME == "zfs_dataset" and
                 self.name != item.name
@@ -107,13 +108,13 @@ class ZFSDataset(Item):
                 # XXX Could be optimized by finding the "largest"
                 # parent only.
                 if self.name.startswith(item.name + "/"):
-                    yield item.id
+                    needs.add(item.id)
                 elif (
                     self.attributes.get('mountpoint') and
                     item.attributes.get('mountpoint') and
                     self.attributes['mountpoint'].startswith(item.attributes['mountpoint'])
                 ):
-                    yield item.id
+                    needs.add(item.id)
 
         if not pool_item_found:
             raise BundleError(_(
@@ -124,6 +125,8 @@ class ZFSDataset(Item):
                 pool=pool,
                 dep=pool_item,
             ))
+
+        return {'needs': needs}
 
     def sdict(self):
         if not self.__does_exist(self.name):
