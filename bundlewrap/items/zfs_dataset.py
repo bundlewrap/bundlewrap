@@ -109,8 +109,8 @@ class ZFSDataset(Item):
                 if self.name.startswith(item.name + "/"):
                     yield item.id
                 elif (
-                    self.attributes['mountpoint'] and
-                    item.attributes['mountpoint'] and
+                    self.attributes.get('mountpoint') and
+                    item.attributes.get('mountpoint') and
                     self.attributes['mountpoint'].startswith(item.attributes['mountpoint'])
                 ):
                     yield item.id
