@@ -6,7 +6,7 @@ from bundlewrap.exceptions import BundleError
 from bundlewrap.utils.text import mark_for_translation as _
 
 
-class PacmanPkg(Pkg):
+class PamacPkg(Pkg):
     """
     A package installed by pamac/pacman.
     """
