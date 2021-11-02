@@ -19,6 +19,10 @@ class PamacPkg(Pkg):
     }
     ITEM_TYPE_NAME = "pkg_pamac"
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        return ["pkg_pacman", "pkg_pamac"]
+
     def cdict(self):
         return {'installed': self.attributes['installed']}
 
