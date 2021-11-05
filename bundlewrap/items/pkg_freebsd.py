@@ -58,6 +58,10 @@ class FreeBSDPkg(Item):
             self.attributes['installed'],
         )
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        return [cls.ITEM_TYPE_NAME]
+
     def cdict(self):
         cdict = self.attributes.copy()
         if cdict['version'] is None or not cdict['installed']:
