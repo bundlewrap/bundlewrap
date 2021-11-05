@@ -1,3 +1,17 @@
+# 4.13.0
+
+2021-11-05
+
+* added support for Python 3.10
+* added filtering for internal attributes in `bw items`
+* added `pkg_pamac`
+* added `svc_freebsd`
+* added support for arbitrary `zfs_dataset` attributes
+* relaxed metadata type conversion
+* fixed `pkg_pip` not showing error output
+* fixed concurrent execution of some package manager operations
+
+
 # 4.12.0
 
 2021-09-22
