@@ -1,4 +1,3 @@
-from os.path import basename, join
 from shlex import quote
 
 from bundlewrap.items.pkg import Pkg
@@ -54,8 +53,11 @@ class PamacPkg(Pkg):
                 continue
             if item.ITEM_TYPE_NAME in ("pkg_pacman") and item.name == self.name:
                 raise BundleError(_(
-                    "{item} is declared both by pkg_pacman (in bundle {bundle_pacman}) and pkg_pamac (in bundle {bundle_pamac})"
-                    ).format(
-                    item=item.name, bundle_pacman=item.bundle.name, bundle_pamac=self.bundle.name,
+                    "{item} is declared both by pkg_pacman (in bundle {bundle_pacman}) "
+                    "and pkg_pamac (in bundle {bundle_pamac})"
+                ).format(
+                    item=item.name,
+                    bundle_pacman=item.bundle.name,
+                    bundle_pamac=self.bundle.name,
                 ))
         return deps
