@@ -204,6 +204,10 @@
 </li>
                                     
 <li>
+    <a href="../../items/pkg_pamac/" class="dropdown-item">pkg_pamac</a>
+</li>
+                                    
+<li>
     <a href="../../items/pkg_pip/" class="dropdown-item">pkg_pip</a>
 </li>
                                     
@@ -229,6 +233,10 @@
                                     
 <li>
     <a href="../../items/routeros/" class="dropdown-item">routeros</a>
+</li>
+                                    
+<li>
+    <a href="../../items/svc_freebsd/" class="dropdown-item">svc_freebsd</a>
 </li>
                                     
 <li>
@@ -387,6 +395,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#when_creating" class="nav-link">when_creating</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
             
@@ -441,6 +453,7 @@ users = {
 <tr><td><a href="../../items/pkg_dnf">pkg_dnf</a></td><td><code>pkg_dnf</code></td><td>Installs and removes packages with dnf</td></tr>
 <tr><td><a href="../../items/pkg_opkg">pkg_opkg</a></td><td><code>pkg_opkg</code></td><td>Installs and removes packages with opkg</td></tr>
 <tr><td><a href="../../items/pkg_pacman">pkg_pacman</a></td><td><code>pkg_pacman</code></td><td>Installs and removes packages with pacman</td></tr>
+<tr><td><a href="../../items/pkg_pamac">pkg_pamac</a></td><td><code>pkg_pamac</code></td><td>Installs and removes packages with pamac</td></tr>
 <tr><td><a href="../../items/pkg_pip">pkg_pip</a></td><td><code>pkg_pip</code></td><td>Installs and removes Python packages with pip</td></tr>
 <tr><td><a href="../../items/pkg_snap">pkg_snap</a></td><td><code>pkg_snap</code></td><td>Installs and removes packages with snap</td></tr>
 <tr><td><a href="../../items/pkg_yum">pkg_yum</a></td><td><code>pkg_yum</code></td><td>Installs and removes packages with yum</td></tr>
@@ -451,6 +464,7 @@ users = {
 <tr><td><a href="../../items/pkg_freebsd">pkg_freebsd</a></td><td><code>pkg_freebsd</code></td><td>Installs and removes FreeBSD packages with pkg</td></tr>
 <tr><td><a href="../../items/pkg_openbsd">pkg_openbsd</a></td><td><code>pkg_openbsd</code></td><td>Installs and removes OpenBSD packages with pkg_add/pkg_delete</td></tr>
 <tr><td><a href="../../items/routeros">routeros</a></td><td><code>routeros</code></td><td>Manages RouterOS configuration</td></tr>
+<tr><td><a href="../../items/svc_freebsd">svc_freebsd</a></td><td><code>svc_freebsd</code></td><td>Starts and stops services with FreeBSD's rc</td></tr>
 <tr><td><a href="../../items/svc_openbsd">svc_openbsd</a></td><td><code>svc_openbsd</code></td><td>Starts and stops services with OpenBSD's rc</td></tr>
 <tr><td><a href="../../items/svc_systemd">svc_systemd</a></td><td><code>svc_systemd</code></td><td>Starts and stops services with systemd</td></tr>
 <tr><td><a href="../../items/svc_systemv">svc_systemv</a></td><td><code>svc_systemv</code></td><td>Starts and stops services with traditional System V init scripts</td></tr>
@@ -642,6 +656,8 @@ pkg_apt = {
 </code></pre>
 <p><code>cascade_skip</code> defaults to <code>True</code>. However, if the item uses the <code>unless</code> or <code>skip</code> attributes or is triggered, the default changes to <code>False</code>. Most of the time, this is what you'll want.</p>
 <p><br></p>
+<h2 id="when_creating">when_creating</h2>
+<p>These attributes are only enforced during the creation of the item on the node (this means the first run of <code>bw apply</code> after adding this item to config). They are ignored in subsequent runs of <code>bw apply</code>, and when other (non-when_creating) attributes are changed.</p>
 <h1 id="canned-actions">Canned actions</h1>
 <p>Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:</p>
 <pre><code>svc_upstart = {'mysql': {'running': True}}

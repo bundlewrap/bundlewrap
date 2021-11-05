@@ -204,6 +204,10 @@
 </li>
                                     
 <li>
+    <a href="../pkg_pamac/" class="dropdown-item">pkg_pamac</a>
+</li>
+                                    
+<li>
     <a href="../pkg_pip/" class="dropdown-item">pkg_pip</a>
 </li>
                                     
@@ -229,6 +233,10 @@
                                     
 <li>
     <a href="../routeros/" class="dropdown-item">routeros</a>
+</li>
+                                    
+<li>
+    <a href="../svc_freebsd/" class="dropdown-item">svc_freebsd</a>
 </li>
                                     
 <li>
@@ -343,7 +351,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#acltype-atime-compression-dedup-quota-and-recordsize" class="nav-link">acltype, atime, compression, dedup, quota, and recordsize</a>
+            <li class="nav-item" data-level="2"><a href="#any-other-attribute" class="nav-link">Any other attribute</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -360,11 +368,14 @@
     "tank/mydataset": {
         "acltype": "posixacl",
         "atime": "on",
+        "relatime": "on",
         "compression": "on",
         "dedup": "off",
         "mountpoint": "/mnt/mydataset",
+        "readonly": "off",
         "quota": "1G",
         "recordsize": "131072",
+        "logbias": "throughput",
     },
 }
 </code></pre>
@@ -379,9 +390,9 @@ bundlewrap will also automatically unmount the dataset for you. The dataset
 will get mounted if you specify a mountpoint.</p>
 <hr>
 
-<h2 id="acltype-atime-compression-dedup-quota-and-recordsize">acltype, atime, compression, dedup, quota, and recordsize</h2>
-<p>Sets the corresponding dataset options <code>acltype</code>, <code>atime</code>, <code>compression</code>,
-<code>dedup</code>, <code>quota</code> and <code>recordsize</code>.</p></div>
+<h2 id="any-other-attribute">Any other attribute</h2>
+<p>Sets the corresponding dataset properties. Make sure the property is available
+in our pool.</p></div>
             </div>
         </div>
 
