@@ -17,6 +17,10 @@ class PipPkg(Item):
     }
     ITEM_TYPE_NAME = "pkg_pip"
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        return [cls.ITEM_TYPE_NAME]
+
     def __repr__(self):
         return "<PipPkg name:{} installed:{}>".format(
             self.name,
