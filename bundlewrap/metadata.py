@@ -4,7 +4,7 @@ from json import dumps, JSONEncoder
 
 from .exceptions import RepositoryError
 from .utils import Fault
-from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_path
+from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, untoml, value_at_key_path
 from .utils.text import force_text, mark_for_translation as _
 
 
@@ -27,7 +27,8 @@ class DoNotRunAgain(Exception):
 
 def deepcopy_metadata(obj):
     """
-    Our own version of deepcopy.copy that doesn't pickle.
+    Our own version of deepcopy.copy that doesn't pickle since some
+    Fault callbacks are unpicklable.
     """
     if isinstance(obj, METADATA_TYPES):
         return obj
@@ -42,7 +43,12 @@ def deepcopy_metadata(obj):
     else:
         assert False  # there should be no other types
 
-    return type(obj)(new_obj)
+    try:
+        # Try to preserve the original type, even if its a superclass of
+        # dict, list, tuple or set.
+        return type(obj)(new_obj)
+    except TypeError:  # tomlkit objects cannot be reconstructed this way
+        return type(untoml(obj))(new_obj)
 
 
 def validate_metadata(metadata, _top_level=True):

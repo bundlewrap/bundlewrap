@@ -27,7 +27,7 @@ from .utils import (
     names,
 )
 from .utils.scm import get_git_branch, get_git_clean, get_rev
-from .utils.dicts import hash_statedict
+from .utils.dicts import hash_statedict, untoml
 from .utils.text import mark_for_translation as _, red, validate_name
 from .utils.ui import io
 
@@ -366,7 +366,7 @@ class Repository(MetadataGenerator):
                         not isfile(filepath) or \
                         filename.startswith("_"):
                     continue
-                infodict = toml_parse(get_file_contents(filepath)).value
+                infodict = untoml(toml_parse(get_file_contents(filepath)))
                 infodict['file_path'] = filepath
                 yield filename[:-5], infodict
 
