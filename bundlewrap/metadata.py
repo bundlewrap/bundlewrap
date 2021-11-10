@@ -43,12 +43,9 @@ def deepcopy_metadata(obj):
     else:
         assert False  # there should be no other types
 
-    try:
-        # Try to preserve the original type, even if its a superclass of
-        # dict, list, tuple or set.
-        return type(obj)(new_obj)
-    except TypeError:  # tomlkit objects cannot be reconstructed this way
-        return type(untoml(obj))(new_obj)
+    # Try to preserve the original type, even if its a superclass of
+    # dict, list, tuple or set.
+    return type(obj)(new_obj)
 
 
 def validate_metadata(metadata, _top_level=True):
