@@ -1,3 +1,10 @@
+# 4.13.1
+
+2021-11-10
+
+* fixed tomlkit types leaking into nodes/metadata
+
+
 # 4.13.0
 
 2021-11-05
