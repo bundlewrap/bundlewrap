@@ -3,137 +3,154 @@ from pipes import quote
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils import cached_property
 
 
 class ZFSDataset(Item):
     """
-    Creates ZFS datasets and manages their options.
+    Creates ZFS datasets and manages their properties.
     """
     BUNDLE_ATTRIBUTE_NAME = "zfs_datasets"
     REJECT_UNKNOWN_ATTRIBUTES = False
     ITEM_TYPE_NAME = "zfs_dataset"
+    # for defaults which should be different from 'zfs inherit -S' behaviour
+    PROPERTY_DEFAULTS = {
+        'mountpoint': 'none',
+    }
 
     def __repr__(self):
-        return f"<ZFSDataset name:{self.name} {' '.join(f'{k}:{v}' for k,v in self.attributes.items())}>"
+        return f"<ZFSDataset name:{self.name} {' '.join(f'{k}:{v}' for k,v in self.__item_properties.items())}>"
 
-    def __create(self, path, options):
-        option_list = []
-        for option, value in sorted(options.items()):
-            # We must exclude the 'mounted' property here because it's a
-            # read-only "informational" property.
-            if option != 'mounted' and value is not None:
-                option_list.append("-o {}={}".format(quote(option), quote(value)))
-        option_args = " ".join(option_list)
+    # HELPERS
 
-        self.run(
-            "zfs create {} {}".format(
-                option_args,
-                quote(path),
-            ),
-            may_fail=True,
-        )
+    def __zfs(self, cmd):
+        return self.run(f'zfs {cmd}').stdout.decode('utf-8').strip()
 
-        if options['mounted'] == 'no':
-            self.__set_option(path, 'mounted', 'no')
-
-    def __does_exist(self, path):
-        status_result = self.run(
-            "zfs list {}".format(quote(path)),
-            may_fail=True,
-        )
-        return status_result.return_code == 0
-
-    def __get_option(self, path, option):
-        cmd = "zfs get -Hp -o value {} {}".format(quote(option), quote(path))
-        # We always expect this to succeed since we don't call this function
-        # if we have already established that the dataset does not exist.
-        status_result = self.run(cmd)
-        return status_result.stdout.decode('utf-8').strip()
-
-    def __set_option(self, path, option, value):
-        if option == 'mounted':
-            # 'mounted' is a read-only property that can not be altered by
-            # 'set'. We need to call 'zfs mount tank/foo'.
-            self.run(
-                "zfs {} {}".format(
-                    "mount" if value == 'yes' else "unmount",
-                    quote(path),
-                ),
-                may_fail=True,
-            )
+    def __get_property(self, property):
+        if (
+            # always consider properties with a custom default value as changed
+            property in self.PROPERTY_DEFAULTS or
+            # properties with a value source other than 'local' are unchanged
+            self.__zfs(f'get {property} {self.name} -p -H -o source') == 'local'
+        ):
+            return self.__zfs(f'get {property} {self.name} -p -H -o value')
         else:
-            self.run(
-                "zfs set {}={} {}".format(
-                    quote(option),
-                    quote(value),
-                    quote(path),
-                ),
-                may_fail=True,
-            )
+            return None
 
-    def cdict(self):
-        cdict = {}
-        for option, value in self.attributes.items():
-            if option == 'mountpoint' and value is None:
-                value = "none"
-            if value is not None:
-                cdict[option] = value
-        cdict['mounted'] = 'no' if cdict.get('mountpoint') in (None, "none") else 'yes'
-        return cdict
+    @cached_property
+    def __item_properties(self):
+        # all properties wanted by this item
+        return {
+            **self.PROPERTY_DEFAULTS,
+            **{
+                property: value
+                    for property, value in self.attributes.items()
+                    if value is not None
+            },
+        }
+
+    @cached_property
+    def __changed_property_names(self):
+        # names of previously changed properties
+        if self.__does_exist():
+            return self.__zfs(f'get all {self.name} -p -H -o property -s local').splitlines()
+        else:
+            return []
+
+    def __create(self):
+        properties_string = ' '.join(
+            f'-o {property}={quote(value)}'
+                for property, value in self.__item_properties.items()
+        )
+        self.run(f'zfs create {properties_string} {self.name}')
+
+    def __does_exist(self):
+        return self.run(f'zfs list {self.name}', may_fail=True).return_code == 0
+
+    def __set_property(self, option, value):
+        if value == None:
+            self.run(f'zfs inherit -S {quote(option)} {quote(self.name)}')
+        else:
+            self.run(f'zfs set {quote(option)}={quote(value)} {quote(self.name)}')
+
+    # ITEM
+
+    def sdict(self):
+        if self.__does_exist():
+            return {
+                # all relevant properties with their current values
+                **{
+                    property: self.__get_property(property)
+                        for property in {
+                            *self.__item_properties,
+                            *self.__changed_property_names,
+                        }
+                },
+                # special readonly property 'mounted'
+                'mounted': self.__zfs(f'get mounted {self.name} -p -H -o value')
+            }
+        else:
+            return None
 
     def fix(self, status):
         if status.must_be_created:
-            self.__create(self.name, status.cdict)
+            self.__create()
         else:
-            for option in status.keys_to_fix:
-                self.__set_option(self.name, option, status.cdict[option])
+            for property in status.keys_to_fix:
+                if property != 'mounted':
+                    self.__set_property(property, status.cdict[property])
+            # mount after setting mountpoint property
+            if status.cdict['mounted'] != self.__zfs(f'get mounted {self.name} -p -H -o value'):
+                mount = 'mount' if status.cdict['mounted'] == 'yes' else 'unmount'
+                self.run(f'zfs {mount} {quote(self.name)}')
+
+    def cdict(self):
+        return {
+            # previously changed properties with their default values
+            **{
+                property: self.PROPERTY_DEFAULTS.get(property)
+                    for property in self.__changed_property_names
+            },
+            # item properties with their wanted values
+            **self.__item_properties,
+            # special readonly property 'mounted'
+            'mounted': 'no' if self.__item_properties.get('mountpoint') == 'none' else 'yes',
+        }
+
+    # DEPENDENCIES
 
     def get_auto_attrs(self, items):
         pool = self.name.split("/")[0]
-        pool_item = "zfs_pool:{}".format(pool)
         pool_item_found = False
+        parent_dataset = '/'.join(self.name.split('/')[0:-1])
         needs = set()
 
         for item in items:
             if item.ITEM_TYPE_NAME == "zfs_pool" and item.name == pool:
-                # Add dependency to the pool this dataset resides on.
+                # add dependency to the pool this dataset resides on
                 pool_item_found = True
-                needs.add(pool_item)
+                needs.add(f'zfs_pool:{pool}')
             elif (
                 item.ITEM_TYPE_NAME == "zfs_dataset" and
-                self.name != item.name
+                item.name == parent_dataset
             ):
-                # Find all other datasets that are parents of this
-                # dataset.
-                # XXX Could be optimized by finding the "largest"
-                # parent only.
-                if self.name.startswith(item.name + "/"):
-                    needs.add(item.id)
-                elif (
-                    self.attributes.get('mountpoint') and
-                    item.attributes.get('mountpoint') and
-                    self.attributes['mountpoint'].startswith(item.attributes['mountpoint'])
+                # add dependency to parent dataset
+                needs.add(item.id)
+            elif self.__item_properties.get('mountpoint'):
+                parent_directory = '/'.join(self.__item_properties.get('mountpoint', '').split('/')[0:-1])
+                if (
+                    item.ITEM_TYPE_NAME == "zfs_dataset" and
+                    item.attributes.get('mountpoint') == parent_directory or
+                    item.ITEM_TYPE_NAME == "directory" and
+                    item.name == parent_directory
                 ):
+                    # add dependency to parent mountpoint or directory
                     needs.add(item.id)
 
         if not pool_item_found:
             raise BundleError(_(
-                "ZFS dataset {dataset} resides on pool {pool} but item "
-                "{dep} does not exist"
-            ).format(
-                dataset=self.name,
-                pool=pool,
-                dep=pool_item,
+                f'ZFS dataset {self.name} resides on pool {pool} but item '
+                f'zfs_pool:{pool} does not exist'
             ))
 
         return {'needs': needs}
-
-    def sdict(self):
-        if not self.__does_exist(self.name):
-            return None
-
-        sdict = {}
-        for option in self.attributes:
-            sdict[option] = self.__get_option(self.name, option)
-        sdict['mounted'] = self.__get_option(self.name, 'mounted')
-        return sdict
