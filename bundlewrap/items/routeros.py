@@ -1,4 +1,5 @@
 from contextlib import suppress
+from threading import Lock
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
@@ -10,6 +11,7 @@ from routeros import login
 
 # very basic connection management, connections are never closed
 CONNECTIONS = {}
+CONNECTION_LOCK = Lock()
 
 
 class RouterOS(Item):
@@ -22,11 +24,6 @@ class RouterOS(Item):
     }
     ITEM_TYPE_NAME = "routeros"
     REJECT_UNKNOWN_ATTRIBUTES = False
-
-    @classmethod
-    def block_concurrent(cls, node_os, node_os_version):
-        # Python API client probably not thread-safe
-        return [cls.ITEM_TYPE_NAME]
 
     def __repr__(self):
         return f"<RouterOS {self.name}>"
@@ -94,27 +91,28 @@ class RouterOS(Item):
         return attributes
 
     def _run(self, *args):
-        try:
-            connection = CONNECTIONS[self.node]
-        except KeyError:
-            connection = login(
-                # str() to resolve Faults
-                str(self.node.username),
-                str(self.node.password or ""),
-                self.node.hostname,
-            )
-            CONNECTIONS[self.node] = connection
+        with CONNECTION_LOCK:
+            try:
+                connection = CONNECTIONS[self.node]
+            except KeyError:
+                connection = login(
+                    # str() to resolve Faults
+                    str(self.node.username),
+                    str(self.node.password or ""),
+                    self.node.hostname,
+                )
+                CONNECTIONS[self.node] = connection
 
-        result = connection(*args)
-        run_result = RunResult()
-        run_result.stdout = repr(result)
-        run_result.stderr = ""
+            result = connection(*args)
+            run_result = RunResult()
+            run_result.stdout = repr(result)
+            run_result.stderr = ""
 
-        self._command_results.append({
-            'command': repr(args),
-            'result': run_result,
-        })
-        return result
+            self._command_results.append({
+                'command': repr(args),
+                'result': run_result,
+            })
+            return result
 
     def _add(self, command, kwargs):
         identifier = self.name.split("?", 1)[1]
