@@ -1,3 +1,11 @@
+# 4.13.2
+
+2021-11-24
+
+* fixed concurrency issues with RouterOS
+* added workaround for setting `comment` on RouterOS items
+
+
 # 4.13.1
 
 2021-11-10
