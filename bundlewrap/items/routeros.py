@@ -32,6 +32,9 @@ class RouterOS(Item):
         if self.attributes['delete']:
             return None
         cdict = self.attributes.copy()
+        if '_comment' in cdict:  # work around 'comment' being a builtin attribute
+            cdict['comment'] = cdict['_comment']
+            del cdict['_comment']
         del cdict['delete']
         return cdict
 

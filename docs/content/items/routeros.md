@@ -53,6 +53,8 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 
 <strong>BundleWrap will accept any attributes for these items and pass them through to the RouterOS API.</strong> All attribute values can be passed as strings. If given as integers or booleans, BundleWrap will convert them to strings for you. If given a set, list, or tuple of strings, BundleWrap will join those strings with commas.
 
+Since `comment` is an internal attribute for BundleWrap, use `_comment` to apply the `comment` attribute on a RouterOS item.
+
 <hr>
 
 ## delete
