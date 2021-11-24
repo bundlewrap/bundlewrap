@@ -54,7 +54,7 @@ def get_local_repo_path(bw_repo_path, repo_name):
             continue
         try:
             repo, path = line.split(":", 1)
-        except:
+        except Exception:
             raise RepositoryError(_("unable to parse line from {path}: '{line}'").format(
                 line=line,
                 path=repo_map_path,

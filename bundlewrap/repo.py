@@ -171,7 +171,7 @@ class LibsProxy:
                 )
                 mod = module_from_spec(spec)
                 spec.loader.exec_module(mod)
-            except:
+            except Exception:
                 io.stderr(_("Exception while trying to load {}:").format(filepath))
                 raise
             self.__module_cache[attrname] = mod
@@ -481,7 +481,7 @@ class Repository(MetadataGenerator):
         try:
             with open(join(path, FILENAME_REQUIREMENTS)) as f:
                 lines = f.readlines()
-        except:
+        except Exception:
             pass
         else:
             try:

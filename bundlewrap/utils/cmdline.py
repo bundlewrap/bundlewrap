@@ -67,9 +67,7 @@ def suppress_broken_pipe_msg(f):
     def wrapper(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except SystemExit:
-            raise
-        except:
+        except Exception:
             print_exc()
             exit(1)
         finally:
