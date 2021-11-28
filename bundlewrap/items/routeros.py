@@ -53,7 +53,11 @@ class RouterOS(Item):
                 )
 
     def sdict(self):
-        return self._get(self.name)
+        result = self._get(self.name)
+        if result:
+            # API doesn't return comment at all if emtpy
+            result.setdefault('comment', '')
+        return result
 
     def display_on_create(self, cdict):
         for key in tuple(cdict.keys()):
