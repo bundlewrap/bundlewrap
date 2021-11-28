@@ -1,3 +1,10 @@
+# 4.13.3
+
+2021-11-18
+
+* fixed empty comments not returned by RouterOS API
+
+
 # 4.13.2
 
 2021-11-24
