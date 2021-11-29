@@ -6,7 +6,7 @@ from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.operations import RunResult
 from bundlewrap.utils.text import mark_for_translation as _
 
-from routeros import login
+from librouteros import connect
 
 
 # very basic connection management, connections are never closed
@@ -57,6 +57,14 @@ class RouterOS(Item):
         if result:
             # API doesn't return comment at all if emtpy
             result.setdefault('comment', '')
+            # undo automatic type conversion in librouteros
+            for key, value in tuple(result.items()):
+                if value is True:
+                    result[key] = "true"
+                elif value is False:
+                    result[key] = "false"
+                elif isinstance(value, int):
+                    result[key] = str(value)
         return result
 
     def display_on_create(self, cdict):
@@ -97,20 +105,23 @@ class RouterOS(Item):
                 attributes[key] = str(value)
         return attributes
 
+    @property
+    def _connection(self):
+        try:
+            connection = CONNECTIONS[self.node]
+        except KeyError:
+            connection = connect(
+                # str() to resolve Faults
+                username=str(self.node.username),
+                password=str(self.node.password or ""),
+                host=self.node.hostname,
+            )
+            CONNECTIONS[self.node] = connection
+        return connection
+
     def _run(self, *args):
         with CONNECTION_LOCK:
-            try:
-                connection = CONNECTIONS[self.node]
-            except KeyError:
-                connection = login(
-                    # str() to resolve Faults
-                    str(self.node.username),
-                    str(self.node.password or ""),
-                    self.node.hostname,
-                )
-                CONNECTIONS[self.node] = connection
-
-            result = connection(*args)
+            result = tuple(self._connection.rawCmd(*args))
             run_result = RunResult()
             run_result.stdout = repr(result)
             run_result.stderr = ""
