@@ -1,3 +1,11 @@
+# 4.13.4
+
+2021-12-01
+
+* fixed addressing for some routeros items
+* fixed occasional socket errors for routeros items
+
+
 # 4.13.3
 
 2021-11-18
