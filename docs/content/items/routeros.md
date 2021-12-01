@@ -39,9 +39,10 @@ Manages RouterOS configuration through the API (port 8728). You can address ever
                 "ether15",
             },
         },
+        "/system/logging?action=remote&topics=critical": {},
     }
 
-Note that when you're dealing with a list of things, item names have two parts, separated by a `?` character. The first part determines which kind of item is addressed, the second part is a simple `key=value` query that MUST return exactly one entry.
+Note that when you're dealing with a list of things, item names have two parts, separated by a `?` character. The first part determines which kind of item is addressed, the second part is a simple `key=value` query that MUST return exactly one entry. If a list has no single "primary key" (such as `/system/logging`), use `&` to add more conditions.
 
 <br><br>
 

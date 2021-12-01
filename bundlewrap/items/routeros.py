@@ -134,8 +134,9 @@ class RouterOS(Item):
 
     def _add(self, command, kwargs):
         identifier = self.name.split("?", 1)[1]
-        identifier_key, identifier_value = identifier.split("=", 1)
-        kwargs[identifier_key] = identifier_value
+        for identifier_component in identifier.split("&"):
+            identifier_key, identifier_value = identifier_component.split("=", 1)
+            kwargs[identifier_key] = identifier_value
         command += "/add"
         arguments = [f"={key}={value}" for key, value in kwargs.items()]
         self._run(command, *arguments)
@@ -143,8 +144,10 @@ class RouterOS(Item):
     def _get(self, command):
         if "?" in command:
             command, query = command.split("?", 1)
-            query = "?=" + query
-            result = self._run(command + "/print", query)
+            query = query.split("&")
+            query = ["?=" + condition for condition in query]
+            query.append("?#&")  # AND all conditions
+            result = self._run(command + "/print", *query)
         else:
             result = self._run(command + "/print")
 
