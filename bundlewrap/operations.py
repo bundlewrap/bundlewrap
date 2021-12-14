@@ -269,6 +269,10 @@ def upload(
         host=hostname, path=local_path, target=remote_path))
     temp_filename = ".bundlewrap_tmp_" + randstr()
 
+    scp_hostname = hostname
+    if ':' in hostname:
+        scp_hostname = f"[{hostname}]"
+
     scp_command = [
         "scp",
         "-o", "BatchMode=yes",
@@ -280,9 +284,9 @@ def upload(
         scp_command.extend(split(extra_args))
     scp_command.append(local_path)
     if username:
-        scp_command.append(f"{username}@{hostname}:{temp_filename}")
+        scp_command.append(f"{username}@{scp_hostname}:{temp_filename}")
     else:
-        scp_command.append(f"{hostname}:{temp_filename}")
+        scp_command.append(f"{scp_hostname}:{temp_filename}")
 
     scp_process = run_local(scp_command)
 
