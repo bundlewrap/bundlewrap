@@ -137,3 +137,17 @@ class ZFSDataset(Item):
             sdict[option] = self.__get_option(self.name, option)
         sdict['mounted'] = self.__get_option(self.name, 'mounted')
         return sdict
+
+    def patch_attributes(self, attributes):
+        # If no mountpoint was specified, explicitely set it to 'none'.
+        # Also, set `canmount` to 'off', so we don't accidentially mount
+        # it.
+        if 'canmount' not in attributes:
+            if not attributes.get('mountpoint'):
+                attributes['canmount'] = 'off'
+            else:
+                attributes['canmount'] = 'on'
+        if not attributes.get('mountpoint'):
+            attributes['mountpoint'] = 'none'
+        return attributes
+
