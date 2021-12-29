@@ -84,12 +84,12 @@ def graph_for_items(
         auto_attrs = item.get_auto_attrs(items)
         if regular:
             for dep in sorted(item._deps_needs):
-                if dep in auto_attrs.get('needs', set()) and auto:
+                if dep.id in auto_attrs.get('needs', set()) and auto:
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
                 else:
                     yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep.id)
             for dep in sorted(item._deps_after):
-                if dep in auto_attrs.get('after', set()) and auto:
+                if dep.id in auto_attrs.get('after', set()) and auto:
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
                 else:
                     yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
@@ -154,7 +154,7 @@ def plot_group(groups, nodes, show_nodes):
                     yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                         group.name, node.name)
                 else:
-                    for pattern in sorted(group._member_patterns):
+                    for pattern in group._member_patterns:
                         if pattern.search(node.name) is not None:
                             yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
                                 group.name, node.name)
