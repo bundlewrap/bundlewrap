@@ -1,8 +1,6 @@
 from pipes import quote
 
-from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
-from bundlewrap.utils.text import mark_for_translation as _
 
 
 class ZFSDataset(Item):
