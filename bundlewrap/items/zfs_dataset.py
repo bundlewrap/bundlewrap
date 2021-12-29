@@ -108,9 +108,10 @@ class ZFSDataset(Item):
                 if self.name.startswith(item.name + "/"):
                     needs.add(item.id)
                 elif (
-                    self.attributes.get('mountpoint') and
-                    item.attributes.get('mountpoint') and
-                    self.attributes['mountpoint'].startswith(item.attributes['mountpoint'])
+                    self.attributes.get('mountpoint')
+                    and item.attributes.get('mountpoint')
+                    and self.attributes['mountpoint'] != item.attributes['mountpoint']
+                    and self.attributes['mountpoint'].startswith(item.attributes['mountpoint'])
                 ):
                     needs.add(item.id)
 
