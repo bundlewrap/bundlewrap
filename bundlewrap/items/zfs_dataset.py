@@ -91,13 +91,11 @@ class ZFSDataset(Item):
     def get_auto_attrs(self, items):
         pool = self.name.split("/")[0]
         pool_item = "zfs_pool:{}".format(pool)
-        pool_item_found = False
         needs = set()
 
         for item in items:
             if item.ITEM_TYPE_NAME == "zfs_pool" and item.name == pool:
                 # Add dependency to the pool this dataset resides on.
-                pool_item_found = True
                 needs.add(pool_item)
             elif (
                 item.ITEM_TYPE_NAME == "zfs_dataset" and
@@ -115,16 +113,6 @@ class ZFSDataset(Item):
                     self.attributes['mountpoint'].startswith(item.attributes['mountpoint'])
                 ):
                     needs.add(item.id)
-
-        if not pool_item_found:
-            raise BundleError(_(
-                "ZFS dataset {dataset} resides on pool {pool} but item "
-                "{dep} does not exist"
-            ).format(
-                dataset=self.name,
-                pool=pool,
-                dep=pool_item,
-            ))
 
         return {'needs': needs}
 
