@@ -1,3 +1,13 @@
+# 4.13.5
+
+2022-01-15
+
+* fixed some issues in `bw plot`
+* fixed `zfs_dataset` not allowing unmanaged pools
+* fixed `zfs_dataset` creating deps based on identical mountpoints
+* fixed `node.metadata` not being recognized as a Mapping
+
+
 # 4.13.4
 
 2021-12-01
