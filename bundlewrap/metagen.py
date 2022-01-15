@@ -1,4 +1,5 @@
 from collections import defaultdict, Counter
+from collections.abc import Mapping
 from contextlib import suppress
 from os import environ
 from threading import RLock
@@ -100,7 +101,7 @@ class PathSet:
             return result
 
 
-class NodeMetadataProxy:
+class NodeMetadataProxy(Mapping):
     def __init__(self, metagen, node):
         self._metagen = metagen
         self._node = node
@@ -121,6 +122,9 @@ class NodeMetadataProxy:
     def __iter__(self):
         for key, value in self.get(tuple()).items():
             yield key, value
+
+    def __len__(self):
+        return len(self.keys())
 
     @property
     def blame(self):
