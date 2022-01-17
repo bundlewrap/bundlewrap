@@ -366,7 +366,8 @@ class Repository(MetadataGenerator):
                         not isfile(filepath) or \
                         filename.startswith("_"):
                     continue
-                infodict = untoml(toml_parse(get_file_contents(filepath)))
+                with error_context(filepath=filepath):
+                    infodict = untoml(toml_parse(get_file_contents(filepath)))
                 infodict['file_path'] = filepath
                 yield filename[:-5], infodict
 
