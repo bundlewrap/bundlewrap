@@ -190,10 +190,13 @@ def plot_node_groups(node):
                 if pattern.search(group2.name) is not None and group2 != group:
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(
                         group.name, group2.name)
+        for supergroup in sorted(group._supergroups_from_attribute):
+            yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(
+                supergroup.name, group.name)
 
-        if group in node._attributes.get('groups', set()):
+        if group.name in node._attributes.get('groups', set()):
             yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
-                node.name, group.name)
+                group.name, node.name)
         elif node in group._nodes_from_members:
             yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                 group.name, node.name)
