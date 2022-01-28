@@ -39,6 +39,7 @@ edge [arrowhead=vee]
 "group-pop" [fontcolor=white,style=filled];
 "node-foo" [fontcolor="#303030",shape=box,style=rounded];
 "group-bar" -> "group-foo" [color="#6BB753",penwidth=2]
+"group-foo" -> "node-foo" [color="#D18C57",penwidth=2]
 "group-pop" -> "group-bar" [color="#6BB753",penwidth=2]
 }
 """
@@ -55,6 +56,7 @@ edge [arrowhead=vee]
 "group-frob" [fontcolor=white,style=filled];
 "group-pop" [fontcolor=white,style=filled];
 "node-pop" [fontcolor="#303030",shape=box,style=rounded];
+"group-baz" -> "node-pop" [color="#D18C57",penwidth=2]
 "group-frob" -> "node-pop" [color="#D18C57",penwidth=2]
 "group-pop" -> "group-baz" [color="#6BB753",penwidth=2]
 }
