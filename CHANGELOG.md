@@ -1,3 +1,12 @@
+# 4.13.6
+
+2022-01-28
+
+* show file path on TOML parse error
+* improved performance of `bw test -M`
+* fixed `bw plot groups-for-node` not showing all memberships
+
+
 # 4.13.5
 
 2022-01-15
