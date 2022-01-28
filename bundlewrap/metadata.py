@@ -146,6 +146,16 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
                                 ))
 
 
+def _recurse_group_tree(path):
+    tail = path[-1]
+
+    if len(tail.immediate_parent_groups) == 0:
+        yield path
+    else:
+        for p in tail.immediate_parent_groups:
+            yield from _recurse_group_tree(path + [p])
+
+
 def check_for_metadata_conflicts_between_groups(node):
     """
     Finds metadata keys defined by two groups that are not part of a
@@ -172,36 +182,9 @@ def check_for_metadata_conflicts_between_groups(node):
     #     group1 -> group3 -> group4
     #
 
-    # find all groups whose subgroups this node is *not* a member of
-    lowest_subgroups = set()
-    for group in node.groups:
-        in_subgroup = False
-        for subgroup in group.subgroups:
-            if subgroup in node.groups:
-                in_subgroup = True
-                break
-        if not in_subgroup:
-            lowest_subgroups.add(group)
-
     chains = []
-    incomplete_chains = [[group] for group in lowest_subgroups]
-
-    while incomplete_chains:
-        for chain in incomplete_chains[:]:
-            highest_group = chain[-1]
-            if list(highest_group.parent_groups):
-                chain_so_far = chain[:]
-                # continue this chain with the first parent group
-                chain.append(list(highest_group.parent_groups)[0])
-                # further parent groups form new chains
-                for further_parents in list(highest_group.parent_groups)[1:]:
-                    new_chain = chain_so_far[:]
-                    new_chain.append(further_parents)
-                    incomplete_chains.append(new_chain)
-            else:
-                # chain has ended
-                chains.append(chain)
-                incomplete_chains.remove(chain)
+    for group in node.immediate_groups:
+        chains.extend(_recurse_group_tree([group]))
 
     # chains now look like this (parents right of children):
     # [

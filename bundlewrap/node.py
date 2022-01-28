@@ -575,39 +575,28 @@ class Node:
     def group_membership_hash(self):
         return hash_statedict(sorted(names(self.groups)))
 
+    @property
+    def immediate_groups(self):
+        for group in self.repo.groups:
+            if group.name in self._attributes.get('groups', set()):
+                yield self.repo.get_group(group.name)
+            elif self in group._nodes_from_members:
+                yield self.repo.get_group(group.name)
+            else:
+                for pattern in group._member_patterns:
+                    if pattern.search(self.name) is not None:
+                        yield self.repo.get_group(group.name)
+
     @cached_property
     @io.job_wrapper(_("{}  determining groups").format(bold("{0.name}")))
     def groups(self):
-        _groups = set()
-
-        for group_name in set(self._attributes.get('groups', set())):
-            with error_context(node=self.name):
-                _groups.add(self.repo.get_group(group_name))
-
-        for group in self.repo.groups:
-            if group in _groups:
-                # we're already in this group, no need to check it again
-                continue
-            if self in group._nodes_from_members:
-                _groups.add(group)
-                continue
-            for pattern in group._member_patterns:
-                if pattern.search(self.name) is not None:
-                    _groups.add(group)
-
-        while True:
-            # Since we're only looking at *immediate* parent groups,
-            # we have to keep doing this until we stop adding parent
-            # groups.
-            _original_groups = _groups.copy()
-            for group in list(_groups):
-                for parent_group in group.immediate_parent_groups:
-                    _groups.add(parent_group)
-            if _groups == _original_groups:
-                # we didn't add any new parent groups, so we can stop
-                break
-
-        return _groups
+        result = set()
+        for group in self.immediate_groups:
+            result.add(group)
+            for parent_group in group.parent_groups:
+                # these are not just the *immediate* parent groups
+                result.add(parent_group)
+        return result
 
     def has_any_bundle(self, bundle_list):
         for bundle_name in bundle_list:
