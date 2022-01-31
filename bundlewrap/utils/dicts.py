@@ -1,5 +1,4 @@
 from copy import copy
-from datetime import datetime, date, time
 from difflib import unified_diff
 from hashlib import sha1
 from json import dumps, JSONEncoder
