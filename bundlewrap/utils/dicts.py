@@ -1,12 +1,9 @@
 from copy import copy
-from datetime import datetime, date, time
 from difflib import unified_diff
 from hashlib import sha1
 from json import dumps, JSONEncoder
 
 from tomlkit import document as toml_document
-from tomlkit import items as toml_types
-from tomlkit.container import Container as TOMLContainer
 
 from . import Fault
 from .text import bold, green, red, yellow
@@ -504,31 +501,3 @@ def value_at_key_path(dict_obj, path):
             raise KeyError("/".join(path))
         else:
             return value_at_key_path(nested_dict, remaining_path)
-
-
-TOML_TYPES = {
-    toml_types.Bool: bool,
-    toml_types.Float: float,
-    toml_types.Integer: int,
-    toml_types.Table: dict,
-    toml_types.String: str,
-    toml_types.DateTime: datetime,
-    toml_types.Date: date,
-    toml_types.Time: time,
-}
-
-
-def untoml(obj):
-    if isinstance(obj, (dict, TOMLContainer)):
-        return {key: untoml(value) for key, value in obj.items()}
-    elif isinstance(obj, set):
-        return {untoml(value) for value in obj}
-    elif isinstance(obj, list):
-        return [untoml(value) for value in obj]
-    elif isinstance(obj, tuple):
-        return tuple(untoml(value) for value in obj)
-    elif isinstance(obj, toml_types.Item):
-        for toml_type, native_type in TOML_TYPES.items():
-            if isinstance(obj, toml_type):
-                return native_type(obj)
-    return obj

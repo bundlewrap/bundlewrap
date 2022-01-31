@@ -45,6 +45,7 @@ setup(
         "requests >= 1.0.0",
         "librouteros >= 3.0.0",
         "tomlkit",
+        "rtoml",
     ],
     zip_safe=False,
 )

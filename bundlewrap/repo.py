@@ -5,7 +5,7 @@ from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
-from tomlkit import parse as toml_parse
+from rtoml import load as toml_load
 
 from . import items, VERSION_STRING
 from .bundle import FILENAME_ITEMS
@@ -27,7 +27,7 @@ from .utils import (
     names,
 )
 from .utils.scm import get_git_branch, get_git_clean, get_rev
-from .utils.dicts import hash_statedict, untoml
+from .utils.dicts import hash_statedict
 from .utils.text import mark_for_translation as _, red, validate_name
 from .utils.ui import io
 
@@ -367,7 +367,7 @@ class Repository(MetadataGenerator):
                         filename.startswith("_"):
                     continue
                 with error_context(filepath=filepath):
-                    infodict = untoml(toml_parse(get_file_contents(filepath)))
+                    infodict = toml_load(get_file_contents(filepath).decode())
                 infodict['file_path'] = filepath
                 yield filename[:-5], infodict
 
