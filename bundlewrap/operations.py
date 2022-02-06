@@ -5,6 +5,7 @@ from shlex import split
 from subprocess import Popen, PIPE
 from threading import Event, Thread
 from os import close, environ, pipe, read, setpgrp
+from os.path import dirname, join
 
 from .exceptions import RemoteException
 from .utils import cached_property
@@ -267,7 +268,7 @@ def upload(
     """
     io.debug(_("uploading {path} -> {host}:{target}").format(
         host=hostname, path=local_path, target=remote_path))
-    temp_filename = ".bundlewrap_tmp_" + randstr()
+    temp_filename = join(dirname(remote_path), f".bundlewrap_upload_{randstr()}")
 
     scp_hostname = hostname
     if ':' in hostname:
