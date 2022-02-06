@@ -267,7 +267,7 @@ def upload(
     """
     io.debug(_("uploading {path} -> {host}:{target}").format(
         host=hostname, path=local_path, target=remote_path))
-    temp_filename = ".bundlewrap_tmp_" + randstr()
+    temp_filename = f"/tmp/bundlewrap_upload_{randstr()}"
 
     scp_hostname = hostname
     if ':' in hostname:
