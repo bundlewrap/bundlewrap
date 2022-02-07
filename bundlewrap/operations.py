@@ -326,7 +326,9 @@ def upload(
     with open(local_path, "rb") as f:
         upload_process = run(
             hostname,
-            f"cat > {quote(temp_filename)}",
+            "cat > {}".format(
+                quote(temp_filename),
+            ),
             stdin=f,
             add_host_keys=add_host_keys,
             ignore_failure=ignore_failure,
