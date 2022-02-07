@@ -5,6 +5,7 @@ from shlex import split
 from subprocess import Popen, PIPE
 from threading import Event, Thread
 from os import close, environ, pipe, read, setpgrp
+from os.path import dirname, join
 
 from .exceptions import RemoteException
 from .utils import cached_property
@@ -267,40 +268,24 @@ def upload(
     """
     io.debug(_("uploading {path} -> {host}:{target}").format(
         host=hostname, path=local_path, target=remote_path))
-    temp_filename = ".bundlewrap_tmp_" + randstr()
 
-    scp_hostname = hostname
-    if ':' in hostname:
-        scp_hostname = f"[{hostname}]"
+    temp_filename = join(dirname(remote_path), f".bundlewrap_upload_{randstr()}")
 
-    scp_command = [
-        "scp",
-        "-o", "BatchMode=yes",
-        "-o",
-        "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
-    ]
-    extra_args = environ.get("BW_SCP_ARGS", environ.get("BW_SSH_ARGS", "")).strip()
-    if extra_args:
-        scp_command.extend(split(extra_args))
-    scp_command.append(local_path)
-    if username:
-        scp_command.append(f"{username}@{scp_hostname}:{temp_filename}")
-    else:
-        scp_command.append(f"{scp_hostname}:{temp_filename}")
+    # touch
+    result = run(
+        hostname,
+        "touch {}".format(
+            quote(temp_filename),
+        ),
+        add_host_keys=add_host_keys,
+        ignore_failure=ignore_failure,
+        wrapper_inner=wrapper_inner,
+        wrapper_outer=wrapper_outer,
+    )
+    if result.return_code != 0:
+        return False
 
-    scp_process = run_local(scp_command)
-
-    if scp_process.return_code != 0:
-        if ignore_failure:
-            return False
-        raise RemoteException(_(
-            "Upload to {host} failed for {failed}:\n\n{result}\n\n"
-        ).format(
-            failed=remote_path,
-            host=hostname,
-            result=force_text(scp_process.stdout) + force_text(scp_process.stderr),
-        ))
-
+    # chown
     if owner or group:
         if group:
             group = ":" + quote(group)
@@ -319,6 +304,7 @@ def upload(
         if result.return_code != 0:
             return False
 
+    # chmod
     if mode:
         result = run(
             hostname,
@@ -334,6 +320,30 @@ def upload(
         if result.return_code != 0:
             return False
 
+    # upload
+    upload_command = [
+        "ssh",
+        "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
+        *environ.get("BW_SSH_ARGS", "").strip().split(),
+        hostname,
+        f"cat > {quote(temp_filename)}",
+    ]
+
+    with open(local_path, "rb") as f:
+        upload_process = run_local(upload_command, data_stdin=f.read())
+
+    if upload_process.return_code != 0:
+        if ignore_failure:
+            return False
+        raise RemoteException(_(
+            "Upload to {host} failed for {failed}:\n\n{result}\n\n"
+        ).format(
+            failed=remote_path,
+            host=hostname,
+            result=force_text(upload_process.stdout) + force_text(upload_process.stderr),
+        ))
+
+    # move
     result = run(
         hostname,
         "mv -f {} {}".format(
