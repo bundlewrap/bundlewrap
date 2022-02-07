@@ -196,6 +196,7 @@ def run(
     hostname,
     command,
     add_host_keys=False,
+    stdin=PIPE,
     data_stdin=None,
     ignore_failure=False,
     raise_for_return_codes=(
@@ -231,6 +232,7 @@ def run(
 
     result = run_local(
         ssh_command,
+        stdin=stdin,
         data_stdin=data_stdin,
         log_function=log_function,
     )
@@ -321,17 +323,16 @@ def upload(
         if result.return_code != 0:
             return False
 
-    # upload
-    upload_command = [
-        "ssh",
-        "-o", "StrictHostKeyChecking=no" if add_host_keys else "StrictHostKeyChecking=yes",
-        *environ.get("BW_SSH_ARGS", "").strip().split(),
-        hostname,
-        f"cat > {quote(temp_filename)}",
-    ]
-
     with open(local_path, "rb") as f:
-        upload_process = run_local(upload_command, stdin=f)
+        upload_process = run(
+            hostname,
+            f"cat > {quote(temp_filename)}",
+            stdin=f,
+            add_host_keys=add_host_keys,
+            ignore_failure=ignore_failure,
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
+        )
 
     if upload_process.return_code != 0:
         if ignore_failure:
