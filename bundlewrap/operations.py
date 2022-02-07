@@ -262,7 +262,6 @@ def upload(
     mode=None,
     owner="",
     ignore_failure=False,
-    username=None,
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
