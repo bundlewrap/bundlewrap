@@ -90,6 +90,7 @@ class RunResult:
 
 def run_local(
     command,
+    stdin=PIPE,
     data_stdin=None,
     log_function=None,
     shell=False,
@@ -122,7 +123,7 @@ def run_local(
         command,
         preexec_fn=setpgrp,
         shell=shell,
-        stdin=PIPE,
+        stdin=stdin,
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )
@@ -330,7 +331,7 @@ def upload(
     ]
 
     with open(local_path, "rb") as f:
-        upload_process = run_local(upload_command, data_stdin=f.read())
+        upload_process = run_local(upload_command, stdin=f)
 
     if upload_process.return_code != 0:
         if ignore_failure:
