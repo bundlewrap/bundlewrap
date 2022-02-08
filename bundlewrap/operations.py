@@ -276,7 +276,7 @@ def upload(
     # touch
     result = run(
         hostname,
-        "touch {}".format(
+        "umask 777 && touch {}".format(
             quote(temp_filename),
         ),
         add_host_keys=add_host_keys,
