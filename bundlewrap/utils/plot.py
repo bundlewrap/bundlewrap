@@ -38,7 +38,7 @@ def graph_for_items(
     reverse=True,
     auto=True,
 ):
-    items = sorted(items)
+    items = set(items)
 
     yield "digraph bundlewrap"
     yield "{"
@@ -80,33 +80,33 @@ def graph_for_items(
             bundles_seen.add(item.bundle.name)
 
     # Define dependencies between items
-    for item in items:
+    for item in sorted(items):
         auto_attrs = item.get_auto_attrs(items)
         if regular:
-            for dep in sorted(item._deps_needs):
+            for dep in sorted(item._deps_needs & items):
                 if dep.id in auto_attrs.get('needs', set()) and auto:
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
                 else:
                     yield "\"{}\" -> \"{}\" [color=\"#C24948\",penwidth=2]".format(item.id, dep.id)
-            for dep in sorted(item._deps_after):
+            for dep in sorted(item._deps_after & items):
                 if dep.id in auto_attrs.get('after', set()) and auto:
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
                 else:
                     yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
 
         if concurrency:
-            for dep in sorted(item._deps_concurrency):
+            for dep in sorted(item._deps_concurrency & items):
                 yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep.id)
 
         if reverse:
             # FIXME this is not filtering auto deps, but we should rethink filters anyway in 5.0
-            for dep in sorted(item._deps_before):
+            for dep in sorted(item._deps_before & items):
                 yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep.id)
-            for dep in sorted(item._deps_needed_by):
+            for dep in sorted(item._deps_needed_by & items):
                 yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep.id)
 
         if auto:
-            for dep in sorted(item._deps_triggers):
+            for dep in sorted(item._deps_triggers & items):
                 yield "\"{}\" -> \"{}\" [color=\"#fca7f7\",penwidth=2]".format(item.id, dep.id)
 
     # Global graph title
