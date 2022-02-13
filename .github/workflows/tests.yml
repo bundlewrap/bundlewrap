@@ -39,4 +39,4 @@ jobs:
         echo -e "Host localhost\n  ControlPath ~/.ssh/controlmasters/%C\n  ControlPersist 1h\n  ControlMaster auto" > ~/.ssh/config
     - name: Test with pytest
       run: |
-        pytest --assert=plain tests  # https://github.com/pytest-dev/pytest/issues/9174
+        pytest tests
