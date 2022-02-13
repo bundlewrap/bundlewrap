@@ -101,7 +101,7 @@ class SecretProxy:
         returns the plaintext as base64.
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
-            return b64encode("decrypted file as base64").decode('utf-8')
+            return b64encode(b"decrypted file as base64").decode('utf-8')
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
