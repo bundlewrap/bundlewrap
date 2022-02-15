@@ -5,6 +5,7 @@ from shlex import split
 from subprocess import Popen, PIPE
 from threading import Event, Thread
 from os import close, environ, pipe, read, setpgrp
+from os.path import dirname, join
 
 from .exceptions import RemoteException
 from .utils import cached_property
@@ -89,6 +90,7 @@ class RunResult:
 
 def run_local(
     command,
+    stdin=PIPE,
     data_stdin=None,
     log_function=None,
     shell=False,
@@ -121,7 +123,7 @@ def run_local(
         command,
         preexec_fn=setpgrp,
         shell=shell,
-        stdin=PIPE,
+        stdin=stdin,
         stderr=stderr_fd_w,
         stdout=stdout_fd_w,
     )
@@ -194,6 +196,7 @@ def run(
     hostname,
     command,
     add_host_keys=False,
+    stdin=PIPE,
     data_stdin=None,
     ignore_failure=False,
     raise_for_return_codes=(
@@ -229,6 +232,7 @@ def run(
 
     result = run_local(
         ssh_command,
+        stdin=stdin,
         data_stdin=data_stdin,
         log_function=log_function,
     )
@@ -249,7 +253,14 @@ def run(
     return result
 
 
-def upload(
+def upload(*args, **kwargs):
+    if environ.get('EXPERIMENTAL_UPLOAD_VIA_CAT', '0') == '1':
+        return upload_via_cat(*args, **kwargs)
+    else:
+        return upload_via_scp(*args, **kwargs)
+
+
+def upload_via_scp(
     hostname,
     local_path,
     remote_path,
@@ -262,6 +273,7 @@ def upload(
     wrapper_inner="{}",
     wrapper_outer="{}",
 ):
+
     """
     Upload a file.
     """
@@ -334,6 +346,115 @@ def upload(
         if result.return_code != 0:
             return False
 
+    result = run(
+        hostname,
+        "mv -f {} {}".format(
+            quote(temp_filename),
+            quote(remote_path),
+        ),
+        add_host_keys=add_host_keys,
+        ignore_failure=ignore_failure,
+        wrapper_inner=wrapper_inner,
+        wrapper_outer=wrapper_outer,
+    )
+    return result.return_code == 0
+
+
+# EXPERIMENTAL
+def upload_via_cat(
+    hostname,
+    local_path,
+    remote_path,
+    add_host_keys=False,
+    group="",
+    mode=None,
+    owner="",
+    ignore_failure=False,
+    username=None,
+    wrapper_inner="{}",
+    wrapper_outer="{}",
+):
+    """
+    Upload a file.
+    """
+    io.debug(_("uploading {path} -> {host}:{target}").format(
+        host=hostname, path=local_path, target=remote_path))
+    temp_filename = join(dirname(remote_path), f".bundlewrap_upload_{randstr()}")
+
+    # touch
+    result = run(
+        hostname,
+        "umask 777 && touch {}".format(
+            quote(temp_filename),
+        ),
+        add_host_keys=add_host_keys,
+        ignore_failure=ignore_failure,
+        wrapper_inner=wrapper_inner,
+        wrapper_outer=wrapper_outer,
+    )
+    if result.return_code != 0:
+        return False
+
+    # chown
+    if owner or group:
+        if group:
+            group = ":" + quote(group)
+        result = run(
+            hostname,
+            "chown {}{} {}".format(
+                quote(owner),
+                group,
+                quote(temp_filename),
+            ),
+            add_host_keys=add_host_keys,
+            ignore_failure=ignore_failure,
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
+        )
+        if result.return_code != 0:
+            return False
+
+    # chmod
+    if mode:
+        result = run(
+            hostname,
+            "chmod {} {}".format(
+                mode,
+                quote(temp_filename),
+            ),
+            add_host_keys=add_host_keys,
+            ignore_failure=ignore_failure,
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
+        )
+        if result.return_code != 0:
+            return False
+
+    with open(local_path, "rb") as f:
+        upload_process = run(
+            hostname,
+            "cat > {}".format(
+                quote(temp_filename),
+            ),
+            stdin=f,
+            add_host_keys=add_host_keys,
+            ignore_failure=ignore_failure,
+            wrapper_inner=wrapper_inner,
+            wrapper_outer=wrapper_outer,
+        )
+
+    if upload_process.return_code != 0:
+        if ignore_failure:
+            return False
+        raise RemoteException(_(
+            "Upload to {host} failed for {failed}:\n\n{result}\n\n"
+        ).format(
+            failed=remote_path,
+            host=hostname,
+            result=force_text(upload_process.stdout) + force_text(upload_process.stderr),
+        ))
+
+    # move
     result = run(
         hostname,
         "mv -f {} {}".format(
