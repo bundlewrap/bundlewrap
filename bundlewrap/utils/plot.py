@@ -201,7 +201,7 @@ def plot_node_groups(node):
             yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(
                 group.name, node.name)
         else:
-            for pattern in sorted(group._member_patterns):
+            for pattern in group._member_patterns:
                 if pattern.search(node.name) is not None:
                     yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(
                         group.name, node.name)
