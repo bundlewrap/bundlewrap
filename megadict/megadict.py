@@ -63,6 +63,14 @@ def merge(value1, value2):
 
 
 class MegaDictNode:
+    __slots__ = (
+        'child_nodes',
+        'layers',
+        'key',
+        'parent',
+        'root',
+    )
+
     def __init__(self, key=Undefined, parent=None, root=None):
         self.child_nodes = {}
         self.layers = {}
@@ -70,48 +78,55 @@ class MegaDictNode:
         self.parent = parent
         self.root = root or self
 
-    def add(self, data, layer=0, source='unknown'):
-        self.ensure_layer(layer)
+    def _add(self, data, layer=0, source='unknown'):
+        """
+        This distributes the data provided by a callback to the proper
+        nodes.
+        """
+        self._ensure_layer(layer)
         if isinstance(data, dict) and not isinstance(data, _Atomic):
             self.layers[layer].values[source] = {}
             for key, value in data.items():
-                child_node = self.ensure_path((key,))
+                child_node = self._ensure_path((key,))
                 self.layers[layer].values[source][key] = child_node
-                child_node.add(value, layer=layer, source=source)
+                child_node._add(value, layer=layer, source=source)
         else:
             self.layers[layer].values[source] = data
 
-    def ensure_layer(self, index):
+    def _ensure_layer(self, index):
         if index not in self.layers:
             self.layers[index] = Layer()
         if self.root != self:
-            self.root.ensure_layer(index)
+            # we must collect all layers at the root, so nodes don't
+            # have to do long searches to find out which layers might
+            # exist on their parent nodes
+            self.root._ensure_layer(index)
 
     @takes_path
-    def ensure_path(self, path):
+    def _ensure_path(self, path):
         if path:
             key = path[0]
             if key not in self.child_nodes:
                 self.child_nodes[key] = MegaDictNode(key=key, parent=self, root=self.root)
-            return self.child_nodes[key].ensure_path(path[1:])
+            return self.child_nodes[key]._ensure_path(path[1:])
         else:
             return self
 
     @takes_path
     def add_callback_for_path(self, path, callback):
         if path:
-            self.ensure_path((path[0],))
+            self._ensure_path((path[0],))
             self.child_nodes[path[0]].add_callback_for_path(path[1:], callback)
         else:
-            self.ensure_layer(callback.layer)
+            self._ensure_layer(callback.layer)
             self.layers[callback.layer].callbacks.add(callback)
 
-    def remove(self, layer, source):
-        with suppress(KeyError):
-            del self.layers[layer].values[source]
-
-        for child_node in self.child_nodes.values():
-            child_node.remove(layer, source)
+    #def remove(self, layer, source):
+    #    with suppress(KeyError):
+    #        del self.layers[layer].values[source]
+    #
+    #    for child_node in self.child_nodes.values():
+    #        child_node.remove(layer, source)
 
     @takes_path
     def get(self, path):
@@ -133,6 +148,10 @@ class MegaDictNode:
 
     @takes_path
     def keys(self, path):
+        """
+        Provides the keys for the dict at the given path without going
+        through the trouble of assembling the values.
+        """
         if path:
             return self.get_node(path).keys()
 
@@ -142,16 +161,6 @@ class MegaDictNode:
             raise ValueError(f"{self.path} is not a dict")
 
         return value.keys()
-
-    @takes_path
-    def make_nodes(self, path):
-        child_identifier = path[0]
-        try:
-            child_node = self.child_nodes[child_identifier]
-        except KeyError:
-            child_node = MegaDictNode(child_identifier)
-            self.child_nodes[child_identifier] = child_node
-        yield from child_node.get_node(path[1:])
 
     @property
     def value(self):
@@ -179,6 +188,10 @@ class MegaDictNode:
         candidate = Undefined
         candidate_sources = set()
         visited_layers = []
+        # It's important we iterate over *all* layers here, even if we
+        # don't have them on the current node. If we didn't,
+        # _run_callbacks_for_layer() might miss a higher layer on a
+        # parent node.
         for layer_index in sorted(self.root.layers.keys()):
             if only_layers is not None and layer_index not in only_layers:
                 continue
@@ -243,6 +256,14 @@ class MegaDictNode:
 
 
 class MegaDictCallback:
+    __slots__ = (
+        'megadict',
+        'identifier',
+        'layer',
+        'callback_func',
+        'has_run',
+    )
+
     def __init__(self, megadict, identifier, layer, callback_func):
         self.megadict = megadict
         self.identifier = identifier
@@ -254,4 +275,4 @@ class MegaDictCallback:
         self.has_run = True
         result = self.callback_func(self.megadict)
         del self.callback_func
-        self.megadict.add(result, layer=self.layer, source=self.identifier)
+        self.megadict._add(result, layer=self.layer, source=self.identifier)
