@@ -18,6 +18,12 @@ class Layer:
         self.callbacks = set()
         self.values = {}
 
+    def __repr__(self):
+        return f"""<Layer {repr({
+            'callbacks': self.callbacks,
+            'values': self.values,
+        })}>"""
+
 
 def takes_path(f):
     @wraps(f)
@@ -47,7 +53,7 @@ def merge(value1, value2):
                 result[key] = value
         return result
     elif isinstance(value1, set) and isinstance(value2, set):
-        return value1 & value2
+        return value1 | value2
     elif value1 is Undefined:
         return value2
     elif value2 is Undefined:
@@ -62,7 +68,7 @@ class MegaDictNode:
         self.layers = {}
         self.key = key
         self.parent = parent
-        self.root = root
+        self.root = root or self
 
     def add(self, data, layer=0, source='unknown'):
         self.ensure_layer(layer)
@@ -78,6 +84,8 @@ class MegaDictNode:
     def ensure_layer(self, index):
         if index not in self.layers:
             self.layers[index] = Layer()
+        if self.root != self:
+            self.root.ensure_layer(index)
 
     @takes_path
     def ensure_path(self, path):
@@ -128,7 +136,7 @@ class MegaDictNode:
         if path:
             return self.get_node(path).keys()
 
-        value, blame = self._value_and_blame(_resolve_child_nodes=False)
+        value, blame = self._value_and_blame(resolve_child_nodes=False)
 
         if not isinstance(value, dict):
             raise ValueError(f"{self.path} is not a dict")
@@ -153,22 +161,40 @@ class MegaDictNode:
     def value_and_blame(self):
         return self._value_and_blame()
 
-    def _value_and_blame(self, _resolve_child_nodes=True):
-        candidate = Undefined
-        candidate_sources = set()
-        for layer_index, layer in sorted(self.layers.items()):
+    def _run_callbacks_for_layer(self, layer_index):
+        try:
+            layer = self.layers[layer_index]
+        except KeyError:
+            pass
+        else:
             for callback in layer.callbacks:
                 if callback.has_run:
                     continue
                 else:
                     callback.run()
+        if self.parent:
+            self.parent._run_callbacks_for_layer(layer_index)
+
+    def _value_and_blame(self, resolve_child_nodes=True, only_layers=None):
+        candidate = Undefined
+        candidate_sources = set()
+        visited_layers = []
+        for layer_index in sorted(self.root.layers.keys()):
+            if only_layers is not None and layer_index not in only_layers:
+                continue
+            visited_layers.append(layer_index)
+            self._run_callbacks_for_layer(layer_index)
+
+            try:
+                layer = self.layers[layer_index]
+            except KeyError:
+                continue
 
             for source, value in layer.values.items():
                 if candidate is Undefined:
                     candidate = value
                     candidate_sources.add(source)
                     continue
-
                 try:
                     candidate = merge(candidate, value)
                 except ValueError as exc:
@@ -183,21 +209,30 @@ class MegaDictNode:
                     or isinstance(candidate, _Atomic)
                 )
             ):
-                # no need to look at lower layers
-                return candidate, candidate_sources
+                # no need to look at lower layers for this node
+                break
 
         if candidate is Undefined and self.child_nodes:
             candidate = self.child_nodes.copy()
 
-        if _resolve_child_nodes and isinstance(candidate, dict):
-            result = {}
-            for key, child_node in candidate.items():
-                value = child_node.value
-                if value is not Undefined:
-                    result[key] = value
-            return result, candidate_sources
-        else:
-            return candidate, candidate_sources
+        if isinstance(candidate, dict) and not isinstance(candidate, _Atomic):
+            if resolve_child_nodes:
+                result = {}
+                result_blame = set()
+                for key, child_node in candidate.items():
+                    value, blame = child_node.value_and_blame
+                    if value is not Undefined:
+                        result[key] = value
+                        result_blame.update(blame)
+                candidate = result
+                candidate_sources = result_blame
+        elif candidate is not Undefined:
+            for key, child_node in self.child_nodes.items():
+                child_value, child_blame = child_node._value_and_blame(only_layers=visited_layers)
+                if child_value is not Undefined:
+                    raise ValueError(f"conflict at {self.path} between {candidate_sources} and {child_blame}: {repr(candidate)} prevents merge of {repr(child_value)}")
+
+        return candidate, candidate_sources
 
     @property
     def path(self):

@@ -78,6 +78,14 @@ def test_merging_int_conflict():
         print(m.get())
 
 
+def test_merging_nested_conflict():
+    m = MegaDictNode()
+    m.add({'foo': 47}, source='1')
+    m.add({'foo': {'bar': 23}}, source='2')
+    with raises(ValueError):
+        print(m.get())
+
+
 def test_merging_int_conflict_resolved_by_layer():
     m = MegaDictNode()
     m.add({'foo': 47}, source='1', layer=0)
@@ -141,7 +149,7 @@ def test_blame():
     m = MegaDictNode()
     m.add({'foo': {'bar': 47}, 'frob': 69}, source='1', layer=0)
     m.add({'foo': {'bar': 23}, 'baz': 42}, source='2', layer=1)
-    assert m.get_node(('foo',)).value_and_blame[1] == {'1', '2'}
+    assert m.get_node(('foo',)).value_and_blame[1] == {'1'}
     assert m.get_node(('foo', 'bar')).value_and_blame[1] == {'1'}
     assert m.get_node(('baz',)).value_and_blame[1] == {'2'}
 
@@ -152,6 +160,35 @@ def test_callback():
     m.add_callback_for_path(('foo',), c)
     assert m.get() == {'foo': 47}
     assert m.get(('foo',)) == 47
+
+
+def test_callback_conflict():
+    m = MegaDictNode()
+    c1 = MegaDictCallback(m, 'c1', 0, lambda m: {'foo': 47})
+    c2 = MegaDictCallback(m, 'c2', 0, lambda m: {'foo': {'bar': 47}})
+    m.add_callback_for_path(('foo',), c1)
+    m.add_callback_for_path(('foo', 'bar'), c2)
+    with raises(ValueError):
+        print(m.get())
+
+
+def test_callback_blame():
+    m = MegaDictNode()
+    c1 = MegaDictCallback(m, 'c1', 0, lambda m: {'foo': {'bar': {23}}})
+    c2 = MegaDictCallback(m, 'c2', 0, lambda m: {'foo': {'bar': {47}}})
+    m.add_callback_for_path(('foo',), c1)
+    m.add_callback_for_path(('foo', 'bar'), c2)
+    assert m.get_node(('foo', 'bar')).value_and_blame == ({23, 47}, {'c1', 'c2'})
+
+
+def test_callback_blame_cross_layer():
+    m = MegaDictNode()
+    c1 = MegaDictCallback(m, 'c1', 0, lambda m: {'foo': {'bar': {23}}})
+    c2 = MegaDictCallback(m, 'c2', 1, lambda m: {'foo': {'bar': {47}}})
+    m.add_callback_for_path(('foo',), c1)
+    m.add_callback_for_path(('foo', 'bar'), c2)
+    print(m.get_node(('foo', 'bar')).layers)
+    assert m.get_node(('foo', 'bar')).value_and_blame == ({23, 47}, {'c1', 'c2'})
 
 
 def test_nested_callback():
