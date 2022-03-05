@@ -1,5 +1,5 @@
-from collections import namedtuple
 from contextlib import suppress
+from functools import wraps
 
 from bundlewrap.utils.dicts import _Atomic
 
@@ -17,6 +17,22 @@ class Layer:
     def __init__(self):
         self.callbacks = set()
         self.values = {}
+
+
+def takes_path(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if args:
+            path = args[0]
+            if isinstance(path, str):
+                if path:
+                    args[0] = tuple(path.split("/"))
+                else:
+                    args[0] = ()
+        else:
+            args = [()]
+        return f(self, *args, **kwargs)
+    return wrapper
 
 
 def merge(value1, value2):
@@ -63,6 +79,7 @@ class MegaDictNode:
         if index not in self.layers:
             self.layers[index] = Layer()
 
+    @takes_path
     def ensure_path(self, path):
         if path:
             key = path[0]
@@ -72,6 +89,7 @@ class MegaDictNode:
         else:
             return self
 
+    @takes_path
     def add_callback_for_path(self, path, callback):
         if path:
             self.ensure_path((path[0],))
@@ -87,7 +105,8 @@ class MegaDictNode:
         for child_node in self.child_nodes.values():
             child_node.remove(layer, source)
 
-    def get(self, path=()):
+    @takes_path
+    def get(self, path):
         value = self.get_node(path).value
         if value is Undefined:
             if path:
@@ -97,12 +116,26 @@ class MegaDictNode:
         else:
             return value
 
+    @takes_path
     def get_node(self, path):
         if path:
             return self.child_nodes[path[0]].get_node(path[1:])
         else:
             return self
 
+    @takes_path
+    def keys(self, path):
+        if path:
+            return self.get_node(path).keys()
+
+        value, blame = self._value_and_blame(_resolve_child_nodes=False)
+
+        if not isinstance(value, dict):
+            raise ValueError(f"{self.path} is not a dict")
+
+        return value.keys()
+
+    @takes_path
     def make_nodes(self, path):
         child_identifier = path[0]
         try:
@@ -114,10 +147,13 @@ class MegaDictNode:
 
     @property
     def value(self):
-        return self.value_and_blame[0]
+        return self._value_and_blame()[0]
 
     @property
     def value_and_blame(self):
+        return self._value_and_blame()
+
+    def _value_and_blame(self, _resolve_child_nodes=True):
         candidate = Undefined
         candidate_sources = set()
         for layer_index, layer in sorted(self.layers.items()):
@@ -150,7 +186,10 @@ class MegaDictNode:
                 # no need to look at lower layers
                 return candidate, candidate_sources
 
-        if isinstance(candidate, dict):
+        if candidate is Undefined and self.child_nodes:
+            candidate = self.child_nodes.copy()
+
+        if _resolve_child_nodes and isinstance(candidate, dict):
             result = {}
             for key, child_node in candidate.items():
                 value = child_node.value

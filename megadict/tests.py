@@ -150,6 +150,7 @@ def test_callback():
     m = MegaDictNode()
     c = MegaDictCallback(m, 'c', 0, lambda m: {'foo': 47})
     m.add_callback_for_path(('foo',), c)
+    assert m.get() == {'foo': 47}
     assert m.get(('foo',)) == 47
 
 
@@ -184,3 +185,19 @@ def test_lazy_callback_layers():
     m.add_callback_for_path(('bar',), c2)
     m.add_callback_for_path(('foo',), c3)
     assert m.get(('bar',)) == 48
+
+
+def test_lazy_keys():
+    m = MegaDictNode()
+    c1 = MegaDictCallback(m, 'c1', 0, lambda m: {'foo': {'bar': 1}})
+    c2 = MegaDictCallback(m, 'c2', 0, lambda m: {'foo': {'bar': 2}})
+    m.add_callback_for_path(('foo', 'bar',), c1)
+    m.add_callback_for_path(('foo', 'bar',), c2)
+
+    # these do not raise ValueError, because they're not supposed to
+    # merge the values
+    assert sorted(m.keys()) == ['foo']
+    assert sorted(m.keys(('foo',))) == ['bar']
+
+    with raises(ValueError):
+        print(m.get())
