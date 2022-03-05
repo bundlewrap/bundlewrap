@@ -137,14 +137,6 @@ def test_merging_dict_layered():
     }
 
 
-#def test_remove():
-#    m = MegaDictNode()
-#    m._add({'foo': {'bar': 47}}, layer=1, source='1')
-#    m._add({'foo': {'bar': 42}}, layer=0, source='0')
-#    m.remove(0, '0')
-#    assert m.get(('foo', 'bar')) == 47
-
-
 def test_blame():
     m = MegaDictNode()
     m._add({'foo': {'bar': 47}, 'frob': 69}, source='1', layer=0)

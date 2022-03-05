@@ -1,4 +1,3 @@
-from contextlib import suppress
 from functools import wraps
 
 from bundlewrap.utils.dicts import _Atomic
@@ -120,13 +119,6 @@ class MegaDictNode:
         else:
             self._ensure_layer(callback.layer)
             self.layers[callback.layer].callbacks.add(callback)
-
-    #def remove(self, layer, source):
-    #    with suppress(KeyError):
-    #        del self.layers[layer].values[source]
-    #
-    #    for child_node in self.child_nodes.values():
-    #        child_node.remove(layer, source)
 
     @takes_path
     def get(self, path):
