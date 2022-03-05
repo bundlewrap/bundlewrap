@@ -101,7 +101,6 @@ class MegaDictNode:
             # exist on their parent nodes
             self.root._ensure_layer(index)
 
-    @takes_path
     def _ensure_path(self, path):
         if path:
             key = path[0]
