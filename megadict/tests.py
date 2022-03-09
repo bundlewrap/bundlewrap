@@ -13,26 +13,26 @@ def test_empty():
 def test_keyerror():
     m = MegaDictNode()
     with raises(KeyError):
-        m.get(('foo',))
+        m.get('foo')
 
 
 def test_keyerror_nested():
     m = MegaDictNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 47}})
     with raises(KeyError):
-        m.get(('foo', 'baz'))
+        m.get('foo/baz')
 
 
 def test_add_and_get_value():
     m = MegaDictNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 47}})
-    assert m.get(('foo', 'bar')) == 47
+    assert m.get('foo/bar') == 47
 
 
 def test_add_and_get_dict():
     m = MegaDictNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 47}})
-    assert m.get(('foo',)) == {'bar': 47}
+    assert m.get('foo') == {'bar': 47}
 
 
 def test_path_root():
@@ -42,25 +42,24 @@ def test_path_root():
 
 def test_path():
     m = MegaDictNode()
-    m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 47}})
-    assert m.get_node(('foo', 'bar')).path == ('foo', 'bar')
+    assert m.get_node('foo/bar').path == ('foo', 'bar')
 
 
 def test_layering():
     m = MegaDictNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 42}}, layer=1)
-    assert m.get(('foo', 'bar')) == 42
+    assert m.get('foo/bar') == 42
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 47}}, layer=0)
-    assert m.get(('foo', 'bar')) == 47
+    assert m.get('foo/bar') == 47
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 23}}, layer=2)
-    assert m.get(('foo', 'bar')) == 47
+    assert m.get('foo/bar') == 47
 
 
 def test_layering_atomic():
     m = MegaDictNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 42}}, layer=1)
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': atomic({'baz': 47})}, layer=0)
-    assert m.get(('foo',)) == {'baz': 47}
+    assert m.get('foo') == {'baz': 47}
 
 
 def test_merging_no_conflict():
@@ -90,7 +89,7 @@ def test_merging_int_conflict_resolved_by_layer():
     m = MegaDictNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': 47}, layer=0)
     m.add_callback_for_paths({()}, lambda m: {'foo': 23}, layer=1)
-    assert m.get(('foo',)) == 47
+    assert m.get('foo') == 47
 
 
 def test_merging_dict_no_conflict():
@@ -181,3 +180,21 @@ def test_lazy_keys():
 
     with raises(ValueError):
         print(m.get())
+
+
+def test_layer_link():
+    m = MegaDictNode()
+    node1_metadata = m.get_node('node1/metadata')
+    group1_metadata = m.get_node('group1/metadata')
+    group2_metadata = m.get_node('group2/metadata')
+    node1_metadata.add_callback_for_paths({()}, lambda m: {'foo': {23}, 'bar': 1}, layer=0)
+    group1_metadata.add_callback_for_paths({()}, lambda m: {'foo': {47}, 'bar': 2}, layer=0)
+    group2_metadata.add_callback_for_paths({()}, lambda m: {'foo': {42}, 'bar': 3, 'baz': None}, layer=0)
+    node1_metadata.link(group1_metadata, 1)
+    group1_metadata.link(group2_metadata, 1)
+    assert m.get('node1/metadata') == {
+        'foo': {23, 42, 47},
+        'bar': 1,
+        'baz': None,
+    }
+    assert m.get('node1/metadata/baz') is None

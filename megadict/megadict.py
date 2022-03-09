@@ -10,16 +10,19 @@ class Undefined:
 class Layer:
     __slots__ = (
         'callbacks',
+        'links',
         'values',
     )
 
     def __init__(self):
         self.callbacks = set()
+        self.links = set()
         self.values = {}
 
     def __repr__(self):
         return f"""<Layer {repr({
             'callbacks': self.callbacks,
+            'links': self.links,
             'values': self.values,
         })}>"""
 
@@ -53,7 +56,7 @@ def merge(value1, value2):
     elif isinstance(value1, dict) and isinstance(value2, dict):
         result = value1.copy()
         for key, value in value2.items():
-            if key in result and result[key] != value:
+            if key in result and result[key] is not Undefined:  # ignore same child node
                 raise ValueError(f"conflicting keys in {repr(value1)} and {repr(value2)}")
             else:
                 result[key] = value
@@ -96,7 +99,7 @@ class MegaDictNode:
             self.layers[layer].values[source] = {}
             for key, value in data.items():
                 child_node = self._ensure_path((key,))
-                self.layers[layer].values[source][key] = child_node
+                self.layers[layer].values[source][key] = Undefined
                 child_node._add(value, layer=layer, source=source)
         else:
             self.layers[layer].values[source] = data
@@ -113,6 +116,7 @@ class MegaDictNode:
             # have to do long searches to find out which layers might
             # exist on their parent nodes
             self.root._ensure_layer(index)
+        return self.layers[index]
 
     def _ensure_path(self, path):
         """
@@ -174,6 +178,9 @@ class MegaDictNode:
 
         return value.keys()
 
+    def link(self, other_node, layer_index):
+        self._ensure_layer(layer_index).links.add(other_node)
+
     @property
     def value(self):
         return self._value_and_blame()[0]
@@ -194,6 +201,17 @@ class MegaDictNode:
             # our parents might also provide relevant values
             self.parent._run_callbacks_for_layer(layer_index)
 
+    def _value_and_blame_for_linked_nodes_at_path(self, path, layer_index):
+        if self.parent:
+            yield from self.parent._value_and_blame_for_linked_nodes_at_path((self.key,), layer_index)
+        try:
+            layer = self.layers[layer_index]
+        except KeyError:
+            pass
+        else:
+            for linked_node in layer.links:
+                yield linked_node.get_node(path)._value_and_blame(resolve_child_nodes=False)
+
     def _value_and_blame(self, resolve_child_nodes=True, only_layers=None):
         value = Undefined
         blame = set()
@@ -208,15 +226,24 @@ class MegaDictNode:
             visited_layers.append(layer_index)
             self._run_callbacks_for_layer(layer_index)
 
+            candidate_values_and_sources = []
+            candidate_values_and_sources.extend(self._value_and_blame_for_linked_nodes_at_path((), layer_index))
+
             try:
                 layer = self.layers[layer_index]
             except KeyError:
-                continue
+                pass
+            else:
+                for source, candidate_value in layer.values.items():
+                    candidate_values_and_sources.append((
+                        candidate_value,
+                        {source},
+                    ))
 
-            for source, candidate_value in layer.values.items():
+            for candidate_value, sources in candidate_values_and_sources:
                 if value is Undefined:
                     value = candidate_value
-                    blame.add(source)
+                    blame.update(sources)
                     continue
                 try:
                     value = merge(value, candidate_value)
@@ -225,7 +252,7 @@ class MegaDictNode:
                         f"conflict at {self.path} between {blame} and {source}: {exc}"
                     )
                 else:
-                    blame.add(source)
+                    blame.update(sources)
 
             if (
                 value is not Undefined
@@ -238,7 +265,10 @@ class MegaDictNode:
                 break
 
         if value is Undefined and self.child_nodes:
-            value = self.child_nodes.copy()
+            value = {
+                key: Undefined
+                for key in self.child_nodes
+            }
 
         if isinstance(value, dict) and not isinstance(value, _Atomic):
             # We were asked to provide a full dict for the current path,
@@ -247,7 +277,10 @@ class MegaDictNode:
             if resolve_child_nodes:
                 result = {}
                 result_blame = set()
-                for key, child_node in value.items():
+                for key in value:
+                    # key might not already exist as child node because
+                    # it's from a linked layer
+                    child_node = self.get_node((key,))
                     child_value, child_blame = child_node.value_and_blame
                     if child_value is not Undefined:
                         result[key] = child_value
