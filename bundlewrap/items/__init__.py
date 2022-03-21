@@ -676,8 +676,9 @@ class Item:
     def cdict(self):
         """
         Return a statedict that describes the target state of this item
-        as configured in the repo. Returning `None` instead means that
-        the item should not exist.
+        as configured in the repo (mnemonic: _c_dict for _config_
+        dict). Returning `None` instead means that the item should
+        not exist.
 
         MAY be overridden by subclasses.
         """
@@ -885,8 +886,9 @@ class Item:
     def sdict(self):
         """
         Return a statedict that describes the actual state of this item
-        on the node. Returning `None` instead means that the item does
-        not exist on the node.
+        on the node (mnemonic: _s_dict for _state_ dict). Returning
+        `None` instead means that the item does not exist on the
+        node.
 
         For the item to validate as correct, the values for all keys in
         self.cdict() have to match this statedict.
