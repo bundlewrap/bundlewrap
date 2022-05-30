@@ -164,7 +164,7 @@ class Group:
                 yield self.repo.get_node(node_name)
             except NoSuchNode:
                 raise RepositoryError(_(
-                    "Group '{group}' has '{node}' listed as a member in groups.py, "
+                    "Group '{group}' has '{node}' listed as a member, "
                     "but no such node could be found."
                 ).format(
                     group=self.name,

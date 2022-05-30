@@ -51,6 +51,21 @@ group3\t
     assert rcode == 0
 
 
+def test_unknown_group_members_at_node(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {'groups': ["group1", "group404"]},
+        },
+        groups={
+            "group1": {},
+        },
+    )
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw groups -i group1 -a nodes", path=str(tmpdir))
+    assert b"group404" in stderr
+    assert rcode == 1
+
+
 def test_supergroups(tmpdir):
     make_repo(
         tmpdir,

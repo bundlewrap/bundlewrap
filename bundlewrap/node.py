@@ -17,6 +17,7 @@ from .exceptions import (
     ItemSkipped,
     NodeLockedException,
     NoSuchBundle,
+    NoSuchGroup,
     RemoteException,
     RepositoryError,
     SkipNode,
@@ -577,15 +578,28 @@ class Node:
 
     @property
     def immediate_groups(self):
+        result = set()
+        for group_name in self._attributes.get('groups', set()):
+            try:
+                result.add(self.repo.get_group(group_name))
+            except NoSuchGroup:
+                raise RepositoryError(_(
+                    "Node '{node}' has '{group}' listed as a group, "
+                    "but no such group could be found."
+                ).format(
+                    node=self.name,
+                    group=group_name,
+                ))
         for group in self.repo.groups:
-            if group.name in self._attributes.get('groups', set()):
-                yield self.repo.get_group(group.name)
+            if group in result:
+                continue
             elif self in group._nodes_from_members:
-                yield self.repo.get_group(group.name)
+                result.add(self.repo.get_group(group.name))
             else:
                 for pattern in group._member_patterns:
                     if pattern.search(self.name) is not None:
-                        yield self.repo.get_group(group.name)
+                        result.add(self.repo.get_group(group.name))
+        return result
 
     @cached_property
     @io.job_wrapper(_("{}  determining groups").format(bold("{0.name}")))
