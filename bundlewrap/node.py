@@ -57,6 +57,7 @@ from .utils.ui import io
 NODE_ATTR_TYPES = GROUP_ATTR_TYPES.copy()
 NODE_ATTR_TYPES['groups'] = COLLECTION_OF_STRINGS
 NODE_ATTR_TYPES['hostname'] = str
+NODE_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['bundles', 'file_path', 'groups', 'hostname'])
 
 
 class ApplyResult:
@@ -525,6 +526,14 @@ class Node:
 
         for attr in GROUP_ATTR_DEFAULTS:
             setattr(self, "_{}".format(attr), attributes.get(attr))
+
+    def __getattr__(self, name):
+        try:
+            func = self.repo.node_attribute_functions[name]
+        except KeyError:
+            raise AttributeError(name)
+        else:
+            return func(self)
 
     def __lt__(self, other):
         return self.name < other.name

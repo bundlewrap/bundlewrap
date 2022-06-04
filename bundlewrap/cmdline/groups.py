@@ -1,11 +1,10 @@
 from ..group import GROUP_ATTR_DEFAULTS
 from ..utils.text import bold, mark_for_translation as _
 from ..utils.ui import io
-from .nodes import _attribute_table
+from .nodes import attribute_table, attrs_for_entities
 
 
 GROUP_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['nodes'])
-GROUP_ATTRS_LISTS = ('nodes',)
 
 
 def bw_groups(repo, args):
@@ -21,11 +20,15 @@ def bw_groups(repo, args):
             for subgroup in sorted(subgroups):
                 io.stdout(subgroup.name)
         else:
-            _attribute_table(
+            results = attrs_for_entities(
                 groups,
+                args['attrs'],
+                1,  # groups don't have dynamic attrs like nodes
+            )
+            attribute_table(
+                results,
                 bold(_("group")),
                 args['attrs'],
                 GROUP_ATTRS,
-                GROUP_ATTRS_LISTS,
                 args['inline'],
             )

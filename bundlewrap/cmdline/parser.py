@@ -627,21 +627,6 @@ will exit with code 47 if any matching items are locked
     )
     parser_nodes.set_defaults(func=bw_nodes)
     parser_nodes.add_argument(
-        "-i",
-        "--inline",
-        action='store_true',
-        dest='inline',
-        help=_("keep lists on a single line (for grep)"),
-    )
-    parser_nodes.add_argument(
-        'targets',
-        default=None,
-        metavar=_("TARGET"),
-        nargs='*',
-        type=str,
-        help=HELP_get_target_nodes,
-    )
-    parser_nodes.add_argument(
         "-a",
         "--attrs",
         default=None,
@@ -651,6 +636,31 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=_("show table with the given attributes for each node "
                "(e.g. 'all', 'groups', 'bundles', 'hostname', 'os', ...)"),
+    )
+    parser_nodes.add_argument(
+        "-i",
+        "--inline",
+        action='store_true',
+        dest='inline',
+        help=_("keep lists on a single line (for grep)"),
+    )
+    bw_nodes_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
+    parser_nodes.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=bw_apply_p_default,
+        dest='node_workers',
+        help=_("number of nodes to gather attributes for simultaneously "
+               "(defaults to {})").format(bw_nodes_p_default),
+        type=int,
+    )
+    parser_nodes.add_argument(
+        'targets',
+        default=None,
+        metavar=_("TARGET"),
+        nargs='*',
+        type=str,
+        help=HELP_get_target_nodes,
     )
 
     # bw plot

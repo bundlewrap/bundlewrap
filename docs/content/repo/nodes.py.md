@@ -190,3 +190,17 @@ You will need to override this if you don't have `pip`, but (for example) only `
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 
 This setting will affect how the [user item](../items/user.md) item operates. If set to `False`, password hashes will be written directly to `/etc/passwd` and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as `master.shadow` is always used.
+
+<br>
+
+## Dynamic node attributes
+
+You can define callbacks that will act as read-only node attributes at runtime. For example:
+
+    @node_attribute
+    def uptime(node):
+        return node.run("uptime").stdout
+
+After adding this to your `nodes.py`, you can then get an overview of all your uptimes using `bw nodes -a uptime` or make use of `node.uptime` in your bundles and other places where you have access to node objects.
+
+<br>
