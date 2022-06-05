@@ -48,7 +48,7 @@ class DconfSettingsItem(Item):
         self._command_results.append({
             'command': command,
             'result': result,
-        }),
+        })
         return result
 
     def get_auto_attrs(self, items):
