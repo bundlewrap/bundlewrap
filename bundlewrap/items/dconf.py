@@ -1,7 +1,9 @@
+from ast import literal_eval
+from json import dumps
+
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
-from json import dumps
-from ast import literal_eval
+
 
 class DconfSettingsItem(Item):
     """
