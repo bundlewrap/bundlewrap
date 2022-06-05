@@ -3,6 +3,7 @@ from json import dumps
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
+from bundlewrap.utils.text import mark_for_translation as _
 
 
 class DconfSettingsItem(Item):
@@ -35,7 +36,7 @@ class DconfSettingsItem(Item):
         else:
             try:
                 return literal_eval(stdout)
-            except Exception:
+            except Exception:  # skipcq: PYL-W0703
                 return stdout
 
     def run(self, command, **kwargs):
@@ -105,22 +106,22 @@ class DconfSettingsItem(Item):
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
         if not attributes.get('value') and not attributes.get('reset'):
-            raise BundleError(
+            raise BundleError(_(
                 f'Item {item_id} in bundle {bundle} has no value set. '
                 'Please explicitely set the "reset" attribute if you '
                 'wish to reset this setting to the default value.'
-            )
+            ))
         if not isinstance(attributes.get('value', []), (set, list, str, int)):
-            raise BundleError(
+            raise BundleError(_(
                 f'Item {item_id} in bundle {bundle} uses invalid type '
                 'for its "value" attribute, must be of type str, int, '
                 'list, set.'
-            )
+            ))
 
     @classmethod
     def validate_name(cls, bundle, name):
         if '/' not in name:
-            raise BundleError(
+            raise BundleError(_(
                 f'Item {name} in bundle {bundle} has invalid name, must '
                 'be in "user/path/to/setting" format.'
-            )
+            ))
