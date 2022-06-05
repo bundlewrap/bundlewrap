@@ -5,7 +5,7 @@ from ..concurrency import WorkerPool
 from ..utils import names
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import bold, mark_for_translation as _, red
+from ..utils.text import bold, green, mark_for_translation as _, red
 from ..utils.ui import io, page_lines
 from ..node import NODE_ATTRS
 
@@ -72,7 +72,11 @@ def attribute_table(
         attr_values = [[entity_name]]
         for attr in selected_attrs:
             value = values[attr]
-            if isinstance(value, (list, set, tuple)):
+            if value is True:
+                attr_values.append([green("True")])
+            elif value is False:
+                attr_values.append([red("False")])
+            elif isinstance(value, (list, set, tuple)):
                 if inline or environ.get("BW_TABLE_STYLE") == 'csv':
                     attr_values.append([",".join(sorted(names(value)))])
                 else:
