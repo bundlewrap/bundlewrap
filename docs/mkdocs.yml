@@ -37,6 +37,7 @@ nav:
   - libs/: repo/libs.md
 - Items:
   - action: items/action.md
+  - dconf: items/dconf.md
   - directory: items/directory.md
   - file: items/file.md
   - git_deploy: items/git_deploy.md
