@@ -31,7 +31,9 @@ class DconfSettingsItem(Item):
 
     def _parse_result(self, result):
         stdout = result.stdout.decode('UTF-8').strip()
-        if stdout.isdigit():
+        if len(stdout) == 0:
+            return None
+        elif stdout.isdigit():
             return int(stdout)
         else:
             try:
@@ -82,7 +84,7 @@ class DconfSettingsItem(Item):
         result = self.run(f'dconf read {self.path}', may_fail=True)
         value = self._parse_result(result)
 
-        if not value:
+        if value is None:
             return None
 
         return {
@@ -113,7 +115,7 @@ class DconfSettingsItem(Item):
             ))
         if not isinstance(attributes.get('value', []), (set, list, str, int)):
             raise BundleError(_(
-                f'Item {item_id} in bundle {bundle} uses invalid type '
+                f'Item {item_id} in bundle {bundle.name} uses invalid type '
                 'for its "value" attribute, must be of type str, int, '
                 'list, set.'
             ))
@@ -122,6 +124,12 @@ class DconfSettingsItem(Item):
     def validate_name(cls, bundle, name):
         if '/' not in name:
             raise BundleError(_(
-                f'Item {name} in bundle {bundle} has invalid name, must '
+                f'Item {name} in bundle {bundle.name} has invalid name, must '
                 'be in "user/path/to/setting" format.'
+            ))
+        user, path = name.split('/', 1)
+        if not user or not path:
+            raise BundleError(_(
+                f'Item {name} in bundle {bundle.name} is missing either '
+                'username or path in item name.'
             ))
