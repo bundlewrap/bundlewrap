@@ -43,7 +43,7 @@ def _attribute_table(
         attr_values = [[entity.name]]
         for attr in selected_attrs:
             if attr in available_attrs_lists:
-                if inline:
+                if inline or environ.get("BW_TABLE_STYLE") == 'csv':
                     attr_values.append([",".join(sorted(names(getattr(entity, attr))))])
                 else:
                     has_list_attrs = True

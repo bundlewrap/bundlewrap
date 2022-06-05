@@ -88,6 +88,7 @@ By default, BundleWrap uses Unicode box-drawing characters at various points in 
 
 <table>
 <tr><td><code>ascii</code></td><td>use only simple ASCII characters to render tables (useful if your font doesn't properly align box-drawing characters)</td></tr>
+<tr><td><code>csv</code></td><td>comma-separated values</td></tr>
 <tr><td><code>grep</code></td><td>make output more <code>grep</code>- and <code>cut</code>-friendly</td></tr>
 </table>
 
