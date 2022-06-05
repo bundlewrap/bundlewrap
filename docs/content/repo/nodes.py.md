@@ -203,4 +203,6 @@ You can define callbacks that will act as read-only node attributes at runtime. 
 
 After adding this to your `nodes.py`, you can then get an overview of all your uptimes using `bw nodes -a uptime` or make use of `node.uptime` in your bundles and other places where you have access to node objects.
 
+Be mindful when using this feature: The primary intended purpose of this is usage with `bw nodes -a` (so you can see builtin attributes, metadata, and `node.run()` results in a single table). It is **not** recommended that you derive configuration from these attributes if they're using `node.run()`. Doing so will make `bw test` dependent on node access and availability, while also making `bw hash` non-deterministic.
+
 <br>
