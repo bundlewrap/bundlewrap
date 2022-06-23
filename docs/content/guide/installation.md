@@ -60,6 +60,7 @@ While the following list might appear long, even very minimal systems should pro
 * `cat`
 * `chmod`
 * `chown`
+* `dconf` (only used with [dconf](../items/dconf.md) items)
 * `dpkg` (only used with [pkg_apt](../items/pkg_apt.md) items)
 * `echo`
 * `file`
