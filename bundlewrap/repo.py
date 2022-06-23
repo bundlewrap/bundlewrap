@@ -18,7 +18,7 @@ from .exceptions import (
 )
 from .group import Group
 from .metagen import MetadataGenerator
-from .node import Node
+from .node import Node, NODE_ATTRS
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import (
     cached_property,
@@ -192,6 +192,7 @@ class Repository(MetadataGenerator):
         self.bundle_names = []
         self.group_dict = {}
         self.node_dict = {}
+        self.node_attribute_functions = {}
         self._get_all_attr_code_cache = {}
         self._get_all_attr_result_cache = {}
 
@@ -332,12 +333,21 @@ class Repository(MetadataGenerator):
         return env
 
     def nodes_or_groups_from_file(self, path, attribute, preexisting):
+        def node_attribute(func):
+            if func.__name__ in NODE_ATTRS:
+                raise RepositoryError(_(
+                    "cannot redefine builtin attribute '{attr}' as @node_attribute in nodes.py"
+                ).format(attr=func.__name__))
+            self.node_attribute_functions[func.__name__] = func
+            return func
+
         try:
             flat_dict = self.get_all_attrs_from_file(
                 path,
                 base_env={
                     attribute: preexisting,
                     'libs': self.libs,
+                    'node_attribute': node_attribute,
                     'repo_path': self.path,
                     'vault': self.vault,
                 },

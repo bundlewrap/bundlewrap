@@ -1,24 +1,53 @@
 from os import environ
 from sys import exit
 
+from ..concurrency import WorkerPool
 from ..utils import names
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import bold, mark_for_translation as _, red
+from ..utils.text import bold, green, mark_for_translation as _, red
 from ..utils.ui import io, page_lines
-from ..group import GROUP_ATTR_DEFAULTS
+from ..node import NODE_ATTRS
 
 
-NODE_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['bundles', 'file_path', 'groups', 'hostname'])
-NODE_ATTRS_LISTS = ('bundles', 'groups')
-
-
-def _attribute_table(
+def attrs_for_entities(
     entities,
+    selected_attrs,
+    node_workers,
+):
+    entities = entities.copy()
+
+    def tasks_available():
+        return bool(entities)
+
+    def next_task():
+        entity = entities.pop()
+
+        def get_values():
+            return {attr: getattr(entity, attr) for attr in selected_attrs}
+
+        return {
+            'task_id': entity.name,
+            'target': get_values,
+        }
+
+    def handle_result(task_id, result, duration):
+        return task_id, result
+
+    worker_pool = WorkerPool(
+        tasks_available,
+        next_task,
+        handle_result=handle_result,
+        workers=node_workers,
+    )
+    return dict(worker_pool.run())
+
+
+def attribute_table(
+    results,
     entity_label,
     selected_attrs,
     available_attrs,
-    available_attrs_lists,
     inline,
 ):
     rows = [[entity_label], ROW_SEPARATOR]
@@ -39,17 +68,22 @@ def _attribute_table(
         rows[0].append(bold(attr))
 
     has_list_attrs = False
-    for entity in sorted(entities):
-        attr_values = [[entity.name]]
+    for entity_name, values in sorted(results.items()):
+        attr_values = [[entity_name]]
         for attr in selected_attrs:
-            if attr in available_attrs_lists:
+            value = values[attr]
+            if value is True:
+                attr_values.append([green("True")])
+            elif value is False:
+                attr_values.append([red("False")])
+            elif isinstance(value, (list, set, tuple)):
                 if inline or environ.get("BW_TABLE_STYLE") == 'csv':
-                    attr_values.append([",".join(sorted(names(getattr(entity, attr))))])
+                    attr_values.append([",".join(sorted(names(value)))])
                 else:
                     has_list_attrs = True
-                    attr_values.append(sorted(names(getattr(entity, attr))))
+                    attr_values.append(sorted(names(value)))
             else:
-                attr_values.append([str(getattr(entity, attr))])
+                attr_values.append([str(value)])
         number_of_lines = max([len(value) for value in attr_values])
         if environ.get("BW_TABLE_STYLE") == 'grep':
             # repeat entity name for each line
@@ -80,11 +114,15 @@ def bw_nodes(repo, args):
         for node in sorted(nodes):
             io.stdout(node.name)
     else:
-        _attribute_table(
+        results = attrs_for_entities(
             nodes,
+            args['attrs'],
+            args['node_workers'],
+        )
+        attribute_table(
+            results,
             bold(_("node")),
             args['attrs'],
-            NODE_ATTRS,
-            NODE_ATTRS_LISTS,
+            NODE_ATTRS + list(repo.node_attribute_functions.keys()),
             args['inline'],
         )
