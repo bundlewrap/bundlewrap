@@ -533,7 +533,8 @@ class Node:
         except KeyError:
             raise AttributeError(name)
         else:
-            return func(self)
+            with error_context(node=self.name, attr=name):
+                return func(self)
 
     def __lt__(self, other):
         return self.name < other.name
