@@ -38,7 +38,7 @@ class DconfSettingsItem(Item):
         else:
             try:
                 return literal_eval(stdout)
-            except Exception:  # skipcq: PYL-W0703
+            except Exception:
                 return stdout
 
     def run(self, command, **kwargs):
@@ -109,27 +109,27 @@ class DconfSettingsItem(Item):
     def validate_attributes(cls, bundle, item_id, attributes):
         if not attributes.get('value') and not attributes.get('reset'):
             raise BundleError(_(
-                f'Item {item_id} in bundle {bundle} has no value set. '
+                'Item {item_id} in bundle {bundle} has no value set. '
                 'Please explicitely set the "reset" attribute if you '
                 'wish to reset this setting to the default value.'
-            ))
+            ).format(item_id=item_id, bundle=bundle.name))
         if not isinstance(attributes.get('value', []), (set, list, str, int)):
             raise BundleError(_(
-                f'Item {item_id} in bundle {bundle.name} uses invalid type '
+                'Item {item_id} in bundle {bundle} uses invalid type '
                 'for its "value" attribute, must be of type str, int, '
                 'list, set.'
-            ))
+            ).format(item_id=item_id, bundle=bundle.name))
 
     @classmethod
     def validate_name(cls, bundle, name):
         if '/' not in name:
             raise BundleError(_(
-                f'Item {name} in bundle {bundle.name} has invalid name, must '
+                'Item {name} in bundle {bundle} has invalid name, must '
                 'be in "user/path/to/setting" format.'
-            ))
+            ).format(name=name, bundle=bundle.name))
         user, path = name.split('/', 1)
         if not user or not path:
             raise BundleError(_(
-                f'Item {name} in bundle {bundle.name} is missing either '
+                'Item {name} in bundle {bundle} is missing either '
                 'username or path in item name.'
-            ))
+            ).format(name=name, bundle=bundle.name))
