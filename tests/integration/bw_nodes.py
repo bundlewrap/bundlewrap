@@ -80,6 +80,21 @@ def test_bundles_via_group(tmpdir):
     assert rcode == 0
 
 
+def test_all_attrs(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'username': "potato",
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw nodes -a all -- node1", path=str(tmpdir))
+    assert "potato" in stdout.decode()
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_dynamic_attrs(tmpdir):
     make_repo(
         tmpdir,

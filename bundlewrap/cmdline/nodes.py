@@ -2,7 +2,6 @@ from os import environ
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..utils import names
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, red
@@ -51,20 +50,8 @@ def attribute_table(
     inline,
 ):
     rows = [[entity_label], ROW_SEPARATOR]
-    selected_attrs = [attr.strip() for attr in selected_attrs]
-
-    if selected_attrs == ['all']:
-        selected_attrs = available_attrs
-    elif 'all' in selected_attrs:
-        io.stderr(_(
-            "{x} invalid attribute list requested ('all' and extraneous): {attr}"
-        ).format(x=red("!!!"), attr=", ".join(sorted(selected_attrs))))
-        exit(1)
 
     for attr in selected_attrs:
-        if attr not in available_attrs:
-            io.stderr(_("{x} unknown attribute: {attr}").format(x=red("!!!"), attr=attr))
-            exit(1)
         rows[0].append(bold(attr))
 
     has_list_attrs = False
@@ -111,6 +98,25 @@ def attribute_table(
     ))
 
 
+def select_attrs(selected_attrs, available_attrs):
+    selected_attrs = [attr.strip() for attr in selected_attrs]
+
+    if selected_attrs == ['all']:
+        selected_attrs = available_attrs
+    elif 'all' in selected_attrs:
+        io.stderr(_(
+            "{x} invalid attribute list requested ('all' and extraneous): {attr}"
+        ).format(x=red("!!!"), attr=", ".join(sorted(selected_attrs))))
+        exit(1)
+
+    for attr in selected_attrs:
+        if attr not in available_attrs:
+            io.stderr(_("{x} unknown attribute: {attr}").format(x=red("!!!"), attr=attr))
+            exit(1)
+
+    return selected_attrs, available_attrs
+
+
 def bw_nodes(repo, args):
     if args['targets']:
         nodes = get_target_nodes(repo, args['targets'])
@@ -120,15 +126,19 @@ def bw_nodes(repo, args):
         for node in sorted(nodes):
             io.stdout(node.name)
     else:
+        selected_attrs, available_attrs = select_attrs(
+            args['attrs'],
+            NODE_ATTRS + list(repo.node_attribute_functions.keys()),
+        )
         results = attrs_for_entities(
             nodes,
-            args['attrs'],
+            selected_attrs,
             args['node_workers'],
         )
         attribute_table(
             results,
             bold(_("node")),
-            args['attrs'],
-            NODE_ATTRS + list(repo.node_attribute_functions.keys()),
+            selected_attrs,
+            available_attrs,
             args['inline'],
         )

@@ -28,6 +28,21 @@ group3\tnode2,node3
     assert rcode == 0
 
 
+def test_group_all_attrs(tmpdir):
+    make_repo(
+        tmpdir,
+        groups={
+            "group1": {
+                'username': "potato",
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw groups -a all -- group1", path=str(tmpdir))
+    assert "potato" in stdout.decode()
+    assert stderr == b""
+    assert rcode == 0
+
+
 def test_group_members_at_node(tmpdir):
     make_repo(
         tmpdir,
