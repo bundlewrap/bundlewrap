@@ -151,6 +151,10 @@ class Group:
             group_dict[node.name] = node.metadata_hash()
         return hash_statedict(group_dict)
 
+    @property
+    def node_count(self):
+        return len(self.nodes)
+
     @cached_property
     def nodes(self):
         for node in self.repo.nodes:

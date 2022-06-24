@@ -4,7 +4,7 @@ from ..utils.ui import io
 from .nodes import attribute_table, attrs_for_entities
 
 
-GROUP_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['nodes'])
+GROUP_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['nodes', 'node_count'])
 
 
 def bw_groups(repo, args):
