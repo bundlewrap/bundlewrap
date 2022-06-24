@@ -199,7 +199,7 @@ You can define callbacks that will act as read-only node attributes at runtime. 
 
     @node_attribute
     def uptime(node):
-        return node.run("uptime").stdout
+        return node.run("uptime").stdout.decode().strip()
 
 After adding this to your `nodes.py`, you can then get an overview of all your uptimes using `bw nodes -a uptime` or make use of `node.uptime` in your bundles and other places where you have access to node objects.
 
