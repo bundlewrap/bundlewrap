@@ -76,12 +76,18 @@ def attribute_table(
                 attr_values.append([green("True")])
             elif value is False:
                 attr_values.append([red("False")])
-            elif isinstance(value, (list, set, tuple)):
+            elif isinstance(value, set):
                 if inline or environ.get("BW_TABLE_STYLE") == 'csv':
-                    attr_values.append([",".join(sorted(names(value)))])
+                    attr_values.append([",".join([str(v) for v in sorted(value)])])
                 else:
                     has_list_attrs = True
-                    attr_values.append(sorted(names(value)))
+                    attr_values.append([str(v) for v in sorted(value)])
+            elif isinstance(value, (list, tuple)):
+                if inline or environ.get("BW_TABLE_STYLE") == 'csv':
+                    attr_values.append([",".join([str(v) for v in value])])
+                else:
+                    has_list_attrs = True
+                    attr_values.append([str(v) for v in value])
             else:
                 attr_values.append([str(value)])
         number_of_lines = max([len(value) for value in attr_values])
