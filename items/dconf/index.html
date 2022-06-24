@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
-        <title>routeros - BundleWrap</title>
+        <title>dconf - BundleWrap</title>
         <link href="../../css/bootstrap.min.css" rel="stylesheet">
         <link href="../../css/font-awesome.min.css" rel="stylesheet">
         <link href="../../css/base.css" rel="stylesheet">
@@ -156,7 +156,7 @@
 </li>
                                     
 <li>
-    <a href="../dconf/" class="dropdown-item">dconf</a>
+    <a href="./" class="dropdown-item active">dconf</a>
 </li>
                                     
 <li>
@@ -236,7 +236,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">routeros</a>
+    <a href="../routeros/" class="dropdown-item">routeros</a>
 </li>
                                     
 <li>
@@ -314,17 +314,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../postgres_role/" class="nav-link">
+                                <a rel="prev" href="../action/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../svc_freebsd/" class="nav-link">
+                                <a rel="next" href="../directory/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/items/routeros.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/items/dconf.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -344,14 +344,18 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#routeros-items" class="nav-link">RouterOS items</a>
+            <li class="nav-item" data-level="1"><a href="#dconf-items" class="nav-link">dconf items</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             
             <li class="nav-item" data-level="1"><a href="#attribute-reference" class="nav-link">Attribute reference</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#delete" class="nav-link">delete</a>
+            <li class="nav-item" data-level="2"><a href="#value" class="nav-link">value</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#reset" class="nav-link">reset</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -362,60 +366,25 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="routeros-items">RouterOS items</h1>
-<p>Manages RouterOS configuration through the API (port 8728). You can address every configuration exposed by the API by constructing the item name and attributes accordingly. If you haven't already, familiarize yourself with the CLI over SSH first. Use it as a reference when composing items in your bundles. <strong>Don't forget to set the <code>os</code> attribute of your node to <code>routeros</code> and also set the <code>username</code> and <code>password</code> attributes.</strong></p>
-<pre><code>routeros = {
-    "/ip/dns": {
-        "servers": "8.8.8.8",
+<h1 id="dconf-items">dconf items</h1>
+<pre><code>dconf = {
+    "username/path/to/dconf/setting": {
+        "value": "some valid settings option",
+        "reset": False,
     },
-    "/interface/vlan?name=vlan6": {
-        "vlan-id": "6",
-        "interface": "bridge",
-        "needs": {
-            "routeros:/interface/bridge?name=bridge",
-        },
-    },
-    "/interface/vlan?name=vlan7": {
-        "delete": True,
-    },
-    "/interface/bridge?name=bridge": {},
-    "/interface/bridge/port?interface=ether8": {
-        "bridge": "bridge",
-        "needs": {
-            "routeros:/interface/bridge?name=bridge",
-        },
-    },
-    "/interface/bridge/vlan?vlan-ids=6": {
-        "bridge": "bridge",
-        "needs": {
-            "routeros:/interface/bridge?name=bridge",
-        },
-        "tagged": {
-            "ether10",
-            "ether11",
-            "ether12",
-        },
-        "untagged": {
-            "ether13",
-            "ether14",
-            "ether15",
-        },
-    },
-    "/system/logging?action=remote&amp;topics=critical": {},
 }
 </code></pre>
-<p>Note that when you're dealing with a list of things, item names have two parts, separated by a <code>?</code> character. The first part determines which kind of item is addressed, the second part is a simple <code>key=value</code> query that MUST return exactly one entry. If a list has no single "primary key" (such as <code>/system/logging</code>), use <code>&amp;</code> to add more conditions.</p>
 <p><br><br></p>
 <h1 id="attribute-reference">Attribute reference</h1>
 <p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <hr>
 
-<p><strong>BundleWrap will accept any attributes for these items and pass them through to the RouterOS API.</strong> All attribute values can be passed as strings. If given as integers or booleans, BundleWrap will convert them to strings for you. If given a set, list, or tuple of strings, BundleWrap will join those strings with commas.</p>
-<p>Since <code>comment</code> is an internal attribute for BundleWrap, use <code>_comment</code> to apply the <code>comment</code> attribute on a RouterOS item.</p>
+<h2 id="value">value</h2>
+<p>The value you want the setting to be set to. Must be of type str, int, list, set. Sets will get sorted prior to being set on the system.</p>
 <hr>
 
-<h2 id="delete">delete</h2>
-<p>When set to <code>True</code>, this item will be removed from the system. When using <code>delete</code>, no other attributes are allowed.</p></div>
+<h2 id="reset">reset</h2>
+<p>Resets the setting to its default value.</p></div>
             </div>
         </div>
 

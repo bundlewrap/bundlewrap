@@ -156,6 +156,10 @@
 </li>
                                     
 <li>
+    <a href="../../items/dconf/" class="dropdown-item">dconf</a>
+</li>
+                                    
+<li>
     <a href="../../items/directory/" class="dropdown-item">directory</a>
 </li>
                                     
@@ -365,6 +369,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#dynamic-node-attributes" class="nav-link">Dynamic node attributes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -494,7 +502,17 @@ nodes['node-1'] = {
 <h3 id="use_shadow_passwords">use_shadow_passwords</h3>
 <div class="alert alert-warning">Changing this setting will affect the security of the target system. Only do this for legacy systems that don't support shadow passwords.</div>
 
-<p>This setting will affect how the <a href="../../items/user/">user item</a> item operates. If set to <code>False</code>, password hashes will be written directly to <code>/etc/passwd</code> and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as <code>master.shadow</code> is always used.</p></div>
+<p>This setting will affect how the <a href="../../items/user/">user item</a> item operates. If set to <code>False</code>, password hashes will be written directly to <code>/etc/passwd</code> and thus be accessible to any user on the system. If the OS of the node is set to "openbsd", this setting has no effect as <code>master.shadow</code> is always used.</p>
+<p><br></p>
+<h2 id="dynamic-node-attributes">Dynamic node attributes</h2>
+<p>You can define callbacks that will act as read-only node attributes at runtime. For example:</p>
+<pre><code>@node_attribute
+def uptime(node):
+    return node.run("uptime").stdout
+</code></pre>
+<p>After adding this to your <code>nodes.py</code>, you can then get an overview of all your uptimes using <code>bw nodes -a uptime</code> or make use of <code>node.uptime</code> in your bundles and other places where you have access to node objects.</p>
+<p>Be mindful when using this feature: The primary intended purpose of this is usage with <code>bw nodes -a</code> (so you can see builtin attributes, metadata, and <code>node.run()</code> results in a single table). It is <strong>not</strong> recommended that you derive configuration from these attributes if they're using <code>node.run()</code>. Doing so will make <code>bw test</code> dependent on node access and availability, while also making <code>bw hash</code> non-deterministic.</p>
+<p><br></p></div>
             </div>
         </div>
 
