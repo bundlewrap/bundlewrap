@@ -508,7 +508,7 @@ nodes['node-1'] = {
 <p>You can define callbacks that will act as read-only node attributes at runtime. For example:</p>
 <pre><code>@node_attribute
 def uptime(node):
-    return node.run("uptime").stdout
+    return node.run("uptime").stdout.decode().strip()
 </code></pre>
 <p>After adding this to your <code>nodes.py</code>, you can then get an overview of all your uptimes using <code>bw nodes -a uptime</code> or make use of <code>node.uptime</code> in your bundles and other places where you have access to node objects.</p>
 <p>Be mindful when using this feature: The primary intended purpose of this is usage with <code>bw nodes -a</code> (so you can see builtin attributes, metadata, and <code>node.run()</code> results in a single table). It is <strong>not</strong> recommended that you derive configuration from these attributes if they're using <code>node.run()</code>. Doing so will make <code>bw test</code> dependent on node access and availability, while also making <code>bw hash</code> non-deterministic.</p>
