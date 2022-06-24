@@ -74,6 +74,9 @@ class Bundle:
     def __repr__(self):
         return f"<Bundle: {self.name}>"
 
+    def __str__(self):
+        return self.name
+
     @cached_property
     @io.job_wrapper(_("{}  {}  parsing bundle attributes").format(bold("{0.node.name}"), bold("{0.name}")))
     def bundle_attrs(self):

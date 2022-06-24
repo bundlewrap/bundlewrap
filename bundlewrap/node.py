@@ -27,7 +27,13 @@ from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock
 from .metadata import hash_metadata
-from .utils import cached_property, error_context, get_file_contents, names
+from .utils import (
+    cached_property,
+    cached_property_set,
+    error_context,
+    get_file_contents,
+    names,
+)
 from .utils.dicts import (
     dict_to_text,
     dict_to_toml,
@@ -542,7 +548,10 @@ class Node:
     def __repr__(self):
         return "<Node '{}'>".format(self.name)
 
-    @cached_property
+    def __str__(self):
+        return self.name
+
+    @cached_property_set
     def bundles(self):
         with io.job(_("{node}  loading bundles").format(node=bold(self.name))):
             bundle_names = set(self._attributes.get('bundles', set()))
