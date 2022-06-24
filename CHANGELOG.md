@@ -1,3 +1,10 @@
+# 4.14.1
+
+2022-06-24
+
+* fixed sorting of lists and tuples in `bw nodes`
+
+
 # 4.14.0
 
 2022-06-24
