@@ -2,7 +2,7 @@ from os.path import exists, join
 
 from .exceptions import BundleError, NoSuchBundle, RepositoryError
 from .metadata import DoNotRunAgain
-from .utils import cached_property
+from .utils import cached_property, cached_property_set
 from .utils.text import bold, mark_for_translation as _
 from .utils.text import validate_name
 from .utils.ui import io
@@ -112,7 +112,7 @@ class Bundle:
                 base_env=base_env,
             )
 
-    @cached_property
+    @cached_property_set
     @io.job_wrapper(_("{}  {}  creating items").format(bold("{0.node.name}"), bold("{0.name}")))
     def items(self):
         for item_class in self.repo.item_classes:

@@ -620,16 +620,14 @@ class Node:
                         result.add(self.repo.get_group(group.name))
         return result
 
-    @cached_property
+    @cached_property_set
     @io.job_wrapper(_("{}  determining groups").format(bold("{0.name}")))
     def groups(self):
-        result = set()
         for group in self.immediate_groups:
-            result.add(group)
+            yield group
             for parent_group in group.parent_groups:
                 # these are not just the *immediate* parent groups
-                result.add(parent_group)
-        return result
+                yield parent_group
 
     def has_any_bundle(self, bundle_list):
         for bundle_name in bundle_list:
@@ -658,7 +656,7 @@ class Node:
                 return True
         return False
 
-    @cached_property
+    @cached_property_set
     def items(self):
         items = {}
         if not self.dummy:
@@ -674,7 +672,7 @@ class Node:
                         ))
                     else:
                         items[item.id] = item
-        return set(items.values())
+        return items.values()
 
     @cached_property
     def magic_number(self):

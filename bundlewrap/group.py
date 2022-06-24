@@ -5,7 +5,14 @@ import re
 from tomlkit import dumps as toml_dump, parse as toml_parse
 
 from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
-from .utils import cached_property, error_context, Fault, get_file_contents, names
+from .utils import (
+    cached_property,
+    cached_property_set,
+    error_context,
+    Fault,
+    get_file_contents,
+    names,
+)
 from .utils.dicts import (
     dict_to_toml,
     hash_statedict,
@@ -155,13 +162,13 @@ class Group:
     def node_count(self):
         return len(self.nodes)
 
-    @cached_property
+    @cached_property_set
     def nodes(self):
         for node in self.repo.nodes:
             if node.in_group(self.name):
                 yield node
 
-    @cached_property
+    @cached_property_set
     def _nodes_from_members(self):
         for node_name in self._attributes.get('members', set()):
             try:
@@ -182,7 +189,7 @@ class Group:
                 if pattern.search(group.name) is not None and group != self:
                     yield group.name
 
-    @cached_property
+    @cached_property_set
     def _supergroups_from_attribute(self):
         for supergroup_name in self._attributes.get('supergroups', set()):
             try:
@@ -244,19 +251,19 @@ class Group:
         if self.name not in visited_names:
             yield self.name
 
-    @cached_property
+    @cached_property_set
     def parent_groups(self):
         for group in self.repo.groups:
             if self in group.subgroups:
                 yield group
 
-    @cached_property
+    @cached_property_set
     def immediate_parent_groups(self):
         for group in self.repo.groups:
             if self in group.immediate_subgroups:
                 yield group
 
-    @cached_property
+    @cached_property_set
     def subgroups(self):
         """
         Iterator over all subgroups as group objects.
@@ -288,7 +295,7 @@ class Group:
             path = path.split("/")
         set_key_at_path(self.toml, path, value)
 
-    @cached_property
+    @cached_property_set
     def immediate_subgroups(self):
         """
         Iterator over all immediate subgroups as group objects.
@@ -305,9 +312,9 @@ class Group:
                     subgroup=group_name,
                 ))
 
-    @cached_property
+    @cached_property_set
     def _immediate_subgroup_names(self):
-        return set(
+        return (
             list(self._attributes.get('subgroups', set())) +
             list(self._subgroup_names_from_patterns) +
             [group.name for group in self.repo.groups if self in group._supergroups_from_attribute]

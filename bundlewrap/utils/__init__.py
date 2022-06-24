@@ -22,7 +22,7 @@ STDERR_WRITER = getwriter('utf-8')(stderr.buffer)
 STDOUT_WRITER = getwriter('utf-8')(stdout.buffer)
 
 
-def cached_property(prop, convert_to_set=False):
+def cached_property(prop, convert_to=None):
     """
     A replacement for the property decorator that will only compute the
     attribute's value on the first call and serve a cached copy from
@@ -39,15 +39,15 @@ def cached_property(prop, convert_to_set=False):
             except DontCache as exc:
                 return exc.obj
             else:
-                if convert_to_set:
-                    return_value = set(return_value)
+                if convert_to:
+                    return_value = convert_to(return_value)
                 self._cache[prop.__name__] = return_value
         return self._cache[prop.__name__]
     return property(cache_wrapper)
 
 
 def cached_property_set(prop):
-    return cached_property(prop, convert_to_set=True)
+    return cached_property(prop, convert_to=set)
 
 
 def download(url, path):
