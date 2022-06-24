@@ -369,6 +369,7 @@ class Repository(MetadataGenerator):
         path = join(self.path, directory)
         if not isdir(path):
             return
+        result = {}
         for root_dir, _dirs, files in walk(path):
             for filename in files:
                 filepath = join(root_dir, filename)
@@ -376,10 +377,20 @@ class Repository(MetadataGenerator):
                         not isfile(filepath) or \
                         filename.startswith("_"):
                     continue
+                entity_name = filename[:-5]
+                if entity_name in result:
+                    raise RepositoryError(_(
+                        "Duplicate definition of {entity_name} in {file1} and {file2}"
+                    ).format(
+                        entity_name=entity_name,
+                        file1=filepath,
+                        file2=result[entity_name]['file_path'],
+                    ))
                 with error_context(filepath=filepath):
                     infodict = toml_load(get_file_contents(filepath).decode())
                 infodict['file_path'] = filepath
-                yield filename[:-5], infodict
+                result[entity_name] = infodict
+        return result
 
     def items_from_dir(self, path):
         """
@@ -529,7 +540,7 @@ class Repository(MetadataGenerator):
                 self.bundle_names.append(dir_entry)
 
         # populate groups
-        toml_groups = dict(self.nodes_or_groups_from_dir("groups"))
+        toml_groups = self.nodes_or_groups_from_dir("groups")
         self.group_dict = {}
         for group in self.nodes_or_groups_from_file(self.groups_file, 'groups', toml_groups):
             self.add_group(Group(*group))
@@ -540,7 +551,7 @@ class Repository(MetadataGenerator):
             self.item_classes.append(item_class)
 
         # populate nodes
-        toml_nodes = dict(self.nodes_or_groups_from_dir("nodes"))
+        toml_nodes = self.nodes_or_groups_from_dir("nodes")
         self.node_dict = {}
         for node in self.nodes_or_groups_from_file(self.nodes_file, 'nodes', toml_nodes):
             self.add_node(Node(*node))
