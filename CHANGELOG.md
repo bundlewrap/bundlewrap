@@ -1,3 +1,18 @@
+# 4.14.0
+
+2022-06-24
+
+* added `BW_TABLE_STYLE=csv`
+* added `dconf` items
+* added dynamic node attributes
+* added `node_count` read-only group attribute
+* improved performance loading toml files
+* improved dependency loop debugging
+* fixed `repo.vault.decode_file_as_base64()` in dummy mode
+* fixed a crash in `bw plot node`
+* fixed reporting of unknown groups
+
+
 # 4.13.6
 
 2022-01-28
