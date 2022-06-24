@@ -1,3 +1,12 @@
+# 4.14.2
+
+2022-06-24
+
+* fixed `bw nodes -a all` and `bw groups -a all`
+* fixed handling of duplicate toml nodes
+* fixed some internal type conversions
+
+
 # 4.14.1
 
 2022-06-24
