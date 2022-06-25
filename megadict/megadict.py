@@ -75,6 +75,7 @@ def merge(value1, value2):
 
 class MegaDictNode:
     __slots__ = (
+        'callbacks_on_stack',
         'child_nodes',
         'layers',
         'key',
@@ -83,13 +84,14 @@ class MegaDictNode:
     )
 
     def __init__(self, key=Undefined, parent=None, root=None):
+        self.callbacks_on_stack = []
         self.child_nodes = {}
         self.layers = {}
         self.key = key
         self.parent = parent
         self.root = root or self
 
-    def _add(self, data, layer=0, source='unknown'):
+    def _add(self, data, layer, source):
         """
         This distributes the data provided by a callback to the proper
         nodes.
@@ -100,9 +102,19 @@ class MegaDictNode:
             for key, value in data.items():
                 child_node = self._ensure_path((key,))
                 self.layers[layer].values[source][key] = Undefined
-                child_node._add(value, layer=layer, source=source)
+                child_node._add(value, layer, source)
         else:
             self.layers[layer].values[source] = data
+
+    def _remove(self, data, layer, source):
+        """
+        Undo for _add().
+        """
+        if isinstance(data, dict) and not isinstance(data, _Atomic):
+            for key, value in data.items():
+                child_node = self._ensure_path((key,))
+                child_node._remove(value, layer, source)
+        del self.layers[layer].values[source]
 
     def _ensure_layer(self, index):
         """
@@ -131,7 +143,9 @@ class MegaDictNode:
             return self
 
     def add_callback_for_paths(self, paths, callback_func, layer=0, source=None):
-        callback = MegaDictCallback(self, layer, callback_func, source=source)
+        if not source:
+            source = repr(callback_func)
+        callback = MegaDictCallback(self, layer, callback_func, source)
         for path in paths:
             path = unstring_path(path)
             self._add_callback_for_path(path, callback)
@@ -145,11 +159,14 @@ class MegaDictNode:
             self.layers[callback.layer].callbacks.add(callback)
 
     @takes_path
-    def get(self, path):
+    def get(self, path, default=Undefined):
         value = self.get_node(path).value
         if value is Undefined:
             if path:
-                raise KeyError(path)
+                if default is Undefined:
+                    raise KeyError(path)
+                else:
+                    return default
             else:
                 return {}
         else:
@@ -186,6 +203,10 @@ class MegaDictNode:
         return self._value_and_blame()[0]
 
     @property
+    def blame(self):
+        return self._value_and_blame()[1]
+
+    @property
     def value_and_blame(self):
         return self._value_and_blame()
 
@@ -201,9 +222,9 @@ class MegaDictNode:
             # our parents might also provide relevant values
             self.parent._run_callbacks_for_layer(layer_index)
 
-    def _value_and_blame_for_linked_nodes_at_path(self, path, layer_index):
+    def _value_and_blame_from_linked(self, path, layer_index):
         if self.parent:
-            yield from self.parent._value_and_blame_for_linked_nodes_at_path((self.key,), layer_index)
+            yield from self.parent._value_and_blame_from_linked((self.key,), layer_index)
         try:
             layer = self.layers[layer_index]
         except KeyError:
@@ -226,8 +247,8 @@ class MegaDictNode:
             visited_layers.append(layer_index)
             self._run_callbacks_for_layer(layer_index)
 
-            candidate_values_and_sources = []
-            candidate_values_and_sources.extend(self._value_and_blame_for_linked_nodes_at_path((), layer_index))
+            candidate_values_and_blame = []
+            candidate_values_and_blame.extend(self._value_and_blame_from_linked((), layer_index))
 
             try:
                 layer = self.layers[layer_index]
@@ -235,12 +256,9 @@ class MegaDictNode:
                 pass
             else:
                 for source, candidate_value in layer.values.items():
-                    candidate_values_and_sources.append((
-                        candidate_value,
-                        {source},
-                    ))
+                    candidate_values_and_blame.append((candidate_value, {source}))
 
-            for candidate_value, sources in candidate_values_and_sources:
+            for candidate_value, sources in candidate_values_and_blame:
                 if value is Undefined:
                     value = candidate_value
                     blame.update(sources)
@@ -315,24 +333,139 @@ class MegaDictCallback:
         'source',
         'layer',
         '_callback_func',
-        '_has_run',
+        'needs_to_run',
+        'reentrant',
+        'previous_result',
     )
 
-    def __init__(self, megadict, layer, callback_func, source=None):
-        if source is None:
-            source = repr(callback_func)
+    def __init__(self, megadict, layer, callback_func, source):
         self._megadict = megadict
         self.source = source
         self.layer = layer
         self._callback_func = callback_func
-        self._has_run = False
+        self.needs_to_run = True
+        self.reentrant = False
+        self.previous_result = None
 
     def __repr__(self):
         return f"<MegaDictCallback '{self.source}' on layer {self.layer}>"
 
     def run(self):
-        if not self._has_run:
-            self._has_run = True
+        if not self.reentrant:
+            try:
+                index = self._megadict.callbacks_on_stack.index(self)
+            except ValueError:
+                pass
+            else:
+                # we're about to call ourselves again, let's not do that
+                # and mark everything involved in the call loop as
+                # reentrant instead
+                for callback in self._megadict.callbacks_on_stack[index:]:
+                    callback.reentrant = True
+                    callback.needs_to_run = True
+                return
+
+        if self.needs_to_run:
+            if not self.reentrant:
+                self._megadict.callbacks_on_stack.append(self)
             result = self._callback_func(self._megadict)
-            del self._callback_func
-            self._megadict._add(result, layer=self.layer, source=self.source)
+            if not self.reentrant:
+                self._megadict.callbacks_on_stack.remove(self)
+
+            self.needs_to_run = False
+            changed = result != self.previous_result
+
+            if changed:
+                if self.previous_result is not None:
+                    self._megadict._remove(self.previous_result, self.layer, self.source)
+                self.previous_result = result
+                self._megadict._add(result, layer=self.layer, source=self.source)
+
+                for callback in self._megadict.callbacks_on_stack:
+                    if callback.reentrant and callback != self:
+                        callback.needs_to_run = True
+                # we need a second loop here because one call to .run()
+                # may cause other callbacks to run as well and we don't
+                # want to mark them as needs_to_run again
+                for callback in self._megadict.callbacks_on_stack:
+                    if callback.reentrant and callback != self:
+                        callback.run()
+
+
+
+
+# TODO:
+# * enforce provides
+# * enforce adding new callbacks from callbacks only within existing provides
+
+
+
+
+#@provides('nginx/vhosts')
+#def foo(m):
+#    result = {'nginx': {'vhosts': {}}}
+#    for key, value in m.get('nginx/vhosts').items():
+#        if value.get('moo') == 5 and '_stats' not in key:
+#            result['nginx']['vhosts'][key + '_stats'] = {}
+#    return result
+#
+#
+#@provides('nginx/vhosts')
+#def bar(m):
+#    result = {'nginx': {'vhosts': {}}}
+#    for key in m.iter('nginx/vhosts'):
+#        result['nginx']['vhosts'][key]['moo'] = 5
+#    return result
+#
+#
+#@provides('nginx/vhosts')
+#def baz(m):
+#    result = {'nginx': {'vhosts': {}}}
+#    for key in m.iter('nginx/vhosts'):
+#        result['nginx']['vhosts'][key]['blubb'] = m.get(f'nginx/vhosts/{key}/moo')
+#    return result
+#
+#
+#
+#
+#
+#
+#@provides('dns/records')
+#def foo(m):
+#    result = {'dns': {'records': {}}}
+#    for key in m.iter('dns/records'):
+#        result['dns']['records'][key + '.local'] = {'AAAA': '127.0.0.1'}
+#    return result
+#
+#
+#@provides('dns/records')
+#def bar(m):
+#    result = {'dns': {'records': {}}}
+#    for key in m.iter('dns/records'):
+#        result['dns']['records'][key]['ttl'] = 5
+#    return result
+#
+#
+#@provides('dns/records')
+#def baz(m):
+#    return {
+#        'dns': {
+#            'records': {
+#                m.get('mailserver_domain'): {
+#                    'AAAA': m.get('mailserver_ip'),
+#                },
+#            },
+#        },
+#    }
+#
+#
+#
+#@provides('foo')
+#def foo1(m):
+#    return {'foo': {'value': m.get('bar', None), 'hint': 47}}
+#
+#
+#@provides('bar')
+#def bar1(m):
+#    return {'bar': m.get('foo/hint', None)}
+#

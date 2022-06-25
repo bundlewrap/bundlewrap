@@ -197,4 +197,35 @@ def test_layer_link():
         'bar': 1,
         'baz': None,
     }
+    assert m.get('group1/metadata/foo') == {42, 47}
     assert m.get('node1/metadata/baz') is None
+
+
+def test_layer_link_blame():
+    m = MegaDictNode()
+    node1_metadata = m.get_node('node1/metadata')
+    group1_metadata = m.get_node('group1/metadata')
+    group2_metadata = m.get_node('group2/metadata')
+    node1_metadata.add_callback_for_paths({()}, lambda m: {'foo': {23}, 'bar': 1}, layer=0, source='node1')
+    group1_metadata.add_callback_for_paths({()}, lambda m: {'foo': {47}, 'bar': 2}, layer=0, source='group1')
+    group2_metadata.add_callback_for_paths({()}, lambda m: {'foo': {42}, 'bar': 3, 'baz': None}, layer=0, source='group2')
+    node1_metadata.link(group1_metadata, 1)
+    group1_metadata.link(group2_metadata, 1)
+    assert m.get_node('node1/metadata/foo').blame == {'node1', 'group1', 'group2'}
+    assert m.get_node('node1/metadata/bar').blame == {'node1'}
+    assert m.get_node('node1/metadata/baz').blame == {'group2'}
+
+
+def test_reentrant_callbacks():
+    m = MegaDictNode()
+    m.add_callback_for_paths(
+        {'foo', 'bar'},
+        lambda m: {'foo': 1, 'bar': m.get('baz', None)},
+    )
+    m.add_callback_for_paths(
+        {'baz'},
+        lambda m: {'baz': m.get('foo', None)},
+    )
+    assert m.get('foo') == 1
+    assert m.get('bar') == 1
+    assert m.get('baz') == 1
