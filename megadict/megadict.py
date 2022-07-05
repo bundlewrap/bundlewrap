@@ -84,12 +84,13 @@ class MegaDictNode:
     )
 
     def __init__(self, key=Undefined, parent=None, root=None):
-        self.callbacks_on_stack = []
         self.child_nodes = {}
         self.layers = {}
         self.key = key
         self.parent = parent
         self.root = root or self
+        if not root:  # this *is* the root node
+            self.callbacks_on_stack = []
 
     def _add(self, data, layer, source):
         """
@@ -338,8 +339,8 @@ class MegaDictCallback:
         'previous_result',
     )
 
-    def __init__(self, megadict, layer, callback_func, source):
-        self._megadict = megadict
+    def __init__(self, megadictnode, layer, callback_func, source):
+        self._megadictnode = megadictnode
         self.source = source
         self.layer = layer
         self._callback_func = callback_func
@@ -353,41 +354,41 @@ class MegaDictCallback:
     def run(self):
         if not self.reentrant:
             try:
-                index = self._megadict.callbacks_on_stack.index(self)
+                index = self._megadictnode.root.callbacks_on_stack.index(self)
             except ValueError:
                 pass
             else:
                 # we're about to call ourselves again, let's not do that
                 # and mark everything involved in the call loop as
                 # reentrant instead
-                for callback in self._megadict.callbacks_on_stack[index:]:
+                for callback in self._megadictnode.root.callbacks_on_stack[index:]:
                     callback.reentrant = True
                     callback.needs_to_run = True
                 return
 
         if self.needs_to_run:
             if not self.reentrant:
-                self._megadict.callbacks_on_stack.append(self)
-            result = self._callback_func(self._megadict)
+                self._megadictnode.root.callbacks_on_stack.append(self)
+            result = self._callback_func(self._megadictnode)
             if not self.reentrant:
-                self._megadict.callbacks_on_stack.remove(self)
+                self._megadictnode.root.callbacks_on_stack.remove(self)
 
             self.needs_to_run = False
             changed = result != self.previous_result
 
             if changed:
                 if self.previous_result is not None:
-                    self._megadict._remove(self.previous_result, self.layer, self.source)
+                    self._megadictnode._remove(self.previous_result, self.layer, self.source)
                 self.previous_result = result
-                self._megadict._add(result, layer=self.layer, source=self.source)
+                self._megadictnode._add(result, layer=self.layer, source=self.source)
 
-                for callback in self._megadict.callbacks_on_stack:
+                for callback in self._megadictnode.root.callbacks_on_stack:
                     if callback.reentrant and callback != self:
                         callback.needs_to_run = True
                 # we need a second loop here because one call to .run()
                 # may cause other callbacks to run as well and we don't
                 # want to mark them as needs_to_run again
-                for callback in self._megadict.callbacks_on_stack:
+                for callback in self._megadictnode.root.callbacks_on_stack:
                     if callback.reentrant and callback != self:
                         callback.run()
 
