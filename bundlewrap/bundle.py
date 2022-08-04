@@ -116,10 +116,19 @@ class Bundle:
     @io.job_wrapper(_("{}  {}  creating items").format(bold("{0.node.name}"), bold("{0.name}")))
     def items(self):
         for item_class in self.repo.item_classes:
-            for item_name, item_attrs in self.bundle_item_attrs.get(
+            attribute_value = self.bundle_item_attrs.get(
                 item_class.BUNDLE_ATTRIBUTE_NAME,
                 {},
-            ).items():
+            )
+            if not isinstance(attribute_value, dict):
+                raise BundleError(_(
+                    "`{attr}` in bundle {bundle} is not a dict for {node}"
+                ).format(
+                    attr=item_class.BUNDLE_ATTRIBUTE_NAME,
+                    bundle=self.name,
+                    node=self.node.name,
+                ))
+            for item_name, item_attrs in attribute_value.items():
                 yield self.make_item(
                     item_class.BUNDLE_ATTRIBUTE_NAME,
                     item_name,
