@@ -485,15 +485,21 @@ class Item:
         start_time = datetime.now()
 
         for item in self._precedes_items:
-            if item._triggers_preceding_items(interactive=interactive):
+            try:
+                if item._triggers_preceding_items(interactive=interactive):
+                    io.debug(_(
+                        "preceding item {item} on {node} has been triggered by {other_item}"
+                    ).format(item=self.id, node=self.node.name, other_item=item.id))
+                    self.has_been_triggered = True
+                    break
+                else:
+                    io.debug(_(
+                        "preceding item {item} on {node} has NOT been triggered by {other_item}"
+                    ).format(item=self.id, node=self.node.name, other_item=item.id))
+            except FaultUnavailable:
                 io.debug(_(
-                    "preceding item {item} on {node} has been triggered by {other_item}"
-                ).format(item=self.id, node=self.node.name, other_item=item.id))
-                self.has_been_triggered = True
-                break
-            else:
-                io.debug(_(
-                    "preceding item {item} on {node} has NOT been triggered by {other_item}"
+                    "preceding item {item} on {node} has NOT been triggered by {other_item}, "
+                    "because this other item is missing Faults"
                 ).format(item=self.id, node=self.node.name, other_item=item.id))
 
         if self.skip:
