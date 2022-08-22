@@ -531,13 +531,6 @@ class Item:
             status_code = self.STATUS_SKIPPED
             details = self.SKIP_REASON_SOFTLOCK
 
-        elif self.cached_unless_result:
-            io.debug(_(
-                "'unless' for {item} on {node} succeeded, not fixing"
-            ).format(item=self.id, node=self.node.name))
-            status_code = self.STATUS_SKIPPED
-            details = self.SKIP_REASON_UNLESS
-
         elif self._faults_missing_for_attributes:
             if self.error_on_missing_fault:
                 self._raise_for_faults()
@@ -573,7 +566,13 @@ class Item:
                     status_code = self.STATUS_SKIPPED
                     details = self.SKIP_REASON_FAULT_UNAVAILABLE
             else:
-                if status_before.correct:
+                if self.cached_unless_result:
+                    io.debug(_(
+                        "'unless' for {item} on {node} succeeded, not fixing"
+                    ).format(item=self.id, node=self.node.name))
+                    status_code = self.STATUS_SKIPPED
+                    details = self.SKIP_REASON_UNLESS
+                elif status_before.correct:
                     status_code = self.STATUS_OK
                 elif show_diff or interactive:
                     if status_before.must_be_created:
