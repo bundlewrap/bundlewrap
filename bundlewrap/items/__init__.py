@@ -485,15 +485,21 @@ class Item:
         start_time = datetime.now()
 
         for item in self._precedes_items:
-            if item._triggers_preceding_items(interactive=interactive):
+            try:
+                if item._triggers_preceding_items(interactive=interactive):
+                    io.debug(_(
+                        "preceding item {item} on {node} has been triggered by {other_item}"
+                    ).format(item=self.id, node=self.node.name, other_item=item.id))
+                    self.has_been_triggered = True
+                    break
+                else:
+                    io.debug(_(
+                        "preceding item {item} on {node} has NOT been triggered by {other_item}"
+                    ).format(item=self.id, node=self.node.name, other_item=item.id))
+            except FaultUnavailable:
                 io.debug(_(
-                    "preceding item {item} on {node} has been triggered by {other_item}"
-                ).format(item=self.id, node=self.node.name, other_item=item.id))
-                self.has_been_triggered = True
-                break
-            else:
-                io.debug(_(
-                    "preceding item {item} on {node} has NOT been triggered by {other_item}"
+                    "preceding item {item} on {node} has NOT been triggered by {other_item}, "
+                    "because this other item is missing Faults"
                 ).format(item=self.id, node=self.node.name, other_item=item.id))
 
         if self.skip:
@@ -524,13 +530,6 @@ class Item:
         elif self._skip_with_soft_locks(my_soft_locks, other_peoples_soft_locks):
             status_code = self.STATUS_SKIPPED
             details = self.SKIP_REASON_SOFTLOCK
-
-        elif self.cached_unless_result:
-            io.debug(_(
-                "'unless' for {item} on {node} succeeded, not fixing"
-            ).format(item=self.id, node=self.node.name))
-            status_code = self.STATUS_SKIPPED
-            details = self.SKIP_REASON_UNLESS
 
         elif self._faults_missing_for_attributes:
             if self.error_on_missing_fault:
@@ -567,7 +566,13 @@ class Item:
                     status_code = self.STATUS_SKIPPED
                     details = self.SKIP_REASON_FAULT_UNAVAILABLE
             else:
-                if status_before.correct:
+                if self.cached_unless_result:
+                    io.debug(_(
+                        "'unless' for {item} on {node} succeeded, not fixing"
+                    ).format(item=self.id, node=self.node.name))
+                    status_code = self.STATUS_SKIPPED
+                    details = self.SKIP_REASON_UNLESS
+                elif status_before.correct:
                     status_code = self.STATUS_OK
                 elif show_diff or interactive:
                     if status_before.must_be_created:
