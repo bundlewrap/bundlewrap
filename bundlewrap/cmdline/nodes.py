@@ -3,6 +3,7 @@ from sys import exit
 from traceback import format_exc
 
 from ..concurrency import WorkerPool
+from ..exceptions import RepositoryError
 from ..node import NODE_ATTRS
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -28,6 +29,8 @@ def attrs_for_entities(
             for attr in selected_attrs:
                 try:
                     result[attr] = getattr(entity, attr)
+                except RepositoryError:
+                    raise
                 except Exception as exc:
                     traceback = format_exc()
                     io.stderr(_(
