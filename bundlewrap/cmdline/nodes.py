@@ -1,10 +1,11 @@
 from os import environ
 from sys import exit
+from traceback import format_exc
 
 from ..concurrency import WorkerPool
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import bold, green, mark_for_translation as _, red
+from ..utils.text import bold, green, mark_for_translation as _, prefix_lines, red
 from ..utils.ui import io, page_lines
 from ..node import NODE_ATTRS
 
@@ -23,7 +24,22 @@ def attrs_for_entities(
         entity = entities.pop()
 
         def get_values():
-            return {attr: getattr(entity, attr) for attr in selected_attrs}
+            result = {}
+            for attr in selected_attrs:
+                try:
+                    result[attr] = getattr(entity, attr)
+                except Exception as exc:
+                    traceback = format_exc()
+                    io.stderr(_(
+                        "{x}  {entity}  Exception while getting '{attr}':\n{traceback}"
+                    ).format(
+                        x=red("✘"),
+                        entity=bold(entity),
+                        attr=attr,
+                        traceback=prefix_lines("\n" + traceback, f"{red('│')} ") + red("╵"),
+                    ))
+                    result[attr] = red(exc.__class__.__name__)
+            return result
 
         return {
             'task_id': entity.name,
