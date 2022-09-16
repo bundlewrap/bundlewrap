@@ -7,7 +7,7 @@ from ..exceptions import RepositoryError
 from ..node import NODE_ATTRS
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
-from ..utils.text import bold, green, mark_for_translation as _, prefix_lines, red
+from ..utils.text import bold, green, mark_for_translation as _, prefix_lines, red, yellow
 from ..utils.ui import io, page_lines
 
 
@@ -82,6 +82,8 @@ def attribute_table(
                 attr_values.append([green("True")])
             elif value is False:
                 attr_values.append([red("False")])
+            elif value is None:
+                attr_values.append([yellow("None")])
             elif isinstance(value, set):
                 if inline or environ.get("BW_TABLE_STYLE") == 'csv':
                     attr_values.append([",".join([str(v) for v in sorted(value)])])
