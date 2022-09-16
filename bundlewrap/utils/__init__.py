@@ -77,31 +77,11 @@ def error_context(**kwargs):
     we're processing lots of different dicts, a "KeyError: foo" will
     often not be helpful, since it's not clear which dict is missing the
     key.
-
-
-    >>> with error_context(arbitrary_kwarg="helpful hint"):
-    ...     {}["foo"]
-    ...
-    Traceback (most recent call last):
-      [...]
-    KeyError: 'foo'
-
-    The above exception was the direct cause of the following exception:
-
-    Traceback (most recent call last):
-      [...]
-    bundlewrap.utils.ErrorContext: ACTUAL EXCEPTION ABOVE
-    {'arbitrary_kwarg': 'helpful hint'}
-
-
-    Careful though: Only use this in places where you don't expect
-    exceptions to occur, since they will indiscriminately be reraised as
-    ErrorContext.
     """
     try:
         yield
     except Exception as exc:
-        raise ErrorContext("ACTUAL EXCEPTION ABOVE\n" + repr(kwargs)) from exc
+        raise exc from ErrorContext(repr(kwargs))
 
 
 class Fault:
