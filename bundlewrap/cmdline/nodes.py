@@ -3,11 +3,11 @@ from sys import exit
 from traceback import format_exc
 
 from ..concurrency import WorkerPool
+from ..node import NODE_ATTRS
 from ..utils.cmdline import get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, prefix_lines, red
 from ..utils.ui import io, page_lines
-from ..node import NODE_ATTRS
 
 
 def attrs_for_entities(
