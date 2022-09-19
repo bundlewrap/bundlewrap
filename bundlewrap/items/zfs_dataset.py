@@ -19,16 +19,19 @@ class ZFSDataset(Item):
         for option, value in sorted(options.items()):
             # We must exclude the 'mounted' property here because it's a
             # read-only "informational" property.
-            if option != 'mounted' and value is not None:
+            if option not in ['mounted', 'password', 'keystatus'] and value is not None:
                 option_list.append("-o {}={}".format(quote(option), quote(value)))
         option_args = " ".join(option_list)
 
+        if options.get('keylocation') == 'prompt':
+            data_stdin = self.attributes['password'].encode() + b'\n' + self.attributes['password'].encode()
+        else:
+            data_stdin = None
+
         self.run(
-            "zfs create {} {}".format(
-                option_args,
-                quote(path),
-            ),
+            f"zfs create {option_args} {quote(path)}",
             may_fail=True,
+            data_stdin=data_stdin,
         )
 
         if options['mounted'] == 'no':
@@ -59,6 +62,17 @@ class ZFSDataset(Item):
                 ),
                 may_fail=True,
             )
+        elif option == 'keystatus':
+            if self.attributes.get('keylocation') == 'prompt':
+                data_stdin = self.attributes['password'].encode() + b'\n' + self.attributes['password'].encode()
+            else:
+                data_stdin = None
+
+            self.run(
+                f'zfs load-key {quote(self.name)}',
+                data_stdin=data_stdin,
+                may_fail=True,
+            )
         else:
             self.run(
                 "zfs set {}={} {}".format(
@@ -72,10 +86,15 @@ class ZFSDataset(Item):
     def cdict(self):
         cdict = {}
         for option, value in self.attributes.items():
-            if option == 'mountpoint' and value is None:
+            if option == 'password':
+                cdict['keystatus'] = 'available'
+                continue
+            elif option == 'mountpoint' and value is None:
                 value = "none"
+
             if value is not None:
                 cdict[option] = value
+
         cdict['mounted'] = 'no' if cdict.get('mountpoint') in (None, "none") else 'yes'
         return cdict
 
@@ -119,8 +138,14 @@ class ZFSDataset(Item):
         if not self.__does_exist(self.name):
             return None
 
-        sdict = {}
+        sdict = {
+            'mounted': self.__get_option(self.name, 'mounted'),
+        }
+
         for option in self.attributes:
-            sdict[option] = self.__get_option(self.name, option)
-        sdict['mounted'] = self.__get_option(self.name, 'mounted')
+            if option == 'password':
+                sdict['keystatus'] = self.__get_option(self.name, 'keystatus')
+            else:
+                sdict[option] = self.__get_option(self.name, option)
+
         return sdict
