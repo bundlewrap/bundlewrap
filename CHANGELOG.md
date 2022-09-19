@@ -1,3 +1,14 @@
+# 4.15.0
+
+2022-09-19
+
+* added exception handling for `bw nodes -a`
+* added color for `None` in `bw nodes -a` output
+* reworked `ErrorContext` exception chain
+* improved error messages for malformed bundles
+* fixed `FaultUnavailable` exception when using unless with Faults
+
+
 # 4.14.2
 
 2022-06-24
