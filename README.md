@@ -1,6 +1,6 @@
 BundleWrap is a decentralized configuration management system that is designed to be powerful, easy to extend and extremely versatile.
 
-For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and [docs.bundlewrap.org](http://docs.bundlewrap.org).
+For more information, have a look at [bundlewrap.org](https://bundlewrap.org) and [docs.bundlewrap.org](https://docs.bundlewrap.org).
 
 ------------------------------------------------------------------------
 
@@ -22,12 +22,4 @@ For more information, have a look at [bundlewrap.org](http://bundlewrap.org) and
 
 ------------------------------------------------------------------------
 
-Donations appreciated:
-
-Bitcoin `13AJYksqncZromPF8HvDUXsmHChAm3Y7W7`
-
-Ethereum `0x5Eb3037e197d3C0d2E014bcfC2e027EB0AD42812`
-
-------------------------------------------------------------------------
-
-BundleWrap is © 2013 - 2021 [Torsten Rehn](mailto:torsten@rehn.email)
+BundleWrap is © 2013 - 2022 [Torsten Rehn](mailto:torsten@rehn.email)
