@@ -5,7 +5,10 @@ from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 
 from pkg_resources import DistributionNotFound, require, VersionConflict
-from rtoml import load as toml_load
+try:
+    from tomllib import loads as toml_load
+except ImportError:
+    from rtoml import load as toml_load
 
 from . import items, VERSION_STRING
 from .bundle import FILENAME_ITEMS
