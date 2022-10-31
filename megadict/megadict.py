@@ -1,4 +1,4 @@
-from functools import wraps
+from functools import cache, wraps
 
 from bundlewrap.utils import list_starts_with
 from bundlewrap.utils.dicts import _Atomic, map_dict_keys
@@ -28,7 +28,7 @@ class Layer:
         })}>"""
 
 
-# TODO cache
+@cache
 def is_covered_by(candidate_path, covering_paths):
     covered = False
     for covering_path in covering_paths:
@@ -368,7 +368,7 @@ class LazyTreeCallback:
         self.layer = layer
         self._callback_func = callback_func
         self.source = source
-        self.provides = provides
+        self.provides = tuple(sorted(provides))  # must be tuple for functools.cache
 
         self.needs_to_run = True
         self.reentrant = False
