@@ -1,6 +1,7 @@
 from functools import wraps
 
-from bundlewrap.utils.dicts import _Atomic
+from bundlewrap.utils import list_starts_with
+from bundlewrap.utils.dicts import _Atomic, map_dict_keys
 
 
 class Undefined:
@@ -25,6 +26,15 @@ class Layer:
             'links': self.links,
             'values': self.values,
         })}>"""
+
+
+# TODO cache
+def is_covered_by(candidate_path, covering_paths):
+    covered = False
+    for covering_path in covering_paths:
+        if list_starts_with(candidate_path, covering_path):
+            covered = True
+    return covered
 
 
 def unstring_path(path):
@@ -146,9 +156,22 @@ class LazyTreeNode:
     def add_callback_for_paths(self, paths, callback_func, layer=0, source=None):
         if not source:
             source = repr(callback_func)
-        callback = LazyTreeCallback(self, layer, callback_func, source)
+        paths = {unstring_path(path) for path in paths}
+        if self.root.callbacks_on_stack:
+            origin_callback = self.root.callbacks_on_stack[-1]
+            for path in paths:
+                # Before we do anything, make sure we're adding the
+                # callback only for paths that were previously declared
+                # as provided by the callback that now is adding the new
+                # callback.
+                if not is_covered_by(path, origin_callback.provides):
+                    raise ValueError(
+                        f"cannot add callback at {self.path} for {path} "
+                        f"as it is not covered by {origin_callback.source} provides: "
+                        f"{origin_callback.provides}"
+                    )
+        callback = LazyTreeCallback(self, layer, callback_func, source, paths)
         for path in paths:
-            path = unstring_path(path)
             self._add_callback_for_path(path, callback)
 
     def _add_callback_for_path(self, path, callback):
@@ -330,20 +353,22 @@ class LazyTreeNode:
 
 class LazyTreeCallback:
     __slots__ = (
+        '_base_node',
         '_callback_func',
-        '_lazytreenode',
         'layer',
         'needs_to_run',
         'previous_result',
+        'provides',
         'reentrant',
         'source',
     )
 
-    def __init__(self, lazytreenode, layer, callback_func, source):
-        self._lazytreenode = lazytreenode
+    def __init__(self, base_node, layer, callback_func, source, provides):
+        self._base_node = base_node
         self.layer = layer
         self._callback_func = callback_func
         self.source = source
+        self.provides = provides
 
         self.needs_to_run = True
         self.reentrant = False
@@ -352,54 +377,55 @@ class LazyTreeCallback:
     def __repr__(self):
         return f"<LazyTreeCallback '{self.source}' on layer {self.layer}>"
 
+    def _verify_provides(self, result):
+        for path in map_dict_keys(result):
+            if not is_covered_by(path, self.provides):
+                path = "/".join(path)
+                raise ValueError(
+                    f"{self.source} returned {path} not covered by provides: {self.provides}"
+                )
+
     def run(self):
         if not self.reentrant:
             try:
-                index = self._lazytreenode.root.callbacks_on_stack.index(self)
+                index = self._base_node.root.callbacks_on_stack.index(self)
             except ValueError:
                 pass
             else:
                 # we're about to call ourselves again, let's not do that
                 # and mark everything involved in the call loop as
                 # reentrant instead
-                for callback in self._lazytreenode.root.callbacks_on_stack[index:]:
+                for callback in self._base_node.root.callbacks_on_stack[index:]:
                     callback.reentrant = True
                     callback.needs_to_run = True
                 return
 
         if self.needs_to_run:
             if not self.reentrant:
-                self._lazytreenode.root.callbacks_on_stack.append(self)
-            result = self._callback_func(self._lazytreenode)
+                self._base_node.root.callbacks_on_stack.append(self)
+            result = self._callback_func(self._base_node)
+            self._verify_provides(result)
             if not self.reentrant:
-                self._lazytreenode.root.callbacks_on_stack.remove(self)
+                self._base_node.root.callbacks_on_stack.remove(self)
 
             self.needs_to_run = False
             changed = result != self.previous_result
 
             if changed:
                 if self.previous_result is not None:
-                    self._lazytreenode._remove(self.previous_result, self.layer, self.source)
+                    self._base_node._remove(self.previous_result, self.layer, self.source)
                 self.previous_result = result
-                self._lazytreenode._add(result, layer=self.layer, source=self.source)
+                self._base_node._add(result, layer=self.layer, source=self.source)
 
-                for callback in self._lazytreenode.root.callbacks_on_stack:
+                for callback in self._base_node.root.callbacks_on_stack:
                     if callback.reentrant and callback != self:
                         callback.needs_to_run = True
                 # we need a second loop here because one call to .run()
                 # may cause other callbacks to run as well and we don't
                 # want to mark them as needs_to_run again
-                for callback in self._lazytreenode.root.callbacks_on_stack:
+                for callback in self._base_node.root.callbacks_on_stack:
                     if callback.reentrant and callback != self:
                         callback.run()
-
-
-
-
-# TODO:
-# * enforce provides
-# * enforce adding new callbacks from callbacks only within existing provides
-
 
 
 

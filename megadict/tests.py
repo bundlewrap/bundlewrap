@@ -229,3 +229,59 @@ def test_reentrant_callbacks():
     assert m.get('foo') == 1
     assert m.get('bar') == 1
     assert m.get('baz') == 1
+
+
+def test_base():
+    root = LazyTreeNode()
+    base = root._ensure_path(('foo',))
+    base.add_callback_for_paths(
+        {'bar', 'baz'},
+        lambda m: {'bar': 1, 'baz': 2},
+    )
+    assert root.get('foo/bar') == 1
+    assert root.get('foo/baz') == 2
+
+
+def test_base_provides_violation():
+    root = LazyTreeNode()
+    base = root._ensure_path(('foo',))
+    base.add_callback_for_paths(
+        {'bar', 'baz'},
+        lambda m: {'bar': 1, 'foo': 2},
+    )
+    with raises(ValueError):
+        root.get('foo/bar') == 1
+
+
+def test_secondary_callback():
+    def unrelated_callback(m):
+        assert m == root
+        return {'five': 5}
+
+    def secondary_callback(m):
+        assert m == foo
+        return {'bar': {'baz': m.root.get('five') + 2}}
+
+    def primary_callback(m):
+        assert m == foo
+        m.add_callback_for_paths({'bar'}, secondary_callback)
+        return {'frob': 23}
+
+    root = LazyTreeNode()
+    foo = root.get_node('foo')
+    foo.add_callback_for_paths({()}, primary_callback)
+    root.add_callback_for_paths({'five'}, unrelated_callback)
+    assert root.get('foo/frob') == 23
+    assert root.get('foo/bar/baz') == 7
+
+
+def test_secondary_callback_provides_violation():
+    def primary_callback(m):
+        assert m == root
+        m.add_callback_for_paths({'bar'}, lambda m: {})
+        return {'frob': 23}
+
+    root = LazyTreeNode()
+    root.add_callback_for_paths({'foo'}, primary_callback)
+    with raises(ValueError):
+        root.get('foo/frob')
