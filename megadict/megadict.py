@@ -73,7 +73,7 @@ def merge(value1, value2):
         )
 
 
-class MegaDictNode:
+class LazyTreeNode:
     __slots__ = (
         'callbacks_on_stack',
         'child_nodes',
@@ -133,12 +133,12 @@ class MegaDictNode:
 
     def _ensure_path(self, path):
         """
-        Creates new MegaDictNodes along the given path if needed.
+        Creates new LazyTreeNodes along the given path if needed.
         """
         if path:
             key = path[0]
             if key not in self.child_nodes:
-                self.child_nodes[key] = MegaDictNode(key=key, parent=self, root=self.root)
+                self.child_nodes[key] = LazyTreeNode(key=key, parent=self, root=self.root)
             return self.child_nodes[key]._ensure_path(path[1:])
         else:
             return self
@@ -146,7 +146,7 @@ class MegaDictNode:
     def add_callback_for_paths(self, paths, callback_func, layer=0, source=None):
         if not source:
             source = repr(callback_func)
-        callback = MegaDictCallback(self, layer, callback_func, source)
+        callback = LazyTreeCallback(self, layer, callback_func, source)
         for path in paths:
             path = unstring_path(path)
             self._add_callback_for_path(path, callback)
@@ -328,67 +328,68 @@ class MegaDictNode:
             return self.parent.path + (self.key,)
 
 
-class MegaDictCallback:
+class LazyTreeCallback:
     __slots__ = (
-        '_megadict',
-        'source',
-        'layer',
         '_callback_func',
+        '_lazytreenode',
+        'layer',
         'needs_to_run',
-        'reentrant',
         'previous_result',
+        'reentrant',
+        'source',
     )
 
-    def __init__(self, megadictnode, layer, callback_func, source):
-        self._megadictnode = megadictnode
-        self.source = source
+    def __init__(self, lazytreenode, layer, callback_func, source):
+        self._lazytreenode = lazytreenode
         self.layer = layer
         self._callback_func = callback_func
+        self.source = source
+
         self.needs_to_run = True
         self.reentrant = False
         self.previous_result = None
 
     def __repr__(self):
-        return f"<MegaDictCallback '{self.source}' on layer {self.layer}>"
+        return f"<LazyTreeCallback '{self.source}' on layer {self.layer}>"
 
     def run(self):
         if not self.reentrant:
             try:
-                index = self._megadictnode.root.callbacks_on_stack.index(self)
+                index = self._lazytreenode.root.callbacks_on_stack.index(self)
             except ValueError:
                 pass
             else:
                 # we're about to call ourselves again, let's not do that
                 # and mark everything involved in the call loop as
                 # reentrant instead
-                for callback in self._megadictnode.root.callbacks_on_stack[index:]:
+                for callback in self._lazytreenode.root.callbacks_on_stack[index:]:
                     callback.reentrant = True
                     callback.needs_to_run = True
                 return
 
         if self.needs_to_run:
             if not self.reentrant:
-                self._megadictnode.root.callbacks_on_stack.append(self)
-            result = self._callback_func(self._megadictnode)
+                self._lazytreenode.root.callbacks_on_stack.append(self)
+            result = self._callback_func(self._lazytreenode)
             if not self.reentrant:
-                self._megadictnode.root.callbacks_on_stack.remove(self)
+                self._lazytreenode.root.callbacks_on_stack.remove(self)
 
             self.needs_to_run = False
             changed = result != self.previous_result
 
             if changed:
                 if self.previous_result is not None:
-                    self._megadictnode._remove(self.previous_result, self.layer, self.source)
+                    self._lazytreenode._remove(self.previous_result, self.layer, self.source)
                 self.previous_result = result
-                self._megadictnode._add(result, layer=self.layer, source=self.source)
+                self._lazytreenode._add(result, layer=self.layer, source=self.source)
 
-                for callback in self._megadictnode.root.callbacks_on_stack:
+                for callback in self._lazytreenode.root.callbacks_on_stack:
                     if callback.reentrant and callback != self:
                         callback.needs_to_run = True
                 # we need a second loop here because one call to .run()
                 # may cause other callbacks to run as well and we don't
                 # want to mark them as needs_to_run again
-                for callback in self._megadictnode.root.callbacks_on_stack:
+                for callback in self._lazytreenode.root.callbacks_on_stack:
                     if callback.reentrant and callback != self:
                         callback.run()
 

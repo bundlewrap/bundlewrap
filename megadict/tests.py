@@ -2,51 +2,51 @@ from pytest import raises
 
 from bundlewrap.metadata import atomic
 
-from megadict import MegaDictNode
+from megadict import LazyTreeNode
 
 
 def test_empty():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     assert m.get() == {}
 
 
 def test_keyerror():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     with raises(KeyError):
         m.get('foo')
 
 
 def test_keyerror_nested():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 47}})
     with raises(KeyError):
         m.get('foo/baz')
 
 
 def test_add_and_get_value():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 47}})
     assert m.get('foo/bar') == 47
 
 
 def test_add_and_get_dict():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 47}})
     assert m.get('foo') == {'bar': 47}
 
 
 def test_path_root():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     assert m.path == ()
 
 
 def test_path():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     assert m.get_node('foo/bar').path == ('foo', 'bar')
 
 
 def test_layering():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 42}}, layer=1)
     assert m.get('foo/bar') == 42
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 47}}, layer=0)
@@ -56,21 +56,21 @@ def test_layering():
 
 
 def test_layering_atomic():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': {'bar': 42}}, layer=1)
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': atomic({'baz': 47})}, layer=0)
     assert m.get('foo') == {'baz': 47}
 
 
 def test_merging_no_conflict():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': 47})
     m.add_callback_for_paths({()}, lambda m: {'bar': 23})
     assert m.get() == {'foo': 47, 'bar': 23}
 
 
 def test_merging_int_conflict():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': 47})
     m.add_callback_for_paths({()}, lambda m: {'foo': 23})
     with raises(ValueError):
@@ -78,7 +78,7 @@ def test_merging_int_conflict():
 
 
 def test_merging_nested_conflict():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': 47})
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 23}})
     with raises(ValueError):
@@ -86,21 +86,21 @@ def test_merging_nested_conflict():
 
 
 def test_merging_int_conflict_resolved_by_layer():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': 47}, layer=0)
     m.add_callback_for_paths({()}, lambda m: {'foo': 23}, layer=1)
     assert m.get('foo') == 47
 
 
 def test_merging_dict_no_conflict():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 47}})
     m.add_callback_for_paths({()}, lambda m: {'foo': {'baz': 23}})
     assert m.get() == {'foo': {'bar': 47, 'baz': 23}}
 
 
 def test_merging_dict_atomic_conflict():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': atomic({'bar': 47})})
     m.add_callback_for_paths({()}, lambda m: {'foo': atomic({'baz': 23})})
     with raises(ValueError):
@@ -108,7 +108,7 @@ def test_merging_dict_atomic_conflict():
 
 
 def test_merging_dict_atomic_conflict_mixed():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 47}})
     m.add_callback_for_paths({()}, lambda m: {'foo': atomic({'baz': 23})})
     with raises(ValueError):
@@ -116,7 +116,7 @@ def test_merging_dict_atomic_conflict_mixed():
 
 
 def test_merging_dict_layered():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 47}, 'frob': 69}, layer=0)
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 23}, 'baz': 42}, layer=1)
     assert m.get() == {
@@ -129,7 +129,7 @@ def test_merging_dict_layered():
 
 
 def test_blame():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 47}, 'frob': 69}, layer=0, source='1')
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 23}, 'baz': 42}, layer=1, source='2')
     assert m.get_node(('foo',)).value_and_blame[1] == {'1'}
@@ -138,14 +138,14 @@ def test_blame():
 
 
 def test_blame_cross_layer():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': {23}}}, layer=0, source='1')
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': {47}}}, layer=1, source='2')
     assert m.get_node(('foo', 'bar')).value_and_blame == ({23, 47}, {'1', '2'})
 
 
 def test_nested_callback():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({'baz'}, lambda m: {'baz': m.get('bar') + 1})
     m.add_callback_for_paths({'bar'}, lambda m: {'bar': m.get(('foo',)) + 1})
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': 47})
@@ -153,7 +153,7 @@ def test_nested_callback():
 
 
 def test_lazy_callback():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({'baz'}, lambda m: {'baz': 0 / 0})
     m.add_callback_for_paths({'bar'}, lambda m: {'bar': m.get(('foo',)) + 1})
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': 47})
@@ -161,7 +161,7 @@ def test_lazy_callback():
 
 
 def test_lazy_callback_layers():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({'bar'}, lambda m: {'bar': 0 / 0}, layer=1)
     m.add_callback_for_paths({'bar'}, lambda m: {'bar': m.get(('foo',)) + 1}, layer=0)
     m.add_callback_for_paths({'foo'}, lambda m: {'foo': 47}, layer=0)
@@ -169,7 +169,7 @@ def test_lazy_callback_layers():
 
 
 def test_lazy_keys():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 1}})
     m.add_callback_for_paths({()}, lambda m: {'foo': {'bar': 2}})
 
@@ -183,7 +183,7 @@ def test_lazy_keys():
 
 
 def test_layer_link():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     node1_metadata = m.get_node('node1/metadata')
     group1_metadata = m.get_node('group1/metadata')
     group2_metadata = m.get_node('group2/metadata')
@@ -202,7 +202,7 @@ def test_layer_link():
 
 
 def test_layer_link_blame():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     node1_metadata = m.get_node('node1/metadata')
     group1_metadata = m.get_node('group1/metadata')
     group2_metadata = m.get_node('group2/metadata')
@@ -217,7 +217,7 @@ def test_layer_link_blame():
 
 
 def test_reentrant_callbacks():
-    m = MegaDictNode()
+    m = LazyTreeNode()
     m.add_callback_for_paths(
         {'foo', 'bar'},
         lambda m: {'foo': 1, 'bar': m.get('baz', None)},
