@@ -109,7 +109,7 @@ class DconfSettingsItem(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if 'value' not in attributes and 'reset' not in attributes:
+        if 'value' not in attributes and not attributes.get('reset', False):
             raise BundleError(_(
                 'Item {item_id} in bundle {bundle} has no value set. '
                 'Please explicitely set the "reset" attribute if you '

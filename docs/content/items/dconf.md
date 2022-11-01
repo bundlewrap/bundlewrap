@@ -25,4 +25,4 @@ The value you want the setting to be set to. Must be of type str, int, list, set
 
 ## reset
 
-Resets the setting to its default value.
+If set to `True`, resets the setting to its default value. If set, `value` will get ignored.
