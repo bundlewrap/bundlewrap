@@ -31,6 +31,8 @@ class DconfSettingsItem(Item):
 
     def _parse_result(self, result):
         stdout = result.stdout.decode('UTF-8').strip()
+        if stdout.startswith('uint'):
+            stdout = ' '.join(stdout.split(' ')[1:])
         if len(stdout) == 0:
             return None
         elif stdout.isdigit():
@@ -107,7 +109,7 @@ class DconfSettingsItem(Item):
 
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
-        if not attributes.get('value') and not attributes.get('reset'):
+        if 'value' not in attributes and 'reset' not in attributes:
             raise BundleError(_(
                 'Item {item_id} in bundle {bundle} has no value set. '
                 'Please explicitely set the "reset" attribute if you '
