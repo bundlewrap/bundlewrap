@@ -54,6 +54,11 @@ def bw_items(repo, args):
                     "{x} skipped {filename} (content_type 'binary')"
                 ).format(x=yellow("»"), filename=bold(item.name)))
                 continue
+            if item.attributes['content_type'] == 'download':
+                io.stderr(_(
+                    "{x} skipped {filename} (content_type 'download')"
+                ).format(x=yellow("»"), filename=bold(item.name)))
+                continue
             if item.attributes['delete']:
                 io.stderr(_(
                     "{x} skipped {filename} ('delete' attribute set)"
