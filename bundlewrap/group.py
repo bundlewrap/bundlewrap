@@ -17,9 +17,10 @@ from .utils.dicts import (
     dict_to_toml,
     hash_statedict,
     set_key_at_path,
+    normalize_dict,
     validate_dict,
     COLLECTION_OF_STRINGS,
-    TUPLE_OF_INTS,
+    LIST_OR_TUPLE_OF_INTS,
 )
 from .utils.text import mark_for_translation as _, toml_clean, validate_name
 
@@ -69,7 +70,7 @@ GROUP_ATTR_TYPES = {
     'members': COLLECTION_OF_STRINGS,
     'metadata': dict,
     'os': str,
-    'os_version': TUPLE_OF_INTS,
+    'os_version': LIST_OR_TUPLE_OF_INTS,
     'password': (Fault, str, type(None)),
     'pip_command': str,
     'subgroups': COLLECTION_OF_STRINGS,
@@ -77,6 +78,10 @@ GROUP_ATTR_TYPES = {
     'supergroups': COLLECTION_OF_STRINGS,
     'use_shadow_passwords': bool,
     'username': (Fault, str, type(None)),
+}
+
+GROUP_ATTR_TYPES_ENFORCED = {
+    'os_version': tuple,
 }
 
 
@@ -113,6 +118,8 @@ class Group:
 
         with error_context(group_name=group_name):
             validate_dict(attributes, GROUP_ATTR_TYPES)
+
+        attributes = normalize_dict(attributes, GROUP_ATTR_TYPES_ENFORCED)
 
         self._attributes = attributes
         self._immediate_subgroup_patterns = {

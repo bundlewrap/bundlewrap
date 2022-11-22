@@ -5,7 +5,7 @@ from bundlewrap.utils.dicts import (
     reduce_dict,
     validate_dict,
     COLLECTION_OF_STRINGS,
-    TUPLE_OF_INTS,
+    LIST_OR_TUPLE_OF_INTS,
 )
 
 from pytest import raises
@@ -112,6 +112,7 @@ def test_validate_ok():
             'j': True,
             'k': False,
             'l': (1, 2, 3),
+            'm': [1, 2, 3],
         },
         {
             'a': int,
@@ -125,7 +126,8 @@ def test_validate_ok():
             'i': set,
             'j': bool,
             'k': (int, bool),
-            'l': TUPLE_OF_INTS,
+            'l': LIST_OR_TUPLE_OF_INTS,
+            'm': LIST_OR_TUPLE_OF_INTS,
         },
     )
 
@@ -173,7 +175,7 @@ def test_validate_inner_type_error2():
                 'l': (1, 2, "3"),
             },
             {
-                'l': TUPLE_OF_INTS,
+                'l': LIST_OR_TUPLE_OF_INTS,
             },
         )
 

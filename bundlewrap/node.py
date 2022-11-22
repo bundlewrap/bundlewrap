@@ -22,7 +22,7 @@ from .exceptions import (
     RepositoryError,
     SkipNode,
 )
-from .group import GROUP_ATTR_DEFAULTS, GROUP_ATTR_TYPES
+from .group import GROUP_ATTR_DEFAULTS, GROUP_ATTR_TYPES, GROUP_ATTR_TYPES_ENFORCED
 from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock
@@ -40,6 +40,7 @@ from .utils.dicts import (
     diff_dict,
     hash_statedict,
     set_key_at_path,
+    normalize_dict,
     validate_dict,
     COLLECTION_OF_STRINGS,
 )
@@ -521,6 +522,8 @@ class Node:
 
         with error_context(node_name=name):
             validate_dict(attributes, NODE_ATTR_TYPES)
+
+        attributes = normalize_dict(attributes, GROUP_ATTR_TYPES_ENFORCED)
 
         self._add_host_keys = environ.get('BW_ADD_HOST_KEYS', False) == "1"
         self._attributes = attributes

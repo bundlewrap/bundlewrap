@@ -378,8 +378,20 @@ def statedict_to_json(sdict, pretty=False):
         )
 
 
+def normalize_dict(dict_obj, types):
+    result = {}
+    for key, value in dict_obj.items():
+        try:
+            normalize = types[key]
+        except KeyError:
+            result[key] = value
+        else:
+            result[key] = normalize(value)
+    return result
+
+
 class COLLECTION_OF_STRINGS: pass
-class TUPLE_OF_INTS: pass
+class LIST_OR_TUPLE_OF_INTS: pass
 
 
 def validate_dict(candidate, schema, required_keys=None):
@@ -402,9 +414,9 @@ def validate_dict(candidate, schema, required_keys=None):
                         k=key,
                         v=repr(inner_value),
                     ))
-        elif allowed_types == TUPLE_OF_INTS:
-            if not isinstance(value, tuple):
-                raise ValueError(_("key '{k}' is {i}, but should be a tuple").format(
+        elif allowed_types == LIST_OR_TUPLE_OF_INTS:
+            if not isinstance(value, (list, tuple)):
+                raise ValueError(_("key '{k}' is {i}, but should be a tuple or list").format(
                     k=key,
                     i=type(value),
                 ))
