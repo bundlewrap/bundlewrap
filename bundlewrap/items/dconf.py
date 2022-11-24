@@ -37,6 +37,10 @@ class DconfSettingsItem(Item):
             return None
         elif stdout.isdigit():
             return int(stdout)
+        elif stdout == 'true':
+            return True
+        elif stdout == 'false':
+            return False
         else:
             try:
                 return literal_eval(stdout)
@@ -118,11 +122,11 @@ class DconfSettingsItem(Item):
                 'Please explicitely set the "reset" attribute if you '
                 'wish to reset this setting to the default value.'
             ).format(item_id=item_id, bundle=bundle.name))
-        if not isinstance(attributes.get('value', []), (set, list, str, int)):
+        if not isinstance(attributes.get('value', []), (set, list, str, int, bool)):
             raise BundleError(_(
                 'Item {item_id} in bundle {bundle} uses invalid type '
                 'for its "value" attribute, must be of type str, int, '
-                'list, set.'
+                'list, set, bool.'
             ).format(item_id=item_id, bundle=bundle.name))
 
     @classmethod
