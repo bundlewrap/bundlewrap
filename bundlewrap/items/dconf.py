@@ -95,9 +95,12 @@ class DconfSettingsItem(Item):
 
     def fix(self, status):
         if status.must_be_created or status.keys_to_fix:
+            value = dumps(self.attributes['value'])
+            if value.isdigit():
+                value = f'uint32 {value}'
             self.run("dconf write {path} '{value}'".format(
                 path=self.path,
-                value=dumps(self.attributes['value']),
+                value=value,
             ))
         elif status.must_be_deleted:
             self.run('dconf reset {self.path}')
