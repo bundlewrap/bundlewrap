@@ -1,3 +1,15 @@
+# 4.16.0
+
+2022-11-27
+
+* added support for Python 3.11
+* improved performance of dynamic node attributes in lambda selectors
+* fixed type handling in `dconf` items
+* fixed `os_version` not being useable in TOML files
+* fixed `pkg_apt` being unable to remove 'essential' packages
+* fixed `bw items -w` crashing with `download` content type
+
+
 # 4.15.0
 
 2022-09-19
