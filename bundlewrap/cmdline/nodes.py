@@ -140,7 +140,7 @@ def select_attrs(selected_attrs, available_attrs):
 
 def bw_nodes(repo, args):
     if args['targets']:
-        nodes = get_target_nodes(repo, args['targets'])
+        nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
     else:
         nodes = repo.nodes
     if not args['attrs']:

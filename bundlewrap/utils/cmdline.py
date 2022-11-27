@@ -1,10 +1,12 @@
 from functools import wraps
+from os import environ
 from sys import exit, stderr, stdout
-from traceback import print_exc
+from traceback import format_exc, print_exc
 
-from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode
+from ..concurrency import WorkerPool
+from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode, RepositoryError
 from . import names
-from .text import mark_for_translation as _, red
+from .text import bold, mark_for_translation as _, prefix_lines, red
 from .ui import io, QUIT_EVENT
 
 
@@ -139,7 +141,59 @@ bundle:my_bundle   # all nodes with this bundle
 """)
 
 
-def get_target_nodes(repo, target_strings):
+def _parallel_node_eval(
+    nodes,
+    expression,
+    node_workers,
+):
+    nodes = set(nodes)
+
+    def tasks_available():
+        return bool(nodes)
+
+    def next_task():
+        node = nodes.pop()
+
+        def get_values():
+            try:
+                return eval("lambda node: " + expression)(node)
+            except RepositoryError:
+                raise
+            except Exception:
+                traceback = format_exc()
+                io.stderr(_(
+                    "{x}  {node}  Exception while evaluating `{expression}`, returning as None:\n{traceback}"
+                ).format(
+                    x=red("✘"),
+                    node=bold(node),
+                    expression=expression,
+                    traceback=prefix_lines("\n" + traceback, f"{red('│')} ") + red("╵"),
+                ))
+                # Returning None here is kinda meh. But it's the only alternative
+                # to failing hard by re-raising, which would be very annoying.
+                return None
+
+        return {
+            'task_id': node.name,
+            'target': get_values,
+        }
+
+    def handle_result(task_id, result, duration):
+        return task_id, result
+
+    worker_pool = WorkerPool(
+        tasks_available,
+        next_task,
+        handle_result=handle_result,
+        workers=node_workers,
+    )
+    return dict(worker_pool.run())
+
+
+def get_target_nodes(repo, target_strings, node_workers=None):
+    if not node_workers:
+        node_workers = int(environ.get("BW_NODE_WORKERS", "4"))
+
     targets = set()
     for name in target_strings:
         name = name.strip()
@@ -159,10 +213,13 @@ def get_target_nodes(repo, target_strings):
                 if group_name not in names(node.groups):
                     targets.add(node)
         elif name.startswith("lambda:"):
-            expression = eval("lambda node: " + name.split(":", 1)[1])
-            for node in repo.nodes:
-                if expression(node):
-                    targets.add(node)
+            for node_name, result in _parallel_node_eval(
+                repo.nodes,
+                name.split(":", 1)[1],
+                node_workers,
+            ).items():
+                if result:
+                    targets.add(repo.get_node(node_name))
         else:
             try:
                 targets.add(repo.get_node(name))

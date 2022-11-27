@@ -24,7 +24,7 @@ from ..utils.ui import io
 
 def bw_apply(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'])
+    target_nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
     pending_nodes = target_nodes.copy()
 
     try:

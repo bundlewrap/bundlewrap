@@ -527,6 +527,7 @@ class Node:
 
         self._add_host_keys = environ.get('BW_ADD_HOST_KEYS', False) == "1"
         self._attributes = attributes
+        self._dynamic_attribute_cache = {}
         self._ssh_conn_established = False
         self._ssh_first_conn_lock = Lock()
         self.file_path = attributes.get('file_path')
@@ -537,13 +538,17 @@ class Node:
             setattr(self, "_{}".format(attr), attributes.get(attr))
 
     def __getattr__(self, name):
+        with suppress(KeyError):
+            return self._dynamic_attribute_cache[name]
         try:
             func = self.repo.node_attribute_functions[name]
         except KeyError:
             raise AttributeError(name)
         else:
             with error_context(node=self.name, attr=name):
-                return func(self)
+                value = func(self)
+            self._dynamic_attribute_cache[name] = value
+            return value
 
     def __lt__(self, other):
         return self.name < other.name
