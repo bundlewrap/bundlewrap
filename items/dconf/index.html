@@ -377,6 +377,8 @@
 <p><br><br></p>
 <h1 id="attribute-reference">Attribute reference</h1>
 <p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<div class="alert alert-info">Due to how <code>dconf</code> works, it is currenty required to have a running <code>dbus</code> session when this item is changed. The easiest way to achive this is by logging in to this user in the GUI.</div>
+
 <hr>
 
 <h2 id="value">value</h2>
@@ -384,13 +386,13 @@
 <hr>
 
 <h2 id="reset">reset</h2>
-<p>Resets the setting to its default value.</p></div>
+<p>If set to <code>True</code>, resets the setting to its default value. If set, <code>value</code> will get ignored.</p></div>
             </div>
         </div>
 
         <footer class="col-md-12">
             <hr>
-                <p>BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>.</p><p> Donations welcome in Bitcoin <code>13AJYksqncZromPF8HvDUXsmHChAm3Y7W7</code> or Ethereum <code>0x5Eb3037e197d3C0d2E014bcfC2e027EB0AD42812</code>.</p>
+                <p>BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>.</p></p>
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
