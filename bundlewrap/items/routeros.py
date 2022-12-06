@@ -9,7 +9,8 @@ from bundlewrap.utils.text import mark_for_translation as _
 from librouteros import connect
 
 
-# very basic connection management, connections are never closed
+# very basic connection management, connections are never closed (unless
+# on errors)
 CONNECTIONS = {}
 CONNECTION_LOCK = Lock()
 
@@ -121,7 +122,17 @@ class RouterOS(Item):
 
     def _run(self, *args):
         with CONNECTION_LOCK:
-            result = tuple(self._connection.rawCmd(*args))
+            try:
+                result = tuple(self._connection.rawCmd(*args))
+            except Exception as e:
+                # Connection in unknown state, try to close it and then
+                # drop it.
+                try:
+                    self._connection.close()
+                except Exception:
+                    pass
+                del CONNECTIONS[self.node]
+                raise e
             run_result = RunResult()
             run_result.stdout = repr(result)
             run_result.stderr = ""
