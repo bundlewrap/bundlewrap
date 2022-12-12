@@ -116,6 +116,7 @@ class RouterOS(Item):
                 username=str(self.node.username),
                 password=str(self.node.password or ""),
                 host=self.node.hostname,
+                timeout=120.0,
             )
             CONNECTIONS[self.node] = connection
         return connection
