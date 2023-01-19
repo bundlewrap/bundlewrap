@@ -1,3 +1,11 @@
+# 4.16.1
+
+2023-01-19
+
+* fixed connections to RouterOS being reused after errors
+* fixed non-strings in sets crashing `bw metadata`
+
+
 # 4.16.0
 
 2022-11-27
