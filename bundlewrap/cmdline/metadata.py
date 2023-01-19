@@ -115,7 +115,7 @@ def bw_metadata(repo, args):
                 if isinstance(value, (dict, list, tuple)):
                     value = ", ".join([str(item) for item in value])
                 elif isinstance(value, set):
-                    value = ", ".join(sorted(value))
+                    value = ", ".join([str(item) for item in sorted(value)])
                 elif isinstance(value, (bool, float, int, Decimal, Fault)) or value is None:
                     value = str(value)
                 values.append(value)
