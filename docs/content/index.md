@@ -12,7 +12,7 @@
 </div>
 
 If you run into a problem that is not answered in these docs, please
-find us on [GitHub](https://github.com/bundlewrap/bundlewrap/discussions) or [IRC](irc://irc.libera.chat/bundlewrap). We’re happy to help!
+find us on [GitHub](https://github.com/bundlewrap/bundlewrap/discussions). We’re happy to help!
 
 Should you already know your way around, just click on the part of your repo that you need help with:
 
