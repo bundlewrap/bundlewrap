@@ -1,8 +1,8 @@
 from contextlib import suppress
 from datetime import datetime, timedelta
 from hashlib import md5
-from os import environ, mkdir
-from os.path import exists, join
+from os import environ, mkdir, rename
+from os.path import dirname, exists, join
 from threading import Lock
 
 from tomlkit import dumps as toml_dump, parse as toml_parse
@@ -859,6 +859,16 @@ class Node:
         """
         return self.metadata
 
+    def rename(self, new_name):
+        if not self.is_toml:
+            raise ValueError(_(
+                "{node} cannot be renamed: not in TOML format"
+            ).format(node=self.name))
+        new_path = join(dirname(self.file_path), f"{new_name}.toml")
+        rename(self.file_path, new_path)
+        self.file_path = new_path
+        self.name = new_name
+
     def run(self, command, data_stdin=None, may_fail=False, log_output=False, user="root"):
         assert self.os in self.OS_FAMILY_UNIX
 
@@ -905,9 +915,13 @@ class Node:
             user=user,
         )
 
+    @property
+    def is_toml(self):
+        return self.file_path and self.file_path.endswith(".toml")
+
     @cached_property
     def toml(self):
-        if not self.file_path or not self.file_path.endswith(".toml"):
+        if not self.is_toml:
             raise ValueError(_("node {} not in TOML format").format(self.name))
         return toml_parse(get_file_contents(self.file_path))
 
