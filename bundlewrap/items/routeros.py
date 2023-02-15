@@ -27,6 +27,10 @@ class RouterOS(Item):
     ITEM_TYPE_NAME = "routeros"
     REJECT_UNKNOWN_ATTRIBUTES = False
 
+    @classmethod
+    def block_concurrent(cls, node_os, node_os_version):
+        return [cls.ITEM_TYPE_NAME]
+
     def __repr__(self):
         return f"<RouterOS {self.name}>"
 
