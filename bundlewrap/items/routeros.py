@@ -4,6 +4,7 @@ from threading import Lock
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.operations import RunResult
+from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
 
 from librouteros import connect
@@ -124,6 +125,7 @@ class RouterOS(Item):
     def _run(self, *args):
         with CONNECTION_LOCK:
             try:
+                io.debug(f'{self.node.name}: running routeros command: {repr(args)}')
                 result = tuple(self._connection.rawCmd(*args))
             except Exception as e:
                 # Connection in unknown state, try to close it and then
