@@ -134,3 +134,14 @@ The encrypted data will be prefixed by `yourkeyname$...` to indicate that the ke
 You can generate a new key by running `bw debug -c "print(repo.vault.random_key())"`. Place the result in your `.secrets.cfg`. Then you need to distribute the new key to your team and run `bw apply` for all your nodes.
 
 <div class="alert alert-info">Note that `encrypt()` and `decrypt()` (plus their `file_` counterparts) use symmetric encryption and require manually updating the encrypted text after the key has changed.</div>
+
+<br>
+
+### Reading keys from external sources
+
+If you'd rather not have plaintext keys in your `.secrets.cfg`, you can use `key_command` instead of `key` to specify a shell command that will be invoked to retrieve the key. Whitespace around the output will be stripped automatically.
+
+	[encrypt]
+	key_command = curl localhost:12345/secret
+
+If both `key` and `key_command` are present, `key_command` will be ignored.

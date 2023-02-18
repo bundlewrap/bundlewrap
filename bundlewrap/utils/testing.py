@@ -50,10 +50,16 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     nodespy.write("nodes = {}\n".format(repr(nodes)))
 
     secrets = tmpdir.join(FILENAME_SECRETS)
-    secrets.write("[generate]\nkey = {}\n\n[encrypt]\nkey = {}\n".format(
-        "Fl53iG1czBcaAPOKhSiJE7RjFU9nIAGkiKDy0k_LoTc=",
-        "DbYiUu5VMfrdeSiKYiAH4rDOAUISipvLSBJI-T0SpeY=",
-    ))
+    secrets.write("""
+[generate]
+key = Fl53iG1czBcaAPOKhSiJE7RjFU9nIAGkiKDy0k_LoTc=
+
+[encrypt]
+key = DbYiUu5VMfrdeSiKYiAH4rDOAUISipvLSBJI-T0SpeY=
+
+[command]
+key_command = echo -e foo\\\\nDbYiUu5VMfrdeSiKYiAH4rDOAUISipvLSBJI-T0SpeY= | tail -n 1
+""")
 
 
 def run(command, path=None):

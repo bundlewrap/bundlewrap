@@ -345,3 +345,21 @@ def test_cmd_fail(tmpdir):
     )
     assert b"CalledProcessError" in stderr
     assert rcode == 1
+
+
+def test_key_command(tmpdir):
+    make_repo(tmpdir)
+
+    stdout1, stderr1, rcode1 = run(
+        "bw debug -c 'print(repo.vault.password_for(\"something\", key=\"encrypt\"))'",
+        path=str(tmpdir),
+    )
+    assert rcode1 == 0
+
+    stdout2, stderr2, rcode2 = run(
+        "bw debug -c 'print(repo.vault.password_for(\"something\", key=\"command\"))'",
+        path=str(tmpdir),
+    )
+    assert rcode2 == 0
+
+    assert stdout1 == stdout2

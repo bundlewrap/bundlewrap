@@ -1,5 +1,5 @@
 from base64 import b64encode, urlsafe_b64decode
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError
 import hashlib
 import hmac
 from os import environ
@@ -246,7 +246,16 @@ class SecretProxy:
             return {}
         result = {}
         for section in config.sections():
-            result[section] = config.get(section, 'key').encode('utf-8')
+            try:
+                result[section] = config.get(section, 'key').encode('utf-8')
+            except NoOptionError:
+                result[section] = run(
+                    config.get(section, 'key_command'),
+                    check=True,
+                    shell=True,
+                    stdout=PIPE,  # replace with capture_output=True
+                                  # when dropping support for Python 3.6
+                ).stdout.strip()
         return result
 
     @staticmethod
