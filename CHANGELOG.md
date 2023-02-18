@@ -1,3 +1,12 @@
+# 4.17.0
+
+2023-02-18
+
+* added `key_command` for `.secrets.cfg`
+* added `node.rename()` for TOML nodes
+* improved logging for `routeros` items
+
+
 # 4.16.1
 
 2023-01-19
