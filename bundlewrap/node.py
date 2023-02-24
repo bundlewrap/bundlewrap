@@ -892,7 +892,12 @@ class Node:
             if self._ssh_first_conn_lock.acquire(False):
                 try:
                     with io.job(_("{}  establishing connection...").format(bold(self.name))):
-                        operations.run(self.hostname, "true", add_host_keys=self._add_host_keys)
+                        operations.run(
+                            self.hostname,
+                            "true",
+                            add_host_keys=self._add_host_keys,
+                            username=self.username,
+                        )
                     self._ssh_conn_established = True
                 finally:
                     self._ssh_first_conn_lock.release()
