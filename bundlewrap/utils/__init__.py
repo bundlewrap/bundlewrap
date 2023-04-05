@@ -38,6 +38,15 @@ def cached_property(prop, convert_to=None):
                     return_value = tuple(return_value)
             except DontCache as exc:
                 return exc.obj
+            except AttributeError as exc:
+                # It's bad to raise an AttributeError from a property
+                # since this will cause Python to try and use
+                # __getattr__, thinking the property doesn't exist. The
+                # original exception gets swallowed by this process,
+                # which leads to entriely unhelpful tracebacks.
+                # To prevent this, we wrap AttributeErrors in a generic
+                # Exception.
+                raise Exception("AttributeError in property, see above") from exc
             else:
                 if convert_to:
                     return_value = convert_to(return_value)
