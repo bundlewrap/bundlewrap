@@ -259,34 +259,41 @@ def run(
 def run_routeros(hostname, username, password, *args):
     with ROUTEROS_CONNECTIONS_LOCK:
         try:
-            connection, lock = ROUTEROS_CONNECTIONS[hostname]
+            conn_state = ROUTEROS_CONNECTIONS[hostname]
         except KeyError:
+            conn_state = {
+                'connection': None,
+                'lock': Lock(),
+                'needs_reconnect': True,
+            }
+            ROUTEROS_CONNECTIONS[hostname] = conn_state
+
+    with conn_state['lock']:
+        if conn_state['needs_reconnect']:
+            if conn_state['connection']:
+                with suppress(Exception):
+                    conn_state['connection'].close()
+
             try:
-                connection = connect(
+                conn_state['connection'] = connect(
                     # str() to resolve Faults
                     username=str(username),
                     password=str(password or ""),
                     host=hostname,
                     timeout=120.0,
                 )
-                lock = Lock()
-                ROUTEROS_CONNECTIONS[hostname] = connection, lock
             except Exception as e:
                 raise RemoteException(str(e)) from e
+            else:
+                conn_state['needs_reconnect'] = False
 
-    try:
-        io.debug(f'{hostname}: running routeros command: {repr(args)}')
-        with lock:
-            result = tuple(connection.rawCmd(*args))
-    except Exception as e:
-        # Connection in unknown state, try to close it and then
-        # drop it.
-        with suppress(Exception):
-            connection.close()
-        with suppress(KeyError):
-            with ROUTEROS_CONNECTIONS_LOCK:
-                del ROUTEROS_CONNECTIONS[hostname]
-        raise RemoteException(str(e)) from e
+        try:
+            io.debug(f'{hostname}: running routeros command: {repr(args)}')
+            result = tuple(conn_state['connection'].rawCmd(*args))
+        except Exception as e:
+            # Connection in unknown state, mark it as broken
+            conn_state['needs_reconnect'] = True
+            raise RemoteException(str(e)) from e
 
     run_result = RunResult()
     run_result.raw = result
