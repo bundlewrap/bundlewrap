@@ -32,7 +32,7 @@ def svc_enabled(node, svcname):
     )
     return (
         result.return_code == 0 and
-        force_text(result.stdout).strip() != "runtime-enabled"
+        force_text(result.stdout).strip() != "enabled-runtime"
     )
 
 
