@@ -686,6 +686,24 @@ class Node:
     def magic_number(self):
         return int(md5(self.name.encode('UTF-8')).hexdigest(), 16)
 
+    def check_connection(self):
+        try:
+            # Running "true" is meant to catch connection errors early,
+            # but this only works on UNIX-y systems (i.e., not k8s).
+            if self.os in self.OS_FAMILY_UNIX:
+                self.run("true")
+            elif self.os == 'routeros':
+                self.run_routeros("/nothing")
+        except RemoteException as exc:
+            io.stdout(_("{x} {node}  Connection error: {msg}").format(
+                msg=exc,
+                node=bold(self.name),
+                x=red("!"),
+            ))
+            return False
+        else:
+            return True
+
     def apply(
         self,
         autoskip_selector=(),
@@ -739,19 +757,8 @@ class Node:
             x=blue("i"),
         ))
 
-        error = False
-
-        try:
-            # Running "true" is meant to catch connection errors early,
-            # but this only works on UNIX-y systems (i.e., not k8s).
-            if self.os in self.OS_FAMILY_UNIX:
-                self.run("true")
-        except RemoteException as exc:
-            io.stdout(_("{x} {node}  Connection error: {msg}").format(
-                msg=exc,
-                node=bold(self.name),
-                x=red("!"),
-            ))
+        error = None
+        if not self.check_connection():
             error = _("Connection error (details above)")
             item_results = []
         else:
@@ -915,6 +922,15 @@ class Node:
             user=user,
         )
 
+    def run_routeros(self, *command):
+        assert self.os == 'routeros'
+        return operations.run_routeros(
+            self.hostname,
+            self.username,
+            self.password,
+            *command,
+        )
+
     @property
     def is_toml(self):
         return self.file_path and self.file_path.endswith(".toml")
@@ -972,6 +988,8 @@ class Node:
 
         if not self.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
+        elif not self.check_connection():
+            io.stdout(_("{x} {node}  Connection error (details above)").format(node=bold(self.name), x=red("!")))
         else:
             result = verify_items(
                 self,

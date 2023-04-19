@@ -1,15 +1,22 @@
+from contextlib import suppress
 from datetime import datetime
 from shlex import quote
 from select import select
 from shlex import split
 from subprocess import Popen, PIPE
-from threading import Event, Thread
+from threading import Event, Thread, Lock
 from os import close, environ, pipe, read, setpgrp
 
 from .exceptions import RemoteException
 from .utils import cached_property
 from .utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
 from .utils.ui import io
+
+from librouteros import connect
+
+
+ROUTEROS_CONNECTIONS = {}
+ROUTEROS_CONNECTIONS_LOCK = Lock()
 
 
 def output_thread_body(line_buffer, read_fd, quit_event, read_until_eof):
@@ -247,6 +254,45 @@ def run(
         if not ignore_failure or result.return_code in raise_for_return_codes:
             raise RemoteException(error_msg)
     return result
+
+
+def run_routeros(hostname, username, password, *args):
+    with ROUTEROS_CONNECTIONS_LOCK:
+        try:
+            connection, lock = ROUTEROS_CONNECTIONS[hostname]
+        except KeyError:
+            try:
+                connection = connect(
+                    # str() to resolve Faults
+                    username=str(username),
+                    password=str(password or ""),
+                    host=hostname,
+                    timeout=120.0,
+                )
+                lock = Lock()
+                ROUTEROS_CONNECTIONS[hostname] = connection, lock
+            except Exception as e:
+                raise RemoteException(str(e)) from e
+
+    try:
+        io.debug(f'{hostname}: running routeros command: {repr(args)}')
+        with lock:
+            result = tuple(connection.rawCmd(*args))
+    except Exception as e:
+        # Connection in unknown state, try to close it and then
+        # drop it.
+        with suppress(Exception):
+            connection.close()
+        with suppress(KeyError):
+            with ROUTEROS_CONNECTIONS_LOCK:
+                del ROUTEROS_CONNECTIONS[hostname]
+        raise RemoteException(str(e)) from e
+
+    run_result = RunResult()
+    run_result.raw = result
+    run_result.stdout = repr(result)
+    run_result.stderr = ""
+    return run_result
 
 
 def upload(

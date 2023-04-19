@@ -1,19 +1,8 @@
 from contextlib import suppress
-from threading import Lock
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
-from bundlewrap.operations import RunResult
-from bundlewrap.utils.ui import io
 from bundlewrap.utils.text import mark_for_translation as _
-
-from librouteros import connect
-
-
-# very basic connection management, connections are never closed (unless
-# on errors)
-CONNECTIONS = {}
-CONNECTION_LOCK = Lock()
 
 
 class RouterOS(Item):
@@ -111,44 +100,13 @@ class RouterOS(Item):
                 attributes[key] = str(value)
         return attributes
 
-    @property
-    def _connection(self):
-        try:
-            connection = CONNECTIONS[self.node]
-        except KeyError:
-            connection = connect(
-                # str() to resolve Faults
-                username=str(self.node.username),
-                password=str(self.node.password or ""),
-                host=self.node.hostname,
-                timeout=120.0,
-            )
-            CONNECTIONS[self.node] = connection
-        return connection
-
-    def _run(self, *args):
-        with CONNECTION_LOCK:
-            try:
-                io.debug(f'{self.node.name}: running routeros command: {repr(args)}')
-                result = tuple(self._connection.rawCmd(*args))
-            except Exception as e:
-                # Connection in unknown state, try to close it and then
-                # drop it.
-                try:
-                    self._connection.close()
-                except Exception:
-                    pass
-                del CONNECTIONS[self.node]
-                raise e
-            run_result = RunResult()
-            run_result.stdout = repr(result)
-            run_result.stderr = ""
-
-            self._command_results.append({
-                'command': repr(args),
-                'result': run_result,
-            })
-            return result
+    def run_routeros(self, *command):
+        result = self.node.run_routeros(*command)
+        self._command_results.append({
+            'command': repr(command),
+            'result': result,
+        })
+        return result
 
     def _add(self, command, kwargs):
         identifier = self.name.split("?", 1)[1]
@@ -157,7 +115,7 @@ class RouterOS(Item):
             kwargs[identifier_key] = identifier_value
         command += "/add"
         arguments = [f"={key}={value}" for key, value in kwargs.items()]
-        self._run(command, *arguments)
+        self.run_routeros(command, *arguments)
 
     def _get(self, command):
         if "?" in command:
@@ -165,9 +123,9 @@ class RouterOS(Item):
             query = query.split("&")
             query = ["?=" + condition for condition in query]
             query.append("?#&")  # AND all conditions
-            result = self._run(command + "/print", *query)
+            result = self.run_routeros(command + "/print", *query).raw
         else:
-            result = self._run(command + "/print")
+            result = self.run_routeros(command + "/print").raw
 
         if not result:
             return None
@@ -186,9 +144,9 @@ class RouterOS(Item):
         command += "/set"
         kvstr = f"={key}={value}"
         if api_id is None:
-            self._run(command, kvstr)
+            self.run_routeros(command, kvstr)
         else:
-            self._run(command, f"=.id={api_id}", kvstr)
+            self.run_routeros(command, f"=.id={api_id}", kvstr)
 
     def _remove(self, command, api_id):
-        self._run(command + "/remove", f"=.id={api_id}")
+        self.run_routeros(command + "/remove", f"=.id={api_id}")
