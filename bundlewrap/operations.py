@@ -1,15 +1,22 @@
+from contextlib import suppress
 from datetime import datetime
 from shlex import quote
 from select import select
 from shlex import split
 from subprocess import Popen, PIPE
-from threading import Event, Thread
+from threading import Event, Thread, Lock
 from os import close, environ, pipe, read, setpgrp
 
 from .exceptions import RemoteException
 from .utils import cached_property
 from .utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
 from .utils.ui import io
+
+from librouteros import connect
+
+
+ROUTEROS_CONNECTIONS = {}
+ROUTEROS_CONNECTIONS_LOCK = Lock()
 
 
 def output_thread_body(line_buffer, read_fd, quit_event, read_until_eof):
@@ -247,6 +254,54 @@ def run(
         if not ignore_failure or result.return_code in raise_for_return_codes:
             raise RemoteException(error_msg)
     return result
+
+
+def run_routeros(hostname, username, password, *args):
+    with ROUTEROS_CONNECTIONS_LOCK:
+        try:
+            conn_state = ROUTEROS_CONNECTIONS[hostname]
+        except KeyError:
+            conn_state = {
+                'connection': None,
+                'lock': Lock(),
+                'needs_reconnect': True,
+            }
+            ROUTEROS_CONNECTIONS[hostname] = conn_state
+
+    with conn_state['lock']:
+        if conn_state['needs_reconnect']:
+            if conn_state['connection']:
+                try:
+                    conn_state['connection'].close()
+                except Exception as exc:
+                    io.debug(f'error closing RouterOS connection to {hostname}: {exc}')
+
+            try:
+                conn_state['connection'] = connect(
+                    # str() to resolve Faults
+                    username=str(username),
+                    password=str(password or ""),
+                    host=hostname,
+                    timeout=120.0,
+                )
+            except Exception as e:
+                raise RemoteException(str(e)) from e
+            else:
+                conn_state['needs_reconnect'] = False
+
+        try:
+            io.debug(f'{hostname}: running routeros command: {repr(args)}')
+            result = tuple(conn_state['connection'].rawCmd(*args))
+        except Exception as e:
+            # Connection in unknown state, mark it as broken
+            conn_state['needs_reconnect'] = True
+            raise RemoteException(str(e)) from e
+
+    run_result = RunResult()
+    run_result.raw = result
+    run_result.stdout = repr(result)
+    run_result.stderr = ""
+    return run_result
 
 
 def upload(

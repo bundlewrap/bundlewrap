@@ -1,5 +1,6 @@
 from contextlib import contextmanager, suppress
 from datetime import datetime
+import faulthandler
 from functools import wraps
 from os import _exit, environ, getpid, kill
 from os.path import join
@@ -85,6 +86,7 @@ def sigint_handler(*args, **kwargs):
         SHUTDOWN_EVENT_SOFT.set()
     else:
         SHUTDOWN_EVENT_HARD.set()
+        faulthandler.dump_traceback()
 
 
 def sigquit_handler(*args, **kwargs):
@@ -197,6 +199,7 @@ class IOManager:
         self._signal_handler_thread.start()
         signal(SIGINT, sigint_handler)
         signal(SIGQUIT, sigquit_handler)
+        faulthandler.enable()
         if TTY:
             write_to_stream(STDOUT_WRITER, HIDE_CURSOR)
 
@@ -245,6 +248,7 @@ class IOManager:
             write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
         signal(SIGINT, SIG_DFL)
         signal(SIGQUIT, SIG_DFL)
+        faulthandler.disable()
         self._signal_handler_thread.join()
         if self.debug_log_file:
             self.debug_log_file.close()
