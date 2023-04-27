@@ -66,9 +66,9 @@ class RouterOS(Item):
             # undo automatic type conversion in librouteros
             for key, value in tuple(result.items()):
                 if value is True:
-                    result[key] = "true"
+                    result[key] = "yes"
                 elif value is False:
-                    result[key] = "false"
+                    result[key] = "no"
                 elif isinstance(value, int):
                     result[key] = str(value)
         return result
@@ -99,16 +99,19 @@ class RouterOS(Item):
             if key in BUILTIN_ITEM_ATTRIBUTES:
                 continue
             value = attributes[key]
+            # We need to stringify bools and ints because librouteros
+            # will convert them anyway and we must have a consistent
+            # representation for the purpose of diffing.
             if value is True:
-                attributes[key] = "true"
+                attributes[key] = "yes"
             elif value is False:
-                attributes[key] = "false"
+                attributes[key] = "no"
+            elif isinstance(value, int):
+                attributes[key] = str(value)
             elif isinstance(value, set):
                 attributes[key] = ",".join(sorted(value))
             elif isinstance(value, (tuple, list)):
                 attributes[key] = ",".join(value)
-            elif isinstance(value, int):
-                attributes[key] = str(value)
         return attributes
 
     @property
