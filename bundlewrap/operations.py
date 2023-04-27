@@ -271,8 +271,10 @@ def run_routeros(hostname, username, password, *args):
     with conn_state['lock']:
         if conn_state['needs_reconnect']:
             if conn_state['connection']:
-                with suppress(Exception):
+                try:
                     conn_state['connection'].close()
+                except Exception as exc:
+                    io.debug(f'error closing RouterOS connection to {hostname}: {exc}')
 
             try:
                 conn_state['connection'] = connect(
