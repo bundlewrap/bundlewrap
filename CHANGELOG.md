@@ -1,3 +1,10 @@
+# 4.17.2
+
+2023-05-05
+
+* fixed `bw hash` trying to hash actions
+
+
 # 4.17.1
 
 2023-05-05
