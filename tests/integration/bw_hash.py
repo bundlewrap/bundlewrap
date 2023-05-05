@@ -85,6 +85,11 @@ def test_dict(tmpdir):
         bundles={
             "bundle1": {
                 'items': {
+                    'actions': {
+                        "test": {
+                            'command': "true",
+                        },
+                    },
                     'files': {
                         "/test": {
                             'content': "yes please",

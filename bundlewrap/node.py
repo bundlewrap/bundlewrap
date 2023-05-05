@@ -583,7 +583,7 @@ class Node:
     def cdict(self):
         node_dict = {}
         for item in self.items:
-            with suppress(AttributeError):  # actions have no cdict
+            if item.ITEM_TYPE_NAME != 'action':  # actions have no cdict
                 node_dict[item.id] = item.hash()
         return node_dict
 
