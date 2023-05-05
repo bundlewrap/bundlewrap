@@ -368,6 +368,7 @@ def upload(
             ),
             add_host_keys=add_host_keys,
             ignore_failure=ignore_failure,
+            username=username,
             wrapper_inner=wrapper_inner,
             wrapper_outer=wrapper_outer,
         )
@@ -383,6 +384,7 @@ def upload(
             ),
             add_host_keys=add_host_keys,
             ignore_failure=ignore_failure,
+            username=username,
             wrapper_inner=wrapper_inner,
             wrapper_outer=wrapper_outer,
         )
@@ -397,6 +399,7 @@ def upload(
         ),
         add_host_keys=add_host_keys,
         ignore_failure=ignore_failure,
+        username=username,
         wrapper_inner=wrapper_inner,
         wrapper_outer=wrapper_outer,
     )
