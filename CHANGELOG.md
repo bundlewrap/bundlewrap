@@ -1,3 +1,14 @@
+# 4.17.1
+
+2023-05-05
+
+* fixed `username` node attribute not being respected during some operations
+* fixed detection of `enabled-runtime` state for systemd services
+* fixed handling of connection errors to routeros nodes
+* fixed boolean type conversion for routeros items
+* fixed unhelpful tracebacks after AttributeError in reactors and such
+
+
 # 4.17.0
 
 2023-02-18
