@@ -81,7 +81,7 @@ class SecretProxy:
         key, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
-    def _decrypt_file(self, source_path=None, key=None):
+    def _decrypt_file(self, source_path=None, binary=False, key=None):
         """
         Decrypts the file at source_path (relative to data/) and
         returns the plaintext as unicode.
@@ -93,7 +93,10 @@ class SecretProxy:
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
 
         f = Fernet(key)
-        return f.decrypt(cryptotext).decode('utf-8')
+        if binary:
+            return f.decrypt(cryptotext)
+        else:
+            return f.decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file_as_base64(self, source_path=None, key=None):
         """
@@ -287,11 +290,12 @@ class SecretProxy:
             key=key,
         )
 
-    def decrypt_file(self, source_path, key=None):
+    def decrypt_file(self, source_path, binary=False, key=None):
         return Fault(
             'bw secrets decrypt_file',
             self._decrypt_file,
             source_path=source_path,
+            binary=binary,
             key=key,
         )
 
