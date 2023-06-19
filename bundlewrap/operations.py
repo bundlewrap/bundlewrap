@@ -364,6 +364,24 @@ def run(
     return result
 
 
+def run_ipmitool(hostname, username, password, command):
+    """
+    Runs a command on a ipmi interface using ipmitool
+    """
+    ipmi_command = [
+        "ipmitool",
+        "-H", hostname,
+        "-U", username,
+        "-P", password,
+    ]
+    extra_args = environ.get("BW_IPMITOOL_ARGS", "").strip()
+    if extra_args:
+        ipmi_command.extend(split(extra_args))
+    ipmi_command.extend(split(command))
+
+    return run_local(ipmi_command)
+
+
 def run_routeros(hostname, username, password, *args):
     with ROUTEROS_CONNECTIONS_LOCK:
         try:

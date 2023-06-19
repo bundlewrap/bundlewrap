@@ -526,7 +526,7 @@ class Node:
         OS_FAMILY_REDHAT
 
     OS_FAMILY_UNIX = OS_FAMILY_BSD + OS_FAMILY_LINUX
-    OS_KNOWN = OS_FAMILY_UNIX + ('kubernetes', 'routeros')
+    OS_KNOWN = OS_FAMILY_UNIX + ('ipmi', 'kubernetes', 'routeros')
 
     def __init__(self, name, attributes=None):
         if attributes is None:
@@ -943,6 +943,15 @@ class Node:
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
             user=user,
+        )
+
+    def run_ipmitool(self, command):
+        assert self.os == 'ipmi'
+        return operations.run_ipmitool(
+            self.hostname,
+            self.username,
+            self.password,
+            command,
         )
 
     def run_routeros(self, *command):
