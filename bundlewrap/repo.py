@@ -4,7 +4,7 @@ from inspect import isabstract
 from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 
-from pkg_resources import DistributionNotFound, require, VersionConflict
+from pkg_resources import DistributionNotFound, require, VersionConflict  # needs setuptools
 try:
     from tomllib import loads as toml_load
 except ImportError:

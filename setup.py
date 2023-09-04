@@ -39,13 +39,14 @@ setup(
     install_requires=[
         "cryptography",
         "Jinja2",
+        "librouteros >= 3.0.0",
         "Mako",
         "passlib",
         "pyyaml",
         "requests >= 1.0.0",
-        "librouteros >= 3.0.0",
-        "tomlkit",
         "rtoml ; python_version<'3.11'",
+        "setuptools",
+        "tomlkit",
     ],
     zip_safe=False,
 )
