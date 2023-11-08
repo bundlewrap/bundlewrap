@@ -26,7 +26,9 @@ def test_any_content_create(tmpdir):
         },
     )
 
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
     assert content == b""
@@ -56,7 +58,9 @@ def test_any_content_exists(tmpdir):
     with open(join(str(tmpdir), "foo"), 'wb') as f:
         f.write(b"existing content")
 
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
     assert content == b"existing content"
@@ -84,7 +88,10 @@ def test_binary_inline_content(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "foo.bin"), 'rb') as f:
         content = f.read()
     assert content.decode('latin-1') == "ö"
@@ -114,7 +121,9 @@ def test_binary_template_content(tmpdir):
     with open(join(str(tmpdir), "bundles", "test", "files", "foo.bin"), 'wb') as f:
         f.write("ö".encode('utf-8'))
 
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "foo.bin"), 'rb') as f:
         content = f.read()
     assert content.decode('latin-1') == "ö"
@@ -143,7 +152,8 @@ def test_delete(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
     assert not exists(join(str(tmpdir), "foo"))
 
 
@@ -169,7 +179,8 @@ def test_mako_template_content(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
     assert content == b"localhost"
@@ -197,7 +208,10 @@ def test_mako_template_content_with_secret(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
     assert content == b"faCTT76kagtDuZE5wnoiD1CxhGKmbgiX"
@@ -225,7 +239,10 @@ def test_text_template_content(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "foo"), 'rb') as f:
         content = f.read()
     assert content == b"${node.name}"

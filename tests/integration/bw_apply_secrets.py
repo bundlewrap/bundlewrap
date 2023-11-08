@@ -26,7 +26,10 @@ files = {{
 }}
 """.format(join(str(tmpdir), "secret")))
 
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
     assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"
@@ -55,7 +58,10 @@ def test_fault_content_mako(tmpdir):
         },
     )
 
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
     assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"
@@ -89,7 +95,10 @@ nodes = {{
 }}
 """.format(host_os()))
 
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
     assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"
@@ -118,7 +127,10 @@ def test_fault_content_jinja2(tmpdir):
         },
     )
 
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "secret")) as f:
         content = f.read()
     assert content == "sQDdTXu5OmCki8gdGgYdfTxooevckXcB"

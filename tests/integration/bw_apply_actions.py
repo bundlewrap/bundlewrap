@@ -22,7 +22,8 @@ def test_action_success(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
 
 
 def test_action_fail(tmpdir):
@@ -46,7 +47,8 @@ def test_action_fail(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 1
 
 
 def test_action_pipe_binary(tmpdir):
@@ -72,7 +74,8 @@ def test_action_pipe_binary(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
 
 
 def test_action_pipe_utf8(tmpdir):
@@ -98,7 +101,8 @@ def test_action_pipe_utf8(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
 
 
 def test_action_return_codes(tmpdir):
@@ -135,4 +139,5 @@ def test_action_return_codes(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0

@@ -43,7 +43,8 @@ def test_purge(tmpdir):
     with open(join(str(tmpdir), "purgedir", "subdir3", "unmanaged_file"), 'w') as f:
         f.write("content")
 
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
 
     assert not exists(join(str(tmpdir), "purgedir", "unmanaged_file"))
     assert not exists(join(str(tmpdir), "purgedir", "subdir3", "unmanaged_file"))
@@ -91,7 +92,8 @@ def test_purge_special_chars(tmpdir):
     with open(join(str(tmpdir), "purgedir", "unmanaged_:'_file"), 'w') as f:
         f.write("content")
 
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
 
     assert not exists(join(str(tmpdir), "purgedir", "unmänäged_file"))
     assert not exists(join(str(tmpdir), "purgedir", "unmanaged_`uname`_file"))

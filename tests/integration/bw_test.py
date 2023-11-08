@@ -38,8 +38,13 @@ def test(repo, **kwargs):
 def test_node(repo, node, **kwargs):
     io.stdout("BBB")
 """)
-    assert b"AAA" in run("bw test -H", path=str(tmpdir))[0]
-    assert b"BBB" in run("bw test -J", path=str(tmpdir))[0]
+    stdout, stderr, rcode = run("bw test -H", path=str(tmpdir))
+    assert rcode == 0
+    assert b"AAA" in stdout
+
+    stdout, stderr, rcode = run("bw test -J", path=str(tmpdir))
+    assert rcode == 0
+    assert b"BBB" in stdout
 
 
 def test_circular_dep_direct(tmpdir):

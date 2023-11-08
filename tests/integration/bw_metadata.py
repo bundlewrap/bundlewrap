@@ -464,6 +464,7 @@ def reactor2(metadata):
         "broken": True,
         "again": True,
     }
+    assert rcode == 0
 
 
 def test_own_node_metadata(tmpdir):
@@ -489,6 +490,7 @@ def reactor1(metadata):
         "number": 47,
         "plusone": 48,
     }
+    assert rcode == 0
 
 
 def test_other_node_metadata(tmpdir):
@@ -522,16 +524,19 @@ def reactor1(metadata):
     return {'other_numbers': numbers}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 0
     assert loads(stdout.decode()) == {
         "number": 47,
         "other_numbers": [23, 42],
     }
     stdout, stderr, rcode = run("bw metadata node2", path=str(tmpdir))
+    assert rcode == 0
     assert loads(stdout.decode()) == {
         "number": 42,
         "other_numbers": [23, 47],
     }
     stdout, stderr, rcode = run("bw metadata node3", path=str(tmpdir))
+    assert rcode == 0
     assert loads(stdout.decode()) == {
         "number": 23,
         "other_numbers": [42, 47],
