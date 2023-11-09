@@ -237,26 +237,27 @@ class SecretProxy:
         return random(h.digest())
 
     def _load_keys(self):
-        config = ConfigParser()
-        secrets_file = join(self.repo.path, FILENAME_SECRETS)
-        try:
-            config.read(secrets_file)
-        except IOError:
-            io.debug(_("unable to read {}").format(secrets_file))
-            return {}
-        result = {}
-        for section in config.sections():
+        with io.job(_("Loading secret keys")):
+            config = ConfigParser()
+            secrets_file = join(self.repo.path, FILENAME_SECRETS)
             try:
-                result[section] = config.get(section, 'key').encode('utf-8')
-            except NoOptionError:
-                result[section] = run(
-                    config.get(section, 'key_command'),
-                    check=True,
-                    shell=True,
-                    stdout=PIPE,  # replace with capture_output=True
-                                  # when dropping support for Python 3.6
-                ).stdout.strip()
-        return result
+                config.read(secrets_file)
+            except IOError:
+                io.debug(_("unable to read {}").format(secrets_file))
+                return {}
+            result = {}
+            for section in config.sections():
+                try:
+                    result[section] = config.get(section, 'key').encode('utf-8')
+                except NoOptionError:
+                    result[section] = run(
+                        config.get(section, 'key_command'),
+                        check=True,
+                        shell=True,
+                        stdout=PIPE,  # replace with capture_output=True
+                                      # when dropping support for Python 3.6
+                    ).stdout.strip()
+            return result
 
     @staticmethod
     def cmd(cmdline, as_text=True, strip=True):
