@@ -23,10 +23,7 @@ def svc_enable(node, svcname):
 
 
 def svc_enabled(node, svcname):
-    result = node.run(
-        "rcctl ls on | grep '^{}$'".format(svcname),
-        may_fail=True,
-    )
+    result = node.run("rcctl get {} status".format(quote(svcname)), may_fail=True)
     return result.return_code == 0
 
 
