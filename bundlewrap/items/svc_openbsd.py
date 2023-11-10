@@ -6,16 +6,16 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def svc_start(node, svcname):
-    return node.run("/etc/rc.d/{} start".format(quote(svcname)), may_fail=True)
+    return node.run("rcctl start {}".format(quote(svcname)), may_fail=True)
 
 
 def svc_running(node, svcname):
-    result = node.run("/etc/rc.d/{} check".format(quote(svcname)), may_fail=True)
+    result = node.run("rcctl check {}".format(quote(svcname)), may_fail=True)
     return "ok" in result.stdout_text
 
 
 def svc_stop(node, svcname):
-    return node.run("/etc/rc.d/{} stop".format(quote(svcname)), may_fail=True)
+    return node.run("rcctl stop {}".format(quote(svcname)), may_fail=True)
 
 
 def svc_enable(node, svcname):
@@ -69,15 +69,15 @@ class SvcOpenBSD(Item):
     def get_canned_actions(self):
         return {
             'stop': {
-                'command': "/etc/rc.d/{0} stop".format(self.name),
+                'command': "rcctl stop {0}".format(self.name),
                 'needed_by': {self.id},
             },
             'stopstart': {
-                'command': "/etc/rc.d/{0} stop && /etc/rc.d/{0} start".format(self.name),
+                'command': "rcctl stop {0} && rcctl start {0}".format(self.name),
                 'needs': {self.id},
             },
             'restart': {
-                'command': "/etc/rc.d/{} restart".format(self.name),
+                'command': "rcctl restart {}".format(self.name),
                 'needs': {
                     # make sure we don't restart and stopstart simultaneously
                     f"{self.id}:stopstart",
