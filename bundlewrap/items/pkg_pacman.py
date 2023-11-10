@@ -24,7 +24,7 @@ class PacmanPkg(Pkg):
     def pkg_all_installed(self):
         pkgs = self.run("pacman -Qq").stdout.decode('utf-8')
         for line in pkgs.splitlines():
-            yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split())
+            yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split()[0])
 
     def pkg_install(self):
         if self.attributes['tarball']:
