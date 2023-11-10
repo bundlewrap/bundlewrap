@@ -199,10 +199,11 @@ class Repository(MetadataGenerator):
         self._get_all_attr_code_cache = {}
         self._get_all_attr_result_cache = {}
 
-        if repo_path is not None:
-            self.populate_from_path(self.path)
-        else:
-            self.item_classes = list(self.items_from_dir(items.__path__[0]))
+        with io.job("Loading repository"):
+            if repo_path is not None:
+                self.populate_from_path(self.path)
+            else:
+                self.item_classes = list(self.items_from_dir(items.__path__[0]))
 
     def __eq__(self, other):
         if self.path == "/dev/null":
