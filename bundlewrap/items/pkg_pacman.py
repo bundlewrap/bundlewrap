@@ -37,11 +37,7 @@ class PacmanPkg(Pkg):
             self.run("pacman --noconfirm -S {}".format(quote(self.name)), may_fail=True)
 
     def pkg_installed(self):
-        result = self.run(
-            "pacman -Q {}".format(quote(self.name)),
-            may_fail=True,
-        )
-        return result.return_code == 0
+        return "{}:{}".format(self.ITEM_TYPE_NAME, self.name) in self.pkg_all_installed()
 
     def pkg_remove(self):
         self.run("pacman --noconfirm -Rs {}".format(quote(self.name)), may_fail=True)
