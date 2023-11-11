@@ -5,6 +5,7 @@ from os.path import isfile, join
 from shlex import quote
 from shutil import rmtree
 from subprocess import PIPE, Popen
+from sys import version_info
 from tempfile import gettempdir, NamedTemporaryFile
 from time import sleep
 
@@ -211,14 +212,26 @@ class GitDeploy(Item):
             " ".join(cmdline),
             repo_dir,
         ))
-        git_process = Popen(
-            cmdline,
-            cwd=repo_dir,
-            env=git_env,
-            preexec_fn=setpgrp,
-            stderr=PIPE,
-            stdout=PIPE,
-        )
+
+        if version_info < (3, 11):
+            git_process = Popen(
+                cmdline,
+                cwd=repo_dir,
+                env=git_env,
+                preexec_fn=setpgrp,
+                stderr=PIPE,
+                stdout=PIPE,
+            )
+        else:
+            git_process = Popen(
+                cmdline,
+                cwd=repo_dir,
+                env=git_env,
+                process_group=0,
+                stderr=PIPE,
+                stdout=PIPE,
+            )
+
         stdout, stderr = git_process.communicate()
         result = RunResult()
         result.stdout = stdout
