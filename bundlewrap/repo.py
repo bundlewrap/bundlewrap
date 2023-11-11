@@ -31,7 +31,7 @@ from .utils import (
 )
 from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.dicts import hash_statedict
-from .utils.text import mark_for_translation as _, red, validate_name
+from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io
 
 DIRNAME_BUNDLES = "bundles"
@@ -124,7 +124,11 @@ class HooksProxy:
             # define a function that calls all hook functions
             def hook(*args, **kwargs):
                 for filename in files:
-                    self.__module_cache[filename][event](*args, **kwargs)
+                    with io.job(_("{event}  Running hooks from {filename}").format(
+                        event=bold(event),
+                        filename=filename,
+                    )):
+                        self.__module_cache[filename][event](*args, **kwargs)
             self.__hook_cache[event] = hook
 
         return self.__hook_cache[event]
