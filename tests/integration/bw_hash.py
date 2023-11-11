@@ -8,6 +8,7 @@ def test_empty(tmpdir):
     stdout, stderr, rcode = run("bw hash", path=str(tmpdir))
     assert stdout == b"bf21a9e8fbc5a3846fb05b4fa0859e0917b2202f\n"
     assert stderr == b""
+    assert rcode == 0
 
 
 def test_nondeterministic(tmpdir):
@@ -36,6 +37,7 @@ def test_nondeterministic(tmpdir):
 
     for i in range(3):
         stdout, stderr, rcode = run("bw hash", path=str(tmpdir))
+        assert rcode == 0
         hashes.add(stdout.strip())
 
     assert len(hashes) > 1
@@ -68,6 +70,7 @@ def test_deterministic(tmpdir):
 
     for i in range(3):
         stdout, stderr, rcode = run("bw hash", path=str(tmpdir))
+        assert rcode == 0
         hashes.add(stdout.strip())
 
     assert len(hashes) == 1

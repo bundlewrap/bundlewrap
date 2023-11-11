@@ -37,7 +37,10 @@ def test_precedes(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "file")) as f:
         content = f.read()
     assert content == "1\n2\n3\n"
@@ -78,7 +81,10 @@ def test_precedes_unless(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "file")) as f:
         content = f.read()
     assert content == "1\n3\n"
@@ -120,7 +126,8 @@ def test_precedes_unless2(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
     assert not exists(join(str(tmpdir), "file"))
 
 
@@ -159,7 +166,10 @@ def test_precedes_unless3(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "file")) as f:
         content = f.read()
     assert content == "2\n3\n"
@@ -198,7 +208,10 @@ def test_precedes_unless4(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 1  # because of action2
+
     with open(join(str(tmpdir), "file")) as f:
         content = f.read()
     assert content == "1\n"
@@ -230,7 +243,10 @@ def test_precedes_action(tmpdir):
             },
         },
     )
-    run("bw apply localhost", path=str(tmpdir))
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
     with open(join(str(tmpdir), "file")) as f:
         content = f.read()
     assert content == "1\n2\n"

@@ -39,3 +39,4 @@ def test_nondeterministic(tmpdir):
 │     2 │ file              │
 ╰───────┴───────────────────╯
 """.encode('utf-8')
+    assert rcode == 0
