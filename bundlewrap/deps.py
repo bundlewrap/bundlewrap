@@ -269,9 +269,13 @@ def _inject_concurrency_blockers(items, node_os, node_os_version):
         ))
         processed_items = set()
         for item in type_items:
-            # disregard deps to items of other types
+            # disregard deps to items of other types and to canned
+            # actions
             item.__deps = set(filter(
-                lambda dep: dep.split(":", 1)[0] in blocked_types,
+                lambda dep: (
+                    dep.split(":", 1)[0] in blocked_types and
+                    dep.count(":") == 1
+                ),
                 item._flattened_deps,
             ))
         previous_item = None
