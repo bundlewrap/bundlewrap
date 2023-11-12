@@ -193,6 +193,14 @@ Runs a command on the node. Returns an instance of `bundlewrap.operations.RunRes
 -   `command` What should be executed on the node
 -   `may_fail` If `False`, `bundlewrap.exceptions.RemoteException` will be raised if the command does not return 0.
 
+
+<br>
+
+**`.run_ipmitool(command)`**
+
+Runs a command on an ipmi interface. Returns an instance of
+`bundlewrap.operations.RunResult`.
+
 <br>
 
 **`.upload(local_path, remote_path, mode=None, owner="", group="")`**
