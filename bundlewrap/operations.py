@@ -1,12 +1,13 @@
 from contextlib import suppress
 from datetime import datetime
+from fcntl import fcntl, F_GETFL, F_SETFL
 from shlex import quote
-from select import select
+from select import poll, POLLIN, POLLOUT, POLLERR, POLLHUP
 from shlex import split
 from subprocess import Popen
 from sys import version_info
 from threading import Lock
-from os import close, environ, pipe, read, setpgrp, write
+from os import close, environ, pipe, read, setpgrp, write, O_NONBLOCK
 
 from .exceptions import RemoteException
 from .utils import cached_property
@@ -73,6 +74,37 @@ class RunResult:
         return force_text(self.stdout)
 
 
+class ManagedPoller:
+    def __init__(self):
+        self.poller = poll()
+        self._fds = set()
+
+    def fd_is_open(self, fd):
+        return fd in self._fds
+
+    def get_open_fds(self):
+        return self._fds
+
+    def has_open_fds(self):
+        return len(self._fds) > 0
+
+    def poll(self, *args, **kwargs):
+        return self.poller.poll(*args, **kwargs)
+
+    def register(self, fd, *args, **kwargs):
+        # Our register() and unregister() first call the actual poller's
+        # functions because they might throw exceptions. Only if they
+        # don't do we add the FD to our set.
+        ret = self.poller.register(fd, *args, **kwargs)
+        self._fds.add(fd)
+        return ret
+
+    def unregister(self, fd, *args, **kwargs):
+        ret = self.poller.unregister(fd, *args, **kwargs)
+        self._fds.remove(fd)
+        return ret
+
+
 def run_local(
     command,
     data_stdin=None,
@@ -95,8 +127,19 @@ def run_local(
     # LineBuffers during `bw run`. We can't use .communicate().
     stderr_fd_r, stderr_fd_w = pipe()
     stdout_fd_r, stdout_fd_w = pipe()
-    watch_readable = [stdout_fd_r, stderr_fd_r]
+
     close_after_fork = [stdout_fd_w, stderr_fd_w]
+
+    lbs_for_fds = {
+        stderr_fd_r: stderr_lb,
+        stdout_fd_r: stdout_lb,
+    }
+
+    # Python's own poll objects lack the ability to track which FDs are
+    # currently registered. We must do this ourselves.
+    poller = ManagedPoller()
+    poller.register(stderr_fd_r, POLLIN)
+    poller.register(stdout_fd_r, POLLIN)
 
     # It's important that SSH never gets connected to the terminal, even
     # if we do not send data to the child. Otherwise, SSH can steal user
@@ -104,11 +147,12 @@ def run_local(
     stdin_fd_r, stdin_fd_w = pipe()
     if data_stdin is None:
         data_stdin = b''
-        watch_writable = []
         close_after_fork += [stdin_fd_r, stdin_fd_w]
     else:
-        watch_writable = [stdin_fd_w]
+        poller.register(stdin_fd_w, POLLOUT)
         close_after_fork += [stdin_fd_r]
+
+        fcntl(stdin_fd_w, F_SETFL, fcntl(stdin_fd_w, F_GETFL) | O_NONBLOCK)
 
     cmd_id = randstr(length=4).upper()
     io.debug("running command with ID {}: {}".format(cmd_id, " ".join(command)))
@@ -152,41 +196,47 @@ def run_local(
         close(fd)
 
     try:
-        while len(watch_readable) + len(watch_writable) > 0:
-            r, w, _ = select(watch_readable, watch_writable, [])
+        while poller.has_open_fds():
+            fdevents = poller.poll()
 
-            for fd, lb in [(stderr_fd_r, stderr_lb), (stdout_fd_r, stdout_lb)]:
-                if fd in r:
+            fds_to_close = []
+
+            for fd, event in fdevents:
+                if event & POLLIN:
                     chunk = read(fd, 8192)
-                    if chunk:
-                        lb.write(chunk)
+                    lbs_for_fds[fd].write(chunk)
+                elif event & POLLOUT:
+                    if len(data_stdin) > 0:
+                        written = write(fd, data_stdin)
+                        data_stdin = data_stdin[written:]
                     else:
-                        close(fd)
-                        watch_readable.remove(fd)
+                        fds_to_close.append(fd)
+                elif event & (POLLERR | POLLHUP):
+                    fds_to_close.append(fd)
 
-            if stdin_fd_w in w:
-                if len(data_stdin) > 0:
-                    written = write(stdin_fd_w, data_stdin)
-                    data_stdin = data_stdin[written:]
-                else:
-                    close(stdin_fd_w)
-                    watch_writable.remove(stdin_fd_w)
+            for fd in fds_to_close:
+                if poller.fd_is_open(fd):
+                    close(fd)
+                    poller.unregister(fd)
 
-            # Why child_process.poll()? A user could use SSH
-            # multiplexing with auto-forking (e.g., "ControlPersist
-            # 10m"). In this case, OpenSSH forks another process which
-            # holds the "master" connection. This forked process
-            # *inherits* our pipes (at least stderr). Thus, only when
-            # that master process finally terminates (possibly after
-            # many minutes), we will be informed about EOF on our stderr
-            # pipe. That doesn't work, bw will hang.
-            #
-            # If the child has exited, we close our end of the stderr
-            # pipe. This loop will continue to read data from stdout
-            # until EOF has been reached.
-            if child_process.poll() is not None and stderr_fd_r in watch_readable:
-                close(stderr_fd_r)
-                watch_readable.remove(stderr_fd_r)
+                    # We can't read on stderr until EOF.
+                    #
+                    # A user could use SSH multiplexing with
+                    # auto-forking (e.g., "ControlPersist 10m"). In this
+                    # case, OpenSSH forks another process which holds
+                    # the "master" connection. This forked process
+                    # *inherits* our pipes (at least stderr). Thus, only
+                    # when that master process finally terminates
+                    # (possibly after many minutes), we will be informed
+                    # about EOF on our stderr pipe. That doesn't work,
+                    # bw will hang.
+                    #
+                    # We interpret an EOF or an error on stdout as "the
+                    # child has terminated". In that case, we give up on
+                    # stderr as well.
+                    if fd == stdout_fd_r and poller.fd_is_open(stderr_fd_r):
+                        close(stderr_fd_r)
+                        poller.unregister(stderr_fd_r)
     finally:
         io._child_pids.remove(child_process.pid)
 
@@ -195,7 +245,7 @@ def run_local(
 
         # In case we get an exception, make sure to close all
         # descriptors that are still open.
-        for fd in watch_readable + watch_writable:
+        for fd in poller.get_open_fds():
             close(fd)
 
         child_process.wait()
