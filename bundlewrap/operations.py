@@ -251,7 +251,14 @@ def run(
             result=force_text(result.stdout) + force_text(result.stderr),
         )
         io.debug(error_msg)
-        if not ignore_failure or result.return_code in raise_for_return_codes:
+
+        if (
+            # Child was terminated by some signal. This is never okay.
+            result.return_code < 0 or
+
+            # Other ignoreable cases.
+            not ignore_failure or result.return_code in raise_for_return_codes
+        ):
             raise RemoteException(error_msg)
     return result
 
