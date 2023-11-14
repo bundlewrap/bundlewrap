@@ -125,13 +125,14 @@ def _add_incoming_needs(items):
     For each item, records all items that need that item in
     ._incoming_needs.
     """
+    mapping = {}
     for item in items:
-        item._incoming_needs = set()
-        for depending_item in items:
-            if item == depending_item:
-                continue
-            if item.id in depending_item._flattened_deps_needs:
-                item._incoming_needs.add(depending_item)
+        for other_item_id in item._flattened_deps_needs:
+            mapping.setdefault(other_item_id, set())
+            mapping[other_item_id].add(item)
+
+    for item in items:
+        item._incoming_needs = mapping.get(item.id, set())
 
 
 def _prepare_auto_attrs(items):
