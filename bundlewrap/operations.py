@@ -206,7 +206,6 @@ def run(
     raise_for_return_codes=(
         126,  # command not executable
         127,  # command not found
-        255,  # SSH error
     ),
     log_function=None,
     username=None,  # SSH auth
@@ -250,8 +249,17 @@ def run(
         )
         io.debug(error_msg)
         raise TransportException(error_msg)
-
-    if result.return_code != 0:
+    elif result.return_code == 255:
+        error_msg = _(
+            "SSH transport error while running '{command}' on '{host}': {result}"
+        ).format(
+            command=command,
+            host=hostname,
+            result=force_text(result.stdout) + force_text(result.stderr),
+        )
+        io.debug(error_msg)
+        raise TransportException(error_msg)
+    elif result.return_code != 0:
         error_msg = _(
             "Non-zero return code ({rcode}) running '{command}' "
             "on '{host}':\n\n{result}\n\n"
