@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 from threading import Event, Thread, Lock
 from os import close, environ, pipe, read, setpgrp
 
-from .exceptions import RemoteException
+from .exceptions import RemoteException, TransportException
 from .utils import cached_property
 from .utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
 from .utils.ui import io
@@ -240,6 +240,17 @@ def run(
         log_function=log_function,
     )
 
+    if result.return_code < 0:
+        error_msg = _(
+            "SSH process running '{command}' on '{host}': Terminated by signal {rcode}"
+        ).format(
+            command=command,
+            host=hostname,
+            rcode=-result.return_code,
+        )
+        io.debug(error_msg)
+        raise TransportException(error_msg)
+
     if result.return_code != 0:
         error_msg = _(
             "Non-zero return code ({rcode}) running '{command}' "
@@ -252,13 +263,7 @@ def run(
         )
         io.debug(error_msg)
 
-        if (
-            # Child was terminated by some signal. This is never okay.
-            result.return_code < 0 or
-
-            # Other ignoreable cases.
-            not ignore_failure or result.return_code in raise_for_return_codes
-        ):
+        if not ignore_failure or result.return_code in raise_for_return_codes:
             raise RemoteException(error_msg)
     return result
 

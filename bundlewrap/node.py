@@ -19,6 +19,7 @@ from .exceptions import (
     NoSuchBundle,
     NoSuchGroup,
     RemoteException,
+    TransportException,
     RepositoryError,
     SkipNode,
 )
@@ -694,7 +695,7 @@ class Node:
                 self.run("true")
             elif self.os == 'routeros':
                 self.run_routeros("/nothing")
-        except RemoteException as exc:
+        except (RemoteException, TransportException) as exc:
             io.stdout(_("{x} {node}  Connection error: {msg}").format(
                 msg=exc,
                 node=bold(self.name),
@@ -1067,7 +1068,7 @@ def verify_items(
         # See comment in node.apply().
         if node.os in node.OS_FAMILY_UNIX:
             node.run("true")
-    except RemoteException as exc:
+    except (RemoteException, TransportException) as exc:
         io.stdout(_("{x} {node}  Connection error: {msg}").format(
             msg=exc,
             node=bold(node.name),

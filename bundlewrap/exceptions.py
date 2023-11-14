@@ -63,6 +63,13 @@ class RemoteException(Exception):
     pass
 
 
+class TransportException(Exception):
+    """
+    Raised when there is an error on the transport layer, e.g. SSH failures.
+    """
+    pass
+
+
 class RepositoryError(Exception):
     """
     Indicates that somethings is wrong with the current repository.

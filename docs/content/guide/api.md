@@ -193,6 +193,8 @@ Runs a command on the node. Returns an instance of `bundlewrap.operations.RunRes
 -   `command` What should be executed on the node
 -   `may_fail` If `False`, `bundlewrap.exceptions.RemoteException` will be raised if the command does not return 0.
 
+`bundlewrap.exceptions.TransportException` will be raised if there was a transport error while running the command, e.g. the SSH process died unexpectedly.
+
 <br>
 
 **`.upload(local_path, remote_path, mode=None, owner="", group="")`**
