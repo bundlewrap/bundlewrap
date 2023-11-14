@@ -149,6 +149,8 @@ def _prepare_auto_attrs(items):
 
 
 def _prepare_deps(items):
+    selector_cache = {}
+
     for item in items:
         item._deps = set()  # holds all item ids blocking execution of that item
         for dep_type, deps in (
@@ -157,21 +159,29 @@ def _prepare_deps(items):
         ):
             setattr(item, '_deps_' + dep_type, set())
             for dep in deps:
-                try:
-                    resolved_deps = tuple(resolve_selector(dep, items, originating_item_id=item.id))
-                except NoSuchItem:
-                    raise ItemDependencyError(_(
-                        "'{item}' in bundle '{bundle}' has a dependency ({dep_type}) "
-                        "on '{dep}', which doesn't exist"
-                    ).format(
-                        item=item.id,
-                        bundle=item.bundle.name,
-                        dep=dep,
-                        dep_type=dep_type,
-                    ))
+                if dep in selector_cache:
+                    resolved_deps = selector_cache[dep]
                 else:
-                    item._deps.update(resolved_deps)
-                    getattr(item, '_deps_' + dep_type).update(resolved_deps)
+                    try:
+                        resolved_deps = tuple(resolve_selector(dep, items))
+                    except NoSuchItem:
+                        raise ItemDependencyError(_(
+                            "'{item}' in bundle '{bundle}' has a dependency ({dep_type}) "
+                            "on '{dep}', which doesn't exist"
+                        ).format(
+                            item=item.id,
+                            bundle=item.bundle.name,
+                            dep=dep,
+                            dep_type=dep_type,
+                        ))
+
+                    selector_cache[dep] = resolved_deps
+
+                # Don't put the item itself into its own deps.
+                resolved_deps = tuple(filter(lambda i: i.id != item.id, resolved_deps))
+
+                item._deps.update(resolved_deps)
+                getattr(item, '_deps_' + dep_type).update(resolved_deps)
 
 
 def _inject_canned_actions(items):
