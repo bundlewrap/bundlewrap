@@ -48,9 +48,10 @@ def bw_pw(repo, args):
             content = repo.vault.decrypt_file(
                 args['string'],
                 key=args['key'],
+                binary=True,
             ).value
             with open(join(repo.data_dir, args['file']), 'wb') as f:
-                f.write(content.encode('utf-8'))
+                f.write(content)
         else:
             try:
                 key, cryptotext = args['string'].split("$", 1)

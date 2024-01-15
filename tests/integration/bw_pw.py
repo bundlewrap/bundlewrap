@@ -80,6 +80,31 @@ def test_encrypt_file_different_key_autodetect(tmpdir):
         assert f.read() == "ohai"
 
 
+def test_encrypt_file_binary(tmpdir):
+    make_repo(tmpdir)
+
+    source_file = join(str(tmpdir), "data", "source")
+    with open(source_file, 'wb') as f:
+        f.write(b"\000\001\002")
+
+    stdout, stderr, rcode = run(
+        f"bw pw -e -f encrypted \"{source_file}\"",
+        path=str(tmpdir),
+    )
+    assert stderr == b""
+    assert rcode == 0
+
+    stdout, stderr, rcode = run(
+        "bw pw -d -f decrypted encrypted",
+        path=str(tmpdir),
+    )
+    assert stdout == b""
+    assert stderr == b""
+    assert rcode == 0
+    with open(join(tmpdir, "data", "decrypted"), 'rb') as f:
+        assert f.read() == b"\000\001\002"
+
+
 def test_human_password(tmpdir):
     make_repo(tmpdir)
 
