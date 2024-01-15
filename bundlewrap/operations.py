@@ -1,11 +1,13 @@
 from contextlib import suppress
 from datetime import datetime
+from fcntl import fcntl, F_GETFL, F_SETFL
 from shlex import quote
-from select import select
+from select import poll, POLLIN, POLLOUT, POLLERR, POLLHUP
 from shlex import split
-from subprocess import Popen, PIPE
-from threading import Event, Thread, Lock
-from os import close, environ, pipe, read, setpgrp
+from subprocess import Popen
+from sys import version_info
+from threading import Lock
+from os import close, environ, pipe, read, setpgrp, write, O_NONBLOCK
 
 from .exceptions import RemoteException, TransportException
 from .utils import cached_property
@@ -17,28 +19,6 @@ from librouteros import connect
 
 ROUTEROS_CONNECTIONS = {}
 ROUTEROS_CONNECTIONS_LOCK = Lock()
-
-
-def output_thread_body(line_buffer, read_fd, quit_event, read_until_eof):
-    # see run() for details
-    while True:
-        r, w, x = select([read_fd], [], [], 0.1)
-        if r:
-            chunk = read(read_fd, 1024)
-            if chunk:
-                line_buffer.write(chunk)
-            else:  # EOF
-                return
-        elif quit_event.is_set() and not read_until_eof:
-            # one last chance to read output after the child process
-            # has died
-            while True:
-                r, w, x = select([read_fd], [], [], 0)
-                if r:
-                    line_buffer.write(read(read_fd, 1024))
-                else:
-                    break
-            return
 
 
 def download(
@@ -94,6 +74,37 @@ class RunResult:
         return force_text(self.stdout)
 
 
+class ManagedPoller:
+    def __init__(self):
+        self.poller = poll()
+        self._fds = set()
+
+    def fd_is_open(self, fd):
+        return fd in self._fds
+
+    def get_open_fds(self):
+        return self._fds
+
+    def has_open_fds(self):
+        return len(self._fds) > 0
+
+    def poll(self, *args, **kwargs):
+        return self.poller.poll(*args, **kwargs)
+
+    def register(self, fd, *args, **kwargs):
+        # Our register() and unregister() first call the actual poller's
+        # functions because they might throw exceptions. Only if they
+        # don't do we add the FD to our set.
+        ret = self.poller.register(fd, *args, **kwargs)
+        self._fds.add(fd)
+        return ret
+
+    def unregister(self, fd, *args, **kwargs):
+        ret = self.poller.unregister(fd, *args, **kwargs)
+        self._fds.remove(fd)
+        return ret
+
+
 def run_local(
     command,
     data_stdin=None,
@@ -113,76 +124,131 @@ def run_local(
     # Create pipes which will be used by the SSH child process. We do
     # not use subprocess.PIPE because we need to be able to continuously
     # check those pipes for new output, so we can feed it to the
-    # LineBuffers during `bw run`.
-    stdout_fd_r, stdout_fd_w = pipe()
+    # LineBuffers during `bw run`. We can't use .communicate().
     stderr_fd_r, stderr_fd_w = pipe()
+    stdout_fd_r, stdout_fd_w = pipe()
+
+    close_after_fork = [stdout_fd_w, stderr_fd_w]
+
+    lbs_for_fds = {
+        stderr_fd_r: stderr_lb,
+        stdout_fd_r: stdout_lb,
+    }
+
+    # Python's own poll objects lack the ability to track which FDs are
+    # currently registered. We must do this ourselves.
+    poller = ManagedPoller()
+    poller.register(stderr_fd_r, POLLIN)
+    poller.register(stdout_fd_r, POLLIN)
+
+    # It's important that SSH never gets connected to the terminal, even
+    # if we do not send data to the child. Otherwise, SSH can steal user
+    # input.
+    stdin_fd_r, stdin_fd_w = pipe()
+    if data_stdin is None:
+        data_stdin = b''
+        close_after_fork += [stdin_fd_r, stdin_fd_w]
+    else:
+        poller.register(stdin_fd_w, POLLOUT)
+        close_after_fork += [stdin_fd_r]
+
+        fcntl(stdin_fd_w, F_SETFL, fcntl(stdin_fd_w, F_GETFL) | O_NONBLOCK)
 
     cmd_id = randstr(length=4).upper()
     io.debug("running command with ID {}: {}".format(cmd_id, " ".join(command)))
     start = datetime.utcnow()
 
-    # Launch the child process. It's important that SSH gets a dummy
-    # stdin, i.e. it must *not* read from the terminal. Otherwise, it
-    # can steal user input.
-    child_process = Popen(
-        command,
-        preexec_fn=setpgrp,
-        shell=shell,
-        stdin=PIPE,
-        stderr=stderr_fd_w,
-        stdout=stdout_fd_w,
-    )
+    # A word on process groups: We create a new process group that all
+    # child processes live in. The point is to avoid SIGINT signals to
+    # reach our children: When a user presses ^C in their terminal, the
+    # signal will be sent to the foreground process group only.
+    #
+    # Our concept of "soft shutdown" hinges on this behavior. If we
+    # didn't create a new process group, child processes would die
+    # instantly.
+    #
+    # Older versions of Python only allow you to do this by setting
+    # preexec_fn=. Using this mechanism has a huge impact on performance
+    # (we did not investigate this further). As of Python 3.11, we can
+    # use process_group=, which has no such impact.
+    if version_info < (3, 11):
+        child_process = Popen(
+            command,
+            preexec_fn=setpgrp,
+            shell=shell,
+            stdin=stdin_fd_r,
+            stderr=stderr_fd_w,
+            stdout=stdout_fd_w,
+        )
+    else:
+        child_process = Popen(
+            command,
+            process_group=0,
+            shell=shell,
+            stdin=stdin_fd_r,
+            stderr=stderr_fd_w,
+            stdout=stdout_fd_w,
+        )
+
     io._child_pids.append(child_process.pid)
 
-    if data_stdin is not None:
-        child_process.stdin.write(data_stdin)
-
-    quit_event = Event()
-    stdout_thread = Thread(
-        args=(stdout_lb, stdout_fd_r, quit_event, True),
-        target=output_thread_body,
-    )
-    stderr_thread = Thread(
-        args=(stderr_lb, stderr_fd_r, quit_event, False),
-        target=output_thread_body,
-    )
-    stdout_thread.start()
-    stderr_thread.start()
+    for fd in close_after_fork:
+        close(fd)
 
     try:
-        child_process.communicate()
+        while poller.has_open_fds():
+            fdevents = poller.poll()
+
+            fds_to_close = []
+
+            for fd, event in fdevents:
+                if event & POLLIN:
+                    chunk = read(fd, 8192)
+                    lbs_for_fds[fd].write(chunk)
+                elif event & POLLOUT:
+                    if len(data_stdin) > 0:
+                        written = write(fd, data_stdin)
+                        data_stdin = data_stdin[written:]
+                    else:
+                        fds_to_close.append(fd)
+                elif event & (POLLERR | POLLHUP):
+                    fds_to_close.append(fd)
+
+            for fd in fds_to_close:
+                if poller.fd_is_open(fd):
+                    close(fd)
+                    poller.unregister(fd)
+
+                    # We can't read on stderr until EOF.
+                    #
+                    # A user could use SSH multiplexing with
+                    # auto-forking (e.g., "ControlPersist 10m"). In this
+                    # case, OpenSSH forks another process which holds
+                    # the "master" connection. This forked process
+                    # *inherits* our pipes (at least stderr). Thus, only
+                    # when that master process finally terminates
+                    # (possibly after many minutes), we will be informed
+                    # about EOF on our stderr pipe. That doesn't work,
+                    # bw will hang.
+                    #
+                    # We interpret an EOF or an error on stdout as "the
+                    # child has terminated". In that case, we give up on
+                    # stderr as well.
+                    if fd == stdout_fd_r and poller.fd_is_open(stderr_fd_r):
+                        close(stderr_fd_r)
+                        poller.unregister(stderr_fd_r)
     finally:
-        # Once we end up here, the child process has terminated.
-        #
-        # Now, the big question is: Why do we need an Event here?
-        #
-        # Problem is, a user could use SSH multiplexing with
-        # auto-forking (e.g., "ControlPersist 10m"). In this case,
-        # OpenSSH forks another process which holds the "master"
-        # connection. This forked process *inherits* our pipes (at least
-        # for stderr). Thus, only when that master process finally
-        # terminates (possibly after many minutes), we will be informed
-        # about EOF on our stderr pipe. That doesn't work. bw will hang.
-        #
-        # So, instead, we use a busy loop in output_thread_body() which
-        # checks for quit_event being set. Unfortunately there is no way
-        # to be absolutely sure that we received all output from stderr
-        # because we never get a proper EOF there. All we can do is hope
-        # that all output has arrived on the reading end of the pipe by
-        # the time the quit_event is checked in the thread.
-        #
-        # Luckily stdout is a somewhat simpler affair: we can just close
-        # the writing end of the pipe, causing the reader thread to
-        # shut down as it sees the EOF.
         io._child_pids.remove(child_process.pid)
-        quit_event.set()
-        close(stdout_fd_w)
-        stdout_thread.join()
-        stderr_thread.join()
-        stdout_lb.close()
+
         stderr_lb.close()
-        for fd in (stdout_fd_r, stderr_fd_r, stderr_fd_w):
+        stdout_lb.close()
+
+        # In case we get an exception, make sure to close all
+        # descriptors that are still open.
+        for fd in poller.get_open_fds():
             close(fd)
+
+        child_process.wait()
 
     io.debug("command with ID {} finished with return code {}".format(
         cmd_id,
