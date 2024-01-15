@@ -160,9 +160,9 @@ def _prepare_deps(items):
         ):
             setattr(item, '_deps_' + dep_type, set())
             for dep in deps:
-                if dep in selector_cache:
+                try:
                     resolved_deps = selector_cache[dep]
-                else:
+                except KeyError:
                     try:
                         resolved_deps = tuple(resolve_selector(dep, items))
                     except NoSuchItem:
