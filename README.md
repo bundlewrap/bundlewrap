@@ -22,4 +22,4 @@ For more information, have a look at [bundlewrap.org](https://bundlewrap.org) an
 
 ------------------------------------------------------------------------
 
-BundleWrap is © 2013 - 2023 [Torsten Rehn](mailto:torsten@rehn.email)
+BundleWrap is © 2013 - 2024 [Torsten Rehn](mailto:torsten@rehn.email)
