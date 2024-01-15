@@ -1,7 +1,6 @@
-from collections import OrderedDict
 from contextlib import suppress
 from decimal import Decimal
-from sys import exit, version_info
+from sys import exit
 
 from ..metadata import metadata_to_json
 from ..utils import Fault, list_starts_with
@@ -79,10 +78,7 @@ def _colorize_path(
 
 
 def _sort_dict_colorblind(old_dict):
-    if version_info < (3, 7):
-        new_dict = OrderedDict()
-    else:
-        new_dict = {}
+    new_dict = {}
 
     for key in sorted(old_dict.keys(), key=ansi_clean):
         if isinstance(old_dict[key], dict):

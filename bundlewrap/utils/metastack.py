@@ -1,6 +1,3 @@
-from collections import OrderedDict
-from sys import version_info
-
 from ..metadata import METADATA_TYPES, deepcopy_metadata, validate_metadata, value_at_key_path
 from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
 
@@ -20,9 +17,9 @@ class Metastack:
     def __init__(self):
         self._partitions = (
             # We rely heavily on insertion order in these dicts.
-            {} if version_info >= (3, 7) else OrderedDict(),  # node/groups
-            {} if version_info >= (3, 7) else OrderedDict(),  # reactors
-            {} if version_info >= (3, 7) else OrderedDict(),  # defaults
+            {},  # node/groups
+            {},  # reactors
+            {},  # defaults
         )
         self._cached_partitions = {}
 
