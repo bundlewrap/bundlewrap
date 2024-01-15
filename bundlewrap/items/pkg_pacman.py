@@ -24,7 +24,7 @@ class PacmanPkg(Pkg):
     def pkg_all_installed(self):
         pkgs = self.run("pacman -Qq").stdout.decode('utf-8')
         for line in pkgs.splitlines():
-            yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split())
+            yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split()[0])
 
     def pkg_install(self):
         if self.attributes['tarball']:
@@ -37,11 +37,14 @@ class PacmanPkg(Pkg):
             self.run("pacman --noconfirm -S {}".format(quote(self.name)), may_fail=True)
 
     def pkg_installed(self):
-        result = self.run(
-            "pacman -Q {}".format(quote(self.name)),
-            may_fail=True,
-        )
-        return result.return_code == 0
+        # Don't use "pacman -Q $name" here because that doesn't work as
+        # expected with "provides". When package A has "provides: B",
+        # then "pacman -Q B" shows info for package A. This is not what
+        # we want, we really want to know if package B (exactly that) is
+        # installed.
+        #
+        # This could lead to issues like #688.
+        return "{}:{}".format(self.ITEM_TYPE_NAME, self.name) in self.pkg_all_installed()
 
     def pkg_remove(self):
         self.run("pacman --noconfirm -Rs {}".format(quote(self.name)), may_fail=True)
