@@ -6,7 +6,12 @@ from shlex import quote
 from socket import gethostname
 from time import time
 
-from .exceptions import NodeLockedException, NoSuchNode, RemoteException
+from .exceptions import (
+    NodeLockedException,
+    NoSuchNode,
+    RemoteException,
+    TransportException,
+)
 from .utils import cached_property, tempfile
 from .utils.text import (
     blue,
@@ -100,7 +105,7 @@ class NodeLock:
             self.locking_node.download(self._hard_lock_file(), local_path)
             with open(local_path, 'r') as fp:
                 return json.load(fp)
-        except (RemoteException, ValueError):
+        except (RemoteException, TransportException, ValueError):
                 io.stderr(_(
                     "{x} {node_bold}  corrupted hard lock: "
                     "unable to read or parse lock file contents "

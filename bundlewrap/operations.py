@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 from threading import Event, Thread, Lock
 from os import close, environ, pipe, read, setpgrp
 
-from .exceptions import RemoteException
+from .exceptions import RemoteException, TransportException
 from .utils import cached_property
 from .utils.text import force_text, LineBuffer, mark_for_translation as _, randstr
 from .utils.ui import io
@@ -206,7 +206,6 @@ def run(
     raise_for_return_codes=(
         126,  # command not executable
         127,  # command not found
-        255,  # SSH error
     ),
     log_function=None,
     username=None,  # SSH auth
@@ -240,7 +239,27 @@ def run(
         log_function=log_function,
     )
 
-    if result.return_code != 0:
+    if result.return_code < 0:
+        error_msg = _(
+            "SSH process running '{command}' on '{host}': Terminated by signal {rcode}"
+        ).format(
+            command=command,
+            host=hostname,
+            rcode=-result.return_code,
+        )
+        io.debug(error_msg)
+        raise TransportException(error_msg)
+    elif result.return_code == 255:
+        error_msg = _(
+            "SSH transport error while running '{command}' on '{host}': {result}"
+        ).format(
+            command=command,
+            host=hostname,
+            result=force_text(result.stdout) + force_text(result.stderr),
+        )
+        io.debug(error_msg)
+        raise TransportException(error_msg)
+    elif result.return_code != 0:
         error_msg = _(
             "Non-zero return code ({rcode}) running '{command}' "
             "on '{host}':\n\n{result}\n\n"
@@ -251,6 +270,7 @@ def run(
             result=force_text(result.stdout) + force_text(result.stderr),
         )
         io.debug(error_msg)
+
         if not ignore_failure or result.return_code in raise_for_return_codes:
             raise RemoteException(error_msg)
     return result
