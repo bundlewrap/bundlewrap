@@ -205,13 +205,13 @@ def run_local(
                 if event & POLLIN:
                     chunk = read(fd, 8192)
                     lbs_for_fds[fd].write(chunk)
-                elif event & POLLOUT:
+                if event & POLLOUT:
                     if len(data_stdin) > 0:
                         written = write(fd, data_stdin)
                         data_stdin = data_stdin[written:]
                     else:
                         fds_to_close.append(fd)
-                elif event & (POLLERR | POLLHUP):
+                if event & (POLLERR | POLLHUP):
                     fds_to_close.append(fd)
 
             for fd in fds_to_close:
