@@ -201,17 +201,39 @@ def run_local(
 
             fds_to_close = []
 
+            # POSIX says that POLLIN and POLLHUP are not mutually
+            # exclusive. We must be prepared to read from an fd "until
+            # EOF", which is the traditional return value of 0 (b'' in
+            # Python). When we see read() == 0, we must mark the fd for
+            # closing right away and must not wait for a subsequent
+            # POLLHUP.
+            #
+            # We must *also* be prepared to mark the fd for closing if
+            # POLLHUP is set, even if we never saw read() == 0.
+            #
+            # (If both POLLIN and POLLHUP are set, it means there is
+            # pending data and the fd has already been closed on the
+            # other end. We must read all that stuff and then we can
+            # close the fd on our end as well. But that "pending data"
+            # can also be "nothing", which signals EOF.)
+            #
+            # OSes behave slightly different here. We should stick to
+            # POSIX as best as we can.
+
             for fd, event in fdevents:
                 if event & POLLIN:
                     chunk = read(fd, 8192)
-                    lbs_for_fds[fd].write(chunk)
-                if event & POLLOUT:
+                    if chunk == b'':
+                        fds_to_close.append(fd)
+                    else:
+                        lbs_for_fds[fd].write(chunk)
+                elif event & POLLOUT:
                     if len(data_stdin) > 0:
                         written = write(fd, data_stdin)
                         data_stdin = data_stdin[written:]
                     else:
                         fds_to_close.append(fd)
-                if event & (POLLERR | POLLHUP):
+                elif event & (POLLERR | POLLHUP):
                     fds_to_close.append(fd)
 
             for fd in fds_to_close:
