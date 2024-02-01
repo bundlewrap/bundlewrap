@@ -17,6 +17,7 @@ from traceback import format_exception
 from jinja2 import Environment, FileSystemLoader
 from mako.lookup import TemplateLookup
 from mako.template import Template
+from requests.exceptions import Timeout as RequestsTimeoutException
 
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
@@ -169,7 +170,14 @@ def download_file(item):
                 f"starting download from {item.attributes['source']}"
             )
             with io.job(_("{}  {}  downloading file".format(bold(item.node.name), bold(item.id)))):
-                download(item.attributes['source'], file_path)
+                try:
+                    download(item.attributes['source'], file_path)
+                except RequestsTimeoutException:
+                    raise BundleError(_(
+                        "download from {url} timed out -- consider increasing BW_DOWNLOAD_TIMEOUT."
+                    ).format(
+                        url=item.attributes['source'],
+                    ))
             io.debug(
                 f"{item.node.name}:{item.id}: "
                 f"finished download from {item.attributes['source']}"

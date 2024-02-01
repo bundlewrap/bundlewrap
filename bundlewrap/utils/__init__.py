@@ -3,7 +3,7 @@ from codecs import getwriter
 from contextlib import contextmanager
 import hashlib
 from inspect import isgenerator
-from os import chmod, close, makedirs, remove
+from os import chmod, close, makedirs, remove, getenv
 from os.path import dirname, exists
 from random import shuffle
 import stat
@@ -59,14 +59,18 @@ def cached_property_set(prop):
     return cached_property(prop, convert_to=set)
 
 
-def download(url, path):
-    with error_context(url=url, path=path):
+def download(url, path, timeout=getenv("BW_DOWNLOAD_TIMEOUT", None)):
+    if timeout is not None:
+        timeout = float(timeout)
+    if timeout <= 0.0:
+        timeout = None
+    with error_context(url=url, path=path, timeout=timeout):
         if not exists(dirname(path)):
             makedirs(dirname(path))
         if exists(path):
             chmod(path, MODE644)
         with open(path, 'wb') as f:
-            r = get(url, stream=True)
+            r = get(url, timeout=timeout, stream=True)
             r.raise_for_status()
             for block in r.iter_content(1024):
                 if not block:
