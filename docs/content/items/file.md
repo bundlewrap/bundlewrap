@@ -56,6 +56,12 @@ When set to `True`, the path of this file will be removed. It doesn't matter if 
 
 <hr>
 
+## download_timeout
+
+Only valid if `content_type` is set to `download`. This value can be set to a number of seconds after which an error is thrown if the remote server no longer provides a response. This does NOT limit the total duration of the download. Defaults to `60.0`.
+
+<hr>
+
 ## encoding
 
 Encoding of the target file. Note that this applies to the remote file only, your template is still conveniently written in UTF-8 and will be converted by BundleWrap. Defaults to "utf-8". Other possible values (e.g. "latin-1") can be found [here](http://docs.python.org/2/library/codecs.html#standard-encodings). Only allowed with `content_type` `jinja2`, `mako`, or `text`.
