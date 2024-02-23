@@ -1,5 +1,5 @@
 from collections import Counter
-from pipes import quote
+from shlex import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
