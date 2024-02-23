@@ -3,7 +3,10 @@ from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime
-from functools import cache
+try:
+    from functools import cache
+except ImportError:  # Python 3.8
+    cache = lambda f: f
 from hashlib import md5
 from os import getenv, getpid, makedirs, mkdir, rmdir
 from os.path import basename, dirname, exists, isfile, join, normpath
