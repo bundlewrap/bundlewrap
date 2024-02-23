@@ -49,16 +49,13 @@ class Symlink(Item):
         if status.must_be_created or 'type' in status.keys_to_fix:
             # fixing the type fixes everything
             self._fix_type(status)
-            return
+        elif 'target' in status.keys_to_fix:
+            # Same, also fixes ownership.
+            self._fix_target(status)
+        elif 'owner' in status.keys_to_fix or 'group' in status.keys_to_fix:
+            self._fix_ownership(status)
 
-        for fix_type in ('target', 'owner', 'group'):
-            if fix_type in status.keys_to_fix:
-                if fix_type == 'group' and 'owner' in status.keys_to_fix:
-                    # owner and group are fixed with a single chown
-                    continue
-                getattr(self, "_fix_" + fix_type)(status)
-
-    def _fix_owner(self, status):
+    def _fix_ownership(self, status):
         group = self.attributes['group'] or ""
         if group:
             group = ":" + quote(group)
@@ -71,7 +68,6 @@ class Symlink(Item):
             group,
             quote(self.name),
         ))
-    _fix_group = _fix_owner
 
     def _fix_target(self, status):
         if self.node.os in self.node.OS_FAMILY_BSD:
@@ -85,6 +81,11 @@ class Symlink(Item):
                 quote(self.name),
             ))
 
+        # Fixing the target essentially creates a new symlink, so we
+        # must also fix ownership afterwards.
+        if self.attributes['owner'] or self.attributes['group']:
+            self._fix_ownership(status)
+
     def _fix_type(self, status):
         self.run("rm -rf -- {}".format(quote(self.name)))
         self.run("mkdir -p -- {}".format(quote(dirname(self.name))))
@@ -93,7 +94,7 @@ class Symlink(Item):
             quote(self.name),
         ))
         if self.attributes['owner'] or self.attributes['group']:
-            self._fix_owner(status)
+            self._fix_ownership(status)
 
     def get_auto_deps(self, items):
         deps = []
