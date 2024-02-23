@@ -3,6 +3,7 @@ from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime
+from functools import cache
 from hashlib import md5
 from os import getenv, getpid, makedirs, mkdir, rmdir
 from os.path import basename, dirname, exists, isfile, join, normpath
@@ -17,6 +18,7 @@ from traceback import format_exception
 from jinja2 import Environment, FileSystemLoader
 from mako.lookup import TemplateLookup
 from mako.template import Template
+from requests import head
 
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
@@ -29,6 +31,16 @@ from bundlewrap.utils.ui import io
 
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
+
+
+@cache
+def check_download(url, timeout):
+    try:
+        head(url, timeout=timeout).raise_for_status()
+    except Exception as exc:
+        return exc
+    else:
+        return None
 
 
 def content_processor_base64(item):
@@ -503,7 +515,11 @@ class File(Item):
         return self.content.decode(self.attributes['encoding'])
 
     def test(self):
-        if self.attributes['source'] and not exists(self.template):
+        if (
+            self.attributes['source']
+            and self.attributes['content_type'] != 'download'
+            and not exists(self.template)
+        ):
             raise BundleError(_(
                 "{item} from bundle '{bundle}' refers to missing "
                 "file '{path}' in its 'source' attribute"
@@ -518,6 +534,16 @@ class File(Item):
             or self.attributes['content_type'] == 'any'
         ):
             pass
+        elif (
+            self.attributes['content_type'] == 'download'
+            and not self.attributes['content_hash']
+        ):
+            download_exc = check_download(
+                self.attributes['source'],
+                self.attributes['download_timeout'],
+            )
+            if download_exc is not None:
+                raise download_exc
         else:
             with self._write_local_file() as local_path:
                 if self.attributes['test_with']:
