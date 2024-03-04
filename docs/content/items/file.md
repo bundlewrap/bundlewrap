@@ -42,6 +42,10 @@ How the file pointed to by `source` or the string given to `content` should be i
 <tr><td><code>text</code> (default)</td><td>will be read and diffed as UTF-8, but offers no template logic</td></tr>
 </table>
 
+Downloaded content will be cached in a temporary directory per bundlewrap invocation. If you require a permanent cache,
+you can provide a cache folder via the environment variable `BW_FILE_DOWNLOAD_CACHE`. Downloads will wait forever for a
+connection and a response (read timeout), unless you set `BW_DOWNLOAD_TIMEOUT` to the number of seconds to wait.
+
 <hr>
 
 ## context
