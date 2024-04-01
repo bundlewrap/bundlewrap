@@ -3,6 +3,10 @@ from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime
+try:
+    from functools import cache
+except ImportError:  # Python 3.8
+    cache = lambda f: f
 from hashlib import md5
 from os import getenv, getpid, makedirs, mkdir, rmdir
 from os.path import basename, dirname, exists, isfile, join, normpath
@@ -17,6 +21,7 @@ from traceback import format_exception
 from jinja2 import Environment, FileSystemLoader
 from mako.lookup import TemplateLookup
 from mako.template import Template
+from requests import head
 
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
@@ -29,6 +34,16 @@ from bundlewrap.utils.ui import io
 
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
+
+
+@cache
+def check_download(url, timeout):
+    try:
+        head(url, timeout=timeout).raise_for_status()
+    except Exception as exc:
+        return exc
+    else:
+        return None
 
 
 def content_processor_base64(item):
@@ -168,8 +183,16 @@ def download_file(item):
                 f"{item.node.name}:{item.id}: "
                 f"starting download from {item.attributes['source']}"
             )
-            with io.job(_("{}  downloading file".format(bold(item.attributes['source'])))):
-                download(item.attributes['source'], file_path)
+            with io.job(_("{node}  {item}  downloading from {url}").format(
+              node=bold(item.node.name), 
+              item=bold(item.id),
+              url=item.attributes['source'],
+            ):
+                download(
+                    item.attributes['source'],
+                    file_path,
+                    timeout=item.attributes['download_timeout'],
+                )
             io.debug(
                 f"{item.node.name}:{item.id}: "
                 f"finished download from {item.attributes['source']}"
@@ -236,6 +259,7 @@ class File(Item):
         'content_hash': None,
         'context': None,
         'delete': False,
+        'download_timeout': 60.0,
         'encoding': "utf-8",
         'group': "root",
         'mode': "0644",
@@ -498,7 +522,11 @@ class File(Item):
         return self.content.decode(self.attributes['encoding'])
 
     def test(self):
-        if self.attributes['source'] and not exists(self.template):
+        if (
+            self.attributes['source']
+            and self.attributes['content_type'] != 'download'
+            and not exists(self.template)
+        ):
             raise BundleError(_(
                 "{item} from bundle '{bundle}' refers to missing "
                 "file '{path}' in its 'source' attribute"
@@ -508,7 +536,22 @@ class File(Item):
                 path=self.template,
             ))
 
-        if not self.attributes['delete'] and not self.attributes['content_type'] == 'any':
+        if (
+            self.attributes['delete']
+            or self.attributes['content_type'] == 'any'
+        ):
+            pass
+        elif (
+            self.attributes['content_type'] == 'download'
+            and not self.attributes['content_hash']
+        ):
+            download_exc = check_download(
+                self.attributes['source'],
+                self.attributes['download_timeout'],
+            )
+            if download_exc is not None:
+                raise download_exc
+        else:
             with self._write_local_file() as local_path:
                 if self.attributes['test_with']:
                     cmd = self.attributes['test_with'].format(quote(local_path))
@@ -561,6 +604,21 @@ class File(Item):
                 "{item} from bundle '{bundle}' specified 'content_hash', but is "
                 "not of type 'download'"
             ).format(item=item_id, bundle=bundle.name))
+
+        if 'download_timeout' in attributes and attributes.get('content_type') != 'download':
+            raise BundleError(_(
+                "{item} from bundle '{bundle}' specified 'download_timeout', but is "
+                "not of type 'download'"
+            ).format(item=item_id, bundle=bundle.name))
+
+        if 'download_timeout' in attributes:
+            if (
+                not isinstance(attributes['download_timeout'], float)
+                or attributes['download_timeout'] <= 0.0
+            ):
+                raise BundleError(_(
+                    "download_timeout for {item} from bundle '{bundle}' must be a float > 0.0"
+                ).format(item=item_id, bundle=bundle.name))
 
         if attributes.get('content_type') == 'download':
             if 'source' not in attributes:
