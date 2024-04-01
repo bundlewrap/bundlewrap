@@ -59,14 +59,14 @@ def cached_property_set(prop):
     return cached_property(prop, convert_to=set)
 
 
-def download(url, path):
+def download(url, path, timeout=60.0):
     with error_context(url=url, path=path):
         if not exists(dirname(path)):
             makedirs(dirname(path))
         if exists(path):
             chmod(path, MODE644)
         with open(path, 'wb') as f:
-            r = get(url, stream=True)
+            r = get(url, stream=True, timeout=timeout)
             r.raise_for_status()
             for block in r.iter_content(1024):
                 if not block:
