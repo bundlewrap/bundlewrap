@@ -183,7 +183,11 @@ def download_file(item):
                 f"{item.node.name}:{item.id}: "
                 f"starting download from {item.attributes['source']}"
             )
-            with io.job(_("{}  {}  downloading file".format(bold(item.node.name), bold(item.id)))):
+            with io.job(_("{node}  {item}  downloading from {url}").format(
+                node=bold(item.node.name), 
+                item=bold(item.id),
+                url=item.attributes['source'],
+            )):
                 download(
                     item.attributes['source'],
                     file_path,
