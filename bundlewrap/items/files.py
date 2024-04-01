@@ -167,7 +167,7 @@ def download_file(item):
     # Since we only download the file once per process, there's no point
     # in displaying the node name here. The file may be used on multiple
     # nodes.
-    with io.job(_("{}  {}  waiting for download".format(bold(item.node.name), bold(item.id)))):
+    with io.job(_("{}  {}  waiting for download").format(bold(item.node.name), bold(item.id))):
         while True:
             try:
                 mkdir(lock_dir)
@@ -340,14 +340,18 @@ class File(Item):
 
     def _fix_content_hash(self, status):
         with self._write_local_file() as local_path:
-            self.node.upload(
-                local_path,
-                self.name,
-                mode=self.attributes['mode'],
-                owner=self.attributes['owner'] or "",
-                group=self.attributes['group'] or "",
-                may_fail=True,
-            )
+            with io.job(_("{}  {}  uploading to node").format(
+                bold(self.node.name),
+                bold(self.id),
+            )):
+                self.node.upload(
+                    local_path,
+                    self.name,
+                    mode=self.attributes['mode'],
+                    owner=self.attributes['owner'] or "",
+                    group=self.attributes['group'] or "",
+                    may_fail=True,
+                )
 
     def _fix_mode(self, status):
         if self.node.os in self.node.OS_FAMILY_BSD:
