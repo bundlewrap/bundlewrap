@@ -1,5 +1,5 @@
 from contextlib import contextmanager, suppress
-from datetime import datetime
+from datetime import datetime, timedelta
 import faulthandler
 from functools import wraps
 from os import _exit, environ, getpid, kill
@@ -157,6 +157,43 @@ class DrainableStdin:
             termios.tcflush(sys.stdin, termios.TCIFLUSH)
 
 
+class JobManager:
+    def __init__(self):
+        self._jobs = []
+
+    def add(self, msg):
+        job_id = (time(), msg)
+        self._jobs.append(job_id)
+        return job_id
+
+    def remove(self, job_id):
+        self._jobs.remove(job_id)
+
+    @property
+    def current_job(self):
+        try:
+            job_start, job_msg = self._jobs[-1]
+        except IndexError:
+            return None
+        current_time = time()
+        if current_time - job_start > 3.0:
+            # If the latest job is taking a long time, start rotating
+            # the displayed job every 3s. That way, users can see all
+            # long-running jobs currently in progress.
+            index = int(current_time / 3.0) % len(self._jobs)
+            job_start, job_msg = self._jobs[index]
+
+        elapsed = current_time - job_start
+        if elapsed > 10.0:
+            job_msg += " ({})".format(format_duration(timedelta(seconds=elapsed)))
+
+        return job_msg
+
+    @property
+    def messages(self):
+        return [job_msg for job_start, job_msg in self._jobs]
+
+
 class IOManager:
     """
     Threadsafe singleton class that handles all IO.
@@ -165,7 +202,7 @@ class IOManager:
         self._active = False
         self.debug_log_file = None
         self.debug_mode = False
-        self.jobs = []
+        self.jobs = JobManager()
         self.lock = Lock()
         self.progress = 0
         self.progress_start = None
@@ -267,15 +304,16 @@ class IOManager:
             return
         with self.lock:
             self._clear_last_job()
-            self.jobs.append(msg)
+            job_id = self.jobs.add(msg)
             self._write_current_job()
+            return job_id
 
-    def job_del(self, msg):
+    def job_del(self, job_id):
         if not self._active:
             return
         with self.lock:
             self._clear_last_job()
-            self.jobs.remove(msg)
+            self.jobs.remove(job_id)
             self._write_current_job()
 
     def progress_advance(self, increment=1):
@@ -295,9 +333,9 @@ class IOManager:
         if INFO_EVENT.is_set():
             INFO_EVENT.clear()
             table = []
-            if self.jobs:
-                table.append([bold(_("Running jobs")), self.jobs[0].strip()])
-                for job in self.jobs[1:]:
+            if self.jobs.messages:
+                table.append([bold(_("Running jobs")), self.jobs.messages[0].strip()])
+                for job in self.jobs.messages[1:]:
                     table.append(["", job.strip()])
             try:
                 progress = (self.progress / float(self.progress_total))
@@ -342,11 +380,11 @@ class IOManager:
 
     @contextmanager
     def job(self, job_text):
-        self.job_add(job_text)
+        job_id = self.job_add(job_text)
         try:
             yield
         finally:
-            self.job_del(job_text)
+            self.job_del(job_id)
 
     def job_wrapper(self, job_text):
         def outer_wrapper(wrapped_function):
@@ -411,7 +449,8 @@ class IOManager:
         self._write_current_job()
 
     def _write_current_job(self):
-        if self.jobs and TTY:
+        current_job = self.jobs.current_job
+        if current_job and TTY:
             line = "{} ".format(blue(self._spinner_character()))
             try:
                 progress = (self.progress / float(self.progress_total))
@@ -420,7 +459,7 @@ class IOManager:
             else:
                 progress_text = "{:.1f}%  ".format(progress * 100)
                 line += bold(progress_text)
-            line += self.jobs[-1]
+            line += current_job
             write_to_stream(
                 STDOUT_WRITER,
                 trim_visible_len_to(line, get_terminal_size().columns),
