@@ -466,6 +466,15 @@ class MetadataGenerator:
         with suppress(KeyError):
             del self._reactors_with_keyerrors[self._current_reactor]
 
+        if new_metadata is None:
+            raise ValueError(_(
+                "{reactor_name} on {node_name} returned None instead of a dict "
+                "(missing return?)"
+            ).format(
+                node_name=node.name,
+                reactor_name=reactor_name,
+            ))
+
         if self._verify_reactor_provides and getattr(reactor, '_provides', None):
             extra_paths = extra_paths_in_dict(new_metadata, reactor._provides)
             if extra_paths:
