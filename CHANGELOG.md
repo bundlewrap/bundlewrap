@@ -1,3 +1,21 @@
+# 4.18.0
+
+2024-04-01
+
+* added support for Python 3.12
+* removed support for Python 3.7
+* added `download_timeout` for file items
+* performance improvements
+* improved display of long-running jobs
+* improved handling of connection errors
+* improved handling of services on OpenBSD
+* fixed fixing of symlink ownership
+* fixed detection of installed packages with `pacman`
+* fixed handling of binary files with `bw pw -f`
+* fixed missing setuptools dependency
+* fixed `block_concurrent()` not working if item provides canned actions
+
+
 # 4.17.2
 
 2023-05-05
