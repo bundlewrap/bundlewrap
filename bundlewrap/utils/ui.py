@@ -135,13 +135,15 @@ def page_lines(lines):
             io.stdout(line)
 
 
-def write_to_stream(stream, msg):
+def write_to_stream(stream, msg, flush=True):
     with suppress(BrokenPipeError):
         if TTY:
             stream.write(msg)
         else:
             stream.write(ansi_clean(msg))
-        stream.flush()
+
+        if flush:
+            stream.flush()
 
 
 class DrainableStdin:
@@ -248,7 +250,7 @@ class IOManager:
         with self.lock:
             if QUIT_EVENT.is_set():
                 sys.exit(0)
-            self._clear_last_job()
+            self._clear_last_job(flush=False)
             while True:
                 write_to_stream(STDOUT_WRITER, "\a" + question + SHOW_CURSOR)
 
@@ -303,7 +305,7 @@ class IOManager:
         if not self._active:
             return
         with self.lock:
-            self._clear_last_job()
+            self._clear_last_job(flush=False)
             job_id = self.jobs.add(msg)
             self._write_current_job()
             return job_id
@@ -312,7 +314,7 @@ class IOManager:
         if not self._active:
             return
         with self.lock:
-            self._clear_last_job()
+            self._clear_last_job(flush=False)
             self.jobs.remove(job_id)
             self._write_current_job()
 
@@ -395,9 +397,35 @@ class IOManager:
             return inner_wrapper
         return outer_wrapper
 
-    def _clear_last_job(self):
+    def _clear_last_job(self, flush=True):
         if self._status_line_present and TTY:
-            write_to_stream(STDOUT_WRITER, "\r\033[K")
+            # Some terminals respond very quickly to \e[K: They
+            # immediately clear the line and redraw their screen right
+            # away, which means an empty line is visible for a brief
+            # moment. It takes some (short amount of) time until we
+            # write the next line. This means we alternate between
+            # "empty line" and "line with text", which means:
+            # Flickering.
+            #
+            # We can avoid this to some degree by not flushing stdout
+            # after writing \e[K.
+            #
+            # We can only do this if we know for certain that we will
+            # write more data soon. For example, this is the case when
+            # _clear_last_job() is followed by _write_current_job().
+            #
+            # It is *not* possible to always omit the flush. Sometimes,
+            # _clear_last_job() is called before _write(..., err=True),
+            # meaning the first call writes to stdout and the second one
+            # to stderr. This results in garbled output because the \e[K
+            # is still lingering in the buffer for stdout.
+            #
+            # Note to future readers: If this causes issues and it's too
+            # hard to understand, then simply remove the 'flush' flag
+            # and go back to always flushing the buffers. This is mostly
+            # a cosmetic issue and it's better to have some flickering
+            # than completely garbled output.
+            write_to_stream(STDOUT_WRITER, "\r\033[K", flush=flush)
             self._status_line_present = False
 
     def _signal_handler_thread_body(self):
@@ -405,7 +433,7 @@ class IOManager:
             self.progress_show()
             if not self._waiting_for_input:  # do not block and ignore SIGINT while .ask()ing
                 with self.lock:
-                    self._clear_last_job()
+                    self._clear_last_job(flush=False)
                     self._write_current_job()
             if QUIT_EVENT.is_set():
                 if SHUTDOWN_EVENT_HARD.wait(0.1):
@@ -450,21 +478,28 @@ class IOManager:
 
     def _write_current_job(self):
         current_job = self.jobs.current_job
-        if current_job and TTY:
-            line = "{} ".format(blue(self._spinner_character()))
-            try:
-                progress = (self.progress / float(self.progress_total))
-            except ZeroDivisionError:
-                pass
+        if TTY:
+            if current_job:
+                line = "{} ".format(blue(self._spinner_character()))
+                try:
+                    progress = (self.progress / float(self.progress_total))
+                except ZeroDivisionError:
+                    pass
+                else:
+                    progress_text = "{:.1f}%  ".format(progress * 100)
+                    line += bold(progress_text)
+                line += current_job
+                write_to_stream(
+                    STDOUT_WRITER,
+                    trim_visible_len_to(line, get_terminal_size().columns),
+                )
+                self._status_line_present = True
             else:
-                progress_text = "{:.1f}%  ".format(progress * 100)
-                line += bold(progress_text)
-            line += current_job
-            write_to_stream(
-                STDOUT_WRITER,
-                trim_visible_len_to(line, get_terminal_size().columns),
-            )
-            self._status_line_present = True
+                # If there are jobs to be displayed, the call above to
+                # write_to_stream() will flush stdout. But if there are
+                # none, then a \e[K might still be lingering in the
+                # buffer. See comment in _clear_last_job().
+                STDOUT_WRITER.flush()
 
 
 io = IOManager()
