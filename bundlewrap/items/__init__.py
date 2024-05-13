@@ -136,7 +136,7 @@ class Item:
     SKIP_REASON_DESC = {
         SKIP_REASON_CMDLINE: _("cmdline"),
         SKIP_REASON_DEP_FAILED: _("dependency failed"),
-        SKIP_REASON_FAULT_UNAVAILABLE: _("Fault unavailable"),
+        SKIP_REASON_FAULT_UNAVAILABLE: _("Fault unavailable: {}"),
         SKIP_REASON_INTERACTIVE: _("declined interactively"),
         SKIP_REASON_INTERACTIVE_ONLY: _("interactive only"),
         SKIP_REASON_NO_TRIGGER: _("not triggered"),

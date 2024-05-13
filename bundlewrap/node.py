@@ -401,8 +401,9 @@ def format_item_result(
         details_text = ""
     elif result == Item.STATUS_SKIPPED:
         if isinstance(details, tuple):
-            details = details[0]
-        details_text = "({})".format(Item.SKIP_REASON_DESC[details])
+            details_text = "({})".format(Item.SKIP_REASON_DESC[details[0]].format(details[1]))
+        else:
+            details_text = "({})".format(Item.SKIP_REASON_DESC[details])
     else:
         details_text = "({})".format(", ".join(sorted(details[2])))
     if result == Item.STATUS_FAILED:
