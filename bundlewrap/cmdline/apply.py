@@ -3,6 +3,7 @@ from sys import exit
 
 from ..concurrency import WorkerPool
 from ..exceptions import GracefulApplyException
+from ..node import format_item_result
 from ..utils import SkipList
 from ..utils.cmdline import count_items, get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -88,8 +89,17 @@ def bw_apply(repo, args):
             io.stderr(msg)
             errors.append(msg)
 
-    def handle_skipped_item(node, item, reason):
-        skipped_items.add((node, item, reason))
+    def handle_skipped_item(node, item, result, details):
+        if not isinstance(details, tuple):
+            # no further details provided by item
+            return
+        errors.append(format_item_result(
+            result,
+            node.name,
+            item.bundle,
+            item,
+            details=details,
+        ))
 
     worker_pool = WorkerPool(
         tasks_available,
@@ -108,7 +118,6 @@ def bw_apply(repo, args):
     if args['summary'] and results:
         stats_summary(results, totals, total_duration)
     error_summary(errors)
-    skipped_item_summary(skipped_items)
 
     repo.hooks.apply_end(
         repo,
@@ -180,18 +189,3 @@ def stats_summary(results, totals, total_duration):
 
     for line in render_table(rows, alignments=alignments):
         io.stdout("{x} {line}".format(x=blue("i"), line=line))
-
-
-def skipped_item_summary(items):
-    for node, item, skip_reason in sorted(items):
-        if not isinstance(skip_reason, tuple):
-            # no further details provided by item
-            continue
-        io.stderr("{x} {node}  {bundle}  {item}  {skipped} ({details})".format(
-            x=yellow("!"),
-            node=bold(node.name),
-            bundle=bold(item.bundle),
-            item=item.id,
-            skipped=yellow("skipped"),
-            details=skip_reason[1],
-        ))

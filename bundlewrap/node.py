@@ -227,7 +227,7 @@ def apply_items(
             item_queue.item_ok(item)
         elif status_code == Item.STATUS_SKIPPED:
             if skipped_item_callback is not None:
-                skipped_item_callback(item.node, item, details)
+                skipped_item_callback(item.node, item, status_code, details)
             for skipped_item in item_queue.item_skipped(item):
                 skip_reason = Item.SKIP_REASON_DEP_SKIPPED
                 for lock in other_peoples_soft_locks:
