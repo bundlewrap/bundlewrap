@@ -397,6 +397,8 @@ def format_item_result(
     if created or deleted or details is None:
         details_text = ""
     elif result == Item.STATUS_SKIPPED:
+        if isinstance(details, tuple):
+            details = details[0]
         details_text = "({})".format(Item.SKIP_REASON_DESC[details])
     else:
         details_text = "({})".format(", ".join(sorted(details[2])))

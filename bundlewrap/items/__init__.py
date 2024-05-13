@@ -546,12 +546,17 @@ class Item:
                     node=self.node.name,
                 ))
                 status_code = self.STATUS_SKIPPED
-                details = self.SKIP_REASON_FAULT_UNAVAILABLE
+                details = (
+                    self.SKIP_REASON_FAULT_UNAVAILABLE,
+                    "missing faults for attributes: {}".format(
+                        ", ".join(sorted(self._faults_missing_for_attributes)),
+                    ),
+                )
 
         else:
             try:
                 status_before = self.cached_status
-            except FaultUnavailable:
+            except FaultUnavailable as e:
                 if self.error_on_missing_fault:
                     self._raise_for_faults()
                 else:
@@ -564,7 +569,10 @@ class Item:
                         node=self.node.name,
                     ))
                     status_code = self.STATUS_SKIPPED
-                    details = self.SKIP_REASON_FAULT_UNAVAILABLE
+                    details = (
+                        self.SKIP_REASON_FAULT_UNAVAILABLE,
+                        str(e),
+                    )
             else:
                 if self.cached_unless_result:
                     io.debug(_(
