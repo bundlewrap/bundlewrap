@@ -177,6 +177,7 @@ def apply_items(
     workers=1,
     interactive=False,
     show_diff=True,
+    skipped_item_callback=None,
 ):
     item_queue = ItemQueue(node)
     # the item queue might contain new generated items (canned actions)
@@ -225,6 +226,8 @@ def apply_items(
         elif status_code == Item.STATUS_OK:
             item_queue.item_ok(item)
         elif status_code == Item.STATUS_SKIPPED:
+            if skipped_item_callback is not None:
+                skipped_item_callback(item.node, item, details)
             for skipped_item in item_queue.item_skipped(item):
                 skip_reason = Item.SKIP_REASON_DEP_SKIPPED
                 for lock in other_peoples_soft_locks:
@@ -716,6 +719,7 @@ class Node:
         show_diff=True,
         skip_list=(),
         workers=4,
+        skipped_item_callback=None,
     ):
         if not list(self.items):
             io.stdout(_("{x} {node}  has no items").format(
@@ -776,6 +780,7 @@ class Node:
                         workers=workers,
                         interactive=interactive,
                         show_diff=show_diff,
+                        skipped_item_callback=skipped_item_callback,
                     )
             except NodeLockedException as e:
                 if not interactive:

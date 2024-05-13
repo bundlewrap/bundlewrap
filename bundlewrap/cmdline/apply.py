@@ -46,6 +46,7 @@ def bw_apply(repo, args):
     start_time = datetime.now()
     results = []
     skip_list = SkipList(args['resume_file'])
+    skipped_items = set()
 
     def tasks_available():
         return bool(pending_nodes)
@@ -56,12 +57,13 @@ def bw_apply(repo, args):
             'target': node.apply,
             'task_id': node.name,
             'kwargs': {
-                'autoskip_selector': args['autoskip'],
                 'autoonly_selector': args['autoonly'],
+                'autoskip_selector': args['autoskip'],
                 'force': args['force'],
                 'interactive': args['interactive'],
                 'show_diff': args['show_diff'],
                 'skip_list': skip_list,
+                'skipped_item_callback': handle_skipped_item,
                 'workers': args['item_workers'],
             },
         }
@@ -86,6 +88,9 @@ def bw_apply(repo, args):
             io.stderr(msg)
             errors.append(msg)
 
+    def handle_skipped_item(node, item, reason):
+        skipped_items.add((node, item, reason))
+
     worker_pool = WorkerPool(
         tasks_available,
         next_task,
@@ -103,6 +108,7 @@ def bw_apply(repo, args):
     if args['summary'] and results:
         stats_summary(results, totals, total_duration)
     error_summary(errors)
+    skipped_item_summary(skipped_items)
 
     repo.hooks.apply_end(
         repo,
@@ -174,3 +180,18 @@ def stats_summary(results, totals, total_duration):
 
     for line in render_table(rows, alignments=alignments):
         io.stdout("{x} {line}".format(x=blue("i"), line=line))
+
+
+def skipped_item_summary(items):
+    for node, item, skip_reason in sorted(items):
+        if not isinstance(skip_reason, tuple):
+            # no further details provided by item
+            continue
+        io.stderr("{x} {node}  {bundle}  {item}  {skipped} ({details})".format(
+            x=yellow("!"),
+            node=bold(node.name),
+            bundle=bold(item.bundle),
+            item=item.id,
+            skipped=yellow("skipped"),
+            details=skip_reason[1],
+        ))
