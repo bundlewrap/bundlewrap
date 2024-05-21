@@ -118,7 +118,7 @@ def bw_metadata(repo, args):
                     if args['resolve_faults']:
                         value = str(value)
                     else:
-                        value = value._repr_first()
+                        value = yellow(value._repr_first())
                 values.append(value)
             table.append([bold(node.name)] + values)
         page_lines(render_table(table))
