@@ -299,7 +299,7 @@ class MetadataJSONEncoder(MetadataJSONEncoderBase):
         return super().default(obj)
 
 
-class MetadataJSONEncoderWithoutFaults(MetadataJSONEncoderBase):
+class MetadataJSONEncoderWithoutFaultsColorized(MetadataJSONEncoderBase):
     def default(self, obj):
         if isinstance(obj, Fault):
             # The first Fault ID is usually "the actual Fault", often a
@@ -317,9 +317,15 @@ class MetadataJSONEncoderWithoutFaults(MetadataJSONEncoderBase):
 def metadata_to_json(metadata, resolve_faults=True, sort_keys=True):
     if not isinstance(metadata, dict):  # might be NodeMetadataProxy
         metadata = dict(metadata)
+
+    if resolve_faults:
+        encoder = MetadataJSONEncoder
+    else:
+        encoder = MetadataJSONEncoderWithoutFaultsColorized
+
     return dumps(
         metadata,
-        cls=MetadataJSONEncoder if resolve_faults else MetadataJSONEncoderWithoutFaults,
+        cls=encoder,
         indent=4,
         sort_keys=sort_keys,
     )
