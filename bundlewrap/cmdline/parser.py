@@ -616,6 +616,12 @@ will exit with code 47 if any matching items are locked
         dest='hide_reactors',
         help=_("hide values set by reactors in metadata.py"),
     )
+    parser_metadata.add_argument(
+        "-f", "--resolve-faults",
+        action='store_true',
+        dest='resolve_faults',
+        help=_("resolve Faults; careful, might contain sensitive data"),
+    )
 
     # bw nodes
     help_nodes = _("List nodes in this repository")

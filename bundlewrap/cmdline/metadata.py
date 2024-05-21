@@ -112,8 +112,13 @@ def bw_metadata(repo, args):
                     value = ", ".join([str(item) for item in value])
                 elif isinstance(value, set):
                     value = ", ".join([str(item) for item in sorted(value)])
-                elif isinstance(value, (bool, float, int, Decimal, Fault)) or value is None:
+                elif isinstance(value, (bool, float, int, Decimal)) or value is None:
                     value = str(value)
+                elif isinstance(value, Fault):
+                    if args['resolve_faults']:
+                        value = str(value)
+                    else:
+                        value = value._repr_first()
                 values.append(value)
             table.append([bold(node.name)] + values)
         page_lines(render_table(table))
@@ -177,6 +182,7 @@ def bw_metadata(repo, args):
                 force_text(line).replace("\\u001b", "\033")
                 for line in metadata_to_json(
                     metadata_sorted,
+                    resolve_faults=args['resolve_faults'],
                     sort_keys=False,
                 ).splitlines()
             ])
