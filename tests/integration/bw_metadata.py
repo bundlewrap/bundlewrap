@@ -619,3 +619,69 @@ def reactor4(metadata):
             'baz': 2,
         },
     }
+
+
+def test_metadata_no_resolve_faults(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+            "node2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+from bundlewrap.utils import Fault
+
+def fault_cb(*args, **kwargs):
+    return "must not show up"
+
+defaults = {
+    "fault": Fault("fault ID", fault_cb),
+}
+""")
+
+    stdout, stderr, rcode = run("bw metadata node1 -k fault", path=str(tmpdir))
+    assert rcode == 0
+    assert "must not show up" not in stdout.decode()
+
+    stdout, stderr, rcode = run("bw metadata node1 node2 -k fault", path=str(tmpdir))
+    assert rcode == 0
+    assert "must not show up" not in stdout.decode()
+
+
+def test_metadata_resolve_faults(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+            },
+            "node2": {},
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""
+from bundlewrap.utils import Fault
+
+def fault_cb(*args, **kwargs):
+    return "must show up"
+
+defaults = {
+    "fault": Fault("fault ID", fault_cb),
+}
+""")
+
+    stdout, stderr, rcode = run("bw metadata node1 -k fault --resolve-faults", path=str(tmpdir))
+    assert rcode == 0
+    assert "must show up" in stdout.decode()
+
+    stdout, stderr, rcode = run("bw metadata node1 node2 -k fault --resolve-faults", path=str(tmpdir))
+    assert rcode == 0
+    assert "must show up" in stdout.decode()
