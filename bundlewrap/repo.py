@@ -53,6 +53,7 @@ HOOK_EVENTS = (
     'lock_add',
     'lock_remove',
     'lock_show',
+    'node_ssh_connect',
     'node_apply_end',
     'node_apply_start',
     'node_run_end',
