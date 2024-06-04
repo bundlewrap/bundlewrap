@@ -99,6 +99,16 @@ Called each time a `bw apply` command reaches a new item.
 
 ---
 
+**`node_ssh_connect(repo, node, **kwargs)`**
+
+Called before the first ssh connection attempt is made once per node.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`node` The current node (instance of `bundlewrap.node.Node`).
+
+---
+
 **`item_apply_end(repo, node, item, duration=None, status_code=None, status_before=None, status_after=None, **kwargs)`**
 
 Called each time a `bw apply` command completes processing an item.
