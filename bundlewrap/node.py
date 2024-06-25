@@ -898,12 +898,7 @@ class Node:
             # has completed on the node before trying to reuse the
             # multiplexed connection.
             if self._ssh_first_conn_lock.acquire(False):
-
-                self.repo.hooks.node_ssh_connect(
-                    self.repo,
-                    self,
-                )
-
+                self.repo.hooks.node_ssh_connect(self.repo, self)
                 try:
                     with io.job(_("{}  establishing connection...").format(bold(self.name))):
                         operations.run(
