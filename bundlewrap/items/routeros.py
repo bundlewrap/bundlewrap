@@ -39,13 +39,15 @@ class RouterOS(Item):
         elif status.must_be_deleted:
             self._remove(self.name.split("?", 1)[0], status.sdict['.id'])
         else:
-            for key in status.keys_to_fix:
-                self._set(
-                    self.name.split("?", 1)[0],
-                    status.sdict.get('.id'),
-                    key,
-                    status.cdict[key],
-                )
+            values_to_fix = {
+                key: status.cdict[key]
+                for key in status.keys_to_fix
+            }
+            self._set(
+                self.name.split("?", 1)[0],
+                status.sdict.get('.id'),
+                values_to_fix
+            )
 
     def sdict(self):
         result = self._get(self.name)
@@ -143,13 +145,16 @@ class RouterOS(Item):
                 result=repr(result),
             ))
 
-    def _set(self, command, api_id, key, value):
+    def _set(self, command, api_id, values_to_fix):
         command += "/set"
-        kvstr = f"={key}={value}"
+        kvpairs = [
+            f"={key}={value}"
+            for key, value in sorted(values_to_fix.items())
+        ]
         if api_id is None:
-            self.run_routeros(command, kvstr)
+            self.run_routeros(command, *kvpairs)
         else:
-            self.run_routeros(command, f"=.id={api_id}", kvstr)
+            self.run_routeros(command, f"=.id={api_id}", *kvpairs)
 
     def _remove(self, command, api_id):
         self.run_routeros(command + "/remove", f"=.id={api_id}")
