@@ -1,3 +1,11 @@
+# 4.19.0
+
+2024-06-25
+
+* added hook `node_ssh_connect`
+* improved flickering in most terminals
+
+
 # 4.18.0
 
 2024-04-01
