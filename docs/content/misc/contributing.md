@@ -39,3 +39,23 @@ The process is essentially the same as detailed above for code contributions. Yo
 ## Help
 
 If at any point you need help or are not sure what to do, just drop by in [#bundlewrap on Libera.Chat](irc://irc.libera.chat/bundlewrap) or open a [discussion on GitHub](https://github.com/bundlewrap/bundlewrap/discussions).
+
+<br>
+
+## Release
+
+If you have been given the required access, to release a new version, do the following:
+
+* Check out the current `main` branch
+* Bump the version number in `setup.py` and `bundlewrap/__init__.py`, observing semantic versioning
+* Add an entry to `CHANGELOG.md`, taking care to list all changes relevant to users and to order them with the most important changes on top (generally: new features, changes/improvements, bug fixes)
+* Commit these changes into a new commit titled `release X.Y.Z`, replacing X.Y.Z with the new version
+* Push to GitHub
+* Wait for GitHub Actions to successfully build (use your best judgment for DeepSource failures, some are very acceptable; in case of other failures, rebase fixes below the release commit)
+* Tag the release commit with the version number and push the tag
+* Create a [new release on GitHub](https://github.com/bundlewrap/bundlewrap/releases/new) referencing the tag, using the version number as the title and the content from the `CHANGELOG.md` entry as the description
+* Run `rm -rf build dist`, just in case
+* Run `python -m build`
+* Run `twine upload dist/*`
+* Run `mkdocs gh-deploy` in the `docs/` directory
+* Rejoice with glee!
