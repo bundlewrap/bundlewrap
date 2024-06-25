@@ -5,7 +5,7 @@ from json import dumps, JSONEncoder
 from .exceptions import RepositoryError
 from .utils import Fault
 from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_path
-from .utils.text import force_text, mark_for_translation as _
+from .utils.text import force_text, mark_for_translation as _, yellow
 
 
 METADATA_TYPES = (  # only meant for natively atomic types
@@ -279,10 +279,8 @@ def find_groups_causing_metadata_conflict(node_name, chain1, chain2, keypath):
         ))
 
 
-class MetadataJSONEncoder(JSONEncoder):
+class MetadataJSONEncoderBase(JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Fault):
-            return obj.value
         if isinstance(obj, set):
             return sorted(obj)
         if isinstance(obj, bytes):
@@ -294,12 +292,40 @@ class MetadataJSONEncoder(JSONEncoder):
             ))
 
 
-def metadata_to_json(metadata, sort_keys=True):
+class MetadataJSONEncoder(MetadataJSONEncoderBase):
+    def default(self, obj):
+        if isinstance(obj, Fault):
+            return obj.value
+        return super().default(obj)
+
+
+class MetadataJSONEncoderWithoutFaultsColorized(MetadataJSONEncoderBase):
+    def default(self, obj):
+        if isinstance(obj, Fault):
+            # The first Fault ID is usually "the actual Fault", often a
+            # human readable identifier such as "bwtv username". It is
+            # mostly helpful for human users to see this identifier. The
+            # remaining IDs are usually transformations like
+            # .format_into() or simply hash IDs.
+            #
+            # (FTR, the full list could easily obtained by doing "return
+            # repr(obj)".)
+            return yellow(obj._repr_first())
+        return super().default(obj)
+
+
+def metadata_to_json(metadata, resolve_faults=True, sort_keys=True):
     if not isinstance(metadata, dict):  # might be NodeMetadataProxy
         metadata = dict(metadata)
+
+    if resolve_faults:
+        encoder = MetadataJSONEncoder
+    else:
+        encoder = MetadataJSONEncoderWithoutFaultsColorized
+
     return dumps(
         metadata,
-        cls=MetadataJSONEncoder,
+        cls=encoder,
         indent=4,
         sort_keys=sort_keys,
     )

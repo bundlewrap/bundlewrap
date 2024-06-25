@@ -117,6 +117,15 @@ class Fault:
         self.callback = callback
         self.kwargs = kwargs
 
+    def _repr_first(self):
+        if isinstance(self.id_list, list):
+            return f"<Fault: {self.id_list[0]}>"
+        else:
+            return f"<Fault: {self.id_list}>"
+
+    def _repr_full(self):
+        return f"<Fault: {self.id_list}>"
+
     def _resolve(self):
         if self._available is None:
             try:
@@ -166,7 +175,7 @@ class Fault:
             return self.value > other
 
     def __repr__(self):
-        return f"<Fault: {self.id_list}>"
+        return self._repr_full()
 
     def __str__(self):
         return str(self.value)
