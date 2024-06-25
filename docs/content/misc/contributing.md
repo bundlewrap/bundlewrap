@@ -38,7 +38,7 @@ The process is essentially the same as detailed above for code contributions. Yo
 
 ## Help
 
-If at any point you need help or are not sure what to do, just drop by in [#bundlewrap on Libera.Chat](irc://irc.libera.chat/bundlewrap) or open a [discussion on GitHub](https://github.com/bundlewrap/bundlewrap/discussions).
+If at any point you need help or are not sure what to do, open a [discussion on GitHub](https://github.com/bundlewrap/bundlewrap/discussions).
 
 <br>
 
