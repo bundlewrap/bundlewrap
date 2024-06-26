@@ -16,12 +16,18 @@ Manages RouterOS configuration through the API (port 8728). You can address ever
         "/interface/vlan?name=vlan7": {
             "delete": True,
         },
+        "/interface/vlan": {
+            "purge": True,
+        },
         "/interface/bridge?name=bridge": {},
         "/interface/bridge/port?interface=ether8": {
             "bridge": "bridge",
             "needs": {
                 "routeros:/interface/bridge?name=bridge",
             },
+        },
+        "/interface/bridge/port": {
+            "purge": True,
         },
         "/interface/bridge/vlan?vlan-ids=6": {
             "bridge": "bridge",
@@ -38,6 +44,14 @@ Manages RouterOS configuration through the API (port 8728). You can address ever
                 "ether14",
                 "ether15",
             },
+        },
+        "/interface/bonding?name=LAG1: {
+            "mode": "802.3ad",
+            "slaves": ["ether2", "ether3"],
+            "transmit-hash-policy": "layer-3-and-4",
+        },
+        "/interface/bonding": {
+            "purge": True,
         },
         "/system/logging?action=remote&topics=critical": {},
     }

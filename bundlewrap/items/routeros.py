@@ -4,6 +4,8 @@ from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.utils.text import mark_for_translation as _
 
+UNMANAGED_SUBITEMS_DESC = _("unmanaged subitems")
+
 
 class RouterOS(Item):
     """
@@ -12,6 +14,7 @@ class RouterOS(Item):
     BUNDLE_ATTRIBUTE_NAME = "routeros"
     ITEM_ATTRIBUTES = {
         'delete': False,
+        'purge': False,
     }
     ITEM_TYPE_NAME = "routeros"
     REJECT_UNKNOWN_ATTRIBUTES = False
@@ -26,30 +29,68 @@ class RouterOS(Item):
     def cdict(self):
         if self.attributes['delete']:
             return None
+
+        if self.attributes['purge']:
+            # purge operates on lists of items only which we can't operate on otherwise
+            return {
+                'subitems_to_purge': set()
+            }
+
         cdict = self.attributes.copy()
         if '_comment' in cdict:  # work around 'comment' being a builtin attribute
             cdict['comment'] = cdict['_comment']
             del cdict['_comment']
+
         del cdict['delete']
+        del cdict['purge']
         return cdict
 
+    def get_basename(self, name):
+        return name.split("?", 1)[0]
+
+    @property
+    def basename(self):
+        return self.get_basename(self.name)
+
+    def get_identifier(self, name):
+        return name.split("?", 1)[1]
+
+    @property
+    def identifier(self):
+        return self.get_identifier(self.name)
+
     def fix(self, status):
+        if status.sdict:
+            for subitem_id, subitem_name in status.sdict.get('subitems_to_purge', set()):
+                self._remove(self.basename, subitem_id)
+
         if status.must_be_created:
-            self._add(self.name.split("?", 1)[0], status.cdict)
+            cdict = status.sdict.copy()
+            with suppress(KeyError):
+                del cdict['subitems_to_purge']
+            self._add(self.basename, cdict)
         elif status.must_be_deleted:
-            self._remove(self.name.split("?", 1)[0], status.sdict['.id'])
+            self._remove(self.basename, status.sdict['.id'])
         else:
             values_to_fix = {
                 key: status.cdict[key]
                 for key in status.keys_to_fix
+                if key not in ('subitems_to_purge',)
             }
-            self._set(
-                self.name.split("?", 1)[0],
-                status.sdict.get('.id'),
-                values_to_fix
-            )
+            if values_to_fix:
+                self._set(
+                    self.basename,
+                    status.sdict.get('.id'),
+                    values_to_fix
+                )
 
     def sdict(self):
+        if self.attributes['purge']:
+            # purge operates on lists of items only which we can't operate on otherwise
+            return {
+                'subitems_to_purge': self._get_subitems_to_purge()
+            }
+
         result = self._get(self.name)
         if result:
             # API doesn't return comment at all if emtpy
@@ -71,6 +112,14 @@ class RouterOS(Item):
         return cdict
 
     def display_dicts(self, cdict, sdict, keys):
+        if 'subitems_to_purge' in keys:
+            keys.remove('subitems_to_purge')
+            keys.append(UNMANAGED_SUBITEMS_DESC)
+            cdict[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in cdict['subitems_to_purge']])
+            sdict[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in sdict['subitems_to_purge']])
+            del cdict['subitems_to_purge']
+            del sdict['subitems_to_purge']
+
         for key in keys:
             if cdict[key].count(",") > 2 or sdict[key].count(",") > 2:
                 cdict[key] = cdict[key].split(",")
@@ -79,6 +128,7 @@ class RouterOS(Item):
 
     def display_on_delete(self, sdict):
         with suppress(KeyError):
+            del sdict['subitems_to_purge']
             del sdict[".id"]
         for key in tuple(sdict.keys()):
             if sdict[key].count(",") > 2:
@@ -113,25 +163,32 @@ class RouterOS(Item):
         })
         return result
 
-    def _add(self, command, kwargs):
-        identifier = self.name.split("?", 1)[1]
+    def parase_identifier(self, identifier):
+        kwargs = {}
         for identifier_component in identifier.split("&"):
             identifier_key, identifier_value = identifier_component.split("=", 1)
             kwargs[identifier_key] = identifier_value
+
+        return kwargs
+
+    def _add(self, command, kwargs):
+        kwargs |= self.parase_identifier(self.identifier)
         command += "/add"
         arguments = [f"={key}={value}" for key, value in kwargs.items()]
         self.run_routeros(command, *arguments)
 
-    def _get(self, command):
+    def _list(self, command):
         if "?" in command:
             command, query = command.split("?", 1)
             query = query.split("&")
             query = ["?=" + condition for condition in query]
             query.append("?#&")  # AND all conditions
-            result = self.run_routeros(command + "/print", *query).raw
+            return self.run_routeros(command + "/print", *query).raw
         else:
-            result = self.run_routeros(command + "/print").raw
+            return self.run_routeros(command + "/print").raw
 
+    def _get(self, command):
+        result = self._list(command)
         if not result:
             return None
         elif len(result) == 1:
@@ -158,3 +215,32 @@ class RouterOS(Item):
 
     def _remove(self, command, api_id):
         self.run_routeros(command + "/remove", f"=.id={api_id}")
+
+    def _get_subitems_to_purge(self):
+        raw_items = self._list(self.basename)
+        if not raw_items:
+            return set()
+
+        raw_item = raw_items[0]
+        for display_key in ['name', 'interface', '.id']:
+            if display_key in raw_item:
+                break
+
+        existing_items = {
+            raw_item['.id']: raw_item[display_key]
+            for raw_item in raw_items
+        }
+
+        desired_items = [
+            self.parase_identifier(self.get_identifier(item.id))[display_key]
+            for item in self.node.items
+            if item.id.startswith(f'routeros:{self.basename}?{display_key}=')
+        ]
+
+        items_to_delete = set(
+            (existing_item_id, existing_item_name)
+            for existing_item_id, existing_item_name in existing_items.items()
+            if existing_item_name not in desired_items
+        )
+
+        return items_to_delete
