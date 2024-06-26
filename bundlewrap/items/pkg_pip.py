@@ -12,6 +12,7 @@ class PipPkg(Item):
     """
     BUNDLE_ATTRIBUTE_NAME = "pkg_pip"
     ITEM_ATTRIBUTES = {
+        'break_system_packages': False,
         'installed': True,
         'version': None,
     }
@@ -96,7 +97,14 @@ class PipPkg(Item):
         if version:
             pkgname = "{}=={}".format(pkgname, version)
         pip_path, pkgname = self._split_path(pkgname)
-        return self.run("{} install -U {}".format(quote(pip_path), quote(pkgname)), may_fail=True)
+        return self.run(
+            "{} install {} -U {}".format(
+                quote(pip_path),
+                '--break-system-packages' if self.attributes['break_system_packages'] else '',
+                quote(pkgname),
+            ),
+            may_fail=True,
+        )
 
     def _pkg_installed(self, pkgname):
         pip_path, pkgname = self._split_path(pkgname)
@@ -112,7 +120,11 @@ class PipPkg(Item):
     def _pkg_remove(self, pkgname):
         pip_path, pkgname = self._split_path(pkgname)
         return self.run(
-            "{} uninstall -y {}".format(quote(pip_path), quote(pkgname)),
+            "{} uninstall {} -y {}".format(
+                quote(pip_path),
+                '--break-system-packages' if self.attributes['break_system_packages'] else '',
+                quote(pkgname),
+            ),
             may_fail=True,
         )
 
