@@ -1,3 +1,4 @@
+from json import loads
 from os.path import join, split
 from shlex import quote
 
@@ -108,14 +109,19 @@ class PipPkg(Item):
 
     def _pkg_installed(self, pkgname):
         pip_path, pkgname = self._split_path(pkgname)
+
         result = self.run(
-            "{} freeze | grep -i '^{}=='".format(quote(pip_path), pkgname),
+            "{} list -v --format json".format(quote(pip_path)),
             may_fail=True,
         )
         if result.return_code != 0:
             return False
         else:
-            return result.stdout_text.split("=")[-1].strip()
+            pkgs = loads(result.stdout_text)
+            for pkg_desc in pkgs:
+                if pkg_desc['installer'] == 'pip' and pkg_desc['name'] == pkgname:
+                    return pkg_desc['version']
+            return False
 
     def _pkg_remove(self, pkgname):
         pip_path, pkgname = self._split_path(pkgname)
