@@ -163,7 +163,7 @@ class RouterOS(Item):
         })
         return result
 
-    def parase_identifier(self, identifier):
+    def parse_identifier(self, identifier):
         kwargs = {}
         for identifier_component in identifier.split("&"):
             identifier_key, identifier_value = identifier_component.split("=", 1)
@@ -172,7 +172,7 @@ class RouterOS(Item):
         return kwargs
 
     def _add(self, command, kwargs):
-        kwargs |= self.parase_identifier(self.identifier)
+        kwargs |= self.parse_identifier(self.identifier)
         command += "/add"
         arguments = [f"={key}={value}" for key, value in kwargs.items()]
         self.run_routeros(command, *arguments)
@@ -232,7 +232,7 @@ class RouterOS(Item):
         }
 
         desired_items = [
-            self.parase_identifier(self.get_identifier(item.id))[display_key]
+            self.parse_identifier(self.get_identifier(item.id))[display_key]
             for item in self.node.items
             if item.id.startswith(f'routeros:{self.basename}?{display_key}=')
         ]
