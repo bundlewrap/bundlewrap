@@ -293,7 +293,7 @@ class SecretProxy:
 
     def decrypt_file(self, source_path, binary=False, key=None):
         return Fault(
-            'bw secrets decrypt_file',
+            'bw secrets decrypt_file ' + source_path,
             self._decrypt_file,
             source_path=source_path,
             binary=binary,
@@ -302,7 +302,7 @@ class SecretProxy:
 
     def decrypt_file_as_base64(self, source_path, key=None):
         return Fault(
-            'bw secrets decrypt_file_as_base64',
+            'bw secrets decrypt_file_as_base64 ' + source_path,
             self._decrypt_file_as_base64,
             source_path=source_path,
             key=key,
@@ -355,7 +355,7 @@ class SecretProxy:
         self, identifier, digits=2, key='generate', per_word=3, words=4,
     ):
         return Fault(
-            'bw secrets human_password_for',
+            'bw secrets human_password_for ' + identifier,
             self._generate_human_password,
             identifier=identifier,
             digits=digits,
@@ -366,7 +366,7 @@ class SecretProxy:
 
     def password_for(self, identifier, key='generate', length=32, symbols=False):
         return Fault(
-            'bw secrets password_for',
+            'bw secrets password_for ' + identifier,
             self._generate_password,
             identifier=identifier,
             key=key,
@@ -376,7 +376,7 @@ class SecretProxy:
 
     def random_bytes_as_base64_for(self, identifier, key='generate', length=32):
         return Fault(
-            'bw secrets random_bytes_as_base64',
+            'bw secrets random_bytes_as_base64 ' + identifier,
             self._generate_random_bytes_as_base64,
             identifier=identifier,
             key=key,
