@@ -1,3 +1,4 @@
+from contextlib import suppress
 from shlex import quote
 
 from bundlewrap.exceptions import BundleError
@@ -14,6 +15,35 @@ class AptPkg(Pkg):
     WHEN_CREATING_ATTRIBUTES = {
         'start_service': True,
     }
+
+    def cdict(self):
+        return {
+            'installed': self.attributes['installed'],
+            'mark': 'manual' if self.attributes['installed'] else None,
+        }
+
+    def sdict(self):
+        mark = None
+        if self.attributes['installed']:
+            if self.pkg_manually_installed():
+                mark = 'manual'
+            else:
+                mark = 'auto'
+        return {
+            'installed': self.pkg_installed_cached(),
+            'mark': mark,
+        }
+
+    def fix(self, status):
+        with suppress(KeyError):
+            self._pkg_install_cache.get(self.node.name, set()).remove(self.id)
+        if 'installed' in status.keys_to_fix:
+            if self.attributes['installed'] is False:
+                self.pkg_remove()
+            else:
+                self.pkg_install()
+        elif 'mark' in status.keys_to_fix:
+            self.run("apt-mark manual {}".format(quote(self.name.replace("_", ":"))))
 
     def pkg_all_installed(self):
         result = self.run("dpkg -l | grep '^ii'")
@@ -69,3 +99,10 @@ class AptPkg(Pkg):
                 bundle=bundle.name,
                 item=item_id,
             ))
+
+    def pkg_manually_installed(self):
+        result = self.run("apt-mark showmanual {}".format(quote(self.name.replace("_", ":"))))
+        for line in result.stdout.decode('utf-8').strip().split("\n"):
+            if line.strip() == self.name:
+                return True
+        return False
