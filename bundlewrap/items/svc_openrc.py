@@ -18,19 +18,27 @@ def svc_stop(node, svcname):
     return node.run(f"rc-service {quote(svcname)} stop", may_fail=True)
 
 
-def svc_enable(node, svcname):
-    return node.run(f"rc-update add {quote(svcname)}", may_fail=True)
+def svc_enable(node, svcname, runlevel):
+    return node.run(f"rc-update add {quote(svcname)} {quote(runlevel)}", may_fail=True)
 
 
-def svc_enabled(node, svcname):
+def svc_enabled(node, svcname, runlevel):
     result = node.run(
-        f"rc-update show default | grep -w {quote(svcname)}", may_fail=True
+        f"rc-update show {quote(runlevel)} | grep -w {quote(svcname)}", may_fail=True
     )
     return result.return_code == 0 and svcname in result.stdout_text
 
 
-def svc_disable(node, svcname):
-    return node.run(f"rc-update del {quote(svcname)}", may_fail=True)
+def svc_runlevel(node, svcname):
+    result = node.run(
+        f"rc-update show --all | grep -w {quote(svcname)} | cut -d \\| -f 2",
+        may_fail=True,
+    )
+    return result.stdout_text.strip() if result.return_code == 0 else None
+
+
+def svc_disable(node, svcname, runlevel):
+    return node.run(f"rc-update del {quote(svcname)} {quote(runlevel)}", may_fail=True)
 
 
 class SvcOpenRC(Item):
@@ -42,26 +50,32 @@ class SvcOpenRC(Item):
     ITEM_ATTRIBUTES = {
         "running": True,
         "enabled": True,
+        "runlevel": "default",
     }
     ITEM_TYPE_NAME = "svc_openrc"
 
     def __repr__(self):
-        return "<SvcOpenRC name:{} enabled:{} running:{}>".format(
-            self.name, self.attributes["enabled"], self.attributes["running"],
+        return "<SvcOpenRC name:{} runlevel:{} enabled:{} running:{}>".format(
+            self.name, self.attributes["runlevel"], self.attributes["enabled"], self.attributes["running"],
         )
 
     def fix(self, status):
         if "enabled" in status.keys_to_fix:
             if self.attributes["enabled"]:
-                svc_enable(self.node, self.name)
+                svc_enable(self.node, self.name, self.attributes["runlevel"])
             else:
-                svc_disable(self.node, self.name)
+                svc_disable(self.node, self.name, self.attributes["runlevel"])
 
         if "running" in status.keys_to_fix:
             if self.attributes["running"]:
                 svc_start(self.node, self.name)
             else:
                 svc_stop(self.node, self.name)
+
+        if "runlevel" in status.keys_to_fix:
+            if status.sdict.runlevel:
+                svc_disable(self.node, self.name, status.sdict.runlevel)
+            svc_enable(self.node, self.name, self.attributes["runlevel"])
 
     def get_canned_actions(self):
         return {
@@ -88,8 +102,9 @@ class SvcOpenRC(Item):
 
     def sdict(self):
         return {
-            "enabled": svc_enabled(self.node, self.name),
+            "enabled": svc_enabled(self.node, self.name, self.attributes["runlevel"]),
             "running": svc_running(self.node, self.name),
+            "runlevel": svc_runlevel(self.node, self.name),
         }
 
     @classmethod
