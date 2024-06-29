@@ -222,12 +222,12 @@ class RouterOS(Item):
             return set()
 
         raw_item = raw_items[0]
-        for display_key in ['name', 'interface', '.id']:
+        for display_key in ['name', 'interface', 'vlan-ids', '.id']:
             if display_key in raw_item:
                 break
 
         existing_items = {
-            raw_item['.id']: raw_item[display_key]
+            raw_item['.id']: str(raw_item[display_key])
             for raw_item in raw_items
         }
 
