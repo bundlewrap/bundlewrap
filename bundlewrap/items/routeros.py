@@ -221,20 +221,23 @@ class RouterOS(Item):
         if not raw_items:
             return set()
 
-        raw_item = raw_items[0]
-        for display_key in ['name', 'interface', 'vlan-ids', '.id']:
-            if display_key in raw_item:
-                break
+        purge_cfg = self.attributes.get('purge', {})
+        if not isinstance(purge_cfg, dict):
+            purge_cfg = {}
+
+        id_by = purge_cfg.get('id-by', 'name')
+        keep = purge_cfg.get('keep', {})
 
         existing_items = {
-            raw_item['.id']: str(raw_item[display_key])
+            raw_item['.id']: str(raw_item[id_by])
             for raw_item in raw_items
+            if not self._subitem_matches_filter(raw_item, keep)
         }
 
         desired_items = [
-            self.parse_identifier(self.get_identifier(item.id))[display_key]
+            self.parse_identifier(self.get_identifier(item.id))[id_by]
             for item in self.node.items
-            if item.id.startswith(f'routeros:{self.basename}?{display_key}=')
+            if item.id.startswith(f'routeros:{self.basename}?{id_by}=')
         ]
 
         items_to_delete = set(
@@ -244,3 +247,10 @@ class RouterOS(Item):
         )
 
         return items_to_delete
+
+    def _subitem_matches_filter(self, subitem, filter):
+        for k, v in filter.items():
+            if subitem.get(k, None) == v:
+                return True
+
+        return False
