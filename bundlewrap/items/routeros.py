@@ -65,7 +65,7 @@ class RouterOS(Item):
                 self._remove(self.basename, subitem_id)
 
         if status.must_be_created:
-            cdict = status.sdict.copy()
+            cdict = status.cdict.copy()
             with suppress(KeyError):
                 del cdict['subitems_to_purge']
             self._add(self.basename, cdict)
