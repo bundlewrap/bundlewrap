@@ -23,6 +23,16 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 
 <hr>
 
+## break\_system\_packages
+
+`True` if you want BundleWrap to add the `--break-system-packages` flag. Refer to <https://www.debian.org/releases/bookworm/amd64/release-notes/ch-information.en.html#python3-pep-668>.
+
+Default is `False`.
+
+This feature is *temporary* and usage is *discouraged*. It might be removed from future BundleWrap versions.
+
+<hr>
+
 ## installed
 
 `True` when the package is expected to be present on the system; `False` if it should be removed.
