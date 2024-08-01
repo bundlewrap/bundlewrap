@@ -6,10 +6,12 @@ Handles services managed by openrc.
         "sshd": {
             "enabled": True,  # default
             "running": True,  # default
+            "runlevel": "default",  # default
         },
         "nginx": {
             "enabled": False,
             "running": False,
+            "runlevel": "boot",
         },
     }
 
@@ -30,6 +32,12 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 ## running
 
 `True` if the service is expected to be running on the system; `False` if it should be stopped. `None` makes BundleWrap ignore this setting.
+
+<hr>
+
+## runlevel
+
+Name of the runlevel this service exists in. Defaults to `"default"`.
 
 <hr>
 
