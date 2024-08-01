@@ -78,15 +78,15 @@ Note that when configuring an item from a list of things, item names have two pa
 first part determines which kind of item is addressed, the second part is a simple `key=value` query that MUST return
 exactly one entry. If a list has no single "primary key" (such as `/system/logging`), use `&` to add more conditions.
 
-For lists of things, the purge option can be activated in order to instruct bundlewrap to remove items, that are not
-managed via bundlewrap items (See the Purging section).
+For lists of things, the purge option can be used to instruct BundleWrap to remove items it doesn't know about (see the
+Purging section).
 
-For example `/interface/vlan` addresses all VLAN-Interfaces (a List of things) and can be configured to purge unmanaged
+For example `/interface/vlan` addresses all VLAN interfaces (a list of things) and can be configured to purge unmanaged
 VLANs, whereas `/interface/vlan?name=vlan7` configures a specific VLAN.
 
 # Purging
 
-For any list of things (VLAN-Interfaces, Bonds) the purge option can be enabled:
+For any lists of things (VLAN interfaces, bonds) the purge option can be enabled:
 
 ```
         "/interface/vlan?name=vlan6": {
@@ -103,12 +103,12 @@ For any list of things (VLAN-Interfaces, Bonds) the purge option can be enabled:
         },
 ```
 
-The `id-by` Option tells bundlewrap to identify configured items by the specified key. In the above example, bundlewrap
-searches for all items with item-ids starting wih `/interface/vlan` that contain a `name` key. It
-finds `/interface/vlan?name=vlan6` and assumes that only one vlan should be configured and it should have a `name`
-of `vlan6`. It will then delete any VLANs on the switch not matching this selection.
+The `id-by` option tells BundleWrap to identify configured items by the specified key. In the above example, BundleWrap
+searches for all items with item ids starting wih `/interface/vlan` that contain a `name` key. It
+finds `/interface/vlan?name=vlan6` and assumes that only one VLAN should be configured and it should have a `name`
+of `vlan6`. It will then delete any VLANs on the node not matching this selection.
 
-For different items, different selection keys are useful. For example for bridge-Ports, the `interface` key is often
+For different items, different selection keys are useful. For example for bridge ports, the `interface` key is often
 used:
 
 ```
@@ -129,11 +129,11 @@ Again, the managed items under the `/interface/bridge/port` path are identified 
 also used to select items to be purged.
 
 For some types of items, not all subitems can be deleted. For example `/interface/bridge/vlan` will also list dynamic
-vlans which are not configured and can thus not be removed. They automatically appear/disappear with the bridgeports
+VLANs which are not configured and can thus not be removed. They automatically appear/disappear with the bridge ports
 using them.
 
-In these cases, additional attributes can be specified in the `keep` option. Any item on the switch that has any
-attribute matching the `keep`-Filter will also be retained and not purged.
+In these cases, additional attributes can be specified in the `keep` option. Any item on the node that has any
+attribute matching the `keep` filter will also be retained and not purged.
 
 ```
         "/interface/bridge/vlan": {
