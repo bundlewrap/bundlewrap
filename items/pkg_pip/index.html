@@ -352,6 +352,10 @@
             
             <li class="nav-item" data-bs-level="1"><a href="#attribute-reference" class="nav-link">Attribute reference</a>
               <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#break_system_packages" class="nav-link">break_system_packages</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#installed" class="nav-link">installed</a>
               <ul class="nav flex-column">
               </ul>
@@ -385,6 +389,12 @@
 <p><br><br></p>
 <h1 id="attribute-reference">Attribute reference</h1>
 <p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
+<hr>
+
+<h2 id="break_system_packages">break_system_packages</h2>
+<p><code>True</code> if you want BundleWrap to add the <code>--break-system-packages</code> flag. Refer to <a href="https://www.debian.org/releases/bookworm/amd64/release-notes/ch-information.en.html#python3-pep-668">https://www.debian.org/releases/bookworm/amd64/release-notes/ch-information.en.html#python3-pep-668</a>.</p>
+<p>Default is <code>False</code>.</p>
+<p>This feature is <em>temporary</em> and usage is <em>discouraged</em>. It might be removed from future BundleWrap versions.</p>
 <hr>
 
 <h2 id="installed">installed</h2>

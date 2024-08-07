@@ -350,6 +350,11 @@
               </ul>
             </li>
             
+            <li class="nav-item" data-bs-level="1"><a href="#purging" class="nav-link">Purging</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
             <li class="nav-item" data-bs-level="1"><a href="#attribute-reference" class="nav-link">Attribute reference</a>
               <ul class="nav flex-column">
             <li class="nav-item" data-bs-level="2"><a href="#delete" class="nav-link">delete</a>
@@ -364,7 +369,11 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="routeros-items">RouterOS items</h1>
-<p>Manages RouterOS configuration through the API (port 8728). You can address every configuration exposed by the API by constructing the item name and attributes accordingly. If you haven't already, familiarize yourself with the CLI over SSH first. Use it as a reference when composing items in your bundles. <strong>Don't forget to set the <code>os</code> attribute of your node to <code>routeros</code> and also set the <code>username</code> and <code>password</code> attributes.</strong></p>
+<p>Manages RouterOS configuration through the API (port 8728). You can address every configuration exposed by the API by
+constructing the item name and attributes accordingly. If you haven't already, familiarize yourself with the CLI over
+SSH first. Use it as a reference when composing items in your bundles. <strong>Don't forget to set the <code>os</code>
+attribute of your node to <code>routeros</code> and also set the <code>username</code> and <code>password</code>
+attributes.</strong></p>
 <pre><code>routeros = {
     "/ip/dns": {
         "servers": "8.8.8.8",
@@ -379,11 +388,21 @@
     "/interface/vlan?name=vlan7": {
         "delete": True,
     },
+    "/interface/vlan": {
+        "purge": {
+            "id-by": "name",
+        },
+    },
     "/interface/bridge?name=bridge": {},
     "/interface/bridge/port?interface=ether8": {
         "bridge": "bridge",
         "needs": {
             "routeros:/interface/bridge?name=bridge",
+        },
+    },
+    "/interface/bridge/port": {
+        "purge": {
+            "id-by": "interface",
         },
     },
     "/interface/bridge/vlan?vlan-ids=6": {
@@ -402,17 +421,92 @@
             "ether15",
         },
     },
+    "/interface/bridge/vlan": {
+        "purge": {
+            "id-by": "vlan-ids",
+            "keep": {
+                "dynamic": True,
+            },
+        },
+    },
+    "/interface/bonding?name=LAG1": {
+        "mode": "802.3ad",
+        "slaves": ["ether2", "ether3"],
+        "transmit-hash-policy": "layer-3-and-4",
+    },
+    "/interface/bonding": {
+        "purge": {
+            "id-by": "name",
+        },
+    },
     "/system/logging?action=remote&amp;topics=critical": {},
 }
 </code></pre>
-<p>Note that when you're dealing with a list of things, item names have two parts, separated by a <code>?</code> character. The first part determines which kind of item is addressed, the second part is a simple <code>key=value</code> query that MUST return exactly one entry. If a list has no single "primary key" (such as <code>/system/logging</code>), use <code>&amp;</code> to add more conditions.</p>
-<p><br><br></p>
+<p>Note that when configuring an item from a list of things, item names have two parts, separated by a <code>?</code> character. The
+first part determines which kind of item is addressed, the second part is a simple <code>key=value</code> query that MUST return
+exactly one entry. If a list has no single "primary key" (such as <code>/system/logging</code>), use <code>&amp;</code> to add more conditions.</p>
+<p>For lists of things, the purge option can be used to instruct BundleWrap to remove items it doesn't know about (see the
+Purging section).</p>
+<p>For example <code>/interface/vlan</code> addresses all VLAN interfaces (a list of things) and can be configured to purge unmanaged
+VLANs, whereas <code>/interface/vlan?name=vlan7</code> configures a specific VLAN.</p>
+<h1 id="purging">Purging</h1>
+<p>For any lists of things (VLAN interfaces, bonds) the purge option can be enabled:</p>
+<pre><code>        &quot;/interface/vlan?name=vlan6&quot;: {
+            &quot;vlan-id&quot;: &quot;6&quot;,
+            &quot;interface&quot;: &quot;bridge&quot;,
+            &quot;needs&quot;: {
+                &quot;routeros:/interface/bridge?name=bridge&quot;,
+            },
+        },
+        &quot;/interface/vlan&quot;: {
+            &quot;purge&quot;: {
+                &quot;id-by&quot;: &quot;name&quot;,
+            },
+        },
+</code></pre>
+<p>The <code>id-by</code> option tells BundleWrap to identify configured items by the specified key. In the above example, BundleWrap
+searches for all items with item ids starting wih <code>/interface/vlan</code> that contain a <code>name</code> key. It
+finds <code>/interface/vlan?name=vlan6</code> and assumes that only one VLAN should be configured and it should have a <code>name</code>
+of <code>vlan6</code>. It will then delete any VLANs on the node not matching this selection.</p>
+<p>For different items, different selection keys are useful. For example for bridge ports, the <code>interface</code> key is often
+used:</p>
+<pre><code>        &quot;/interface/bridge/port?interface=ether8&quot;: {
+            &quot;bridge&quot;: &quot;bridge&quot;,
+            &quot;needs&quot;: {
+                &quot;routeros:/interface/bridge?name=bridge&quot;,
+            },
+        },
+        &quot;/interface/bridge/port&quot;: {
+            &quot;purge&quot;: {
+                &quot;id-by&quot;: &quot;interface&quot;,
+            },
+        },
+</code></pre>
+<p>Again, the managed items under the <code>/interface/bridge/port</code> path are identified by the <code>interface</code> key and this key is
+also used to select items to be purged.</p>
+<p>For some types of items, not all subitems can be deleted. For example <code>/interface/bridge/vlan</code> will also list dynamic
+VLANs which are not configured and can thus not be removed. They automatically appear/disappear with the bridge ports
+using them.</p>
+<p>In these cases, additional attributes can be specified in the <code>keep</code> option. Any item on the node that has any
+attribute matching the <code>keep</code> filter will also be retained and not purged.</p>
+<pre><code>        &quot;/interface/bridge/vlan&quot;: {
+            &quot;purge&quot;: {
+                &quot;id-by&quot;: &quot;vlan-ids&quot;,
+                &quot;keep&quot;: {
+                    &quot;dynamic&quot;: True,
+                },
+            },
+        },
+</code></pre>
 <h1 id="attribute-reference">Attribute reference</h1>
 <p>See also: <a href="../../repo/items.py/#builtin-item-attributes">The list of generic builtin item attributes</a></p>
 <hr>
 
-<p><strong>BundleWrap will accept any attributes for these items and pass them through to the RouterOS API.</strong> All attribute values can be passed as strings. If given as integers or booleans, BundleWrap will convert them to strings for you. If given a set, list, or tuple of strings, BundleWrap will join those strings with commas.</p>
-<p>Since <code>comment</code> is an internal attribute for BundleWrap, use <code>_comment</code> to apply the <code>comment</code> attribute on a RouterOS item.</p>
+<p><strong>BundleWrap will accept any attributes for these items and pass them through to the RouterOS API.</strong> All
+attribute values can be passed as strings. If given as integers or booleans, BundleWrap will convert them to strings for
+you. If given a set, list, or tuple of strings, BundleWrap will join those strings with commas.</p>
+<p>Since <code>comment</code> is an internal attribute for BundleWrap, use <code>_comment</code> to apply the <code>comment</code> attribute on a RouterOS
+item.</p>
 <hr>
 
 <h2 id="delete">delete</h2>

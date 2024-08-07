@@ -360,6 +360,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#runlevel" class="nav-link">runlevel</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#canned-actions" class="nav-link">Canned actions</a>
               <ul class="nav flex-column">
               </ul>
@@ -389,10 +393,12 @@
     "sshd": {
         "enabled": True,  # default
         "running": True,  # default
+        "runlevel": "default",  # default
     },
     "nginx": {
         "enabled": False,
         "running": False,
+        "runlevel": "boot",
     },
 }
 </code></pre>
@@ -407,6 +413,10 @@
 
 <h2 id="running">running</h2>
 <p><code>True</code> if the service is expected to be running on the system; <code>False</code> if it should be stopped. <code>None</code> makes BundleWrap ignore this setting.</p>
+<hr>
+
+<h2 id="runlevel">runlevel</h2>
+<p>Name of the runlevel this service exists in. Defaults to <code>"default"</code>.</p>
 <hr>
 
 <h2 id="canned-actions">Canned actions</h2>
