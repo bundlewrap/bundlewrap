@@ -1,3 +1,13 @@
+# 4.20.0
+
+2024-08-07
+
+* added `bw metadata --resolve-faults`
+* added runlevel support for `svc_openrc`
+* added purge support for `routeros`
+* experimental: added support for `--break-system-packages` to `pkg_pip`
+
+
 # 4.19.0
 
 2024-06-25
