@@ -119,7 +119,10 @@ class PipPkg(Item):
         else:
             pkgs = loads(result.stdout_text)
             for pkg_desc in pkgs:
-                if pkg_desc['installer'] == 'pip' and pkg_desc['name'] == pkgname:
+                if (
+                    pkg_desc['installer'] == 'pip' and
+                    pkg_desc['name'].lower() == pkgname.lower()
+                ):
                     return pkg_desc['version']
             return False
 
