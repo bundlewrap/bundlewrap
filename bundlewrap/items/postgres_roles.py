@@ -1,4 +1,5 @@
 from passlib.apps import postgres_context
+from shlex import quote
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
@@ -17,14 +18,12 @@ def delete_role(node, role):
 
 
 def fix_role(node, role, attrs, create=False):
-    password = " PASSWORD '{}'".format(attrs['password_hash'])
-    sql = "{operation} ROLE \\\"{role}\\\" WITH LOGIN {superuser}SUPERUSER{password}".format(
-        operation="CREATE" if create else "ALTER",
-        password="" if attrs['password_hash'] is None else password,
-        role=role,
-        superuser="" if attrs['superuser'] is True else "NO",
-    )
-    node.run(f"psql -nqw -c \"{sql}\"", user="postgres")
+    if create:
+        create_sql = f"CREATE ROLE \\\"{role}\\\" WITH LOGIN {attrs['superuser']}SUPERUSER"
+        node.run(f"psql -nqw -c {quote(create_sql)}", user="postgres")
+
+    password_sql = f"UPDATE pg_authid SET rolpassword = '{attrs['password_hash']}' WHERE rolname = '{role}'"
+    node.run(f"psql -nqw -c {quote(password_sql)}", user="postgres")
 
 
 def get_role(node, role):
