@@ -19,7 +19,8 @@ def delete_role(node, role):
 
 def fix_role(node, role, attrs, create=False):
     if create:
-        create_sql = f"CREATE ROLE \\\"{role}\\\" WITH LOGIN {attrs['superuser']}SUPERUSER"
+        superuser_sql = "SUPERUSER" if attrs['superuser'] else "NOSUPERUSER"
+        create_sql = f"CREATE ROLE \\\"{role}\\\" WITH LOGIN {superuser_sql}"
         node.run(f"psql -nqw -c {quote(create_sql)}", user="postgres")
 
     password_sql = f"UPDATE pg_authid SET rolpassword = '{attrs['password_hash']}' WHERE rolname = '{role}'"
