@@ -15,6 +15,7 @@ class AptPkg(Pkg):
     WHEN_CREATING_ATTRIBUTES = {
         'start_service': True,
     }
+    _pkg_manual_cache = {}
 
     def cdict(self):
         return {
@@ -37,15 +38,23 @@ class AptPkg(Pkg):
     def fix(self, status):
         with suppress(KeyError):
             self._pkg_install_cache.get(self.node.name, set()).remove(self.id)
+        pkg_name = self.name.replace("_", ":")
         if 'installed' in status.keys_to_fix:
             if self.attributes['installed'] is False:
                 self.pkg_remove()
             else:
+                self._pkg_manual_cache.setdefault(self.node.name, set()).add(pkg_name)
                 self.pkg_install()
         elif 'mark' in status.keys_to_fix:
-            self.run("apt-mark manual {}".format(quote(self.name.replace("_", ":"))))
+            self._pkg_manual_cache.setdefault(self.node.name, set()).add(pkg_name)
+            self.run("apt-mark manual {}".format(quote(pkg_name)))
 
     def pkg_all_installed(self):
+        result = self.run("apt-mark showmanual")
+        self._pkg_manual_cache[self.node.name] = set()
+        for line in result.stdout.decode('utf-8').strip().splitlines():
+            self._pkg_manual_cache[self.node.name].add(line.strip())
+
         result = self.run("dpkg -l | grep '^ii'")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
             pkg_name = line[4:].split()[0].replace(":", "_")
@@ -101,8 +110,5 @@ class AptPkg(Pkg):
             ))
 
     def pkg_manually_installed(self):
-        result = self.run("apt-mark showmanual {}".format(quote(self.name.replace("_", ":"))))
-        for line in result.stdout.decode('utf-8').strip().split("\n"):
-            if line.strip() == self.name:
-                return True
-        return False
+        pkg_quoted = self.name.replace("_", ":")
+        return pkg_quoted in self._pkg_manual_cache.get(self.node.name, set())
