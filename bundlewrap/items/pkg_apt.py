@@ -1,3 +1,4 @@
+from contextlib import suppress
 from shlex import quote
 
 from bundlewrap.exceptions import BundleError
@@ -14,8 +15,46 @@ class AptPkg(Pkg):
     WHEN_CREATING_ATTRIBUTES = {
         'start_service': True,
     }
+    _pkg_manual_cache = {}
+
+    def cdict(self):
+        return {
+            'installed': self.attributes['installed'],
+            'mark': 'manual' if self.attributes['installed'] else None,
+        }
+
+    def sdict(self):
+        mark = None
+        if self.attributes['installed']:
+            if self.pkg_manually_installed():
+                mark = 'manual'
+            else:
+                mark = 'auto'
+        return {
+            'installed': self.pkg_installed_cached(),
+            'mark': mark,
+        }
+
+    def fix(self, status):
+        with suppress(KeyError):
+            self._pkg_install_cache.get(self.node.name, set()).remove(self.id)
+        pkg_name = self.name.replace("_", ":")
+        if 'installed' in status.keys_to_fix:
+            if self.attributes['installed'] is False:
+                self.pkg_remove()
+            else:
+                self._pkg_manual_cache.setdefault(self.node.name, set()).add(pkg_name)
+                self.pkg_install()
+        elif 'mark' in status.keys_to_fix:
+            self._pkg_manual_cache.setdefault(self.node.name, set()).add(pkg_name)
+            self.run("apt-mark manual {}".format(quote(pkg_name)))
 
     def pkg_all_installed(self):
+        result = self.run("apt-mark showmanual")
+        self._pkg_manual_cache[self.node.name] = set()
+        for line in result.stdout.decode('utf-8').strip().splitlines():
+            self._pkg_manual_cache[self.node.name].add(line.strip())
+
         result = self.run("dpkg -l | grep '^ii'")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
             pkg_name = line[4:].split()[0].replace(":", "_")
@@ -69,3 +108,7 @@ class AptPkg(Pkg):
                 bundle=bundle.name,
                 item=item_id,
             ))
+
+    def pkg_manually_installed(self):
+        pkg_quoted = self.name.replace("_", ":")
+        return pkg_quoted in self._pkg_manual_cache.get(self.node.name, set())
