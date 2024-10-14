@@ -17,6 +17,12 @@ class AptPkg(Pkg):
     }
     _pkg_manual_cache = {}
 
+    def pkg_all_installed(self):
+        result = self.run("dpkg -l | grep '^ii'")
+        for line in result.stdout.decode('utf-8').strip().split("\n"):
+            pkg_name = line[4:].split()[0].replace(":", "_")
+            yield "{}:{}".format(self.ITEM_TYPE_NAME, pkg_name)
+
     def cdict(self):
         return {
             'installed': self.attributes['installed'],
@@ -48,17 +54,6 @@ class AptPkg(Pkg):
         elif 'mark' in status.keys_to_fix:
             self._pkg_manual_cache.setdefault(self.node.name, set()).add(pkg_name)
             self.run("apt-mark manual {}".format(quote(pkg_name)))
-
-    def pkg_all_installed(self):
-        result = self.run("apt-mark showmanual")
-        self._pkg_manual_cache[self.node.name] = set()
-        for line in result.stdout.decode('utf-8').strip().splitlines():
-            self._pkg_manual_cache[self.node.name].add(line.strip())
-
-        result = self.run("dpkg -l | grep '^ii'")
-        for line in result.stdout.decode('utf-8').strip().split("\n"):
-            pkg_name = line[4:].split()[0].replace(":", "_")
-            yield "{}:{}".format(self.ITEM_TYPE_NAME, pkg_name)
 
     def pkg_install(self):
         runlevel = "" if self.when_creating['start_service'] else "RUNLEVEL=1 "
@@ -110,5 +105,11 @@ class AptPkg(Pkg):
             ))
 
     def pkg_manually_installed(self):
+        if self.node.name not in self._pkg_manual_cache:
+            result = self.run("apt-mark showmanual")
+            self._pkg_manual_cache[self.node.name] = set()
+            for line in result.stdout.decode('utf-8').strip().splitlines():
+                self._pkg_manual_cache[self.node.name].add(line.strip())
+
         pkg_quoted = self.name.replace("_", ":")
         return pkg_quoted in self._pkg_manual_cache.get(self.node.name, set())
