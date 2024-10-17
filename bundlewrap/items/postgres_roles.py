@@ -22,6 +22,10 @@ def fix_role(node, role, attrs, create=False):
         superuser_sql = "SUPERUSER" if attrs['superuser'] else "NOSUPERUSER"
         create_sql = f'CREATE ROLE "{role}" WITH LOGIN {superuser_sql}'
         node.run(f"psql -nqw -c {quote(create_sql)}", user="postgres")
+    else:
+        superuser_sql = "SUPERUSER" if attrs['superuser'] else "NOSUPERUSER"
+        alter_superuser_sql = f'ALTER ROLE "{role}" {superuser_sql}'
+        node.run(f"psql -nqw -c {quote(alter_superuser_sql)}", user="postgres")
 
     password_sql = f"UPDATE pg_authid SET rolpassword = '{attrs['password_hash']}' WHERE rolname = '{role}'"
     node.run(f"psql -nqw -c {quote(password_sql)}", user="postgres")
