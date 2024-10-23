@@ -1,10 +1,12 @@
 from contextlib import suppress
 from shlex import quote
+from threading import Lock
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items.pkg import Pkg
 from bundlewrap.utils.text import mark_for_translation as _
 
+APT_SHOWMANUAL_LOCK = {}
 
 class AptPkg(Pkg):
     """
@@ -105,11 +107,15 @@ class AptPkg(Pkg):
             ))
 
     def pkg_manually_installed(self):
-        if self.node.name not in self._pkg_manual_cache:
-            result = self.run("apt-mark showmanual")
-            self._pkg_manual_cache[self.node.name] = set()
-            for line in result.stdout.decode('utf-8').strip().splitlines():
-                self._pkg_manual_cache[self.node.name].add(line.strip())
+        if self.node.name not in APT_SHOWMANUAL_LOCK:
+            APT_SHOWMANUAL_LOCK[self.node.name] = Lock()
+
+        with APT_SHOWMANUAL_LOCK[self.node.name]:
+            if self.node.name not in self._pkg_manual_cache:
+                result = self.run("apt-mark showmanual")
+                self._pkg_manual_cache[self.node.name] = set()
+                for line in result.stdout.decode('utf-8').strip().splitlines():
+                    self._pkg_manual_cache[self.node.name].add(line.strip())
 
         pkg_quoted = self.name.replace("_", ":")
         return pkg_quoted in self._pkg_manual_cache.get(self.node.name, set())
