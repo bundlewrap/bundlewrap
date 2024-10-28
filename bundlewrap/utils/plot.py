@@ -94,10 +94,6 @@ def graph_for_items(
                 else:
                     yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
 
-        if concurrency:
-            for dep in sorted(item._deps_concurrency & items):
-                yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep.id)
-
         if reverse:
             # FIXME this is not filtering auto deps, but we should rethink filters anyway in 5.0
             for dep in sorted(item._deps_before & items):

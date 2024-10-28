@@ -77,16 +77,35 @@ class ItemQueue(BaseQueue):
             )
         self._split()
 
-    def pop(self):
+    def items_without_deps_filtered(self, exclude_item_types):
+        filtered_items = set()
+
+        for item in self.items_without_deps:
+            add_this_item = True
+            for item_blocked_for in item.block_concurrent(item.node.os, item.node.os_version):
+                if item_blocked_for in exclude_item_types:
+                    add_this_item = False
+                    break
+
+            if add_this_item:
+                filtered_items.add(item)
+
+        return filtered_items
+
+    def pop(self, exclude_item_types=set()):
         """
         Gets the next item available for processing and moves it into
         self.pending_items. Will raise KeyError if no item is
         available.
         """
-        if not self.items_without_deps:
+        filtered_items = self.items_without_deps_filtered(exclude_item_types)
+
+        if not filtered_items:
             raise KeyError
 
-        item = self.items_without_deps.pop()
+        item = filtered_items.pop()
+        self.items_without_deps.remove(item)
+
         self.pending_items.add(item)
         return item
 

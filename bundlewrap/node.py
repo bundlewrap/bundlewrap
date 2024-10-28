@@ -186,11 +186,30 @@ def apply_items(
 
     results = []
 
+    # Some item types are not allowed to run at the same time as some
+    # other item types. Keep track of which item types are currently
+    # being processed.
+    item_types_running = {}
+
+    def _active_types():
+        return set([i for i in item_types_running if item_types_running[i] > 0])
+
     def tasks_available():
-        return bool(item_queue.items_without_deps)
+        return bool(item_queue.items_without_deps_filtered(_active_types()))
 
     def next_task():
-        item = item_queue.pop()
+        item = item_queue.pop(exclude_item_types=_active_types())
+
+        item_types_running.setdefault(item.ITEM_TYPE_NAME, 0)
+        item_types_running[item.ITEM_TYPE_NAME] += 1
+
+        # XXX Remove and somehow turn this into a proper test case
+        if (
+            item_types_running.get('pkg_apt', 0) > 1 or
+            item_types_running.get('pkg_pip', 0) > 1
+        ):
+            raise Exception('Concurrency blocking didn’t work')
+
         return {
             'task_id': "{}:{}".format(node.name, item.id),
             'target': item.apply,
@@ -207,6 +226,8 @@ def apply_items(
     def handle_result(task_id, return_value, duration):
         item_id = task_id.split(":", 1)[1]
         item = find_item(item_id, item_queue.pending_items)
+
+        item_types_running[item.ITEM_TYPE_NAME] -= 1
 
         status_code, details, created, deleted = return_value
 
@@ -264,6 +285,8 @@ def apply_items(
     def handle_exception(task_id, exc, traceback):
         item_id = task_id.split(":", 1)[1]
         item = find_item(item_id, item_queue.pending_items)
+
+        item_types_running[item.ITEM_TYPE_NAME] -= 1
 
         for skipped_item in item_queue.item_failed(item):
             handle_apply_result(
