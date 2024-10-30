@@ -705,7 +705,6 @@ will exit with code 47 if any matching items are locked
         "Color guide: "
         "needs in red, "
         "after in blue, "
-        "concurrency blockers in purple, "
         "before in yellow, "
         "needed_by in orange, "
         "auto in green, "
