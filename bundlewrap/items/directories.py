@@ -152,7 +152,7 @@ class Directory(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        self.run("rm -rf -- {}".format(quote(self.name)))
+        self.run("rm -f -- {}".format(quote(self.name)))
         self.run("mkdir -p -- {}".format(quote(self.name)))
         if self.attributes['mode']:
             self._fix_mode(status)
