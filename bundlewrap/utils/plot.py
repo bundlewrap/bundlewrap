@@ -33,7 +33,6 @@ def graph_for_items(
     title,
     items,
     cluster=True,
-    concurrency=True,
     regular=True,
     reverse=True,
     auto=True,
