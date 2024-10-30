@@ -77,36 +77,38 @@ class ItemQueue(BaseQueue):
             )
         self._split()
 
-    def items_without_deps_filtered(self, exclude_item_types):
-        filtered_items = set()
+    def items_without_deps_runnable(self):
+        runnable_items = set()
+        running_item_types = set([i.ITEM_TYPE_NAME for i in self.pending_items])
 
         for item in self.items_without_deps:
             add_this_item = True
             for item_blocked_for in item.block_concurrent(item.node.os, item.node.os_version):
-                if item_blocked_for in exclude_item_types:
+                if item_blocked_for in running_item_types:
                     add_this_item = False
                     break
 
             if add_this_item:
-                filtered_items.add(item)
+                runnable_items.add(item)
 
-        return filtered_items
+        return runnable_items
 
-    def pop(self, exclude_item_types=set()):
+    def pop(self):
         """
         Gets the next item available for processing and moves it into
         self.pending_items. Will raise KeyError if no item is
         available.
         """
-        filtered_items = self.items_without_deps_filtered(exclude_item_types)
+        runnable_items = self.items_without_deps_runnable()
 
-        if not filtered_items:
+        if not runnable_items:
             raise KeyError
 
-        item = filtered_items.pop()
+        item = runnable_items.pop()
         self.items_without_deps.remove(item)
 
         self.pending_items.add(item)
+
         return item
 
     def _fire_triggers_for_item(self, item):
