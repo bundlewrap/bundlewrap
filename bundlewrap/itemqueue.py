@@ -27,6 +27,13 @@ class BaseQueue:
 
 
 class ItemQueue(BaseQueue):
+    def __init__(self, node):
+        super().__init__(node)
+
+        # Optional sanity check. Remove this mechanism if performance is
+        # a concern.
+        self.item_types_with_blockers = set()
+
     def item_failed(self, item):
         """
         Called when an item could not be fixed. Yields all items that
@@ -84,6 +91,14 @@ class ItemQueue(BaseQueue):
         for item in self.items_without_deps:
             add_this_item = True
             for item_blocked_for in item.block_concurrent(item.node.os, item.node.os_version):
+                # Optional sanity check. Remove this mechanism if
+                # performance is a concern.
+                #
+                # Keep track of item types that have blockers. We can
+                # later use this to do a sanity check: Was there a bug
+                # and did we accidentally run blocked items after all?
+                self.item_types_with_blockers.add(item.ITEM_TYPE_NAME)
+
                 if item_blocked_for in running_item_types:
                     add_this_item = False
                     break
@@ -108,6 +123,20 @@ class ItemQueue(BaseQueue):
         self.items_without_deps.remove(item)
 
         self.pending_items.add(item)
+
+        # Optional sanity check. Remove this mechanism if performance is
+        # a concern.
+        #
+        # Also not that this does NOT catch all cases that are
+        # theoretically possible. It only catches things like pkg_apt
+        # where only one item of that exact type can be running.
+        item_types_running = {}
+        for i in self.pending_items:
+            item_types_running.setdefault(i.ITEM_TYPE_NAME, 0)
+            item_types_running[i.ITEM_TYPE_NAME] += 1
+        for it in self.item_types_with_blockers:
+            if item_types_running.get(it, 0) > 1:
+                raise Exception(f'BUG! More than one {it} running!')
 
         return item
 

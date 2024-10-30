@@ -194,18 +194,6 @@ def apply_items(
 
     def next_task():
         item = item_queue.pop()
-
-        # XXX Remove and somehow turn this into a proper test case
-        item_types_running = {}
-        for i in item_queue.pending_items:
-            item_types_running.setdefault(i.ITEM_TYPE_NAME, 0)
-            item_types_running[i.ITEM_TYPE_NAME] += 1
-        if (
-            item_types_running.get('pkg_apt', 0) > 1 or
-            item_types_running.get('pkg_pip', 0) > 1
-        ):
-            raise Exception('Concurrency blocking didn’t work')
-
         return {
             'task_id': "{}:{}".format(node.name, item.id),
             'target': item.apply,
