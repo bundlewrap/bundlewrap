@@ -61,6 +61,7 @@ def bw_apply(repo, args):
                 'force': args['force'],
                 'interactive': args['interactive'],
                 'show_diff': args['show_diff'],
+                'show_skipped_items': args['show_skipped_items'],
                 'skip_list': skip_list,
                 'workers': args['item_workers'],
             },
