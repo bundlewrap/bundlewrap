@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from .deps import (
     find_item,
     prepare_dependencies,
@@ -130,12 +132,11 @@ class ItemQueue(BaseQueue):
         # Also not that this does NOT catch all cases that are
         # theoretically possible. It only catches things like pkg_apt
         # where only one item of that exact type can be running.
-        item_types_running = {}
+        item_types_running = defaultdict(int)
         for i in self.pending_items:
-            item_types_running.setdefault(i.ITEM_TYPE_NAME, 0)
             item_types_running[i.ITEM_TYPE_NAME] += 1
         for it in self.item_types_with_blockers:
-            if item_types_running.get(it, 0) > 1:
+            if item_types_running[it] > 1:
                 raise Exception(f'BUG! More than one {it} running!')
 
         return item
