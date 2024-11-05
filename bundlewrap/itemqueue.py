@@ -32,8 +32,7 @@ class ItemQueue(BaseQueue):
     def __init__(self, node):
         super().__init__(node)
 
-        # Optional sanity check. Remove this mechanism if performance is
-        # a concern.
+        # Optional sanity check.
         self.item_types_with_blockers = set()
 
     def item_failed(self, item):
@@ -93,12 +92,16 @@ class ItemQueue(BaseQueue):
         for item in self.items_without_deps:
             add_this_item = True
             for item_blocked_for in item.block_concurrent(item.node.os, item.node.os_version):
-                # Optional sanity check. Remove this mechanism if
-                # performance is a concern.
+                # Optional sanity check.
                 #
                 # Keep track of item types that have blockers. We can
                 # later use this to do a sanity check: Was there a bug
                 # and did we accidentally run blocked items after all?
+                #
+                # Note that this does NOT catch all cases that are
+                # theoretically possible. It only catches things like
+                # pkg_apt where only one item of that exact type can be
+                # running.
                 self.item_types_with_blockers.add(item.ITEM_TYPE_NAME)
 
                 if item_blocked_for in running_item_types:
@@ -126,12 +129,7 @@ class ItemQueue(BaseQueue):
 
         self.pending_items.add(item)
 
-        # Optional sanity check. Remove this mechanism if performance is
-        # a concern.
-        #
-        # Also not that this does NOT catch all cases that are
-        # theoretically possible. It only catches things like pkg_apt
-        # where only one item of that exact type can be running.
+        # Optional sanity check.
         item_types_running = defaultdict(int)
         for i in self.pending_items:
             item_types_running[i.ITEM_TYPE_NAME] += 1
