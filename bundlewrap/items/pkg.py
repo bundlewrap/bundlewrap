@@ -1,9 +1,29 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import suppress
+from threading import Lock
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
+
+
+class PkgInstalledLock:
+    def __init__(self):
+        self._access_lock = Lock()
+        self._node_locks = {}
+
+    def lock(self, node_name):
+        # run this inside a lock so we can ensure we always only have
+        # one Lock per node. If not, we might run into threading issues
+        # when multiple threads run into this if.
+        with self._access_lock:
+            if node_name not in self._node_locks:
+                self._node_locks[node_name] = Lock()
+
+        yield self._node_locks[node_name]
+
+
+PKG_INSTALLED_LOCK = PkgInstalledLock()
 
 
 class Pkg(Item, metaclass=ABCMeta):

@@ -1,12 +1,9 @@
 from contextlib import suppress
 from shlex import quote
-from threading import Lock
 
 from bundlewrap.exceptions import BundleError
-from bundlewrap.items.pkg import Pkg
+from bundlewrap.items.pkg import Pkg, PKG_INSTALLED_LOCK
 from bundlewrap.utils.text import mark_for_translation as _
-
-APT_SHOWMANUAL_LOCK = {}
 
 class AptPkg(Pkg):
     """
@@ -107,10 +104,8 @@ class AptPkg(Pkg):
             ))
 
     def pkg_manually_installed(self):
-        if self.node.name not in APT_SHOWMANUAL_LOCK:
-            APT_SHOWMANUAL_LOCK[self.node.name] = Lock()
-
-        with APT_SHOWMANUAL_LOCK[self.node.name]:
+        # ensure we don't run `apt-mark showmanual` concurrently
+        with PKG_INSTALLED_LOCK.lock(self.node.name):
             if self.node.name not in self._pkg_manual_cache:
                 result = self.run("apt-mark showmanual")
                 self._pkg_manual_cache[self.node.name] = set()
