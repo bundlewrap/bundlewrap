@@ -16,7 +16,8 @@ class DnfPkg(Pkg):
 
     def pkg_all_installed(self):
         result = self.run("dnf list --installed")
-        for line in result.stdout.decode('utf-8').strip().split("\n"):
+        # First line is a header, skip that.
+        for line in result.stdout.decode('utf-8').strip().split("\n")[1:]:
             yield "{}:{}".format(self.ITEM_TYPE_NAME, line.split()[0].split(".")[0])
 
     def pkg_install(self):
