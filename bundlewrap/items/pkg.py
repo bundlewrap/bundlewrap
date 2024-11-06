@@ -20,7 +20,7 @@ class PkgInstalledLock:
             if node_name not in self._node_locks:
                 self._node_locks[node_name] = Lock()
 
-        yield self._node_locks[node_name]
+        return self._node_locks[node_name]
 
 
 PKG_INSTALLED_LOCK = PkgInstalledLock()
