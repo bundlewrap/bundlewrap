@@ -67,12 +67,15 @@ class Pkg(Item, metaclass=ABCMeta):
         raise NotImplementedError
 
     def pkg_installed_cached(self):
-        cache = self._pkg_install_cache.setdefault(self.node.name, set())
+        # ensure we don't run pkg_all_installed() concurrently, breaks
+        # some package managers
+        with PKG_INSTALLED_LOCK.lock(self.node.name):
+            cache = self._pkg_install_cache.setdefault(self.node.name, set())
 
-        if not cache:
-            cache.add(None)  # make sure we don't run into this if again
-            for pkgid in self.pkg_all_installed():
-                cache.add(pkgid)
+            if not cache:
+                cache.add(None)  # make sure we don't run into this if again
+                for pkgid in self.pkg_all_installed():
+                    cache.add(pkgid)
         if self.pkg_in_cache(self.id, cache):
             return True
         return self.pkg_installed()
