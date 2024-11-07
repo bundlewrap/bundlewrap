@@ -3,6 +3,7 @@ from sys import exit
 
 from ..concurrency import WorkerPool
 from ..exceptions import GracefulApplyException
+from ..node import format_item_result
 from ..utils import SkipList
 from ..utils.cmdline import count_items, get_target_nodes
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -46,6 +47,7 @@ def bw_apply(repo, args):
     start_time = datetime.now()
     results = []
     skip_list = SkipList(args['resume_file'])
+    skipped_items = set()
 
     def tasks_available():
         return bool(pending_nodes)
@@ -56,12 +58,13 @@ def bw_apply(repo, args):
             'target': node.apply,
             'task_id': node.name,
             'kwargs': {
-                'autoskip_selector': args['autoskip'],
                 'autoonly_selector': args['autoonly'],
+                'autoskip_selector': args['autoskip'],
                 'force': args['force'],
                 'interactive': args['interactive'],
                 'show_diff': args['show_diff'],
                 'skip_list': skip_list,
+                'skipped_item_callback': handle_skipped_item,
                 'workers': args['item_workers'],
             },
         }
@@ -85,6 +88,18 @@ def bw_apply(repo, args):
             io.stderr(repr(exception))
             io.stderr(msg)
             errors.append(msg)
+
+    def handle_skipped_item(node, item, result, details):
+        if not isinstance(details, tuple):
+            # no further details provided by item
+            return
+        errors.append(format_item_result(
+            result,
+            node.name,
+            item.bundle,
+            item,
+            details=details,
+        ))
 
     worker_pool = WorkerPool(
         tasks_available,
