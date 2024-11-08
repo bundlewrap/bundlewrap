@@ -1,9 +1,29 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import suppress
+from threading import Lock
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
+
+
+class PkgInstalledLock:
+    def __init__(self):
+        self._access_lock = Lock()
+        self._node_locks = {}
+
+    def lock(self, node_name):
+        # run this inside a lock so we can ensure we always only have
+        # one Lock per node. If not, we might run into threading issues
+        # when multiple threads run into this if.
+        with self._access_lock:
+            if node_name not in self._node_locks:
+                self._node_locks[node_name] = Lock()
+
+        return self._node_locks[node_name]
+
+
+PKG_INSTALLED_LOCK = PkgInstalledLock()
 
 
 class Pkg(Item, metaclass=ABCMeta):
@@ -47,12 +67,15 @@ class Pkg(Item, metaclass=ABCMeta):
         raise NotImplementedError
 
     def pkg_installed_cached(self):
-        cache = self._pkg_install_cache.setdefault(self.node.name, set())
+        # ensure we don't run pkg_all_installed() concurrently, breaks
+        # some package managers
+        with PKG_INSTALLED_LOCK.lock(self.node.name):
+            cache = self._pkg_install_cache.setdefault(self.node.name, set())
 
-        if not cache:
-            cache.add(None)  # make sure we don't run into this if again
-            for pkgid in self.pkg_all_installed():
-                cache.add(pkgid)
+            if not cache:
+                cache.add(None)  # make sure we don't run into this if again
+                for pkgid in self.pkg_all_installed():
+                    cache.add(pkgid)
         if self.pkg_in_cache(self.id, cache):
             return True
         return self.pkg_installed()
