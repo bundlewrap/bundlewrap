@@ -33,7 +33,6 @@ def graph_for_items(
     title,
     items,
     cluster=True,
-    concurrency=True,
     regular=True,
     reverse=True,
     auto=True,
@@ -93,10 +92,6 @@ def graph_for_items(
                     yield "\"{}\" -> \"{}\" [color=\"#6BB753\",penwidth=2]".format(item.id, dep.id)
                 else:
                     yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
-
-        if concurrency:
-            for dep in sorted(item._deps_concurrency & items):
-                yield "\"{}\" -> \"{}\" [color=\"#714D99\",penwidth=2]".format(item.id, dep.id)
 
         if reverse:
             # FIXME this is not filtering auto deps, but we should rethink filters anyway in 5.0

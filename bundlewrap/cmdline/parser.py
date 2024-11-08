@@ -705,7 +705,6 @@ will exit with code 47 if any matching items are locked
         "Color guide: "
         "needs in red, "
         "after in blue, "
-        "concurrency blockers in purple, "
         "before in yellow, "
         "needed_by in orange, "
         "auto in green, "
@@ -735,11 +734,12 @@ will exit with code 47 if any matching items are locked
         dest='depends_auto',
         help=_("do not show auto-generated and trigger dependencies"),
     )
+    # XXX Remove in bw 5
     parser_plot_subparsers_node.add_argument(
         "--no-depends-conc",
         action='store_false',
         dest='depends_concurrency',
-        help=_("do not show concurrency blocker dependencies"),
+        help=_("obsolete and ignored"),
     )
     parser_plot_subparsers_node.add_argument(
         "--no-depends-regular",

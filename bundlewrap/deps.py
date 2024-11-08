@@ -223,102 +223,6 @@ def _inject_tag_filler_items(items, bundles):
                 items.add(TagFillerItem(bundle, tag, {'tags': {tag}}))
 
 
-def _inject_concurrency_blockers(items, node_os, node_os_version):
-    """
-    Looks for items with BLOCK_CONCURRENT set and inserts daisy-chain
-    dependencies to force a sequential apply.
-    """
-    # find every item type that cannot be applied in parallel
-    item_types = set()
-    for item in items:
-        item._deps_concurrency = set()
-        if item.block_concurrent(node_os, node_os_version):
-            item_types.add(item.__class__)
-
-    # Now that we have collected all relevant types,
-    # we must group them together when they overlap. E.g.:
-    #
-    #     Type1.block_concurrent(...) == ["type1", "type2"]
-    #     Type2.block_concurrent(...) == ["type2", "type3"]
-    #     Type4.block_concurrent(...) == ["type4"]
-    #
-    # becomes
-    #
-    #     ["type1", "type2", "type3"]
-    #     ["type4"]
-    #
-    # because the first two types overlap in blocking type2. This is
-    # necessary because existing dependencies from type3 to type1 need
-    # to be taken into account when generating the daisy-chains
-    # connecting the three types. If we processed blockers for Type1 and
-    # Type2 independently, we might end up with two very different
-    # chains for Type2, which may cause circular dependencies.
-
-    chain_groups = []
-    for item_type in item_types:
-        block_concurrent = {item_type.ITEM_TYPE_NAME}
-        block_concurrent.update(item_type.block_concurrent(node_os, node_os_version))
-        found = False
-        for blocked_types in chain_groups:
-            for blocked_type in block_concurrent:
-                if blocked_type in blocked_types:
-                    blocked_types.update(block_concurrent)
-                    found = True
-                    break
-            if found:
-                break
-        if not found:
-            chain_groups.append(block_concurrent)
-
-    # daisy-chain all items of the chain group while respecting existing
-    # dependencies between them
-    for blocked_types in chain_groups:
-        blocked_types = set(blocked_types)
-        type_items = set(filter(
-            lambda item: item.ITEM_TYPE_NAME in blocked_types,
-            items,
-        ))
-        processed_items = set()
-        for item in type_items:
-            # disregard deps to items of other types and to canned
-            # actions
-            item.__deps = set(filter(
-                lambda dep: (
-                    dep.split(":", 1)[0] in blocked_types and
-                    dep.count(":") == 1
-                ),
-                item._flattened_deps,
-            ))
-        previous_item = None
-        while len(processed_items) < len(type_items):
-            # find the first item without same-type deps we haven't
-            # processed yet
-            try:
-                item = list(filter(
-                    lambda item: not item.__deps and item not in processed_items,
-                    type_items,
-                ))[0]
-            except IndexError:
-                # this can happen if the flattened deps of all items of
-                # this type already contain a dependency on another
-                # item of this type
-                break
-            if previous_item is not None:  # unless we're at the first item
-                # add dep to previous item -- unless it's already in there
-                if previous_item not in item._deps:
-                    item._deps.add(previous_item)
-                    item._deps_concurrency.add(previous_item)
-                    item._flattened_deps.add(previous_item.id)
-            previous_item = item
-            processed_items.add(item)
-            # Now remove all deps on the processed item. This frees up
-            # items depending *only* on the processed item to be
-            # eligible for the next iteration of this loop.
-            for other_item in type_items:
-                with suppress(KeyError):
-                    other_item.__deps.remove(item.id)
-
-
 def _inject_reverse_dependencies(items):
     """
     Looks for 'before' and 'needed_by' deps and creates standard 
@@ -555,7 +459,6 @@ def prepare_dependencies(node):
     _inject_preceded_by_dependencies(items)
     _flatten_dependencies(items)
     _add_incoming_needs(items)
-    _inject_concurrency_blockers(items, node.os, node.os_version)
 
     return items
 

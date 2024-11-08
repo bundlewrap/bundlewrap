@@ -187,7 +187,10 @@ def apply_items(
     results = []
 
     def tasks_available():
-        return bool(item_queue.items_without_deps)
+        # Some item types are not allowed to run at the same time as
+        # some other item types. items_without_deps_runnable handles
+        # these cases.
+        return bool(item_queue.items_without_deps_runnable())
 
     def next_task():
         item = item_queue.pop()
