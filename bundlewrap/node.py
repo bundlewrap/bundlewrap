@@ -146,6 +146,7 @@ def handle_apply_result(
     ):
         # skipped for "unless" or "not triggered", don't output those
         return
+
     formatted_result = format_item_result(
         status_code,
         node.name,
@@ -177,6 +178,7 @@ def apply_items(
     workers=1,
     interactive=False,
     show_diff=True,
+    show_skipped_items=True,
 ):
     item_queue = ItemQueue(node)
     # the item queue might contain new generated items (canned actions)
@@ -212,13 +214,14 @@ def apply_items(
 
         if status_code == Item.STATUS_FAILED:
             for skipped_item in item_queue.item_failed(item):
-                handle_apply_result(
-                    node,
-                    skipped_item,
-                    Item.STATUS_SKIPPED,
-                    interactive=interactive,
-                    details=Item.SKIP_REASON_DEP_FAILED,
-                )
+                if show_skipped_items:
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive=interactive,
+                        details=Item.SKIP_REASON_DEP_FAILED,
+                    )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
             item_queue.item_fixed(item)
@@ -232,13 +235,14 @@ def apply_items(
                         if skipped_item.covered_by_autoskip_selector(selector):
                             skip_reason = Item.SKIP_REASON_SOFTLOCK
                             break
-                handle_apply_result(
-                    node,
-                    skipped_item,
-                    Item.STATUS_SKIPPED,
-                    interactive=interactive,
-                    details=skip_reason,
-                )
+                if show_skipped_items:
+                    handle_apply_result(
+                        node,
+                        skipped_item,
+                        Item.STATUS_SKIPPED,
+                        interactive=interactive,
+                        details=skip_reason,
+                    )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         else:
             raise AssertionError(_(
@@ -248,16 +252,17 @@ def apply_items(
                 ),
             ))
 
-        handle_apply_result(
-            node,
-            item,
-            status_code,
-            interactive=interactive,
-            details=details,
-            show_diff=show_diff,
-            created=created,
-            deleted=deleted,
-        )
+        if status_code != Item.STATUS_SKIPPED or show_skipped_items:
+            handle_apply_result(
+                node,
+                item,
+                status_code,
+                interactive=interactive,
+                details=details,
+                show_diff=show_diff,
+                created=created,
+                deleted=deleted,
+            )
         io.progress_advance()
         results.append((item.id, status_code, duration))
 
@@ -266,13 +271,14 @@ def apply_items(
         item = find_item(item_id, item_queue.pending_items)
 
         for skipped_item in item_queue.item_failed(item):
-            handle_apply_result(
-                node,
-                skipped_item,
-                Item.STATUS_SKIPPED,
-                interactive=interactive,
-                details=Item.SKIP_REASON_DEP_FAILED,
-            )
+            if show_skipped_items:
+                handle_apply_result(
+                    node,
+                    skipped_item,
+                    Item.STATUS_SKIPPED,
+                    interactive=interactive,
+                    details=Item.SKIP_REASON_DEP_FAILED,
+                )
             results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
 
         handle_apply_result(
@@ -712,6 +718,7 @@ class Node:
         interactive=False,
         force=False,
         show_diff=True,
+        show_skipped_items=True,
         skip_list=(),
         workers=4,
     ):
@@ -774,6 +781,7 @@ class Node:
                         workers=workers,
                         interactive=interactive,
                         show_diff=show_diff,
+                        show_skipped_items=show_skipped_items,
                     )
             except NodeLockedException as e:
                 if not interactive:
