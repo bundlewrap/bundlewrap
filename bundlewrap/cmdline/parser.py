@@ -172,6 +172,12 @@ bundle:my_bundle  # items in this bundle
         help=_("don't show stats summary"),
     )
     parser_apply.add_argument(
+        "--no-skipped-items",
+        action='store_false',
+        dest='show_skipped_items',
+        help=_("don't show skipped items"),
+    )
+    parser_apply.add_argument(
         "-r",
         "--resume-file",
         default=None,

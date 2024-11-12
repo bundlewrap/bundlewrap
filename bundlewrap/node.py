@@ -139,6 +139,7 @@ def handle_apply_result(
     show_diff=True,
     created=None,
     deleted=None,
+    show_skipped_items=True,
 ):
     if status_code == Item.STATUS_SKIPPED and details in (
         Item.SKIP_REASON_NO_TRIGGER,
@@ -146,6 +147,10 @@ def handle_apply_result(
     ):
         # skipped for "unless" or "not triggered", don't output those
         return
+
+    if status_code == Item.STATUS_SKIPPED and not show_skipped_items:
+        return
+
     formatted_result = format_item_result(
         status_code,
         node.name,
@@ -177,6 +182,7 @@ def apply_items(
     workers=1,
     interactive=False,
     show_diff=True,
+    show_skipped_items=True,
 ):
     item_queue = ItemQueue(node)
     # the item queue might contain new generated items (canned actions)
@@ -221,6 +227,7 @@ def apply_items(
                     Item.STATUS_SKIPPED,
                     interactive=interactive,
                     details=Item.SKIP_REASON_DEP_FAILED,
+                    show_skipped_items=show_skipped_items,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         elif status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
@@ -241,6 +248,7 @@ def apply_items(
                     Item.STATUS_SKIPPED,
                     interactive=interactive,
                     details=skip_reason,
+                    show_skipped_items=show_skipped_items,
                 )
                 results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
         else:
@@ -260,6 +268,7 @@ def apply_items(
             show_diff=show_diff,
             created=created,
             deleted=deleted,
+            show_skipped_items=show_skipped_items,
         )
         io.progress_advance()
         results.append((item.id, status_code, duration))
@@ -275,6 +284,7 @@ def apply_items(
                 Item.STATUS_SKIPPED,
                 interactive=interactive,
                 details=Item.SKIP_REASON_DEP_FAILED,
+                show_skipped_items=show_skipped_items,
             )
             results.append((skipped_item.id, Item.STATUS_SKIPPED, timedelta(0)))
 
@@ -285,6 +295,7 @@ def apply_items(
             interactive=interactive,
             details=None,
             show_diff=False,
+            show_skipped_items=show_skipped_items,
         )
         results.append((item.id, Item.STATUS_FAILED, timedelta(0)))
         output = prefix_lines(traceback, red("│ "))
@@ -715,6 +726,7 @@ class Node:
         interactive=False,
         force=False,
         show_diff=True,
+        show_skipped_items=True,
         skip_list=(),
         workers=4,
     ):
@@ -777,6 +789,7 @@ class Node:
                         workers=workers,
                         interactive=interactive,
                         show_diff=show_diff,
+                        show_skipped_items=show_skipped_items,
                     )
             except NodeLockedException as e:
                 if not interactive:
