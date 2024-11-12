@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from .deps import (
     find_item,
     prepare_dependencies,
@@ -27,6 +29,12 @@ class BaseQueue:
 
 
 class ItemQueue(BaseQueue):
+    def __init__(self, node):
+        super().__init__(node)
+
+        # Optional sanity check.
+        self.item_types_with_blockers = set()
+
     def item_failed(self, item):
         """
         Called when an item could not be fixed. Yields all items that
@@ -77,17 +85,58 @@ class ItemQueue(BaseQueue):
             )
         self._split()
 
+    def items_without_deps_runnable(self):
+        runnable_items = set()
+        running_item_types = set([i.ITEM_TYPE_NAME for i in self.pending_items])
+
+        for item in self.items_without_deps:
+            add_this_item = True
+            for item_blocked_for in item.block_concurrent(item.node.os, item.node.os_version):
+                # Optional sanity check.
+                #
+                # Keep track of item types that have blockers. We can
+                # later use this to do a sanity check: Was there a bug
+                # and did we accidentally run blocked items after all?
+                #
+                # Note that this does NOT catch all cases that are
+                # theoretically possible. It only catches things like
+                # pkg_apt where only one item of that exact type can be
+                # running.
+                self.item_types_with_blockers.add(item.ITEM_TYPE_NAME)
+
+                if item_blocked_for in running_item_types:
+                    add_this_item = False
+                    break
+
+            if add_this_item:
+                runnable_items.add(item)
+
+        return runnable_items
+
     def pop(self):
         """
         Gets the next item available for processing and moves it into
         self.pending_items. Will raise KeyError if no item is
         available.
         """
-        if not self.items_without_deps:
+        runnable_items = self.items_without_deps_runnable()
+
+        if not runnable_items:
             raise KeyError
 
-        item = self.items_without_deps.pop()
+        item = runnable_items.pop()
+        self.items_without_deps.remove(item)
+
         self.pending_items.add(item)
+
+        # Optional sanity check.
+        item_types_running = defaultdict(int)
+        for i in self.pending_items:
+            item_types_running[i.ITEM_TYPE_NAME] += 1
+        for it in self.item_types_with_blockers:
+            if item_types_running[it] > 1:
+                raise Exception(f'BUG! More than one {it} running!')
+
         return item
 
     def _fire_triggers_for_item(self, item):
