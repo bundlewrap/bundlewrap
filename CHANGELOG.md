@@ -1,3 +1,15 @@
+# 4.21.0
+
+2024-11-14
+
+* fixed dependency loops created by bw itself ("concurrency blockers" are implemented differently now)
+* fixed a regression in `pkg_pip`: packages were incorrectly identified as "not installed"
+* added: `pkg_apt` packages will now be marked as manually installed, thus preventing auto-cleanup mechanisms from deleting them
+* added support for DNF 5
+* added: `postgres_roles` now support password hashes other than md5
+* added `bw apply --no-skipped-items` to not show skipped items
+* improved `directory` items: try to avoid accidental data loss by using `rm -f` instead of `rm -rf`
+
 # 4.20.0
 
 2024-08-07
