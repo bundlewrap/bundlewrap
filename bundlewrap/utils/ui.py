@@ -218,6 +218,9 @@ class IOManager:
         self._waiting_for_input = False
 
     def activate(self):
+        if self._active:
+            return
+
         self._active = True
         if 'BW_DEBUG_LOG_DIR' in environ:
             self.debug_log_file = open(join(
@@ -282,6 +285,9 @@ class IOManager:
         return answer
 
     def deactivate(self):
+        if not self._active:
+            return
+
         self._active = False
         if TTY:
             write_to_stream(STDOUT_WRITER, SHOW_CURSOR)
