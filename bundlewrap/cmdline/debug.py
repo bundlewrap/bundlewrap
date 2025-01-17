@@ -1,4 +1,6 @@
 from code import interact
+from readline import set_completer, parse_and_bind
+from rlcompleter import Completer
 
 from .. import VERSION_STRING
 from ..utils.cmdline import get_node
@@ -26,4 +28,6 @@ def bw_debug(repo, args):
     if args['command']:
         exec(args['command'], env)
     else:
-        interact(banner, local=env)
+        set_completer(Completer(env).complete)
+        parse_and_bind("tab: complete")
+        interact(local=env)
