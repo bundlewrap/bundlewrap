@@ -30,4 +30,4 @@ def bw_debug(repo, args):
     else:
         set_completer(Completer(env).complete)
         parse_and_bind("tab: complete")
-        interact(local=env)
+        interact(banner=banner, local=env)
