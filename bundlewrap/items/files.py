@@ -67,7 +67,8 @@ def content_processor_jinja2(item):
             repo=item.node.repo,
             **item.attributes['context']
         )
-    except FaultUnavailable:
+    except FaultUnavailable as e:
+        io.debug(f"{item.node.name}:{item.id}: Fault Unavailable - {e}")
         raise
     except Exception as e:
         io.stderr("".join(format_exception(*exc_info())))
@@ -106,7 +107,8 @@ def content_processor_mako(item):
             repo=item.node.repo,
             **item.attributes['context']
         )
-    except FaultUnavailable:
+    except FaultUnavailable as e:
+        io.debug(f"{item.node.name}:{item.id}: Fault Unavailable - {e}")
         raise
     except Exception as e:
         io.stderr("".join(format_exception(*exc_info())))
