@@ -57,7 +57,7 @@ def content_processor_jinja2(item):
 
     template = env.from_string(item._template_content)
 
-    io.debug(f"{item.node.name}:{item.id}: rendering with Jinja2...")
+    io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: rendering with Jinja2...")
     start = datetime.now()
     try:
         content = template.render(
@@ -67,7 +67,8 @@ def content_processor_jinja2(item):
             repo=item.node.repo,
             **item.attributes['context']
         )
-    except FaultUnavailable:
+    except FaultUnavailable as e:
+        io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: Fault Unavailable - {e}")
         raise
     except Exception as e:
         io.stderr("".join(format_exception(*exc_info())))
@@ -96,7 +97,7 @@ def content_processor_mako(item):
         lookup=TemplateLookup(directories=[item.item_data_dir, item.item_dir]),
         output_encoding=item.attributes['encoding'],
     )
-    io.debug(f"{item.node.name}:{item.id}: rendering with Mako...")
+    io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: rendering with Mako...")
     start = datetime.now()
     try:
         content = template.render(
@@ -106,7 +107,8 @@ def content_processor_mako(item):
             repo=item.node.repo,
             **item.attributes['context']
         )
-    except FaultUnavailable:
+    except FaultUnavailable as e:
+        io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: Fault Unavailable - {e}")
         raise
     except Exception as e:
         io.stderr("".join(format_exception(*exc_info())))
@@ -126,7 +128,7 @@ def content_processor_mako(item):
             node=item.node.name,
         ))
     duration = datetime.now() - start
-    io.debug(f"{item.node.name}:{item.id}: rendered in {duration.total_seconds():.09f} s")
+    io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: rendered in {duration.total_seconds():.09f} s")
     return content
 
 
@@ -162,7 +164,7 @@ def download_file(item):
 
         makedirs(remove_dir, exist_ok=True)
 
-    io.debug(f"{item.node.name}:{item.id}: download lock dir is {lock_dir}")
+    io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: download lock dir is {lock_dir}")
 
     # Since we only download the file once per process, there's no point
     # in displaying the node name here. The file may be used on multiple
@@ -171,16 +173,16 @@ def download_file(item):
         while True:
             try:
                 mkdir(lock_dir)
-                io.debug(f"{item.node.name}:{item.id}: have download lock")
+                io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: have download lock")
                 break
             except FileExistsError:
-                io.debug(f"{item.node.name}:{item.id}: waiting for download lock")
+                io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: waiting for download lock")
                 sleep(1)
 
     try:
         if not isfile(file_path):
             io.debug(
-                f"{item.node.name}:{item.id}: "
+                f"{item.node.name}:{item.bundle.name}:{item.id}: "
                 f"starting download from {item.attributes['source']}"
             )
             with io.job(_("{node}  {item}  downloading from {url}").format(
@@ -194,7 +196,7 @@ def download_file(item):
                     timeout=item.attributes['download_timeout'],
                 )
             io.debug(
-                f"{item.node.name}:{item.id}: "
+                f"{item.node.name}:{item.bundle.name}:{item.id}: "
                 f"finished download from {item.attributes['source']}"
             )
 
@@ -205,7 +207,7 @@ def download_file(item):
                 bold(item.id),
             ))):
                 local_hash = hash_local_file(file_path)
-                io.debug(f"{item.node.name}:{item.id}: content hash is {local_hash}")
+                io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: content hash is {local_hash}")
                 if local_hash != item.attributes['content_hash']:
                     raise BundleError(_(
                         "could not download correct file from {} - sha1sum mismatch "
@@ -215,10 +217,10 @@ def download_file(item):
                         item.attributes['content_hash'],
                         local_hash
                     ))
-                io.debug(f"{item.node.name}:{item.id}: content hash matches")
+                io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: content hash matches")
     finally:
         rmdir(lock_dir)
-        io.debug(f"{item.node.name}:{item.id}: released download lock")
+        io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: released download lock")
 
     return file_path, remove_dir
 
