@@ -20,6 +20,9 @@ from librouteros import connect
 ROUTEROS_CONNECTIONS = {}
 ROUTEROS_CONNECTIONS_LOCK = Lock()
 
+IPMITOOL_CONNECTIONS = {}
+IPMITOOL_CONNECTIONS_LOCK = Lock()
+
 
 def download(
     hostname,
@@ -364,23 +367,33 @@ def run(
     return result
 
 
-def run_ipmitool(hostname, username, password, command):
+def run_ipmitool(hostname, username, password, command, interface=None):
     """
     Runs a command on a ipmi interface using ipmitool
     """
+    with IPMITOOL_CONNECTIONS_LOCK:
+        try:
+            ipmi_lock = IPMITOOL_CONNECTIONS[hostname]
+        except KeyError:
+            ipmi_lock = Lock()
+            IPMITOOL_CONNECTIONS[hostname] = ipmi_lock
+
     ipmi_command = [
         "ipmitool",
         "-H", hostname,
         "-U", username,
         "-P", password,
     ]
-    extra_args = environ.get("BW_IPMITOOL_ARGS", "").strip()
-    if extra_args:
-        ipmi_command.extend(split(extra_args))
+    if interface:
+        ipmi_command += [
+            "-I", interface
+        ]
     ipmi_command.extend(split(command))
 
-    return run_local(ipmi_command)
+    with ipmi_lock:
+        result = run_local(ipmi_command)
 
+    return result
 
 def run_routeros(hostname, username, password, *args):
     with ROUTEROS_CONNECTIONS_LOCK:

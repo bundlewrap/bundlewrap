@@ -65,6 +65,7 @@ from .utils.ui import io
 NODE_ATTR_TYPES = GROUP_ATTR_TYPES.copy()
 NODE_ATTR_TYPES['groups'] = COLLECTION_OF_STRINGS
 NODE_ATTR_TYPES['hostname'] = str
+NODE_ATTR_TYPES['ipmi'] = dict
 NODE_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['bundles', 'file_path', 'groups', 'hostname'])
 
 
@@ -526,7 +527,7 @@ class Node:
         OS_FAMILY_REDHAT
 
     OS_FAMILY_UNIX = OS_FAMILY_BSD + OS_FAMILY_LINUX
-    OS_KNOWN = OS_FAMILY_UNIX + ('ipmi', 'kubernetes', 'routeros')
+    OS_KNOWN = OS_FAMILY_UNIX + ('kubernetes', 'routeros')
 
     def __init__(self, name, attributes=None):
         if attributes is None:
@@ -946,12 +947,15 @@ class Node:
         )
 
     def run_ipmitool(self, command):
-        assert self.os == 'ipmi'
+        opts = self._attributes.get('ipmi', {})
+        if not opts:
+            raise ValueError(_("node {} has no ipmi configuration").format(self.name))
         return operations.run_ipmitool(
-            self.hostname,
-            self.username,
-            self.password,
+            opts['hostname'],
+            opts['username'],
+            opts['password'],
             command,
+            interface=opts.get('interface'),
         )
 
     def run_routeros(self, *command):

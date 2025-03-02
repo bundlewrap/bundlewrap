@@ -9,6 +9,7 @@ from .debug import bw_debug
 from .diff import bw_diff
 from .groups import bw_groups
 from .hash import bw_hash
+from .ipmi import bw_ipmi
 from .items import bw_items
 from .lock import bw_lock_add, bw_lock_remove, bw_lock_show
 from .metadata import bw_metadata
@@ -358,6 +359,23 @@ bundle:my_bundle  # items in this bundle
         type=str,
         nargs='?',
         help=_("show config hash for this item on the given node"),
+    )
+
+    # bw ipmi
+    help_ipmi = _("Run 'ipmitool' on the ipmit interface of a specific node")
+    parser_ipmi = subparsers.add_parser("ipmi", description=help_ipmi, help=help_ipmi)
+    parser_ipmi.set_defaults(func=bw_ipmi)
+    parser_ipmi.add_argument(
+        'node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("run ipmitool on this node"),
+    )
+    parser_ipmi.add_argument(
+        'command',
+        metavar=_("COMMAND"),
+        type=str,
+        help=_("command to run"),
     )
 
     # bw items
