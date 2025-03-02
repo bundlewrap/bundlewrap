@@ -61,6 +61,7 @@ GROUP_ATTR_TYPES = {
     'bundles': COLLECTION_OF_STRINGS,
     'cmd_wrapper_inner': str,
     'cmd_wrapper_outer': str,
+    'ipmi': dict
     'lock_dir': str,
     'dummy': bool,
     'file_path': str,

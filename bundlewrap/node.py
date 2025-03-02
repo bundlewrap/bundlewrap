@@ -65,7 +65,6 @@ from .utils.ui import io
 NODE_ATTR_TYPES = GROUP_ATTR_TYPES.copy()
 NODE_ATTR_TYPES['groups'] = COLLECTION_OF_STRINGS
 NODE_ATTR_TYPES['hostname'] = str
-NODE_ATTR_TYPES['ipmi'] = dict
 NODE_ATTRS = sorted(list(GROUP_ATTR_DEFAULTS) + ['bundles', 'file_path', 'groups', 'hostname'])
 
 
