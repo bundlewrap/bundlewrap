@@ -367,7 +367,7 @@ def run(
     return result
 
 
-def run_ipmitool(hostname, username, password, command, interface=None):
+def run_ipmitool(hostname, username, password, command, interface=None, log_function=None):
     """
     Runs a command on a ipmi interface using ipmitool
     """
@@ -391,7 +391,7 @@ def run_ipmitool(hostname, username, password, command, interface=None):
     ipmi_command.extend(split(command))
 
     with ipmi_lock:
-        result = run_local(ipmi_command)
+        result = run_local(ipmi_command, log_function=log_function)
 
     return result
 
