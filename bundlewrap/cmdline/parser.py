@@ -363,19 +363,35 @@ bundle:my_bundle  # items in this bundle
 
     # bw ipmi
     help_ipmi = _("Run 'ipmitool' on the ipmit interface of a specific node")
-    parser_ipmi = subparsers.add_parser("ipmi", description=help_ipmi, help=help_ipmi)
+    parser_ipmi = subparsers.add_parser(
+        "ipmi",
+        description=help_ipmi,
+        help=help_ipmi,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
     parser_ipmi.set_defaults(func=bw_ipmi)
     parser_ipmi.add_argument(
-        'node',
-        metavar=_("NODE"),
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
         type=str,
-        help=_("run ipmitool on this node"),
+        help=HELP_get_target_nodes,
     )
     parser_ipmi.add_argument(
         'command',
         metavar=_("COMMAND"),
         type=str,
         help=_("command to run"),
+    )
+    bw_ipmi_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
+    parser_ipmi.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=bw_ipmi_p_default,
+        dest='node_workers',
+        help=_("number of nodes to run command on simultaneously "
+               "(defaults to {})").format(bw_ipmi_p_default),
+        type=int,
     )
 
     # bw items
