@@ -194,14 +194,19 @@ Runs a command on the node. Returns an instance of `bundlewrap.operations.RunRes
 -   `may_fail` If `False`, `bundlewrap.exceptions.RemoteException` will be raised if the command does not return 0.
 
 `bundlewrap.exceptions.TransportException` will be raised if there was a transport error while running the command, e.g. the SSH process died unexpectedly.
-=======
+
 
 <br>
 
 **`.run_ipmitool(command)`**
 
 Runs a command on an ipmi interface. Returns an instance of
-`bundlewrap.operations.RunResult`.
+`bundlewrap.operations.RunResult`. A command is a string of tokens which
+gets passed to ipmitool. The command will be split at whitespace
+characters and added to the commandline:
+
+    # runs `ipmitool -H hostname -U username -P password power status`
+    node.run_ipmitool('power status')
 
 <br>
 
