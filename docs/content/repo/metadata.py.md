@@ -40,6 +40,47 @@ You can also access other nodes' metadata:
 	    return {'frob': frob}
 
 
+### A performance optimization: <code>metadata_reactor.provides</code>
+
+If you have *lots* of metadata reactors, performance can become an issue. Every time you access metadata (e.g., in `items.py` or templates), BundleWrap has to find the value for that metadata key. This requires running metadata reactors. The problem here is that – without further help – BundleWrap does not know *which* reactors to run, so it runs them all, which can be costly.
+
+To help BundleWrap optimize this process, you can annotate your reactors. Take the reactor from above, for example:
+
+	@metadata_reactor.provides(
+	    'frob',
+	)
+	def baz(metadata):
+	    frob = set()
+	    for n in repo.nodes:
+	        frob.add(n.metadata.get('sizzle'))
+	    return {'frob': frob}
+
+Now BundleWrap knows that, in order to calculate the value of the `frob` key, it has to run *this* reactor.
+
+By annotating *all* of your reactors, BundleWrap can know exactly which ones to run.
+
+Here are some more examples of specifying metadata keys:
+
+	@metadata_reactor.provides(
+	    'frob',
+	    'foo/bar',
+	    ('quz', 'irritating/slashes'),
+	)
+	def baz(metadata):
+	    # ... do something ...
+	    return {
+	        'frob': frob,
+	        'foo': {
+	            'bar': bar_result,
+	        },
+	        'quz': {
+	            'irritating/slashes': some_value,
+	        },
+	    }
+
+So, when a metadata key contains slashes, you have to use a tuple.
+
+
 ### DoNotRunAgain
 
 On the other hand, if your reactor only needs to provide new metadata in *some* cases, you can tell BundleWrap to not run it again to save some performance:
