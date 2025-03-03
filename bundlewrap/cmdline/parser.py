@@ -362,7 +362,7 @@ bundle:my_bundle  # items in this bundle
     )
 
     # bw ipmi
-    help_ipmi = _("Run 'ipmitool' on the ipmit interface of a specific node")
+    help_ipmi = _("Run 'ipmitool' on the ipmi interface of a specific node")
     parser_ipmi = subparsers.add_parser(
         "ipmi",
         description=help_ipmi,
