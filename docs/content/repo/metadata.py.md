@@ -52,7 +52,7 @@ On the other hand, if your reactor only needs to provide new metadata in *some* 
 	        raise DoNotRunAgain
 
 
-<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_reactors</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div>
+<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_reactor</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div>
 
 
 ## Priority
