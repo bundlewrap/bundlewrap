@@ -102,6 +102,19 @@ Cannot be set at group level.
 
 <br>
 
+### ipmi
+
+A dictionary defining the nodes ipmi connection (if available). Will only be used with `bw ipmi` commands.
+
+The following keys are supported:
+
+* `hostname`
+* `username`
+* `password`
+* `interface` (optional, see `ipmitool --help` for possible options and default)
+
+<br>
+
 ### metadata
 
 This can be a dictionary of arbitrary data (some type restrictions apply). You can access it from your templates as `node.metadata`. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the [group level](groups.py.md#metadata), but node metadata has higher priority.
