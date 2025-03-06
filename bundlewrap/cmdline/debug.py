@@ -32,6 +32,12 @@ def bw_debug(repo, args):
         history_filename = join(repo.path, '.bw_debug_history')
         if isfile(history_filename):
             readline.read_history_file(history_filename)
+            previous_history_length = readline.get_current_history_length()
+        else:
+            # touch empty history file so we can append to it (maybe, see
+            # comment below)
+            open(history_filename, 'wb').close()
+            previous_history_length = 0
 
         # set up tab completion
         readline.set_completer(Completer(env).complete)
@@ -40,5 +46,18 @@ def bw_debug(repo, args):
         # launch interactive debug session
         interact(banner=banner, local=env)
 
-        # save history
-        readline.write_history_file(history_filename)
+        # So, the thing is, MacOS does not use GNU readline, but instead
+        # provides you with `editline` as a wrapper. This usually works fine,
+        # except it doesn't implement `append_history_file()` at all.
+        # So we have to find out if append_history_file is supported, and if
+        # not we just overwrite the history file with whatever history the last
+        # closed `bw debug` shell had. This sucks, but that's what we have to
+        # work with.
+        if hasattr(readline, 'append_history_file'):
+            new_history_length = readline.get_current_history_length()
+            readline.append_history_file(
+                new_history_length - previous_history_length,
+                history_filename,
+            )
+        else:
+            readline.write_history_file(history_filename)
