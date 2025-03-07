@@ -234,7 +234,12 @@ def softlock_add_and_warn_for_others(node, *args, **kwargs):
             node=bold(node.name),
         ))
         io.stdout(_("{x}").format(x=yellow("!")))
-        page_lines(output)
+
+        # TODO 5.0 Just use "page_lines(output)" here
+        # For backwards compatibility, we don't use a pager, because
+        # this might break people's workflows/scripts.
+        for line in output:
+            io.stdout(line)
 
     return new_lock_id
 
