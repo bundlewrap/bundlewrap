@@ -102,16 +102,11 @@ Cannot be set at group level.
 
 <br>
 
-### ipmi
+### ipmi_hostname, ipmi_username, ipmi_password, ipmi_interface
 
 A dictionary defining the nodes ipmi connection (if available). Will only be used with `bw ipmi` commands.
 
-The following keys are supported:
-
-* `hostname`
-* `username`
-* `password`
-* `interface` (optional, see `ipmitool --help` for possible options and default)
+Using `ipmi_interface` is optional and will default to whatever `ipmitool` uses as default. See `ipmitool --help` for possible options.
 
 <br>
 

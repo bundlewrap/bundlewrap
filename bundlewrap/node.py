@@ -946,9 +946,8 @@ class Node:
         )
 
     def run_ipmitool(self, command, log_output=False):
-        opts = self._attributes.get('ipmi', {})
-        if not opts:
-            raise ValueError(_("node {} has no ipmi configuration").format(self.name))
+        if not (self.ipmi_hostname and self.ipmi_username and self.ipmi_password):
+            raise ValueError(_("node {} has no or invalid ipmi configuration").format(self.name))
 
         if log_output:
             def log_function(msg):
@@ -962,11 +961,11 @@ class Node:
 
         return operations.run_ipmitool(
             # these might be Faults
-            str(opts['hostname']),
-            str(opts['username']),
-            str(opts['password']),
+            self.ipmi_hostname,
+            str(self.ipmi_username),
+            str(self.ipmi_password),
             command,
-            interface=opts.get('interface'),
+            interface=self.ipmi_interface,
             log_function=log_function,
         )
 
