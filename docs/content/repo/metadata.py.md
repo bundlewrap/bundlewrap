@@ -26,7 +26,7 @@ So let's look at reactors next. Metadata reactors are functions that take the me
 
 While this looks simple enough, there are some important caveats. First and foremost: Metadata reactors must assume to be called many times. This is to give you an opportunity to react to metadata provided by other reactors. All reactors will be run again and again until none of them return any changed metadata. Anything you return from a reactor will overwrite defaults, while metadata from `groups.py` and `nodes.py` will still overwrite metadata from reactors. Collection types like sets and dicts will be merged.
 
-The parameter `metadata` is not a dictionary but an instance of `Metastack`. You cannot modify the contents of this object. It provides `.get("some/path", "default")` to query a key path (equivalent to `metadata["some"]["path"]` in a dict) and accepts an optional default value. It will raise a `KeyError` when called for a non-existant path without a default.
+The parameter `metadata` is not a dictionary but an instance of an opaque type, which *resembles* a dict in some ways. You cannot modify the contents of this object. It provides `.get("some/path", "default")` to query a key path (equivalent to `metadata["some"]["path"]` in a dict) and accepts an optional default value. It will raise a `KeyError` when called for a non-existant path without a default.
 
 While node and group metadata and metadata defaults will always be available to reactors, you should not rely on that for the simple reason that you may one day move some metadata from those static sources into another reactor, which may be run later. Thus you may need to wait for some iterations before that data shows up in `metadata`. Note that BundleWrap will catch any `KeyError`s raised in metadata reactors and only report them if they don't go away after all other relevant reactors are done.
 
@@ -38,6 +38,47 @@ You can also access other nodes' metadata:
 	    for n in repo.nodes:
 	        frob.add(n.metadata.get('sizzle'))
 	    return {'frob': frob}
+
+
+### A performance optimization: <code>metadata_reactor.provides</code>
+
+If you have *lots* of metadata reactors, performance can become an issue. Every time you access metadata (e.g., in `items.py` or templates), BundleWrap has to find the value for that metadata key. This requires running metadata reactors. The problem here is that – without further help – BundleWrap does not know *which* reactors to run, so it runs them all, which can be costly.
+
+To help BundleWrap optimize this process, you can annotate your reactors. Take the reactor from above, for example:
+
+	@metadata_reactor.provides(
+	    'frob',
+	)
+	def baz(metadata):
+	    frob = set()
+	    for n in repo.nodes:
+	        frob.add(n.metadata.get('sizzle'))
+	    return {'frob': frob}
+
+Now BundleWrap knows that, in order to calculate the value of the `frob` key, it has to run *this* reactor.
+
+By annotating *all* of your reactors, BundleWrap can know exactly which ones to run.
+
+Here are some more examples of specifying metadata keys:
+
+	@metadata_reactor.provides(
+	    'frob',
+	    'foo/bar',
+	    ('quz', 'irritating/slashes'),
+	)
+	def baz(metadata):
+	    # ... do something ...
+	    return {
+	        'frob': frob,
+	        'foo': {
+	            'bar': bar_result,
+	        },
+	        'quz': {
+	            'irritating/slashes': some_value,
+	        },
+	    }
+
+So, when a metadata key contains slashes, you have to use a tuple.
 
 
 ### DoNotRunAgain
@@ -52,7 +93,7 @@ On the other hand, if your reactor only needs to provide new metadata in *some* 
 	        raise DoNotRunAgain
 
 
-<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_reactors</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div>
+<div class="alert alert-info">For your convenience, you can access <code>repo</code>, <code>node</code>, <code>metadata_reactor</code>, and <code>DoNotRunAgain</code> in <code>metadata.py</code> without importing them.</div>
 
 
 ## Priority
