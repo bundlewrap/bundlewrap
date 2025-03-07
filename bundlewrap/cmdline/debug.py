@@ -55,9 +55,11 @@ def bw_debug(repo, args):
         # work with.
         if hasattr(readline, 'append_history_file'):
             new_history_length = readline.get_current_history_length()
+            readline.set_history_length(10000)
             readline.append_history_file(
                 new_history_length - previous_history_length,
                 history_filename,
             )
         else:
+            readline.set_history_length(10000)
             readline.write_history_file(history_filename)
