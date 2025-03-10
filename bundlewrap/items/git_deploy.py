@@ -207,6 +207,7 @@ class GitDeploy(Item):
         """
         git_env = environ.copy()
         git_env['GIT_TERMINAL_PROMPT'] = '0'
+        git_env['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes'
         cmdline = ["git"] + cmdline
         io.debug(_("running '{}' in {}").format(
             " ".join(cmdline),
