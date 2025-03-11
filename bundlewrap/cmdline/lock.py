@@ -1,14 +1,16 @@
-from os import environ
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..lock import softlock_add, softlock_list, softlock_remove
+from ..lock import (
+    softlock_add_and_warn_for_others,
+    softlock_list,
+    softlock_remove,
+    softlocks_to_table,
+)
 from ..utils.cmdline import get_target_nodes
-from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     bold,
     error_summary,
-    format_timestamp,
     green,
     mark_for_translation as _,
     randstr,
@@ -54,7 +56,7 @@ def bw_lock_add(repo, args):
     def next_task():
         node = pending_nodes.pop()
         return {
-            'target': softlock_add,
+            'target': softlock_add_and_warn_for_others,
             'task_id': node.name,
             'args': (node, lock_id),
             'kwargs': {
@@ -161,7 +163,6 @@ def bw_lock_show(repo, args):
 
     pending_nodes = target_nodes[:]
     locks_on_node = {}
-    exit_code = 0
 
     def tasks_available():
         return bool(pending_nodes)
@@ -195,86 +196,12 @@ def bw_lock_show(repo, args):
     )
     worker_pool.run()
 
-    rows = [[
-        bold(_("node")),
-        bold(_("ID")),
-        bold(_("created")),
-        bold(_("expires")),
-        bold(_("user")),
-        bold(_("items")),
-        bold(_("comment")),
-    ], ROW_SEPARATOR]
-
-    for node_name, locks in sorted(locks_on_node.items()):
-        if locks:
-            first_lock = True
-            for lock in locks:
-                lock['formatted_date'] = format_timestamp(lock['date'])
-                lock['formatted_expiry'] = format_timestamp(lock['expiry'])
-                first_item = True
-                for item in lock['items']:
-                    rows.append([
-                        node_name if first_item and first_lock else "",
-                        lock['id'] if first_item else "",
-                        lock['formatted_date'] if first_item else "",
-                        lock['formatted_expiry'] if first_item else "",
-                        lock['user'] if first_item else "",
-                        item,
-                        lock['comment'] if first_item else "",
-                    ])
-                    # always repeat for grep style
-                    first_item = environ.get("BW_TABLE_STYLE") == 'grep'
-                # always repeat for grep style
-                first_lock = environ.get("BW_TABLE_STYLE") == 'grep'
-        else:
-            rows.append([
-                node_name,
-                _("(none)"),
-                "",
-                "",
-                "",
-                "",
-                "",
-            ])
-        rows.append(ROW_SEPARATOR)
-
-    output = list(render_table(
-        rows[:-1],  # remove trailing ROW_SEPARATOR
-        alignments={1: 'center'},
-    ))
-
-    if args['items']:
-        rows = [[
-            bold(_("node")),
-            bold(_("item")),
-            bold(_("locked")),
-            bold(_("ID")),
-        ], ROW_SEPARATOR]
-        for node_name, locks in sorted(locks_on_node.items()):
-            node = repo.get_node(node_name)
-            for item in sorted(node.items):
-                if not item.covered_by_autoskip_selector(args['items']):
-                    continue
-                locked_by = None
-                for lock in locks:
-                    if item.covered_by_autoskip_selector(lock['items']):
-                        locked_by = lock['id']
-                        exit_code = 47
-                        break
-                rows.append([
-                    node.name,
-                    item.id,
-                    red(_("YES")) if locked_by else green(_("NO")),
-                    locked_by or "",
-                ])
-            if rows[-1] != ROW_SEPARATOR:
-                rows.append(ROW_SEPARATOR)
-
-        output += list(render_table(
-            rows[:-1],  # remove trailing ROW_SEPARATOR
-        ))
-
+    output, some_selected_items_locked = softlocks_to_table(
+        locks_on_node,
+        items=args['items'],
+        repo=repo,
+    )
     page_lines(output)
     error_summary(errors)
 
-    exit(exit_code)
+    exit(47 if some_selected_items_locked else 0)
