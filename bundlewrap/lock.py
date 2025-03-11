@@ -26,7 +26,7 @@ from .utils.text import (
     wrap_question,
     yellow,
 )
-from .utils.ui import io, page_lines
+from .utils.ui import io
 
 
 def identity():
