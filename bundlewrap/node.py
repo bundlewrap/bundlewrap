@@ -945,6 +945,30 @@ class Node:
             user=user,
         )
 
+    def run_ipmitool(self, command, log_output=False):
+        if not (self.ipmi_hostname and self.ipmi_username and self.ipmi_password):
+            raise ValueError(_("node {} has no or invalid ipmi configuration").format(self.name))
+
+        if log_output:
+            def log_function(msg):
+                io.stdout("{x} {node}  {msg}".format(
+                    node=bold(self.name),
+                    msg=force_text(msg).rstrip("\n"),
+                    x=cyan("›"),
+                ))
+        else:
+            log_function = None
+
+        return operations.run_ipmitool(
+            # these might be Faults
+            self.ipmi_hostname,
+            str(self.ipmi_username),
+            str(self.ipmi_password),
+            command,
+            interface=self.ipmi_interface,
+            log_function=log_function,
+        )
+
     def run_routeros(self, *command):
         assert self.os == 'routeros'
         return operations.run_routeros(
