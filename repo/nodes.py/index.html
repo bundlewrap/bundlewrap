@@ -451,6 +451,10 @@ nodes['node-1'] = {
 
 <p>Cannot be set at group level.</p>
 <p><br></p>
+<h3 id="ipmi_hostname-ipmi_username-ipmi_password-ipmi_interface">ipmi_hostname, ipmi_username, ipmi_password, ipmi_interface</h3>
+<p>A dictionary defining the nodes ipmi connection (if available). Will only be used with <code>bw ipmi</code> commands.</p>
+<p>Using <code>ipmi_interface</code> is optional and will default to whatever <code>ipmitool</code> uses as default. See <code>ipmitool --help</code> for possible options.</p>
+<p><br></p>
 <h3 id="metadata">metadata</h3>
 <p>This can be a dictionary of arbitrary data (some type restrictions apply). You can access it from your templates as <code>node.metadata</code>. Use this to attach custom data (such as a list of IP addresses that should be configured on the target node) to the node. Note that you can also define metadata at the <a href="../groups.py/#metadata">group level</a>, but node metadata has higher priority.</p>
 <p>You are restricted to using only the following types in metadata:</p>

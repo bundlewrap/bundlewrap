@@ -474,6 +474,15 @@ print(uptime.stdout)
 </ul>
 <p><code>bundlewrap.exceptions.TransportException</code> will be raised if there was a transport error while running the command, e.g. the SSH process died unexpectedly.</p>
 <p><br></p>
+<p><strong><code>.run_ipmitool(command)</code></strong></p>
+<p>Runs a command on an ipmi interface. Returns an instance of
+<code>bundlewrap.operations.RunResult</code>. A command is a string of tokens which
+gets passed to ipmitool. The command will be split at whitespace
+characters and added to the commandline:</p>
+<pre><code># runs `ipmitool -H hostname -U username -P password power status`
+node.run_ipmitool('power status')
+</code></pre>
+<p><br></p>
 <p><strong><code>.upload(local_path, remote_path, mode=None, owner="", group="")</code></strong></p>
 <p>Uploads a file to the node.</p>
 <ul>
