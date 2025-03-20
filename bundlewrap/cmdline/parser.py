@@ -9,6 +9,7 @@ from .debug import bw_debug
 from .diff import bw_diff
 from .groups import bw_groups
 from .hash import bw_hash
+from .ipmi import bw_ipmi
 from .items import bw_items
 from .lock import bw_lock_add, bw_lock_remove, bw_lock_show
 from .metadata import bw_metadata
@@ -358,6 +359,39 @@ bundle:my_bundle  # items in this bundle
         type=str,
         nargs='?',
         help=_("show config hash for this item on the given node"),
+    )
+
+    # bw ipmi
+    help_ipmi = _("Run 'ipmitool' on the ipmi interface of a specific node")
+    parser_ipmi = subparsers.add_parser(
+        "ipmi",
+        description=help_ipmi,
+        help=help_ipmi,
+        formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
+    )
+    parser_ipmi.set_defaults(func=bw_ipmi)
+    parser_ipmi.add_argument(
+        'targets',
+        metavar=_("TARGET"),
+        nargs='+',
+        type=str,
+        help=HELP_get_target_nodes,
+    )
+    parser_ipmi.add_argument(
+        'command',
+        metavar=_("COMMAND"),
+        type=str,
+        help=_("command to run"),
+    )
+    bw_ipmi_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
+    parser_ipmi.add_argument(
+        "-p",
+        "--parallel-nodes",
+        default=bw_ipmi_p_default,
+        dest='node_workers',
+        help=_("number of nodes to run command on simultaneously "
+               "(defaults to {})").format(bw_ipmi_p_default),
+        type=int,
     )
 
     # bw items
