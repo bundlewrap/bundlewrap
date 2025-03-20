@@ -1,3 +1,18 @@
+# 4.22.0
+
+2025-03-20
+
+* fixed a bug where the original signal handlers were not restored on exit
+* fixed a bug where `io` could get (de)activated multiple times
+* add tab completion to `bw debug`
+* added better debug messages for missing faults in files
+* added warning on `bw lock add` if node already contains other locks
+* add history saving and loading to `bw debug`
+* improve handling of ssh connections in `git_deploy` items
+* add `bw ipmi`
+* DOCS: fix documentation for `metadata.py`
+
+
 # 4.21.0
 
 2024-11-14
