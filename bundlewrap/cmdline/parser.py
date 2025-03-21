@@ -2,7 +2,10 @@ from argparse import ArgumentParser, RawTextHelpFormatter, SUPPRESS
 from os import environ, getcwd
 
 from .. import VERSION_STRING
-from ..utils.cmdline import HELP_get_target_nodes
+from ..utils.cmdline import (DEFAULT_item_workers, DEFAULT_node_workers,
+                             DEFAULT_softlock_expiry, HELP_get_target_nodes,
+                             HELP_item_workers, HELP_node_workers,
+                             HELP_softlock_expiry)
 from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
@@ -130,24 +133,20 @@ dependencies of selected items will NOT be skipped
         nargs='+',
         type=str,
     )
-    bw_apply_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_apply.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_apply_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to apply to simultaneously "
-               "(defaults to {})").format(bw_apply_p_default),
+        help=HELP_node_workers,
         type=int,
     )
-    bw_apply_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_apply.add_argument(
         "-P",
         "--parallel-items",
-        default=bw_apply_p_items_default,
+        default=DEFAULT_item_workers,
         dest='item_workers',
-        help=_("number of items to apply simultaneously on each node "
-               "(defaults to {})").format(bw_apply_p_items_default),
+        help=HELP_item_workers,
         type=int,
     )
     parser_apply.add_argument(
@@ -383,14 +382,12 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=_("command to run"),
     )
-    bw_ipmi_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_ipmi.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_ipmi_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to run command on simultaneously "
-               "(defaults to {})").format(bw_ipmi_p_default),
+        help=HELP_node_workers,
         type=int,
     )
 
@@ -488,14 +485,12 @@ bundle:my_bundle  # items in this bundle
         help=_("brief description of the purpose of the lock"),
         type=str,
     )
-    bw_lock_add_e_default = environ.get("BW_SOFTLOCK_EXPIRY", "8h")
     parser_lock_add.add_argument(
         "-e",
         "--expires-in",
-        default=bw_lock_add_e_default,
+        default=DEFAULT_softlock_expiry,
         dest='expiry',
-        help=_("how long before the lock is ignored and removed automatically "
-               "(defaults to \"{}\")").format(bw_lock_add_e_default),
+        help=HELP_softlock_expiry,
         type=str,
     )
     parser_lock_add.add_argument(
@@ -513,14 +508,12 @@ bundle:my_bundle  # items in this bundle
         nargs='+',
         type=str,
     )
-    bw_lock_add_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_lock_add.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_lock_add_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to lock simultaneously "
-               "(defaults to {})").format(bw_lock_add_p_default),
+        help=HELP_node_workers,
         type=int,
     )
 
@@ -546,14 +539,12 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=_("ID of the lock to remove (obtained with `bw lock show`)"),
     )
-    bw_lock_remove_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_lock_remove.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_lock_remove_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to remove lock from simultaneously "
-               "(defaults to {})").format(bw_lock_remove_p_default),
+        help=HELP_node_workers,
         type=int,
     )
 
@@ -590,14 +581,12 @@ will exit with code 47 if any matching items are locked
         nargs='+',
         type=str,
     )
-    bw_lock_show_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_lock_show.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_lock_show_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to retrieve locks from simultaneously "
-               "(defaults to {})").format(bw_lock_show_p_default),
+        help=HELP_node_workers,
         type=int,
     )
 
@@ -690,14 +679,12 @@ will exit with code 47 if any matching items are locked
         dest='inline',
         help=_("keep lists on a single line (for grep)"),
     )
-    bw_nodes_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_nodes.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_apply_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to gather attributes for simultaneously "
-               "(defaults to {})").format(bw_nodes_p_default),
+        help=HELP_node_workers,
         type=int,
     )
     parser_nodes.add_argument(
@@ -978,14 +965,12 @@ will exit with code 47 if any matching items are locked
         dest='stdout_table',
         help=_("include command stdout in stats table"),
     )
-    bw_run_p_default = int(environ.get("BW_NODE_WORKERS", "1"))
     parser_run.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_run_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to run command on simultaneously "
-               "(defaults to {})").format(bw_run_p_default),
+        help=HELP_node_workers,
         type=int,
     )
     parser_run.add_argument(
@@ -1181,24 +1166,20 @@ bundle:my_bundle  # items in this bundle
         type=str,
     )
 
-    bw_verify_p_default = int(environ.get("BW_NODE_WORKERS", "4"))
     parser_verify.add_argument(
         "-p",
         "--parallel-nodes",
-        default=bw_verify_p_default,
+        default=DEFAULT_node_workers,
         dest='node_workers',
-        help=_("number of nodes to verify simultaneously "
-               "(defaults to {})").format(bw_verify_p_default),
+        help=HELP_node_workers,
         type=int,
     )
-    bw_verify_p_items_default = int(environ.get("BW_ITEM_WORKERS", "4"))
     parser_verify.add_argument(
         "-P",
         "--parallel-items",
-        default=bw_verify_p_items_default,
+        default=DEFAULT_item_workers,
         dest='item_workers',
-        help=_("number of items to verify simultaneously on each node "
-               "(defaults to {})").format(bw_verify_p_items_default),
+        help=HELP_item_workers,
         type=int,
     )
     parser_verify.add_argument(
