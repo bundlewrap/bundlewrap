@@ -66,7 +66,11 @@ class PostgresRole(Item):
     ITEM_TYPE_NAME = "postgres_role"
 
     def __repr__(self):
-        return "<PostgresRole name:{}>".format(self.name)
+        return "<PostgresRole name:{} superuser:{} delete:{}>".format(
+            self.name,
+            self.attributes['superuser'],
+            self.attributes['delete'],
+        )
 
     def cdict(self):
         if self.attributes['delete']:

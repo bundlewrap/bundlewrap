@@ -66,7 +66,14 @@ class PostgresDB(Item):
     }
 
     def __repr__(self):
-        return "<PostgresDB name:{}>".format(self.name)
+        return "<PostgresDB name:{} owner:{} delete:{} collation:{} ctype:{} encoding:{}>".format(
+            self.name,
+            self.attributes['owner'],
+            self.attributes['delete'],
+            self.when_creating['collation'],
+            self.when_creating['ctype'],
+            self.when_creating['encoding'],
+        )
 
     def cdict(self):
         if self.attributes['delete']:

@@ -24,7 +24,7 @@ class RouterOS(Item):
         return [cls.ITEM_TYPE_NAME]
 
     def __repr__(self):
-        return f"<RouterOS {self.name}>"
+        return f"<RouterOS {self.name} delete:{self.attributes['delete']} purge:{bool(self.attributes['purge'])}>"
 
     def cdict(self):
         if self.attributes['delete']:

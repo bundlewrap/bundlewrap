@@ -39,7 +39,11 @@ class Group(Item):
             return []
 
     def __repr__(self):
-        return "<Group name:{}>".format(self.name)
+        return "<Group name:{} gid:{} delete:{}>".format(
+            self.name,
+            self.attributes['gid'],
+            self.attributes['delete'],
+        )
 
     def cdict(self):
         if self.attributes['delete']:

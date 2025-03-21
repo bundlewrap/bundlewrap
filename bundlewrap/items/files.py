@@ -273,7 +273,14 @@ class File(Item):
     ITEM_TYPE_NAME = "file"
 
     def __repr__(self):
-        return "<File path:{}>".format(quote(self.name))
+        return "<File path:{} content_type:{} owner:{} group:{} mode:{} delete:{}>".format(
+            quote(self.name),
+            self.attributes['content_type'],
+            self.attributes['owner'],
+            self.attributes['group'],
+            self.attributes['mode'],
+            self.attributes['delete'],
+        )
 
     @property
     def _template_content(self):
