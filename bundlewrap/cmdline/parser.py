@@ -443,6 +443,12 @@ bundle:my_bundle  # items in this bundle
         help=_("show internal item attributes"),
     )
     parser_items.add_argument(
+        "--blame",
+        action='store_true',
+        dest='blame',
+        help=_("show information on which bundle defines each item"),
+    )
+    parser_items.add_argument(
         "--repr",
         action='store_true',
         dest='show_repr',

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Collection
 from os import environ, makedirs
 from os.path import dirname, exists, join
@@ -140,8 +141,29 @@ def bw_items(repo, args):
                     else:
                         io.stdout(statedict_to_json(statedict, pretty=True))
     else:
+        items_per_bundle = defaultdict(list)
         for item in sorted(node.items):
-            if args['show_repr']:
+            if args['blame']:
+                if args['show_repr']:
+                    items_per_bundle[item.bundle.name].append(repr(item))
+                else:
+                    items_per_bundle[item.bundle.name].append(item.id)
+            elif args['show_repr']:
                 io.stdout(repr(item))
             else:
                 io.stdout(item.id)
+
+        if args['blame']:
+            blame_table = [
+                [_("bundle name"), _("items")],
+            ]
+            for bundle_name, items in sorted(items_per_bundle.items()):
+                first_line = True
+                blame_table.append(ROW_SEPARATOR)
+                for item in items:
+                    if first_line:
+                        blame_table.append([bundle_name, item])
+                    else:
+                        blame_table.append(["", item])
+                    first_line = False
+            page_lines(render_table(blame_table))
