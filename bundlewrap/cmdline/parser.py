@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, RawTextHelpFormatter, SUPPRESS
 from os import environ, getcwd
-from os.path import abspath
 
 from .. import VERSION_STRING
 from ..utils.cmdline import HELP_get_target_nodes
@@ -38,7 +37,8 @@ class TargetCompleter:
 
     def __call__(self, prefix, **kwargs):
         try:
-            repo_path = abspath(environ.get('BW_REPO_PATH', getcwd()))
+            # warn(kwargs)  # For development and debugging
+            repo_path = kwargs['parsed_args'].repo_path
             compl_file = f'{repo_path}/.bw_shell_completion_targets'
             with open(compl_file) as f:
                 return f.read().splitlines()
