@@ -114,7 +114,13 @@ class User(Item):
             return []
 
     def __repr__(self):
-        return "<User name:{}>".format(self.name)
+        return "<User name:{} uid:{} gid:{} shell:{} delete:{}>".format(
+            self.name,
+            self.attributes['uid'],
+            self.attributes['gid'],
+            self.attributes['shell'],
+            self.attributes['delete'],
+        )
 
     def cdict(self):
         if self.attributes['delete']:
