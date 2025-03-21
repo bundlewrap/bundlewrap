@@ -35,11 +35,10 @@ except ImportError:
 class TargetCompleter:
     """Completer for bw targets, which can be used by argcomplete"""
 
-    def __call__(self, prefix, **kwargs):
+    def __call__(self, parsed_args, **kwargs):
         try:
             # warn(kwargs)  # For development and debugging
-            repo_path = kwargs['parsed_args'].repo_path
-            compl_file = f'{repo_path}/.bw_shell_completion_targets'
+            compl_file = f'{parsed_args.repo_path}/.bw_shell_completion_targets'
             with open(compl_file) as f:
                 return f.read().splitlines()
         except FileNotFoundError:
