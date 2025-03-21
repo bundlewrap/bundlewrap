@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter, SUPPRESS
 from os import environ, getcwd
+from os.path import abspath
 
 from .. import VERSION_STRING
 from ..utils.cmdline import HELP_get_target_nodes
@@ -24,7 +25,7 @@ from .verify import bw_verify
 from .zen import bw_zen
 
 try:
-    from argcomplete import autocomplete
+    from argcomplete import autocomplete, warn
 
     shell_completion = True
 except ImportError:
@@ -35,11 +36,15 @@ class TargetCompleter:
     """Completer for bw targets, which can be used by argcomplete"""
 
     def __call__(self, prefix, **kwargs):
-        compl_file = environ.get('BW_TARGET_COMPLETION_FILE')
         try:
+            repo_path = abspath(environ.get('BW_REPO_PATH', getcwd()))
+            compl_file = f'{repo_path}/.bw_shell_completion_targets'
             with open(compl_file) as f:
                 return f.read().splitlines()
-        except Exception:
+        except FileNotFoundError:
+            return []
+        except Exception as exc:
+            warn(f'Reading from target completion file failed: {repr(exc)}')
             return []
 
 
