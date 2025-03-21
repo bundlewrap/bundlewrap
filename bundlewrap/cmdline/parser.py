@@ -26,9 +26,9 @@ from .zen import bw_zen
 try:
     from argcomplete import autocomplete
 
-    bash_completion = True
+    shell_completion = True
 except ImportError:
-    bash_completion = False
+    shell_completion = False
 
 
 class TargetCompleter:
@@ -38,7 +38,7 @@ class TargetCompleter:
         compl_file = environ.get('BW_TARGET_COMPLETION_FILE')
         try:
             with open(compl_file) as f:
-                return f.read().split('\n')
+                return f.read().splitlines()
         except Exception:
             return []
 
@@ -109,7 +109,7 @@ def build_parser_bw():
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_apply.completer = TargetCompleter()
 
     parser_apply.add_argument(
@@ -310,7 +310,7 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_diff.completer = TargetCompleter()
 
     # bw groups
@@ -401,7 +401,7 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_ipmi.completer = TargetCompleter()
 
     parser_ipmi.add_argument(
@@ -507,7 +507,7 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_lock_add.completer = TargetCompleter()
 
     parser_lock_add.add_argument(
@@ -570,7 +570,7 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_lock_remove.completer = TargetCompleter()
 
     parser_lock_remove.add_argument(
@@ -606,7 +606,7 @@ bundle:my_bundle  # items in this bundle
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_lock_show.completer = TargetCompleter()
 
     parser_lock_show.add_argument(
@@ -654,7 +654,7 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_metadata.completer = TargetCompleter()
 
     parser_metadata.add_argument(
@@ -749,7 +749,7 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_nodes.completer = TargetCompleter()
 
     # bw plot
@@ -1003,7 +1003,7 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_run.completer = TargetCompleter()
 
     parser_run.add_argument(
@@ -1083,7 +1083,7 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=HELP_get_target_nodes + _("\n(defaults to all)"),
     )
-    if bash_completion:
+    if shell_completion:
         targets_test.completer = TargetCompleter()
 
     parser_test.add_argument(
@@ -1200,7 +1200,7 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=HELP_get_target_nodes,
     )
-    if bash_completion:
+    if shell_completion:
         targets_verify.completer = TargetCompleter()
 
     parser_verify.add_argument(
@@ -1280,6 +1280,6 @@ bundle:my_bundle  # items in this bundle
     parser_zen = subparsers.add_parser("zen")
     parser_zen.set_defaults(func=bw_zen)
 
-    if bash_completion:
+    if shell_completion:
         autocomplete(parser)
     return parser
