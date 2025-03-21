@@ -8,6 +8,7 @@ from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
 from .diff import bw_diff
+from .generate_completions import bw_generate_completions
 from .groups import bw_groups
 from .hash import bw_hash
 from .ipmi import bw_ipmi
@@ -1286,5 +1287,14 @@ bundle:my_bundle  # items in this bundle
     parser_zen.set_defaults(func=bw_zen)
 
     if shell_completion:
+        # bw generate_completions
+        help_generate_completions = _("Generates the shell completion file")
+        parser_apply = subparsers.add_parser(
+            "generate_completions",
+            description=help_generate_completions,
+            help=help_generate_completions,
+        )
+        parser_apply.set_defaults(func=bw_generate_completions)
+
         autocomplete(parser)
     return parser
