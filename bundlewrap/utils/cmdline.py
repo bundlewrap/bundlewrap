@@ -129,6 +129,11 @@ def get_node(repo, node_name):
         exit(1)
 
 
+
+DEFAULT_item_workers = int(environ.get("BW_ITEM_WORKERS", "4"))
+DEFAULT_node_workers = int(environ.get("BW_NODE_WORKERS", "4"))
+DEFAULT_softlock_expiry = environ.get("BW_SOFTLOCK_EXPIRY", "8h")
+
 HELP_get_target_nodes = _("""expression to select target nodes:
 
 my_node            # to select a single node
@@ -139,6 +144,9 @@ bundle:my_bundle   # all nodes with this bundle
 "lambda:node.metadata_get('foo/magic', 47) < 3"
                    # all nodes whose metadata["foo"]["magic"] is less than three
 """)
+HELP_item_workers = _("number of items to apply simultaneously on each node (defaults to {})").format(DEFAULT_item_workers),
+HELP_node_workers = _("number of nodes to apply to simultaneously (defaults to {})").format(DEFAULT_node_workers),
+HELP_softlock_expiry = _("how long before the lock is ignored and removed automatically (defaults to \"{}\")").format(DEFAULT_softlock_expiry),
 
 
 def _parallel_node_eval(
@@ -192,7 +200,7 @@ def _parallel_node_eval(
 
 def get_target_nodes(repo, target_strings, node_workers=None):
     if not node_workers:
-        node_workers = int(environ.get("BW_NODE_WORKERS", "4"))
+        node_workers = DEFAULT_node_workers
 
     targets = set()
     for name in target_strings:
