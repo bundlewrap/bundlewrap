@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter, SUPPRESS
 from os import environ, getcwd
+from os.path import join
 
 from .. import VERSION_STRING
 from ..utils.cmdline import HELP_get_target_nodes
@@ -38,7 +39,7 @@ class TargetCompleter:
     def __call__(self, parsed_args, **kwargs):
         try:
             # warn(kwargs)  # For development and debugging
-            compl_file = f'{parsed_args.repo_path}/.bw_shell_completion_targets'
+            compl_file = join(parsed_args.repo_path, '.bw_shell_completion_targets')
             with open(compl_file) as f:
                 return f.read().splitlines()
         except FileNotFoundError:
