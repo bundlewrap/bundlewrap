@@ -217,6 +217,14 @@ class IOManager:
         self._status_line_present = False
         self._waiting_for_input = False
 
+    def __enter__(self):
+        self.activate()
+        # return self, so users could also do `with IOManager() as io:`
+        return self
+
+    def __exit__(self):
+        self.deactivate()
+
     def activate(self):
         if self._active:
             return
