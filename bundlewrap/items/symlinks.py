@@ -26,9 +26,11 @@ class Symlink(Item):
     REQUIRED_ATTRIBUTES = ['target']
 
     def __repr__(self):
-        return "<Symlink path:{} target:{}>".format(
+        return "<Symlink path:{} target:{} owner:{} group:{}>".format(
             quote(self.name),
             self.attributes['target'],
+            self.attributes['owner'],
+            self.attributes['group'],
         )
 
     def cdict(self):

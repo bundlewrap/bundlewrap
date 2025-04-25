@@ -54,8 +54,12 @@ class Directory(Item):
     ITEM_TYPE_NAME = "directory"
 
     def __repr__(self):
-        return "<Directory path:{}>".format(
+        return "<Directory path:{} purge:{} owner:{} group:{} mode:{}>".format(
             quote(self.name),
+            self.attributes['purge'],
+            self.attributes['owner'],
+            self.attributes['group'],
+            self.attributes['mode'],
         )
 
     def cdict(self):
