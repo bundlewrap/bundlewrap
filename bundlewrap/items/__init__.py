@@ -326,8 +326,13 @@ class Item:
         Returns True if 'unless' wants to skip this item.
         """
         if self.unless and (self.ITEM_TYPE_NAME == 'action' or not self.cached_status.correct):
-            unless_result = self.node.run(self.unless, may_fail=True)
-            return unless_result.return_code == 0
+            with io.job(_("{node}  {bundle}  {item}  running 'unless' ...").format(
+                bundle=bold(self.bundle.name),
+                item=self.id,
+                node=bold(self.node.name),
+            )):
+                unless_result = self.node.run(self.unless, may_fail=True)
+                return unless_result.return_code == 0
         else:
             return False
 
