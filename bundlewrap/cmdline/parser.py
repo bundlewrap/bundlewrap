@@ -606,6 +606,13 @@ will exit with code 47 if any matching items are locked
                "(defaults to {})").format(bw_lock_show_p_default),
         type=int,
     )
+    parser_lock_show.add_argument(
+        "-q",
+        "--quiet",
+        help=_("hide table rows for nodes without any locks "
+               "(defaults to False)"),
+        action='store_true',
+    )
 
     # bw metadata
     help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red, uncolored if mixed-source) or a table of selected metadata keys from multiple nodes")
