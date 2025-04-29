@@ -1289,12 +1289,12 @@ bundle:my_bundle  # items in this bundle
     if shell_completion:
         # bw generate_completions
         help_generate_completions = _("Generates the shell completion file")
-        parser_apply = subparsers.add_parser(
+        parser_generate_completions = subparsers.add_parser(
             "generate_completions",
             description=help_generate_completions,
             help=help_generate_completions,
         )
-        parser_apply.set_defaults(func=bw_generate_completions)
+        parser_generate_completions.set_defaults(func=bw_generate_completions)
 
         autocomplete(parser)
     return parser
