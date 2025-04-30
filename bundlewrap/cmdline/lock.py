@@ -200,7 +200,7 @@ def bw_lock_show(repo, args):
         locks_on_node,
         items=args['items'],
         repo=repo,
-        hide_nodes_without_locks=args['quiet']
+        hide_nodes_without_locks=args['hide-not-locked']
     )
     page_lines(output)
     error_summary(errors)

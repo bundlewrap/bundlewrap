@@ -607,8 +607,7 @@ will exit with code 47 if any matching items are locked
         type=int,
     )
     parser_lock_show.add_argument(
-        "-q",
-        "--quiet",
+        "--hide-not-locked",
         help=_("hide table rows for nodes without any locks "
                "(defaults to False)"),
         action='store_true',
