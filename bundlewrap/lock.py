@@ -286,7 +286,7 @@ def softlock_remove(node, lock_id):
     node.repo.hooks.lock_remove(node.repo, node, lock_id)
 
 
-def softlocks_to_table(locks_on_node, items=None, repo=None):
+def softlocks_to_table(locks_on_node, items=None, repo=None, hide_nodes_without_locks=False):
     rows = [[
         bold(_("node")),
         bold(_("ID")),
@@ -318,18 +318,19 @@ def softlocks_to_table(locks_on_node, items=None, repo=None):
                     first_item = environ.get("BW_TABLE_STYLE") == 'grep'
                 # always repeat for grep style
                 first_lock = environ.get("BW_TABLE_STYLE") == 'grep'
+            rows.append(ROW_SEPARATOR)
         else:
-            rows.append([
-                node_name,
-                _("(none)"),
-                "",
-                "",
-                "",
-                "",
-                "",
-            ])
-
-        rows.append(ROW_SEPARATOR)
+            if not hide_nodes_without_locks:
+                rows.append([
+                    node_name,
+                    _("(none)"),
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ])
+                rows.append(ROW_SEPARATOR)
 
     output = list(render_table(
         rows[:-1],  # remove trailing ROW_SEPARATOR

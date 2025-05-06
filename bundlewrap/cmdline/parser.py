@@ -637,6 +637,12 @@ will exit with code 47 if any matching items are locked
         help=HELP_node_workers,
         type=int,
     )
+    parser_lock_show.add_argument(
+        "--hide-not-locked",
+        help=_("hide table rows for nodes without any locks "
+               "(defaults to False)"),
+        action='store_true',
+    )
 
     # bw metadata
     help_metadata = (
