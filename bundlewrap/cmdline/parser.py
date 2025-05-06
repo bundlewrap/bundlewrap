@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, RawTextHelpFormatter, SUPPRESS
 from os import environ, getcwd
+from os.path import join
 
 from .. import VERSION_STRING
 from ..utils.cmdline import (DEFAULT_item_workers, DEFAULT_node_workers,
@@ -10,6 +11,7 @@ from ..utils.text import mark_for_translation as _
 from .apply import bw_apply
 from .debug import bw_debug
 from .diff import bw_diff
+from .generate_completions import bw_generate_completions
 from .groups import bw_groups
 from .hash import bw_hash
 from .ipmi import bw_ipmi
@@ -25,6 +27,29 @@ from .stats import bw_stats
 from .test import bw_test
 from .verify import bw_verify
 from .zen import bw_zen
+
+try:
+    from argcomplete import autocomplete, warn
+
+    shell_completion = True
+except ImportError:
+    shell_completion = False
+
+
+class TargetCompleter:
+    """Completer for bw targets, which can be used by argcomplete"""
+
+    def __call__(self, parsed_args, **kwargs):
+        try:
+            # warn(kwargs)  # For development and debugging
+            compl_file = join(parsed_args.repo_path, '.bw_shell_completion_targets')
+            with open(compl_file) as f:
+                return f.read().splitlines()
+        except FileNotFoundError:
+            return []
+        except Exception as exc:
+            warn(f'Reading from target completion file failed: {repr(exc)}')
+            return []
 
 
 def build_parser_bw():
@@ -86,13 +111,16 @@ def build_parser_bw():
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_apply.set_defaults(func=bw_apply)
-    parser_apply.add_argument(
+    targets_apply = parser_apply.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_apply.completer = TargetCompleter()
+
     parser_apply.add_argument(
         "-D",
         "--no-diff",
@@ -280,13 +308,15 @@ bundle:my_bundle  # items in this bundle
         dest='metadata',
         help=_("compare metadata instead of configuration"),
     )
-    parser_diff.add_argument(
+    targets_diff = parser_diff.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_diff.completer = TargetCompleter()
 
     # bw groups
     help_groups = _("Lists groups in this repository")
@@ -369,13 +399,16 @@ bundle:my_bundle  # items in this bundle
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_ipmi.set_defaults(func=bw_ipmi)
-    parser_ipmi.add_argument(
+    targets_ipmi = parser_ipmi.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_ipmi.completer = TargetCompleter()
+
     parser_ipmi.add_argument(
         'command',
         metavar=_("COMMAND"),
@@ -476,13 +509,16 @@ bundle:my_bundle  # items in this bundle
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_lock_add.set_defaults(func=bw_lock_add)
-    parser_lock_add.add_argument(
+    targets_lock_add = parser_lock_add.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_lock_add.completer = TargetCompleter()
+
     parser_lock_add.add_argument(
         "-c",
         "--comment",
@@ -532,13 +568,16 @@ bundle:my_bundle  # items in this bundle
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_lock_remove.set_defaults(func=bw_lock_remove)
-    parser_lock_remove.add_argument(
+    targets_lock_remove = parser_lock_remove.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_lock_remove.completer = TargetCompleter()
+
     parser_lock_remove.add_argument(
         'lock_id',
         metavar=_("LOCK_ID"),
@@ -563,13 +602,16 @@ bundle:my_bundle  # items in this bundle
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_lock_show.set_defaults(func=bw_lock_show)
-    parser_lock_show.add_argument(
+    targets_lock_show = parser_lock_show.add_argument(
         'targets',
         metavar=_("TARGETS"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_lock_show.completer = TargetCompleter()
+
     parser_lock_show.add_argument(
         "-i",
         "--items",
@@ -597,7 +639,8 @@ will exit with code 47 if any matching items are locked
     )
 
     # bw metadata
-    help_metadata = ("View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red, uncolored if mixed-source) or a table of selected metadata keys from multiple nodes")
+    help_metadata = (
+        "View a JSON representation of a node's metadata (defaults blue, reactors green, groups yellow, node red, uncolored if mixed-source) or a table of selected metadata keys from multiple nodes")
     parser_metadata = subparsers.add_parser(
         "metadata",
         description=help_metadata,
@@ -605,13 +648,16 @@ will exit with code 47 if any matching items are locked
         formatter_class=RawTextHelpFormatter,
     )
     parser_metadata.set_defaults(func=bw_metadata)
-    parser_metadata.add_argument(
+    targets_metadata = parser_metadata.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_metadata.completer = TargetCompleter()
+
     parser_metadata.add_argument(
         "-k", "--keys",
         default=[],
@@ -619,7 +665,8 @@ will exit with code 47 if any matching items are locked
         metavar=_("KEY"),
         nargs='*',
         type=str,
-        help=_("show only partial metadata from the given key paths (e.g. `bw metadata mynode -k users/jdoe` to show `mynode.metadata['users']['jdoe']`)"),
+        help=_(
+            "show only partial metadata from the given key paths (e.g. `bw metadata mynode -k users/jdoe` to show `mynode.metadata['users']['jdoe']`)"),
     )
     parser_metadata.add_argument(
         "-b", "--blame",
@@ -693,7 +740,7 @@ will exit with code 47 if any matching items are locked
         help=HELP_node_workers,
         type=int,
     )
-    parser_nodes.add_argument(
+    targets_nodes = parser_nodes.add_argument(
         'targets',
         default=None,
         metavar=_("TARGET"),
@@ -701,6 +748,8 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_nodes.completer = TargetCompleter()
 
     # bw plot
     help_plot = _("Generates DOT output that can be piped into `dot -Tsvg -ooutput.svg`. "
@@ -946,13 +995,16 @@ will exit with code 47 if any matching items are locked
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_run.set_defaults(func=bw_run)
-    parser_run.add_argument(
+    targets_run = parser_run.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_run.completer = TargetCompleter()
+
     parser_run.add_argument(
         'command',
         metavar=_("COMMAND"),
@@ -1020,7 +1072,7 @@ will exit with code 47 if any matching items are locked
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_test.set_defaults(func=bw_test)
-    parser_test.add_argument(
+    targets_test = parser_test.add_argument(
         'targets',
         default=None,
         metavar=_("TARGET"),
@@ -1028,6 +1080,9 @@ will exit with code 47 if any matching items are locked
         type=str,
         help=HELP_get_target_nodes + _("\n(defaults to all)"),
     )
+    if shell_completion:
+        targets_test.completer = TargetCompleter()
+
     parser_test.add_argument(
         "-d",
         "--config-determinism",
@@ -1135,13 +1190,16 @@ will exit with code 47 if any matching items are locked
         formatter_class=RawTextHelpFormatter,  # for HELP_get_target_nodes
     )
     parser_verify.set_defaults(func=bw_verify)
-    parser_verify.add_argument(
+    targets_verify = parser_verify.add_argument(
         'targets',
         metavar=_("TARGET"),
         nargs='+',
         type=str,
         help=HELP_get_target_nodes,
     )
+    if shell_completion:
+        targets_verify.completer = TargetCompleter()
+
     parser_verify.add_argument(
         "-a",
         "--show-all",
@@ -1214,4 +1272,16 @@ bundle:my_bundle  # items in this bundle
     # bw zen
     parser_zen = subparsers.add_parser("zen")
     parser_zen.set_defaults(func=bw_zen)
+
+    if shell_completion:
+        # bw generate_completions
+        help_generate_completions = _("Generates the shell completion file")
+        parser_generate_completions = subparsers.add_parser(
+            "generate_completions",
+            description=help_generate_completions,
+            help=help_generate_completions,
+        )
+        parser_generate_completions.set_defaults(func=bw_generate_completions)
+
+        autocomplete(parser)
     return parser

@@ -1,3 +1,5 @@
+# PYTHON_ARGCOMPLETE_OK
+
 from cProfile import Profile
 from os import environ
 from os.path import abspath
