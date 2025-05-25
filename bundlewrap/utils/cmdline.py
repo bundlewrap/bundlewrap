@@ -144,9 +144,9 @@ bundle:my_bundle   # all nodes with this bundle
 "lambda:node.metadata_get('foo/magic', 47) < 3"
                    # all nodes whose metadata["foo"]["magic"] is less than three
 """)
-HELP_item_workers = _("number of items to apply simultaneously on each node (defaults to {})").format(DEFAULT_item_workers),
-HELP_node_workers = _("number of nodes to apply to simultaneously (defaults to {})").format(DEFAULT_node_workers),
-HELP_softlock_expiry = _("how long before the lock is ignored and removed automatically (defaults to \"{}\")").format(DEFAULT_softlock_expiry),
+HELP_item_workers = _("number of items to apply simultaneously on each node (defaults to {})").format(DEFAULT_item_workers)
+HELP_node_workers = _("number of nodes to apply to simultaneously (defaults to {})").format(DEFAULT_node_workers)
+HELP_softlock_expiry = _("how long before the lock is ignored and removed automatically (defaults to \"{}\")").format(DEFAULT_softlock_expiry)
 
 
 def _parallel_node_eval(
