@@ -193,6 +193,14 @@ class RouterOS(Item):
             return None
         elif len(result) == 1:
             return result[0]
+        elif len(result) >= 1:
+            for entry in result:
+                # ignore connected dynamic entries,
+                # these are for currently open connections
+                if entry.get('dynamic', False) and entry.get('connection', False):
+                    continue
+                else:
+                    return entry
         else:
             raise BundleError(_(
                 "{item} on {node} returned ambiguous data from API: {result}"
