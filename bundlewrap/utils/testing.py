@@ -44,10 +44,16 @@ def make_repo(tmpdir, bundles=None, groups=None, nodes=None):
     tmpdir.mkdir("libs")
 
     groupspy = tmpdir.join("groups.py")
-    groupspy.write("groups = {}\n".format(repr(groups)))
+    if groups:
+        groupspy.write("groups = {}\n".format(repr(groups)))
+    else:
+        groupspy.write("\n")
 
     nodespy = tmpdir.join("nodes.py")
-    nodespy.write("nodes = {}\n".format(repr(nodes)))
+    if nodes:
+        nodespy.write("nodes = {}\n".format(repr(nodes)))
+    else:
+        nodespy.write("\n")
 
     secrets = tmpdir.join(FILENAME_SECRETS)
     secrets.write("""
