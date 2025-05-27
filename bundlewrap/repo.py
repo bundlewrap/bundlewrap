@@ -73,31 +73,28 @@ HOOK_EVENTS = (
 
 INITIAL_CONTENT = {
     FILENAME_GROUPS: _("""
-groups = {
-    #'group-1': {
-    #    'bundles': (
-    #        'bundle-1',
-    #    ),
-    #    'members': (
-    #        'node-1',
-    #    ),
-    #    'subgroups': (
-    #        'group-2',
-    #    ),
-    #},
-    'all': {
-        'member_patterns': (
-            r".*",
-        ),
-    },
+#groups['group-1'] = {
+#    'bundles': (
+#        'bundle-1',
+#    ),
+#    'members': (
+#        'node-1',
+#    ),
+#    'subgroups': (
+#        'group-2',
+#    ),
+#}
+
+groups['all'] = {
+    'member_patterns': (
+        r".*",
+    ),
 }
     """),
 
     FILENAME_NODES: _("""
-nodes = {
-    'node-1': {
-        'hostname': "localhost",
-    },
+nodes['node-1'] = {
+    'hostname': "localhost",
 }
     """),
     FILENAME_REQUIREMENTS: "bundlewrap>={}\n".format(VERSION_STRING),
