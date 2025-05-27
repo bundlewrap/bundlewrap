@@ -447,7 +447,7 @@ class Repository(MetadataGenerator):
     def nodes_or_groups_from_dir(self, directory):
         path = join(self.path, directory)
         if not isdir(path):
-            return
+            return {}
         result = {}
         for root_dir, _dirs, files in walk(path):
             for filename in files:
