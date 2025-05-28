@@ -153,6 +153,12 @@ def prefix_lines(lines, prefix):
     return output
 
 
+def remove_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
+
+
 def randstr(length=24):
     """
     Returns a random alphanumeric string of the given length.

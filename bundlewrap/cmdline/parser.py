@@ -8,6 +8,7 @@ from ..utils.cmdline import (DEFAULT_item_workers, DEFAULT_node_workers,
                              HELP_item_workers, HELP_node_workers,
                              HELP_softlock_expiry)
 from ..utils.text import mark_for_translation as _
+from ..utils.text import remove_prefix
 from .apply import bw_apply
 from .debug import bw_debug
 from .diff import bw_diff
@@ -44,7 +45,10 @@ class TargetCompleter:
             # warn(kwargs)  # For development and debugging
             compl_file = join(parsed_args.repo_path, '.bw_shell_completion_targets')
             with open(compl_file) as f:
-                return f.read().splitlines()
+                return [
+                    remove_prefix(remove_prefix(line, 'node:'), 'group:')
+                    for line in f.read().splitlines()
+                ]
         except FileNotFoundError:
             return []
         except Exception as exc:
