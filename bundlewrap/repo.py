@@ -3,12 +3,19 @@ from importlib.util import module_from_spec, spec_from_file_location
 from inspect import isabstract
 from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
+from sys import version_info
 
-from pkg_resources import DistributionNotFound, require, VersionConflict  # needs setuptools
 try:
     from tomllib import loads as toml_load
 except ImportError:
     from rtoml import load as toml_load
+
+VERSION_NEW_PACKAGING = (3, 10)
+if version_info >= VERSION_NEW_PACKAGING:
+    from importlib import metadata
+    from packaging.requirements import Requirement
+else:
+    from pkg_resources import DistributionNotFound, require, VersionConflict  # needs setuptools
 
 from . import items, VERSION_STRING
 from .bundle import FILENAME_ITEMS
@@ -96,6 +103,69 @@ nodes = {
     FILENAME_REQUIREMENTS: "bundlewrap>={}\n".format(VERSION_STRING),
     FILENAME_SECRETS: generate_initial_secrets_cfg,
 }
+
+
+def _check_requirements(lines):
+    reqs = [Requirement(line) for line in lines]
+
+    for req in reqs:
+        # Ignore packages with a marker that does *not* apply to
+        # the current system.
+        if req.marker is not None and not req.marker.evaluate():
+            continue
+
+        for installed in metadata.distributions():
+            if req.name.lower() == installed.name.lower():
+                if req.specifier.contains(installed.version):
+                    # We're good.
+                    break
+                else:
+                    raise MissingRepoDependency(_(
+                        "{x} Python package '{required}' is listed in {filename}, "
+                        "but only '{existing_name}=={existing_version}' was found. "
+                        "You probably have to upgrade it with `pip install {required}`."
+                    ).format(
+                        existing_name=installed.name,
+                        existing_version=installed.version,
+                        filename=FILENAME_REQUIREMENTS,
+                        required=req,
+                        x=red("!"),
+                    ))
+        else:
+            raise MissingRepoDependency(_(
+                "{x} Python package '{pkg}' is listed in {filename}, but wasn't found. "
+                "You probably have to install it with `pip install {pkg}`."
+            ).format(
+                filename=FILENAME_REQUIREMENTS,
+                pkg=req,
+                x=red("!"),
+            ))
+
+
+# TODO Remove when dropping support for Python 3.9
+def _check_requirements_legacy(lines):
+    try:
+        require(lines)
+    except DistributionNotFound as exc:
+        raise MissingRepoDependency(_(
+            "{x} Python package '{pkg}' is listed in {filename}, but wasn't found. "
+            "You probably have to install it with `pip install {pkg}`."
+        ).format(
+            filename=FILENAME_REQUIREMENTS,
+            pkg=exc.req,
+            x=red("!"),
+        ))
+    except VersionConflict as exc:
+        raise MissingRepoDependency(_(
+            "{x} Python package '{required}' is listed in {filename}, "
+            "but only '{existing}' was found. "
+            "You probably have to upgrade it with `pip install {required}`."
+        ).format(
+            existing=exc.dist,
+            filename=FILENAME_REQUIREMENTS,
+            required=exc.req,
+            x=red("!"),
+        ))
 
 
 class HooksProxy:
@@ -513,32 +583,21 @@ class Repository(MetadataGenerator):
         # check requirements.txt
         try:
             with open(join(path, FILENAME_REQUIREMENTS)) as f:
-                lines = f.readlines()
+                lines = [line.strip() for line in f.readlines()]
+
+                # Ignore empty lines and comments.
+                lines = [line for line in lines if line and not line.startswith('#')]
+
+                # "-e some/editable" and "-r other_requirements.txt" are not
+                # supported.
+                lines = [line for line in lines if not line.startswith('-')]
         except Exception:
             pass
         else:
-            try:
-                require(lines)
-            except DistributionNotFound as exc:
-                raise MissingRepoDependency(_(
-                    "{x} Python package '{pkg}' is listed in {filename}, but wasn't found. "
-                    "You probably have to install it with `pip install {pkg}`."
-                ).format(
-                    filename=FILENAME_REQUIREMENTS,
-                    pkg=exc.req,
-                    x=red("!"),
-                ))
-            except VersionConflict as exc:
-                raise MissingRepoDependency(_(
-                    "{x} Python package '{required}' is listed in {filename}, "
-                    "but only '{existing}' was found. "
-                    "You probably have to upgrade it with `pip install {required}`."
-                ).format(
-                    existing=exc.dist,
-                    filename=FILENAME_REQUIREMENTS,
-                    required=exc.req,
-                    x=red("!"),
-                ))
+            if version_info >= VERSION_NEW_PACKAGING:
+                _check_requirements(lines)
+            else:
+                _check_requirements_legacy(lines)
 
         self.vault = SecretProxy(self)
 

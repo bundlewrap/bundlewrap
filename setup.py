@@ -29,7 +29,7 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.8",  # remove hack in files.py import when EOL
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.9",  # remove hack in repo.py (pkg_resources) and setuptools below when EOL
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -41,11 +41,12 @@ setup(
         "Jinja2",
         "librouteros >= 3.0.0",
         "Mako",
+        "packaging >= 25 ; python_version>='3.10'",
         "passlib",
         "pyyaml",
         "requests >= 1.0.0",
         "rtoml ; python_version<'3.11'",
-        "setuptools",
+        "setuptools <= 80.8.0 ; python_version<'3.10'",
         "tomlkit",
     ],
     zip_safe=False,
