@@ -1,3 +1,18 @@
+# 4.23.0
+
+2025-06-03
+
+* added support for shell autocompletion using `argcomplete`
+* added `bw items --blame`
+* defaults for `BW_NODE_WORKERS` are now consistent across all of bundlewrap
+  * This especially means that `bw run` and `bw ipmi` will now also use 4 (four) workers by default if you did not set`BW_NODE_WORKERS` manually
+* `IOManager` can now be used as a context manager
+  * That means you can now do `with io: ...` instead of having to use `try: ... finally:`
+* added job information for running `unless` actions
+* added `bw lock show --hide-not-locked`
+* fixed `bw repo create` so TOML nodes work out of the box
+* removed dependency on deprecated `pkg_resources` for python >= 3.10
+
 # 4.22.0
 
 2025-03-20
