@@ -1,3 +1,11 @@
+# 4.23.1
+
+2025-06-05
+
+* fixed name of new command: rename `bw generate_completions` to `generate-completions`
+* fixed order of `.bw_shell_completion_targets` file, must always be sorted
+* fixed position of `generate-completions` in help output
+
 # 4.23.0
 
 2025-06-03
