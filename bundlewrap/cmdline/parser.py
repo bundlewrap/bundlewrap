@@ -322,6 +322,16 @@ bundle:my_bundle  # items in this bundle
     if shell_completion:
         targets_diff.completer = TargetCompleter()
 
+    if shell_completion:
+        # bw generate-completions
+        help_generate_completions = _("Generates the shell completion file")
+        parser_generate_completions = subparsers.add_parser(
+            "generate-completions",
+            description=help_generate_completions,
+            help=help_generate_completions,
+        )
+        parser_generate_completions.set_defaults(func=bw_generate_completions)
+
     # bw groups
     help_groups = _("Lists groups in this repository")
     parser_groups = subparsers.add_parser("groups", description=help_groups, help=help_groups)
@@ -1284,14 +1294,6 @@ bundle:my_bundle  # items in this bundle
     parser_zen.set_defaults(func=bw_zen)
 
     if shell_completion:
-        # bw generate_completions
-        help_generate_completions = _("Generates the shell completion file")
-        parser_generate_completions = subparsers.add_parser(
-            "generate_completions",
-            description=help_generate_completions,
-            help=help_generate_completions,
-        )
-        parser_generate_completions.set_defaults(func=bw_generate_completions)
-
         autocomplete(parser)
+
     return parser
