@@ -11,4 +11,4 @@ def bw_generate_completions(repo, args):
     targets |= {f'!bundle:{bundle}' for bundle in repo.bundle_names}
 
     with open(compl_file, 'w') as f:
-        f.write('\n'.join(sorted(targets)))
+        f.write('\n'.join(sorted(targets)) + '\n')
