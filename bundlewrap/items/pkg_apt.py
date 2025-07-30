@@ -87,7 +87,7 @@ class AptPkg(Pkg):
     def pkg_remove(self):
         self.run(
             "DEBIAN_FRONTEND=noninteractive "
-            "apt-get -qy --allow-remove-essential "
+            "apt-get -qy --allow-remove-essential --allow-change-held-packages "
             "purge {}".format(quote(self.name.replace("_", ":")))
         )
 
