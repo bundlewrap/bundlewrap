@@ -174,7 +174,7 @@ class RouterOS(Item):
     def _add(self, command, kwargs):
         kwargs |= self.parse_identifier(self.identifier)
         command += "/add"
-        arguments = [f"={key}={value}" for key, value in kwargs.items()]
+        arguments = [f"={key}={value}" for key, value in kwargs.items() if key != "dynamic"]
         self.run_routeros(command, *arguments)
 
     def _list(self, command):
