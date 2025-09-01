@@ -8,22 +8,24 @@ from .ui import io
 def stat(node, path):
     if node.os in node.OS_FAMILY_BSD:
         result = node.run(
-            "stat -f '%Su:%Sg:%p:%z:%HT' -- {}".format(quote(path)),
+            "stat -f '%Su:%Sg:%u:%g:%p:%z:%HT' -- {}".format(quote(path)),
             may_fail=True,
         )
     else:
         result = node.run(
-            "stat -c '%U:%G:%a:%s:%F' -- {}".format(quote(path)),
+            "stat -c '%U:%G:%u:%g:%a:%s:%F' -- {}".format(quote(path)),
             may_fail=True,
         )
     if result.return_code != 0:
         return {}
-    owner, group, mode, size, ftype = \
-        force_text(result.stdout).strip().split(":", 5)
+    owner, group, owner_id, group_id, mode, size, ftype = \
+        force_text(result.stdout).strip().split(":", 7)
     mode = mode[-4:].zfill(4)  # cut off BSD file type
     file_stat = {
         'owner': owner,
         'group': group,
+        'owner_id': owner_id,
+        'group_id': group_id,
         'mode': mode,
         'size': int(size),
         'type': ftype.lower(),
@@ -58,6 +60,10 @@ class PathInfo:
         return self.stat['group']
 
     @property
+    def group_id(self):
+        return self.stat['group_id']
+
+    @property
     def is_directory(self):
         return self.stat['type'] == "directory"
 
@@ -89,6 +95,10 @@ class PathInfo:
     @property
     def owner(self):
         return self.stat['owner']
+
+    @property
+    def owner_id(self):
+        return self.stat['owner_id']
 
     @cached_property
     def desc(self):
