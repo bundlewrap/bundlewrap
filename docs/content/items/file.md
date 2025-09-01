@@ -70,7 +70,7 @@ Encoding of the target file. Note that this applies to the remote file only, you
 
 ## group
 
-Name of the group this file belongs to. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node. If `group` is set to `None` and the file does not exist yet, `group` will be the primary group of the ssh user.
+Name of the group this file belongs to. Prefix with `+` if you want to use a GID instead of a group name (e. g. `+1234`). Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node. If `group` is set to `None` and the file does not exist yet, `group` will be the primary group of the ssh user.
 
 <hr>
 
@@ -82,7 +82,7 @@ File mode as returned by `stat -c %a <file>`. Defaults to `644`. Set to `None` i
 
 ## owner
 
-Username of the file's owner. Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.  If `owner` is set to `None` and the file does not exist yet, `owner` will be the ssh user.
+Username of the file's owner. Prefix with `+` if you want to use a UID instead of a username (e. g. `+1234`). Defaults to `'root'`. Set to `None` if you don't want BundleWrap to change whatever is set on the node.  If `owner` is set to `None` and the file does not exist yet, `owner` will be the ssh user.
 
 <hr>
 
