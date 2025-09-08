@@ -7,7 +7,7 @@ from ..lock import (
     softlock_remove,
     softlocks_to_table,
 )
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import get_target_nodes_or_exit
 from ..utils.text import (
     bold,
     error_summary,
@@ -40,7 +40,7 @@ def remove_lock_if_present(node, lock_id):
 
 def bw_lock_add(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
+    target_nodes = get_target_nodes_or_exit(repo, args['targets'], args['node_workers'])
     target_nodes = remove_dummy_nodes(target_nodes)
     if not target_nodes:
         return
@@ -97,7 +97,7 @@ def bw_lock_add(repo, args):
 
 def bw_lock_remove(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
+    target_nodes = get_target_nodes_or_exit(repo, args['targets'], args['node_workers'])
     target_nodes = remove_dummy_nodes(target_nodes)
     if not target_nodes:
         return
@@ -156,7 +156,7 @@ def bw_lock_remove(repo, args):
 
 def bw_lock_show(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
+    target_nodes = get_target_nodes_or_exit(repo, args['targets'], args['node_workers'])
     target_nodes = remove_dummy_nodes(target_nodes)
     if not target_nodes:
         return

@@ -1,5 +1,5 @@
 from ..concurrency import WorkerPool
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import get_target_nodes_or_exit
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import blue, bold, error_summary, format_duration, green
 from ..utils.text import mark_for_translation as _
@@ -9,7 +9,7 @@ from ..utils.ui import io
 
 def bw_ipmi(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
+    target_nodes = get_target_nodes_or_exit(repo, args['targets'], args['node_workers'])
     pending_nodes = target_nodes.copy()
     io.progress_set_total(len(pending_nodes))
 

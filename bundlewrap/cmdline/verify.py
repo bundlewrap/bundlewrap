@@ -2,7 +2,7 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..utils.cmdline import count_items, get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes_or_exit
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -113,7 +113,7 @@ def stats_summary(node_stats, total_duration):
 def bw_verify(repo, args):
     errors = []
     node_stats = {}
-    pending_nodes = get_target_nodes(repo, args['targets'])
+    pending_nodes = get_target_nodes_or_exit(repo, args['targets'])
     start_time = datetime.now()
     io.progress_set_total(count_items(pending_nodes))
 

@@ -5,7 +5,7 @@ from sys import exit
 from ..concurrency import WorkerPool
 from ..exceptions import SkipNode
 from ..utils import SkipList
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import get_target_nodes_or_exit
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -110,7 +110,7 @@ def stats_summary(results, include_stdout, include_stderr):
 
 def bw_run(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
+    target_nodes = get_target_nodes_or_exit(repo, args['targets'], args['node_workers'])
     pending_nodes = target_nodes.copy()
     io.progress_set_total(len(pending_nodes))
 
