@@ -5,7 +5,7 @@ from sys import exit
 from ..exceptions import NoSuchItem
 from ..metadata import metadata_to_json
 from ..repo import Repository
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import get_target_nodes_or_exit
 from ..utils.dicts import diff_dict, dict_to_text
 from ..utils.scm import get_git_branch, get_git_rev, set_git_rev
 from ..utils.text import (
@@ -322,7 +322,7 @@ def bw_diff(repo, args):
         ).format(x=red("!!!")))
         exit(1)
 
-    target_nodes = sorted(get_target_nodes(repo, args['targets']))
+    target_nodes = sorted(get_target_nodes_or_exit(repo, args['targets']))
 
     if args['branch'] or args['cmd_change'] or args['cmd_reset'] or args['prompt']:
         intermissions = []

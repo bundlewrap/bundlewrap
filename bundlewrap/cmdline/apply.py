@@ -4,7 +4,7 @@ from sys import exit
 from ..concurrency import WorkerPool
 from ..exceptions import GracefulApplyException
 from ..utils import SkipList
-from ..utils.cmdline import count_items, get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes_or_exit
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -24,7 +24,7 @@ from ..utils.ui import io
 
 def bw_apply(repo, args):
     errors = []
-    target_nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
+    target_nodes = get_target_nodes_or_exit(repo, args['targets'], args['node_workers'])
     pending_nodes = target_nodes.copy()
 
     try:

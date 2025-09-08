@@ -4,7 +4,7 @@ from sys import exit, stderr, stdout
 from traceback import format_exc, print_exc
 
 from ..concurrency import WorkerPool
-from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode, RepositoryError
+from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode, RepositoryError, UsageException
 from . import names
 from .text import bold, mark_for_translation as _, prefix_lines, red
 from .ui import io, QUIT_EVENT
@@ -198,6 +198,17 @@ def _parallel_node_eval(
     return dict(worker_pool.run())
 
 
+def get_target_nodes_or_exit(repo, target_strings, node_workers=None):
+    try:
+        return get_target_nodes(repo, target_strings, node_workers)
+    except UsageException as e:
+        io.stderr(_("{x} {message}").format(
+            x=red("!!!"),
+            message=str(e),
+        ))
+        exit(1)
+
+
 def get_target_nodes(repo, target_strings, node_workers=None):
     if not node_workers:
         node_workers = DEFAULT_node_workers
@@ -235,11 +246,7 @@ def get_target_nodes(repo, target_strings, node_workers=None):
                 try:
                     group = repo.get_group(name)
                 except NoSuchGroup:
-                    io.stderr(_("{x} No such node or group: {name}").format(
-                        x=red("!!!"),
-                        name=name,
-                    ))
-                    exit(1)
+                    raise UsageException('No such node or group: {}'.format(name))
                 else:
                     targets.update(group.nodes)
     return targets

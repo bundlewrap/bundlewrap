@@ -6,7 +6,7 @@ from ..exceptions import FaultUnavailable
 from ..itemqueue import ItemTestQueue
 from ..metadata import check_for_metadata_conflicts, metadata_to_json
 from ..repo import Repository
-from ..utils.cmdline import count_items, get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes_or_exit
 from ..utils.dicts import diff_dict, diff_text
 from ..utils.text import bold, green, mark_for_translation as _, prefix_lines, red, yellow
 from ..utils.ui import io, QUIT_EVENT
@@ -259,7 +259,7 @@ def bw_test(repo, args):
         args['subgroup_loops']
     )
     if args['targets']:
-        nodes = get_target_nodes(repo, args['targets'])
+        nodes = get_target_nodes_or_exit(repo, args['targets'])
         if not options_selected:
             args['hooks_node'] = True
             args['items'] = True

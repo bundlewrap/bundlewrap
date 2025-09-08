@@ -5,7 +5,7 @@ from traceback import format_exc
 from ..concurrency import WorkerPool
 from ..exceptions import RepositoryError
 from ..node import NODE_ATTRS
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import get_target_nodes_or_exit
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, prefix_lines, red, yellow
 from ..utils.ui import io, page_lines
@@ -140,7 +140,7 @@ def select_attrs(selected_attrs, available_attrs):
 
 def bw_nodes(repo, args):
     if args['targets']:
-        nodes = get_target_nodes(repo, args['targets'], args['node_workers'])
+        nodes = get_target_nodes_or_exit(repo, args['targets'], args['node_workers'])
     else:
         nodes = repo.nodes
     if not args['attrs']:
