@@ -9,7 +9,7 @@ from bundlewrap.utils.ui import io
 def parallel_node_eval(
     nodes,
     expression,
-    node_workers,
+    workers,
 ):
     nodes = set(nodes)
 
@@ -50,6 +50,6 @@ def parallel_node_eval(
         tasks_available,
         next_task,
         handle_result=handle_result,
-        workers=node_workers,
+        workers=workers,
     )
     return dict(worker_pool.run())

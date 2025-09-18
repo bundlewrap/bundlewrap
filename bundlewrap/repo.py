@@ -538,6 +538,9 @@ class Repository(MetadataGenerator):
         """
         Returns a list of nodes where every node is a member of every
         group given.
+
+        :param group_names: list of names of the groups to check for
+        :return list of nodes where every node is a member of every group given.
         """
         base_group = set(self.get_group(group_names[0]).nodes)
         for group_name in group_names[1:]:
@@ -553,6 +556,9 @@ class Repository(MetadataGenerator):
         """
         Returns all nodes that are a member of at least one of the given
         groups.
+
+        :param group_names: list of names of the groups to check for
+        :return list of nodes which are in at least one of given groups
         """
         for node in self.nodes:
             if node.in_any_group(group_names):
@@ -561,12 +567,18 @@ class Repository(MetadataGenerator):
     def nodes_in_group(self, group_name):
         """
         Returns a list of nodes in the given group.
+
+        :param group_name: name of the group to check for
+        :return list of nodes which are in the given group
         """
         return self.nodes_in_all_groups([group_name])
 
     def nodes_not_in_group(self, group_name):
         """
         Returns a list of nodes not in the given group.
+
+        :param group_name: name of the group to check for
+        :return list of nodes which are not in the given group
         """
         return [
             node
@@ -576,7 +588,10 @@ class Repository(MetadataGenerator):
 
     def nodes_with_bundle(self, bundle_name):
         """
-        Returns a list of nodes not in the given group.
+        Returns a list of nodes that do have the given bundle.
+
+        :param bundle_name: name of the bundle to check for
+        :return list of nodes which do not have the given bundle
         """
         return [
             node
@@ -586,7 +601,10 @@ class Repository(MetadataGenerator):
 
     def nodes_without_bundle(self, bundle_name):
         """
-        Returns a list of nodes not in the given group.
+        Returns a list of nodes that do not have the given bundle.
+
+        :param bundle_name: name of the bundle to check for
+        :return list of nodes which have the given bundle
         """
         return [
             node
@@ -594,14 +612,21 @@ class Repository(MetadataGenerator):
             if bundle_name not in names(node.bundles)
         ]
 
-    def nodes_matching_lambda(self, lamda_str, node_workers=None):
+    def nodes_matching_lambda(self, lamda_str, lamda_workers=None):
         """
-        Returns a list of nodes matching the lambda
+        Returns a list of nodes matching the lambda.
+
+        Example:
+            nodes = repo.nodes_matching_lambda("lambda:node.metadata_get('foo/magic', 47) < 3")
+
+        :param lamda_str: string to evaluate as python code with `node` being one of the nodes, expected to return a boolean
+        :param lamda_workers: number of parallel workers used to check lamda condition on every node
+        :return list of nodes matching the given lamda
         """
         result_items = parallel_node_eval(
             self.nodes,
             lamda_str,
-            node_workers,
+            lamda_workers,
         ).items()
 
         return [
@@ -610,7 +635,26 @@ class Repository(MetadataGenerator):
             if result
         ]
 
-    def nodes_matching(self, target_strings, node_workers=None):
+    def nodes_matching(self, target_strings, lamda_workers=None):
+        """
+        Returns a list of nodes matching any of the given target-strings. This is the same API that is used by
+        all the bw commandlines, i.e. `bw items` or `bw apply` to select which nodes to operate on.
+
+        Example:
+            nodes = repo.nodes_matching(['wi-5.s2s', 'wi-5.routing'])
+
+        :param target_strings: expression to select target nodes:
+        my_node            # to select a single node
+        my_group           # all nodes in this group
+        bundle:my_bundle   # all nodes with this bundle
+        !bundle:my_bundle  # all nodes without this bundle
+        !group:my_group    # all nodes not in this group
+        "lambda:node.metadata_get('foo/magic', 47) < 3"
+        # all nodes whose metadata["foo"]["magic"] is less than three
+
+        :param lamda_workers: number of parallel workers to check lamda condition on nodes
+        :return list of nodes matching any of the given target-strings
+        """
         if isinstance(target_strings, str):
             target_strings = [target_strings]
 
@@ -628,7 +672,7 @@ class Repository(MetadataGenerator):
                 targets.update(self.nodes_in_group(group_name))
             elif name.startswith("lambda:"):
                 lambda_str = name.split(":", 1)[1]
-                targets.update(self.nodes_matching_lambda(lambda_str, node_workers))
+                targets.update(self.nodes_matching_lambda(lambda_str, lamda_workers))
             else:
                 try:
                     targets.add(self.get_node(name))
