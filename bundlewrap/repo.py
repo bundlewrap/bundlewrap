@@ -5,6 +5,8 @@ from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 from sys import version_info
 
+from .utils.node_lambda import parallel_node_eval
+
 try:
     from tomllib import loads as toml_load
 except ImportError:
@@ -25,6 +27,7 @@ from .exceptions import (
     NoSuchRepository,
     MissingRepoDependency,
     RepositoryError,
+    UsageException,
 )
 from .group import Group
 from .metagen import MetadataGenerator
@@ -561,6 +564,83 @@ class Repository(MetadataGenerator):
         Returns a list of nodes in the given group.
         """
         return self.nodes_in_all_groups([group_name])
+
+    def nodes_not_in_group(self, group_name):
+        """
+        Returns a list of nodes not in the given group.
+        """
+        return [
+            node
+            for node in self.nodes
+            if not node.in_group(group_name)
+        ]
+
+    def nodes_with_bundle(self, bundle_name):
+        """
+        Returns a list of nodes not in the given group.
+        """
+        return [
+            node
+            for node in self.nodes
+            if bundle_name in names(node.bundles)
+        ]
+
+    def nodes_without_bundle(self, bundle_name):
+        """
+        Returns a list of nodes not in the given group.
+        """
+        return [
+            node
+            for node in self.nodes
+            if bundle_name not in names(node.bundles)
+        ]
+
+    def nodes_matching_lambda(self, lamda_str, node_workers=None):
+        """
+        Returns a list of nodes matching the lambda
+        """
+        result_items = parallel_node_eval(
+            self.nodes,
+            lamda_str,
+            node_workers,
+        ).items()
+
+        return [
+            self.get_node(node_name)
+            for node_name, result in result_items
+            if result
+        ]
+
+
+    def nodes_matching(self, target_strings, node_workers=None):
+        targets = set()
+        for name in target_strings:
+            name = name.strip()
+            if name.startswith("bundle:"):
+                bundle_name = name.split(":", 1)[1]
+                targets.update(self.nodes_with_bundle(bundle_name))
+            elif name.startswith("!bundle:"):
+                bundle_name = name.split(":", 1)[1]
+                targets.update(self.nodes_without_bundle(bundle_name))
+            elif name.startswith("!group:"):
+                group_name = name.split(":", 1)[1]
+                targets.update(self.nodes_in_group(group_name))
+            elif name.startswith("lambda:"):
+                lambda_str = name.split(":", 1)[1]
+                targets.update(self.nodes_matching_lambda(lambda_str, node_workers))
+            else:
+                try:
+                    targets.add(self.get_node(name))
+                except NoSuchNode:
+                    try:
+                        group = self.get_group(name)
+                    except NoSuchGroup:
+                        raise UsageException(
+                            _("No such node or group: {name}").format(name=name)
+                        )
+                    else:
+                        targets.update(group.nodes)
+        return targets
 
     def metadata_hash(self):
         repo_dict = {}
