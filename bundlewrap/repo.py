@@ -634,12 +634,10 @@ class Repository(MetadataGenerator):
                 except NoSuchNode:
                     try:
                         group = self.get_group(name)
-                    except NoSuchGroup:
-                        raise UsageException(
-                            _("No such node or group: {name}").format(name=name)
-                        )
-                    else:
                         targets.update(group.nodes)
+                    except NoSuchGroup:
+                        continue
+
         return targets
 
     def metadata_hash(self):

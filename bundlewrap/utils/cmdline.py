@@ -153,11 +153,11 @@ def get_target_nodes(repo, target_strings, node_workers=None):
     if not node_workers:
         node_workers = DEFAULT_node_workers
 
-    try:
-        return repo.nodes_matching(target_strings, node_workers)
-    except UsageException as e:
-        io.stderr("{x} {message}").format(
+    nodes_matching = repo.nodes_matching(target_strings, node_workers)
+    if not nodes_matching:
+        io.stderr(_("{x} Input did not match any nodes").format(
             x=red("!!!"),
-            message=str(e),
-        )
+        ))
         exit(1)
+
+    return nodes_matching
