@@ -638,7 +638,7 @@ class Repository(MetadataGenerator):
                     except NoSuchGroup:
                         continue
 
-        return targets
+        return list(targets)
 
     def metadata_hash(self):
         repo_dict = {}
