@@ -43,7 +43,7 @@ def parallel_node_eval(
             'target': get_values,
         }
 
-    def handle_result(task_id, result, duration):
+    def handle_result(task_id, result, _duration):
         return task_id, result
 
     worker_pool = WorkerPool(
