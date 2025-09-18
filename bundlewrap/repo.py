@@ -27,7 +27,6 @@ from .exceptions import (
     NoSuchRepository,
     MissingRepoDependency,
     RepositoryError,
-    UsageException,
 )
 from .group import Group
 from .metagen import MetadataGenerator

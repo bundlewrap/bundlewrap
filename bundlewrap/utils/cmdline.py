@@ -1,12 +1,10 @@
 from functools import wraps
 from os import environ
 from sys import exit, stderr, stdout
-from traceback import format_exc, print_exc
+from traceback import print_exc
 
-from ..concurrency import WorkerPool
-from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode, RepositoryError, UsageException
-from . import names
-from .text import bold, mark_for_translation as _, prefix_lines, red
+from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode
+from .text import mark_for_translation as _, red
 from .ui import io, QUIT_EVENT
 
 
