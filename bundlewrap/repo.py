@@ -611,8 +611,10 @@ class Repository(MetadataGenerator):
             if result
         ]
 
-
     def nodes_matching(self, target_strings, node_workers=None):
+        if isinstance(target_strings, str):
+            target_strings = [target_strings]
+
         targets = set()
         for name in target_strings:
             name = name.strip()
