@@ -39,7 +39,7 @@ DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
 @cache
 def check_download(url, timeout):
     try:
-        head(url, timeout=timeout).raise_for_status()
+        head(url, allow_redirects=True, timeout=timeout).raise_for_status()
     except Exception as exc:
         return exc
     else:
