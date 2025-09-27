@@ -37,6 +37,7 @@ setup(
         "Topic :: System :: Systems Administration",
     ],
     install_requires=[
+        "bcrypt",
         "cryptography",
         "Jinja2",
         "librouteros >= 3.0.0",
