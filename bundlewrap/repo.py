@@ -612,22 +612,22 @@ class Repository(MetadataGenerator):
             if bundle_name not in names(node.bundles)
         ]
 
-    def nodes_matching_lambda(self, lamda_str, lamda_workers=None):
+    def nodes_matching_lambda(self, lambda_str, lambda_workers=None):
         """
         Returns a list of nodes matching the lambda.
 
         Example:
             nodes = repo.nodes_matching_lambda("lambda:node.metadata_get('foo/magic', 47) < 3")
 
-        :param lamda_str: string to evaluate as python code with `node` being one of the nodes,
+        :param lambda_str: string to evaluate as python code with `node` being one of the nodes,
             expected to return a value that can be interpreted as boolean
-        :param lamda_workers: number of parallel workers used to check lamda condition on every node
-        :return list of nodes matching the given lamda
+        :param lambda_workers: number of parallel workers used to check lambda condition on every node
+        :return list of nodes matching the given lambda
         """
         result_items = parallel_node_eval(
             self.nodes,
-            lamda_str,
-            lamda_workers,
+            lambda_str,
+            lambda_workers,
         ).items()
 
         return [
@@ -636,7 +636,7 @@ class Repository(MetadataGenerator):
             if result
         ]
 
-    def nodes_matching(self, target_strings, lamda_workers=None):
+    def nodes_matching(self, target_strings, lambda_workers=None):
         """
         Returns a list of nodes matching any of the given target-strings. This is the same API that is used by
         all the bw commandlines, i.e. `bw items` or `bw apply` to select which nodes to operate on.
@@ -653,7 +653,7 @@ class Repository(MetadataGenerator):
         "lambda:node.metadata_get('foo/magic', 47) < 3"
         # all nodes whose metadata["foo"]["magic"] is less than three
 
-        :param lamda_workers: number of parallel workers to check lamda condition on nodes
+        :param lambda_workers: number of parallel workers to check lambda condition on nodes
         :return list of nodes matching any of the given target-strings
         """
         if isinstance(target_strings, str):
@@ -673,7 +673,7 @@ class Repository(MetadataGenerator):
                 targets.update(self.nodes_in_group(group_name))
             elif name.startswith("lambda:"):
                 lambda_str = name.split(":", 1)[1]
-                targets.update(self.nodes_matching_lambda(lambda_str, lamda_workers))
+                targets.update(self.nodes_matching_lambda(lambda_str, lambda_workers))
             else:
                 try:
                     targets.add(self.get_node(name))

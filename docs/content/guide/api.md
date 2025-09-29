@@ -112,7 +112,7 @@ Returns a list of Node objects that do not have the named bundle.
 
 <br>
 
-**`.nodes_matching_lambda(self, lamda_str, lamda_workers=None)`**
+**`.nodes_matching_lambda(self, lambda_str, lambda_workers=None)`**
 
 Returns a list of Node objects matching the lambda.
 
@@ -121,12 +121,12 @@ Example:
 nodes = repo.nodes_matching_lambda("node.metadata.get('foo/magic', 47) < 3")
 ```
 
-- `lamda_str` is evaluated as python code with `node` being one of the nodes and expected to return a boolean.
-- `lamda_workers` is number of parallel workers used to check lamda condition on every node
+- `lambda_str` is evaluated as python code with `node` being one of the nodes and expected to return a boolean.
+- `lambda_workers` is number of parallel workers used to check lambda condition on every node
 
 <br>
 
-**`.nodes_matching(self, target_strings, lamda_workers=None)`**
+**`.nodes_matching(self, target_strings, lambda_workers=None)`**
 
 Returns a list of nodes matching any of the given target-strings. This is the same API that is used by
 all the bw commandlines, i.e. `bw items` or `bw apply` to select which nodes to operate on.
@@ -139,7 +139,7 @@ nodes = repo.nodes_matching("loc.router-1")
 ```
 
 - `target_strings` is a list of expression to select target nodes
-- `lamda_workers` is number of parallel workers used to check lamda condition on every node
+- `lambda_workers` is number of parallel workers used to check lambda condition on every node
 
 The following expressions can be used:
 - `my_node` to select a single node
