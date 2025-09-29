@@ -96,29 +96,29 @@ Returns a list of Node objects in the named group.
 
 **`.nodes_not_in_group(group_name)`**
 
-Returns a list of nodes not in the named group.
+Returns a list of Node objects not in the named group.
 
 <br>
 
 **`.nodes_with_bundle(bundle_name)`**
 
-Returns a list of nodes that do have the named bundle.
+Returns a list of Node objects that do have the named bundle.
 
 <br>
 
 **`.nodes_without_bundle(bundle_name)`**
 
-Returns a list of nodes that do not have the named bundle.
+Returns a list of Node objects that do not have the named bundle.
 
 <br>
 
 **`.nodes_matching_lambda(self, lamda_str, lamda_workers=None)`**
 
-Returns a list of nodes matching the lambda.
+Returns a list of Node objects matching the lambda.
 
 Example:
 ```python
-nodes = repo.nodes_matching_lambda("lambda:node.metadata_get('foo/magic', 47) < 3")
+nodes = repo.nodes_matching_lambda("node.metadata.get('foo/magic', 47) < 3")
 ```
 
 - `lamda_str` is evaluated as python code with `node` being one of the nodes and expected to return a boolean.
@@ -133,7 +133,9 @@ all the bw commandlines, i.e. `bw items` or `bw apply` to select which nodes to 
 
 Example:
 ```python
-nodes = repo.nodes_matching_lambda("lambda:node.metadata_get('foo/magic', 47) < 3")
+nodes = repo.nodes_matching("lambda:node.metadata.get('foo/magic', 47) < 3")
+nodes = repo.nodes_matching("loc.routers")
+nodes = repo.nodes_matching("loc.router-1")
 ```
 
 - `target_strings` is a list of expression to select target nodes

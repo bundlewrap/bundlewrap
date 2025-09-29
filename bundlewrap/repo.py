@@ -591,7 +591,7 @@ class Repository(MetadataGenerator):
         Returns a list of nodes that do have the given bundle.
 
         :param bundle_name: name of the bundle to check for
-        :return list of nodes which do not have the given bundle
+        :return list of nodes which have the given bundle
         """
         return [
             node
@@ -604,7 +604,7 @@ class Repository(MetadataGenerator):
         Returns a list of nodes that do not have the given bundle.
 
         :param bundle_name: name of the bundle to check for
-        :return list of nodes which have the given bundle
+        :return list of nodes which do not have the given bundle
         """
         return [
             node
@@ -619,7 +619,8 @@ class Repository(MetadataGenerator):
         Example:
             nodes = repo.nodes_matching_lambda("lambda:node.metadata_get('foo/magic', 47) < 3")
 
-        :param lamda_str: string to evaluate as python code with `node` being one of the nodes, expected to return a boolean
+        :param lamda_str: string to evaluate as python code with `node` being one of the nodes,
+            expected to return a value that can be interpreted as boolean
         :param lamda_workers: number of parallel workers used to check lamda condition on every node
         :return list of nodes matching the given lamda
         """
