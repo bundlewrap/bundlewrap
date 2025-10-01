@@ -2,10 +2,11 @@ from logging import ERROR, getLogger
 from shlex import quote
 from string import ascii_lowercase, digits
 
-from passlib.hash import bcrypt, md5_crypt, sha256_crypt, sha512_crypt
+from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
+from bundlewrap.utils.crypto import bcrypt
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
@@ -32,17 +33,15 @@ _ATTRIBUTE_OPTIONS = {
 }
 
 # a random static salt if users don't provide one
+# TODO #853 If we make bundlewrap.crypto a replacement for passlib, then
+# move this constant over there.
 _DEFAULT_SALT = "uJzJlYdG"
-
-# bcrypt needs special salts. 22 characters long, ending in ".", "O", "e", "u"
-# see https://bitbucket.org/ecollins/passlib/issues/25
-_DEFAULT_BCRYPT_SALT = "oo2ahgheen9Tei0IeJohTO"
 
 HASH_METHODS = {
     'md5': md5_crypt,
     'sha256': sha256_crypt,
     'sha512': sha512_crypt,
-    'bcrypt': bcrypt
+    'bcrypt': bcrypt,
 }
 
 _USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
@@ -293,10 +292,10 @@ class User(Item):
             )]
             salt = force_text(attributes.get('salt', None))
             if self.node.os == 'openbsd':
-                attributes['password_hash'] = bcrypt.encrypt(
+                attributes['password_hash'] = bcrypt(
                     force_text(attributes['password']),
                     rounds=8,  # default rounds for OpenBSD accounts
-                    salt=_DEFAULT_BCRYPT_SALT if salt is None else salt,
+                    salt=salt,
                 )
             elif attributes.get('hash_method') == 'md5':
                 attributes['password_hash'] = hash_method.encrypt(
