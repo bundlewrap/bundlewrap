@@ -8,6 +8,7 @@ from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .utils import (
     cached_property,
     cached_property_set,
+    convert_magic_strings,
     error_context,
     Fault,
     get_file_contents,
@@ -22,7 +23,8 @@ from .utils.dicts import (
     COLLECTION_OF_STRINGS,
     LIST_OR_TUPLE_OF_INTS,
 )
-from .utils.text import mark_for_translation as _, toml_clean, validate_name
+from .utils.text import mark_for_translation as _, toml_clean, bold, validate_name
+from .utils.ui import io
 
 
 GROUP_ATTR_DEFAULTS = {
@@ -142,6 +144,8 @@ class Group:
         self.file_path = attributes.get('file_path')
         self.repo = repo
 
+        self.convert_magic_strings()
+
         for attr in GROUP_ATTR_DEFAULTS:
             # defaults are applied in node.py
             setattr(self, attr, attributes.get(attr))
@@ -161,6 +165,11 @@ class Group:
         for node in self.nodes:
             group_dict[node.name] = node.hash()
         return group_dict
+
+    @io.job_wrapper(_("{}  converting magic strings").format(bold("{0.name}")))
+    def convert_magic_strings(self):
+        # Lives in its own function so we can use `io.job_wrapper()`
+        self._attributes = convert_magic_strings(self.repo, self._attributes)
 
     def group_membership_hash(self):
         return hash_statedict(sorted(names(self.nodes)))

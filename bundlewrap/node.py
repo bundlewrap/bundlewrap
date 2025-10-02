@@ -31,6 +31,7 @@ from .metadata import hash_metadata
 from .utils import (
     cached_property,
     cached_property_set,
+    convert_magic_strings,
     error_context,
     get_file_contents,
     names,
@@ -60,6 +61,7 @@ from .utils.text import (
     yellow,
 )
 from .utils.ui import io
+
 
 
 NODE_ATTR_TYPES = GROUP_ATTR_TYPES.copy()
@@ -550,6 +552,8 @@ class Node:
         self.name = name
         self.repo = repo
 
+        self.convert_magic_strings()
+
         for attr in GROUP_ATTR_DEFAULTS:
             setattr(self, "_{}".format(attr), attributes.get(attr))
 
@@ -615,6 +619,11 @@ class Node:
             if "group:{}".format(group.name) in components:
                 return True
         return False
+
+    @io.job_wrapper(_("{}  converting magic strings").format(bold("{0.name}")))
+    def convert_magic_strings(self):
+        # Lives in its own function so we can use `io.job_wrapper()`
+        self._attributes = convert_magic_strings(self.repo, self._attributes)
 
     def group_membership_hash(self):
         return hash_statedict(sorted(names(self.groups)))
