@@ -528,7 +528,7 @@ class Node:
     OS_FAMILY_UNIX = OS_FAMILY_BSD + OS_FAMILY_LINUX
     OS_KNOWN = OS_FAMILY_UNIX + ('kubernetes', 'routeros')
 
-    def __init__(self, name, attributes=None):
+    def __init__(self, name, attributes=None, repo=None):
         if attributes is None:
             attributes = {}
 
@@ -548,6 +548,7 @@ class Node:
         self.file_path = attributes.get('file_path')
         self.hostname = attributes.get('hostname', name)
         self.name = name
+        self.repo = repo
 
         for attr in GROUP_ATTR_DEFAULTS:
             setattr(self, "_{}".format(attr), attributes.get(attr))

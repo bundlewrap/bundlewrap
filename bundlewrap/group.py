@@ -117,7 +117,7 @@ class Group:
     """
     A group of nodes.
     """
-    def __init__(self, group_name, attributes=None):
+    def __init__(self, group_name, attributes=None, repo=None):
         if attributes is None:
             attributes = {}
 
@@ -140,6 +140,7 @@ class Group:
         }
         self.name = group_name
         self.file_path = attributes.get('file_path')
+        self.repo = repo
 
         for attr in GROUP_ATTR_DEFAULTS:
             # defaults are applied in node.py

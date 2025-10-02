@@ -309,7 +309,6 @@ class Repository(MetadataGenerator):
         if group.name in names(self.groups):
             raise RepositoryError(_("you cannot have two groups "
                                     "both named '{}'").format(group.name))
-        group.repo = self
         self.group_dict[group.name] = group
 
     def add_node(self, node):
@@ -322,8 +321,6 @@ class Repository(MetadataGenerator):
         if node.name in names(self.nodes):
             raise RepositoryError(_("you cannot have two nodes "
                                     "both named '{}'").format(node.name))
-
-        node.repo = self
         self.node_dict[node.name] = node
 
     @cached_property
@@ -607,8 +604,8 @@ class Repository(MetadataGenerator):
         # populate groups
         toml_groups = self.nodes_or_groups_from_dir("groups")
         self.group_dict = {}
-        for group in self.nodes_or_groups_from_file(self.groups_file, 'groups', toml_groups):
-            self.add_group(Group(*group))
+        for group_name, group_attrs in self.nodes_or_groups_from_file(self.groups_file, 'groups', toml_groups):
+            self.add_group(Group(group_name, attributes=group_attrs, repo=self))
 
         # populate items
         self.item_classes = list(self.items_from_dir(items.__path__[0]))
@@ -618,8 +615,8 @@ class Repository(MetadataGenerator):
         # populate nodes
         toml_nodes = self.nodes_or_groups_from_dir("nodes")
         self.node_dict = {}
-        for node in self.nodes_or_groups_from_file(self.nodes_file, 'nodes', toml_nodes):
-            self.add_node(Node(*node))
+        for node_name, node_attrs in self.nodes_or_groups_from_file(self.nodes_file, 'nodes', toml_nodes):
+            self.add_node(Node(node_name, attributes=node_attrs, repo=self))
 
     @cached_property
     def revision(self):
