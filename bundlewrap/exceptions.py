@@ -91,6 +91,13 @@ class ItemDependencyError(RepositoryError):
     pass
 
 
+class InvalidMagicStringException(RepositoryError):
+    """
+    Raised when an invalid magic string is encountered.
+    """
+    pass
+
+
 class NoSuchRepository(RepositoryError):
     """
     Raised when trying to get a Repository object from a directory that
