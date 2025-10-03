@@ -1,23 +1,20 @@
+import hashlib
+import stat
 from base64 import b64encode
 from codecs import getwriter
 from contextlib import contextmanager
-import hashlib
 from inspect import isgenerator
 from os import chmod, close, makedirs, remove
 from os.path import dirname, exists
 from random import shuffle
-from re import compile as re_compile
-import stat
 from sys import stderr, stdout
 from tempfile import mkstemp
 
 from passlib.hash import apr_md5_crypt
 from requests import get
 
-from ..exceptions import DontCache, FaultUnavailable, InvalidMagicStringException
+from ..exceptions import DontCache, FaultUnavailable
 
-
-MAGIC_STRINGS_PATTERN = re_compile(r'^!([a-zA-Z0-9_]+):(.+)$')
 
 class NO_DEFAULT: pass
 MODE644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
@@ -60,38 +57,6 @@ def cached_property(prop, convert_to=None):
 
 def cached_property_set(prop):
     return cached_property(prop, convert_to=set)
-
-
-def convert_magic_strings(repo, obj):
-    if not repo.magic_string_functions:
-        # If we don't have any magic string functions, we just skip this
-        # altogether. This eases migration from existing implementations
-        # of magic strings to the builtin methods.
-        return obj
-
-    if isinstance(obj, str):
-        m = MAGIC_STRINGS_PATTERN.match(obj)
-        if m:
-            func_name, func_args = m.groups()
-            try:
-                func = repo.magic_string_functions[func_name]
-            except KeyError:
-                raise InvalidMagicStringException(func_name)
-            else:
-                with error_context(magic_string=func_name):
-                    value = func(func_args)
-                return value
-        else:
-            return obj
-    elif isinstance(obj, dict):
-        return {k: convert_magic_strings(repo, v) for k,v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_magic_strings(repo, i) for i in obj]
-    elif isinstance(obj, set):
-        return {convert_magic_strings(repo, i) for i in obj}
-    elif isinstance(obj, tuple):
-        return tuple([convert_magic_strings(repo, i) for i in obj])
-    return obj
 
 
 def download(url, path, timeout=60.0):

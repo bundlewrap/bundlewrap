@@ -31,7 +31,6 @@ from .metadata import hash_metadata
 from .utils import (
     cached_property,
     cached_property_set,
-    convert_magic_strings,
     error_context,
     get_file_contents,
     names,
@@ -46,6 +45,7 @@ from .utils.dicts import (
     validate_dict,
     COLLECTION_OF_STRINGS,
 )
+from .utils.magic_strings import convert_magic_strings
 from .utils.text import (
     blue,
     bold,

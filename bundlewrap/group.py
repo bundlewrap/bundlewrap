@@ -8,7 +8,6 @@ from .exceptions import NoSuchGroup, NoSuchNode, RepositoryError
 from .utils import (
     cached_property,
     cached_property_set,
-    convert_magic_strings,
     error_context,
     Fault,
     get_file_contents,
@@ -23,6 +22,7 @@ from .utils.dicts import (
     COLLECTION_OF_STRINGS,
     LIST_OR_TUPLE_OF_INTS,
 )
+from .utils.magic_strings import convert_magic_strings
 from .utils.text import mark_for_translation as _, toml_clean, bold, validate_name
 from .utils.ui import io
 
