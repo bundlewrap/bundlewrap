@@ -272,7 +272,7 @@ class Item:
         if (
             self.id in self.after or
             self.id in self.before or
-            self.id in self.needs or 
+            self.id in self.needs or
             self.id in self.needed_by
         ):
             raise ItemDependencyError(_(

@@ -225,7 +225,7 @@ def _inject_tag_filler_items(items, bundles):
 
 def _inject_reverse_dependencies(items):
     """
-    Looks for 'before' and 'needed_by' deps and creates standard 
+    Looks for 'before' and 'needed_by' deps and creates standard
     dependencies accordingly.
     """
     for item in items:
@@ -445,7 +445,7 @@ def prepare_dependencies(node):
     """
     for item in node.items:
         item._check_loopback_dependency()
-        
+
     items = set(node.items)  # might be a tuple from cached_property
     _inject_canned_actions(items)
     _inject_tag_filler_items(items, node.bundles)
