@@ -148,7 +148,7 @@ class Group:
 
         for attr in GROUP_ATTR_DEFAULTS:
             # defaults are applied in node.py
-            setattr(self, attr, attributes.get(attr))
+            setattr(self, attr, self._attributes.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name

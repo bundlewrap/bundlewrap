@@ -555,7 +555,7 @@ class Node:
         self.convert_magic_strings()
 
         for attr in GROUP_ATTR_DEFAULTS:
-            setattr(self, "_{}".format(attr), attributes.get(attr))
+            setattr(self, "_{}".format(attr), self._attributes.get(attr))
 
     def __getattr__(self, name):
         with suppress(KeyError):
