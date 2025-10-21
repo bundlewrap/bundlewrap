@@ -101,10 +101,11 @@ def decrypt(string):
     return vault.decrypt(string)
 ```
 
-In your node you then use the function as follows:
+In your node you then use the function as follows, where
+`encrypt$gAAAAABo90x3H...` is the result of `bw pw -e "foo"`:
 
 ```toml
-mysecret = "!decrypt:SecretStringEncryptedBy `bw pw -e`"
+mysecret = "!decrypt:encrypt$gAAAAABo90x3H..."
 ```
 
 The part between `!` and `:` is used as the function name, everything after the `:` will be passed
