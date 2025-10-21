@@ -111,3 +111,28 @@ mysecret = "!decrypt:encrypt$gAAAAABo90x3H..."
 The part between `!` and `:` is used as the function name, everything after the `:` will be passed
 as argument to the called function. Bundlewrap will raise `InvalidMagicStringException` if the
 function cannot be found.
+
+### `atomic()` in TOML
+
+Using this mechanism, you could also use `atomic()` in TOML nodes and groups
+by creating a magic string which will return an atomic result:
+
+```python
+from ast import literal_eval
+from bundlewrap.metadata import atomic as _bw_atomic
+
+@magic_string
+def atomic(arg):
+    # Using `literal_eval()` here will prevent you from most accidents
+    # by only allowing strings, bytes, numbers, tuples, lists, dicts,
+    # sets, booleans, `None` and `Ellipsis`
+    # https://docs.python.org/3/library/ast.html#ast.literal_eval
+    return _bw_atomic(literal_eval(arg))
+```
+
+So, to create an atomic list, you'd put a python list into a magic string like
+this:
+
+```toml
+something_atomic = "!atomic:['a list', 'which is', 'atomic']"
+```
