@@ -22,7 +22,7 @@ See also: [The list of generic builtin item attributes](../repo/items.py.md#buil
 
 ## enabled
 
-`True` if the service shall be automatically started during system bootup; `False` otherwise. `True`, the default value, is needed on FreeBSD, as starting disabled services fails. 
+`True` if the service shall be automatically started during system bootup; `False` otherwise. `True`, the default value, is needed on FreeBSD, as starting disabled services fails.
 
 <hr>
 
