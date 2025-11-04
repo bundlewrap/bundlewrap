@@ -441,6 +441,8 @@ class File(Item):
         return deps
 
     def sdict(self):
+        use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')
+        use_gid = self.attributes['group'] is not None and self.attributes['group'].startswith('+')
         path_info = PathInfo(self.node, self.name)
         if not path_info.exists:
             return None
@@ -449,8 +451,8 @@ class File(Item):
                 'type': 'file' if path_info.is_file else path_info.stat['type'],
                 'content_hash': path_info.sha1 if path_info.is_file else None,
                 'mode': path_info.mode,
-                'owner': path_info.owner,
-                'group': path_info.group,
+                'owner': ('+' + path_info.owner_id) if use_uid else path_info.owner,
+                'group': ('+' + path_info.group_id) if use_gid else path_info.group,
                 'size': path_info.size,
             }
 

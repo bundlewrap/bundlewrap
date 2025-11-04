@@ -1,5 +1,6 @@
 from base64 import b64encode
 from os.path import exists, join
+from os import stat
 
 from bundlewrap.utils.testing import host_os, make_repo, run
 
@@ -275,3 +276,59 @@ files = {
     assert rcode == 0
     assert b"file:/tmp/bw_test_faultunavailable  skipped (Fault unavailable)" in stdout
     assert not exists("/tmp/bw_test_faultunavailable")
+
+def test_file_owner_uid(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'any',
+                            'owner': '+32001',
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
+    assert stat(join(str(tmpdir), "foo")).st_uid == 32001
+
+def test_file_group_gid(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "foo"): {
+                            'content_type': 'any',
+                            'group': '+32002',
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
+    assert stat(join(str(tmpdir), "foo")).st_gid == 32002
