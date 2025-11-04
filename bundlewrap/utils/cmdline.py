@@ -1,12 +1,10 @@
 from functools import wraps
 from os import environ
 from sys import exit, stderr, stdout
-from traceback import format_exc, print_exc
+from traceback import print_exc
 
-from ..concurrency import WorkerPool
-from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode, RepositoryError
-from . import names
-from .text import bold, mark_for_translation as _, prefix_lines, red
+from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode
+from .text import mark_for_translation as _, red
 from .ui import io, QUIT_EVENT
 
 
@@ -149,97 +147,15 @@ HELP_node_workers = _("number of nodes to apply to simultaneously (defaults to {
 HELP_softlock_expiry = _("how long before the lock is ignored and removed automatically (defaults to \"{}\")").format(DEFAULT_softlock_expiry)
 
 
-def _parallel_node_eval(
-    nodes,
-    expression,
-    node_workers,
-):
-    nodes = set(nodes)
-
-    def tasks_available():
-        return bool(nodes)
-
-    def next_task():
-        node = nodes.pop()
-
-        def get_values():
-            try:
-                return eval("lambda node: " + expression)(node)
-            except RepositoryError:
-                raise
-            except Exception:
-                traceback = format_exc()
-                io.stderr(_(
-                    "{x}  {node}  Exception while evaluating `{expression}`, returning as None:\n{traceback}"
-                ).format(
-                    x=red("✘"),
-                    node=bold(node),
-                    expression=expression,
-                    traceback=prefix_lines("\n" + traceback, f"{red('│')} ") + red("╵"),
-                ))
-                # Returning None here is kinda meh. But it's the only alternative
-                # to failing hard by re-raising, which would be very annoying.
-                return None
-
-        return {
-            'task_id': node.name,
-            'target': get_values,
-        }
-
-    def handle_result(task_id, result, duration):
-        return task_id, result
-
-    worker_pool = WorkerPool(
-        tasks_available,
-        next_task,
-        handle_result=handle_result,
-        workers=node_workers,
-    )
-    return dict(worker_pool.run())
-
-
 def get_target_nodes(repo, target_strings, node_workers=None):
     if not node_workers:
         node_workers = DEFAULT_node_workers
 
-    targets = set()
-    for name in target_strings:
-        name = name.strip()
-        if name.startswith("bundle:"):
-            bundle_name = name.split(":", 1)[1]
-            for node in repo.nodes:
-                if bundle_name in names(node.bundles):
-                    targets.add(node)
-        elif name.startswith("!bundle:"):
-            bundle_name = name.split(":", 1)[1]
-            for node in repo.nodes:
-                if bundle_name not in names(node.bundles):
-                    targets.add(node)
-        elif name.startswith("!group:"):
-            group_name = name.split(":", 1)[1]
-            for node in repo.nodes:
-                if group_name not in names(node.groups):
-                    targets.add(node)
-        elif name.startswith("lambda:"):
-            for node_name, result in _parallel_node_eval(
-                repo.nodes,
-                name.split(":", 1)[1],
-                node_workers,
-            ).items():
-                if result:
-                    targets.add(repo.get_node(node_name))
-        else:
-            try:
-                targets.add(repo.get_node(name))
-            except NoSuchNode:
-                try:
-                    group = repo.get_group(name)
-                except NoSuchGroup:
-                    io.stderr(_("{x} No such node or group: {name}").format(
-                        x=red("!!!"),
-                        name=name,
-                    ))
-                    exit(1)
-                else:
-                    targets.update(group.nodes)
-    return targets
+    nodes_matching = repo.nodes_matching(target_strings, node_workers)
+    if not nodes_matching:
+        io.stderr(_("{x} Input did not match any nodes").format(
+            x=red("!!!"),
+        ))
+        exit(1)
+
+    return nodes_matching

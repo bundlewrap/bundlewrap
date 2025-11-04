@@ -8,6 +8,7 @@ from .utils.text import mark_for_translation as _
 from .utils.ui import io, QUIT_EVENT
 
 JOIN_TIMEOUT = 5  # seconds
+DEFAULT_WORKERS = 4
 
 
 class WorkerPool:
@@ -22,8 +23,11 @@ class WorkerPool:
         handle_exception=None,
         cleanup=None,
         pool_id=None,
-        workers=4,
+        workers=None,
     ):
+        if workers is None:
+            workers = DEFAULT_WORKERS
+
         if workers < 1:
             raise ValueError(_("at least one worker is required"))
 
