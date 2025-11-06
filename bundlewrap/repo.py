@@ -47,7 +47,7 @@ DIRNAME_HOOKS = "hooks"
 DIRNAME_ITEM_TYPES = "items"
 DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
-FILENAME_MAGIC_STRINGS = "magic-strings.py"
+FILENAME_MAGIC_STRINGS = "magic_strings.py"
 FILENAME_NODES = "nodes.py"
 FILENAME_REQUIREMENTS = "requirements.txt"
 

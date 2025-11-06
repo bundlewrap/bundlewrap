@@ -90,7 +90,7 @@ They work exactly the same way as nodes, but have their own `groups/` directory.
 Due to TOML nodes and groups not supporting python code, BundleWrap supports what we call "magic strings".
 These allow you to use secrets in your nodes with just using a special syntax inside a string.
 
-To define magic strings, you need to add a `magic-strings.py` to your repository. It might look like
+To define magic strings, you need to add a `magic_strings.py` to your repository. It might look like
 this example:
 
 ```python

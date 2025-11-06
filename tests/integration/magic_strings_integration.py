@@ -15,7 +15,7 @@ def test_magic_string_in_node_file(tmpdir):
             },
         },
     )
-    with open(join(tmpdir, "magic-strings.py"), 'w') as f:
+    with open(join(tmpdir, "magic_strings.py"), 'w') as f:
         f.write(dedent("""
         @magic_string
         def magic(arg):
@@ -42,7 +42,7 @@ def test_magic_string_in_group_file(tmpdir):
             },
         },
     )
-    with open(join(tmpdir, "magic-strings.py"), 'w') as f:
+    with open(join(tmpdir, "magic_strings.py"), 'w') as f:
         f.write(dedent("""
         @magic_string
         def magic(arg):
