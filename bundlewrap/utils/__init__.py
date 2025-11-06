@@ -1,12 +1,12 @@
+import hashlib
+import stat
 from base64 import b64encode
 from codecs import getwriter
 from contextlib import contextmanager
-import hashlib
 from inspect import isgenerator
 from os import chmod, close, makedirs, remove
 from os.path import dirname, exists
 from random import shuffle
-import stat
 from sys import stderr, stdout
 from tempfile import mkstemp
 

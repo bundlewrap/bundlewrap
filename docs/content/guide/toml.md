@@ -82,3 +82,57 @@ This should make it pretty straightforward to make changes to lots of nodes with
 ## TOML groups
 
 They work exactly the same way as nodes, but have their own `groups/` directory. `.toml`, `.toml_set()` and `toml_save()` are also found on `Group` objects.
+
+<br>
+
+## Using secrets
+
+Due to TOML nodes and groups not supporting python code, BundleWrap supports what we call "magic strings".
+These allow you to use secrets in your nodes with just using a special syntax inside a string.
+
+To define magic strings, you need to add a `magic_strings.py` to your repository. It might look like
+this example:
+
+```python
+# `vault`, `libs` and `repo_path` are available for your convenience
+
+@magic_string
+def decrypt(string):
+    return vault.decrypt(string)
+```
+
+In your node you then use the function as follows, where
+`encrypt$gAAAAABo90x3H...` is the result of `bw pw -e "foo"`:
+
+```toml
+mysecret = "!decrypt:encrypt$gAAAAABo90x3H..."
+```
+
+The part between `!` and `:` is used as the function name, everything after the `:` will be passed
+as argument to the called function. Bundlewrap will raise `InvalidMagicStringException` if the
+function cannot be found.
+
+### `atomic()` in TOML
+
+Using this mechanism, you could also use `atomic()` in TOML nodes and groups
+by creating a magic string which will return an atomic result:
+
+```python
+from ast import literal_eval
+from bundlewrap.metadata import atomic as _bw_atomic
+
+@magic_string
+def atomic(arg):
+    # Using `literal_eval()` here will prevent you from most accidents
+    # by only allowing strings, bytes, numbers, tuples, lists, dicts,
+    # sets, booleans, `None` and `Ellipsis`
+    # https://docs.python.org/3/library/ast.html#ast.literal_eval
+    return _bw_atomic(literal_eval(arg))
+```
+
+So, to create an atomic list, you'd put a python list into a magic string like
+this:
+
+```toml
+something_atomic = "!atomic:['a list', 'which is', 'atomic']"
+```

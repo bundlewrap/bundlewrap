@@ -22,7 +22,9 @@ from .utils.dicts import (
     COLLECTION_OF_STRINGS,
     LIST_OR_TUPLE_OF_INTS,
 )
-from .utils.text import mark_for_translation as _, toml_clean, validate_name
+from .utils.magic_strings import convert_magic_strings
+from .utils.text import mark_for_translation as _, toml_clean, bold, validate_name
+from .utils.ui import io
 
 
 GROUP_ATTR_DEFAULTS = {
@@ -117,7 +119,7 @@ class Group:
     """
     A group of nodes.
     """
-    def __init__(self, group_name, attributes=None):
+    def __init__(self, group_name, attributes=None, repo=None):
         if attributes is None:
             attributes = {}
 
@@ -140,10 +142,13 @@ class Group:
         }
         self.name = group_name
         self.file_path = attributes.get('file_path')
+        self.repo = repo
+
+        self.convert_magic_strings()
 
         for attr in GROUP_ATTR_DEFAULTS:
             # defaults are applied in node.py
-            setattr(self, attr, attributes.get(attr))
+            setattr(self, attr, self._attributes.get(attr))
 
     def __lt__(self, other):
         return self.name < other.name
@@ -160,6 +165,11 @@ class Group:
         for node in self.nodes:
             group_dict[node.name] = node.hash()
         return group_dict
+
+    @io.job_wrapper(_("{}  converting magic strings").format(bold("{0.name}")))
+    def convert_magic_strings(self):
+        # Lives in its own function so we can use `io.job_wrapper()`
+        self._attributes = convert_magic_strings(self.repo, self._attributes)
 
     def group_membership_hash(self):
         return hash_statedict(sorted(names(self.nodes)))

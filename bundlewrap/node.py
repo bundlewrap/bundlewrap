@@ -45,6 +45,7 @@ from .utils.dicts import (
     validate_dict,
     COLLECTION_OF_STRINGS,
 )
+from .utils.magic_strings import convert_magic_strings
 from .utils.text import (
     blue,
     bold,
@@ -60,6 +61,7 @@ from .utils.text import (
     yellow,
 )
 from .utils.ui import io
+
 
 
 NODE_ATTR_TYPES = GROUP_ATTR_TYPES.copy()
@@ -528,7 +530,7 @@ class Node:
     OS_FAMILY_UNIX = OS_FAMILY_BSD + OS_FAMILY_LINUX
     OS_KNOWN = OS_FAMILY_UNIX + ('kubernetes', 'routeros')
 
-    def __init__(self, name, attributes=None):
+    def __init__(self, name, attributes=None, repo=None):
         if attributes is None:
             attributes = {}
 
@@ -548,9 +550,12 @@ class Node:
         self.file_path = attributes.get('file_path')
         self.hostname = attributes.get('hostname', name)
         self.name = name
+        self.repo = repo
+
+        self.convert_magic_strings()
 
         for attr in GROUP_ATTR_DEFAULTS:
-            setattr(self, "_{}".format(attr), attributes.get(attr))
+            setattr(self, "_{}".format(attr), self._attributes.get(attr))
 
     def __getattr__(self, name):
         with suppress(KeyError):
@@ -614,6 +619,11 @@ class Node:
             if "group:{}".format(group.name) in components:
                 return True
         return False
+
+    @io.job_wrapper(_("{}  converting magic strings").format(bold("{0.name}")))
+    def convert_magic_strings(self):
+        # Lives in its own function so we can use `io.job_wrapper()`
+        self._attributes = convert_magic_strings(self.repo, self._attributes)
 
     def group_membership_hash(self):
         return hash_statedict(sorted(names(self.groups)))

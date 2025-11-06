@@ -49,6 +49,7 @@ DIRNAME_HOOKS = "hooks"
 DIRNAME_ITEM_TYPES = "items"
 DIRNAME_LIBS = "libs"
 FILENAME_GROUPS = "groups.py"
+FILENAME_MAGIC_STRINGS = "magic_strings.py"
 FILENAME_NODES = "nodes.py"
 FILENAME_REQUIREMENTS = "requirements.txt"
 
@@ -270,6 +271,7 @@ class Repository(MetadataGenerator):
         self.group_dict = {}
         self.node_dict = {}
         self.node_attribute_functions = {}
+        self.magic_string_functions = {}
         self._get_all_attr_code_cache = {}
         self._get_all_attr_result_cache = {}
 
@@ -311,7 +313,6 @@ class Repository(MetadataGenerator):
         if group.name in names(self.groups):
             raise RepositoryError(_("you cannot have two groups "
                                     "both named '{}'").format(group.name))
-        group.repo = self
         self.group_dict[group.name] = group
 
     def add_node(self, node):
@@ -324,8 +325,6 @@ class Repository(MetadataGenerator):
         if node.name in names(self.nodes):
             raise RepositoryError(_("you cannot have two nodes "
                                     "both named '{}'").format(node.name))
-
-        node.repo = self
         self.node_dict[node.name] = node
 
     @cached_property
@@ -469,6 +468,26 @@ class Repository(MetadataGenerator):
                 infodict['file_path'] = filepath
                 result[entity_name] = infodict
         return result
+
+    def get_magic_strings(self):
+        if not isfile(self.magic_strings_file):
+            return
+
+        def magic_string(func):
+            self.magic_string_functions[func.__name__] = func
+            return func
+
+        # We do not store the gotten attrs anywhere, because we're
+        # only interested in the defined magic strings.
+        self.get_all_attrs_from_file(
+            self.magic_strings_file,
+            base_env={
+                'libs': self.libs,
+                'magic_string': magic_string,
+                'repo_path': self.path,
+                'vault': self.vault,
+            },
+        )
 
     def items_from_dir(self, path):
         """
@@ -728,11 +747,14 @@ class Repository(MetadataGenerator):
             if validate_name(dir_entry):
                 self.bundle_names.append(dir_entry)
 
+        # populate magic strings
+        self.get_magic_strings()
+
         # populate groups
         toml_groups = self.nodes_or_groups_from_dir("groups")
         self.group_dict = {}
-        for group in self.nodes_or_groups_from_file(self.groups_file, 'groups', toml_groups):
-            self.add_group(Group(*group))
+        for group_name, group_attrs in self.nodes_or_groups_from_file(self.groups_file, 'groups', toml_groups):
+            self.add_group(Group(group_name, attributes=group_attrs, repo=self))
 
         # populate items
         self.item_classes = list(self.items_from_dir(items.__path__[0]))
@@ -742,8 +764,8 @@ class Repository(MetadataGenerator):
         # populate nodes
         toml_nodes = self.nodes_or_groups_from_dir("nodes")
         self.node_dict = {}
-        for node in self.nodes_or_groups_from_file(self.nodes_file, 'nodes', toml_nodes):
-            self.add_node(Node(*node))
+        for node_name, node_attrs in self.nodes_or_groups_from_file(self.nodes_file, 'nodes', toml_nodes):
+            self.add_node(Node(node_name, attributes=node_attrs, repo=self))
 
     @cached_property
     def revision(self):
@@ -757,6 +779,7 @@ class Repository(MetadataGenerator):
         self.items_dir = join(self.path, DIRNAME_ITEM_TYPES)
         self.groups_file = join(self.path, FILENAME_GROUPS)
         self.libs_dir = join(self.path, DIRNAME_LIBS)
+        self.magic_strings_file = join(self.path, FILENAME_MAGIC_STRINGS)
         self.nodes_file = join(self.path, FILENAME_NODES)
 
         self.hooks = HooksProxy(self, self.hooks_dir)
