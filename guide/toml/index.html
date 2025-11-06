@@ -363,6 +363,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#using-secrets" class="nav-link">Using secrets</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -434,7 +438,44 @@ nodes/nodenamegoeshere.toml
 <p>This should make it pretty straightforward to make changes to lots of nodes without the headaches of using <code>sed</code> or something of that nature to edit Python code in <code>nodes.py</code>.</p>
 <p><br></p>
 <h2 id="toml-groups">TOML groups</h2>
-<p>They work exactly the same way as nodes, but have their own <code>groups/</code> directory. <code>.toml</code>, <code>.toml_set()</code> and <code>toml_save()</code> are also found on <code>Group</code> objects.</p></div>
+<p>They work exactly the same way as nodes, but have their own <code>groups/</code> directory. <code>.toml</code>, <code>.toml_set()</code> and <code>toml_save()</code> are also found on <code>Group</code> objects.</p>
+<p><br></p>
+<h2 id="using-secrets">Using secrets</h2>
+<p>Due to TOML nodes and groups not supporting python code, BundleWrap supports what we call "magic strings".
+These allow you to use secrets in your nodes with just using a special syntax inside a string.</p>
+<p>To define magic strings, you need to add a <code>magic_strings.py</code> to your repository. It might look like
+this example:</p>
+<pre><code class="language-python"># `vault`, `libs` and `repo_path` are available for your convenience
+
+@magic_string
+def decrypt(string):
+    return vault.decrypt(string)
+</code></pre>
+<p>In your node you then use the function as follows, where
+<code>encrypt$gAAAAABo90x3H...</code> is the result of <code>bw pw -e "foo"</code>:</p>
+<pre><code class="language-toml">mysecret = &quot;!decrypt:encrypt$gAAAAABo90x3H...&quot;
+</code></pre>
+<p>The part between <code>!</code> and <code>:</code> is used as the function name, everything after the <code>:</code> will be passed
+as argument to the called function. Bundlewrap will raise <code>InvalidMagicStringException</code> if the
+function cannot be found.</p>
+<h3 id="atomic-in-toml"><code>atomic()</code> in TOML</h3>
+<p>Using this mechanism, you could also use <code>atomic()</code> in TOML nodes and groups
+by creating a magic string which will return an atomic result:</p>
+<pre><code class="language-python">from ast import literal_eval
+from bundlewrap.metadata import atomic as _bw_atomic
+
+@magic_string
+def atomic(arg):
+    # Using `literal_eval()` here will prevent you from most accidents
+    # by only allowing strings, bytes, numbers, tuples, lists, dicts,
+    # sets, booleans, `None` and `Ellipsis`
+    # https://docs.python.org/3/library/ast.html#ast.literal_eval
+    return _bw_atomic(literal_eval(arg))
+</code></pre>
+<p>So, to create an atomic list, you'd put a python list into a magic string like
+this:</p>
+<pre><code class="language-toml">something_atomic = &quot;!atomic:['a list', 'which is', 'atomic']&quot;
+</code></pre></div>
             </div>
         </div>
 

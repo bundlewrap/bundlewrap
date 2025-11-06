@@ -415,6 +415,45 @@ print(uptime.stdout)
 <p><strong><code>.nodes_in_group(group_name)</code></strong></p>
 <p>Returns a list of Node objects in the named group.</p>
 <p><br></p>
+<p><strong><code>.nodes_not_in_group(group_name)</code></strong></p>
+<p>Returns a list of Node objects not in the named group.</p>
+<p><br></p>
+<p><strong><code>.nodes_with_bundle(bundle_name)</code></strong></p>
+<p>Returns a list of Node objects that do have the named bundle.</p>
+<p><br></p>
+<p><strong><code>.nodes_without_bundle(bundle_name)</code></strong></p>
+<p>Returns a list of Node objects that do not have the named bundle.</p>
+<p><br></p>
+<p><strong><code>.nodes_matching_lambda(self, lambda_str, lambda_workers=None)</code></strong></p>
+<p>Returns a list of Node objects matching the lambda.</p>
+<p>Example:</p>
+<pre><code class="language-python">nodes = repo.nodes_matching_lambda(&quot;node.metadata.get('foo/magic', 47) &lt; 3&quot;)
+</code></pre>
+<ul>
+<li><code>lambda_str</code> is evaluated as python code with <code>node</code> being one of the nodes and expected to return a boolean.</li>
+<li><code>lambda_workers</code> is number of parallel workers used to check lambda condition on every node</li>
+</ul>
+<p><br></p>
+<p><strong><code>.nodes_matching(self, target_strings, lambda_workers=None)</code></strong></p>
+<p>Returns a list of nodes matching any of the given target-strings. This is the same API that is used by
+all the bw commandlines, i.e. <code>bw items</code> or <code>bw apply</code> to select which nodes to operate on.</p>
+<p>Example:</p>
+<pre><code class="language-python">nodes = repo.nodes_matching(&quot;lambda:node.metadata.get('foo/magic', 47) &lt; 3&quot;)
+nodes = repo.nodes_matching(&quot;loc.routers&quot;)
+nodes = repo.nodes_matching(&quot;loc.router-1&quot;)
+</code></pre>
+<ul>
+<li><code>target_strings</code> is a list of expression to select target nodes</li>
+<li><code>lambda_workers</code> is number of parallel workers used to check lambda condition on every node</li>
+</ul>
+<p>The following expressions can be used:
+- <code>my_node</code> to select a single node
+- <code>my_group</code> all nodes in this group
+- <code>bundle:my_bundle</code> all nodes with this bundle
+- <code>!bundle:my_bundle</code> all nodes without this bundle
+<code></code>!group:my_group<code>all nodes not in this group
+-</code>"lambda:node.metadata_get('foo/magic', 47) &lt; 3"<code>all nodes whose</code>metadata["foo"]["magic"]` is less than three</p>
+<p><br></p>
 <h3 id="bundlewrapnodenode">bundlewrap.node.Node()</h3>
 <p>A system managed by BundleWrap.</p>
 <p><br></p>
