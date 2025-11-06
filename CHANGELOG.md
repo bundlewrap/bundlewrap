@@ -1,3 +1,14 @@
+# 4.24.0
+
+2025-11-06
+
+* added support for numeric UIDs and GIDs (by prefixing with `+`) ([Documentation for `file` item](https://docs.bundlewrap.org/items/file/))
+* added public api for getting a list of nodes matching various selectors ([Documentation for python API](https://docs.bundlewrap.org/guide/api/))
+* added support for "magic strings" ([Documentation for TOML usage](https://docs.bundlewrap.org/guide/toml/))
+* replaced usage of bcrypt via passlib with calling bcrypt directly
+* fixed a bug where routeros items could not be created if `dynamic` was in the list of filters
+* fixed a bug in `file` items where a tem of `content_type` `download` would successfully apply, but tests might fail
+
 # 4.23.1
 
 2025-06-05
