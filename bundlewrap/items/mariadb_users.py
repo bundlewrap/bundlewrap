@@ -8,12 +8,12 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def hash_password(plaintext):
-    m = sha1()
-    m.update(plaintext)
+    first_hash_interation = sha1()
+    first_hash_interation.update(plaintext.encode())
 
-    n = sha1()
-    n.update(m.digest())
-    return '*' + n.hexdigest().upper()
+    second_hash_interation = sha1()
+    second_hash_interation.update(first_hash_interation.digest())
+    return '*' + second_hash_interation.hexdigest().upper()
 
 
 class MariadbUser(Item):
