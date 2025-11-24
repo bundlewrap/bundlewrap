@@ -84,13 +84,16 @@ class MariadbUser(Item):
             self._query("FLUSH PRIVILEGES;")
 
     def sdict(self):
-        password_hash = self._query(f"SELECT `Password` FROM `mysql`.`user` WHERE `User` = '{self.name}';")
-        if not password_hash:
+        user_exists = self._query(f"SELECT EXISTS(SELECT 1 FROM mysql.user WHERE User = '{self.name}') AS user_exists;") == "1"
+
+        if user_exists:
+            password_hash = self._query(f"SELECT `Password` FROM `mysql`.`user` WHERE `User` = '{self.name}';")
+            return {
+                'password_hash': password_hash,
+                'all_privileges': set(self._get_all_privileges()),
+            }
+        else:
             return None
-        return {
-            'password_hash': password_hash,
-            'all_privileges': set(self._get_all_privileges()),
-        }
 
     def get_auto_attrs(self, items):
         needs = set()
