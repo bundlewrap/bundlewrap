@@ -53,4 +53,3 @@ class MariadbDB(Item):
                 bundle=bundle.name,
                 item=item_id,
             ))
-
