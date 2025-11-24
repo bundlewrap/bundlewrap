@@ -1,5 +1,5 @@
 from hashlib import sha1
-from re import match as re_match
+from re import search
 from shlex import quote
 
 from bundlewrap.exceptions import BundleError
@@ -47,11 +47,11 @@ class MariadbUser(Item):
             if not grant.startswith("GRANT ALL PRIVILEGES ON "):
                 continue
 
-            m = re_match(r'ON `(.+)`\.', grant)
-            if not m:
+            results = search(r'ON `(.+)`\.', grant)
+            if not results:
                 continue
 
-            databases.add(m.groups()[1])
+            databases.add(results.groups()[0])
         return databases
 
     def cdict(self):
