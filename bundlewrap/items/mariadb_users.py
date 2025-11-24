@@ -69,7 +69,8 @@ class MariadbUser(Item):
             self._query(f"CREATE USER '{self.name}';")
 
         if status.must_be_created or 'password_hash' in status.keys_to_fix:
-            self._query(f"SET PASSWORD FOR '{self.name}' = '{quote(self.attributes['password'])}';")
+            password_hash = hash_password(self.attributes['password'])
+            self._query(f"SET PASSWORD FOR '{self.name}' = '{password_hash}';")
 
         if status.must_be_created or 'all_privileges' in status.keys_to_fix:
             old_grants = self._get_all_privileges()
