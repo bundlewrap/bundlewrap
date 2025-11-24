@@ -77,10 +77,10 @@ class MariadbUser(Item):
             to_be_removed = old_grants - self.attributes['all_privileges']
             to_be_added = self.attributes['all_privileges'] - old_grants
 
-            for i in to_be_removed:
-                self._query(f"REVOKE ALL PRIVILEGES ON `{i}`.* FROM '{self.name}';")
-            for i in to_be_added:
-                self._query(f"GRANT ALL PRIVILEGES ON `{i}`.* TO '{self.name}';")
+            for database in to_be_removed:
+                self._query(f"REVOKE ALL PRIVILEGES ON `{database}`.* FROM '{self.name}';")
+            for database in to_be_added:
+                self._query(f"GRANT ALL PRIVILEGES ON `{database}`.* TO '{self.name}';")
             self._query("FLUSH PRIVILEGES;")
 
     def sdict(self):
