@@ -1,5 +1,5 @@
 from hashlib import sha1
-from re import match as re_match
+from re import search
 from shlex import quote
 
 from bundlewrap.exceptions import BundleError
@@ -8,12 +8,12 @@ from bundlewrap.utils.text import mark_for_translation as _
 
 
 def hash_password(plaintext):
-    m = sha1()
-    m.update(plaintext)
+    first_hash_interation = sha1()
+    first_hash_interation.update(plaintext.encode())
 
-    n = sha1()
-    n.update(m.digest())
-    return '*' + n.hexdigest().upper()
+    second_hash_interation = sha1()
+    second_hash_interation.update(first_hash_interation.digest())
+    return '*' + second_hash_interation.hexdigest().upper()
 
 
 class MariadbUser(Item):
@@ -47,11 +47,11 @@ class MariadbUser(Item):
             if not grant.startswith("GRANT ALL PRIVILEGES ON "):
                 continue
 
-            m = re_match(r'ON `(.+)`\.', grant)
-            if not m:
+            results = search(r'ON `(.+)`\.', grant)
+            if not results:
                 continue
 
-            databases.add(m.groups()[1])
+            databases.add(results.groups()[0])
         return databases
 
     def cdict(self):
@@ -69,27 +69,31 @@ class MariadbUser(Item):
             self._query(f"CREATE USER '{self.name}';")
 
         if status.must_be_created or 'password_hash' in status.keys_to_fix:
-            self._query(f"SET PASSWORD FOR '{self.name}' = '{quote(self.attributes['password'])}';")
+            password_hash = hash_password(self.attributes['password'])
+            self._query(f"SET PASSWORD FOR '{self.name}' = '{password_hash}';")
 
         if status.must_be_created or 'all_privileges' in status.keys_to_fix:
             old_grants = self._get_all_privileges()
             to_be_removed = old_grants - self.attributes['all_privileges']
             to_be_added = self.attributes['all_privileges'] - old_grants
 
-            for i in to_be_removed:
-                self._query(f"REVOKE ALL PRIVILEGES ON `{i}`.* FROM '{self.name}';")
-            for i in to_be_added:
-                self._query(f"GRANT ALL PRIVILEGES ON `{i}`.* TO '{self.name}';")
+            for database in to_be_removed:
+                self._query(f"REVOKE ALL PRIVILEGES ON `{database}`.* FROM '{self.name}';")
+            for database in to_be_added:
+                self._query(f"GRANT ALL PRIVILEGES ON `{database}`.* TO '{self.name}';")
             self._query("FLUSH PRIVILEGES;")
 
     def sdict(self):
-        password_hash = self._query(f"SELECT `Password` FROM `mysql`.`user` WHERE `User` = '{self.name}';")
-        if not password_hash:
+        user_exists = self._query(f"SELECT EXISTS(SELECT 1 FROM mysql.user WHERE User = '{self.name}') AS user_exists;") == "1"
+
+        if user_exists:
+            password_hash = self._query(f"SELECT `Password` FROM `mysql`.`user` WHERE `User` = '{self.name}';")
+            return {
+                'password_hash': password_hash,
+                'all_privileges': set(self._get_all_privileges()),
+            }
+        else:
             return None
-        return {
-            'password_hash': password_hash,
-            'all_privileges': set(self._get_all_privileges()),
-        }
 
     def get_auto_attrs(self, items):
         needs = set()
