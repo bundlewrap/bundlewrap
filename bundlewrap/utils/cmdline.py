@@ -84,6 +84,18 @@ def suppress_broken_pipe_msg(f):
     return wrapper
 
 
+def count_autoskipped_items(nodes, autoskip_selector):
+    count = 0
+    for node in nodes:
+        for item in node.items:
+            if QUIT_EVENT.is_set():
+                return 0
+
+            if item.covered_by_autoskip_selector(autoskip_selector):
+                count += 1
+    return count
+
+
 def count_items(nodes):
     count = 0
     for node in nodes:
