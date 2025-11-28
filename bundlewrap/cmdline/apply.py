@@ -43,14 +43,15 @@ def bw_apply(repo, args):
 
     io.progress_set_total(count_items(pending_nodes))
 
-    with io.job("verifying --skip selector"):
-        if count_autoskipped_items(pending_nodes, args['autoskip']) == 0:
-            # XXX make this an error in 5.0
-            io.stderr(_("{x} the selector you specified for --skip does not match any items").format(
-                x=red("!!!"),
-            ))
-            if args['error_on_empty_skiplist']:
-                exit(1)
+    if args['autoskip']:
+        with io.job("verifying --skip selector"):
+            if count_autoskipped_items(pending_nodes, args['autoskip']) == 0:
+                # XXX make this an error in 5.0
+                io.stderr(_("{x} the selector you specified for --skip does not match any items").format(
+                    x=red("!!!"),
+                ))
+                if args['error_on_empty_skiplist']:
+                    exit(1)
 
     start_time = datetime.now()
     results = []
