@@ -2,7 +2,7 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..utils.cmdline import count_autoskipped_items, count_items, get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes, verify_autoskip_selector
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -117,15 +117,14 @@ def bw_verify(repo, args):
     start_time = datetime.now()
     io.progress_set_total(count_items(pending_nodes))
 
-    if args['autoskip']:
-        with io.job("verifying --skip selector"):
-            if count_autoskipped_items(pending_nodes, args['autoskip']) == 0:
-                # XXX make this an error in 5.0
-                io.stderr(_("{x} the selector you specified for --skip does not match any items").format(
-                    x=red("!!!"),
-                ))
-                if args['error_on_empty_skiplist']:
-                    exit(1)
+    skiplist_errors = verify_autoskip_selector(pending_nodes, args['autoskip'])
+    if skiplist_errors:
+        io.stderr(_("{x} the following selectors for --skip do not match any items: {selectors}").format(
+            x=red("!!!"),
+            selectors=' '.join(sorted(skiplist_errors)),
+        ))
+        if args['exit_on_skiplist_error']:
+            exit(1)
 
     def tasks_available():
         return bool(pending_nodes)

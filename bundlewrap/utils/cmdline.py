@@ -84,18 +84,6 @@ def suppress_broken_pipe_msg(f):
     return wrapper
 
 
-def count_autoskipped_items(nodes, autoskip_selector):
-    count = 0
-    for node in nodes:
-        for item in node.items:
-            if QUIT_EVENT.is_set():
-                return 0
-
-            if item.covered_by_autoskip_selector(autoskip_selector):
-                count += 1
-    return count
-
-
 def count_items(nodes):
     count = 0
     for node in nodes:
@@ -171,3 +159,28 @@ def get_target_nodes(repo, target_strings, node_workers=None):
         exit(1)
 
     return nodes_matching
+
+
+
+def verify_autoskip_selector(nodes, autoskip_selector):
+    if not autoskip_selector:
+        return set()
+
+    selectors = {
+        selector: False
+        for selector in autoskip_selector
+    }
+    for node in nodes:
+        for item in node.items:
+            if QUIT_EVENT.is_set():
+                return 0
+
+            for selector in autoskip_selector:
+                if item.covered_by_autoskip_selector([selector]):
+                    selectors[selector] = True
+
+    return {
+        selector
+        for selector, matches in selectors.items()
+        if not matches
+    }

@@ -198,7 +198,7 @@ bundle:my_bundle  # items in this bundle
     )
     # XXX make this the default in 5.0
     parser_apply.add_argument(
-        "--error-on-empty-skiplist",
+        "--exit-on-skiplist-error",
         action='store_true',
         help=_("exit with error message if --skip does not match any items"),
     )
@@ -1289,7 +1289,7 @@ bundle:my_bundle  # items in this bundle
     )
     # XXX make this the default in 5.0
     parser_verify.add_argument(
-        "--error-on-empty-skiplist",
+        "--exit-on-skiplist-error",
         action='store_true',
         help=_("exit with error message if --skip does not match any items"),
     )
