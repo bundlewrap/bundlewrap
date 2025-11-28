@@ -49,6 +49,8 @@ def bw_apply(repo, args):
             io.stderr(_("{x} the selector you specified for --skip does not match any items").format(
                 x=red("!!!"),
             ))
+            if args['error_on_empty_skiplist']:
+                exit(1)
 
     start_time = datetime.now()
     results = []
