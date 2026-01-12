@@ -25,7 +25,7 @@ class ItemRepresentation(enum.Enum):
 def bw_items(repo, args):
     node = get_node(repo, args['node'])
     if args['file_preview_path']:  # -w / --write-file-previews
-        bw_items_render_file_previews(repo, node, args['file_preview_path'], args)
+        render_file_previews(node, args['file_preview_path'], args)
 
     elif args['item']:  # [ITEM] specified
         item = get_item(node, args['item'])
@@ -40,10 +40,10 @@ def bw_items(repo, args):
         else:
             representation = ItemRepresentation.CDICT
 
-        bw_items_show_single_item(repo, node, item, representation, args)
+        show_single_item(node, item, representation, args)
 
     else:
-        bw_items_list_all_items(repo, node, args)
+        list_all_items(node, args)
 
 
 def write_preview(file_item, base_path):
@@ -60,7 +60,7 @@ def write_preview(file_item, base_path):
         f.write(content)
 
 
-def bw_items_render_file_previews(repo, node, file_preview_path, args):
+def render_file_previews(node, file_preview_path, args):
     if args['item']:
         io.stderr(_("{x} use --preview to preview single files").format(x=red("!!!")))
         exit(1)
@@ -112,9 +112,9 @@ def bw_items_render_file_previews(repo, node, file_preview_path, args):
             ))
 
 
-def bw_items_show_single_item(repo, node, item, representation, args):
+def show_single_item(node, item, representation, args):
     if representation == ItemRepresentation.PREVIEW:
-        bw_items_show_single_item_preview(repo, node, item, args)
+        show_single_item_preview(node, item)
         return
 
     data = {}
@@ -139,7 +139,7 @@ def bw_items_show_single_item(repo, node, item, representation, args):
 
     elif representation == ItemRepresentation.REPR:
         data = [repr(item)]
-        bw_items_format_data(data, args['format'], table_headers=[_('item')])
+        format_data(data, args['format'], table_headers=[_('item')])
         return
 
     if args['attr']:
@@ -147,10 +147,10 @@ def bw_items_show_single_item(repo, node, item, representation, args):
         io.stdout(repr(data[args['attr']]))
     else:
         # print attributes key-value
-        bw_items_format_data(data, args['format'], table_headers=[_('attribute'), _('value')])
+        format_data(data, args['format'], table_headers=[_('attribute'), _('value')])
 
 
-def bw_items_show_single_item_preview(repo, node, item, args):
+def show_single_item_preview(node, item):
     try:
         io.stdout(
             item.preview(),
@@ -173,7 +173,7 @@ def bw_items_show_single_item_preview(repo, node, item, args):
         exit(1)
 
 
-def bw_items_list_all_items(repo, node, args):
+def list_all_items(node, args):
     show_repr = args['show_repr']
     if args['blame']:
         # items per bundles
@@ -189,10 +189,10 @@ def bw_items_list_all_items(repo, node, args):
         for item in sorted(node.items):
             data.append(repr(item) if show_repr else item.id)
 
-    bw_items_format_data(data, args['format'], table_headers=table_headers)
+    format_data(data, args['format'], table_headers=table_headers)
 
 
-def bw_items_format_data(data, format, table_headers=None):
+def format_data(data, format, table_headers=None):
     default_format = 'table' if TTY else 'flat'
     format = format if format else default_format
 
