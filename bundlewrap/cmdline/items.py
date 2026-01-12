@@ -11,7 +11,7 @@ from ..utils.cmdline import get_item, get_node
 from ..utils.dicts import statedict_to_json
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
-from ..utils.ui import io, page_lines
+from ..utils.ui import io, page_lines, TTY
 
 
 class ItemRepresentation(enum.Enum):
@@ -132,11 +132,12 @@ def bw_items_show_single_item(repo, node, item, representation, args):
     elif representation == ItemRepresentation.CDICT:
         data = item.cdict()
 
-    # TODO add more formatting options here
     if args['attr']:
+        # print single attribute (formatting is always flat)
         io.stdout(repr(data[args['attr']]))
     else:
-        io.stdout(statedict_to_json(data, pretty=True))
+        # print attributes key-value
+        bw_items_format_data(data, args['format'], table_headers=[_('attribute'), _('value')])
 
 
 def bw_items_show_single_item_preview(repo, node, item, args):
@@ -161,15 +162,85 @@ def bw_items_show_single_item_preview(repo, node, item, args):
         ).format(x=red("!!!"), item=item.id, node=node.name))
         exit(1)
 
-def bw_items_list_all_items(repo, node, args):
-    if args['blame']:
-        data = defaultdict(list)
-        for item in sorted(node.items):
-            data[item.bundle.name].append(item.id)
-    else:
-        data = []
-        for item in sorted(node.items):
-            data.append(item.id)
 
-    # TODO add more formatting options here, especially the blame-table and the flat items list are pretty important
-    io.stdout(statedict_to_json(data, pretty=True))
+def bw_items_list_all_items(repo, node, args):
+    show_repr = args['show_repr']
+    if args['blame']:
+        # items per bundles
+        data = defaultdict(list)
+        table_headers = [_("bundle name"), _("items")]
+        for item in sorted(node.items):
+            data[item.bundle.name].append(repr(item) if show_repr else item.id)
+
+    else:
+        # items list
+        data = []
+        table_headers = [_('items')]
+        for item in sorted(node.items):
+            data.append(repr(item) if show_repr else item.id)
+
+    bw_items_format_data(data, args['format'], table_headers=table_headers)
+
+
+def bw_items_format_data(data, format, table_headers=None):
+    default_format = 'table' if TTY else 'flat'
+    format = format if format else default_format
+
+    if format == 'json':
+        io.stdout(statedict_to_json(data, pretty=True))
+
+    elif format == 'flat':
+        lines = []
+        if isinstance(data, (list, set)):
+            for v in data:
+                if isinstance(v, (list, set)):
+                    v = ', '.join(v)
+
+                lines.append(f'{v}')
+
+        elif isinstance(data, dict):
+            for k, v in data.items():
+                if isinstance(v, (list, set)):
+                    v = ', '.join(v)
+
+                lines.append(f'{k}: {v}')
+
+        page_lines(lines)
+
+    elif format == 'table':
+        table = [
+            [
+                bold(header)
+                for header in table_headers
+            ]
+        ]
+
+        if isinstance(data, (list, set)):
+            table.append(ROW_SEPARATOR)
+            for v in data:  # iterate a list
+                if isinstance(v, (list, set)):
+                    for vv in v:  # iterate inner list of lists
+                        table.append([str(vv)])
+                else:
+                    # value in list
+                    table.append([str(v)])
+
+        elif isinstance(data, dict):
+            for k, v in data.items():  # iterate items in dict
+                table.append(ROW_SEPARATOR)
+                if isinstance(v, (list, set)):
+                    first_line = True
+                    if len(v) == 0:
+                        table.append([str(k), "[]"])
+                        continue
+
+                    for vv in v:  # iterate list-value
+                        if first_line:
+                            table.append([str(k), str(vv)])
+                            first_line = False
+                        else:
+                            table.append(["", str(vv)])
+                else:
+                    table.append([str(k), str(v)])
+
+        page_lines(render_table(table))

@@ -504,6 +504,14 @@ bundle:my_bundle  # items in this bundle
         dest='show_sdict',
         help=_("show actual item status on node instead of should-be configuration"),
     )
+    parser_items.add_argument(
+        "-F",
+        "--format",
+        action='store',
+        dest='format',
+        choices=['json', 'table', 'flat'],
+        help=_("choose the output formatting, default is table when stdout is a tty and flat when it isn't"),
+    )
 
     # bw lock
     help_lock = _("Manage locks on nodes used to prevent collisions between BundleWrap users")
