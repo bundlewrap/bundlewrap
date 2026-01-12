@@ -271,6 +271,22 @@ If `action:download_thing` would not set `cascade_skip` to `False`, `action:run_
 
 <br>
 
+## if
+
+The counterpart to `unless` is `if`. BundleWrap will only apply an item if the `if` command **succeeds** (exit code 0). If the command fails, the item is skipped.
+
+
+	actions = {
+	    'only_when_ready': {
+	    	'if': "test -f /opt/ready.flag",
+	    	'command': "do-the-thing",
+	    },
+	}
+
+`unless` and `if` are evaluated together: an item will only run when `unless` fails **and** `if` succeeds. Both commands should be idempotent and side-effect free because they may also be executed during `bw verify`.
+
+<br>
+
 ## cascade_skip
 
 DEPRECATED: Use `before` and `after` instead.
@@ -284,7 +300,7 @@ There are some situations where you don't want to default behavior of skipping e
 * because they haven't been triggered or
 * because one of their dependencies was skipped or
 * because one of their dependencies failed or
-* they failed their `unless` condition or
+* they failed their `unless` or `if` condition or
 * the `skip` attribute was set or
 * because an [action](../items/action.md) had its `interactive` attribute set to `True` during a non-interactive run
 
@@ -303,7 +319,7 @@ The following example will offer to run an `apt-get update` before installing a 
 	    },
 	}
 
-`cascade_skip` defaults to `True`. However, if the item uses the `unless` or `skip` attributes or is triggered, the default changes to `False`. Most of the time, this is what you'll want.
+`cascade_skip` defaults to `True`. However, if the item uses the `unless` or `if` attributes, sets `skip`, or is triggered, the default changes to `False`. Most of the time, this is what you'll want.
 
 <br>
 
