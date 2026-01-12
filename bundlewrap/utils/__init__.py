@@ -265,7 +265,7 @@ def hash_local_file(path):
     """
     Retuns the sha1 hash of a file on the local machine.
     """
-    return sha1(get_file_contents(path))
+    return sha256(get_file_contents(path))
 
 
 def list_starts_with(list_a, list_b):
@@ -308,6 +308,13 @@ def sha1(data):
     hasher.update(data)
     return hasher.hexdigest()
 
+def sha256(data):
+    """
+    Returns hex SHA256 hash for input.
+    """
+    hasher = hashlib.sha256()
+    hasher.update(data)
+    return hasher.hexdigest()
 
 class SkipList:
     """
