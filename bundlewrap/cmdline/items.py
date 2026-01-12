@@ -19,6 +19,7 @@ class ItemRepresentation(enum.Enum):
     ATTRS = 'attrs'
     SDICT = 'sdict'
     CDICT = 'cdict'
+    REPR = 'repr'
 
 
 def bw_items(repo, args):
@@ -34,6 +35,8 @@ def bw_items(repo, args):
             representation = ItemRepresentation.ATTRS
         elif args['show_sdict']:  # --state
             representation = ItemRepresentation.SDICT
+        elif args['show_repr']:  # --repr
+            representation = ItemRepresentation.REPR
         else:
             representation = ItemRepresentation.CDICT
 
@@ -133,6 +136,11 @@ def bw_items_show_single_item(repo, node, item, representation, args):
 
     elif representation == ItemRepresentation.CDICT:
         data = item.cdict()
+
+    elif representation == ItemRepresentation.REPR:
+        data = [repr(item)]
+        bw_items_format_data(data, args['format'], table_headers=[_('item')])
+        return
 
     if args['attr']:
         # print single attribute (formatting is always flat)
