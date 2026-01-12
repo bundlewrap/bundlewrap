@@ -49,8 +49,7 @@ def bw_apply(repo, args):
             x=red("!!!"),
             selectors=' '.join(sorted(skiplist_errors)),
         ))
-        if args['exit_on_skiplist_error']:
-            exit(1)
+        exit(1)
 
     start_time = datetime.now()
     results = []

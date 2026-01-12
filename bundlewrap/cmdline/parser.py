@@ -196,12 +196,6 @@ bundle:my_bundle  # items in this bundle
         nargs='+',
         type=str,
     )
-    # XXX make this the default in 5.0
-    parser_apply.add_argument(
-        "--exit-on-skiplist-error",
-        action='store_true',
-        help=_("exit with error message if --skip does not match any items"),
-    )
     parser_apply.add_argument(
         "-S",
         "--no-summary",
@@ -1286,12 +1280,6 @@ bundle:my_bundle  # items in this bundle
         metavar=_("SELECTOR"),
         nargs='+',
         type=str,
-    )
-    # XXX make this the default in 5.0
-    parser_verify.add_argument(
-        "--exit-on-skiplist-error",
-        action='store_true',
-        help=_("exit with error message if --skip does not match any items"),
     )
     parser_verify.add_argument(
         "-S",

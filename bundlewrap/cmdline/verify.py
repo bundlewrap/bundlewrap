@@ -123,8 +123,7 @@ def bw_verify(repo, args):
             x=red("!!!"),
             selectors=' '.join(sorted(skiplist_errors)),
         ))
-        if args['exit_on_skiplist_error']:
-            exit(1)
+        exit(1)
 
     def tasks_available():
         return bool(pending_nodes)
