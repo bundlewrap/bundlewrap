@@ -69,7 +69,6 @@ While the following list might appear long, even very minimal systems should pro
 * `groupadd`
 * `groupmod`
 * `id`
-* `initctl` (only used with [svc_upstart](../items/svc_upstart.md) items)
 * `mkdir`
 * `mv`
 * `pacman` (only used with [pkg_pacman](../items/pkg_pacman.md) items)
