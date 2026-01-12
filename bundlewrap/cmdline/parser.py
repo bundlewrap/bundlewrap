@@ -465,7 +465,6 @@ bundle:my_bundle  # items in this bundle
     parser_items.add_argument(
         "-f",
         "--preview",
-        "--file-preview",  # TODO 4.0 remove
         action='store_true',
         dest='preview',
         help=_("print preview of given ITEM"),

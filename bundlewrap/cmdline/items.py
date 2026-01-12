@@ -59,13 +59,15 @@ def write_preview(file_item, base_path):
 
 def bw_items_render_file_previews(repo, node, file_preview_path, args):
     if args['item']:
-        io.stderr(_("{x} use --file-preview to preview single files").format(x=red("!!!")))
+        io.stderr(_("{x} use --preview to preview single files").format(x=red("!!!")))
         exit(1)
+
     if exists(file_preview_path):
         io.stderr(_(
             "not writing to existing path: {path}"
         ).format(path=file_preview_path))
         exit(1)
+
     for item in sorted(node.items):
         if not item.id.startswith("file:"):
             continue
