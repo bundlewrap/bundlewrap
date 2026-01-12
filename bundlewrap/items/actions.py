@@ -97,22 +97,22 @@ class Action(Item):
             return (self.STATUS_SKIPPED, self.SKIP_REASON_NO_TRIGGER, None, None)
 
         if self.unless:
-            with io.job(_("{node}  {bundle}  {item}  checking 'unless' condition").format(
-                bundle=bold(self.bundle.name),
-                item=self.id,
-                node=bold(self.node.name),
-            )):
-                unless_result = self.bundle.node.run(
-                    self.unless,
-                    may_fail=True,
-                )
-            if unless_result.return_code == 0:
+            if self.cached_unless_result:
                 io.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
                     bundle=self.bundle.name,
                     name=self.name,
                     node=self.bundle.node.name,
                 ))
                 return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS, None, None)
+
+        if getattr(self, 'if'):
+            if not self.cached_if_result:
+                io.debug(_("{node}:{bundle}:action:{name}: failed 'if', not running").format(
+                    bundle=self.bundle.name,
+                    name=self.name,
+                    node=self.bundle.node.name,
+                ))
+                return (self.STATUS_SKIPPED, self.SKIP_REASON_IF, None, None)
 
         question_body = ""
         if self.attributes['data_stdin'] is not None:
@@ -250,6 +250,9 @@ class Action(Item):
             raise ItemSkipped
 
         if self.unless and self.cached_unless_result:
-            return self.cached_unless_result, None, None
-        else:
-            raise NotImplementedError
+            return True, None, None
+
+        if getattr(self, 'if') and not self.cached_if_result:
+            return True, None, None
+
+        raise NotImplementedError

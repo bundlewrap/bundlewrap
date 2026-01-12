@@ -33,6 +33,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'before': set(),
     'cascade_skip': None,
     'comment': None,
+    'if': "",
     'needed_by': set(),
     'needs': set(),
     'preceded_by': set(),
@@ -133,6 +134,7 @@ class Item:
     SKIP_REASON_UNLESS = 8
     SKIP_REASON_DEP_SKIPPED = 9
     SKIP_REASON_ATTR = 10
+    SKIP_REASON_IF = 11
     SKIP_REASON_DESC = {
         SKIP_REASON_CMDLINE: _("cmdline"),
         SKIP_REASON_DEP_FAILED: _("dependency failed"),
@@ -141,6 +143,7 @@ class Item:
         SKIP_REASON_INTERACTIVE_ONLY: _("interactive only"),
         SKIP_REASON_NO_TRIGGER: _("not triggered"),
         SKIP_REASON_SOFTLOCK: _("soft locked"),
+        SKIP_REASON_IF: _("if"),
         SKIP_REASON_UNLESS: _("unless"),
         SKIP_REASON_DEP_SKIPPED: _("dependency skipped"),
         SKIP_REASON_ATTR: _("attribute"),
@@ -240,7 +243,7 @@ class Item:
                 self.attributes.setdefault(key, value)
 
         if self.cascade_skip is None:
-            self.cascade_skip = not (self.skip or self.triggered or self.unless)
+            self.cascade_skip = not (self.skip or self.triggered or self.unless or getattr(self, 'if'))
 
         if self.id in self.triggers:
             raise BundleError(_(
@@ -336,6 +339,21 @@ class Item:
         else:
             return False
 
+    @cached_property
+    def cached_if_result(self):
+        """
+        Returns True if 'if' allows this item to run.
+        """
+        if getattr(self, 'if') and (self.ITEM_TYPE_NAME == 'action' or not self.cached_status.correct):
+            with io.job(_("{node}  {bundle}  {item}  running 'if' ...").format(
+                bundle=bold(self.bundle.name),
+                item=self.id,
+                node=bold(self.node.name),
+            )):
+                if_result = self.node.run(getattr(self, 'if'), may_fail=True)
+                return if_result.return_code == 0
+        return True
+
     def _triggers_preceding_items(self, interactive=False):
         """
         Preceding items will execute this to figure out if they're
@@ -343,6 +361,9 @@ class Item:
         """
         if self.cached_unless_result:
             # 'unless' says we don't need to run
+            return False
+        if not self.cached_if_result:
+            # 'if' says we must not run
             return False
         if self.ITEM_TYPE_NAME == 'action':
             # so we have an action where 'unless' says it must be run
@@ -577,6 +598,12 @@ class Item:
                     ).format(item=self.id, node=self.node.name))
                     status_code = self.STATUS_SKIPPED
                     details = self.SKIP_REASON_UNLESS
+                elif not self.cached_if_result:
+                    io.debug(_(
+                        "'if' for {item} on {node} failed, not fixing"
+                    ).format(item=self.id, node=self.node.name))
+                    status_code = self.STATUS_SKIPPED
+                    details = self.SKIP_REASON_IF
                 elif status_before.correct:
                     status_code = self.STATUS_OK
                 elif show_diff or interactive:
@@ -844,7 +871,7 @@ class Item:
                 # TODO remove sorted() in 5.0 to pass a set
                 sorted(copy(self.cached_status.keys_to_fix)),
             )
-        return self.cached_unless_result, self.cached_status, display
+        return self.cached_unless_result or not self.cached_if_result, self.cached_status, display
 
     def display_on_create(self, expected_state):
         """
