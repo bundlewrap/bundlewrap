@@ -29,9 +29,9 @@ def bw_apply(repo, args):
 
     try:
         repo.hooks.apply_start(
-            repo,
-            args['targets'],
-            target_nodes,
+            repo=repo,
+            target=args['targets'],
+            nodes=target_nodes,
             interactive=args['interactive'],
         )
     except GracefulApplyException as exc:
@@ -106,9 +106,9 @@ def bw_apply(repo, args):
     error_summary(errors)
 
     repo.hooks.apply_end(
-        repo,
-        args['targets'],
-        target_nodes,
+        repo=repo,
+        target=args['targets'],
+        nodes=target_nodes,
         duration=total_duration,
     )
 

@@ -479,9 +479,9 @@ class Item:
         show_diff=True,
     ):
         self.node.repo.hooks.item_apply_start(
-            self.node.repo,
-            self.node,
-            self,
+            repo=self.node.repo,
+            node=self.node,
+            item=self,
         )
         status_code = None
         status_before = None
@@ -652,9 +652,9 @@ class Item:
             status_code = self.STATUS_FIXED if status_after.correct else self.STATUS_FAILED
 
         self.node.repo.hooks.item_apply_end(
-            self.node.repo,
-            self.node,
-            self,
+            repo=self.node.repo,
+            node=self.node,
+            item=self,
             duration=datetime.now() - start_time,
             status_code=status_code,
             status_before=status_before,

@@ -158,18 +158,18 @@ class Action(Item):
 
     def get_result(self, *args, **kwargs):
         self.node.repo.hooks.action_run_start(
-            self.node.repo,
-            self.node,
-            self,
+            repo=self.node.repo,
+            node=self.node,
+            item=self,
         )
         start_time = datetime.now()
 
         result = self._get_result(*args, **kwargs)
 
         self.node.repo.hooks.action_run_end(
-            self.node.repo,
-            self.node,
-            self,
+            repo=self.node.repo,
+            node=self.node,
+            item=self,
             duration=datetime.now() - start_time,
             status=result[0],
         )
