@@ -1,4 +1,4 @@
-from passlib.apps import postgres_context
+from hashlib import md5
 from shlex import quote
 
 from bundlewrap.exceptions import BundleError
@@ -93,10 +93,12 @@ class PostgresRole(Item):
 
     def patch_attributes(self, attributes):
         if 'password' in attributes:
-            attributes['password_hash'] = postgres_context.encrypt(
-                force_text(attributes['password']),
-                user=self.name,
-            )
+            attributes['password_hash'] = 'md5' + md5(
+                (
+                    force_text(attributes['password']) +
+                    self.name
+                ).encode('UTF-8')
+            ).hexdigest()
         return attributes
 
     @classmethod
