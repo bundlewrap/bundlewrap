@@ -297,8 +297,9 @@ class Repository(MetadataGenerator):
         """
         try:
             assert isdir(path)
-            assert isfile(join(path, "nodes.py"))
-            assert isfile(join(path, "groups.py"))
+            assert isdir(join(path, DIRNAME_BUNDLES))
+            assert isfile(join(path, FILENAME_NODES))
+            assert isfile(join(path, FILENAME_GROUPS))
         except AssertionError:
             return False
         return True
