@@ -96,7 +96,7 @@ TYPE_DIFF_NORMALIZE = {
     set: diff_normalize_list,
     tuple: diff_normalize_list,
 }
-VALID_STATEDICT_TYPES = tuple(TYPE_DIFF_NORMALIZE.keys()) + (str,)
+VALID_ACTUAL_STATE_TYPES = tuple(TYPE_DIFF_NORMALIZE.keys()) + (str,)
 
 
 def diff_normalize(value):
@@ -175,7 +175,7 @@ def diff_dict(dict1, dict2, skip_missing_in_target=False):
     else:
         for key in sorted(diff_keys(dict1, dict2)):
             if skip_missing_in_target and key not in dict2:
-                # this is used to hide anything not present in a cdict
+                # this is used to hide anything not present in a expected_state
                 # and thus not relevant to the diff/user
                 continue
             value1 = dict1.get(key, _MISSING_KEY)
@@ -209,11 +209,11 @@ class FaultResolvingJSONEncoder(JSONEncoder):
             return JSONEncoder.default(self, obj)
 
 
-def hash_statedict(sdict):
+def hash_actual_state(actual_state):
     """
     Returns a canonical SHA1 hash to describe this dict.
     """
-    return sha1(statedict_to_json(sdict).encode('utf-8')).hexdigest()
+    return sha1(actual_state_to_json(actual_state).encode('utf-8')).hexdigest()
 
 
 def map_dict_keys(dict_obj, leaves_only=False, _base=None,):
@@ -363,15 +363,15 @@ def reduce_dict(full_dict, template_dict):
         return full_dict
 
 
-def statedict_to_json(sdict, pretty=False):
+def actual_state_to_json(actual_state, pretty=False):
     """
-    Returns a canonical JSON representation of the given statedict.
+    Returns a canonical JSON representation of the given actual_state.
     """
-    if sdict is None:
+    if actual_state is None:
         return ""
     else:
         return dumps(
-            sdict,
+            actual_state,
             cls=FaultResolvingJSONEncoder,
             indent=4 if pretty else None,
             sort_keys=True,
@@ -437,19 +437,19 @@ def validate_dict(candidate, schema, required_keys=None):
             raise ValueError(_("missing required key: {}").format(key))
 
 
-def validate_statedict(sdict):
+def validate_actual_state(actual_state):
     """
-    Raises ValueError if the given statedict is invalid.
+    Raises ValueError if the given actual_state is invalid.
     """
-    if sdict is None:
+    if actual_state is None:
         return
-    for key, value in sdict.items():
+    for key, value in actual_state.items():
         if not isinstance(force_text(key), str):
-            raise ValueError(_("non-text statedict key: {}").format(key))
+            raise ValueError(_("non-text actual_state key: {}").format(key))
 
-        if not isinstance(value, VALID_STATEDICT_TYPES) and value is not None:
+        if not isinstance(value, VALID_ACTUAL_STATE_TYPES) and value is not None:
             raise ValueError(_(
-                "invalid statedict value for key '{k}': {v}"
+                "invalid actual_state value for key '{k}': {v}"
             ).format(
                 k=key,
                 v=repr(value),
@@ -457,9 +457,9 @@ def validate_statedict(sdict):
 
         if isinstance(value, (list, tuple)):
             for index, element in enumerate(value):
-                if not isinstance(element, VALID_STATEDICT_TYPES) and element is not None:
+                if not isinstance(element, VALID_ACTUAL_STATE_TYPES) and element is not None:
                     raise ValueError(_(
-                        "invalid element #{i} in statedict key '{k}': {e}"
+                        "invalid element #{i} in actual_state key '{k}': {e}"
                     ).format(
                         e=repr(element),
                         i=index,

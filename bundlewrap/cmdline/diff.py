@@ -37,18 +37,18 @@ def diff_metadata(node_a, node_b):
 
 def diff_item(node_a, node_b, item):
     item_a = node_a.get_item(item)
-    item_a_dict = item_a.display_on_create(item_a.cdict().copy())
+    item_a_dict = item_a.display_on_create(item_a.expected_state().copy())
     item_b = node_b.get_item(item)
-    item_b_dict = item_b.display_on_create(item_b.cdict().copy())
+    item_b_dict = item_b.display_on_create(item_b.expected_state().copy())
     io.stdout(diff_dict(item_a_dict, item_b_dict))
 
 
 def diff_node(node_a, node_b):
     node_a_hashes = sorted(
-        ["{}\t{}".format(i, h) for i, h in node_a.cdict.items()]
+        ["{}\t{}".format(i, h) for i, h in node_a.expected_state.items()]
     )
     node_b_hashes = sorted(
-        ["{}\t{}".format(i, h) for i, h in node_b.cdict.items()]
+        ["{}\t{}".format(i, h) for i, h in node_b.expected_state.items()]
     )
     io.stdout("\n".join(
         filter(
@@ -162,7 +162,7 @@ def hooked_diff_single_item(repo, node, item, intermissions, epilogues):
         item_before = None
         item_before_dict = None
     else:
-        item_before_dict = item_before.cdict()
+        item_before_dict = item_before.expected_state()
         if item_before_dict:
             item_before_dict = item_before.display_on_create(copy(item_before_dict))
 
@@ -177,7 +177,7 @@ def hooked_diff_single_item(repo, node, item, intermissions, epilogues):
         item_after = None
         item_after_dict = None
     else:
-        item_after_dict = item_after.cdict()
+        item_after_dict = item_after.expected_state()
         if item_after_dict:
             item_after_dict = item_after.display_on_create(copy(item_after_dict))
 

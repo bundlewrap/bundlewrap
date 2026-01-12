@@ -22,7 +22,7 @@ class PamacPkg(Pkg):
     def block_concurrent(cls, node_os, node_os_version):
         return ["pkg_pacman", "pkg_pamac"]
 
-    def cdict(self):
+    def expected_state(self):
         return {'installed': self.attributes['installed']}
 
     def pkg_all_installed(self):

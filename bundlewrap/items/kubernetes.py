@@ -48,7 +48,7 @@ class KubernetesItem(Item, metaclass=ABCMeta):
         with open(filename, 'rb') as f:
             return force_text(f.read())
 
-    def cdict(self):
+    def expected_state(self):
         if self.attributes['delete']:
             return None
         else:
@@ -166,7 +166,7 @@ class KubernetesItem(Item, metaclass=ABCMeta):
     def resource_name(self):
         return self._manifest_dict['metadata']['name']
 
-    def sdict(self):
+    def actual_state(self):
         # Include apiVersion in object name to stop k8s from chosing an
         # apiVersion randomly.
         version_spec = [self.KIND]

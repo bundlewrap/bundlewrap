@@ -95,13 +95,13 @@ class OpenBSDPkg(Item):
     def block_concurrent(cls, node_os, node_os_version):
         return [cls.ITEM_TYPE_NAME]
 
-    def cdict(self):
-        cdict = self.attributes.copy()
-        if not cdict['installed']:
-            del cdict['flavor']
-        if cdict['version'] is None or not cdict['installed']:
-            del cdict['version']
-        return cdict
+    def expected_state(self):
+        expected_state = self.attributes.copy()
+        if not expected_state['installed']:
+            del expected_state['flavor']
+        if expected_state['version'] is None or not expected_state['installed']:
+            del expected_state['version']
+        return expected_state
 
     def fix(self, status):
         if self.attributes['installed'] is False:
@@ -114,7 +114,7 @@ class OpenBSDPkg(Item):
                 self.attributes['version']
             )
 
-    def sdict(self):
+    def actual_state(self):
         version, flavor = pkg_installed(self.node, self.name)
         return {
             'installed': bool(version),

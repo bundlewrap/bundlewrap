@@ -153,8 +153,8 @@ class Action(Item):
     def apply(self, *args, **kwargs):
         return self.get_result(*args, **kwargs)
 
-    def cdict(self):
-        raise AttributeError(_("actions don't have cdicts"))
+    def expected_state(self):
+        raise AttributeError(_("actions don't have expected_states"))
 
     def get_result(self, *args, **kwargs):
         self.node.repo.hooks.action_run_start(

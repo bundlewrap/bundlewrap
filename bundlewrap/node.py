@@ -39,7 +39,7 @@ from .utils.dicts import (
     dict_to_text,
     dict_to_toml,
     diff_dict,
-    hash_statedict,
+    hash_actual_state,
     set_key_at_path,
     normalize_dict,
     validate_dict,
@@ -600,10 +600,10 @@ class Node:
                     ))
 
     @cached_property
-    def cdict(self):
+    def expected_state(self):
         node_dict = {}
         for item in self.items:
-            if item.ITEM_TYPE_NAME != 'action':  # actions have no cdict
+            if item.ITEM_TYPE_NAME != 'action':  # actions have no expected_state
                 node_dict[item.id] = item.hash()
         return node_dict
 
@@ -626,7 +626,7 @@ class Node:
         self._attributes = convert_magic_strings(self.repo, self._attributes)
 
     def group_membership_hash(self):
-        return hash_statedict(sorted(names(self.groups)))
+        return hash_actual_state(sorted(names(self.groups)))
 
     @property
     def immediate_groups(self):
@@ -675,7 +675,7 @@ class Node:
         return False
 
     def hash(self):
-        return hash_statedict(self.cdict)
+        return hash_actual_state(self.expected_state)
 
     def in_any_group(self, group_list):
         for group_name in group_list:

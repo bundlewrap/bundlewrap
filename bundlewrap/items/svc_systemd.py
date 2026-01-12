@@ -76,12 +76,12 @@ class SvcSystemd(Item):
             self.attributes['masked'],
         )
 
-    def cdict(self):
-        cdict = {}
+    def expected_state(self):
+        expected_state = {}
         for option, value in self.attributes.items():
             if value is not None:
-                cdict[option] = value
-        return cdict
+                expected_state[option] = value
+        return expected_state
 
     def fix(self, status):
         if 'masked' in status.keys_to_fix:
@@ -125,7 +125,7 @@ class SvcSystemd(Item):
             },
         }
 
-    def sdict(self):
+    def actual_state(self):
         return {
             'enabled': svc_enabled(self.node, self.name),
             'running': svc_running(self.node, self.name),

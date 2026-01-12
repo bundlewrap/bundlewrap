@@ -501,7 +501,7 @@ bundle:my_bundle  # items in this bundle
     parser_items.add_argument(
         "--state",
         action='store_true',
-        dest='show_sdict',
+        dest='show_actual_state',
         help=_("show actual item status on node instead of should-be configuration"),
     )
 

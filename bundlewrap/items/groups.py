@@ -45,13 +45,13 @@ class Group(Item):
             self.attributes['delete'],
         )
 
-    def cdict(self):
+    def expected_state(self):
         if self.attributes['delete']:
             return None
-        cdict = {}
+        expected_state = {}
         if self.attributes.get('gid') is not None:
-            cdict['gid'] = self.attributes['gid']
-        return cdict
+            expected_state['gid'] = self.attributes['gid']
+        return expected_state
 
     def fix(self, status):
         if self.node.os == 'freebsd':
@@ -76,7 +76,7 @@ class Group(Item):
             command += f"{self.name}"
         self.run(command, may_fail=True)
 
-    def sdict(self):
+    def actual_state(self):
         # verify content of /etc/group
         grep_result = self.run(
             "grep -e '^{}:' /etc/group".format(self.name),

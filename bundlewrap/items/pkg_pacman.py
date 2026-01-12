@@ -15,7 +15,7 @@ class PacmanPkg(Pkg):
     }
     ITEM_TYPE_NAME = "pkg_pacman"
 
-    def cdict(self):
+    def expected_state(self):
         # TODO/FIXME: this is bad because it ignores tarball
         # (However, that's not part of the node's state, so bw won't
         # "fix" it anyway, so ... I guess we can live with that.)

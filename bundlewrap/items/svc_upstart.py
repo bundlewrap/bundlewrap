@@ -76,7 +76,7 @@ class SvcUpstart(Item):
             },
         }
 
-    def sdict(self):
+    def actual_state(self):
         return {'running': svc_running(self.node, self.name)}
 
     @classmethod

@@ -349,7 +349,7 @@
 2021-03-29
 
 * fixed `bw lock show` hiding output if it failed to connect to any host
-* fixed `bw test -m` not handling cdict mismatches properly
+* fixed `bw test -m` not handling expected_state mismatches properly
 
 
 # 4.7.0
@@ -448,7 +448,7 @@
 
 2020-10-30
 
-* fixed tomlkit types not being accepted as statedict values
+* fixed tomlkit types not being accepted as actual_state values
 
 
 # 4.2.1
@@ -802,7 +802,7 @@
 * added encoding and collation to postgres_db items
 * added the 'comment' attribute for all items
 * fixed group deletion
-* fixed accidental modification of lists in statedicts
+* fixed accidental modification of lists in actual_states
 
 
 # 2.17.1
@@ -1092,7 +1092,7 @@
 * added `bw items --file-preview`
 * added hooks for `bw test`
 * reason for skipping an item is now displayed in regular output
-* fixed exception handling for invalid cdicts/sdicts
+* fixed exception handling for invalid expected_states/actual_states
 * fixed handling of SSH errors
 * fixed broken diffs caused by partial file downloads
 * fixed interactive prompts sometimes not reading input correctly

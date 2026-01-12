@@ -8,7 +8,7 @@ from ..deps import prepare_dependencies
 from ..exceptions import FaultUnavailable
 from ..items import BUILTIN_ITEM_ATTRIBUTES
 from ..utils.cmdline import get_item, get_node
-from ..utils.dicts import statedict_to_json
+from ..utils.dicts import actual_state_to_json
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, page_lines
@@ -128,18 +128,18 @@ def bw_items(repo, args):
                 page_lines(render_table(table))
             else:
                 if item.ITEM_TYPE_NAME == "action":
-                    statedict = item.attributes
-                elif args['show_sdict']:
-                    statedict = item.sdict()
+                    actual_state = item.attributes
+                elif args['show_actual_state']:
+                    actual_state = item.actual_state()
                 else:
-                    statedict = item.cdict()
-                if statedict is None:
+                    actual_state = item.expected_state()
+                if actual_state is None:
                     io.stdout("REMOVE")
                 else:
                     if args['attr']:
-                        io.stdout(repr(statedict[args['attr']]))
+                        io.stdout(repr(actual_state[args['attr']]))
                     else:
-                        io.stdout(statedict_to_json(statedict, pretty=True))
+                        io.stdout(actual_state_to_json(actual_state, pretty=True))
     else:
         items_per_bundle = defaultdict(list)
         for item in sorted(node.items):

@@ -112,7 +112,7 @@ class GitDeploy(Item):
             repo_dir = get_local_repo_path(self.node.repo.path, self.attributes['repo'])
         return repo_dir
 
-    def cdict(self):
+    def expected_state(self):
         return {'rev': self._expanded_rev}
 
     def get_auto_deps(self, items):
@@ -183,7 +183,7 @@ class GitDeploy(Item):
         finally:
             remove(archive_local.name)
 
-    def sdict(self):
+    def actual_state(self):
         if self.attributes['use_xattrs']:
             status_result = self.run(
                 "attr -q -g bw_git_deploy_rev {}".format(quote(self.name)),

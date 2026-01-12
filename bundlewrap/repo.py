@@ -39,7 +39,7 @@ from .utils import (
     names,
 )
 from .utils.scm import get_git_branch, get_git_clean, get_rev
-from .utils.dicts import hash_statedict
+from .utils.dicts import hash_actual_state
 from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io
 
@@ -332,7 +332,7 @@ class Repository(MetadataGenerator):
         return get_git_branch()
 
     @cached_property
-    def cdict(self):
+    def expected_state(self):
         repo_dict = {}
         for node in self.nodes:
             repo_dict[node.name] = node.hash()
@@ -538,7 +538,7 @@ class Repository(MetadataGenerator):
             raise NoSuchNode(node_name)
 
     def group_membership_hash(self):
-        return hash_statedict(sorted(names(self.groups)))
+        return hash_actual_state(sorted(names(self.groups)))
 
     @property
     def groups(self):
@@ -546,7 +546,7 @@ class Repository(MetadataGenerator):
         return sorted(self.group_dict.values())
 
     def hash(self):
-        return hash_statedict(self.cdict)
+        return hash_actual_state(self.expected_state)
 
     @property
     def nodes(self):
@@ -709,7 +709,7 @@ class Repository(MetadataGenerator):
         repo_dict = {}
         for node in self.nodes:
             repo_dict[node.name] = node.metadata_hash()
-        return hash_statedict(repo_dict)
+        return hash_actual_state(repo_dict)
 
     def populate_from_path(self, path):
         if not self.is_repo(path):

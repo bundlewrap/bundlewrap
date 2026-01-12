@@ -22,13 +22,13 @@ class AptPkg(Pkg):
             pkg_name = line[4:].split()[0].replace(":", "_")
             yield "{}:{}".format(self.ITEM_TYPE_NAME, pkg_name)
 
-    def cdict(self):
+    def expected_state(self):
         return {
             'installed': self.attributes['installed'],
             'mark': 'manual' if self.attributes['installed'] else None,
         }
 
-    def sdict(self):
+    def actual_state(self):
         mark = None
         if self.attributes['installed']:
             if self.pkg_manually_installed():
