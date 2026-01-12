@@ -263,7 +263,7 @@ def get_file_contents(path):
 
 def hash_local_file(path):
     """
-    Retuns the sha1 hash of a file on the local machine.
+    Retuns the sha256 hash of a file on the local machine.
     """
     return sha256(get_file_contents(path))
 
@@ -299,14 +299,6 @@ def randomize_order(obj):
     shuffle(result)
     return result
 
-
-def sha1(data):
-    """
-    Returns hex SHA1 hash for input.
-    """
-    hasher = hashlib.sha1()
-    hasher.update(data)
-    return hasher.hexdigest()
 
 def sha256(data):
     """
