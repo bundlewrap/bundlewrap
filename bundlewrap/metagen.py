@@ -416,11 +416,15 @@ class MetadataGenerator:
             new_metadata = reactor(node.metadata)
         except MetadataUnavailable as exc:
             if self._current_reactor not in self._reactors_with_unavailable_metadata:
-                
-                self._reactors_with_unavailable_metadata[self._current_reactor] = (
-                    ('UNKNOWN', ('UNKNOWN',)),
-                    exc,
-                )
+                io.stderr(_(
+                    "{x} MetadataUnavailable while executing metadata reactor "
+                    "{metaproc} for node {node}:"
+                ).format(
+                    x=red("!!!"),
+                    metaproc=reactor_name,
+                    node=node.name,
+                ))
+                raise exc
             io.debug(
                 f"{self._current_reactor} raised MetadataUnavailable: "
                 f"{self._reactors_with_unavailable_metadata[self._current_reactor]}"
