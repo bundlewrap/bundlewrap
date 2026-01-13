@@ -23,6 +23,9 @@ class ItemRepresentation(enum.Enum):
 
 
 def bw_items(repo, args):
+    """
+    Implementation for the `bw items` command
+    """
     node = get_node(repo, args['node'])
     if args['file_preview_path']:  # -w / --write-file-previews
         render_file_previews(node, args['file_preview_path'], args)
@@ -46,21 +49,10 @@ def bw_items(repo, args):
         list_all_items(node, args)
 
 
-def write_preview(file_item, base_path):
-    """
-    Writes the content of a single file item to the given path.
-    """
-    # this might raise an exception, try it before creating anything
-    content = file_item.content
-    file_path = join(base_path, file_item.name.lstrip("/"))
-    dir_path = dirname(file_path)
-    if not exists(dir_path):
-        makedirs(dir_path)
-    with open(file_path, 'wb') as f:
-        f.write(content)
-
-
 def render_file_previews(node, file_preview_path, args):
+    """
+    Implementation for `bw items --write-file-previews`: Writes all file-items into a local directory.
+    """
     if args['item']:
         io.stderr(_("{x} use --preview to preview single files").format(x=red("!!!")))
         exit(1)
@@ -95,7 +87,7 @@ def render_file_previews(node, file_preview_path, args):
             ).format(x=yellow("»"), filename=bold(item.name)))
             continue
         try:
-            write_preview(item, file_preview_path)
+            write_file_preview(item, file_preview_path)
         except FaultUnavailable:
             io.stderr(_(
                 "{x} skipped {path} (Fault unavailable)"
@@ -112,7 +104,27 @@ def render_file_previews(node, file_preview_path, args):
             ))
 
 
+def write_file_preview(file_item, base_path):
+    """
+    Writes the content of a single file item to the given path.
+    """
+
+    # this might raise an exception, try it before creating anything
+    content = file_item.content
+
+    # write content to named file
+    file_path = join(base_path, file_item.name.lstrip("/"))
+    dir_path = dirname(file_path)
+    if not exists(dir_path):
+        makedirs(dir_path)
+    with open(file_path, 'wb') as f:
+        f.write(content)
+
+
 def show_single_item(node, item, representation, args):
+    """
+    Implementation for all variants of `bw items NODE ITEM`.
+    """
     if representation == ItemRepresentation.PREVIEW:
         show_single_item_preview(node, item)
         return
@@ -147,6 +159,9 @@ def show_single_item(node, item, representation, args):
 
 
 def show_single_item_preview(node, item):
+    """
+    Implementation of `bw items NODE ITEM --preview`: Writes the content of single file to stdout.
+    """
     try:
         io.stdout(
             item.preview(),
@@ -170,6 +185,9 @@ def show_single_item_preview(node, item):
 
 
 def list_all_items(node, args):
+    """
+    Implementation of `bw items NODE`: Lists all items on a node.
+    """
     show_repr = args['show_repr']
     if args['blame']:
         # items per bundles
@@ -189,6 +207,9 @@ def list_all_items(node, args):
 
 
 def format_data(data, fmt, table_headers=None):
+    """
+    Formats a list or a dict (with scalar or list values) according to the requested format
+    """
     if fmt == 'json':
         io.stdout(statedict_to_json(data, pretty=True))
 
@@ -197,6 +218,9 @@ def format_data(data, fmt, table_headers=None):
 
 
 def format_data_table(data, table_headers):
+    """
+    Formats a list or a dict (with scalar or list values) as bw-style table
+    """
     table = [
         [
             bold(header)
