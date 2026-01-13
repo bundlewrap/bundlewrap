@@ -161,30 +161,29 @@ def get_target_nodes(repo, target_strings, node_workers=None):
     return nodes_matching
 
 
-
-def verify_autoskip_selector(nodes, autoskip_selector):
-    if not autoskip_selector:
+def verify_autoskip_selectors(nodes, selectors_given):
+    if not selectors_given:
         return set()
 
-    selectors = {
+    selectors_used = {
         selector: False
-        for selector in autoskip_selector
+        for selector in selectors_given
     }
     for node in nodes:
-        for selector in autoskip_selector:
+        for selector in selectors_given:
             if node.covered_by_autoskip_selector([selector]):
-                selectors[selector] = True
+                selectors_used[selector] = True
 
         for item in node.items:
             if QUIT_EVENT.is_set():
                 return 0
 
-            for selector in autoskip_selector:
+            for selector in selectors_given:
                 if item.covered_by_autoskip_selector([selector]):
-                    selectors[selector] = True
+                    selectors_used[selector] = True
 
     return {
         selector
-        for selector, matches in selectors.items()
+        for selector, matches in selectors_used.items()
         if not matches
     }
