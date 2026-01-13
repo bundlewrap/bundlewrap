@@ -187,32 +187,57 @@ def render_table(rows, alignments=None):
 
     alignments is a dict mapping column indexes to 'left' or 'right'.
     """
+    if not rows:
+        return
+
+    num_columns = len(rows[0])
+
     if environ.get("BW_TABLE_STYLE") == 'csv':
-        output = StringIO()
-        writer = csv.writer(output)
-        for row in rows:
-            if row == ROW_SEPARATOR:
-                continue
-            writer.writerow([ansi_clean(inline_list(cell)) for cell in row])
-        for line in output.getvalue().splitlines():
-            yield line
+        yield from render_table_csv(rows)
+    elif num_columns == 1:
+        yield from render_table_single_column(rows)
     else:
-        if alignments is None:
-            alignments = {}
-        column_widths = _column_widths_for_rows(rows)
+        yield from render_table_beauty(alignments, rows)
 
-        if environ.get("BW_TABLE_STYLE") != 'grep':
-            yield _border_top(column_widths)
 
-        for row_index, row in enumerate(rows):
-            if row == ROW_SEPARATOR:
-                if environ.get("BW_TABLE_STYLE") != 'grep':
-                    yield _row([ROW_SEPARATOR] * len(column_widths), column_widths, {})
-            elif row_index == 0:
-                # heading row ignores alignments
-                yield _row(row, column_widths, {})
-            elif environ.get("BW_TABLE_STYLE") != 'grep' or not _empty_row(row):
-                yield _row(row, column_widths, alignments)
+def render_table_csv(rows):
+    output = StringIO()
+    writer = csv.writer(output)
+    for row in rows:
+        if row == ROW_SEPARATOR:
+            continue
+        writer.writerow([ansi_clean(inline_list(cell)) for cell in row])
+    for line in output.getvalue().splitlines():
+        yield line
 
-        if environ.get("BW_TABLE_STYLE") != 'grep':
-            yield _border_bottom(column_widths)
+
+def render_table_single_column(rows):
+    for row in rows:
+        if not row:
+            yield ""
+        elif row == ROW_SEPARATOR:
+            continue
+        else:
+            yield str(row[0])
+
+
+def render_table_beauty(alignments, rows):
+    if alignments is None:
+        alignments = {}
+    column_widths = _column_widths_for_rows(rows)
+
+    if environ.get("BW_TABLE_STYLE") != 'grep':
+        yield _border_top(column_widths)
+
+    for row_index, row in enumerate(rows):
+        if row == ROW_SEPARATOR:
+            if environ.get("BW_TABLE_STYLE") != 'grep':
+                yield _row([ROW_SEPARATOR] * len(column_widths), column_widths, {})
+        elif row_index == 0:
+            # heading row ignores alignments
+            yield _row(row, column_widths, {})
+        elif environ.get("BW_TABLE_STYLE") != 'grep' or not _empty_row(row):
+            yield _row(row, column_widths, alignments)
+
+    if environ.get("BW_TABLE_STYLE") != 'grep':
+        yield _border_bottom(column_widths)
