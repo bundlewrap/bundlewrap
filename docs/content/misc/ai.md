@@ -1,14 +1,14 @@
-# BundleWrap AI Usage Policy
+# AI Usage Policy
 
 ## Philosophy: AI-Augmented Engineering vs. AI-Generated Code
 
 We distinguish between two fundamentally different approaches to AI:
 
-1. *AI-Generated Code (Discouraged):* Handing off a problem to an AI and copy-pasting the output. This leads to "plausible" but buggy code, increased review fatigue, and a loss of deep system knowledge.
+1. *AI-Generated Code (Problematic):* Handing off a problem to an AI and copy-pasting the output. This leads to "plausible" but buggy code, increased review fatigue, and a loss of deep system knowledge.
 
-2. *AI-Augmented Engineering (Encouraged):* Using AI as an assistant to accelerate an engineer's existing plan. The human remains the architect; the AI is the high-speed drafter.
+2. *AI-Augmented Engineering (Allowed):* Using AI as an assistant to accelerate an engineer's existing plan. The human remains the architect; the AI is the high-speed drafter.
 
-Our goal is to foster *AI-Augmented Engineering*. We value the "handcrafted" quality of BundleWrap and use AI to reduce friction, not to bypass thinking.
+If a contributor chooses to use AI, our goal is to foster *AI-Augmented Engineering*. We value the "handcrafted" quality of BundleWrap and want AI to reduce friction, not to bypass thinking.
 
 ## Core Principles
 
