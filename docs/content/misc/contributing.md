@@ -18,7 +18,7 @@ Please use the [GitHub issue tracker](https://github.com/bundlewrap/bundlewrap/i
 
 Here are the steps:
 
-1. Write your code. Awesome!
+1. Write your code. Awesome! Sure to also read and adhere to the [AI policy](ai.md).
 2. If you haven't already done so, please consider writing tests. Otherwise, someone else will have to do it for you.
 3. Same goes for documentation.
 4. Set up a [virtualenv](http://virtualenv.readthedocs.org/en/latest/) and run `pip install -r requirements.txt`.
