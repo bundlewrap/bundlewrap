@@ -34,7 +34,6 @@ def bw_plot_node(repo, args):
         prepare_dependencies(node),
         cluster=args['cluster'],
         regular=args['depends_regular'],
-        reverse=args['depends_reverse'],
         auto=args['depends_auto'],
     ):
         io.stdout(line)

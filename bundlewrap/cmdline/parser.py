@@ -849,13 +849,7 @@ will exit with code 47 if any matching items are locked
         dest='depends_regular',
         help=_("do not show after/needs dependencies"),
     )
-    parser_plot_subparsers_node.add_argument(
-        "--no-depends-reverse",
-        action='store_false',
-        dest='depends_reverse',
-        help=_("do not show before/needed_by dependencies"),
-    )
-
+   
     # bw plot groups-for-node
     help_plot_node_groups = _("Show where a specific node gets its groups from")
     parser_plot_subparsers_node_groups = parser_plot_subparsers.add_parser(
