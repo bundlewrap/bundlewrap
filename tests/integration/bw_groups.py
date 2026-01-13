@@ -198,5 +198,5 @@ def test_nonexistant(tmpdir):
         },
     )
     stdout, stderr, rcode = run("bw nodes group2", path=str(tmpdir))
-    assert b"NoSuchTarget" in stderr
+    assert b"Target string group2 does match neither bundle, nor group, node or lambda." in stderr
     assert rcode == 1

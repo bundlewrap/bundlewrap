@@ -702,7 +702,7 @@ class Repository(MetadataGenerator):
                         group = self.get_group(name)
                         targets.update(group.nodes)
                     except NoSuchGroup:
-                        raise NoSuchTarget(_(f"Target string {name} does match neither bundle, nor group, node or lambda."))
+                        raise NoSuchTarget(name)
 
         return list(targets)
 
