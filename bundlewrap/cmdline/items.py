@@ -151,11 +151,11 @@ def show_single_item(node, item, representation, args):
 
     elif representation == ItemRepresentation.REPR:
         data = [repr(item)]
-        format_data(data, args['format'], table_headers=[_('item')])
+        format_data(data, args, table_headers=[_('item')])
         return
 
     # print attributes key-value
-    format_data(data, args['format'], table_headers=[_('attribute'), _('value')])
+    format_data(data, args, table_headers=[_('attribute'), _('value')])
 
 
 def show_single_item_preview(node, item):
@@ -203,17 +203,17 @@ def list_all_items(node, args):
         for item in sorted(node.items):
             data.append(repr(item) if show_repr else item.id)
 
-    format_data(data, args['format'], table_headers=table_headers)
+    format_data(data, args, table_headers=table_headers)
 
 
-def format_data(data, fmt, table_headers=None):
+def format_data(data, args, table_headers=None):
     """
     Formats a list or a dict (with scalar or list values) according to the requested format
     """
-    if fmt == 'json':
+    if args['format_json']:
         io.stdout(statedict_to_json(data, pretty=True))
 
-    elif fmt == 'table':
+    else:
         format_data_table(data, table_headers)
 
 

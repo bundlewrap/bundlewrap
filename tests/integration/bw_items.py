@@ -248,7 +248,7 @@ def test_show_auto_needs(tmpdir):
             },
         },
     )
-    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw items --attr --format table node1 directory:/foo/bar needs", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw items --attr node1 directory:/foo/bar needs", path=str(tmpdir))
     assert stdout.decode() == """attribute\tvalue
 needs\taction:
 needs\tdirectory:/foo
@@ -300,6 +300,17 @@ file:/foo/bar/moo
 """.lstrip())
 
 
+def test_bw_items_invocation_list_of_items_as_json(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --json node1', """
+[
+    "action:clone_code",
+    "directory:/foo/bar",
+    "file:/foo/bar/moo"
+]
+""".lstrip())
+
+
 def test_bw_items_invocation_list_of_items_repr(tmpdir):
     _bw_items_invocation_make_repo(tmpdir)
     _test_bw_items_invocation_succeeds(tmpdir, 'bw items --repr node1', """
@@ -310,6 +321,17 @@ items
 """.lstrip())
 
 
+def test_bw_items_invocation_list_of_items_repr_as_json(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --repr --json node1', """
+[
+    "<Item action:clone_code>",
+    "<Directory path:/foo/bar purge:False owner:root group:root mode:0755>",
+    "<File path:/foo/bar/moo content_type:text owner:root group:root mode:0644 delete:False>"
+]
+""".lstrip())
+
+
 def test_bw_items_invocation_list_of_items_blame(tmpdir):
     _bw_items_invocation_make_repo(tmpdir)
     _test_bw_items_invocation_succeeds(tmpdir, 'bw items --blame node1', """
@@ -317,6 +339,19 @@ bundle name\titems
 bundle1\taction:clone_code
 bundle1\tdirectory:/foo/bar
 bundle1\tfile:/foo/bar/moo
+""".lstrip())
+
+
+def test_bw_items_invocation_list_of_items_blame_as_json(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --blame --json node1', """
+{
+    "bundle1": [
+        "action:clone_code",
+        "directory:/foo/bar",
+        "file:/foo/bar/moo"
+    ]
+}
 """.lstrip())
 
 
@@ -332,11 +367,33 @@ type\tdirectory
 """.lstrip())
 
 
+def test_bw_items_invocation_single_item_as_json(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --json node1 directory:/foo/bar', """
+{
+    "group": "root",
+    "mode": "0755",
+    "owner": "root",
+    "paths_to_purge": [],
+    "type": "directory"
+}
+""".lstrip())
+
+
 def test_bw_items_invocation_single_item_repr(tmpdir):
     _bw_items_invocation_make_repo(tmpdir)
     _test_bw_items_invocation_succeeds(tmpdir, 'bw items --repr node1 directory:/foo/bar', """
 item
 <Directory path:/foo/bar purge:False owner:root group:root mode:0755>
+""".lstrip())
+
+
+def test_bw_items_invocation_single_item_repr_as_json(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --repr --json node1 directory:/foo/bar', """
+[
+    "<Directory path:/foo/bar purge:False owner:root group:root mode:0755>"
+]
 """.lstrip())
 
 
@@ -360,6 +417,32 @@ triggered_by\t[]
 triggers\t[]
 unless\t
 when_creating\t{}
+""".lstrip())
+
+
+def test_bw_items_invocation_single_item_attrs_as_json(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --attrs --json node1 directory:/foo/bar', """
+{
+    "after": [],
+    "before": [],
+    "cascade_skip": true,
+    "comment": null,
+    "error_on_missing_fault": false,
+    "needed_by": [],
+    "needs": [
+        "action:"
+    ],
+    "preceded_by": [],
+    "precedes": [],
+    "skip": false,
+    "tags": [],
+    "triggered": false,
+    "triggered_by": [],
+    "triggers": [],
+    "unless": "",
+    "when_creating": {}
+}
 """.lstrip())
 
 

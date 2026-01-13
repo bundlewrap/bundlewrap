@@ -505,13 +505,10 @@ bundle:my_bundle  # items in this bundle
         help=_("show actual item status on node instead of should-be configuration"),
     )
     parser_items.add_argument(
-        "-F",
-        "--format",
-        action='store',
-        dest='format',
-        choices=['table', 'json'],
-        default='table',
-        help=_("choose the output formatting"),
+        "--json",
+        action='store_true',
+        dest='format_json',
+        help=_("show output as json instead of the usual table"),
     )
 
     # bw lock
