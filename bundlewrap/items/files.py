@@ -397,7 +397,7 @@ class File(Item):
             self._fix_content_hash(status)
 
     def get_auto_attrs(self, items):
-        deps = []
+        deps = set()
         for item in items:
             if item.ITEM_TYPE_NAME == 'file' and is_subdirectory(item.name, self.name):
                 raise BundleError(_(
@@ -421,7 +421,7 @@ class File(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
+                    deps.add(item.id)
             elif item.ITEM_TYPE_NAME == 'group' and item.name == self.attributes['group']:
                 if item.attributes['delete']:
                     raise BundleError(_(
@@ -434,12 +434,12 @@ class File(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
+                    deps.add(item.id)
             elif item.ITEM_TYPE_NAME in ('directory', 'symlink'):
                 if is_subdirectory(item.name, self.name):
-                    deps.append(item.id)
+                    deps.add(item.id)
         return {
-            'needs': deps,
+            'after': deps,
         }
 
     def sdict(self):

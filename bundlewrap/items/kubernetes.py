@@ -69,7 +69,7 @@ class KubernetesItem(Item, metaclass=ABCMeta):
             log_error(result)
 
     def get_auto_attrs(self, items, _secrets=True):
-        deps = []
+        deps = set()
         for item in items:
             if (
                 item.ITEM_TYPE_NAME == 'k8s_namespace' and
@@ -84,13 +84,13 @@ class KubernetesItem(Item, metaclass=ABCMeta):
                         bundle=self.bundle.name,
                         node=self.node.name,
                     ))
-                deps.append(item.id)
+                deps.add(item.id)
             elif (
                 _secrets and
                 item.ITEM_TYPE_NAME == 'k8s_secret' and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
+                deps.add(item.id)
         return {
             'needs': deps,
         }
@@ -264,7 +264,7 @@ class KubernetesRawItem(KubernetesItem):
                 item.ITEM_TYPE_NAME == 'k8s_crd' and
                 item._manifest_dict.get('spec', {}).get('names', {}).get('kind') == self.KIND
             ):
-                deps.append(item.id)
+                deps.add(item.id)
         return {
             'needs': deps,
         }
@@ -295,7 +295,7 @@ class KubernetesClusterRoleBinding(KubernetesItem):
 
     def get_auto_attrs(self, items):
         deps = super(KubernetesClusterRoleBinding, self).get_auto_attrs(items)['needs']
-        deps.append("k8s_clusterrole:")
+        deps.add("k8s_clusterrole:")
         return {
             'needs': deps,
         }
@@ -344,7 +344,7 @@ class KubernetesDaemonSet(KubernetesItem):
                 item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
+                deps.add(item.id)
         return {
             'needs': deps,
         }
@@ -362,7 +362,7 @@ class KubernetesDeployment(KubernetesItem):
                 item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
+                deps.add(item.id)
         return {
             'needs': deps,
         }
@@ -380,7 +380,7 @@ class KubernetesIngress(KubernetesItem):
                 item.ITEM_TYPE_NAME == 'k8s_service' and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
+                deps.add(item.id)
         return {
             'needs': deps,
         }
@@ -424,7 +424,7 @@ class KubernetesRoleBinding(KubernetesItem):
 
     def get_auto_attrs(self, items):
         deps = super(KubernetesRoleBinding, self).get_auto_attrs(items)['needs']
-        deps.append("k8s_role:")
+        deps.add("k8s_role:")
         return {
             'needs': deps,
         }
@@ -463,7 +463,7 @@ class KubernetesStatefulSet(KubernetesItem):
                 item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
+                deps.add(item.id)
         return {
             'needs': deps,
         }
