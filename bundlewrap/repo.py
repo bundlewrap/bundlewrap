@@ -5,7 +5,6 @@ from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 from sys import version_info
 
-from .utils.node_lambda import parallel_node_eval
 
 try:
     from tomllib import loads as toml_load
@@ -39,8 +38,9 @@ from .utils import (
     get_file_contents,
     names,
 )
-from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.dicts import hash_statedict
+from .utils.scm import get_git_branch, get_git_clean, get_rev
+from .utils.node_lambda import parallel_node_eval
 from .utils.text import bold, mark_for_translation as _, red, validate_name
 from .utils.ui import io
 
@@ -207,7 +207,8 @@ class HooksProxy:
                         level_hint=level_hint,
                         filename=filename,
                     )):
-                        self.__module_cache[filename][event](**kwargs)
+                        with error_context(filename=filename):
+                            self.__module_cache[filename][event](**kwargs)
             self.__hook_cache[event] = hook
 
         return self.__hook_cache[event]
