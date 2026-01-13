@@ -5,6 +5,7 @@ from os import listdir, mkdir, walk
 from os.path import abspath, dirname, isdir, isfile, join
 from sys import version_info
 
+from .utils import error_context
 from .utils.node_lambda import parallel_node_eval
 
 try:
@@ -207,7 +208,8 @@ class HooksProxy:
                         level_hint=level_hint,
                         filename=filename,
                     )):
-                        self.__module_cache[filename][event](**kwargs)
+                        with error_context(filename=filename):
+                            self.__module_cache[filename][event](**kwargs)
             self.__hook_cache[event] = hook
 
         return self.__hook_cache[event]
