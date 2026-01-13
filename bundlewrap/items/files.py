@@ -26,7 +26,7 @@ from requests import head
 from bundlewrap.exceptions import BundleError, FaultUnavailable, TemplateError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.items.directories import validator_mode
-from bundlewrap.utils import cached_property, download, hash_local_file, sha1, tempfile
+from bundlewrap.utils import cached_property, download, hash_local_file, sha256, tempfile
 from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import bold, force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
@@ -210,7 +210,7 @@ def download_file(item):
                 io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: content hash is {local_hash}")
                 if local_hash != item.attributes['content_hash']:
                     raise BundleError(_(
-                        "could not download correct file from {} - sha1sum mismatch "
+                        "could not download correct file from {} - sha256sum mismatch "
                         "(expected {}, got {})"
                     ).format(
                         item.attributes['source'],
@@ -302,7 +302,7 @@ class File(Item):
         if self.attributes['content_type'] in ('binary', 'download'):
             return hash_local_file(self.template)
         else:
-            return sha1(self.content)
+            return sha256(self.content)
 
     @cached_property
     def template(self):
@@ -449,7 +449,7 @@ class File(Item):
         else:
             return {
                 'type': 'file' if path_info.is_file else path_info.stat['type'],
-                'content_hash': path_info.sha1 if path_info.is_file else None,
+                'content_hash': path_info.sha256 if path_info.is_file else None,
                 'mode': path_info.mode,
                 'owner': ('+' + path_info.owner_id) if use_uid else path_info.owner,
                 'group': ('+' + path_info.group_id) if use_gid else path_info.group,
