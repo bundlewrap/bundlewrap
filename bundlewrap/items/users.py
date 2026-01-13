@@ -1,16 +1,11 @@
-from logging import ERROR, getLogger
 from shlex import quote
 from string import ascii_lowercase, digits
-
-from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.utils.crypto import crypt_bcrypt
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 
-
-getLogger('passlib').setLevel(ERROR)
 
 _ATTRIBUTE_NAMES = {
     'full_name': _("full name"),
@@ -30,18 +25,6 @@ _ATTRIBUTE_OPTIONS = {
     'password_hash': "-p",
     'shell': "-s",
     'uid': "-u",
-}
-
-# a random static salt if users don't provide one
-# TODO #853 If we make bundlewrap.crypto a replacement for passlib, then
-# move this constant over there.
-_DEFAULT_SALT = "uJzJlYdG"
-
-HASH_METHODS = {
-    'md5': md5_crypt,
-    'sha256': sha256_crypt,
-    'sha512': sha512_crypt,
-    'bcrypt': crypt_bcrypt,
 }
 
 _USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
@@ -93,7 +76,6 @@ class User(Item):
         'full_name': None,
         'gid': None,
         'groups': None,
-        'hash_method': 'sha512',
         'home': None,
         'password': None,
         'password_hash': None,
@@ -126,7 +108,6 @@ class User(Item):
             return None
         cdict = self.attributes.copy()
         del cdict['delete']
-        del cdict['hash_method']
         del cdict['password']
         del cdict['salt']
         del cdict['use_shadow']
@@ -285,29 +266,23 @@ class User(Item):
 
     def patch_attributes(self, attributes):
         if attributes.get('password', None) is not None:
-            # defaults aren't set yet
-            hash_method = HASH_METHODS[attributes.get(
-                'hash_method',
-                self.ITEM_ATTRIBUTES['hash_method'],
-            )]
+            # This is the default in OpenBSD.
+            #
+            # Linux PAM appears to use 5 by default. It's probably
+            # reasonable to ignore this and use 8 on Linux as well.
+            #
+            # (The Linux PAM crypt algo is configured in some file in
+            # /etc/pam.d, probably a line like "password pam_unix.so
+            # blowfish".)
+            rounds = 8
+
             salt = force_text(attributes.get('salt', None))
-            if self.node.os == 'openbsd':
-                attributes['password_hash'] = crypt_bcrypt(
-                    force_text(attributes['password']),
-                    rounds=8,  # default rounds for OpenBSD accounts
-                    salt=salt,
-                )
-            elif attributes.get('hash_method') == 'md5':
-                attributes['password_hash'] = hash_method.encrypt(
-                    force_text(attributes['password']),
-                    salt=_DEFAULT_SALT if salt is None else salt,
-                )
-            else:
-                attributes['password_hash'] = hash_method.encrypt(
-                    force_text(attributes['password']),
-                    rounds=5000,  # default from glibc
-                    salt=_DEFAULT_SALT if salt is None else salt,
-                )
+
+            attributes['password_hash'] = crypt_bcrypt(
+                force_text(attributes['password']),
+                rounds=rounds,
+                salt=salt,
+            )
 
         if 'use_shadow' not in attributes:
             attributes['use_shadow'] = self.node.use_shadow_passwords
@@ -327,16 +302,6 @@ class User(Item):
                         "{item} from bundle '{bundle}' cannot have other "
                         "attributes besides 'delete'"
                     ).format(item=item_id, bundle=bundle.name))
-
-        if 'hash_method' in attributes and \
-                attributes['hash_method'] not in HASH_METHODS:
-            raise BundleError(
-                _("Invalid hash method for {item} in bundle '{bundle}': '{method}'").format(
-                    bundle=bundle.name,
-                    item=item_id,
-                    method=attributes['hash_method'],
-                )
-            )
 
         if 'password_hash' in attributes and (
             'password' in attributes or

@@ -50,18 +50,6 @@ List of groups (names, not GIDs) the user should belong to. Must NOT include the
 
 <hr>
 
-## hash_method
-
-One of:
-
-* `md5`
-* `sha256`
-* `sha512`
-
-Defaults to `sha512`.
-
-<hr>
-
 ## home
 
 Path to home directory. Defaults to `/home/USERNAME`.
