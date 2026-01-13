@@ -138,8 +138,6 @@ def _add_incoming_needs(items):
 def _prepare_auto_attrs(items):
     for item in items:
         auto_attrs = item.get_auto_attrs(items)
-        # remove next line in 5.0 when killing get_auto_deps
-        auto_attrs['needs'] = set(auto_attrs.get('needs', set())) | set(item.get_auto_deps(items))
         for key, value in auto_attrs.items():
             if key not in ALLOWED_ITEM_AUTO_ATTRIBUTES:
                 raise ValueError(_("get_auto_attrs() on {item} returned illegal key {key}").format(

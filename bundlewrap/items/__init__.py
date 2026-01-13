@@ -766,21 +766,6 @@ class Item:
         """
         return {}
 
-    def get_auto_deps(self, items):
-        """
-        DEPRECATED remove in 5.0, use get_auto_attrs instead
-
-        Return a list of item IDs this item should have dependencies on.
-
-        Be very careful when using this. There are few circumstances
-        where this is really necessary. Only use this if you really need
-        to examine the actual list of items in order to figure out your
-        dependencies.
-
-        MAY be overridden by subclasses.
-        """
-        return []
-
     def get_canned_actions(self):
         """
         Return a dictionary of action definitions (mapping action names
