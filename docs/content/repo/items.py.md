@@ -61,7 +61,6 @@ This table lists all item types included in BundleWrap along with the bundle att
 <tr><td><a href="../../items/svc_openbsd">svc_openbsd</a></td><td><code>svc_openbsd</code></td><td>Starts and stops services with OpenBSD's rc</td></tr>
 <tr><td><a href="../../items/svc_systemd">svc_systemd</a></td><td><code>svc_systemd</code></td><td>Starts and stops services with systemd</td></tr>
 <tr><td><a href="../../items/svc_systemv">svc_systemv</a></td><td><code>svc_systemv</code></td><td>Starts and stops services with traditional System V init scripts</td></tr>
-<tr><td><a href="../../items/svc_upstart">svc_upstart</a></td><td><code>svc_upstart</code></td><td>Starts and stops services with Upstart</td></tr>
 <tr><td><a href="../../items/symlink">symlink</a></td><td><code>symlinks</code></td><td>Manages symbolic links and their ownership</td></tr>
 <tr><td><a href="../../items/user">user</a></td><td><code>users</code></td><td>Manages users by wrapping <code>useradd</code>, <code>usermod</code> and <code>userdel</code></td></tr>
 <tr><td><a href="../../items/zfs_dataset">zfs_dataset</a></td><td><code>zfs_datasets</code></td><td>Manages ZFS datasets</td></tr>
@@ -315,15 +314,15 @@ These attributes are only enforced during the creation of the item on the node (
 
 Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:
 
-	svc_upstart = {'mysql': {'running': True}}
+	svc_systemd = {'mysql': {'running': True}}
 
 	files = {
 	    "/etc/mysql/my.cnf": {
 	        'source': "my.cnf",
 	        'triggers': [
-	            "svc_upstart:mysql:reload",  # this triggers the canned action
+	            "svc_systemd:mysql:reload",  # this triggers the canned action
 	        ],
 	    },
 	}
 
-Canned actions always have to be triggered in order to run. In the example above, a change in the file `/etc/mysql/my.cnf` will trigger the `reload` action defined by the [svc_upstart item type](../items/svc_upstart.md) for the mysql service.
+Canned actions always have to be triggered in order to run. In the example above, a change in the file `/etc/mysql/my.cnf` will trigger the `reload` action defined by the [svc_systemd item type](../items/svc_systemd.md) for the mysql service.

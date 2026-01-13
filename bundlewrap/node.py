@@ -763,8 +763,8 @@ class Node:
 
         try:
             self.repo.hooks.node_apply_start(
-                self.repo,
-                self,
+                repo=self.repo,
+                node=self,
                 interactive=interactive,
             )
         except SkipNode as exc:
@@ -828,8 +828,8 @@ class Node:
         ))
 
         self.repo.hooks.node_apply_end(
-            self.repo,
-            self,
+            repo=self.repo,
+            node=self,
             duration=result.duration,
             interactive=interactive,
             result=result,
@@ -924,7 +924,10 @@ class Node:
             # has completed on the node before trying to reuse the
             # multiplexed connection.
             if self._ssh_first_conn_lock.acquire(False):
-                self.repo.hooks.node_ssh_connect(self.repo, self)
+                self.repo.hooks.node_ssh_connect(
+                    repo=self.repo,
+                    node=self,
+                )
                 try:
                     with io.job(_("{}  establishing connection...").format(bold(self.name))):
                         operations.run(

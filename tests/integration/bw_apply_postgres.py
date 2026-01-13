@@ -43,7 +43,6 @@ if environ.get('TRAVIS') == "true":
         stdout, stderr, rcode = run("bw items --state localhost postgres_role:bw-test1", path=str(tmpdir))
         assert rcode == 0
         assert loads(stdout.decode()) == {
-            'can_login': True,
             'password_hash': "md5ecba3aec62c5aabf6480de6352182004",
             'superuser': True,
         }

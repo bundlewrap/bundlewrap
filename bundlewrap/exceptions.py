@@ -72,6 +72,22 @@ class NoSuchNode(BundlewrapError):
     pass
 
 
+class NoSuchTarget(BundlewrapError):
+    """
+    Raised when a target matches neither bundle nor group, item or node.
+    """
+    
+    def __init__(self, target):
+        self.target = target
+
+    def __repr__(self):
+        return "<NoSuchTarget {}>".format(self.target)
+
+    def __str__(self):
+        return self.target
+    pass
+
+
 class RemoteException(BundlewrapError):
     """
     Raised when a shell command on a node fails.
