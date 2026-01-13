@@ -396,7 +396,7 @@ class File(Item):
             self.run("mkdir -p -- {}".format(quote(dirname(self.name))))
             self._fix_content_hash(status)
 
-    def get_auto_deps(self, items):
+    def get_auto_attrs(self, items):
         deps = []
         for item in items:
             if item.ITEM_TYPE_NAME == 'file' and is_subdirectory(item.name, self.name):
@@ -438,7 +438,9 @@ class File(Item):
             elif item.ITEM_TYPE_NAME in ('directory', 'symlink'):
                 if is_subdirectory(item.name, self.name):
                     deps.append(item.id)
-        return deps
+        return {
+            'needs': deps,
+        }
 
     def sdict(self):
         use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')

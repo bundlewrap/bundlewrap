@@ -91,12 +91,14 @@ class PostgresDB(Item):
         else:
             raise AssertionError("this shouldn't happen")
 
-    def get_auto_deps(self, items):
+    def get_auto_attrs(self, items):
         deps = []
         for item in items:
             if item.ITEM_TYPE_NAME == "postgres_role" and item.name == self.attributes['owner']:
                 deps.append(item.id)
-        return deps
+        return {
+            'needs': deps,
+        }
 
     def sdict(self):
         databases = get_databases(self.node)

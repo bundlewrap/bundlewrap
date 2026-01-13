@@ -98,7 +98,7 @@ class Symlink(Item):
         if self.attributes['owner'] or self.attributes['group']:
             self._fix_ownership(status)
 
-    def get_auto_deps(self, items):
+    def get_auto_attrs(self, items):
         deps = []
         for item in items:
             if item == self:
@@ -145,7 +145,9 @@ class Symlink(Item):
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
                     deps.append(item.id)
-        return deps
+        return {
+            'needs': deps,
+        }
 
     def patch_attributes(self, attributes):
         if 'group' not in attributes and self.node.os in self.node.OS_FAMILY_BSD:
