@@ -43,7 +43,7 @@ def get_role(node, role):
         else:
             role_attrs[AUTHID_COLUMNS[key]] = value
 
-    for bool_attr in ('superuser'):
+    for bool_attr in ('superuser',):
         if bool_attr in role_attrs:
             role_attrs[bool_attr] = role_attrs[bool_attr] == "t"
 
