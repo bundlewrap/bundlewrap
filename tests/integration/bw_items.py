@@ -248,7 +248,8 @@ def test_show_auto_needs(tmpdir):
             },
         },
     )
-    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw items --attr node1 directory:/foo/bar needs", path=str(tmpdir))
+    stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw items --attr --format table node1 directory:/foo/bar needs", path=str(tmpdir))
+    print(stdout.decode())
     assert stdout.decode() == """attribute\tvalue
 needs\taction:
 needs\tdirectory:/foo
