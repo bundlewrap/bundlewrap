@@ -24,6 +24,7 @@ from .bundle import FILENAME_ITEMS
 from .exceptions import (
     NoSuchGroup,
     NoSuchNode,
+    NoSuchTarget,
     NoSuchRepository,
     MissingRepoDependency,
     RepositoryError,
@@ -701,7 +702,7 @@ class Repository(MetadataGenerator):
                         group = self.get_group(name)
                         targets.update(group.nodes)
                     except NoSuchGroup:
-                        continue
+                        raise NoSuchTarget(_(f"Target string {name} does match neither bundle, nor group, node or lambda."))
 
         return list(targets)
 

@@ -56,6 +56,13 @@ class NoSuchNode(Exception):
     pass
 
 
+class NoSuchTarget(Exception):
+    """
+    Raised when a target matches neither bundle nor group, item or node.
+    """
+    pass
+
+
 class RemoteException(Exception):
     """
     Raised when a shell command on a node fails.

@@ -184,3 +184,19 @@ def test_supergroups_redundant(tmpdir):
     assert b"group2" in stderr
     assert b"group3" not in stderr
     assert rcode == 1
+
+def test_nonexistant(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {},
+        },
+        groups={
+            "group1": {
+                'members': {"node1"},
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw nodes group2", path=str(tmpdir))
+    assert b"NoSuchTarget" in stderr
+    assert rcode == 1
