@@ -142,12 +142,8 @@ def show_single_item(node, item, representation, args):
         format_data(data, args['format'], table_headers=[_('item')])
         return
 
-    if args['attr']:
-        # print single attribute (formatting is always flat)
-        io.stdout(repr(data[args['attr']]))
-    else:
-        # print attributes key-value
-        format_data(data, args['format'], table_headers=[_('attribute'), _('value')])
+    # print attributes key-value
+    format_data(data, args['format'], table_headers=[_('attribute'), _('value')])
 
 
 def show_single_item_preview(node, item):
