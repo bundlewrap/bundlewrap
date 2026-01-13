@@ -196,7 +196,7 @@ class NodeMetadataProxy(Mapping):
                     return default
                 else:
                     if self._metagen._in_a_reactor:
-                        self._metagen._reactors_with_keyerrors[self._metagen._current_reactor] = \
+                        self._metagen._reactors_with_unavailable_metadata[self._metagen._current_reactor] = \
                             ((self._node.name, path), exc)
                     raise exc
 
@@ -225,7 +225,7 @@ class MetadataGenerator:
         # which reactors are currently triggered (and by what)
         self._reactors_triggered = defaultdict(set)
         # which reactors raised a KeyError (and for what)
-        self._reactors_with_keyerrors = {}
+        self._reactors_with_unavailable_metadata = {}
         # maps provided paths to their reactors
         self._provides_tree = ReactorTree()
         # how often each reactor changed
@@ -268,12 +268,12 @@ class MetadataGenerator:
                     break
             io.debug("reactor run completed, rerunning relevant reactors")
 
-        if self._reactors_with_keyerrors:
+        if self._reactors_with_unavailable_metadata:
             msg = _(
                 "These metadata reactors raised a KeyError "
                 "even after all other reactors were done:"
             )
-            for source, path_exc in sorted(self._reactors_with_keyerrors.items()):
+            for source, path_exc in sorted(self._reactors_with_unavailable_metadata.items()):
                 node_name, reactor = source
                 path, exc = path_exc
                 msg += f"\n\n  {node_name} {reactor}\n  accessing {path}\n\n"
@@ -358,8 +358,8 @@ class MetadataGenerator:
         reactors_triggered = self._reactors_triggered
         self._reactors_triggered = defaultdict(set)
 
-        reactors_with_keyerrors = self._reactors_with_keyerrors
-        self._reactors_with_keyerrors = {}
+        reactors_with_unavailable_metadata = self._reactors_with_unavailable_metadata
+        self._reactors_with_unavailable_metadata = {}
 
         for reactor_id, triggers in reactors_triggered.items():
             yield (
@@ -368,7 +368,7 @@ class MetadataGenerator:
                 f"it was triggered by: {triggers}",
             )
 
-        for reactor_id, path_exc in reactors_with_keyerrors.items():
+        for reactor_id, path_exc in reactors_with_unavailable_metadata.items():
             yield (
                 reactor_id,
                 f"running reactor {reactor_id} because "
@@ -399,7 +399,7 @@ class MetadataGenerator:
                     self._reactors[reactor_id]['reactor'],
                 )
 
-            if (node_name, reactor_name) not in self._reactors_with_keyerrors:
+            if (node_name, reactor_name) not in self._reactors_with_unavailable_metadata:
                 only_keyerrors = False
 
         return reactors_run, only_keyerrors
@@ -415,22 +415,22 @@ class MetadataGenerator:
         try:
             new_metadata = reactor(node.metadata)
         except MetadataUnavailable as exc:
-            if self._current_reactor not in self._reactors_with_keyerrors:
+            if self._current_reactor not in self._reactors_with_unavailable_metadata:
                 
-                self._reactors_with_keyerrors[self._current_reactor] = (
+                self._reactors_with_unavailable_metadata[self._current_reactor] = (
                     ('UNKNOWN', ('UNKNOWN',)),
                     exc,
                 )
             io.debug(
                 f"{self._current_reactor} raised MetadataUnavailable: "
-                f"{self._reactors_with_keyerrors[self._current_reactor]}"
+                f"{self._reactors_with_unavailable_metadata[self._current_reactor]}"
             )
             return False
         except DoNotRunAgain:
             self._reactors[self._current_reactor]['raised_donotrunagain'] = True
             # clear any previously stored exception
             with suppress(KeyError):
-                del self._reactors_with_keyerrors[self._current_reactor]
+                del self._reactors_with_unavailable_metadata[self._current_reactor]
             self._current_reactor_newly_requested_paths.clear()
             io.debug(f"{self._current_reactor} raised DoNotRunAgain")
             return False
@@ -454,7 +454,7 @@ class MetadataGenerator:
 
         # reactor terminated normally, clear any previously stored exception
         with suppress(KeyError):
-            del self._reactors_with_keyerrors[self._current_reactor]
+            del self._reactors_with_unavailable_metadata[self._current_reactor]
 
         if new_metadata is None:
             raise ValueError(_(
