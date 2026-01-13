@@ -249,10 +249,122 @@ def test_show_auto_needs(tmpdir):
         },
     )
     stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw items --attr --format table node1 directory:/foo/bar needs", path=str(tmpdir))
-    print(stdout.decode())
     assert stdout.decode() == """attribute\tvalue
 needs\taction:
 \tdirectory:/foo
 """
     assert stderr.decode() == ""
     assert rcode == 0
+
+
+def _test_bw_items_invocation_succeeds(tmpdir, invocation, expected_output):
+    stdout, stderr, rcode = run(f"BW_TABLE_STYLE=grep {invocation}", path=str(tmpdir))
+    assert stdout.decode() == expected_output
+    assert stderr.decode() == ""
+    assert rcode == 0
+
+
+def _bw_items_invocation_make_repo(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'items': {
+                    'directories': {
+                        "/foo/bar": {'needs': {"action:"}},
+                    },
+                    'files': {
+                        "/foo/bar/moo": {'content': 'bar\n'},
+                    },
+                    'actions': {
+                        "clone_code": {'command': 'git clone'},
+                    },
+                },
+            },
+        },
+    )
+
+
+def test_bw_items_invocation_list_of_items(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items node1', """
+items
+action:clone_code
+directory:/foo/bar
+file:/foo/bar/moo
+""".lstrip())
+
+
+def test_bw_items_invocation_list_of_items_repr(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --repr node1', """
+items
+<Item action:clone_code>
+<Directory path:/foo/bar purge:False owner:root group:root mode:0755>
+<File path:/foo/bar/moo content_type:text owner:root group:root mode:0644 delete:False>
+""".lstrip())
+
+
+def test_bw_items_invocation_list_of_items_blame(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --blame node1', """
+bundle name\titems
+bundle1\taction:clone_code
+\tdirectory:/foo/bar
+\tfile:/foo/bar/moo
+""".lstrip())
+
+
+def test_bw_items_invocation_single_item(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items node1 directory:/foo/bar', """
+attribute\tvalue
+group\troot
+mode\t0755
+owner\troot
+paths_to_purge\t[]
+type\tdirectory
+""".lstrip())
+
+
+def test_bw_items_invocation_single_item_repr(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --repr node1 directory:/foo/bar', """
+item
+<Directory path:/foo/bar purge:False owner:root group:root mode:0755>
+""".lstrip())
+
+
+def test_bw_items_invocation_single_item_attrs(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --attrs node1 directory:/foo/bar', """
+attribute\tvalue
+after\t[]
+before\t[]
+cascade_skip\tTrue
+comment\tNone
+error_on_missing_fault\tFalse
+needed_by\t[]
+needs\taction:
+preceded_by\t[]
+precedes\t[]
+skip\tFalse
+tags\t[]
+triggered\tFalse
+triggered_by\t[]
+triggers\t[]
+unless\t
+when_creating\t{}
+""".lstrip())
+
+
+def test_bw_items_invocation_single_item_preview(tmpdir):
+    _bw_items_invocation_make_repo(tmpdir)
+    _test_bw_items_invocation_succeeds(tmpdir, 'bw items --preview node1 file:/foo/bar/moo', """
+bar
+""".lstrip())
