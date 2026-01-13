@@ -480,24 +480,25 @@ bundle:my_bundle  # items in this bundle
         help=_("create DIRECTORY and fill it with rendered file previews"),
     )
     parser_items.add_argument(
-        "--attrs",
-        action='store_true',
-        dest='show_attrs',
-        help=_("show internal item attributes"),
-    )
-    parser_items.add_argument(
         "--blame",
         action='store_true',
         dest='blame',
         help=_("show information on which bundle defines each item"),
     )
-    parser_items.add_argument(
+    information_group = parser_items.add_mutually_exclusive_group()
+    information_group.add_argument(
+        "--attrs",
+        action='store_true',
+        dest='show_attrs',
+        help=_("show internal item attributes"),
+    )
+    information_group.add_argument(
         "--repr",
         action='store_true',
         dest='show_repr',
         help=_("show more verbose representation of each item"),
     )
-    parser_items.add_argument(
+    information_group.add_argument(
         "--state",
         action='store_true',
         dest='show_sdict',
