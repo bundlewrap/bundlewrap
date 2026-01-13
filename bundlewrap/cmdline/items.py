@@ -223,16 +223,16 @@ def format_data(data, format, table_headers=None):
 
         if isinstance(data, (list, set)):
             table.append(ROW_SEPARATOR)
-            for v in data:  # iterate a list
+            for v in sorted(data):  # iterate a list
                 if isinstance(v, (list, set)):
-                    for vv in v:  # iterate inner list of lists
+                    for vv in sorted(v):  # iterate inner list of lists
                         table.append([str(vv)])
                 else:
                     # value in list
                     table.append([str(v)])
 
         elif isinstance(data, dict):
-            for k, v in data.items():  # iterate items in dict
+            for k, v in sorted(data.items()):  # iterate items in dict
                 table.append(ROW_SEPARATOR)
                 if isinstance(v, (list, set)):
                     first_line = True
@@ -240,7 +240,7 @@ def format_data(data, format, table_headers=None):
                         table.append([str(k), "[]"])
                         continue
 
-                    for vv in v:  # iterate list-value
+                    for vv in sorted(v):  # iterate list-value
                         if first_line:
                             table.append([str(k), str(vv)])
                             first_line = False
