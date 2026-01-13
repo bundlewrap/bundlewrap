@@ -10,8 +10,9 @@ from random import shuffle
 from sys import stderr, stdout
 from tempfile import mkstemp
 
-from passlib.hash import apr_md5_crypt
 from requests import get
+
+from bundlewrap.utils.crypto import crypt_bcrypt
 
 from ..exceptions import DontCache, FaultUnavailable
 
@@ -194,10 +195,7 @@ class Fault:
         def callback():
             return '{}:{}'.format(
                 username,
-                apr_md5_crypt.encrypt(
-                    self.value,
-                    salt=hashlib.sha512(self.id_list[0].encode('utf-8')).hexdigest()[:8],
-                ),
+                crypt_bcrypt(self.value, salt_from=self.id_list[0]),
             )
         return Fault(self.id_list + ['as_htpasswd_entry ' + username], callback)
 
