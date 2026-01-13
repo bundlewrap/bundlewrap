@@ -43,11 +43,11 @@ def bw_apply(repo, args):
 
     io.progress_set_total(count_items(pending_nodes))
 
-    skiplist_errors = verify_autoskip_selector(pending_nodes, args['autoskip'])
-    if skiplist_errors:
+    selectors_not_matching = verify_autoskip_selector(pending_nodes, args['autoskip'])
+    if selectors_not_matching:
         io.stderr(_("{x} the following selectors for --skip do not match any items: {selectors}").format(
             x=red("!!!"),
-            selectors=' '.join(sorted(skiplist_errors)),
+            selectors=' '.join(sorted(selectors_not_matching)),
         ))
         exit(1)
 
