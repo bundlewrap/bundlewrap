@@ -6,7 +6,7 @@ from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
-from bundlewrap.utils.crypto import bcrypt
+from bundlewrap.utils.crypto import crypt_bcrypt
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
@@ -41,7 +41,7 @@ HASH_METHODS = {
     'md5': md5_crypt,
     'sha256': sha256_crypt,
     'sha512': sha512_crypt,
-    'bcrypt': bcrypt,
+    'bcrypt': crypt_bcrypt,
 }
 
 _USERNAME_VALID_CHARACTERS = ascii_lowercase + digits + "-_"
@@ -292,7 +292,7 @@ class User(Item):
             )]
             salt = force_text(attributes.get('salt', None))
             if self.node.os == 'openbsd':
-                attributes['password_hash'] = bcrypt(
+                attributes['password_hash'] = crypt_bcrypt(
                     force_text(attributes['password']),
                     rounds=8,  # default rounds for OpenBSD accounts
                     salt=salt,

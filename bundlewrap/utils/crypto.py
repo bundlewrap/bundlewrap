@@ -5,7 +5,7 @@ from bcrypt import hashpw as bcrypt_hashpw
 _DEFAULT_BCRYPT_SALT = "oo2ahgheen9Tei0IeJohTO"
 
 
-def bcrypt(b, encoding='UTF-8', rounds=12, salt=None):
+def crypt_bcrypt(b, encoding='UTF-8', rounds=12, salt=None):
     if salt is None:
         salt = _DEFAULT_BCRYPT_SALT
 
