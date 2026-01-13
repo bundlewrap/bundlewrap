@@ -24,6 +24,7 @@ from .bundle import FILENAME_ITEMS
 from .exceptions import (
     NoSuchGroup,
     NoSuchNode,
+    NoSuchTarget,
     NoSuchRepository,
     MissingRepoDependency,
     RepositoryError,
@@ -193,13 +194,20 @@ class HooksProxy:
                     files.append(filename)
 
             # define a function that calls all hook functions
-            def hook(*args, **kwargs):
+            def hook(**kwargs):
+                level_hint = _("repo-level hooks")
+                if 'node' in kwargs:
+                    level_hint = _("node-level hooks for node {}").format(kwargs['node'].name)
+                elif 'nodes' in kwargs:
+                    level_hint += _(" for {} nodes").format(len(kwargs['nodes']))
+
                 for filename in files:
-                    with io.job(_("{event}  Running hooks from {filename}").format(
+                    with io.job(_("{event}  Running {level_hint} from {filename}").format(
                         event=bold(event),
+                        level_hint=level_hint,
                         filename=filename,
                     )):
-                        self.__module_cache[filename][event](*args, **kwargs)
+                        self.__module_cache[filename][event](**kwargs)
             self.__hook_cache[event] = hook
 
         return self.__hook_cache[event]
@@ -297,8 +305,9 @@ class Repository(MetadataGenerator):
         """
         try:
             assert isdir(path)
-            assert isfile(join(path, "nodes.py"))
-            assert isfile(join(path, "groups.py"))
+            assert isdir(join(path, DIRNAME_BUNDLES))
+            assert isfile(join(path, FILENAME_NODES))
+            assert isfile(join(path, FILENAME_GROUPS))
         except AssertionError:
             return False
         return True
@@ -701,7 +710,7 @@ class Repository(MetadataGenerator):
                         group = self.get_group(name)
                         targets.update(group.nodes)
                     except NoSuchGroup:
-                        continue
+                        raise NoSuchTarget(name)
 
         return list(targets)
 

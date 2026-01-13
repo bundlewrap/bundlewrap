@@ -34,7 +34,7 @@ Used for organizing your nodes.
 
 A single piece of configuration on a node, e.g. a file or an installed package.
 
-You might be interested in [this overview of item types](../repo/items.py.md#item_types).
+You might be interested in [this overview of item types](../repo/items.py.md#item-types).
 
 <br>
 

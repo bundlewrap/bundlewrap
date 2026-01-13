@@ -187,7 +187,7 @@ def _prepare_deps(items):
 
 def _inject_canned_actions(items):
     """
-    Looks for canned actions like "svc_upstart:mysql:reload" in items,
+    Looks for canned actions in items,
     created actions for them and add those to the list of items.
     """
     actions = set()

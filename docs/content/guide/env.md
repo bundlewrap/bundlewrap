@@ -38,6 +38,8 @@ Optional cache directory for <a href="../../items/git_deploy/#bw_git_deploy_cach
 
 When BundleWrap [locks](locks.md) a node, it stores a short description about "you". By default, this is the string `$USER@$HOSTNAME`, e.g. `john@mymachine`. You can use `BW_IDENTITY` to specify a custom string. (No variables will be evaluated in user supplied strings.)
 
+When running inside of a Git repository, BundleWrap will append the current branch name, e.g. `john@mymachine:main`.
+
 <br>
 
 ## `BW_ITEM_WORKERS` and `BW_NODE_WORKERS`
@@ -78,7 +80,7 @@ Extra arguments to include in every call to `ssh` BundleWrap makes. Set this to 
 
 ## `BW_SCP_ARGS`
 
-Extra arguments to include in every call to `scp` BundleWrap makes. Defaults to the value of `BW_SSH_ARGS`.
+Extra arguments to include in every call to `scp` BundleWrap makes. Defaults to `""`.
 
 <br>
 

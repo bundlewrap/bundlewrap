@@ -362,7 +362,7 @@ bundle:my_bundle  # items in this bundle
     )
 
     # bw hash
-    help_hash = _("Shows a SHA1 hash that summarizes the entire configuration for this repo, node, group, or item.")
+    help_hash = _("Shows a SHA256 hash that summarizes the entire configuration for this repo, node, group, or item.")
     parser_hash = subparsers.add_parser("hash", description=help_hash, help=help_hash)
     parser_hash.set_defaults(func=bw_hash)
     parser_hash.add_argument(

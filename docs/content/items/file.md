@@ -98,9 +98,9 @@ If using `'content_type': 'download'`, this specifies the URL from which the fil
 
 ## content_hash
 
-Only valid if `content_type` is set to `download`. Specifies a `sha1sum` to compare the downloaded file to. If set, the file will only be downloaded if the remote hash does not match. Hash will be verified after downloading and after uploading to the node.
+Only valid if `content_type` is set to `download`. Specifies a `sha256sum` to compare the downloaded file to. If set, the file will only be downloaded if the remote hash does not match. Hash will be verified after downloading and after uploading to the node.
 
-If not set, bundlewrap will always download the file, then compare the `sha1sum` of the downloaded file to the one currently on the node.
+If not set, bundlewrap will always download the file, then compare the `sha256sum` of the downloaded file to the one currently on the node.
 
 <hr>
 
