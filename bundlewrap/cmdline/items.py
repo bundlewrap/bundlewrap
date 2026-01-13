@@ -234,38 +234,11 @@ def format_data_table(data, table_headers):
 
         table.append(ROW_SEPARATOR)
         for v in data:
-            if isinstance(v, set):
-                v = list(sorted(v))
-
-            if isinstance(v, list):
-                # iterate inner list of lists
-                for vv in v:
-                    table.append([str(vv)])
-
-            else:
-                # value in list
-                table.append([str(v)])
+            table.append([v])
 
     elif isinstance(data, dict):
         for k, v in sorted(data.items()):  # iterate items in dict
             table.append(ROW_SEPARATOR)
-            if isinstance(v, set):
-                v = list(sorted(v))
-
-            if isinstance(v, list):
-                first_line = True
-                if len(v) == 0:
-                    table.append([str(k), "[]"])
-                    continue
-
-                # iterate list-value
-                for vv in v:
-                    if first_line:
-                        table.append([str(k), str(vv)])
-                        first_line = False
-                    else:
-                        table.append(["", str(vv)])
-            else:
-                table.append([str(k), str(v)])
+            table.append([str(k), v])
 
     page_lines(render_table(table))

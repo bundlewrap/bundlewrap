@@ -73,6 +73,7 @@ def main(*args, **kwargs):
             exit(1)
 
     # convert all string args into text
+    ## hint from the future: not all args are indeed text and this code silently assumes, that force_text will keep them...
     text_pargs = {key: force_text(value) for key, value in vars(pargs).items()}
 
     try:

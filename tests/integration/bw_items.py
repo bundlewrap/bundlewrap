@@ -251,7 +251,7 @@ def test_show_auto_needs(tmpdir):
     stdout, stderr, rcode = run("BW_TABLE_STYLE=grep bw items --attr --format table node1 directory:/foo/bar needs", path=str(tmpdir))
     assert stdout.decode() == """attribute\tvalue
 needs\taction:
-\tdirectory:/foo
+needs\tdirectory:/foo
 """
     assert stderr.decode() == ""
     assert rcode == 0
@@ -315,8 +315,8 @@ def test_bw_items_invocation_list_of_items_blame(tmpdir):
     _test_bw_items_invocation_succeeds(tmpdir, 'bw items --blame node1', """
 bundle name\titems
 bundle1\taction:clone_code
-\tdirectory:/foo/bar
-\tfile:/foo/bar/moo
+bundle1\tdirectory:/foo/bar
+bundle1\tfile:/foo/bar/moo
 """.lstrip())
 
 
