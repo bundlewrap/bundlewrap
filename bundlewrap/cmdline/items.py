@@ -229,8 +229,11 @@ def format_data_table(data, table_headers):
     ]
 
     if isinstance(data, (list, set)):
+        if isinstance(data, set):
+            data = list(sorted(data))
+
         table.append(ROW_SEPARATOR)
-        for v in sorted(data):  # iterate a list
+        for v in data:
             if isinstance(v, set):
                 v = list(sorted(v))
 
