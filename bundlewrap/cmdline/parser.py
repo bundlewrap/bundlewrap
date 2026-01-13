@@ -508,8 +508,9 @@ bundle:my_bundle  # items in this bundle
         "--format",
         action='store',
         dest='format',
-        choices=['json', 'table', 'flat'],
-        help=_("choose the output formatting, default is table when stdout is a tty and flat when it isn't"),
+        choices=['table', 'json'],
+        default='table',
+        help=_("choose the output formatting"),
     )
 
     # bw lock

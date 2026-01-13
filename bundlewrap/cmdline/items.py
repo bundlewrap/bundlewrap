@@ -11,7 +11,7 @@ from ..utils.cmdline import get_item, get_node
 from ..utils.dicts import statedict_to_json
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
-from ..utils.ui import io, page_lines, TTY
+from ..utils.ui import io, page_lines
 
 
 class ItemRepresentation(enum.Enum):
@@ -189,14 +189,8 @@ def list_all_items(node, args):
 
 
 def format_data(data, fmt, table_headers=None):
-    default_fmt = 'table' if TTY else 'flat'
-    fmt = fmt if fmt else default_fmt
-
     if fmt == 'json':
         io.stdout(statedict_to_json(data, pretty=True))
-
-    elif fmt == 'flat':
-        format_data_flat(data)
 
     elif fmt == 'table':
         format_data_table(data, table_headers)
@@ -239,22 +233,3 @@ def format_data_table(data, table_headers):
                 table.append([str(k), str(v)])
 
     page_lines(render_table(table))
-
-
-def format_data_flat(data):
-    lines = []
-    if isinstance(data, (list, set)):
-        for v in data:
-            if isinstance(v, (list, set)):
-                v = ', '.join(v)
-
-            lines.append(f'{v}')
-
-    elif isinstance(data, dict):
-        for k, v in data.items():
-            if isinstance(v, (list, set)):
-                v = ', '.join(v)
-
-            lines.append(f'{k}: {v}')
-
-    page_lines(lines)
