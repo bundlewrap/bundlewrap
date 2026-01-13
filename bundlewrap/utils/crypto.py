@@ -2,8 +2,7 @@ from base64 import b64encode
 
 from bcrypt import hashpw as bcrypt_hashpw
 
-# bcrypt needs special salts. 22 characters long, ending in ".", "O", "e", "u"
-# see https://bitbucket.org/ecollins/passlib/issues/25
+# bcrypt salts are 16 random bytes encoded by `b64encode_bcrypt()`.
 _DEFAULT_BCRYPT_SALT = "oo2ahgheen9Tei0IeJohTO"
 
 
