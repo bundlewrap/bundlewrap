@@ -252,7 +252,7 @@ def test_show_auto_needs(tmpdir):
     print(stdout.decode())
     assert stdout.decode() == """attribute\tvalue
 needs\taction:
-needs\tdirectory:/foo
+\tdirectory:/foo
 """
     assert stderr.decode() == ""
     assert rcode == 0
