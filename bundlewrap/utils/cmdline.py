@@ -3,7 +3,7 @@ from os import environ
 from sys import exit, stderr, stdout
 from traceback import print_exc
 
-from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode
+from ..exceptions import NoSuchGroup, NoSuchItem, NoSuchNode, NoSuchTarget
 from .text import mark_for_translation as _, red
 from .ui import io, QUIT_EVENT
 
@@ -150,12 +150,47 @@ HELP_softlock_expiry = _("how long before the lock is ignored and removed automa
 def get_target_nodes(repo, target_strings, node_workers=None):
     if not node_workers:
         node_workers = DEFAULT_node_workers
-
-    nodes_matching = repo.nodes_matching(target_strings, node_workers)
-    if not nodes_matching:
-        io.stderr(_("{x} Input did not match any nodes").format(
+    
+    try:
+        nodes_matching = repo.nodes_matching(target_strings, node_workers)
+        if not nodes_matching:
+            io.stderr(_("{x} Input did not match any nodes").format(
+                x=red("!!!"),
+            ))
+            exit(1)
+    except NoSuchTarget as e:
+        io.stderr("{x} Target string {name} does match neither bundle, nor group, node or lambda.".format(
             x=red("!!!"),
-        ))
+            name = e,
+            ))
         exit(1)
 
     return nodes_matching
+
+
+def verify_autoskip_selectors(nodes, selectors_given):
+    if not selectors_given:
+        return set()
+
+    selectors_used = {
+        selector: False
+        for selector in selectors_given
+    }
+    for node in nodes:
+        for selector in selectors_given:
+            if node.covered_by_autoskip_selector([selector]):
+                selectors_used[selector] = True
+
+        for item in node.items:
+            if QUIT_EVENT.is_set():
+                return 0
+
+            for selector in selectors_given:
+                if item.covered_by_autoskip_selector([selector]):
+                    selectors_used[selector] = True
+
+    return {
+        selector
+        for selector, matches in selectors_used.items()
+        if not matches
+    }

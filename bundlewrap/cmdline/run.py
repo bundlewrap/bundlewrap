@@ -31,9 +31,9 @@ def run_on_node(node, command, skip_list):
 
     try:
         node.repo.hooks.node_run_start(
-            node.repo,
-            node,
-            command,
+            repo=node.repo,
+            node=node,
+            command=command,
         )
     except SkipNode as exc:
         io.stdout(_("{x} {node}  skipped by hook ({reason})").format(
@@ -51,9 +51,9 @@ def run_on_node(node, command, skip_list):
         )
 
     node.repo.hooks.node_run_end(
-        node.repo,
-        node,
-        command,
+        repo=node.repo,
+        node=node,
+        command=command,
         duration=result.duration,
         return_code=result.return_code,
         stdout=result.stdout,
@@ -115,10 +115,10 @@ def bw_run(repo, args):
     io.progress_set_total(len(pending_nodes))
 
     repo.hooks.run_start(
-        repo,
-        args['targets'],
-        target_nodes,
-        args['command'],
+        repo=repo,
+        target=args['targets'],
+        nodes=target_nodes,
+        command=args['command'],
     )
     start_time = datetime.now()
     results = {}
@@ -169,10 +169,10 @@ def bw_run(repo, args):
     error_summary(errors)
 
     repo.hooks.run_end(
-        repo,
-        args['targets'],
-        target_nodes,
-        args['command'],
+        repo=repo,
+        target=args['targets'],
+        nodes=target_nodes,
+        command=args['command'],
         duration=datetime.now() - start_time,
     )
 

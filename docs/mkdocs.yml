@@ -63,7 +63,6 @@ nav:
   - svc_openrc: items/svc_openrc.md
   - svc_systemd: items/svc_systemd.md
   - svc_systemv: items/svc_systemv.md
-  - svc_upstart: items/svc_upstart.md
   - symlink: items/symlink.md
   - user: items/user.md
   - zfs_dataset: items/zfs_dataset.md

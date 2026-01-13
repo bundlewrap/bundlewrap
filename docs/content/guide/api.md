@@ -149,6 +149,8 @@ The following expressions can be used:
 ` `!group:my_group` all nodes not in this group
 - `"lambda:node.metadata_get('foo/magic', 47) < 3"` all nodes whose `metadata["foo"]["magic"]` is less than three
 
+Throws the exception `NoSuchTarget` if one of the expressions in the target string doesn't resolve to nodes.
+
 <br>
 
 ### bundlewrap.node.Node()
