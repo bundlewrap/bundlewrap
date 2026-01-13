@@ -171,6 +171,10 @@ def verify_autoskip_selector(nodes, autoskip_selector):
         for selector in autoskip_selector
     }
     for node in nodes:
+        for selector in autoskip_selector:
+            if node.covered_by_autoskip_selector([selector]):
+                selectors[selector] = True
+
         for item in node.items:
             if QUIT_EVENT.is_set():
                 return 0
