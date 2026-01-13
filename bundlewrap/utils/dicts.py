@@ -8,6 +8,7 @@ from tomlkit import document as toml_document
 from . import Fault
 from .text import bold, green, red, yellow
 from .text import force_text, mark_for_translation as _
+from ..exceptions import MetadataUnavailable
 
 
 DIFF_MAX_INLINE_LENGTH = 36
@@ -510,6 +511,6 @@ def value_at_key_path(dict_obj, path):
         nested_dict = dict_obj[path[0]]
         remaining_path = path[1:]
         if remaining_path and not isinstance(nested_dict, dict):
-            raise KeyError("/".join(path))
+            raise MetadataUnavailable("/".join(path))
         else:
             return value_at_key_path(nested_dict, remaining_path)

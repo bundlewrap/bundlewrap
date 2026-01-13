@@ -5,7 +5,7 @@ from os import environ
 from threading import RLock
 from traceback import TracebackException
 
-from .exceptions import MetadataPersistentKeyError
+from .exceptions import MetadataPersistentKeyError, MetadataUnavailable
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy
 from .utils import list_starts_with, randomize_order, NO_DEFAULT
@@ -191,7 +191,7 @@ class NodeMetadataProxy(Mapping):
 
             try:
                 return self._metastack.get(path)
-            except KeyError as exc:
+            except MetadataUnavailable as exc:
                 if default != NO_DEFAULT:
                     return default
                 else:
@@ -414,25 +414,15 @@ class MetadataGenerator:
         self._reactor_runs[self._current_reactor] += 1
         try:
             new_metadata = reactor(node.metadata)
-        except KeyError as exc:
+        except MetadataUnavailable as exc:
             if self._current_reactor not in self._reactors_with_keyerrors:
-                # Uncomment this in 5.0 and remove the rest of this block
-                # # this is a KeyError that didn't result from metadata.get()
-                # io.stderr(_(
-                #     "{x} KeyError while executing metadata reactor "
-                #     "{metaproc} for node {node}:"
-                # ).format(
-                #     x=red("!!!"),
-                #     metaproc=reactor_name,
-                #     node=node.name,
-                # ))
-                # raise exc
+                
                 self._reactors_with_keyerrors[self._current_reactor] = (
                     ('UNKNOWN', ('UNKNOWN',)),
                     exc,
                 )
             io.debug(
-                f"{self._current_reactor} raised KeyError: "
+                f"{self._current_reactor} raised MetadataUnavailable: "
                 f"{self._reactors_with_keyerrors[self._current_reactor]}"
             )
             return False
