@@ -13,6 +13,7 @@ from .exceptions import (
     TransportException,
 )
 from .utils import cached_property, tempfile
+from .utils.scm import get_git_branch
 from .utils.table import ROW_SEPARATOR, render_table
 from .utils.text import (
     blue,
@@ -30,10 +31,15 @@ from .utils.ui import io
 
 
 def identity():
-    return environ.get('BW_IDENTITY', "{}@{}".format(
-        getuser(),
-        gethostname(),
-    ))
+    envvar = environ.get('BW_IDENTITY')
+    if envvar:
+        return envvar
+
+    maybe_branch = get_git_branch()
+    if maybe_branch:
+        return f"{getuser()}@{gethostname()}:{maybe_branch}"
+    else:
+        return f"{getuser()}@{gethostname()}"
 
 
 class NodeLock:

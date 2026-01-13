@@ -16,7 +16,7 @@ BundleWrap uses a [locking mechanism](../guide/locks.md) to prevent collisions l
 
 ### How can I have BundleWrap reload my services after config changes?
 
-See [canned actions](../repo/items.py.md#canned_actions) and [triggers](../repo/items.py.md#triggers).
+See [canned actions](../repo/items.py.md#canned-actions) and [triggers](../repo/items.py.md#triggers-and-triggered).
 
 <br>
 

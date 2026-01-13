@@ -15,7 +15,7 @@ As of version 2.6.0, BundleWrap provides "soft locks" to prevent this. The autho
 <pre><code class="nohighlight">$ bw lock add node1
 ✓ node1  locked with ID B9JS (expires in 8h)</code></pre>
 
-This will prevent all other users from changing any items on the node for the next 8 hours. BundleWrap will tell users apart by their [BW_IDENTITY](env.md#BW_IDENTITY). Now say someone else is reviewing the pull request and wants to use `bw apply`, while still keeping others out and the original author in. This can be done by simply locking the node *again* as the reviewer. Nodes can have many soft locks. Soft locks act as an exemption from a general ban on changing items that goes into effect as soon as one or more soft locks are present on the node. Of course, if no soft locks are present, anyone can change any item.
+This will prevent all other users from changing any items on the node for the next 8 hours. BundleWrap will tell users apart by their [BW_IDENTITY](env.md#bw_identity). Now say someone else is reviewing the pull request and wants to use `bw apply`, while still keeping others out and the original author in. This can be done by simply locking the node *again* as the reviewer. Nodes can have many soft locks. Soft locks act as an exemption from a general ban on changing items that goes into effect as soon as one or more soft locks are present on the node. Of course, if no soft locks are present, anyone can change any item.
 
 You can list all soft locks on a node with:
 
