@@ -92,10 +92,10 @@ class PostgresDB(Item):
             raise AssertionError("this shouldn't happen")
 
     def get_auto_attrs(self, items):
-        deps = []
+        deps = set()
         for item in items:
             if item.ITEM_TYPE_NAME == "postgres_role" and item.name == self.attributes['owner']:
-                deps.append(item.id)
+                deps.add(item.id)
         return {
             'needs': deps,
         }

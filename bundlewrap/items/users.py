@@ -205,7 +205,7 @@ class User(Item):
         return (cdict, sdict, keys)
 
     def get_auto_attrs(self, items):
-        deps = []
+        deps = set()
         groups = self.attributes['groups'] or []
         for item in items:
             if item.ITEM_TYPE_NAME == "group":
@@ -226,7 +226,7 @@ class User(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
+                    deps.add(item.id)
         return {
             'needs': deps,
         }
