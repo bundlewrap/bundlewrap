@@ -188,65 +188,73 @@ def list_all_items(node, args):
     format_data(data, args['format'], table_headers=table_headers)
 
 
-def format_data(data, format, table_headers=None):
-    default_format = 'table' if TTY else 'flat'
-    format = format if format else default_format
+def format_data(data, fmt, table_headers=None):
+    default_fmt = 'table' if TTY else 'flat'
+    fmt = fmt if fmt else default_fmt
 
-    if format == 'json':
+    if fmt == 'json':
         io.stdout(statedict_to_json(data, pretty=True))
 
-    elif format == 'flat':
-        lines = []
-        if isinstance(data, (list, set)):
-            for v in data:
-                if isinstance(v, (list, set)):
-                    v = ', '.join(v)
+    elif fmt == 'flat':
+        format_data_flat(data)
 
-                lines.append(f'{v}')
+    elif fmt == 'table':
+        format_data_table(data, table_headers)
 
-        elif isinstance(data, dict):
-            for k, v in data.items():
-                if isinstance(v, (list, set)):
-                    v = ', '.join(v)
 
-                lines.append(f'{k}: {v}')
-
-        page_lines(lines)
-
-    elif format == 'table':
-        table = [
-            [
-                bold(header)
-                for header in table_headers
-            ]
+def format_data_table(data, table_headers):
+    table = [
+        [
+            bold(header)
+            for header in table_headers
         ]
+    ]
 
-        if isinstance(data, (list, set)):
+    if isinstance(data, (list, set)):
+        table.append(ROW_SEPARATOR)
+        for v in sorted(data):  # iterate a list
+            if isinstance(v, (list, set)):
+                for vv in sorted(v):  # iterate inner list of lists
+                    table.append([str(vv)])
+            else:
+                # value in list
+                table.append([str(v)])
+
+    elif isinstance(data, dict):
+        for k, v in sorted(data.items()):  # iterate items in dict
             table.append(ROW_SEPARATOR)
-            for v in sorted(data):  # iterate a list
-                if isinstance(v, (list, set)):
-                    for vv in sorted(v):  # iterate inner list of lists
-                        table.append([str(vv)])
-                else:
-                    # value in list
-                    table.append([str(v)])
+            if isinstance(v, (list, set)):
+                first_line = True
+                if len(v) == 0:
+                    table.append([str(k), "[]"])
+                    continue
 
-        elif isinstance(data, dict):
-            for k, v in sorted(data.items()):  # iterate items in dict
-                table.append(ROW_SEPARATOR)
-                if isinstance(v, (list, set)):
-                    first_line = True
-                    if len(v) == 0:
-                        table.append([str(k), "[]"])
-                        continue
+                for vv in sorted(v):  # iterate list-value
+                    if first_line:
+                        table.append([str(k), str(vv)])
+                        first_line = False
+                    else:
+                        table.append(["", str(vv)])
+            else:
+                table.append([str(k), str(v)])
 
-                    for vv in sorted(v):  # iterate list-value
-                        if first_line:
-                            table.append([str(k), str(vv)])
-                            first_line = False
-                        else:
-                            table.append(["", str(vv)])
-                else:
-                    table.append([str(k), str(v)])
+    page_lines(render_table(table))
 
-        page_lines(render_table(table))
+
+def format_data_flat(data):
+    lines = []
+    if isinstance(data, (list, set)):
+        for v in data:
+            if isinstance(v, (list, set)):
+                v = ', '.join(v)
+
+            lines.append(f'{v}')
+
+    elif isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, (list, set)):
+                v = ', '.join(v)
+
+            lines.append(f'{k}: {v}')
+
+    page_lines(lines)
