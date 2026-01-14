@@ -318,9 +318,12 @@ def bw_test(repo, args):
         for node in nodes:
             if QUIT_EVENT.is_set():
                 break
-            repo.hooks.test_node(repo, node)
+            repo.hooks.test_node(
+                repo=repo,
+                node=node,
+            )
             io.progress_advance()
         io.progress_set_total(0)
 
     if args['hooks_repo'] and not QUIT_EVENT.is_set():
-        repo.hooks.test(repo)
+        repo.hooks.test(repo=repo)

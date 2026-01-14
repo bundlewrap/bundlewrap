@@ -22,6 +22,8 @@ To use hooks, you need to create a subdirectory in your repo called `hooks`. In 
 
 This is a list of all functions a hook file may implement.
 
+<div class="alert alert-info">Hook functions will always get called with named arguments.</div>
+
 ---
 
 **`action_run_start(repo, node, item, **kwargs)`**

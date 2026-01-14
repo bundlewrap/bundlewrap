@@ -4,7 +4,7 @@ from sys import exit
 from ..concurrency import WorkerPool
 from ..exceptions import GracefulApplyException
 from ..utils import SkipList
-from ..utils.cmdline import count_items, get_target_nodes
+from ..utils.cmdline import count_items, get_target_nodes, verify_autoskip_selectors
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
     blue,
@@ -29,9 +29,9 @@ def bw_apply(repo, args):
 
     try:
         repo.hooks.apply_start(
-            repo,
-            args['targets'],
-            target_nodes,
+            repo=repo,
+            target=args['targets'],
+            nodes=target_nodes,
             interactive=args['interactive'],
         )
     except GracefulApplyException as exc:
@@ -42,6 +42,14 @@ def bw_apply(repo, args):
         exit(1)
 
     io.progress_set_total(count_items(pending_nodes))
+
+    selectors_not_matching = verify_autoskip_selectors(pending_nodes, args['autoskip'])
+    if selectors_not_matching:
+        io.stderr(_("{x} the following selectors for --skip do not match any items: {selectors}").format(
+            x=red("!!!"),
+            selectors=' '.join(sorted(selectors_not_matching)),
+        ))
+        exit(1)
 
     start_time = datetime.now()
     results = []
@@ -106,9 +114,9 @@ def bw_apply(repo, args):
     error_summary(errors)
 
     repo.hooks.apply_end(
-        repo,
-        args['targets'],
-        target_nodes,
+        repo=repo,
+        target=args['targets'],
+        nodes=target_nodes,
         duration=total_duration,
     )
 

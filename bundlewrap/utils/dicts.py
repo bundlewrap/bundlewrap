@@ -213,7 +213,7 @@ class FaultResolvingJSONEncoder(JSONEncoder):
 
 def hash_statedict(sdict):
     """
-    Returns a canonical SHA1 hash to describe this dict.
+    Returns a canonical sha256 hash to describe this dict.
     """
     return sha256(statedict_to_json(sdict).encode('utf-8')).hexdigest()
 
