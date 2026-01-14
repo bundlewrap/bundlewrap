@@ -1,3 +1,18 @@
+# 5.0.0
+
+TODO date
+
+* a user's identity now automatically includes the Git branch name
+* support for `svc_upstart` items has been removed
+* hashing (files, node hashes, ...) now uses sha256 instead of sha1
+* fixed mkdocs warnings
+* the `bundles/` directory is required to be present for bw to consider a directory a bw repository
+* `BW_SCP_ARGS` no longer defaults to the value of `BW_SSH_ARGS`, because these two programs use different sets of arguments
+* the "Running hooks ..." line is more verbose
+* exit with an error if `-s` selectors don't match anything
+* `repo.nodes_matching()` throws `NoSuchTarget` when expressions don't match anything
+* removed unused attribute `can_login` from `postgres_roles.py`
+
 # 4.24.0
 
 2025-11-06
