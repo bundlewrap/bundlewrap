@@ -1,9 +1,11 @@
 from copy import copy
 from difflib import unified_diff
-from hashlib import sha1
+from hashlib import sha256
 from json import dumps, JSONEncoder
 
 from tomlkit import document as toml_document
+
+from bundlewrap.exceptions import MetadataUnavailable
 
 from . import Fault
 from .text import bold, green, red, yellow
@@ -59,7 +61,7 @@ def diff_keys(dict1, dict2):
         try:
             if dict1[key] != dict2[key]:
                 differing_keys.add(key)
-        except KeyError:
+        except (KeyError, MetadataUnavailable):
             differing_keys.add(key)
     return differing_keys
 
@@ -211,9 +213,9 @@ class FaultResolvingJSONEncoder(JSONEncoder):
 
 def hash_statedict(sdict):
     """
-    Returns a canonical SHA1 hash to describe this dict.
+    Returns a canonical sha256 hash to describe this dict.
     """
-    return sha1(statedict_to_json(sdict).encode('utf-8')).hexdigest()
+    return sha256(statedict_to_json(sdict).encode('utf-8')).hexdigest()
 
 
 def map_dict_keys(dict_obj, leaves_only=False, _base=None,):
@@ -383,7 +385,7 @@ def normalize_dict(dict_obj, types):
     for key, value in dict_obj.items():
         try:
             normalize = types[key]
-        except KeyError:
+        except (KeyError, MetadataUnavailable):
             result[key] = value
         else:
             result[key] = normalize(value)
@@ -468,6 +470,8 @@ def validate_statedict(sdict):
 
 
 def delete_key_at_path(d, path):
+    if path[0] not in d:
+        return
     if len(path) == 1:
         del d[path[0]]
     else:
@@ -510,6 +514,6 @@ def value_at_key_path(dict_obj, path):
         nested_dict = dict_obj[path[0]]
         remaining_path = path[1:]
         if remaining_path and not isinstance(nested_dict, dict):
-            raise KeyError("/".join(path))
+            raise MetadataUnavailable(path)
         else:
             return value_at_key_path(nested_dict, remaining_path)

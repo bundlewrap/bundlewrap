@@ -2,6 +2,7 @@ from contextlib import suppress
 from decimal import Decimal
 from sys import exit
 
+from ..exceptions import MetadataUnavailable
 from ..metadata import metadata_to_json
 from ..utils import Fault, list_starts_with
 from ..utils.cmdline import exit_on_keyboardinterrupt, get_target_nodes
@@ -155,7 +156,7 @@ def bw_metadata(repo, args):
                     ):
                         break
                 else:
-                    with suppress(KeyError):
+                    with suppress(MetadataUnavailable):
                         delete_key_at_path(metadata, path)
                     continue
 

@@ -1,3 +1,4 @@
+from bundlewrap.exceptions import MetadataUnavailable
 from bundlewrap.metadata import atomic
 from bundlewrap.utils.metastack import Metastack
 from pytest import raises
@@ -5,14 +6,14 @@ from pytest import raises
 
 def test_has_no_top():
     stack = Metastack()
-    with raises(KeyError):
+    with raises(MetadataUnavailable):
         stack.get(('something',))
 
 
 def test_has_no_subpath():
     stack = Metastack()
     stack.set_layer(0, 'base', {'something': {'in': {}}})
-    with raises(KeyError):
+    with raises(MetadataUnavailable):
         stack.get(('something', 'in', 'a', 'path'))
 
 
@@ -148,13 +149,13 @@ def test_update_layer_for_new_value():
 
     stack.set_layer(0, 'overlay', {'something': 123})
     assert stack.get(('foo',)) == 'bar'
-    with raises(KeyError):
+    with raises(MetadataUnavailable):
         assert stack.get(('boing',))
     assert stack.get(('something',)) == 123
 
     stack.set_layer(0, 'overlay', {'something': 456})
     assert stack.get(('foo',)) == 'bar'
-    with raises(KeyError):
+    with raises(MetadataUnavailable):
         assert stack.get(('boing',))
     assert stack.get(('something',)) == 456
 
@@ -188,7 +189,7 @@ def test_pop_layer():
     stack.set_layer(0, 'overlay', {'foo': 'bar'})
     stack.set_layer(0, 'overlay', {'foo': 'baz'})
     assert stack.pop_layer(0, 'overlay') == {'foo': 'baz'}
-    with raises(KeyError):
+    with raises(MetadataUnavailable):
         stack.get(('foo',))
     assert stack.pop_layer(0, 'overlay') == {}
     assert stack.pop_layer(0, 'unknown') == {}
