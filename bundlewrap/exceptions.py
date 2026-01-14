@@ -24,7 +24,9 @@ class MetadataUnavailable(BundlewrapError):
     """
     Raised when a Metadata key cannot be resolved.
     """
-    def __init__(self, path={}):
+    def __init__(self, path=None):
+        if path is None:
+            path = {}
         self.path = path
         super().__init__(f"Metadata key path unavailable: {'/'.join(self.path)}")
 
