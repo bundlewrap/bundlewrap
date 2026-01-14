@@ -69,7 +69,6 @@ While the following list might appear long, even very minimal systems should pro
 * `groupadd`
 * `groupmod`
 * `id`
-* `initctl` (only used with [svc_upstart](../items/svc_upstart.md) items)
 * `mkdir`
 * `mv`
 * `pacman` (only used with [pkg_pacman](../items/pkg_pacman.md) items)
@@ -77,7 +76,7 @@ While the following list might appear long, even very minimal systems should pro
 * `rm`
 * sftp-enabled SSH server (your home directory must be writable)
 * `sudo`
-* `sha1sum`
+* `sha256sum`
 * `stat`
 * `systemctl` (only used with [svc_systemd](../items/svc_systemd.md) items)
 * `tar` (only used with [git_deploy](../items/git_deploy.md) items)
