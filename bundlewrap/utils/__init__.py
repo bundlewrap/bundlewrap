@@ -12,9 +12,8 @@ from tempfile import mkstemp
 
 from requests import get
 
-from bundlewrap.utils.crypto import b64encode_bcrypt, crypt_bcrypt
-
 from ..exceptions import DontCache, FaultUnavailable
+from .crypto import b64encode_bcrypt, crypt_bcrypt
 
 
 class NO_DEFAULT: pass
