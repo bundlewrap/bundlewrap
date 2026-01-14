@@ -324,7 +324,7 @@ bundle:my_bundle  # items in this bundle
 
     if shell_completion:
         # bw generate-completions
-        help_generate_completions = _("Generates the shell completion file")
+        help_generate_completions = _("Generates the shell completion file for use with argcomplete")
         parser_generate_completions = subparsers.add_parser(
             "generate-completions",
             description=help_generate_completions,
