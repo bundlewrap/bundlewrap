@@ -858,12 +858,12 @@ class Node:
     def metadata(self):
         return self.repo._metadata_proxy_for_node(self.name)
 
-    def metadata_hash(self):
-        return hash_metadata(self.metadata)
-   
     def metadata_get(self, *args, **kwargs):
         # TODO remove in 5.0
         return self.metadata.get(*args, _backwards_compatibility_default=False, **kwargs)
+
+    def metadata_hash(self):
+        return hash_metadata(self.metadata)
 
     @property
     def metadata_defaults(self):
