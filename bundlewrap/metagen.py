@@ -415,9 +415,6 @@ class MetadataGenerator:
         try:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
-            #if self._current_reactor not in self._reactors_with_keyerrors:
-            # Uncomment this in 5.0 and remove the rest of this block
-            # this is a KeyError that didn't result from metadata.get()
             io.stderr(_(
                 "{x} KeyError while executing metadata reactor "
                 "{metaproc} for node {node}:"
@@ -427,7 +424,6 @@ class MetadataGenerator:
                 node=node.name,
             ))
             raise exc
-            #return False
         except MetadataUnavailable as exc:
             if self._current_reactor not in self._reactors_with_keyerrors:
                 self._reactors_with_keyerrors[self._current_reactor] = (
