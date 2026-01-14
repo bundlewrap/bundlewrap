@@ -119,7 +119,7 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
                     for path, value, current_type in paths_with_values_and_types(layer):
                         try:
                             prev_type, prev_identifier, prev_value = paths[path]
-                        except MetadataUnavailable:
+                        except KeyError:
                             paths[path] = current_type, identifier, value
                         else:
                             if (
