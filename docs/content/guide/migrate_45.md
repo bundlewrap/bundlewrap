@@ -54,9 +54,9 @@ You will have to catch this exception and decide what to do. Previously, this ca
 
 <br>
 
-## Hooks are called with positional arguments
+## Hooks are called with named arguments
 
-Hooks are called with position arguments now. The names in your function signature must match the ones in [our documentation](../repo/hooks.md).
+Hooks are called with named arguments now. The names in your function signature must match the ones in [our documentation](../repo/hooks.md).
 
 For example, you can no longer do this:
 
