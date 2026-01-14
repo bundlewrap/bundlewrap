@@ -2,6 +2,11 @@ from base64 import b64encode
 
 from bcrypt import hashpw as bcrypt_hashpw
 
+# This is the current (2026) default cost factor in the underlying Rust
+# library. (The Python wrapper doesn't export this symbol, so we have to
+# copy the value here.)
+_DEFAULT_BCRYPT_COST = 12
+
 # bcrypt salts are 16 random bytes encoded by `b64encode_bcrypt()`.
 _DEFAULT_BCRYPT_SALT = "oo2ahgheen9Tei0IeJohTO"
 
@@ -24,7 +29,12 @@ def b64encode_bcrypt(payload_bytes):
     return payload_64_bcrypt.rstrip('=')
 
 
-def bcrypt(payload, encoding='UTF-8', cost=12, salt=None):
+def bcrypt(
+    payload,
+    encoding='UTF-8',
+    cost=_DEFAULT_BCRYPT_COST,
+    salt=None,
+):
     """
     Returns a crypt line using the bcrypt algorithm (`2b`).
 
@@ -32,7 +42,7 @@ def bcrypt(payload, encoding='UTF-8', cost=12, salt=None):
     servers.
 
     -   `encoding`: `payload` will be encoded using this encoding.
-    -   `cost`: Use this cost factor. `12` is the bcrypt default.
+    -   `cost`: Use this cost factor instead of bcrypt's default.
     -   `salt`: Must be a valid bcrypt salt.
     """
 
