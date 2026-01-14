@@ -13,6 +13,7 @@ from .exceptions import (
     TransportException,
 )
 from .utils import cached_property, tempfile
+from .utils.scm import get_git_branch
 from .utils.table import ROW_SEPARATOR, render_table
 from .utils.text import (
     blue,
@@ -30,10 +31,15 @@ from .utils.ui import io
 
 
 def identity():
-    return environ.get('BW_IDENTITY', "{}@{}".format(
-        getuser(),
-        gethostname(),
-    ))
+    envvar = environ.get('BW_IDENTITY')
+    if envvar:
+        return envvar
+
+    maybe_branch = get_git_branch()
+    if maybe_branch:
+        return f"{getuser()}@{gethostname()}:{maybe_branch}"
+    else:
+        return f"{getuser()}@{gethostname()}"
 
 
 class NodeLock:
@@ -210,7 +216,14 @@ def softlock_add(node, lock_id, comment="", expiry="8h", item_selectors=None):
         locking_node.run("mkdir -p " + quote(_soft_lock_dir(node.name, locking_node)))
         locking_node.upload(local_path, _soft_lock_file(node.name, locking_node, lock_id), mode='0644')
 
-    node.repo.hooks.lock_add(node.repo, node, lock_id, item_selectors, expiry_timestamp, comment)
+    node.repo.hooks.lock_add(
+        repo=node.repo,
+        node=node,
+        lock_id=lock_id,
+        items=item_selectors,
+        expiry=expiry_timestamp,
+        comment=comment,
+    )
 
     return lock_id
 
@@ -283,7 +296,11 @@ def softlock_remove(node, lock_id):
         node=node.name,
     ))
     locking_node.run("rm {}".format(_soft_lock_file(node.name, locking_node, lock_id)))
-    node.repo.hooks.lock_remove(node.repo, node, lock_id)
+    node.repo.hooks.lock_remove(
+        repo=node.repo,
+        node=node,
+        lock_id=lock_id,
+    )
 
 
 def softlocks_to_table(locks_on_node, items=None, repo=None, hide_nodes_without_locks=False):
