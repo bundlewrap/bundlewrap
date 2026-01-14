@@ -5,7 +5,7 @@ from os import environ
 from threading import RLock
 from traceback import TracebackException
 
-from .exceptions import MetadataPersistentKeyError
+from .exceptions import MetadataPersistentKeyError, MetadataUnavailable
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy
 from .utils import list_starts_with, randomize_order, NO_DEFAULT
@@ -91,7 +91,7 @@ class PathSet:
         """
         try:
             return self._covers_cache[candidate_path]
-        except KeyError:
+        except (KeyError, MetadataUnavailable):
             result = False
             for existing_path in self._paths:
                 if list_starts_with(candidate_path, existing_path):
@@ -111,7 +111,7 @@ class NodeMetadataProxy(Mapping):
     def __contains__(self, key):
         try:
             self.get(key, _backwards_compatibility_default=False)
-        except KeyError:
+        except MetadataUnavailable:
             return False
         else:
             return True
@@ -191,7 +191,7 @@ class NodeMetadataProxy(Mapping):
 
             try:
                 return self._metastack.get(path)
-            except KeyError as exc:
+            except MetadataUnavailable as exc:
                 if default != NO_DEFAULT:
                     return default
                 else:
@@ -224,7 +224,7 @@ class MetadataGenerator:
         self._reactors = {}
         # which reactors are currently triggered (and by what)
         self._reactors_triggered = defaultdict(set)
-        # which reactors raised a KeyError (and for what)
+        # which reactors raised a MetadataUnavailable (and for what)
         self._reactors_with_keyerrors = {}
         # maps provided paths to their reactors
         self._provides_tree = ReactorTree()
@@ -262,15 +262,15 @@ class MetadataGenerator:
                 break
             elif only_keyerrors:
                 if set(self._reactors_triggered.keys()).difference(reactors_run):
-                    io.debug("all reactors raised KeyErrors, but new ones were triggered")
+                    io.debug("all reactors raised MetadataUnavailables, but new ones were triggered")
                 else:
-                    io.debug("reactor run completed, all threw KeyErrors")
+                    io.debug("reactor run completed, all threw MetadataUnavailables")
                     break
             io.debug("reactor run completed, rerunning relevant reactors")
 
         if self._reactors_with_keyerrors:
             msg = _(
-                "These metadata reactors raised a KeyError "
+                "These metadata reactors raised a MetadataUnavailable "
                 "even after all other reactors were done:"
             )
             for source, path_exc in sorted(self._reactors_with_keyerrors.items()):
@@ -372,7 +372,7 @@ class MetadataGenerator:
             yield (
                 reactor_id,
                 f"running reactor {reactor_id} because "
-                f"it previously raised a KeyError for: {path_exc[0]}"
+                f"it previously raised a MetadataUnavailable for: {path_exc[0]}"
             )
 
     def __run_reactors(self):
@@ -415,32 +415,33 @@ class MetadataGenerator:
         try:
             new_metadata = reactor(node.metadata)
         except KeyError as exc:
+            #if self._current_reactor not in self._reactors_with_keyerrors:
+            # Uncomment this in 5.0 and remove the rest of this block
+            # this is a KeyError that didn't result from metadata.get()
+            io.stderr(_(
+                "{x} KeyError while executing metadata reactor "
+                "{metaproc} for node {node}:"
+            ).format(
+                x=red("!!!"),
+                metaproc=reactor_name,
+                node=node.name,
+            ))
+            raise exc
+            #return False
+        except MetadataUnavailable as exc:
             if self._current_reactor not in self._reactors_with_keyerrors:
-                # Uncomment this in 5.0 and remove the rest of this block
-                # # this is a KeyError that didn't result from metadata.get()
-                # io.stderr(_(
-                #     "{x} KeyError while executing metadata reactor "
-                #     "{metaproc} for node {node}:"
-                # ).format(
-                #     x=red("!!!"),
-                #     metaproc=reactor_name,
-                #     node=node.name,
-                # ))
-                # raise exc
                 self._reactors_with_keyerrors[self._current_reactor] = (
-                    ('UNKNOWN', ('UNKNOWN',)),
+                    (node.name, exc.path),
                     exc,
                 )
-            io.debug(
-                f"{self._current_reactor} raised KeyError: "
-                f"{self._reactors_with_keyerrors[self._current_reactor]}"
-            )
+                io.debug(f"{self._current_reactor} raised MetadataUnavailable for {exc.path}")
             return False
         except DoNotRunAgain:
             self._reactors[self._current_reactor]['raised_donotrunagain'] = True
             # clear any previously stored exception
-            with suppress(KeyError):
-                del self._reactors_with_keyerrors[self._current_reactor]
+            with suppress(MetadataUnavailable):
+                if self._current_reactor in self._reactors_with_keyerrors:
+                    del self._reactors_with_keyerrors[self._current_reactor]
             self._current_reactor_newly_requested_paths.clear()
             io.debug(f"{self._current_reactor} raised DoNotRunAgain")
             return False
@@ -456,15 +457,17 @@ class MetadataGenerator:
             raise exc
         finally:
             self._in_a_reactor = False
-            with suppress(KeyError):
-                del self._reactors_triggered[self._current_reactor]
+            with suppress(MetadataUnavailable):
+                if self._current_reactor in self._reactors_triggered:
+                    del self._reactors_triggered[self._current_reactor]
             for path in self._current_reactor_newly_requested_paths:
                 for needed_reactor in self._trigger_reactors_for_path(path, self._current_reactor):
                     self._reactors[needed_reactor]['trigger_on_change'].add(self._current_reactor)
 
         # reactor terminated normally, clear any previously stored exception
-        with suppress(KeyError):
-            del self._reactors_with_keyerrors[self._current_reactor]
+        with suppress(MetadataUnavailable,KeyError):
+            if self._current_reactor in self._reactors_with_keyerrors:
+                del self._reactors_with_keyerrors[self._current_reactor]
 
         if new_metadata is None:
             raise ValueError(_(

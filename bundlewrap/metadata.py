@@ -2,7 +2,7 @@ from copy import copy
 from hashlib import sha1
 from json import dumps, JSONEncoder
 
-from .exceptions import RepositoryError
+from .exceptions import MetadataUnavailable, RepositoryError
 from .utils import Fault
 from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_path
 from .utils.text import force_text, mark_for_translation as _, yellow
@@ -119,7 +119,7 @@ def check_for_metadata_conflicts_between_defaults_and_reactors(node):
                     for path, value, current_type in paths_with_values_and_types(layer):
                         try:
                             prev_type, prev_identifier, prev_value = paths[path]
-                        except KeyError:
+                        except MetadataUnavailable:
                             paths[path] = current_type, identifier, value
                         else:
                             if (
