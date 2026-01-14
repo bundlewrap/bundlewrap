@@ -1,6 +1,7 @@
 from copy import copy
 from hashlib import sha256
 from json import JSONEncoder, dumps
+import re
 
 from tomlkit import document as toml_document
 from tomlkit import dumps as tomlkit_dumps
@@ -355,9 +356,20 @@ def metadata_dict_to_toml(dict_obj, resolve_faults=False):
             toml_doc[key] = value
     return toml_doc
 
+
+def dumps_ansi(data):
+    toml_str = tomlkit_dumps(data)
+    pattern = r'"([^"\n]*\\u001b[^"\n]*)"'
+    def unquote_match(match):
+        inner = match.group(1)
+        return inner.encode('utf-8').decode('unicode_escape')
+
+    return re.sub(pattern, unquote_match, toml_str)
+
+
 def metadata_to_toml(metadata, resolve_faults=True, sort_keys=True):
     toml_doc = metadata_dict_to_toml({"metadata": metadata}, resolve_faults=resolve_faults)
-    return tomlkit_dumps(toml_doc)
+    return dumps_ansi(toml_doc)
 
 def hash_metadata(sdict):
     """
