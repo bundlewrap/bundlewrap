@@ -204,8 +204,8 @@ class User(Item):
                 del sdict[attr_name]
         return (cdict, sdict, keys)
 
-    def get_auto_deps(self, items):
-        deps = []
+    def get_auto_attrs(self, items):
+        deps = set()
         groups = self.attributes['groups'] or []
         for item in items:
             if item.ITEM_TYPE_NAME == "group":
@@ -226,8 +226,10 @@ class User(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
-        return deps
+                    deps.add(item.id)
+        return {
+            'needs': deps,
+        }
 
     def sdict(self):
         # verify content of /etc/passwd
