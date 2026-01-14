@@ -13,7 +13,7 @@ from tempfile import mkstemp
 from requests import get
 
 from ..exceptions import DontCache, FaultUnavailable
-from .crypto import b64encode_bcrypt, crypt_bcrypt
+from .crypto import b64encode_bcrypt, bcrypt
 
 
 class NO_DEFAULT: pass
@@ -227,7 +227,7 @@ class Fault:
 
             return '{}:{}'.format(
                 username,
-                crypt_bcrypt(self.value, salt=salt),
+                bcrypt(self.value, salt=salt),
             )
         return Fault(self.id_list + ['as_htpasswd_entry ' + username], callback)
 

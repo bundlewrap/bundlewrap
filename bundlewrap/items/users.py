@@ -3,7 +3,7 @@ from string import ascii_lowercase, digits
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
-from bundlewrap.utils.crypto import crypt_bcrypt
+from bundlewrap.utils.crypto import bcrypt
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
@@ -278,7 +278,7 @@ class User(Item):
 
             salt = force_text(attributes.get('salt', None))
 
-            attributes['password_hash'] = crypt_bcrypt(
+            attributes['password_hash'] = bcrypt(
                 force_text(attributes['password']),
                 rounds=rounds,
                 salt=salt,

@@ -24,7 +24,7 @@ def b64encode_bcrypt(payload_bytes):
     return payload_64_bcrypt.rstrip('=')
 
 
-def crypt_bcrypt(payload, encoding='UTF-8', rounds=12, salt=None):
+def bcrypt(payload, encoding='UTF-8', rounds=12, salt=None):
     """
     Returns a crypt line using the bcrypt algorithm (`2b`).
 
