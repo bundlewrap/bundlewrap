@@ -24,7 +24,7 @@ def b64encode_bcrypt(payload_bytes):
     return payload_64_bcrypt.rstrip('=')
 
 
-def bcrypt(payload, encoding='UTF-8', rounds=12, salt=None):
+def bcrypt(payload, encoding='UTF-8', cost=12, salt=None):
     """
     Returns a crypt line using the bcrypt algorithm (`2b`).
 
@@ -32,7 +32,7 @@ def bcrypt(payload, encoding='UTF-8', rounds=12, salt=None):
     servers.
 
     -   `encoding`: `payload` will be encoded using this encoding.
-    -   `rounds`: Use this many rounds. `12` is the bcrypt default.
+    -   `cost`: Use this cost factor. `12` is the bcrypt default.
     -   `salt`: Must be a valid bcrypt salt.
     """
 
@@ -40,8 +40,8 @@ def bcrypt(payload, encoding='UTF-8', rounds=12, salt=None):
         salt = _DEFAULT_BCRYPT_SALT
 
     # The bcrypt lib calls this "salt", but it's more than that, it also
-    # includes the "2b" prefix and the number of rounds.
-    config = f'$2b${rounds}${salt}'.encode('ASCII')
+    # includes the "2b" prefix and the cost factor.
+    config = f'$2b${cost}${salt}'.encode('ASCII')
 
     return bcrypt_hashpw(payload.encode(encoding), config).decode(
         'ASCII'

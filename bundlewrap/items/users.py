@@ -274,13 +274,13 @@ class User(Item):
             # (The Linux PAM crypt algo is configured in some file in
             # /etc/pam.d, probably a line like "password pam_unix.so
             # blowfish".)
-            rounds = 8
+            cost = 8
 
             salt = force_text(attributes.get('salt', None))
 
             attributes['password_hash'] = bcrypt(
                 force_text(attributes['password']),
-                rounds=rounds,
+                cost=cost,
                 salt=salt,
             )
 
