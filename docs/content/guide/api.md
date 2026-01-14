@@ -142,11 +142,12 @@ nodes = repo.nodes_matching("loc.router-1")
 - `lambda_workers` is number of parallel workers used to check lambda condition on every node
 
 The following expressions can be used:
+
 - `my_node` to select a single node
 - `my_group` all nodes in this group
 - `bundle:my_bundle` all nodes with this bundle
 - `!bundle:my_bundle` all nodes without this bundle
-` `!group:my_group` all nodes not in this group
+- `!group:my_group` all nodes not in this group
 - `"lambda:node.metadata_get('foo/magic', 47) < 3"` all nodes whose `metadata["foo"]["magic"]` is less than three
 
 Throws the exception `NoSuchTarget` if one of the expressions in the target string doesn't resolve to nodes.
