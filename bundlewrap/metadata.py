@@ -346,11 +346,12 @@ def metadata_dict_to_toml(dict_obj, resolve_faults=False):
             toml_doc[key] = sorted(value)
         elif isinstance(value, dict):
             toml_doc[key] = metadata_dict_to_toml(value, resolve_faults)
-        elif isinstance(value, Fault) and resolve_faults:
-            toml_doc[key] = value.value
-        elif isinstance(value, Fault) and not resolve_faults:
-            toml_doc[key] = yellow(value._repr_first())
-        elif value == None:
+        elif isinstance(value, Fault):
+            if resolve_faults:
+                toml_doc[key] = value.value
+            else:
+                toml_doc[key] = yellow(value._repr_first())
+        elif value is None:
             toml_doc[key] = "!none:"
         else:
             toml_doc[key] = value
