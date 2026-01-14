@@ -84,7 +84,7 @@ class NoSuchTarget(BundlewrapError):
         self.target = target
 
     def __repr__(self):
-        return "<NoSuchTarget {}>".format(self.target)
+        return f"<NoSuchTarget {self.target}>"
 
     def __str__(self):
         return self.target

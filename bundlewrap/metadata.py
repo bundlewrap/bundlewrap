@@ -1,5 +1,5 @@
 from copy import copy
-from hashlib import sha1
+from hashlib import sha256
 from json import dumps, JSONEncoder
 
 from .exceptions import MetadataUnavailable, RepositoryError
@@ -335,4 +335,4 @@ def hash_metadata(sdict):
     """
     Returns a canonical SHA1 hash to describe this dict.
     """
-    return sha1(metadata_to_json(sdict).encode('utf-8')).hexdigest()
+    return sha256(metadata_to_json(sdict).encode('utf-8')).hexdigest()
