@@ -176,7 +176,7 @@ def bw_metadata(repo, args):
 
             # now we need to recreate the dict, sorting the keys as if
             # they were not colored (otherwise we'd end up sorted by
-            # co863lor)
+            # color)
             metadata_sorted = _sort_dict_colorblind(metadata)
             if args["toml"]:
                 page_lines(
