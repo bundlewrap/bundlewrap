@@ -2,7 +2,7 @@ from copy import copy
 from hashlib import sha256
 from json import dumps, JSONEncoder
 
-from .exceptions import MetadataUnavailable, RepositoryError
+from .exceptions import RepositoryError
 from .utils import Fault
 from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_path
 from .utils.text import force_text, mark_for_translation as _, yellow
