@@ -404,7 +404,7 @@ class MetadataGenerator:
 
         return reactors_run, only_keyerrors
 
-    def __run_reactor(self, node, reactor_name, reactor):
+    def __run_reactor(self, node, reactor_name, reactor): #skipcq: PY-R1000
         # make sure the reactor doesn't react to its own output
         old_metadata = node.metadata._metastack.pop_layer(1, reactor_name)
         self._in_a_reactor = True
