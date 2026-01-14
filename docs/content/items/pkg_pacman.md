@@ -1,5 +1,7 @@
 # Pacman package items
 
+<div class="alert alert-info">See the general remarks on <a href="/items/pkg">package management items</a>.</div>
+
 Handles packages installed by `pacman` (e.g. Arch Linux).
 
     pkg_pacman = {

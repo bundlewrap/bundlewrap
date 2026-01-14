@@ -1,5 +1,7 @@
 # Pamac package items
 
+<div class="alert alert-info">See the general remarks on <a href="/items/pkg">package management items</a>.</div>
+
 Handles packages installed by `pacman` (e.g. Arch Linux) and `pamac`. Uses `pamac` to install, build and remove packages. Needs `pacman` to determine if a package is installed.
 `Pacman` is only used to read information from the node, all action is handeled by `pamac`.
 
