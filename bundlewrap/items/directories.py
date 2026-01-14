@@ -238,7 +238,7 @@ class Directory(Item):
                     deps.add(item.id)
             elif item.ITEM_TYPE_NAME == "zfs_dataset":
                 if item.attributes['mountpoint'] not in (None, "none"):
-                    if is_subdirectory(item.attributes['mountpoint'], self.name):
+                    if is_subdirectory(item.attributes['mountpoint'], self.name) or item.attributes['mountpoint'] == self.name:
                         deps.add(item.id)
             elif item.ITEM_TYPE_NAME in ("directory", "symlink"):
                 if is_subdirectory(item.name, self.name):
