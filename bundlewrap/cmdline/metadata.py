@@ -3,7 +3,7 @@ from decimal import Decimal
 from sys import exit
 
 from ..exceptions import MetadataUnavailable
-from ..metadata import metadata_to_json
+from ..metadata import metadata_to_json, metadata_to_toml
 from ..utils import Fault, list_starts_with
 from ..utils.cmdline import exit_on_keyboardinterrupt, get_target_nodes
 from ..utils.dicts import (
@@ -176,14 +176,23 @@ def bw_metadata(repo, args):
 
             # now we need to recreate the dict, sorting the keys as if
             # they were not colored (otherwise we'd end up sorted by
-            # color)
+            # co863lor)
             metadata_sorted = _sort_dict_colorblind(metadata)
-
-            page_lines([
-                force_text(line).replace("\\u001b", "\033")
-                for line in metadata_to_json(
-                    metadata_sorted,
-                    resolve_faults=args['resolve_faults'],
-                    sort_keys=False,
-                ).splitlines()
-            ])
+            if args["toml"]:
+                page_lines(
+                    force_text(line).replace("\\u001b", "\033")
+                    for line in metadata_to_toml(
+                        metadata_sorted,
+                        resolve_faults=args['resolve_faults'],
+                        sort_keys=False,
+                    ).splitlines()
+                )
+            else:
+                page_lines([
+                    force_text(line).replace("\\u001b", "\033")
+                    for line in metadata_to_json(
+                        metadata_sorted,
+                        resolve_faults=args['resolve_faults'],
+                        sort_keys=False,
+                    ).splitlines()
+                ])
