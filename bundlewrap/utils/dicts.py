@@ -1,6 +1,6 @@
 from copy import copy
 from difflib import unified_diff
-from hashlib import sha1
+from hashlib import sha256
 from json import dumps, JSONEncoder
 
 from tomlkit import document as toml_document
@@ -215,7 +215,7 @@ def hash_statedict(sdict):
     """
     Returns a canonical SHA1 hash to describe this dict.
     """
-    return sha1(statedict_to_json(sdict).encode('utf-8')).hexdigest()
+    return sha256(statedict_to_json(sdict).encode('utf-8')).hexdigest()
 
 
 def map_dict_keys(dict_obj, leaves_only=False, _base=None,):
