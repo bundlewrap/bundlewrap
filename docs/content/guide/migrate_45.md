@@ -54,6 +54,22 @@ You will have to catch this exception and decide what to do. Previously, this ca
 
 <br>
 
+## Hooks are called with positional arguments
+
+Hooks are called with position arguments now. The names in your function signature must match the ones in [our documentation](../repo/hooks.md).
+
+For example, you can no longer do this:
+
+    def node_apply_start(my_repo, my_node):
+        ...
+
+But you must do this instead:
+
+    def node_apply_start(repo, node):
+        ...
+
+<br>
+
 ## Minor changes
 
 For everything else, please consult the [changelog](https://github.com/bundlewrap/bundlewrap/blob/master/CHANGELOG.md#500).
