@@ -140,7 +140,7 @@ bundle:my_bundle   # all nodes with this bundle
 !bundle:my_bundle  # all nodes without this bundle
 !group:my_group    # all nodes not in this group
 "lambda:node.metadata_get('foo/magic', 47) < 3"
-                   # all nodes whose metadata["foo"]["magic"] is less than three
+                   # all nodes whose metadata.get("foo/magic") is less than three
 """)
 HELP_item_workers = _("number of items to apply simultaneously on each node (defaults to {})").format(DEFAULT_item_workers)
 HELP_node_workers = _("number of nodes to apply to simultaneously (defaults to {})").format(DEFAULT_node_workers)
