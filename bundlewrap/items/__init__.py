@@ -587,11 +587,10 @@ class Item:
                     elif status_before.must_be_deleted:
                         details = self.display_on_delete(copy(status_before.sdict))
                     else:
-                        details = self.display_dicts(
+                        details = self.display_on_fix(
                             copy(status_before.cdict),
                             copy(status_before.sdict),
-                            # TODO remove sorted() in 5.0 to pass a set
-                            sorted(copy(status_before.keys_to_fix)),
+                            copy(status_before.keys_to_fix),
                         )
 
         if status_code is None:  # item not skipped or OK
@@ -821,11 +820,10 @@ class Item:
         elif self.cached_status.must_be_deleted:
             display = self.display_on_delete(copy(self.cached_status.sdict))
         else:
-            display = self.display_dicts(
+            display = self.display_on_fix(
                 copy(self.cached_status.cdict),
                 copy(self.cached_status.sdict),
-                # TODO remove sorted() in 5.0 to pass a set
-                sorted(copy(self.cached_status.keys_to_fix)),
+                copy(self.cached_status.keys_to_fix),
             )
         return self.cached_unless_result, self.cached_status, display
 
@@ -840,8 +838,7 @@ class Item:
         """
         return cdict
 
-    # TODO rename to display_on_fix in 5.0
-    def display_dicts(self, cdict, sdict, keys):
+    def display_on_fix(self, cdict, sdict, keys):
         """
         Given cdict and sdict as implemented above, modify them to
         better suit interactive presentation. The keys parameter is a

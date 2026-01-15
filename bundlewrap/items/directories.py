@@ -77,13 +77,13 @@ class Directory(Item):
         del cdict['type']
         return cdict
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_on_fix(self, cdict, sdict, keys):
         try:
             keys.remove('paths_to_purge')
         except ValueError:
             pass
         else:
-            keys.append(UNMANAGED_PATH_DESC)
+            keys.add(UNMANAGED_PATH_DESC)
             cdict[UNMANAGED_PATH_DESC] = sorted(cdict['paths_to_purge'])
             sdict[UNMANAGED_PATH_DESC] = sorted(sdict['paths_to_purge'])
             del cdict['paths_to_purge']

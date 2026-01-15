@@ -167,7 +167,7 @@ class User(Item):
                 del cdict[attr_name]
         return cdict
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_on_fix(self, cdict, sdict, keys):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
             if attr_name == attr_display_name:
                 # Don't change anything; the `del`s below would
@@ -178,7 +178,7 @@ class User(Item):
             except ValueError:
                 pass
             else:
-                keys.append(attr_display_name)
+                keys.add(attr_display_name)
                 cdict[attr_display_name] = cdict[attr_name]
                 sdict[attr_display_name] = sdict[attr_name]
                 del cdict[attr_name]

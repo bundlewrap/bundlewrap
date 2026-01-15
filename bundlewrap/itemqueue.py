@@ -7,7 +7,7 @@ from .deps import (
     remove_dep_from_items,
     split_items_without_deps,
 )
-from .exceptions import NoSuchItem
+from .exceptions import NoSuchItem, MetadataUnavailable
 from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
@@ -69,7 +69,7 @@ class ItemQueue(BaseQueue):
         been skipped as a result by cascading.
         """
         self.pending_items.remove(item)
-        if item.cascade_skip:  # TODO 5.0 always do this when removing cascade_skip
+        if item.cascade_skip:
             # if an item fails or is skipped, all items that depend on
             # it shall be removed from the queue
             self.items_with_deps, skipped_items = remove_item_dependents(
@@ -122,7 +122,7 @@ class ItemQueue(BaseQueue):
         runnable_items = self.items_without_deps_runnable()
 
         if not runnable_items:
-            raise KeyError
+            raise MetadataUnavailable()
 
         item = runnable_items.pop()
         self.items_without_deps.remove(item)

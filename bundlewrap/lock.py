@@ -27,7 +27,7 @@ from .utils.text import (
     wrap_question,
     yellow,
 )
-from .utils.ui import io
+from .utils.ui import io, page_lines
 
 
 def identity():
@@ -238,21 +238,16 @@ def softlock_add_and_warn_for_others(node, *args, **kwargs):
 
     if other_peoples_soft_locks[node.name]:
         output, _ignore = softlocks_to_table(other_peoples_soft_locks)
+        disclaimer = [
+            _("{x}").format(x=yellow("!")), 
+            _("{x} {node}  Your lock was added, but the node was already locked by other people:").format(
+                x=yellow("!"),
+                node=bold(node.name),
+            ), 
+            _("{x}").format(x=yellow("!")),
+        ]
 
-        io.stdout(_("{x}").format(x=yellow("!")))
-        io.stdout(_(
-            "{x} {node}  Your lock was added, but the node was already locked by other people:"
-        ).format(
-            x=yellow("!"),
-            node=bold(node.name),
-        ))
-        io.stdout(_("{x}").format(x=yellow("!")))
-
-        # TODO 5.0 Just use "page_lines(output)" here
-        # For backwards compatibility, we don't use a pager, because
-        # this might break people's workflows/scripts.
-        for line in output:
-            io.stdout(line)
+        page_lines(disclaimer + output)
 
     return new_lock_id
 

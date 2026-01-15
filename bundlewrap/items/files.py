@@ -474,7 +474,7 @@ class File(Item):
         del cdict['type']
         return cdict
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_on_fix(self, cdict, sdict, keys):
         if (
             'content_hash' in keys and
             self.attributes['content_type'] not in ('base64', 'binary', 'download') and
