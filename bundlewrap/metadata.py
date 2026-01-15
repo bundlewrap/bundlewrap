@@ -316,7 +316,7 @@ class MetadataJSONEncoderWithoutFaultsColorized(MetadataJSONEncoderBase):
 
 def metadata_to_json(metadata, resolve_faults=True, sort_keys=True):
     if not isinstance(metadata, dict):  # might be NodeMetadataProxy
-        metadata = dict(metadata)
+        metadata = metadata.to_dict()
 
     if resolve_faults:
         encoder = MetadataJSONEncoder

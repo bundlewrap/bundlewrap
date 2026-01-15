@@ -121,6 +121,9 @@ class NodeMetadataProxy():
         else:
             return self._metastack
 
+    def to_dict(self):
+        return dict(self.get(tuple()).items())
+
     def get(self, path, default=NO_DEFAULT):
         if not isinstance(path, (tuple, list)):
             path = tuple(path.split("/"))
