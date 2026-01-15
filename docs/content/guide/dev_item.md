@@ -79,7 +79,7 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             """
             return expected_state
 
-        def display_dicts(self, expected_state, actual_state, keys):
+        def display_on_fix(self, expected_state, actual_state, keys):
             """
             Given expected_state and actual_state as implemented above, modify them to
             better suit interactive presentation. The keys parameter is a

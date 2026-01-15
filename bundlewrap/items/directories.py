@@ -5,10 +5,9 @@ from shlex import quote
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.remote import PathInfo
-from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
+from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.ui import io
-
 
 UNMANAGED_PATH_DESC = _("unmanaged subpaths")
 
@@ -79,13 +78,13 @@ class Directory(Item):
         del expected_state['type']
         return expected_state
 
-    def display_dicts(self, expected_state, actual_state, keys):
+    def display_on_fix(self, expected_state, actual_state, keys):
         try:
             keys.remove('paths_to_purge')
         except ValueError:
             pass
         else:
-            keys.append(UNMANAGED_PATH_DESC)
+            keys.add(UNMANAGED_PATH_DESC)
             expected_state[UNMANAGED_PATH_DESC] = sorted(expected_state['paths_to_purge'])
             actual_state[UNMANAGED_PATH_DESC] = sorted(actual_state['paths_to_purge'])
             del expected_state['paths_to_purge']
@@ -155,6 +154,7 @@ class Directory(Item):
             group,
             quote(self.name),
         ))
+
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
@@ -197,11 +197,11 @@ class Directory(Item):
             if item == self:
                 continue
             if ((
-                    item.ITEM_TYPE_NAME == "file" and
-                    is_subdirectory(item.name, self.name)
-                ) or (
-                    item.ITEM_TYPE_NAME in ("file", "symlink") and
-                    item.name == self.name
+                item.ITEM_TYPE_NAME == "file" and
+                is_subdirectory(item.name, self.name)
+            ) or (
+                item.ITEM_TYPE_NAME in ("file", "symlink") and
+                item.name == self.name
             )):
                 raise BundleError(_(
                     "{item1} (from bundle '{bundle1}') blocking path to "

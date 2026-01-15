@@ -3,6 +3,7 @@ from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime
+
 try:
     from functools import cache
 except ImportError:  # Python 3.8
@@ -31,7 +32,6 @@ from bundlewrap.utils.remote import PathInfo
 from bundlewrap.utils.text import bold, force_text, mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
 from bundlewrap.utils.ui import io
-
 
 DIFF_MAX_FILE_SIZE = 1024 * 1024 * 5  # bytes
 
@@ -342,11 +342,11 @@ class File(Item):
             for fix_type in ('content_hash', 'mode', 'owner', 'group'):
                 if fix_type in status.keys_to_fix:
                     if fix_type == 'group' and \
-                            'owner' in status.keys_to_fix:
+                        'owner' in status.keys_to_fix:
                         # owner and group are fixed with a single chown
                         continue
                     if fix_type in ('mode', 'owner', 'group') and \
-                            'content' in status.keys_to_fix:
+                        'content' in status.keys_to_fix:
                         # fixing content implies settings mode and owner/group
                         continue
                     getattr(self, "_fix_" + fix_type)(status)
@@ -391,6 +391,7 @@ class File(Item):
             group,
             quote(self.name),
         ))
+
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
@@ -479,7 +480,7 @@ class File(Item):
         del expected_state['type']
         return expected_state
 
-    def display_dicts(self, expected_state, actual_state, keys):
+    def display_on_fix(self, expected_state, actual_state, keys):
         if (
             'content_hash' in keys and
             self.attributes['content_type'] not in ('base64', 'binary', 'download') and
@@ -657,10 +658,10 @@ class File(Item):
                 ).format(item=item_id, bundle=bundle.name, source=attributes['source']))
 
         if 'encoding' in attributes and attributes.get('content_type') in (
-            'any',
-            'base64',
-            'binary',
-            'download',
+                'any',
+                'base64',
+                'binary',
+                'download',
         ):
             raise BundleError(_(
                 "content_type of {item} from bundle '{bundle}' cannot provide different encoding "
@@ -669,10 +670,10 @@ class File(Item):
 
         if (
             attributes.get('content_type', None) == "any" and (
-                'content' in attributes or
-                'encoding' in attributes or
-                'source' in attributes
-            )
+            'content' in attributes or
+            'encoding' in attributes or
+            'source' in attributes
+        )
         ):
             raise BundleError(_(
                 "{item} from bundle '{bundle}' with content_type 'any' "

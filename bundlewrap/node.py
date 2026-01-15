@@ -882,13 +882,6 @@ class Node:
                     reactor,
                 )
 
-    @property
-    def partial_metadata(self):
-        """
-        Deprecated, remove in 5.0.0
-        """
-        return self.metadata
-
     def rename(self, new_name):
         if not self.is_toml:
             raise ValueError(_(

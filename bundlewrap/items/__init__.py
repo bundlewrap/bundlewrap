@@ -108,6 +108,7 @@ def make_normalize(attribute_default):
                 return attribute_value
             else:
                 return type(attribute_default)(attribute_value)
+
         return normalize
     else:
         return copy
@@ -586,11 +587,10 @@ class Item:
                     elif status_before.must_be_deleted:
                         details = self.display_on_delete(copy(status_before.actual_state))
                     else:
-                        details = self.display_dicts(
+                        details = self.display_on_fix(
                             copy(status_before.expected_state),
                             copy(status_before.actual_state),
-                            # TODO remove sorted() in 5.0 to pass a set
-                            sorted(copy(status_before.keys_to_fix)),
+                            copy(status_before.keys_to_fix),
                         )
 
         if status_code is None:  # item not skipped or OK
@@ -819,11 +819,10 @@ class Item:
         elif self.cached_status.must_be_deleted:
             display = self.display_on_delete(copy(self.cached_status.actual_state))
         else:
-            display = self.display_dicts(
+            display = self.display_on_fix(
                 copy(self.cached_status.expected_state),
                 copy(self.cached_status.actual_state),
-                # TODO remove sorted() in 5.0 to pass a set
-                sorted(copy(self.cached_status.keys_to_fix)),
+                copy(self.cached_status.keys_to_fix),
             )
         return self.cached_unless_result, self.cached_status, display
 
@@ -838,8 +837,7 @@ class Item:
         """
         return expected_state
 
-    # TODO rename to display_on_fix in 5.0
-    def display_dicts(self, expected_state, actual_state, keys):
+    def display_on_fix(self, expected_state, actual_state, keys):
         """
         Given expected_state and actual_state as implemented above, modify them to
         better suit interactive presentation. The keys parameter is a

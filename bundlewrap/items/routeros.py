@@ -113,7 +113,7 @@ class RouterOS(Item):
                 expected_state[key] = expected_state[key].split(",")
         return expected_state
 
-    def display_dicts(self, expected_state, actual_state, keys):
+    def display_on_fix(self, expected_state, actual_state, keys):
         if 'subitems_to_purge' in keys:
             keys.remove('subitems_to_purge')
             keys.append(UNMANAGED_SUBITEMS_DESC)

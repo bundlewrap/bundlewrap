@@ -6,7 +6,6 @@ from bundlewrap.items import BUILTIN_ITEM_ATTRIBUTES, Item
 from bundlewrap.utils.crypto import bcrypt
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 
-
 _ATTRIBUTE_NAMES = {
     'full_name': _("full name"),
     'gid': _("GID"),
@@ -139,7 +138,7 @@ class User(Item):
             stdin = None
             for attr, option in sorted(_ATTRIBUTE_OPTIONS.items()):
                 if (attr in status.keys_to_fix or status.must_be_created) and \
-                        self.attributes[attr] is not None:
+                    self.attributes[attr] is not None:
                     if attr == 'groups':
                         value = ",".join(self.attributes[attr])
                     elif attr == 'password_hash' and self.node.os == 'freebsd':
@@ -172,7 +171,7 @@ class User(Item):
                 del expected_state[attr_name]
         return expected_state
 
-    def display_dicts(self, expected_state, actual_state, keys):
+    def display_on_fix(self, expected_state, actual_state, keys):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
             if attr_name == attr_display_name:
                 # Don't change anything; the `del`s below would
@@ -183,7 +182,7 @@ class User(Item):
             except ValueError:
                 pass
             else:
-                keys.append(attr_display_name)
+                keys.add(attr_display_name)
                 expected_state[attr_display_name] = expected_state[attr_name]
                 actual_state[attr_display_name] = actual_state[attr_name]
                 del expected_state[attr_name]
