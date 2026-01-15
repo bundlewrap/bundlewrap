@@ -1,5 +1,7 @@
 # pip package items
 
+<div class="alert alert-info">See the general remarks on <a href="/items/pkg">package management items</a>.</div>
+
 Handles Python packages installed by `pip`. Note that you can use the [pip_command node attribute](../repo/nodes.py.md#pip_command) to use `pip3`.
 
     pkg_pip = {

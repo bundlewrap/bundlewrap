@@ -1,5 +1,7 @@
 # snap package items
 
+<div class="alert alert-info">See the general remarks on <a href="/items/pkg">package management items</a>.</div>
+
 Handles packages installed by `snap` command.
 
     pkg_snap = {
