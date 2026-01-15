@@ -33,6 +33,7 @@ from .node import Node, NODE_ATTRS
 from .secrets import FILENAME_SECRETS, generate_initial_secrets_cfg, SecretProxy
 from .utils import (
     cached_property,
+    cached_property_set,
     error_context,
     get_file_contents,
     names,
@@ -549,18 +550,16 @@ class Repository(MetadataGenerator):
     def group_membership_hash(self):
         return hash_statedict(sorted(names(self.groups)))
 
-    @property
+    @cached_property_set
     def groups(self):
-        # TODO 5.0 make this a cached set
-        return sorted(self.group_dict.values())
+        return self.group_dict.values()
 
     def hash(self):
         return hash_statedict(self.cdict)
 
-    @property
+    @cached_property_set
     def nodes(self):
-        # TODO 5.0 make this a cached set
-        return sorted(self.node_dict.values())
+        return self.node_dict.values()
 
     def nodes_in_all_groups(self, group_names):
         """

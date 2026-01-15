@@ -69,7 +69,7 @@ class ItemQueue(BaseQueue):
         been skipped as a result by cascading.
         """
         self.pending_items.remove(item)
-        if item.cascade_skip:  # TODO 5.0 always do this when removing cascade_skip
+        if item.cascade_skip:
             # if an item fails or is skipped, all items that depend on
             # it shall be removed from the queue
             self.items_with_deps, skipped_items = remove_item_dependents(

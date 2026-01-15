@@ -590,8 +590,7 @@ class Item:
                         details = self.display_dicts(
                             copy(status_before.cdict),
                             copy(status_before.sdict),
-                            # TODO remove sorted() in 5.0 to pass a set
-                            sorted(copy(status_before.keys_to_fix)),
+                            copy(status_before.keys_to_fix),
                         )
 
         if status_code is None:  # item not skipped or OK
@@ -824,8 +823,7 @@ class Item:
             display = self.display_dicts(
                 copy(self.cached_status.cdict),
                 copy(self.cached_status.sdict),
-                # TODO remove sorted() in 5.0 to pass a set
-                sorted(copy(self.cached_status.keys_to_fix)),
+                copy(self.cached_status.keys_to_fix),
             )
         return self.cached_unless_result, self.cached_status, display
 
@@ -840,8 +838,7 @@ class Item:
         """
         return cdict
 
-    # TODO rename to display_on_fix in 5.0
-    def display_dicts(self, cdict, sdict, keys):
+    def display_on_fix(self, cdict, sdict, keys):
         """
         Given cdict and sdict as implemented above, modify them to
         better suit interactive presentation. The keys parameter is a
