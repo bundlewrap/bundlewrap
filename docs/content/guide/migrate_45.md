@@ -70,6 +70,30 @@ But you must do this instead:
 
 <br>
 
+## `get_auto_deps()` has been replaced by `get_auto_attrs()`
+
+[Custom items](dev_item.md) could be instructed to auto-discover dependencies. That happened by calling `get_auto_deps()` on them.
+
+`get_auto_deps()` has now been replaced by the more generic `get_auto_attrs()`, which is able to return different kinds of attributes instead of just `needs`.
+
+To migrate existing code, replace this pattern:
+
+    class MyItem(Item):
+        def get_auto_deps(self, items):
+            # ...
+            return [some_item.id, another_item.id]
+
+With this:
+
+    class MyItem(Item):
+        def get_auto_attrs(self, items):
+            # ...
+            return {
+                'needs': [some_item.id, another_item.id],
+            }
+
+<br>
+
 ## Minor changes
 
 For everything else, please consult the [changelog](https://github.com/bundlewrap/bundlewrap/blob/master/CHANGELOG.md#500).
