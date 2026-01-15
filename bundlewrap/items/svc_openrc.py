@@ -73,8 +73,8 @@ class SvcOpenRC(Item):
                 svc_stop(self.node, self.name)
 
         if "runlevel" in status.keys_to_fix:
-            if status.sdict.runlevel:
-                svc_disable(self.node, self.name, status.sdict.runlevel)
+            if status.actual_state.runlevel:
+                svc_disable(self.node, self.name, status.actual_state.runlevel)
             svc_enable(self.node, self.name, self.attributes["runlevel"])
 
     def get_canned_actions(self):
@@ -100,7 +100,7 @@ class SvcOpenRC(Item):
             },
         }
 
-    def sdict(self):
+    def actual_state(self):
         return {
             "enabled": svc_enabled(self.node, self.name, self.attributes["runlevel"]),
             "running": svc_running(self.node, self.name),

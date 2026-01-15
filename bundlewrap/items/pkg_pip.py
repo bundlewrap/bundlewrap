@@ -29,11 +29,11 @@ class PipPkg(Item):
             self.attributes['installed'],
         )
 
-    def cdict(self):
-        cdict = {'installed': self.attributes['installed']}
+    def expected_state(self):
+        expected_state = {'installed': self.attributes['installed']}
         if self.attributes.get('version') is not None:
-            cdict['version'] = self.attributes['version']
-        return cdict
+            expected_state['version'] = self.attributes['version']
+        return expected_state
 
     def get_auto_attrs(self, items):
         for item in items:
@@ -60,7 +60,7 @@ class PipPkg(Item):
         else:
             self._pkg_install(self.name, version=self.attributes['version'])
 
-    def sdict(self):
+    def actual_state(self):
         install_status = self._pkg_installed(self.name)
         return {
             'installed': bool(install_status),

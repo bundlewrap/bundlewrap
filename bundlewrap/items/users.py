@@ -103,20 +103,20 @@ class User(Item):
             self.attributes['delete'],
         )
 
-    def cdict(self):
+    def expected_state(self):
         if self.attributes['delete']:
             return None
-        cdict = self.attributes.copy()
-        del cdict['delete']
-        del cdict['password']
-        del cdict['salt']
-        del cdict['use_shadow']
-        for key in list(cdict.keys()):
-            if cdict[key] is None:
-                del cdict[key]
-        if 'groups' in cdict:
-            cdict['groups'] = set(cdict['groups'])
-        return cdict
+        expected_state = self.attributes.copy()
+        del expected_state['delete']
+        del expected_state['password']
+        del expected_state['salt']
+        del expected_state['use_shadow']
+        for key in list(expected_state.keys()):
+            if expected_state[key] is None:
+                del expected_state[key]
+        if 'groups' in expected_state:
+            expected_state['groups'] = set(expected_state['groups'])
+        return expected_state
 
     def fix(self, status):
         if self.node.os == 'freebsd':
@@ -156,18 +156,18 @@ class User(Item):
             command += f"{self.name}"
             self.run(command, data_stdin=stdin, may_fail=True)
 
-    def display_on_create(self, cdict):
+    def display_on_create(self, expected_state):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
             if attr_name == attr_display_name:
                 # Don't change anything; the `del` below would
                 # always remove the key entirely!
                 continue
-            if attr_name in cdict:
-                cdict[attr_display_name] = cdict[attr_name]
-                del cdict[attr_name]
-        return cdict
+            if attr_name in expected_state:
+                expected_state[attr_display_name] = expected_state[attr_name]
+                del expected_state[attr_name]
+        return expected_state
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_dicts(self, expected_state, actual_state, keys):
         for attr_name, attr_display_name in _ATTRIBUTE_NAMES.items():
             if attr_name == attr_display_name:
                 # Don't change anything; the `del`s below would
@@ -179,11 +179,11 @@ class User(Item):
                 pass
             else:
                 keys.append(attr_display_name)
-                cdict[attr_display_name] = cdict[attr_name]
-                sdict[attr_display_name] = sdict[attr_name]
-                del cdict[attr_name]
-                del sdict[attr_name]
-        return (cdict, sdict, keys)
+                expected_state[attr_display_name] = expected_state[attr_name]
+                actual_state[attr_display_name] = actual_state[attr_name]
+                del expected_state[attr_name]
+                del actual_state[attr_name]
+        return (expected_state, actual_state, keys)
 
     def get_auto_attrs(self, items):
         deps = set()
@@ -212,7 +212,7 @@ class User(Item):
             'needs': deps,
         }
 
-    def sdict(self):
+    def actual_state(self):
         # verify content of /etc/passwd
         if self.node.os in self.node.OS_FAMILY_BSD:
             password_command = "grep -ae '^{}:' /etc/master.passwd"
@@ -241,10 +241,10 @@ class User(Item):
         else:
             entries = ('username', 'passwd_hash', 'uid', 'gid', 'gecos', 'home', 'shell')
 
-        sdict = _parse_passwd_line(passwd_grep_result.stdout_text, entries)
+        actual_state = _parse_passwd_line(passwd_grep_result.stdout_text, entries)
 
         if self.attributes['gid'] is not None and not self.attributes['gid'].isdigit():
-            sdict['gid'] = _group_name_for_gid(self.node, sdict['gid'])
+            actual_state['gid'] = _group_name_for_gid(self.node, actual_state['gid'])
 
         if self.attributes['password_hash'] is not None:
             if self.attributes['use_shadow'] and self.node.os not in self.node.OS_FAMILY_BSD:
@@ -254,17 +254,17 @@ class User(Item):
                     may_fail=True,
                 )
                 if shadow_grep_result.return_code != 0:
-                    sdict['password_hash'] = None
+                    actual_state['password_hash'] = None
                 else:
-                    sdict['password_hash'] = shadow_grep_result.stdout_text.split(":")[1]
+                    actual_state['password_hash'] = shadow_grep_result.stdout_text.split(":")[1]
             else:
-                sdict['password_hash'] = sdict['passwd_hash']
-        del sdict['passwd_hash']
+                actual_state['password_hash'] = actual_state['passwd_hash']
+        del actual_state['passwd_hash']
 
         # verify content of /etc/group
-        sdict['groups'] = set(_groups_for_user(self.node, self.name))
+        actual_state['groups'] = set(_groups_for_user(self.node, self.name))
 
-        return sdict
+        return actual_state
 
     def patch_attributes(self, attributes):
         if attributes.get('password', None) is not None:

@@ -91,7 +91,7 @@ class Pkg(Item, metaclass=ABCMeta):
     def pkg_remove(self):
         raise NotImplementedError
 
-    def sdict(self):
+    def actual_state(self):
         return {
             'installed': self.pkg_installed_cached(),
         }

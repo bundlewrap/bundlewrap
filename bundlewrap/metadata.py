@@ -331,8 +331,8 @@ def metadata_to_json(metadata, resolve_faults=True, sort_keys=True):
     )
 
 
-def hash_metadata(sdict):
+def hash_metadata(actual_state):
     """
     Returns a canonical sha256 hash to describe this dict.
     """
-    return sha256(metadata_to_json(sdict).encode('utf-8')).hexdigest()
+    return sha256(metadata_to_json(actual_state).encode('utf-8')).hexdigest()

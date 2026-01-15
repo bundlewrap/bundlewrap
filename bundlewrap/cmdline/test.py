@@ -182,14 +182,14 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
                         if item.ITEM_TYPE_NAME == "action":
                             continue  # actions don't hash :'(
                         if item.hash() != previous_item.hash():
-                            current_cdict = item.display_on_create(item.cdict().copy())
-                            previous_cdict = previous_item.display_on_create(previous_item.cdict().copy())
+                            current_expected_state = item.display_on_create(item.expected_state().copy())
+                            previous_expected_state = previous_item.display_on_create(previous_item.expected_state().copy())
                             output = _("{x} {node}  {item} changed:\n").format(
                                 x=red("✘"),
                                 node=bold(node.name),
                                 item=item.id,
                             )
-                            diff = diff_dict(current_cdict, previous_cdict)
+                            diff = diff_dict(current_expected_state, previous_expected_state)
                             output += prefix_lines(diff, red("│ "))
                             output += red("╵")
                             io.stderr(output)

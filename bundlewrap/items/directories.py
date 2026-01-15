@@ -62,33 +62,33 @@ class Directory(Item):
             self.attributes['mode'],
         )
 
-    def cdict(self):
-        cdict = {
+    def expected_state(self):
+        expected_state = {
             'paths_to_purge': set(),
             'type': 'directory',
         }
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
-                cdict[optional_attr] = self.attributes[optional_attr]
-        return cdict
+                expected_state[optional_attr] = self.attributes[optional_attr]
+        return expected_state
 
-    def display_on_create(self, cdict):
-        del cdict['paths_to_purge']
-        del cdict['type']
-        return cdict
+    def display_on_create(self, expected_state):
+        del expected_state['paths_to_purge']
+        del expected_state['type']
+        return expected_state
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_dicts(self, expected_state, actual_state, keys):
         try:
             keys.remove('paths_to_purge')
         except ValueError:
             pass
         else:
             keys.append(UNMANAGED_PATH_DESC)
-            cdict[UNMANAGED_PATH_DESC] = sorted(cdict['paths_to_purge'])
-            sdict[UNMANAGED_PATH_DESC] = sorted(sdict['paths_to_purge'])
-            del cdict['paths_to_purge']
-            del sdict['paths_to_purge']
-        return (cdict, sdict, keys)
+            expected_state[UNMANAGED_PATH_DESC] = sorted(expected_state['paths_to_purge'])
+            actual_state[UNMANAGED_PATH_DESC] = sorted(actual_state['paths_to_purge'])
+            del expected_state['paths_to_purge']
+            del actual_state['paths_to_purge']
+        return (expected_state, actual_state, keys)
 
     def fix(self, status):
         if status.must_be_created or 'type' in status.keys_to_fix:
@@ -96,7 +96,7 @@ class Directory(Item):
             self._fix_type(status)
             return
 
-        for path in status.sdict.get('paths_to_purge', set()):
+        for path in status.actual_state.get('paths_to_purge', set()):
             self.run("rm -rf -- {}".format(quote(path)))
 
         for fix_type in ('mode', 'owner', 'group'):
@@ -134,7 +134,7 @@ class Directory(Item):
 
             # We only want to run these extra commands if we have found
             # one of the two special bits to be set.
-            if status.sdict is not None and int(status.sdict['mode'], 8) & 0o6000:
+            if status.actual_state is not None and int(status.actual_state['mode'], 8) & 0o6000:
                 if not int(self.attributes['mode'], 8) & 0o4000:
                     self.run("chmod u-s {}".format(quote(self.name)))
                 if not int(self.attributes['mode'], 8) & 0o2000:
@@ -245,7 +245,7 @@ class Directory(Item):
                     deps.add(item.id)
         return {'needs': deps}
 
-    def sdict(self):
+    def actual_state(self):
         use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')
         use_gid = self.attributes['group'] is not None and self.attributes['group'].startswith('+')
         path_info = PathInfo(self.node, self.name)

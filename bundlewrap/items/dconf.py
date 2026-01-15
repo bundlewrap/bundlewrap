@@ -78,7 +78,7 @@ class DconfSettingsItem(Item):
             'needs': needs,
         }
 
-    def cdict(self):
+    def expected_state(self):
         if self.attributes['reset']:
             return None
 
@@ -86,7 +86,7 @@ class DconfSettingsItem(Item):
             'value': self.attributes['value'],
         }
 
-    def sdict(self):
+    def actual_state(self):
         result = self.run(f'dconf read {self.path}', may_fail=True)
         value = self._parse_result(result)
 

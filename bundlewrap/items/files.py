@@ -317,19 +317,19 @@ class File(Item):
             return data_template
         return join(self.item_dir, self.attributes['source'])
 
-    def cdict(self):
+    def expected_state(self):
         if self.attributes['delete']:
             return None
-        cdict = {'type': 'file'}
+        expected_state = {'type': 'file'}
         if self.attributes['content_type'] != 'any':
             if self.attributes['content_type'] == 'download' and self.attributes['content_hash']:
-                cdict['content_hash'] = self.attributes['content_hash']
+                expected_state['content_hash'] = self.attributes['content_hash']
             else:
-                cdict['content_hash'] = self.content_hash
+                expected_state['content_hash'] = self.content_hash
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
-                cdict[optional_attr] = self.attributes[optional_attr]
-        return cdict
+                expected_state[optional_attr] = self.attributes[optional_attr]
+        return expected_state
 
     def fix(self, status):
         if status.must_be_created or status.must_be_deleted or 'type' in status.keys_to_fix:
@@ -390,7 +390,7 @@ class File(Item):
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
-        if status.sdict:
+        if status.actual_state:
             self.run("rm -rf -- {}".format(quote(self.name)))
         if not status.must_be_deleted:
             self.run("mkdir -p -- {}".format(quote(dirname(self.name))))
@@ -446,7 +446,7 @@ class File(Item):
             'needs': deps,
         }
 
-    def sdict(self):
+    def actual_state(self):
         use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')
         use_gid = self.attributes['group'] is not None and self.attributes['group'].startswith('+')
         path_info = PathInfo(self.node, self.name)
@@ -462,32 +462,32 @@ class File(Item):
                 'size': path_info.size,
             }
 
-    def display_on_create(self, cdict):
+    def display_on_create(self, expected_state):
         if (
             self.attributes['content_type'] not in ('any', 'base64', 'binary', 'download') and
             len(self.content) < DIFF_MAX_FILE_SIZE
         ):
-            del cdict['content_hash']
-            cdict['content'] = force_text(self.content)
+            del expected_state['content_hash']
+            expected_state['content'] = force_text(self.content)
         if self.attributes['content_type'] == 'download':
-            cdict['source'] = self.attributes['source']
-        del cdict['type']
-        return cdict
+            expected_state['source'] = self.attributes['source']
+        del expected_state['type']
+        return expected_state
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_dicts(self, expected_state, actual_state, keys):
         if (
             'content_hash' in keys and
             self.attributes['content_type'] not in ('base64', 'binary', 'download') and
-            sdict['size'] < DIFF_MAX_FILE_SIZE and
+            actual_state['size'] < DIFF_MAX_FILE_SIZE and
             len(self.content) < DIFF_MAX_FILE_SIZE and
             PathInfo(self.node, self.name).is_text_file
         ):
             keys.remove('content_hash')
             keys.append('content')
-            del cdict['content_hash']
-            del sdict['content_hash']
-            cdict['content'] = self.content.decode(self.attributes['encoding'])
-            sdict['content'] = get_remote_file_contents(
+            del expected_state['content_hash']
+            del actual_state['content_hash']
+            expected_state['content'] = self.content.decode(self.attributes['encoding'])
+            actual_state['content'] = get_remote_file_contents(
                 self.node,
                 self.name,
             ).decode('utf-8', 'backslashreplace')
@@ -495,26 +495,26 @@ class File(Item):
             with suppress(ValueError):
                 keys.remove('content_hash')
         if self.attributes['content_type'] == 'download':
-            cdict['source'] = self.attributes['source']
-            sdict['source'] = ''
-        if sdict:
-            del sdict['size']
+            expected_state['source'] = self.attributes['source']
+            actual_state['source'] = ''
+        if actual_state:
+            del actual_state['size']
             if self.attributes['content_type'] == 'any':
                 with suppress(KeyError):
-                    del sdict['content_hash']
-        return (cdict, sdict, keys)
+                    del actual_state['content_hash']
+        return (expected_state, actual_state, keys)
 
-    def display_on_delete(self, sdict):
-        del sdict['content_hash']
+    def display_on_delete(self, actual_state):
+        del actual_state['content_hash']
         path_info = PathInfo(self.node, self.name)
         if (
-            sdict['size'] < DIFF_MAX_FILE_SIZE and
+            actual_state['size'] < DIFF_MAX_FILE_SIZE and
             path_info.is_text_file
         ):
-            sdict['content'] = get_remote_file_contents(self.node, self.name)
+            actual_state['content'] = get_remote_file_contents(self.node, self.name)
         if path_info.is_file:
-            sdict['size'] = f"{sdict['size']} bytes"
-        return sdict
+            actual_state['size'] = f"{actual_state['size']} bytes"
+        return actual_state
 
     def patch_attributes(self, attributes):
         if (

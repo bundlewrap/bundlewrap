@@ -90,7 +90,7 @@ class SvcFreeBSD(Item):
             },
         }
 
-    def sdict(self):
+    def actual_state(self):
         return {
             'enabled': svc_enabled(self.node, self.name),
             'running': svc_running(self.node, self.name),
