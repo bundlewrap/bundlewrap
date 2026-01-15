@@ -33,11 +33,12 @@ class ZFSPool(Item):
         )
 
     def expected_state(self):
-        ret = {}
+        state = {}
         for i in self.attributes:
             if self.attributes.get(i) is not None:
-                ret[i] = self.attributes[i]
-        return ret
+                state[i] = self.attributes[i]
+
+        return state
 
     @property
     def devices_used(self):
@@ -101,10 +102,11 @@ class ZFSPool(Item):
             except (IndexError, ValueError):
                 continue
 
-        actual_state = {}
+        state = {}
         for attr in self.attributes:
-            actual_state[attr] = (pool_status.get(attr) == 'on')
-        return actual_state
+            state[attr] = (pool_status.get(attr) == 'on')
+
+        return state
 
     def test(self):
         duplicate_devices = [

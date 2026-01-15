@@ -106,17 +106,21 @@ class User(Item):
     def expected_state(self):
         if self.attributes['delete']:
             return None
-        expected_state = self.attributes.copy()
-        del expected_state['delete']
-        del expected_state['password']
-        del expected_state['salt']
-        del expected_state['use_shadow']
-        for key in list(expected_state.keys()):
-            if expected_state[key] is None:
-                del expected_state[key]
-        if 'groups' in expected_state:
-            expected_state['groups'] = set(expected_state['groups'])
-        return expected_state
+
+        state = self.attributes.copy()
+        del state['delete']
+        del state['password']
+        del state['salt']
+        del state['use_shadow']
+
+        for key in list(state.keys()):
+            if state[key] is None:
+                del state[key]
+
+        if 'groups' in state:
+            state['groups'] = set(state['groups'])
+
+        return state
 
     def fix(self, status):
         if self.node.os == 'freebsd':

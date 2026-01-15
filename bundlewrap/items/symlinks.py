@@ -34,14 +34,16 @@ class Symlink(Item):
         )
 
     def expected_state(self):
-        expected_state = {
+        state = {
             'target': self.attributes['target'],
             'type': 'symlink',
         }
+
         for optional_attr in ('group', 'owner'):
             if self.attributes[optional_attr] is not None:
-                expected_state[optional_attr] = self.attributes[optional_attr]
-        return expected_state
+                state[optional_attr] = self.attributes[optional_attr]
+
+        return state
 
     def display_on_create(self, expected_state):
         del expected_state['type']

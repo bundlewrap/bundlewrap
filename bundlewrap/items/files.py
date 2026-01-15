@@ -320,16 +320,19 @@ class File(Item):
     def expected_state(self):
         if self.attributes['delete']:
             return None
-        expected_state = {'type': 'file'}
+
+        state = {'type': 'file'}
         if self.attributes['content_type'] != 'any':
             if self.attributes['content_type'] == 'download' and self.attributes['content_hash']:
-                expected_state['content_hash'] = self.attributes['content_hash']
+                state['content_hash'] = self.attributes['content_hash']
             else:
-                expected_state['content_hash'] = self.content_hash
+                state['content_hash'] = self.content_hash
+
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
-                expected_state[optional_attr] = self.attributes[optional_attr]
-        return expected_state
+                state[optional_attr] = self.attributes[optional_attr]
+
+        return state
 
     def fix(self, status):
         if status.must_be_created or status.must_be_deleted or 'type' in status.keys_to_fix:

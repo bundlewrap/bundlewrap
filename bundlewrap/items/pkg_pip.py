@@ -30,10 +30,12 @@ class PipPkg(Item):
         )
 
     def expected_state(self):
-        expected_state = {'installed': self.attributes['installed']}
+        state = {'installed': self.attributes['installed']}
+
         if self.attributes.get('version') is not None:
-            expected_state['version'] = self.attributes['version']
-        return expected_state
+            state['version'] = self.attributes['version']
+
+        return state
 
     def get_auto_attrs(self, items):
         for item in items:

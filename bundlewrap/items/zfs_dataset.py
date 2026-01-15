@@ -70,14 +70,15 @@ class ZFSDataset(Item):
             )
 
     def expected_state(self):
-        expected_state = {}
+        state = {}
         for option, value in self.attributes.items():
             if option == 'mountpoint' and value is None:
                 value = "none"
             if value is not None:
-                expected_state[option] = value
-        expected_state['mounted'] = 'no' if expected_state.get('mountpoint') in (None, "none") else 'yes'
-        return expected_state
+                state[option] = value
+
+        state['mounted'] = 'no' if state.get('mountpoint') in (None, "none") else 'yes'
+        return state
 
     def fix(self, status):
         if status.must_be_created:
@@ -119,8 +120,9 @@ class ZFSDataset(Item):
         if not self.__does_exist(self.name):
             return None
 
-        actual_state = {}
+        state = {}
         for option in self.attributes:
-            actual_state[option] = self.__get_option(self.name, option)
-        actual_state['mounted'] = self.__get_option(self.name, 'mounted')
-        return actual_state
+            state[option] = self.__get_option(self.name, option)
+
+        state['mounted'] = self.__get_option(self.name, 'mounted')
+        return state

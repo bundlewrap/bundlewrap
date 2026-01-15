@@ -73,10 +73,11 @@ class PostgresRole(Item):
     def expected_state(self):
         if self.attributes['delete']:
             return None
-        expected_state = self.attributes.copy()
-        del expected_state['delete']
-        del expected_state['password']
-        return expected_state
+
+        state = self.attributes.copy()
+        del state['delete']
+        del state['password']
+        return state
 
     def fix(self, status):
         if status.must_be_deleted:

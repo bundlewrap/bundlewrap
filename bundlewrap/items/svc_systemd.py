@@ -77,11 +77,13 @@ class SvcSystemd(Item):
         )
 
     def expected_state(self):
-        expected_state = {}
+        state = {}
+
         for option, value in self.attributes.items():
             if value is not None:
-                expected_state[option] = value
-        return expected_state
+                state[option] = value
+
+        return state
 
     def fix(self, status):
         if 'masked' in status.keys_to_fix:

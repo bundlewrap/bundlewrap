@@ -63,10 +63,11 @@ class FreeBSDPkg(Item):
         return [cls.ITEM_TYPE_NAME]
 
     def expected_state(self):
-        expected_state = self.attributes.copy()
-        if expected_state['version'] is None or not expected_state['installed']:
-            del expected_state['version']
-        return expected_state
+        state = self.attributes.copy()
+        if state['version'] is None or not state['installed']:
+            del state['version']
+
+        return state
 
     def fix(self, status):
         if self.attributes['installed'] is False:

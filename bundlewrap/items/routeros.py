@@ -36,14 +36,14 @@ class RouterOS(Item):
                 'subitems_to_purge': set()
             }
 
-        expected_state = self.attributes.copy()
-        if '_comment' in expected_state:  # work around 'comment' being a builtin attribute
-            expected_state['comment'] = expected_state['_comment']
-            del expected_state['_comment']
+        state = self.attributes.copy()
+        if '_comment' in state:  # work around 'comment' being a builtin attribute
+            state['comment'] = state['_comment']
+            del state['_comment']
 
-        del expected_state['delete']
-        del expected_state['purge']
-        return expected_state
+        del state['delete']
+        del state['purge']
+        return state
 
     def get_basename(self, name):
         return name.split("?", 1)[0]
@@ -91,19 +91,19 @@ class RouterOS(Item):
                 'subitems_to_purge': self._get_subitems_to_purge()
             }
 
-        result = self._get(self.name)
-        if result:
+        state = self._get(self.name)
+        if state:
             # API doesn't return comment at all if emtpy
-            result.setdefault('comment', '')
+            state.setdefault('comment', '')
             # undo automatic type conversion in librouteros
-            for key, value in tuple(result.items()):
+            for key, value in tuple(state.items()):
                 if value is True:
-                    result[key] = "yes"
+                    state[key] = "yes"
                 elif value is False:
-                    result[key] = "no"
+                    state[key] = "no"
                 elif isinstance(value, int):
-                    result[key] = str(value)
-        return result
+                    state[key] = str(value)
+        return state
 
     def display_on_create(self, expected_state):
         for key in tuple(expected_state.keys()):

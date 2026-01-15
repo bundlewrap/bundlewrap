@@ -48,10 +48,11 @@ class Group(Item):
     def expected_state(self):
         if self.attributes['delete']:
             return None
-        expected_state = {}
+        state = {}
         if self.attributes.get('gid') is not None:
-            expected_state['gid'] = self.attributes['gid']
-        return expected_state
+            state['gid'] = self.attributes['gid']
+
+        return state
 
     def fix(self, status):
         if self.node.os == 'freebsd':

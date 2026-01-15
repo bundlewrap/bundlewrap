@@ -63,14 +63,15 @@ class Directory(Item):
         )
 
     def expected_state(self):
-        expected_state = {
+        state = {
             'paths_to_purge': set(),
             'type': 'directory',
         }
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
-                expected_state[optional_attr] = self.attributes[optional_attr]
-        return expected_state
+                state[optional_attr] = self.attributes[optional_attr]
+
+        return state
 
     def display_on_create(self, expected_state):
         del expected_state['paths_to_purge']
