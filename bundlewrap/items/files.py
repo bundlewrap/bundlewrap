@@ -579,8 +579,6 @@ class File(Item):
                     exitcode, stdout = self._run_validator(cmd)
                     if exitcode == 0:
                         io.debug(f"{self.id} passed local validation")
-                    elif exitcode in (126, 127, 255):
-                        io.debug(f"{self.id} failed local validation with code {exitcode}, ignoring")
                     else:
                         raise BundleError(_(
                             "{i} failed local validation using: {c}\n\n{out}"
