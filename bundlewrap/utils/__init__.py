@@ -10,10 +10,10 @@ from random import shuffle
 from sys import stderr, stdout
 from tempfile import mkstemp
 
-from passlib.hash import apr_md5_crypt
 from requests import get
 
 from ..exceptions import DontCache, FaultUnavailable
+from .crypto import b64encode_bcrypt, bcrypt
 
 
 class NO_DEFAULT: pass
@@ -192,12 +192,42 @@ class Fault:
 
     def as_htpasswd_entry(self, username):
         def callback():
+            # bcrypt demands to have a salt (16 random bytes, encoded
+            # with a special `b64encode_bcrypt()` function).
+            #
+            # This salt needs to be deterministic in our case (to
+            # prevent items from changing on every run).
+            #
+            # Using the `random` module allows us to set up a PRNG with
+            # a seed (`self.id_list[0]` would be that seed), but that
+            # module is explicitly marked as "should not be used for
+            # security purposes".
+            #
+            # The `secrets` module does not allow us to set up a PRNG
+            # with a seed.
+            #
+            # We could set up an "HMAC PRNG", like we do in
+            # `secrets.py`, which we use for functions like
+            # `vault.password_for()`. Downside of that is that we now
+            # need a *key*. Those keys are usually read from
+            # `.secrets.cfg`. It's probably not advisable to depend on
+            # this whole machinery for this generic
+            # `as_htpasswd_entry()` function.
+            #
+            # So, what do we do?
+            #
+            # Historically, we have used 8 bytes from `sha512()` and
+            # then fed that into `apr_md5()`. We now do the same with 16
+            # bytes.
+            #
+            # TODO Cryptographically sound?
+            salt = b64encode_bcrypt(
+                hashlib.sha512(self.id_list[0].encode('UTF-8')).digest()[:16]
+            )
+
             return '{}:{}'.format(
                 username,
-                apr_md5_crypt.encrypt(
-                    self.value,
-                    salt=hashlib.sha512(self.id_list[0].encode('utf-8')).hexdigest()[:8],
-                ),
+                bcrypt(self.value, salt=salt),
             )
         return Fault(self.id_list + ['as_htpasswd_entry ' + username], callback)
 

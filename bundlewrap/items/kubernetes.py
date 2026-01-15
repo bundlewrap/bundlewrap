@@ -68,8 +68,8 @@ class KubernetesItem(Item, metaclass=ABCMeta):
             )
             log_error(result)
 
-    def get_auto_deps(self, items, _secrets=True):
-        deps = []
+    def get_auto_attrs(self, items, _secrets=True):
+        deps = set()
         for item in items:
             if (
                 item.ITEM_TYPE_NAME == 'k8s_namespace' and
@@ -84,14 +84,16 @@ class KubernetesItem(Item, metaclass=ABCMeta):
                         bundle=self.bundle.name,
                         node=self.node.name,
                     ))
-                deps.append(item.id)
+                deps.add(item.id)
             elif (
                 _secrets and
                 item.ITEM_TYPE_NAME == 'k8s_secret' and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
-        return deps
+                deps.add(item.id)
+        return {
+            'needs': deps,
+        }
 
     @property
     def _kubectl(self):
@@ -255,15 +257,17 @@ class KubernetesRawItem(KubernetesItem):
                     node=self.node.name,
                 ))
 
-    def get_auto_deps(self, items):
-        deps = super(KubernetesRawItem, self).get_auto_deps(items)
+    def get_auto_attrs(self, items):
+        deps = super(KubernetesRawItem, self).get_auto_attrs(items)['needs']
         for item in items:
             if (
                 item.ITEM_TYPE_NAME == 'k8s_crd' and
                 item._manifest_dict.get('spec', {}).get('names', {}).get('kind') == self.KIND
             ):
-                deps.append(item.id)
-        return deps
+                deps.add(item.id)
+        return {
+            'needs': deps,
+        }
 
     @property
     def KIND(self):
@@ -289,10 +293,12 @@ class KubernetesClusterRoleBinding(KubernetesItem):
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
-    def get_auto_deps(self, items):
-        deps = super(KubernetesClusterRoleBinding, self).get_auto_deps(items)
-        deps.append("k8s_clusterrole:")
-        return deps
+    def get_auto_attrs(self, items):
+        deps = super(KubernetesClusterRoleBinding, self).get_auto_attrs(items)['needs']
+        deps.add("k8s_clusterrole:")
+        return {
+            'needs': deps,
+        }
 
     @property
     def namespace(self):
@@ -318,8 +324,8 @@ class KubernetesCustomResourceDefinition(KubernetesItem):
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
-    def get_auto_deps(self, items):
-        return []
+    def get_auto_attrs(self, items):
+        return {}
 
     @property
     def namespace(self):
@@ -331,15 +337,17 @@ class KubernetesDaemonSet(KubernetesItem):
     KIND = "DaemonSet"
     ITEM_TYPE_NAME = "k8s_daemonset"
 
-    def get_auto_deps(self, items):
-        deps = super(KubernetesDaemonSet, self).get_auto_deps(items)
+    def get_auto_attrs(self, items):
+        deps = super(KubernetesDaemonSet, self).get_auto_attrs(items)['needs']
         for item in items:
             if (
                 item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
-        return deps
+                deps.add(item.id)
+        return {
+            'needs': deps,
+        }
 
 
 class KubernetesDeployment(KubernetesItem):
@@ -347,15 +355,17 @@ class KubernetesDeployment(KubernetesItem):
     KIND = "Deployment"
     ITEM_TYPE_NAME = "k8s_deployment"
 
-    def get_auto_deps(self, items):
-        deps = super(KubernetesDeployment, self).get_auto_deps(items)
+    def get_auto_attrs(self, items):
+        deps = super(KubernetesDeployment, self).get_auto_attrs(items)['needs']
         for item in items:
             if (
                 item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
-        return deps
+                deps.add(item.id)
+        return {
+            'needs': deps,
+        }
 
 
 class KubernetesIngress(KubernetesItem):
@@ -363,15 +373,17 @@ class KubernetesIngress(KubernetesItem):
     KIND = "Ingress"
     ITEM_TYPE_NAME = "k8s_ingress"
 
-    def get_auto_deps(self, items):
-        deps = super(KubernetesIngress, self).get_auto_deps(items)
+    def get_auto_attrs(self, items):
+        deps = super(KubernetesIngress, self).get_auto_attrs(items)['needs']
         for item in items:
             if (
                 item.ITEM_TYPE_NAME == 'k8s_service' and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
-        return deps
+                deps.add(item.id)
+        return {
+            'needs': deps,
+        }
 
 
 class KubernetesNamespace(KubernetesItem):
@@ -381,8 +393,8 @@ class KubernetesNamespace(KubernetesItem):
     NAME_REGEX = r"^[a-z0-9-\.]{1,253}$"
     NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
-    def get_auto_deps(self, items):
-        return []
+    def get_auto_attrs(self, items):
+        return {}
 
 
 class KubernetesNetworkPolicy(KubernetesItem):
@@ -410,10 +422,12 @@ class KubernetesRoleBinding(KubernetesItem):
     KIND = "RoleBinding"
     ITEM_TYPE_NAME = "k8s_rolebinding"
 
-    def get_auto_deps(self, items):
-        deps = super(KubernetesRoleBinding, self).get_auto_deps(items)
-        deps.append("k8s_role:")
-        return deps
+    def get_auto_attrs(self, items):
+        deps = super(KubernetesRoleBinding, self).get_auto_attrs(items)['needs']
+        deps.add("k8s_role:")
+        return {
+            'needs': deps,
+        }
 
 
 class KubernetesSecret(KubernetesItem):
@@ -421,8 +435,8 @@ class KubernetesSecret(KubernetesItem):
     KIND = "Secret"
     ITEM_TYPE_NAME = "k8s_secret"
 
-    def get_auto_deps(self, items):
-        return super(KubernetesSecret, self).get_auto_deps(items, _secrets=False)
+    def get_auto_attrs(self, items):
+        return super(KubernetesSecret, self).get_auto_attrs(items, _secrets=False)
 
 
 class KubernetesService(KubernetesItem):
@@ -442,12 +456,14 @@ class KubernetesStatefulSet(KubernetesItem):
     KIND = "StatefulSet"
     ITEM_TYPE_NAME = "k8s_statefulset"
 
-    def get_auto_deps(self, items):
-        deps = super(KubernetesStatefulSet, self).get_auto_deps(items)
+    def get_auto_attrs(self, items):
+        deps = super(KubernetesStatefulSet, self).get_auto_attrs(items)['needs']
         for item in items:
             if (
                 item.ITEM_TYPE_NAME in ('k8s_pvc', 'k8s_configmap') and
                 item.namespace == self.namespace
             ):
-                deps.append(item.id)
-        return deps
+                deps.add(item.id)
+        return {
+            'needs': deps,
+        }

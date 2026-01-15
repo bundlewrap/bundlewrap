@@ -112,6 +112,22 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             """
             raise NotImplementedError
 
+        def get_auto_attrs(self, items):
+            """
+            Return a dict with any number of attributes. The respective
+            sets will be merged with the user-supplied values. For example:
+
+                return {
+                    'needs': {
+                        'file:/foo',
+                    },
+                }
+
+            Note that only attributes from ALLOWED_ITEM_AUTO_ATTRIBUTES are
+            allowed (see BundleWrap source code).
+            """
+            return {}
+
 <br>
 
 ## Step 2: Define attributes
