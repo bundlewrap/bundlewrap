@@ -43,6 +43,7 @@ nav:
   - git_deploy: items/git_deploy.md
   - group: items/group.md
   - k8s_*: items/k8s.md
+  - pkg_*: items/pkg.md
   - pkg_apk: items/pkg_apk.md
   - pkg_apt: items/pkg_apt.md
   - pkg_dnf: items/pkg_dnf.md
