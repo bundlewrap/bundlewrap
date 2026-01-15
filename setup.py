@@ -43,7 +43,6 @@ setup(
         "librouteros >= 3.0.0",
         "Mako",
         "packaging >= 25 ; python_version>='3.10'",
-        "passlib",
         "pyyaml",
         "requests >= 1.0.0",
         "rtoml ; python_version<'3.11'",

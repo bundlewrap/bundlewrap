@@ -50,18 +50,6 @@ List of groups (names, not GIDs) the user should belong to. Must NOT include the
 
 <hr>
 
-## hash_method
-
-One of:
-
-* `md5`
-* `sha256`
-* `sha512`
-
-Defaults to `sha512`.
-
-<hr>
-
 ## home
 
 Path to home directory. Defaults to `/home/USERNAME`.
@@ -86,7 +74,7 @@ Hashed password as it would be returned by `crypt()` and written to `/etc/shadow
 
 ## salt
 
-Recommended for use with the `password` attribute. BundleWrap will use 5000 rounds of SHA-512 on this salt and the provided password.
+Recommended for use with the `password` attribute. BundleWrap will use bcrypt with a cost factor of 8 on this salt and the provided password.
 
 <hr>
 
