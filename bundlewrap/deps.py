@@ -138,8 +138,6 @@ def _add_incoming_needs(items):
 def _prepare_auto_attrs(items):
     for item in items:
         auto_attrs = item.get_auto_attrs(items)
-        # remove next line in 5.0 when killing get_auto_deps
-        auto_attrs['needs'] = set(auto_attrs.get('needs', set())) | set(item.get_auto_deps(items))
         for key, value in auto_attrs.items():
             if key not in ALLOWED_ITEM_AUTO_ATTRIBUTES:
                 raise ValueError(_("get_auto_attrs() on {item} returned illegal key {key}").format(
@@ -194,7 +192,10 @@ def _inject_canned_actions(items):
     for item in items:
         for canned_action_name, canned_action_attrs in item.get_canned_actions().items():
             canned_action_id = f"{item.id}:{canned_action_name}"
-            canned_action_attrs.update({'triggered': True})
+            canned_action_attrs.update({
+                'triggered': True,
+                'tags': item.tags,
+            })
             action = Action(
                 item.bundle,
                 canned_action_id,

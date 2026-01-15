@@ -4,8 +4,7 @@ from os import environ
 
 from .text import ansi_clean
 
-
-ROW_SEPARATOR = 1
+ROW_SEPARATOR = object()
 
 if environ.get("BW_TABLE_STYLE") == 'ascii':
     FRAME_TOP_LEFT = "+-"
@@ -65,7 +64,11 @@ def _column_widths_for_rows(rows):
         for i, column in enumerate(row):
             if column == ROW_SEPARATOR:
                 continue
-            column_widths[i] = max(column_widths[i], len(ansi_clean(column)))
+            if isinstance(column, (list, tuple, set)):
+                for value in column:
+                    column_widths[i] = max(column_widths[i], len(ansi_clean(value)))
+            else:
+                column_widths[i] = max(column_widths[i], len(ansi_clean(column)))
     return column_widths
 
 
@@ -103,21 +106,28 @@ def _empty_row(row):
     return True
 
 
+def _nested_row(row, column_widths, alignments):
+    repeat_literal_columns = environ.get("BW_TABLE_STYLE") == 'grep'
+    for flat_row in _flatten_rows_with_lists(row, repeat_literal_columns):
+        yield _row(flat_row, column_widths, alignments)
+
+
 def _row(row, column_widths, alignments):
     result = ""
     columns = []
     for i, column_value in enumerate(row):
         alignment = alignments.get(i, 'left')
+
         if column_value == ROW_SEPARATOR:
             columns.append(ROW_SEPARATOR)
         elif alignment == 'right':
             columns.append(
                 FRAME_COLUMN_WHITESPACE * (column_widths[i] - len(ansi_clean(column_value))) +
-                column_value
+                str(column_value)
             )
         elif alignment == 'left':
             columns.append(
-                column_value +
+                str(column_value) +
                 FRAME_COLUMN_WHITESPACE * (column_widths[i] - len(ansi_clean(column_value)))
             )
         elif alignment == 'center':
@@ -125,7 +135,7 @@ def _row(row, column_widths, alignments):
             suffix = (column_widths[i] - len(ansi_clean(column_value)) - prefix)
             columns.append(
                 FRAME_COLUMN_WHITESPACE * prefix +
-                column_value +
+                str(column_value) +
                 FRAME_COLUMN_WHITESPACE * suffix
             )
         else:
@@ -160,6 +170,39 @@ def _row(row, column_widths, alignments):
     return result[1:-1]  # strip exactly one whitespace character at each end
 
 
+def _flatten_rows_with_lists(row, repeat_literal_columns):
+    has_list_column = any(isinstance(cell, (list, tuple, set)) for cell in row)
+    if not has_list_column:
+        yield row
+        return
+
+    longest_list_column = max(len(cell) for cell in row if isinstance(cell, (list, tuple, set)))
+    longest_list_column = max(longest_list_column, 1)
+    is_first_flat_row = True
+
+    for i in range(longest_list_column):
+        flat_row = []
+        for cell in row:
+            if isinstance(cell, set):
+                cell = list(sorted(cell))
+
+            if isinstance(cell, (list, tuple)):
+                if len(cell) == 0:
+                    flat_row.append('[]')
+                elif i < len(cell):
+                    flat_row.append(str(cell[i]))
+                else:
+                    flat_row.append('')
+            else:
+                if is_first_flat_row or repeat_literal_columns:
+                    flat_row.append(str(cell))
+                else:
+                    flat_row.append('')
+
+        is_first_flat_row = False
+        yield flat_row
+
+
 def inline_list(cell):
     if isinstance(cell, set):
         return ",".join(sorted(set))
@@ -187,32 +230,57 @@ def render_table(rows, alignments=None):
 
     alignments is a dict mapping column indexes to 'left' or 'right'.
     """
+    if not rows:
+        return
+
+    num_columns = len(rows[0])
+
     if environ.get("BW_TABLE_STYLE") == 'csv':
-        output = StringIO()
-        writer = csv.writer(output)
-        for row in rows:
-            if row == ROW_SEPARATOR:
-                continue
-            writer.writerow([ansi_clean(inline_list(cell)) for cell in row])
-        for line in output.getvalue().splitlines():
-            yield line
+        yield from render_table_csv(rows)
+    elif num_columns == 1:
+        yield from render_table_single_column(rows)
     else:
-        if alignments is None:
-            alignments = {}
-        column_widths = _column_widths_for_rows(rows)
+        yield from render_table_beauty(alignments, rows)
 
-        if environ.get("BW_TABLE_STYLE") != 'grep':
-            yield _border_top(column_widths)
 
-        for row_index, row in enumerate(rows):
-            if row == ROW_SEPARATOR:
-                if environ.get("BW_TABLE_STYLE") != 'grep':
-                    yield _row([ROW_SEPARATOR] * len(column_widths), column_widths, {})
-            elif row_index == 0:
-                # heading row ignores alignments
-                yield _row(row, column_widths, {})
-            elif environ.get("BW_TABLE_STYLE") != 'grep' or not _empty_row(row):
-                yield _row(row, column_widths, alignments)
+def render_table_csv(rows):
+    output = StringIO()
+    writer = csv.writer(output)
+    for row in rows:
+        if row == ROW_SEPARATOR:
+            continue
+        writer.writerow([ansi_clean(inline_list(cell)) for cell in row])
+    for line in output.getvalue().splitlines():
+        yield line
 
-        if environ.get("BW_TABLE_STYLE") != 'grep':
-            yield _border_bottom(column_widths)
+
+def render_table_single_column(rows):
+    for row in rows:
+        if not row:
+            yield ""
+        elif row == ROW_SEPARATOR:
+            continue
+        else:
+            yield str(row[0])
+
+
+def render_table_beauty(alignments, rows):
+    if alignments is None:
+        alignments = {}
+    column_widths = _column_widths_for_rows(rows)
+
+    if environ.get("BW_TABLE_STYLE") != 'grep':
+        yield _border_top(column_widths)
+
+    for row_index, row in enumerate(rows):
+        if row == ROW_SEPARATOR:
+            if environ.get("BW_TABLE_STYLE") != 'grep':
+                yield from _nested_row([ROW_SEPARATOR] * len(column_widths), column_widths, {})
+        elif row_index == 0:
+            # heading row ignores alignments
+            yield from _nested_row(row, column_widths, {})
+        elif environ.get("BW_TABLE_STYLE") != 'grep' or not _empty_row(row):
+            yield from _nested_row(row, column_widths, alignments)
+
+    if environ.get("BW_TABLE_STYLE") != 'grep':
+        yield _border_bottom(column_widths)

@@ -4,3 +4,8 @@
 /build/
 /dist/
 /docs/build/
+
+# Anywhere in repo
+*.egg-info/
+*.pyc
+*.swp

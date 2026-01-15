@@ -115,7 +115,7 @@ class GitDeploy(Item):
     def cdict(self):
         return {'rev': self._expanded_rev}
 
-    def get_auto_deps(self, items):
+    def get_auto_attrs(self, items):
         deps = set()
         for item in items:
             if item == self:
@@ -146,7 +146,9 @@ class GitDeploy(Item):
                     ).format(item.name))
                 else:
                     deps.add(item.id)
-        return deps
+        return {
+            'needs': deps,
+        }
 
     def fix(self, status):
         archive_local = NamedTemporaryFile(delete=False)
@@ -334,5 +336,3 @@ class GitDeploy(Item):
             ))
 
         return repo_dir, remove_dir
-
-# FIXME get_auto_deps for dir and ensure dir does not use purge

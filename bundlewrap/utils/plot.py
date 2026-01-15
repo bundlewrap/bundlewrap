@@ -34,7 +34,6 @@ def graph_for_items(
     items,
     cluster=True,
     regular=True,
-    reverse=True,
     auto=True,
 ):
     items = set(items)
@@ -93,12 +92,10 @@ def graph_for_items(
                 else:
                     yield "\"{}\" -> \"{}\" [color=\"#42AFFF\",penwidth=2]".format(item.id, dep.id)
 
-        if reverse:
-            # FIXME this is not filtering auto deps, but we should rethink filters anyway in 5.0
-            for dep in sorted(item._deps_before & items):
-                yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=2]".format(item.id, dep.id)
-            for dep in sorted(item._deps_needed_by & items):
-                yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=2]".format(item.id, dep.id)
+        for dep in sorted(item._deps_before & items):
+            yield "\"{}\" -> \"{}\" [color=\"#D1CF52\",penwidth=1,style=\"dashed\"]".format(item.id, dep.id)
+        for dep in sorted(item._deps_needed_by & items):
+            yield "\"{}\" -> \"{}\" [color=\"#D18C57\",penwidth=1,style=\"dashed\"]".format(item.id, dep.id)
 
         if auto:
             for dep in sorted(item._deps_triggers & items):
