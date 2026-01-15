@@ -499,10 +499,10 @@ bundle:my_bundle  # items in this bundle
         help=_("show more verbose representation of each item"),
     )
     information_group.add_argument(
-        "--state",
+        "--actual-state",
         action='store_true',
         dest='show_actual_state',
-        help=_("show actual item status on node instead of should-be configuration"),
+        help=_("show actual item status on the node instead of the expected state"),
     )
     parser_items.add_argument(
         "--json",
