@@ -119,4 +119,4 @@ If you do rely on the old behavior, you can still set a `user`'s `password_hash`
 
 ## Minor changes
 
-For everything else, please consult the [changelog](https://github.com/bundlewrap/bundlewrap/blob/master/CHANGELOG.md#500).
+For everything else, please consult the [changelog](https://github.com/bundlewrap/bundlewrap/blob/main/CHANGELOG.md#500).
