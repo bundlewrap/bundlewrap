@@ -121,7 +121,7 @@ class NodeMetadataProxy():
         else:
             return self._metastack
 
-    def to_dict(self):
+    def _to_dict(self):
         return dict(self.get(tuple()).items())
 
     def get(self, path, default=NO_DEFAULT):
