@@ -691,10 +691,6 @@ class Item:
         """
         return self.attributes
 
-    def cdict(self):
-        io.stderr(_("DeprecationWarning: Item.cdict() is deprecated, please use Item.expected_state() instead."))
-        return self.expected_state()
-
     def covered_by_autoskip_selector(self, autoskip_selector):
         """
         True if this item should be skipped based on the given selector
@@ -890,10 +886,6 @@ class Item:
         MUST be overridden by subclasses.
         """
         raise NotImplementedError()
-
-    def sdict(self):
-        io.stderr(_("DeprecationWarning: Item.sdict() is deprecated, please use Item.actual_state() instead."))
-        return self.actual_state()
 
     def test(self):
         """
