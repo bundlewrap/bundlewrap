@@ -5,6 +5,8 @@ from json import dumps, JSONEncoder
 
 from tomlkit import document as toml_document
 
+from ..exceptions import MetadataUnavailable
+
 from . import Fault
 from .text import bold, green, red, yellow
 from .text import force_text, mark_for_translation as _
@@ -468,6 +470,8 @@ def validate_statedict(sdict):
 
 
 def delete_key_at_path(d, path):
+    if path[0] not in d:
+        return
     if len(path) == 1:
         del d[path[0]]
     else:
@@ -510,6 +514,6 @@ def value_at_key_path(dict_obj, path):
         nested_dict = dict_obj[path[0]]
         remaining_path = path[1:]
         if remaining_path and not isinstance(nested_dict, dict):
-            raise KeyError("/".join(path))
+            raise MetadataUnavailable(path)
         else:
             return value_at_key_path(nested_dict, remaining_path)

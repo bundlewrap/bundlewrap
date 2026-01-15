@@ -7,7 +7,7 @@ from .deps import (
     remove_dep_from_items,
     split_items_without_deps,
 )
-from .exceptions import NoSuchItem
+from .exceptions import NoSuchItem, MetadataUnavailable
 from .utils.text import mark_for_translation as _
 from .utils.ui import io
 
@@ -122,7 +122,7 @@ class ItemQueue(BaseQueue):
         runnable_items = self.items_without_deps_runnable()
 
         if not runnable_items:
-            raise KeyError
+            raise MetadataUnavailable()
 
         item = runnable_items.pop()
         self.items_without_deps.remove(item)
