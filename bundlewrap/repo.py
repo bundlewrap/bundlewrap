@@ -551,14 +551,14 @@ class Repository(MetadataGenerator):
 
     @property
     def groups(self):
-        return self.group_dict.values()
+        return set(self.group_dict.values())
 
     def hash(self):
         return hash_statedict(self.cdict)
 
     @property
     def nodes(self):
-        return self.node_dict.values()
+        return set(self.node_dict.values())
 
     def nodes_in_all_groups(self, group_names):
         """
