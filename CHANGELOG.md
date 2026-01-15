@@ -10,6 +10,7 @@ TODO date
 * `repo.nodes_matching()` throws `NoSuchTarget` when expressions don't match anything (BACKWARDS INCOMPATIBLE)
 * the "Running hooks ..." line is more verbose, bw calls your hooks differently (BACKWARDS INCOMPATIBLE)
 * items: `get_auto_deps()` has been removed, always use `get_auto_attrs()` now (BACKWARDS INCOMPATIBLE)
+* dependency on passlib has been removed, this affects several hashing algorithms (BACKWARDS INCOMPATIBLE)
 * the `bundles/` directory is required to be present for bw to consider a directory a bw repository
 * fixed mkdocs warnings
 * removed unused attribute `can_login` from `postgres_roles.py`

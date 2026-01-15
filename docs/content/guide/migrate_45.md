@@ -103,6 +103,20 @@ With this:
 
 <br>
 
+## bcrypt
+
+The dependency on [passlib](https://passlib.readthedocs.io/en/stable/) has been removed, becase this library is unmaintained.
+
+This affects `user` items and the `as_htpasswd_entry()` method of [Fault objects](api.md#bundlewraputilsfault). Both will use [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) for hashing now, i.e. they look like `$2b$12$riWuF3Oh...`.
+
+The `hash_method` attribute has been removed from `user` items.
+
+Current versions of nginx and Apache, and current Linux distributions as well as FreeBSD and OpenBSD should support the `$2b$` scheme in their shadow files.
+
+If you do rely on the old behavior, you can still set a `user`'s `password_hash` manually. There is no replacement regarding `as_htpasswd_entry()`, you will have to implement your own version of the old crypt algorithms.
+
+<br>
+
 ## Minor changes
 
 For everything else, please consult the [changelog](https://github.com/bundlewrap/bundlewrap/blob/master/CHANGELOG.md#500).
