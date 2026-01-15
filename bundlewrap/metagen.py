@@ -1,5 +1,4 @@
 from collections import defaultdict, Counter
-from collections.abc import Mapping
 from contextlib import suppress
 from os import environ
 from threading import RLock
@@ -101,30 +100,12 @@ class PathSet:
             return result
 
 
-class NodeMetadataProxy(Mapping):
+class NodeMetadataProxy():
     def __init__(self, metagen, node):
         self._metagen = metagen
         self._node = node
         self._completed_paths = PathSet()
         self._metastack = Metastack()
-
-    def __contains__(self, key):
-        try:
-            self.get(key, _backwards_compatibility_default=False)
-        except KeyError:
-            return False
-        else:
-            return True
-
-    def __getitem__(self, key):
-        return self.get((key,), _backwards_compatibility_default=False)
-
-    def __iter__(self):
-        for key, value in self.get(tuple()).items():
-            yield key, value
-
-    def __len__(self):
-        return len(self.keys())
 
     @property
     def blame(self):
@@ -140,16 +121,7 @@ class NodeMetadataProxy(Mapping):
         else:
             return self._metastack
 
-    def get(self, path, default=NO_DEFAULT, _backwards_compatibility_default=True):
-        if (
-            default == NO_DEFAULT and
-            _backwards_compatibility_default and
-            not self._metagen._in_a_reactor and
-            "/" not in path
-        ):
-            # make node.metadata.get('foo') work as if it was still a dict
-            # TODO remove in 5.0
-            default = None
+    def get(self, path, default=NO_DEFAULT):
         if not isinstance(path, (tuple, list)):
             path = tuple(path.split("/"))
 
@@ -199,15 +171,6 @@ class NodeMetadataProxy(Mapping):
                         self._metagen._reactors_with_keyerrors[self._metagen._current_reactor] = \
                             ((self._node.name, path), exc)
                     raise exc
-
-    def items(self):
-        return self.get(tuple()).items()
-
-    def keys(self):
-        return self.get(tuple()).keys()
-
-    def values(self):
-        return self.get(tuple()).values()
 
 
 class MetadataGenerator:
