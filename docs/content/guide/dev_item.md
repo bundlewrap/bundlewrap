@@ -155,7 +155,10 @@ Step 3: Implement methods
 
 You should probably start with `actual_state()`. Use `self.run("command")` to run shell commands on the current node and check the `stdout` property of the returned object.
 
-The only other method you have to implement is `fix`. It doesn't have to return anything and just uses `self.run()` to fix the item. To do this efficiently, it may use the provided parameter `status.keys_to_fix` indicating which keys differ between the `expected_state` and the `actual_state`. Both state-dicts are also provided in case you need to know their values.
+The only other method you have to implement is `fix`. It doesn't have to return anything and just uses `self.run()` to fix the item. It receives a `status` object of type `ItemStatus` which carries the state-dicts `expected_state` and `actual_state`. Also, a set of additional keys are supplied which can help in writing efficient fix-methods:
+
+- `keys_to_fix` contains a list of keys that differ between the `expected_state` and the `actual_state`
+- `must_be_deleted` and `must_be_created` are booleans indicating that one the state-dicts is empty
 
 `block_concurrent()` must return a list of item types (e.g. `['pkg_apt']`) that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time).
 
