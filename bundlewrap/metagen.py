@@ -100,7 +100,7 @@ class PathSet:
             return result
 
 
-class NodeMetadataProxy():
+class NodeMetadataProxy:
     def __init__(self, metagen, node):
         self._metagen = metagen
         self._node = node
