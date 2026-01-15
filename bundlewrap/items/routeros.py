@@ -111,7 +111,7 @@ class RouterOS(Item):
                 cdict[key] = cdict[key].split(",")
         return cdict
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_on_fix(self, cdict, sdict, keys):
         if 'subitems_to_purge' in keys:
             keys.remove('subitems_to_purge')
             keys.append(UNMANAGED_SUBITEMS_DESC)

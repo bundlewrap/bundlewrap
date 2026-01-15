@@ -82,7 +82,7 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             """
             return cdict
 
-        def display_dicts(self, cdict, sdict, keys):
+        def display_on_fix(self, cdict, sdict, keys):
             """
             Given cdict and sdict as implemented above, modify them to
             better suit interactive presentation. The keys parameter is a
