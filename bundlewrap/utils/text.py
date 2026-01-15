@@ -16,7 +16,7 @@ VALID_NAME_CHARS = digits + ascii_letters + "-_.+"
 
 
 def ansi_clean(input_string):
-    return ANSI_ESCAPE.sub("", force_text(input_string))
+    return ANSI_ESCAPE.sub("", str(force_text(input_string)))
 
 
 def ansi_wrapper(colorizer):
@@ -114,6 +114,9 @@ def error_summary(errors):
 def force_text(data):
     """
     Try to return a text aka unicode object from the given data.
+
+    Note from the future: this function is used in a ton of places which silently expect to pass in None, bool or dict and
+    get that out again, so this function does indeed *not* force text but changing it to do so will break tons of places.
     """
     if isinstance(data, bytes):
         return data.decode('utf-8', 'replace')
