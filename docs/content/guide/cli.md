@@ -94,6 +94,24 @@ It offers an interesting view into the internal complexities BundleWrap has to d
 
 ## bw stats
 
+Show some statistics about your repository.
+
+```
+$ bw stats
+╭───────┬───────────────────╮
+│ count │ type              │
+├───────┼───────────────────┤
+│     1 │ nodes             │
+│     0 │ groups            │
+│     1 │ bundles           │
+│     0 │ metadata defaults │
+│     0 │ metadata reactors │
+│     2 │ items             │
+├───────┼───────────────────┤
+│     2 │ file              │
+╰───────┴───────────────────╯
+```
+
 ## bw test
 
 ```none
@@ -241,4 +259,31 @@ $ bw hash mynode user:root
 
 ## bw generate-completions
 
-Generates or updates a file named `.bw_shell_completion_targets` in the repo-dir to be used with [argcomplete](https://kislyuk.github.io/argcomplete/).
+<div class="alert alert-info">Needs <a href="https://kislyuk.github.io/argcomplete/">argcomplete</a> to be manually installed.</div>
+
+This subcommand is meant to be used with [argcomplete](https://kislyuk.github.io/argcomplete/). When argcomplete is installed and activated, it is activated by the bw main command
+and shows tab-completions for all subcommands and arguments.
+
+```none
+$ bw apply <TAB><TAB>
+--add-host-keys       -a  -- set StrictHostKeyChecking=no instead of yes for SSH
+--debug               -d  -- print debugging info
+--help                -h  -- show this help message and exit
+--repo-path           -r  -- Look for repository at this path (defaults to current working directory)
+--version                 -- show program's version number and exit
+apply                     -- Applies the configuration defined in your repository to your nodes
+debug                     -- Start an interactive Python shell for this repository
+diff                      -- Show differences between nodes
+…
+```
+
+To also get auto-complete options for node- and group-names, `bw generate-completions` needs to be run regularly. It generates
+a list of available targets for bw-operations and offers them for completion:
+
+```none
+$ bw apply location.<TAB><TAB>
+location.node-1                                                location.node-2
+location.node-3                                                location.node-4
+location.node-group
+…
+```
