@@ -46,10 +46,9 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 
         def expected_state(self):
             """
-            Return a actual_state that describes the target state of this item
-            as configured in the repo (mnemonic: _c_dict for _config_
-            dict). Returning `None` instead means that the item should
-            not exist.
+            Return a state-dict that describes the expeced state of this item
+            as configured in the repo. Returning `None` instead means that the
+            item should not exist on the node.
 
             Implementing this method is optional. The default implementation
             uses the attributes as defined in the bundle.
@@ -58,10 +57,9 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 
         def actual_state(self):
             """
-            Return a actual_state that describes the actual state of this item
-            on the node (mnemonic: _s_dict for _state_ dict). Returning
-            `None` instead means that the item does not exist on the
-            node.
+            Return a state-dict that describes the actual state of this item
+            on the node. Returning `None` instead means that the item does not
+            exist on the node.
 
             For the item to validate as correct, the values for all keys in
             self.expected_state() have to match this actual_state.
