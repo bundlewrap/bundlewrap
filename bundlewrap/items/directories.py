@@ -77,7 +77,7 @@ class Directory(Item):
         del cdict['type']
         return cdict
 
-    def display_dicts(self, cdict, sdict, keys):
+    def display_on_fix(self, cdict, sdict, keys):
         try:
             keys.remove('paths_to_purge')
         except ValueError:

@@ -587,7 +587,7 @@ class Item:
                     elif status_before.must_be_deleted:
                         details = self.display_on_delete(copy(status_before.sdict))
                     else:
-                        details = self.display_dicts(
+                        details = self.display_on_fix(
                             copy(status_before.cdict),
                             copy(status_before.sdict),
                             copy(status_before.keys_to_fix),
@@ -820,7 +820,7 @@ class Item:
         elif self.cached_status.must_be_deleted:
             display = self.display_on_delete(copy(self.cached_status.sdict))
         else:
-            display = self.display_dicts(
+            display = self.display_on_fix(
                 copy(self.cached_status.cdict),
                 copy(self.cached_status.sdict),
                 copy(self.cached_status.keys_to_fix),
