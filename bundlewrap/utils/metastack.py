@@ -1,4 +1,4 @@
-from bundlewrap.exceptions import MetadataUnavailable
+from ..exceptions import MetadataUnavailable
 from ..metadata import METADATA_TYPES, deepcopy_metadata, validate_metadata, value_at_key_path
 from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
 
@@ -37,7 +37,7 @@ class Metastack:
             for layer in reversed(list(partition.values())):
                 try:
                     value = value_at_key_path(layer, path)
-                except (KeyError, MetadataUnavailable):
+                except KeyError:
                     pass
                 else:
                     if undef:
@@ -88,7 +88,7 @@ class Metastack:
     def pop_layer(self, partition_index, identifier):
         try:
             return self._partitions[partition_index].pop(identifier)
-        except (MetadataUnavailable, KeyError, IndexError):
+        except (KeyError, IndexError):
             return {}
 
     def set_layer(self, partition_index, identifier, new_layer):

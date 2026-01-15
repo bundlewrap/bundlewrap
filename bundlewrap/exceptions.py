@@ -25,13 +25,17 @@ class MetadataUnavailable(BundlewrapError):
     Raised when a Metadata key cannot be resolved.
     """
     def __init__(self, path=None):
-        if path is None:
-            path = {}
         self.path = path
-        super().__init__(f"Metadata key path unavailable: {'/'.join(self.path)}")
 
-    pass
-
+    def __str__(self):
+        if self.path is None:
+            return "path: <unknown>"
+        return f"path: {'/'.join(self.path)}"
+    
+    def __repr__(self):
+        if self.path is None:
+            return "<MetadataUnavailable>"
+        return f"<MetadataUnavailable path={'/'.join(self.path)}>"
 
 class GracefulApplyException(BundlewrapError):
     """
@@ -88,7 +92,6 @@ class NoSuchTarget(BundlewrapError):
 
     def __str__(self):
         return self.target
-    pass
 
 
 class RemoteException(BundlewrapError):

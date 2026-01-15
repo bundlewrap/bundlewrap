@@ -5,7 +5,7 @@ from json import dumps, JSONEncoder
 
 from tomlkit import document as toml_document
 
-from bundlewrap.exceptions import MetadataUnavailable
+from ..exceptions import MetadataUnavailable
 
 from . import Fault
 from .text import bold, green, red, yellow
@@ -61,7 +61,7 @@ def diff_keys(dict1, dict2):
         try:
             if dict1[key] != dict2[key]:
                 differing_keys.add(key)
-        except (KeyError, MetadataUnavailable):
+        except KeyError:
             differing_keys.add(key)
     return differing_keys
 
@@ -385,7 +385,7 @@ def normalize_dict(dict_obj, types):
     for key, value in dict_obj.items():
         try:
             normalize = types[key]
-        except (KeyError, MetadataUnavailable):
+        except KeyError:
             result[key] = value
         else:
             result[key] = normalize(value)
