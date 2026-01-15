@@ -44,7 +44,16 @@ No changes to the repository are required.
 
 ## `bw apply` and `bw verify`: `-s` without matches is an error now
 
-TODO still being discussed in https://github.com/bundlewrap/bundlewrap/pull/874
+This is an error now:
+
+    $ bw verify hw.switch-foobar -s tag:causes-downtime
+    !!! the following selectors for --skip do not match any items: tag:causes-downtime
+
+The intention is to catch typos. For example, `-s tag:causes_downtime` previously went unnoticed and might have unintentionally restarted some services.
+
+This check is done on the entire selection. If you apply a group and *no* node in that group has items that match the selector, then the error is raised.
+
+There is no direct replacement. If you rely on the old behavior, because you regularly apply nodes where the `-s` argument doesn't match anything, then you must remove `-s` in those cases.
 
 <br>
 
