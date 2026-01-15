@@ -443,7 +443,7 @@ class File(Item):
                 if is_subdirectory(item.name, self.name):
                     deps.add(item.id)
         return {
-            'after': deps,
+            'needs': deps,
         }
 
     def sdict(self):
