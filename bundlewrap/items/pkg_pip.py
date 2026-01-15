@@ -29,6 +29,7 @@ class PipPkg(Item):
             self.attributes['installed'],
         )
 
+    @property
     def expected_state(self):
         state = {'installed': self.attributes['installed']}
 
@@ -62,6 +63,7 @@ class PipPkg(Item):
         else:
             self._pkg_install(self.name, version=self.attributes['version'])
 
+    @property
     def actual_state(self):
         install_status = self._pkg_installed(self.name)
         return {

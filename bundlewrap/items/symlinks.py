@@ -33,6 +33,7 @@ class Symlink(Item):
             self.attributes['group'],
         )
 
+    @property
     def expected_state(self):
         state = {
             'target': self.attributes['target'],
@@ -158,6 +159,7 @@ class Symlink(Item):
             attributes['group'] = 'wheel'
         return attributes
 
+    @property
     def actual_state(self):
         path_info = PathInfo(self.node, self.name)
         if not path_info.exists:

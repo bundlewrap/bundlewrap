@@ -112,6 +112,7 @@ class GitDeploy(Item):
             repo_dir = get_local_repo_path(self.node.repo.path, self.attributes['repo'])
         return repo_dir
 
+    @property
     def expected_state(self):
         return {'rev': self._expanded_rev}
 
@@ -185,6 +186,7 @@ class GitDeploy(Item):
         finally:
             remove(archive_local.name)
 
+    @property
     def actual_state(self):
         if self.attributes['use_xattrs']:
             status_result = self.run(

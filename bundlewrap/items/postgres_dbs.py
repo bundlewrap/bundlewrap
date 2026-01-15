@@ -75,6 +75,7 @@ class PostgresDB(Item):
             self.when_creating['encoding'],
         )
 
+    @property
     def expected_state(self):
         if self.attributes['delete']:
             return None
@@ -100,6 +101,7 @@ class PostgresDB(Item):
             'needs': deps,
         }
 
+    @property
     def actual_state(self):
         databases = get_databases(self.node)
         if self.name not in databases:

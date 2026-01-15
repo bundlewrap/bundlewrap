@@ -32,6 +32,7 @@ class ZFSPool(Item):
             self.when_creating['config'],
         )
 
+    @property
     def expected_state(self):
         state = {}
         for i in self.attributes:
@@ -86,6 +87,7 @@ class ZFSPool(Item):
                 state_str = 'on' if status.expected_state[attr] else 'off'
                 self.run('zpool set {}={} {}'.format(attr, state_str, quote(self.name)))
 
+    @property
     def actual_state(self):
         status_result = self.run('zpool list {}'.format(quote(self.name)), may_fail=True)
         if status_result.return_code != 0:

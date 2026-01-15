@@ -26,6 +26,7 @@ class TagFillerItem(Item):
     BUNDLE_ATTRIBUTE_NAME = "__tagfiller__"
     ITEM_TYPE_NAME = "empty_tag"
 
+    @property
     def actual_state(self):
         return {}
 

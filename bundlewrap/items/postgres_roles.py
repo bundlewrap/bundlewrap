@@ -70,6 +70,7 @@ class PostgresRole(Item):
             self.attributes['delete'],
         )
 
+    @property
     def expected_state(self):
         if self.attributes['delete']:
             return None
@@ -87,6 +88,7 @@ class PostgresRole(Item):
         else:
             fix_role(self.node, self.name, self.attributes)
 
+    @property
     def actual_state(self):
         return get_role(self.node, self.name)
 

@@ -317,6 +317,7 @@ class File(Item):
             return data_template
         return join(self.item_dir, self.attributes['source'])
 
+    @property
     def expected_state(self):
         if self.attributes['delete']:
             return None
@@ -449,6 +450,7 @@ class File(Item):
             'needs': deps,
         }
 
+    @property
     def actual_state(self):
         use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')
         use_gid = self.attributes['group'] is not None and self.attributes['group'].startswith('+')

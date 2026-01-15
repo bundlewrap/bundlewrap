@@ -69,6 +69,7 @@ class ZFSDataset(Item):
                 may_fail=True,
             )
 
+    @property
     def expected_state(self):
         state = {}
         for option, value in self.attributes.items():
@@ -116,6 +117,7 @@ class ZFSDataset(Item):
 
         return {'needs': needs}
 
+    @property
     def actual_state(self):
         if not self.__does_exist(self.name):
             return None

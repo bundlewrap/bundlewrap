@@ -95,6 +95,7 @@ class OpenBSDPkg(Item):
     def block_concurrent(cls, node_os, node_os_version):
         return [cls.ITEM_TYPE_NAME]
 
+    @property
     def expected_state(self):
         state = self.attributes.copy()
         if not state['installed']:
@@ -116,6 +117,7 @@ class OpenBSDPkg(Item):
                 self.attributes['version']
             )
 
+    @property
     def actual_state(self):
         version, flavor = pkg_installed(self.node, self.name)
         return {

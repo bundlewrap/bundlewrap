@@ -76,6 +76,7 @@ class SvcSystemd(Item):
             self.attributes['masked'],
         )
 
+    @property
     def expected_state(self):
         state = {}
 
@@ -127,6 +128,7 @@ class SvcSystemd(Item):
             },
         }
 
+    @property
     def actual_state(self):
         return {
             'enabled': svc_enabled(self.node, self.name),

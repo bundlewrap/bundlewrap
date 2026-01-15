@@ -56,6 +56,7 @@ class ZypperPkg(Item):
         else:
             pkg_install(self.node, self.name)
 
+    @property
     def actual_state(self):
         return {
             'installed': pkg_installed(self.node, self.name),

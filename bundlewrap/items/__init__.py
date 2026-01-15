@@ -287,7 +287,7 @@ class Item:
         if self._faults_missing_for_attributes:
             self._raise_for_faults()
 
-        expected_state = self.expected_state()
+        expected_state = self.expected_state
         try:
             validate_state_dict(expected_state)
         except ValueError as e:
@@ -302,7 +302,7 @@ class Item:
 
     @cached_property
     def cached_actual_state(self):
-        status = self.actual_state()
+        status = self.actual_state
         try:
             validate_state_dict(status)
         except ValueError as e:
@@ -682,6 +682,7 @@ class Item:
         })
         return result
 
+    @property
     def expected_state(self):
         """
         Return a dict describing the expected state of this item on the node.
@@ -875,13 +876,14 @@ class Item:
         """
         raise NotImplementedError()
 
+    @property
     def actual_state(self):
         """
         Return a dict describing the actual state of this item on the node.
         Returning `None` instead means that the item does not exist on the node.
 
         For the item to validate as correct, the values for all keys in
-        self.expected_state() have to match this actual_state.
+        self.expected_state have to match this actual_state.
 
         MUST be overridden by subclasses.
         """

@@ -6,11 +6,11 @@ To represent both the expected and actual state of an item, BundleWrap uses dict
 
 * keys must be Unicode text
 * every value must be of one of these simple data types:
-	* bool
-	* float
-	* int
-	* Unicode text
-	* None
+    * bool
+    * float
+    * int
+    * Unicode text
+    * None
 * ...or a list/tuple containing only instances of one of the types above
 
 Additional information can be stored in these state-dicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" `actual_state` information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply.
@@ -44,6 +44,7 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
         def __repr__(self):
             return "<Foo attribute:{}>".format(self.attributes['attribute'])
 
+        @property
         def expected_state(self):
             """
             Return a state-dict that describes the expeced state of this item
@@ -55,6 +56,7 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             """
             raise NotImplementedError
 
+        @property
         def actual_state(self):
             """
             Return a state-dict that describes the actual state of this item
@@ -62,7 +64,7 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             exist on the node.
 
             For the item to validate as correct, the values for all keys in
-            self.expected_state() have to match this actual_state.
+            self.expected_state have to match this actual_state.
             """
             raise NotImplementedError
 
@@ -102,8 +104,8 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             object has the following useful information:
 
                 status.keys_to_fix           list of expected_state keys that need fixing
-                status.expected_state        cached copy of self.expected_state()
-                status.actual_state          cached copy of self.actual_state()
+                status.expected_state        cached copy of self.expected_state
+                status.actual_state          cached copy of self.actual_state
             """
             raise NotImplementedError
 
@@ -133,16 +135,13 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 
 ...then you should put `BUNDLE_ATTRIBUTE_NAME = "foo"` here.
 
-
 `ITEM_ATTRIBUTES` is a dictionary of the attributes users will be able to configure for your item. For files, that would be stuff like owner, group, and permissions. Every attribute (even if it's mandatory) needs a default value, `None` is totally acceptable:
 
     ITEM_ATTRIBUTES = {'attr1': "default1"}
 
-
 `ITEM_TYPE_NAME` sets the first part of an items ID. For the file items, this is "file". Therefore, file ID look this this: `file:/path`. The second part is the name a user assigns to your item in a bundle. Example:
 
     ITEM_TYPE_NAME = "foo"
-
 
 `REQUIRED_ATTRIBUTES` is a list of attribute names that must be set on each item of this type. If BundleWrap encounters an item without all these attributes during bundle inspection, an exception will be raised. Example:
 

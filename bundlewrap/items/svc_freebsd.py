@@ -90,6 +90,7 @@ class SvcFreeBSD(Item):
             },
         }
 
+    @property
     def actual_state(self):
         return {
             'enabled': svc_enabled(self.node, self.name),

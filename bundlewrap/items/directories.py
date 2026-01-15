@@ -62,6 +62,7 @@ class Directory(Item):
             self.attributes['mode'],
         )
 
+    @property
     def expected_state(self):
         state = {
             'paths_to_purge': set(),
@@ -246,6 +247,7 @@ class Directory(Item):
                     deps.add(item.id)
         return {'needs': deps}
 
+    @property
     def actual_state(self):
         use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')
         use_gid = self.attributes['group'] is not None and self.attributes['group'].startswith('+')

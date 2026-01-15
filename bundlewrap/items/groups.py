@@ -45,6 +45,7 @@ class Group(Item):
             self.attributes['delete'],
         )
 
+    @property
     def expected_state(self):
         if self.attributes['delete']:
             return None
@@ -77,6 +78,7 @@ class Group(Item):
             command += f"{self.name}"
         self.run(command, may_fail=True)
 
+    @property
     def actual_state(self):
         # verify content of /etc/group
         grep_result = self.run(

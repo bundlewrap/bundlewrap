@@ -78,6 +78,7 @@ class DconfSettingsItem(Item):
             'needs': needs,
         }
 
+    @property
     def expected_state(self):
         if self.attributes['reset']:
             return None
@@ -86,6 +87,7 @@ class DconfSettingsItem(Item):
             'value': self.attributes['value'],
         }
 
+    @property
     def actual_state(self):
         result = self.run(f'dconf read {self.path}', may_fail=True)
         value = self._parse_result(result)

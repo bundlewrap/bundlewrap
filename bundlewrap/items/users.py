@@ -103,6 +103,7 @@ class User(Item):
             self.attributes['delete'],
         )
 
+    @property
     def expected_state(self):
         if self.attributes['delete']:
             return None
@@ -216,6 +217,7 @@ class User(Item):
             'needs': deps,
         }
 
+    @property
     def actual_state(self):
         # verify content of /etc/passwd
         if self.node.os in self.node.OS_FAMILY_BSD:

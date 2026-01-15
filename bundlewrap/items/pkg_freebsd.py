@@ -62,6 +62,7 @@ class FreeBSDPkg(Item):
     def block_concurrent(cls, node_os, node_os_version):
         return [cls.ITEM_TYPE_NAME]
 
+    @property
     def expected_state(self):
         state = self.attributes.copy()
         if state['version'] is None or not state['installed']:
@@ -79,6 +80,7 @@ class FreeBSDPkg(Item):
                 self.attributes['version']
             )
 
+    @property
     def actual_state(self):
         version = pkg_installed(self.node, self.name)
         return {

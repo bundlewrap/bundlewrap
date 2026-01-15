@@ -26,6 +26,7 @@ class RouterOS(Item):
     def __repr__(self):
         return f"<RouterOS {self.name} delete:{self.attributes['delete']} purge:{bool(self.attributes['purge'])}>"
 
+    @property
     def expected_state(self):
         if self.attributes['delete']:
             return None
@@ -84,6 +85,7 @@ class RouterOS(Item):
                     values_to_fix
                 )
 
+    @property
     def actual_state(self):
         if self.attributes['purge']:
             # purge operates on lists of items only which we can't operate on otherwise

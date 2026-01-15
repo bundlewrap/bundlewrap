@@ -153,6 +153,7 @@ class Action(Item):
     def apply(self, *args, **kwargs):
         return self.get_result(*args, **kwargs)
 
+    @property
     def expected_state(self):
         raise AttributeError(_("actions don't have expected_states"))
 

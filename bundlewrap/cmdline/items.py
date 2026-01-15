@@ -144,10 +144,10 @@ def show_single_item(node, item, representation, args):
         data = item.attributes
 
     elif representation == ItemRepresentation.ACTUAL_STATE:
-        data = item.actual_state()
+        data = item.actual_state
 
     elif representation == ItemRepresentation.EXPECTED_STATE:
-        data = item.expected_state()
+        data = item.expected_state
 
     elif representation == ItemRepresentation.REPR:
         data = [repr(item)]
