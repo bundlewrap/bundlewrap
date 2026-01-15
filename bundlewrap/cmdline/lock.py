@@ -7,7 +7,7 @@ from ..lock import (
     softlock_remove,
     softlocks_to_table,
 )
-from ..utils.cmdline import get_target_nodes
+from ..utils.cmdline import get_target_nodes, verify_autoskip_selectors
 from ..utils.text import (
     bold,
     error_summary,
@@ -49,6 +49,15 @@ def bw_lock_add(repo, args):
     max_node_name_length = max([len(node.name) for node in target_nodes])
     lock_id = randstr(length=4).upper()
     io.progress_set_total(len(pending_nodes))
+
+    if args['items'] and not args['skip_item_verification']:
+        selectors_not_matching = verify_autoskip_selectors(pending_nodes, args['items'])
+        if selectors_not_matching:
+            io.stderr(_("{x} the following selectors for --items do not match any items: {selectors}").format(
+                x=red("!!!"),
+                selectors=' '.join(sorted(selectors_not_matching)),
+            ))
+            exit(1)
 
     def tasks_available():
         return bool(pending_nodes)

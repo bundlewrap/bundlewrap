@@ -571,6 +571,12 @@ bundle:my_bundle  # items in this bundle
         type=str,
     )
     parser_lock_add.add_argument(
+        "--skip-item-verification",
+        action='store_true',
+        dest='skip_item_verification',
+        help=_("disable verification of item selector (-i)"),
+    )
+    parser_lock_add.add_argument(
         "-p",
         "--parallel-nodes",
         default=DEFAULT_node_workers,
