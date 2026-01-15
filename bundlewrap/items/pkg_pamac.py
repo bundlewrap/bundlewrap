@@ -46,12 +46,11 @@ class PamacPkg(Pkg):
     def pkg_remove(self):
         self.run("pamac remove --no-confirm --unneeded --orphans {}".format(quote(self.name)), may_fail=True)
 
-    def get_auto_deps(self, items):
-        deps = []
+    def get_auto_attrs(self, items):
         for item in items:
             if item == self:
                 continue
-            if item.ITEM_TYPE_NAME in ("pkg_pacman") and item.name == self.name:
+            if item.ITEM_TYPE_NAME in ("pkg_pacman",) and item.name == self.name:
                 raise BundleError(_(
                     "{item} is declared both by pkg_pacman (in bundle {bundle_pacman}) "
                     "and pkg_pamac (in bundle {bundle_pamac})"
@@ -60,4 +59,4 @@ class PamacPkg(Pkg):
                     bundle_pacman=item.bundle.name,
                     bundle_pamac=self.bundle.name,
                 ))
-        return deps
+        return {}

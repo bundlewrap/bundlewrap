@@ -396,8 +396,8 @@ class File(Item):
             self.run("mkdir -p -- {}".format(quote(dirname(self.name))))
             self._fix_content_hash(status)
 
-    def get_auto_deps(self, items):
-        deps = []
+    def get_auto_attrs(self, items):
+        deps = set()
         for item in items:
             if item.ITEM_TYPE_NAME == 'file' and is_subdirectory(item.name, self.name):
                 raise BundleError(_(
@@ -421,7 +421,7 @@ class File(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
+                    deps.add(item.id)
             elif item.ITEM_TYPE_NAME == 'group' and item.name == self.attributes['group']:
                 if item.attributes['delete']:
                     raise BundleError(_(
@@ -434,11 +434,17 @@ class File(Item):
                         bundle2=item.bundle.name,
                     ))
                 else:
-                    deps.append(item.id)
+                    deps.add(item.id)
+            elif item.ITEM_TYPE_NAME == "zfs_dataset":
+                if item.attributes['mountpoint'] not in (None, "none"):
+                    if is_subdirectory(item.attributes['mountpoint'], self.name):
+                        deps.add(item.id)
             elif item.ITEM_TYPE_NAME in ('directory', 'symlink'):
                 if is_subdirectory(item.name, self.name):
-                    deps.append(item.id)
-        return deps
+                    deps.add(item.id)
+        return {
+            'after': deps,
+        }
 
     def sdict(self):
         use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')

@@ -35,7 +35,7 @@ class PipPkg(Item):
             cdict['version'] = self.attributes['version']
         return cdict
 
-    def get_auto_deps(self, items):
+    def get_auto_attrs(self, items):
         for item in items:
             if item == self:
                 continue
@@ -52,7 +52,7 @@ class PipPkg(Item):
                     item2=self.id,
                     bundle2=self.bundle.name,
                 ))
-        return []
+        return {}
 
     def fix(self, status):
         if self.attributes['installed'] is False:
