@@ -178,7 +178,7 @@ class User(Item):
             except ValueError:
                 pass
             else:
-                keys.append(attr_display_name)
+                keys.add(attr_display_name)
                 cdict[attr_display_name] = cdict[attr_name]
                 sdict[attr_display_name] = sdict[attr_name]
                 del cdict[attr_name]
