@@ -80,7 +80,7 @@ class Directory(Item):
     def display_on_fix(self, cdict, sdict, keys):
         try:
             keys.remove('paths_to_purge')
-        except ValueError:
+        except KeyError:
             pass
         else:
             keys.add(UNMANAGED_PATH_DESC)
