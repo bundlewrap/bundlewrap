@@ -483,7 +483,7 @@ class File(Item):
             PathInfo(self.node, self.name).is_text_file
         ):
             keys.remove('content_hash')
-            keys.append('content')
+            keys.add('content')
             del cdict['content_hash']
             del sdict['content_hash']
             cdict['content'] = self.content.decode(self.attributes['encoding'])

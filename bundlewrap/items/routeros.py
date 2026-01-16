@@ -114,7 +114,7 @@ class RouterOS(Item):
     def display_on_fix(self, cdict, sdict, keys):
         if 'subitems_to_purge' in keys:
             keys.remove('subitems_to_purge')
-            keys.append(UNMANAGED_SUBITEMS_DESC)
+            keys.add(UNMANAGED_SUBITEMS_DESC)
             cdict[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in cdict['subitems_to_purge']])
             sdict[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in sdict['subitems_to_purge']])
             del cdict['subitems_to_purge']
