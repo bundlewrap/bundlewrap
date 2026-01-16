@@ -155,7 +155,7 @@ class Action(Item):
 
     @property
     def expected_state(self):
-        raise AttributeError(_("actions don't have expected_states"))
+        raise AttributeError(_("actions don't have expected_state dicts"))
 
     def get_result(self, *args, **kwargs):
         self.node.repo.hooks.action_run_start(

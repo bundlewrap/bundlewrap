@@ -177,8 +177,9 @@ def diff_dict(dict1, dict2, skip_missing_in_target=False):
     else:
         for key in sorted(diff_keys(dict1, dict2)):
             if skip_missing_in_target and key not in dict2:
-                # this is used to hide anything not present in a expected_state
-                # and thus not relevant to the diff/user
+                # this is used to hide anything not present in an
+                # expected_state dict and thus not relevant to the
+                # diff/user
                 continue
             value1 = dict1.get(key, _MISSING_KEY)
             value2 = dict2.get(key, _MISSING_KEY)
@@ -441,7 +442,7 @@ def validate_dict(candidate, schema, required_keys=None):
 
 def validate_state_dict(state_dict):
     """
-    Raises ValueError if the given actual_state is invalid.
+    Raises ValueError if the given state dict is invalid.
     """
     if state_dict is None:
         return

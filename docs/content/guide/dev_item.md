@@ -47,9 +47,9 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
         @property
         def expected_state(self):
             """
-            Return a state-dict that describes the expeced state of this item
-            as configured in the repo. Returning `None` instead means that the
-            item should not exist on the node.
+            Return a dict describing the expected state of this item on
+            the node. Returning `None` instead means that the item
+            should not exist.
 
             Implementing this method is optional. The default implementation
             uses the attributes as defined in the bundle.
@@ -59,21 +59,21 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
         @property
         def actual_state(self):
             """
-            Return a state-dict that describes the actual state of this item
-            on the node. Returning `None` instead means that the item does not
-            exist on the node.
+            Return a dict describing the actual state of this item on
+            the node. Returning `None` instead means that the item does
+            not exist on the node.
 
-            For the item to validate as correct, the values for all keys in
-            self.expected_state have to match this actual_state.
+            For the item to validate as correct, the values for all keys
+            in self.expected_state have to match this actual_state.
             """
             raise NotImplementedError
 
         def display_on_create(self, expected_state):
             """
-            Given a expected_state as implemented above, modify it to better suit
-            interactive presentation when an item is created. If there are
-            any when_creating attributes, they will be added to the expected_state
-            before it is passed to this method.
+            Given an expected_state dict as implemented above, modify it to
+            better suit interactive presentation when an item is created. If
+            there are any when_creating attributes, they will be added to
+            the expected_state before it is passed to this method.
 
             Implementing this method is optional.
             """
@@ -91,8 +91,8 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 
         def display_on_delete(self, actual_state):
             """
-            Given an actual_state as implemented above, modify it to better suit
-            interactive presentation when an item is deleted.
+            Given an actual_state dict as implemented above, modify it to
+            better suit interactive presentation when an item is deleted.
 
             Implementing this method is optional.
             """

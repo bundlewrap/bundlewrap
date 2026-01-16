@@ -828,10 +828,10 @@ class Item:
 
     def display_on_create(self, expected_state):
         """
-        Given a expected_state as implemented above, modify it to better suit
-        interactive presentation when an item is created. If there are
-        any when_creating attributes, they will be added to the expected_state
-        before it is passed to this method.
+        Given an expected_state dict as implemented above, modify it to
+        better suit interactive presentation when an item is created. If
+        there are any when_creating attributes, they will be added to
+        the expected_state before it is passed to this method.
 
         MAY be overridden by subclasses.
         """
@@ -849,8 +849,8 @@ class Item:
 
     def display_on_delete(self, actual_state):
         """
-        Given an actual_state as implemented above, modify it to better suit
-        interactive presentation when an item is deleted.
+        Given an actual_state dict as implemented above, modify it to
+        better suit interactive presentation when an item is deleted.
 
         MAY be overridden by subclasses.
         """
