@@ -11,9 +11,19 @@ TODO date
 * the "Running hooks ..." line is more verbose, bw calls your hooks differently (BACKWARDS INCOMPATIBLE)
 * items: `get_auto_deps()` has been removed, always use `get_auto_attrs()` now (BACKWARDS INCOMPATIBLE)
 * dependency on passlib has been removed, this affects several hashing algorithms (BACKWARDS INCOMPATIBLE)
+* the output of `bw items` was harmonized over all subcomannds (BACKWARDS INCOMPATIBLE)
+* the deprecated API `node.metadata_get()` (note the underscore) has been removed (BACKWARDS INCOMPATIBLE)
+* canned actions inherit tags (BACKWARDS INCOMPATIBLE)
+* `bw test` no longer ignores some exit status codes of `test_with` (BACKWARDS INCOMPATIBLE)
+* item selectors in `bw lock -i ...` are now verified and raise an error if they match nothing (BACKWARDS INCOMPATIBLE)
+* `MetadataUnavailable` is raised instead of `KeyError` when `metadata.get()` cannot find the requested metadata key (BACKWARDS INCOMPATIBLE)
+* `Item.display_dicts()` replaced by `Item.display_on_fix()` and the `keys` argument is a set now (BACKWARDS INCOMPATIBLE)
+* `bw lock add`'s warning when there already are locks always uses a pager now (BACKWARDS INCOMPATIBLE)
 * the `bundles/` directory is required to be present for bw to consider a directory a bw repository
 * fixed mkdocs warnings
 * removed unused attribute `can_login` from `postgres_roles.py`
+* various documentation improvements
+* introduce BundlewrapError as the new base exception class for the project to standardize error handling
 
 # 4.24.0
 

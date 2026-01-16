@@ -90,6 +90,63 @@ If you do rely on the old behavior, you can still set a `user`'s `password_hash`
 
 <br>
 
+### `node.metadata_get()` has been removed
+
+This method was deprecated. Use `node.metadata.get()` instead.
+
+<br>
+
+### Canned actions inherit tags
+
+[Canned actions](../repo/items.py.md#canned-actions) like `svc_systemd:nginx:restart` now inherit the tags from their "parent" item. This mostly affects two scenarios.
+
+Suppose you have a [custom item type](dev_item.md) for an init system and you define a service like this:
+
+    svc_fancy_init['nginx'] = {
+        'tags': {'causes-downtime'},
+    }
+
+If your item type supports canned actions like `svc_fancy_init:nginx:restart` (and if that canned action does not depend on `svc_fancy_init:nginx` itself), then running the following command will now skip both `svc_fancy_init:nginx` and the canned action `svc_fancy_init:nginx:restart`:
+
+    $ bw apply mynode -s tag:causes-downtime
+
+Previously, this *only* skipped `svc_fancy_init:nginx`. (This does not affect item types from core BundleWrap, because all their canned actions already explicitly depend on the parent item.)
+
+The second scenario is that the following was previously impossible, because the canned actions did not inherit the `a` tag and thus a dependency loop was created:
+
+    svc_systemd = {
+        'test.service': {
+            'tags': {'a'},
+            'needed_by': {'!tag:a'},
+        },
+    }
+
+<br>
+
+### `MetadataUnavailable` instead of `KeyError`
+
+[Metadata reactors](../repo/metadata.py.md#reactors) must now throw `MetadataUnavailable` to indicate that metadata is not available. For example in `metadata.py`:
+
+    from bundlewrap.exceptions import MetadataUnavailable
+
+    @metadata_reactor
+    def foo(metadata):
+        if some_condition:
+            raise MetadataUnavailable()
+
+        return {'foo': True}
+
+<br>
+
+### Items: `display_dicts()` → `display_on_fix()`, `keys` is a set
+
+[Custom items](dev_item.md) must be updated:
+
+-   The method `display_dicts()` has been renamed to `display_on_fix()` for consistency.
+-   `display_on_fix()`'s third argument, `keys`, is a set now instead of a list.
+
+<br>
+
 <hr>
 
 <br>
@@ -126,6 +183,48 @@ The intention is to catch typos. For example, `-s tag:causes_downtime` previousl
 This check is done on the entire selection. If you apply a group and *no* node in that group has items that match the selector, then the error is raised.
 
 There is no direct replacement. If you rely on the old behavior, because you regularly apply nodes where the `-s` argument doesn't match anything, then you must remove `-s` in those cases.
+
+<br>
+
+### Harmonized output of `bw items`
+
+The output of `bw items` was harmonized over all subcomannds. Some subcommands that previously generated JSON now default to table output and will need `--json` to switch back to JSON output.
+
+Tables printed to the CLI with only one column are now formatted as flat list without decorators.
+
+Tables printed to the CLI with the format of `BW_TABLE_STYLE=grep` were changed to repeat literal columns for every row of an array for all tables (not just some), this might require changes to your scripts if you parse `bw` command output.
+
+`bw item NODE ITEM --state` is now called `--actual-state` to clarify its function.
+
+<br>
+
+### `bw plot --no-depends-reverse` has been removed
+
+Instead, reverse dependencies are shown with dashed lines.
+
+<br>
+
+### `bw test` always fails if `test_with` fails
+
+When a `test_with` command failed, we previously ignored this *if* its exit code was 126, 127, or 255. This is no longer the case.
+
+<br>
+
+### `bw lock -i $selector`: Verify if `$selector` matches
+
+To prevent typos and accidents, BundleWrap will now verify if these item selectors match anything. If you don't want this, use `--skip-item-verification`.
+
+<br>
+
+### `bw lock add`: Warning when there are locks always uses a pager
+
+`bw lock add` shows a message like `Your lock was added, but the node was already locked by ...`, followed by a list of existing locks. This output is always piped through a pager now.
+
+This can break your scripts, because they might block now, waiting for the pager to quit. Override the environment variable `PAGER` for these calls if you want the old behavior:
+
+    #!/bin/sh
+
+    PAGER=cat bw lock add ...
 
 <br>
 
