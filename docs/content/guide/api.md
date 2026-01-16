@@ -148,7 +148,7 @@ The following expressions can be used:
 - `bundle:my_bundle` all nodes with this bundle
 - `!bundle:my_bundle` all nodes without this bundle
 - `!group:my_group` all nodes not in this group
-- `"lambda:node.metadata_get('foo/magic', 47) < 3"` all nodes whose `metadata["foo"]["magic"]` is less than three
+- `"lambda:node.metadata_get('foo/magic', 47) < 3"` all nodes whose `metadata.get("foo/magic")` is less than three
 
 Throws the exception `NoSuchTarget` if one of the expressions in the target string doesn't resolve to nodes.
 

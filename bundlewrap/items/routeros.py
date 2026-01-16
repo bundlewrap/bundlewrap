@@ -116,7 +116,7 @@ class RouterOS(Item):
     def display_on_fix(self, expected_state, actual_state, keys):
         if 'subitems_to_purge' in keys:
             keys.remove('subitems_to_purge')
-            keys.append(UNMANAGED_SUBITEMS_DESC)
+            keys.add(UNMANAGED_SUBITEMS_DESC)
             expected_state[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in expected_state['subitems_to_purge']])
             actual_state[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in actual_state['subitems_to_purge']])
             del expected_state['subitems_to_purge']

@@ -81,7 +81,7 @@ class Directory(Item):
     def display_on_fix(self, expected_state, actual_state, keys):
         try:
             keys.remove('paths_to_purge')
-        except ValueError:
+        except KeyError:
             pass
         else:
             keys.add(UNMANAGED_PATH_DESC)

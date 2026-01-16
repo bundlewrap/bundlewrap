@@ -677,7 +677,7 @@ class Repository(MetadataGenerator):
         !bundle:my_bundle  # all nodes without this bundle
         !group:my_group    # all nodes not in this group
         "lambda:node.metadata_get('foo/magic', 47) < 3"
-        # all nodes whose metadata["foo"]["magic"] is less than three
+        # all nodes whose metadata.get("foo/magic") is less than three
 
         :param lambda_workers: number of parallel workers to check lambda condition on nodes
         :return list of nodes matching any of the given target-strings

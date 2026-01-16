@@ -489,7 +489,7 @@ class File(Item):
             PathInfo(self.node, self.name).is_text_file
         ):
             keys.remove('content_hash')
-            keys.append('content')
+            keys.add('content')
             del expected_state['content_hash']
             del actual_state['content_hash']
             expected_state['content'] = self.content.decode(self.attributes['encoding'])
@@ -498,8 +498,7 @@ class File(Item):
                 self.name,
             ).decode('utf-8', 'backslashreplace')
         if 'type' in keys:
-            with suppress(ValueError):
-                keys.remove('content_hash')
+            keys.discard('content_hash')
         if self.attributes['content_type'] == 'download':
             expected_state['source'] = self.attributes['source']
             actual_state['source'] = ''

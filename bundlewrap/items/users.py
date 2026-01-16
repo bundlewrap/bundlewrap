@@ -179,7 +179,7 @@ class User(Item):
                 continue
             try:
                 keys.remove(attr_name)
-            except ValueError:
+            except KeyError:
                 pass
             else:
                 keys.add(attr_display_name)
