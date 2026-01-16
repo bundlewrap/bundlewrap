@@ -147,6 +147,22 @@ The second scenario is that the following was previously impossible, because the
 
 <br>
 
+### `metadata` objects don't try to be dicts anymore
+
+This has been deprecated for a long time. If you still have dict-style access like this:
+
+    version = metadata['my_program']['version']
+
+Then you must replace it with this, because this is the only public API of these objects now:
+
+    version = metadata.get('my_program/version')
+
+Also, `metadata.items()`, `metadata.keys()`, and `metadata.values()` is gone.
+
+`metadata.get('foo')` now throws `MetadataUnavailable` instead of silently returning `None`. This matches the behavior of other `get()` operations. For example, `metadata.get('foo/var')` has already thrown an exception; only "root" access was different.
+
+<br>
+
 <hr>
 
 <br>

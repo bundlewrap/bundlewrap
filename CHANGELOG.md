@@ -19,6 +19,7 @@ TODO date
 * `MetadataUnavailable` is raised instead of `KeyError` when `metadata.get()` cannot find the requested metadata key (BACKWARDS INCOMPATIBLE)
 * `Item.display_dicts()` replaced by `Item.display_on_fix()` and the `keys` argument is a set now (BACKWARDS INCOMPATIBLE)
 * `bw lock add`'s warning when there already are locks always uses a pager now (BACKWARDS INCOMPATIBLE)
+* `metadata` objects no longer try to behave like dicts, you must use `get()` now (BACKWARDS INCOMPATIBLE)
 * the `bundles/` directory is required to be present for bw to consider a directory a bw repository
 * fixed mkdocs warnings
 * removed unused attribute `can_login` from `postgres_roles.py`
