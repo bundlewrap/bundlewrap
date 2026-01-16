@@ -25,7 +25,7 @@ If you are stuck with upstart for some reason, you will have to copy [the last v
 sha1 has been replaced by sha256 in the following places:
 
 -   `content_hash` of `file` items. You must update your item definitions.
--   When hashing file contents on the node, `sha256` or `sha256sum` is now used. This program must exist *on the node*.
+-   When hashing file contents on the node, `sha256` or `sha256sum` (depending on the OS) is now used. This program must exist *on the node*.
 -   The `bw hash ...` command will print sha256 hashes now.
 
 <br>
