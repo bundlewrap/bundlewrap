@@ -14,15 +14,15 @@ The most important and most used part of BundleWrap, `bw apply` will apply your 
 
 ## bw verify
 
-Inspect the health or 'correctness' of a node without changing it.
+Inspect the health or "correctness" of a node without changing it.
 
 ```none
 $ bw verify mynode
-i ╭────────────────────────────────┬───────┬──────┬─────┬─────────┬────────┬──────────╮
-i │ node                           │ items │ good │ bad │ unknown │ health │ duration │
-i ├────────────────────────────────┼───────┼──────┼─────┼─────────┼────────┼──────────┤
-i │ mynode                         │   979 │  979 │   0 │       0 │ 100.0% │      15s │
-i ╰────────────────────────────────┴───────┴──────┴─────┴─────────┴────────┴──────────╯
+i ╭────────┬───────┬──────┬─────┬─────────┬────────┬──────────╮
+i │ node   │ items │ good │ bad │ unknown │ health │ duration │
+i ├────────┼───────┼──────┼─────┼─────────┼────────┼──────────┤
+i │ mynode │   979 │  979 │   0 │       0 │ 100.0% │      15s │
+i ╰────────┴───────┴──────┴─────┴─────────┴────────┴──────────╯
 ```
 
 ## bw lock
@@ -198,7 +198,7 @@ $ bw metadata -k 'apt/packages/bind9-dnsutils' --blame -- mynode
 
 ## bw pw
 
-Encodes, Decodes or generates [secrets and passwords](secrets.md) with the repos secret-keys, to be securely stored in metadata. The usual process here is to auto-generate all passwords that are only used by other managed components (ie. database passwords which will be generated for both, the database and the application) so that they can be rotated regularly without too much manual labour. The `bw pw` tools can then be used to introspect these keys in the case they are needed for manual interaction.
+Encodes, decodes or generates [secrets and passwords](secrets.md) with the repo's secret keys, to be securely stored in metadata. The usual process here is to auto-generate all passwords that are only used by other managed components (i.e., database passwords which will be generated for both the database and the application) so that they can be rotated regularly without too much manual labour. The `bw pw` tools can then be used to introspect these keys in the case they are needed for manual interaction.
 
 Derive human-readable password from string (same as `repo.vault.human_password_for()`)
 
@@ -232,7 +232,7 @@ $ bw bundle create mybundle
 
 ## bw diff
 
-Show differences between two or more nodes. Generates a list of items that are different together with their item-hash. Use `bw items` to further inspect them.
+Show differences between two or more nodes. Generates a list of items that are different together with their item hash. Use `bw items` to further inspect them.
 
 ```none
 $ bw diff mynode yournode
@@ -244,7 +244,7 @@ $ bw diff mynode yournode
 
 ## bw hash
 
-Generate the SHA256 hash for nodes, groups, lambdas or items. The hash can be used to indicate if a single item within the selection has changed. This can be used for automatic deploys or change-notifications.
+Generate the SHA256 hash for nodes, groups, lambdas or items. The hash can be used to indicate if a single item within the selection has changed. This can be used for automatic deployments or change notifications.
 
 ```none
 $ bw hash mynode
@@ -261,8 +261,7 @@ $ bw hash mynode user:root
 
 <div class="alert alert-info">Needs <a href="https://kislyuk.github.io/argcomplete/">argcomplete</a> to be manually installed.</div>
 
-This subcommand is meant to be used with [argcomplete](https://kislyuk.github.io/argcomplete/). When argcomplete is installed and activated, it is activated by the bw main command
-and shows tab-completions for all subcommands and arguments.
+This subcommand is meant to be used with [argcomplete](https://kislyuk.github.io/argcomplete/). When argcomplete is installed and activated, it is activated by the bw main command and shows tab completions for all subcommands and arguments.
 
 ```none
 $ bw apply <TAB><TAB>
@@ -277,13 +276,12 @@ diff                      -- Show differences between nodes
 …
 ```
 
-To also get auto-complete options for node- and group-names, `bw generate-completions` needs to be run regularly. It generates
-a list of available targets for bw-operations and offers them for completion:
+To also get auto-complete options for node  and group names, `bw generate-completions` needs to be run regularly. It generates a list of available targets for bw-operations and offers them for completion:
 
 ```none
 $ bw apply location.<TAB><TAB>
-location.node-1                                                location.node-2
-location.node-3                                                location.node-4
+location.node-1      location.node-2
+location.node-3      location.node-4
 location.node-group
 …
 ```
