@@ -511,7 +511,11 @@ def value_at_key_path(dict_obj, path):
     if not path:
         return dict_obj
     else:
-        nested_dict = dict_obj[path[0]]
+        try:
+            nested_dict = dict_obj[path[0]]
+        except KeyError:
+            raise MetadataUnavailable(path)
+
         remaining_path = path[1:]
         if remaining_path and not isinstance(nested_dict, dict):
             raise MetadataUnavailable(path)

@@ -37,7 +37,7 @@ class Metastack:
             for layer in reversed(list(partition.values())):
                 try:
                     value = value_at_key_path(layer, path)
-                except KeyError:
+                except MetadataUnavailable:
                     pass
                 else:
                     if undef:
@@ -79,7 +79,7 @@ class Metastack:
                 for identifier, layer in partition.items():
                     try:
                         value_at_key_path(layer, path)
-                    except KeyError:
+                    except MetadataUnavailable:
                         pass
                     else:
                         blame.setdefault(path, []).append(identifier)
