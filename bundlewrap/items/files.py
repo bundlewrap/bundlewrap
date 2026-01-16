@@ -492,8 +492,7 @@ class File(Item):
                 self.name,
             ).decode('utf-8', 'backslashreplace')
         if 'type' in keys:
-            with suppress(ValueError):
-                keys.remove('content_hash')
+            keys.discard('content_hash')
         if self.attributes['content_type'] == 'download':
             cdict['source'] = self.attributes['source']
             sdict['source'] = ''
