@@ -1,22 +1,19 @@
 # Custom item types
 
+## Step 0: Understand expected_state and actual_state
 
-## Step 0: Understand statedicts
-
-To represent supposed vs. actual state, BundleWrap uses statedicts. These are
-normal Python dictionaries with some restrictions:
+To represent both the expected and actual state of an item, BundleWrap uses dictionaries with a specific structure:
 
 * keys must be Unicode text
 * every value must be of one of these simple data types:
-	* bool
-	* float
-	* int
-	* Unicode text
-	* None
+    * bool
+    * float
+    * int
+    * Unicode text
+    * None
 * ...or a list/tuple containing only instances of one of the types above
 
-Additional information can be stored in statedicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" sdict information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply.
-
+Additional information can be stored in these state-dicts by using keys that start with an underscore. You may only use this for caching purposes (e.g. storing rendered file template content while the "real" `actual_state` information only contains a hash of this content). BundleWrap will ignore these keys and hide them from the user. The type restrictions noted above do not apply.
 
 ## Step 1: Create an item module
 
@@ -47,68 +44,68 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
         def __repr__(self):
             return "<Foo attribute:{}>".format(self.attributes['attribute'])
 
-        def cdict(self):
+        @property
+        def expected_state(self):
             """
-            Return a statedict that describes the target state of this item
-            as configured in the repo (mnemonic: _c_dict for _config_
-            dict). Returning `None` instead means that the item should
-            not exist.
+            Return a dict describing the expected state of this item on
+            the node. Returning `None` instead means that the item
+            should not exist.
 
             Implementing this method is optional. The default implementation
             uses the attributes as defined in the bundle.
             """
             raise NotImplementedError
 
-        def sdict(self):
+        @property
+        def actual_state(self):
             """
-            Return a statedict that describes the actual state of this item
-            on the node (mnemonic: _s_dict for _state_ dict). Returning
-            `None` instead means that the item does not exist on the
-            node.
+            Return a dict describing the actual state of this item on
+            the node. Returning `None` instead means that the item does
+            not exist on the node.
 
-            For the item to validate as correct, the values for all keys in
-            self.cdict() have to match this statedict.
+            For the item to validate as correct, the values for all keys
+            in self.expected_state have to match this actual_state.
             """
             raise NotImplementedError
 
-        def display_on_create(self, cdict):
+        def display_on_create(self, expected_state):
             """
-            Given a cdict as implemented above, modify it to better suit
-            interactive presentation when an item is created. If there are
-            any when_creating attributes, they will be added to the cdict
-            before it is passed to this method.
+            Given an expected_state dict as implemented above, modify it to
+            better suit interactive presentation when an item is created. If
+            there are any when_creating attributes, they will be added to
+            the expected_state before it is passed to this method.
 
             Implementing this method is optional.
             """
-            return cdict
+            return expected_state
 
-        def display_on_fix(self, cdict, sdict, keys):
+        def display_on_fix(self, expected_state, actual_state, keys):
             """
-            Given cdict and sdict as implemented above, modify them to
+            Given expected_state and actual_state as implemented above, modify them to
             better suit interactive presentation. The keys parameter is a
-            list of keys whose values differ between cdict and sdict.
+            list of keys whose values differ between expected_state and actual_state.
 
             Implementing this method is optional.
             """
-            return (cdict, sdict, keys)
+            return (expected_state, actual_state, keys)
 
-        def display_on_delete(self, sdict):
+        def display_on_delete(self, actual_state):
             """
-            Given an sdict as implemented above, modify it to better suit
-            interactive presentation when an item is deleted.
+            Given an actual_state dict as implemented above, modify it to
+            better suit interactive presentation when an item is deleted.
 
             Implementing this method is optional.
             """
-            return sdict
+            return actual_state
 
         def fix(self, status):
             """
             Do whatever is necessary to correct this item. The given ItemStatus
             object has the following useful information:
 
-                status.keys_to_fix  list of cdict keys that need fixing
-                status.cdict        cached copy of self.cdict()
-                status.sdict        cached copy of self.sdict()
+                status.keys_to_fix           list of expected_state keys that need fixing
+                status.expected_state        cached copy of self.expected_state
+                status.actual_state          cached copy of self.actual_state
             """
             raise NotImplementedError
 
@@ -138,16 +135,13 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 
 ...then you should put `BUNDLE_ATTRIBUTE_NAME = "foo"` here.
 
-
 `ITEM_ATTRIBUTES` is a dictionary of the attributes users will be able to configure for your item. For files, that would be stuff like owner, group, and permissions. Every attribute (even if it's mandatory) needs a default value, `None` is totally acceptable:
 
     ITEM_ATTRIBUTES = {'attr1': "default1"}
 
-
 `ITEM_TYPE_NAME` sets the first part of an items ID. For the file items, this is "file". Therefore, file ID look this this: `file:/path`. The second part is the name a user assigns to your item in a bundle. Example:
 
     ITEM_TYPE_NAME = "foo"
-
 
 `REQUIRED_ATTRIBUTES` is a list of attribute names that must be set on each item of this type. If BundleWrap encounters an item without all these attributes during bundle inspection, an exception will be raised. Example:
 
@@ -158,9 +152,12 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
 Step 3: Implement methods
 -------------------------
 
-You should probably start with `sdict()`. Use `self.run("command")` to run shell commands on the current node and check the `stdout` property of the returned object.
+You should probably start with `actual_state()`. Use `self.run("command")` to run shell commands on the current node and check the `stdout` property of the returned object.
 
-The only other method you have to implement is `fix`. It doesn't have to return anything and just uses `self.run()` to fix the item. To do this efficiently, it may use the provided parameters indicating which keys differ between the should-be sdict and the actual one. Both sdicts are also provided in case you need to know their values.
+The only other method you have to implement is `fix`. It doesn't have to return anything and just uses `self.run()` to fix the item. It receives a `status` object of type `ItemStatus` which carries the state-dicts `expected_state` and `actual_state`. Also, a set of additional keys are supplied which can help in writing efficient fix-methods:
+
+- `keys_to_fix` contains a list of keys that differ between the `expected_state` and the `actual_state`
+- `must_be_deleted` and `must_be_created` are booleans indicating that one the state-dicts is empty
 
 `block_concurrent()` must return a list of item types (e.g. `['pkg_apt']`) that cannot be applied in parallel with this type of item. May include this very item type itself. For most items this is not an issue (e.g. creating multiple files at the same time), but some types of items have to be applied sequentially (e.g. package managers usually employ locks to ensure only one package is installed at a time).
 

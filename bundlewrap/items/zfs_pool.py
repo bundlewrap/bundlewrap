@@ -32,12 +32,14 @@ class ZFSPool(Item):
             self.when_creating['config'],
         )
 
-    def cdict(self):
-        ret = {}
+    @property
+    def expected_state(self):
+        state = {}
         for i in self.attributes:
             if self.attributes.get(i) is not None:
-                ret[i] = self.attributes[i]
-        return ret
+                state[i] = self.attributes[i]
+
+        return state
 
     @property
     def devices_used(self):
@@ -71,7 +73,7 @@ class ZFSPool(Item):
             if self.when_creating['ashift']:
                 options.add('-o ashift={}'.format(self.when_creating['ashift']))
 
-            for opt, value in status.cdict.items():
+            for opt, value in status.expected_state.items():
                 state_str = 'on' if value else 'off'
                 options.add('-o {}={}'.format(opt, state_str))
 
@@ -82,10 +84,11 @@ class ZFSPool(Item):
             ))
         elif status.keys_to_fix:
             for attr in status.keys_to_fix:
-                state_str = 'on' if status.cdict[attr] else 'off'
+                state_str = 'on' if status.expected_state[attr] else 'off'
                 self.run('zpool set {}={} {}'.format(attr, state_str, quote(self.name)))
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         status_result = self.run('zpool list {}'.format(quote(self.name)), may_fail=True)
         if status_result.return_code != 0:
             return None
@@ -101,10 +104,11 @@ class ZFSPool(Item):
             except (IndexError, ValueError):
                 continue
 
-        sdict = {}
+        state = {}
         for attr in self.attributes:
-            sdict[attr] = (pool_status.get(attr) == 'on')
-        return sdict
+            state[attr] = (pool_status.get(attr) == 'on')
+
+        return state
 
     def test(self):
         duplicate_devices = [

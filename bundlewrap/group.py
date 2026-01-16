@@ -15,7 +15,7 @@ from .utils import (
 )
 from .utils.dicts import (
     dict_to_toml,
-    hash_statedict,
+    hash_state_dict,
     set_key_at_path,
     normalize_dict,
     validate_dict,
@@ -160,7 +160,7 @@ class Group:
         return self.name
 
     @cached_property
-    def cdict(self):
+    def expected_state(self):
         group_dict = {}
         for node in self.nodes:
             group_dict[node.name] = node.hash()
@@ -172,16 +172,16 @@ class Group:
         self._attributes = convert_magic_strings(self.repo, self._attributes)
 
     def group_membership_hash(self):
-        return hash_statedict(sorted(names(self.nodes)))
+        return hash_state_dict(sorted(names(self.nodes)))
 
     def hash(self):
-        return hash_statedict(self.cdict)
+        return hash_state_dict(self.expected_state)
 
     def metadata_hash(self):
         group_dict = {}
         for node in self.nodes:
             group_dict[node.name] = node.metadata_hash()
-        return hash_statedict(group_dict)
+        return hash_state_dict(group_dict)
 
     @property
     def node_count(self):

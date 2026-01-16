@@ -89,7 +89,8 @@ class SvcOpenBSD(Item):
             },
         }
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         return {
             'enabled': svc_enabled(self.node, self.name),
             'running': svc_running(self.node, self.name),

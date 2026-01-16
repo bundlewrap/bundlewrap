@@ -70,13 +70,15 @@ class PostgresRole(Item):
             self.attributes['delete'],
         )
 
-    def cdict(self):
+    @property
+    def expected_state(self):
         if self.attributes['delete']:
             return None
-        cdict = self.attributes.copy()
-        del cdict['delete']
-        del cdict['password']
-        return cdict
+
+        state = self.attributes.copy()
+        del state['delete']
+        del state['password']
+        return state
 
     def fix(self, status):
         if status.must_be_deleted:
@@ -86,7 +88,8 @@ class PostgresRole(Item):
         else:
             fix_role(self.node, self.name, self.attributes)
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         return get_role(self.node, self.name)
 
     def patch_attributes(self, attributes):

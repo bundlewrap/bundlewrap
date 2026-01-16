@@ -14,13 +14,12 @@ from bundlewrap.exceptions import (
     ItemDependencyError,
     ItemSkipped,
 )
-from bundlewrap.utils import cached_property, Fault
-from bundlewrap.utils.dicts import dict_to_text, diff_dict, hash_statedict, validate_statedict
-from bundlewrap.utils.text import force_text, mark_for_translation as _
-from bundlewrap.utils.text import blue, bold, green, italic, red, wrap_question
-from bundlewrap.utils.ui import io
 from bundlewrap.operations import run_local
-
+from bundlewrap.utils import cached_property, Fault
+from bundlewrap.utils.dicts import dict_to_text, diff_dict, hash_state_dict, validate_state_dict
+from bundlewrap.utils.text import blue, bold, green, italic, red, wrap_question
+from bundlewrap.utils.text import force_text, mark_for_translation as _
+from bundlewrap.utils.ui import io
 
 ALLOWED_ITEM_AUTO_ATTRIBUTES = {
     'after',
@@ -63,14 +62,14 @@ def format_comment(comment):
     return result
 
 
-def keys_to_fix(cdict, sdict):
-    if cdict is None:
+def keys_to_fix(expected_state, actual_state):
+    if expected_state is None:
         return set()
-    if sdict is None:
-        return set(cdict.keys())
+    if actual_state is None:
+        return set(expected_state.keys())
     differing_keys = set()
-    for key, value in cdict.items():
-        if value != sdict[key]:
+    for key, value in expected_state.items():
+        if value != actual_state[key]:
             differing_keys.add(key)
     return differing_keys
 
@@ -81,14 +80,14 @@ class ItemStatus:
     fixing and what's broken.
     """
 
-    def __init__(self, cdict, sdict):
-        self.cdict = cdict
-        self.sdict = sdict
+    def __init__(self, expected_state, actual_state):
+        self.expected_state = expected_state
+        self.actual_state = actual_state
         self.keys_to_fix = []
-        self.must_be_deleted = (self.sdict is not None and self.cdict is None)
-        self.must_be_created = (self.cdict is not None and self.sdict is None)
+        self.must_be_deleted = (self.actual_state is not None and self.expected_state is None)
+        self.must_be_created = (self.expected_state is not None and self.actual_state is None)
         if not self.must_be_deleted and not self.must_be_created:
-            self.keys_to_fix = keys_to_fix(cdict, sdict)
+            self.keys_to_fix = keys_to_fix(expected_state, actual_state)
 
     def __repr__(self):
         return "<ItemStatus correct:{}>".format(self.correct)
@@ -109,6 +108,7 @@ def make_normalize(attribute_default):
                 return attribute_value
             else:
                 return type(attribute_default)(attribute_value)
+
         return normalize
     else:
         return copy
@@ -284,28 +284,28 @@ class Item:
             ))
 
     @cached_property
-    def cached_cdict(self):
+    def cached_expected_state(self):
         if self._faults_missing_for_attributes:
             self._raise_for_faults()
 
-        cdict = self.cdict()
+        expected_state = self.expected_state
         try:
-            validate_statedict(cdict)
+            validate_state_dict(expected_state)
         except ValueError as e:
             raise ValueError(_(
-                "{item} from bundle '{bundle}' returned invalid cdict: {msg}"
+                "{item} from bundle '{bundle}' returned invalid expected_state: {msg}"
             ).format(
                 bundle=self.bundle.name,
                 item=self.id,
                 msg=repr(e),
             ))
-        return cdict
+        return expected_state
 
     @cached_property
-    def cached_sdict(self):
-        status = self.sdict()
+    def cached_actual_state(self):
+        status = self.actual_state
         try:
-            validate_statedict(status)
+            validate_state_dict(status)
         except ValueError as e:
             raise ValueError(_(
                 "{item} from bundle '{bundle}' returned invalid status: {msg}"
@@ -581,15 +581,15 @@ class Item:
                     status_code = self.STATUS_OK
                 elif show_diff or interactive:
                     if status_before.must_be_created:
-                        cdict = copy(status_before.cdict)
-                        cdict.update(self.when_creating)
-                        details = self.display_on_create(cdict)
+                        expected_state = copy(status_before.expected_state)
+                        expected_state.update(self.when_creating)
+                        details = self.display_on_create(expected_state)
                     elif status_before.must_be_deleted:
-                        details = self.display_on_delete(copy(status_before.sdict))
+                        details = self.display_on_delete(copy(status_before.actual_state))
                     else:
                         details = self.display_on_fix(
-                            copy(status_before.cdict),
-                            copy(status_before.sdict),
+                            copy(status_before.expected_state),
+                            copy(status_before.actual_state),
                             copy(status_before.keys_to_fix),
                         )
 
@@ -609,10 +609,10 @@ class Item:
                     question_text = dict_to_text(details, value_color=red)
                     prompt = _("Delete {}?").format(bold(self.id))
                 else:
-                    display_cdict, display_sdict, display_keys_to_fix = details
+                    display_expected_state, display_actual_state, display_keys_to_fix = details
                     question_text = diff_dict(
-                        display_sdict,
-                        display_cdict,
+                        display_actual_state,
+                        display_expected_state,
                         skip_missing_in_target=True,
                     )
                     prompt = _("Fix {}?").format(bold(self.id))
@@ -682,12 +682,11 @@ class Item:
         })
         return result
 
-    def cdict(self):
+    @property
+    def expected_state(self):
         """
-        Return a statedict that describes the target state of this item
-        as configured in the repo (mnemonic: _c_dict for _config_
-        dict). Returning `None` instead means that the item should
-        not exist.
+        Return a dict describing the expected state of this item on the node.
+        Returning `None` instead means that the item should not exist.
 
         MAY be overridden by subclasses.
         """
@@ -785,11 +784,11 @@ class Item:
             node=bold(self.node.name),
         )):
             if not cached:
-                del self._cache['cached_sdict']
-            return ItemStatus(self.cached_cdict, self.cached_sdict)
+                del self._cache['cached_actual_state']
+            return ItemStatus(self.cached_expected_state, self.cached_actual_state)
 
     def hash(self):
-        return hash_statedict(self.cached_cdict)
+        return hash_state_dict(self.cached_expected_state)
 
     @property
     def id(self):
@@ -816,46 +815,46 @@ class Item:
             raise ItemSkipped
 
         if self.cached_status.must_be_created:
-            display = self.display_on_create(copy(self.cached_status.cdict))
+            display = self.display_on_create(copy(self.cached_status.expected_state))
         elif self.cached_status.must_be_deleted:
-            display = self.display_on_delete(copy(self.cached_status.sdict))
+            display = self.display_on_delete(copy(self.cached_status.actual_state))
         else:
             display = self.display_on_fix(
-                copy(self.cached_status.cdict),
-                copy(self.cached_status.sdict),
+                copy(self.cached_status.expected_state),
+                copy(self.cached_status.actual_state),
                 copy(self.cached_status.keys_to_fix),
             )
         return self.cached_unless_result, self.cached_status, display
 
-    def display_on_create(self, cdict):
+    def display_on_create(self, expected_state):
         """
-        Given a cdict as implemented above, modify it to better suit
-        interactive presentation when an item is created. If there are
-        any when_creating attributes, they will be added to the cdict
-        before it is passed to this method.
+        Given an expected_state dict as implemented above, modify it to
+        better suit interactive presentation when an item is created. If
+        there are any when_creating attributes, they will be added to
+        the expected_state before it is passed to this method.
 
         MAY be overridden by subclasses.
         """
-        return cdict
+        return expected_state
 
-    def display_on_fix(self, cdict, sdict, keys):
+    def display_on_fix(self, expected_state, actual_state, keys):
         """
-        Given cdict and sdict as implemented above, modify them to
+        Given expected_state and actual_state as implemented above, modify them to
         better suit interactive presentation. The keys parameter is a
-        list of keys whose values differ between cdict and sdict.
+        list of keys whose values differ between expected_state and actual_state.
 
         MAY be overridden by subclasses.
         """
-        return (cdict, sdict, keys)
+        return (expected_state, actual_state, keys)
 
-    def display_on_delete(self, sdict):
+    def display_on_delete(self, actual_state):
         """
-        Given an sdict as implemented above, modify it to better suit
-        interactive presentation when an item is deleted.
+        Given an actual_state dict as implemented above, modify it to
+        better suit interactive presentation when an item is deleted.
 
         MAY be overridden by subclasses.
         """
-        return sdict
+        return actual_state
 
     def patch_attributes(self, attributes):
         """
@@ -875,15 +874,14 @@ class Item:
         """
         raise NotImplementedError()
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         """
-        Return a statedict that describes the actual state of this item
-        on the node (mnemonic: _s_dict for _state_ dict). Returning
-        `None` instead means that the item does not exist on the
-        node.
+        Return a dict describing the actual state of this item on the node.
+        Returning `None` instead means that the item does not exist on the node.
 
         For the item to validate as correct, the values for all keys in
-        self.cdict() have to match this statedict.
+        self.expected_state have to match this actual_state.
 
         MUST be overridden by subclasses.
         """

@@ -60,11 +60,11 @@ def bw_hash(repo, args):
             for node in sorted(target.nodes):
                 io.stdout("{}\t{}".format(node.name, node.metadata_hash()))
         else:
-            cdict = target.cached_cdict if args['item'] else target.cdict
-            if cdict is None:
+            expected_state = target.cached_expected_state if args['item'] else target.expected_state
+            if expected_state is None:
                 io.stdout("REMOVE")
             else:
-                for key, value in sorted(cdict.items()):
+                for key, value in sorted(expected_state.items()):
                     io.stdout(
                         "{}\t{}".format(key, value) if args['item']
                         else "{}  {}".format(value, key)

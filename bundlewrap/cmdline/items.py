@@ -8,7 +8,7 @@ from ..deps import prepare_dependencies
 from ..exceptions import FaultUnavailable
 from ..items import BUILTIN_ITEM_ATTRIBUTES
 from ..utils.cmdline import get_item, get_node
-from ..utils.dicts import statedict_to_json
+from ..utils.dicts import state_dict_to_json
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import bold, green, mark_for_translation as _, red, yellow
 from ..utils.ui import io, page_lines
@@ -17,8 +17,8 @@ from ..utils.ui import io, page_lines
 class ItemRepresentation(enum.Enum):
     PREVIEW = 'preview'
     ATTRS = 'attrs'
-    SDICT = 'sdict'
-    CDICT = 'cdict'
+    ACTUAL_STATE = 'actual_state'
+    EXPECTED_STATE = 'expected_state'
     REPR = 'repr'
 
 
@@ -36,12 +36,12 @@ def bw_items(repo, args):
             representation = ItemRepresentation.PREVIEW
         elif args['show_attrs']:  # -a / --attrs
             representation = ItemRepresentation.ATTRS
-        elif args['show_sdict']:  # --state
-            representation = ItemRepresentation.SDICT
+        elif args['show_actual_state']:  # --state
+            representation = ItemRepresentation.ACTUAL_STATE
         elif args['show_repr']:  # --repr
             representation = ItemRepresentation.REPR
         else:
-            representation = ItemRepresentation.CDICT
+            representation = ItemRepresentation.EXPECTED_STATE
 
         show_single_item(node, item, representation, args)
 
@@ -140,14 +140,14 @@ def show_single_item(node, item, representation, args):
             data[attribute] = value
 
     elif item.ITEM_TYPE_NAME == "action":
-        # actions don't have a state and thus no sdict or cdict
+        # actions don't have a state and thus no state-dict
         data = item.attributes
 
-    elif representation == ItemRepresentation.SDICT:
-        data = item.sdict()
+    elif representation == ItemRepresentation.ACTUAL_STATE:
+        data = item.actual_state
 
-    elif representation == ItemRepresentation.CDICT:
-        data = item.cdict()
+    elif representation == ItemRepresentation.EXPECTED_STATE:
+        data = item.expected_state
 
     elif representation == ItemRepresentation.REPR:
         data = [repr(item)]
@@ -211,7 +211,7 @@ def format_data(data, args, table_headers=None):
     Formats a list or a dict (with scalar or list values) according to the requested format
     """
     if args['format_json']:
-        io.stdout(statedict_to_json(data, pretty=True))
+        io.stdout(state_dict_to_json(data, pretty=True))
 
     else:
         format_data_table(data, table_headers)

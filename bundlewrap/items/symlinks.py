@@ -33,19 +33,22 @@ class Symlink(Item):
             self.attributes['group'],
         )
 
-    def cdict(self):
-        cdict = {
+    @property
+    def expected_state(self):
+        state = {
             'target': self.attributes['target'],
             'type': 'symlink',
         }
+
         for optional_attr in ('group', 'owner'):
             if self.attributes[optional_attr] is not None:
-                cdict[optional_attr] = self.attributes[optional_attr]
-        return cdict
+                state[optional_attr] = self.attributes[optional_attr]
 
-    def display_on_create(self, cdict):
-        del cdict['type']
-        return cdict
+        return state
+
+    def display_on_create(self, expected_state):
+        del expected_state['type']
+        return expected_state
 
     def fix(self, status):
         if status.must_be_created or 'type' in status.keys_to_fix:
@@ -156,7 +159,8 @@ class Symlink(Item):
             attributes['group'] = 'wheel'
         return attributes
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         path_info = PathInfo(self.node, self.name)
         if not path_info.exists:
             return None

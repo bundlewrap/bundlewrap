@@ -26,7 +26,8 @@ class RouterOS(Item):
     def __repr__(self):
         return f"<RouterOS {self.name} delete:{self.attributes['delete']} purge:{bool(self.attributes['purge'])}>"
 
-    def cdict(self):
+    @property
+    def expected_state(self):
         if self.attributes['delete']:
             return None
 
@@ -36,14 +37,14 @@ class RouterOS(Item):
                 'subitems_to_purge': set()
             }
 
-        cdict = self.attributes.copy()
-        if '_comment' in cdict:  # work around 'comment' being a builtin attribute
-            cdict['comment'] = cdict['_comment']
-            del cdict['_comment']
+        state = self.attributes.copy()
+        if '_comment' in state:  # work around 'comment' being a builtin attribute
+            state['comment'] = state['_comment']
+            del state['_comment']
 
-        del cdict['delete']
-        del cdict['purge']
-        return cdict
+        del state['delete']
+        del state['purge']
+        return state
 
     def get_basename(self, name):
         return name.split("?", 1)[0]
@@ -60,80 +61,81 @@ class RouterOS(Item):
         return self.get_identifier(self.name)
 
     def fix(self, status):
-        if status.sdict:
-            for subitem_id, subitem_name in status.sdict.get('subitems_to_purge', set()):
+        if status.actual_state:
+            for subitem_id, subitem_name in status.actual_state.get('subitems_to_purge', set()):
                 self._remove(self.basename, subitem_id)
 
         if status.must_be_created:
-            cdict = status.cdict.copy()
+            expected_state = status.expected_state.copy()
             with suppress(KeyError):
-                del cdict['subitems_to_purge']
-            self._add(self.basename, cdict)
+                del expected_state['subitems_to_purge']
+            self._add(self.basename, expected_state)
         elif status.must_be_deleted:
-            self._remove(self.basename, status.sdict['.id'])
+            self._remove(self.basename, status.actual_state['.id'])
         else:
             values_to_fix = {
-                key: status.cdict[key]
+                key: status.expected_state[key]
                 for key in status.keys_to_fix
                 if key not in ('subitems_to_purge',)
             }
             if values_to_fix:
                 self._set(
                     self.basename,
-                    status.sdict.get('.id'),
+                    status.actual_state.get('.id'),
                     values_to_fix
                 )
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         if self.attributes['purge']:
             # purge operates on lists of items only which we can't operate on otherwise
             return {
                 'subitems_to_purge': self._get_subitems_to_purge()
             }
 
-        result = self._get(self.name)
-        if result:
+        state = self._get(self.name)
+        if state:
             # API doesn't return comment at all if emtpy
-            result.setdefault('comment', '')
+            state.setdefault('comment', '')
             # undo automatic type conversion in librouteros
-            for key, value in tuple(result.items()):
+            for key, value in tuple(state.items()):
                 if value is True:
-                    result[key] = "yes"
+                    state[key] = "yes"
                 elif value is False:
-                    result[key] = "no"
+                    state[key] = "no"
                 elif isinstance(value, int):
-                    result[key] = str(value)
-        return result
+                    state[key] = str(value)
+        return state
 
-    def display_on_create(self, cdict):
-        for key in tuple(cdict.keys()):
-            if cdict[key].count(",") > 2:
-                cdict[key] = cdict[key].split(",")
-        return cdict
+    def display_on_create(self, expected_state):
+        for key in tuple(expected_state.keys()):
+            if expected_state[key].count(",") > 2:
+                expected_state[key] = expected_state[key].split(",")
+        return expected_state
 
-    def display_on_fix(self, cdict, sdict, keys):
+    def display_on_fix(self, expected_state, actual_state, keys):
         if 'subitems_to_purge' in keys:
             keys.remove('subitems_to_purge')
             keys.add(UNMANAGED_SUBITEMS_DESC)
-            cdict[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in cdict['subitems_to_purge']])
-            sdict[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in sdict['subitems_to_purge']])
-            del cdict['subitems_to_purge']
-            del sdict['subitems_to_purge']
+            expected_state[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in expected_state['subitems_to_purge']])
+            actual_state[UNMANAGED_SUBITEMS_DESC] = sorted([name for id, name in actual_state['subitems_to_purge']])
+            del expected_state['subitems_to_purge']
+            del actual_state['subitems_to_purge']
 
         for key in keys:
-            if cdict[key].count(",") > 2 or sdict[key].count(",") > 2:
-                cdict[key] = cdict[key].split(",")
-                sdict[key] = sdict[key].split(",")
-        return (cdict, sdict, keys)
+            if expected_state[key].count(",") > 2 or actual_state[key].count(",") > 2:
+                expected_state[key] = expected_state[key].split(",")
+                actual_state[key] = actual_state[key].split(",")
+        return (expected_state, actual_state, keys)
 
-    def display_on_delete(self, sdict):
+    def display_on_delete(self, actual_state):
         with suppress(KeyError):
-            del sdict['subitems_to_purge']
-            del sdict[".id"]
-        for key in tuple(sdict.keys()):
-            if sdict[key].count(",") > 2:
-                sdict[key] = sdict[key].split(",")
-        return sdict
+            del actual_state['subitems_to_purge']
+            del actual_state[".id"]
+        for key in tuple(actual_state.keys()):
+            if actual_state[key].count(",") > 2:
+                actual_state[key] = actual_state[key].split(",")
+        return actual_state
 
     def patch_attributes(self, attributes):
         for key in tuple(attributes.keys()):

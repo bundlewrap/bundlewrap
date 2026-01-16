@@ -69,22 +69,24 @@ class ZFSDataset(Item):
                 may_fail=True,
             )
 
-    def cdict(self):
-        cdict = {}
+    @property
+    def expected_state(self):
+        state = {}
         for option, value in self.attributes.items():
             if option == 'mountpoint' and value is None:
                 value = "none"
             if value is not None:
-                cdict[option] = value
-        cdict['mounted'] = 'no' if cdict.get('mountpoint') in (None, "none") else 'yes'
-        return cdict
+                state[option] = value
+
+        state['mounted'] = 'no' if state.get('mountpoint') in (None, "none") else 'yes'
+        return state
 
     def fix(self, status):
         if status.must_be_created:
-            self.__create(self.name, status.cdict)
+            self.__create(self.name, status.expected_state)
         else:
             for option in status.keys_to_fix:
-                self.__set_option(self.name, option, status.cdict[option])
+                self.__set_option(self.name, option, status.expected_state[option])
 
     def get_auto_attrs(self, items):
         pool = self.name.split("/")[0]
@@ -115,12 +117,14 @@ class ZFSDataset(Item):
 
         return {'needs': needs}
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         if not self.__does_exist(self.name):
             return None
 
-        sdict = {}
+        state = {}
         for option in self.attributes:
-            sdict[option] = self.__get_option(self.name, option)
-        sdict['mounted'] = self.__get_option(self.name, 'mounted')
-        return sdict
+            state[option] = self.__get_option(self.name, option)
+
+        state['mounted'] = self.__get_option(self.name, 'mounted')
+        return state

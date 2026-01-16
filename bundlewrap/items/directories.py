@@ -5,10 +5,9 @@ from shlex import quote
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.utils.remote import PathInfo
-from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.text import is_subdirectory
+from bundlewrap.utils.text import mark_for_translation as _
 from bundlewrap.utils.ui import io
-
 
 UNMANAGED_PATH_DESC = _("unmanaged subpaths")
 
@@ -62,33 +61,35 @@ class Directory(Item):
             self.attributes['mode'],
         )
 
-    def cdict(self):
-        cdict = {
+    @property
+    def expected_state(self):
+        state = {
             'paths_to_purge': set(),
             'type': 'directory',
         }
         for optional_attr in ('group', 'mode', 'owner'):
             if self.attributes[optional_attr] is not None:
-                cdict[optional_attr] = self.attributes[optional_attr]
-        return cdict
+                state[optional_attr] = self.attributes[optional_attr]
 
-    def display_on_create(self, cdict):
-        del cdict['paths_to_purge']
-        del cdict['type']
-        return cdict
+        return state
 
-    def display_on_fix(self, cdict, sdict, keys):
+    def display_on_create(self, expected_state):
+        del expected_state['paths_to_purge']
+        del expected_state['type']
+        return expected_state
+
+    def display_on_fix(self, expected_state, actual_state, keys):
         try:
             keys.remove('paths_to_purge')
         except KeyError:
             pass
         else:
             keys.add(UNMANAGED_PATH_DESC)
-            cdict[UNMANAGED_PATH_DESC] = sorted(cdict['paths_to_purge'])
-            sdict[UNMANAGED_PATH_DESC] = sorted(sdict['paths_to_purge'])
-            del cdict['paths_to_purge']
-            del sdict['paths_to_purge']
-        return (cdict, sdict, keys)
+            expected_state[UNMANAGED_PATH_DESC] = sorted(expected_state['paths_to_purge'])
+            actual_state[UNMANAGED_PATH_DESC] = sorted(actual_state['paths_to_purge'])
+            del expected_state['paths_to_purge']
+            del actual_state['paths_to_purge']
+        return (expected_state, actual_state, keys)
 
     def fix(self, status):
         if status.must_be_created or 'type' in status.keys_to_fix:
@@ -96,7 +97,7 @@ class Directory(Item):
             self._fix_type(status)
             return
 
-        for path in status.sdict.get('paths_to_purge', set()):
+        for path in status.actual_state.get('paths_to_purge', set()):
             self.run("rm -rf -- {}".format(quote(path)))
 
         for fix_type in ('mode', 'owner', 'group'):
@@ -134,7 +135,7 @@ class Directory(Item):
 
             # We only want to run these extra commands if we have found
             # one of the two special bits to be set.
-            if status.sdict is not None and int(status.sdict['mode'], 8) & 0o6000:
+            if status.actual_state is not None and int(status.actual_state['mode'], 8) & 0o6000:
                 if not int(self.attributes['mode'], 8) & 0o4000:
                     self.run("chmod u-s {}".format(quote(self.name)))
                 if not int(self.attributes['mode'], 8) & 0o2000:
@@ -153,6 +154,7 @@ class Directory(Item):
             group,
             quote(self.name),
         ))
+
     _fix_group = _fix_owner
 
     def _fix_type(self, status):
@@ -195,11 +197,11 @@ class Directory(Item):
             if item == self:
                 continue
             if ((
-                    item.ITEM_TYPE_NAME == "file" and
-                    is_subdirectory(item.name, self.name)
-                ) or (
-                    item.ITEM_TYPE_NAME in ("file", "symlink") and
-                    item.name == self.name
+                item.ITEM_TYPE_NAME == "file" and
+                is_subdirectory(item.name, self.name)
+            ) or (
+                item.ITEM_TYPE_NAME in ("file", "symlink") and
+                item.name == self.name
             )):
                 raise BundleError(_(
                     "{item1} (from bundle '{bundle1}') blocking path to "
@@ -245,7 +247,8 @@ class Directory(Item):
                     deps.add(item.id)
         return {'needs': deps}
 
-    def sdict(self):
+    @property
+    def actual_state(self):
         use_uid = self.attributes['owner'] is not None and self.attributes['owner'].startswith('+')
         use_gid = self.attributes['group'] is not None and self.attributes['group'].startswith('+')
         path_info = PathInfo(self.node, self.name)
