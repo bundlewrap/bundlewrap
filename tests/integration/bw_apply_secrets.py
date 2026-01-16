@@ -75,7 +75,7 @@ def test_fault_content_mako_metadata(tmpdir):
                 'items': {
                     'files': {
                         join(str(tmpdir), "secret"): {
-                            'content': "${node.metadata['secret']}",
+                            'content': "${node.metadata.get('secret')}",
                             'content_type': 'mako',
                         },
                     },

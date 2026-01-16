@@ -99,7 +99,7 @@ Quite often you will attach custom metadata to your nodes in `nodes.py`, e.g.:
 
 You can easily access this information in templates:
 
-	% for interface, ip in sorted(node.metadata["interfaces"].items()):
+	% for interface, ip in sorted(node.metadata.get("interfaces").items()):
 	interface ${interface}
 		ip = ${ip}
 	% endfor

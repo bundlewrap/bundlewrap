@@ -698,7 +698,7 @@ will exit with code 47 if any matching items are locked
         nargs='*',
         type=str,
         help=_(
-            "show only partial metadata from the given key paths (e.g. `bw metadata mynode -k users/jdoe` to show `mynode.metadata['users']['jdoe']`)"),
+            "show only partial metadata from the given key paths (e.g. `bw metadata mynode -k users/jdoe` to show `mynode.metadata.get('users/jdoe')`)"),
     )
     parser_metadata.add_argument(
         "-b", "--blame",
@@ -907,7 +907,7 @@ will exit with code 47 if any matching items are locked
         help=_(
             "request only partial metadata from the given key paths "
             "(e.g. `bw plot reactors mynode -k users/jdoe` "
-            "to show `mynode.metadata['users']['jdoe']`)"
+            "to show `mynode.metadata.get('users/jdoe')`)"
         ),
     )
     parser_plot_subparsers_node_reactors.add_argument(
