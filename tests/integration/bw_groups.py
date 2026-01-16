@@ -185,7 +185,7 @@ def test_supergroups_redundant(tmpdir):
     assert b"group3" not in stderr
     assert rcode == 1
 
-def test_nonexistant(tmpdir):
+def test_nonexistent(tmpdir):
     make_repo(
         tmpdir,
         nodes={
