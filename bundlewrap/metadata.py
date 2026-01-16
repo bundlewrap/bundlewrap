@@ -1,8 +1,8 @@
 from copy import copy
 from hashlib import sha256
 from json import JSONEncoder, dumps
-import re
 
+from tomlkit import comment
 from tomlkit import document as toml_document
 from tomlkit import dumps as tomlkit_dumps
 
@@ -341,20 +341,21 @@ def metadata_dict_to_toml(dict_obj, resolve_faults=False):
     toml_doc = toml_document()
     for key, value in dict_obj.items():
         if isinstance(value, tuple):
-            toml_doc[key] = list(value)
+            toml_doc.add(key, list(value))
         elif isinstance(value, set):
-            toml_doc[key] = sorted(value)
+            toml_doc.add(key, sorted(value))
         elif isinstance(value, dict):
-            toml_doc[key] = metadata_dict_to_toml(value, resolve_faults)
+            toml_doc.add(key, metadata_dict_to_toml(value, resolve_faults))
         elif isinstance(value, Fault):
             if resolve_faults:
-                toml_doc[key] = value.value
+                toml_doc.add(key, value.value)
             else:
-                toml_doc[key] = yellow(value._repr_first())
+                toml_doc.add(key, yellow(value._repr_first()))
         elif value is None:
-            toml_doc[key] = "!none:"
+            toml_doc.add(key, "None")
+            toml_doc[key].comment("# was None, but toml can't natively handle NoneType objects")
         else:
-            toml_doc[key] = value
+            toml_doc.add(key, value)
     return toml_doc
 
 
