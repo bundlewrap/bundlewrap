@@ -319,7 +319,10 @@ def metadata_to_json(metadata, resolve_faults=True, sort_keys=True):
         metadata = metadata.get(tuple())
 
     if not isinstance(metadata, dict):
-        raise ValueError('metadata is neither NodeMetadataProxy nor dict, can')
+        raise ValueError(
+            f'metadata is neither NodeMetadataProxy nor dict but {type(metadata)}, '
+            'cannot convert to JSON'
+        )
 
     if resolve_faults:
         encoder = MetadataJSONEncoder
