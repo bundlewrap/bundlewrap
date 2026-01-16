@@ -163,6 +163,18 @@ Also, `metadata.items()`, `metadata.keys()`, and `metadata.values()` is gone.
 
 <br>
 
+### `cdict`/`sdict` moved to properties `expected_state`/`actual_state`
+
+The terminology `cdict` and `sdict` has been considered confusing. To alleviate this pain, we use `expected_state` and `actual_state` now.
+
+[Custom items](dev_item.md) must be updated:
+
+-   Rename `cdict` to `expected_state`: This describes the desired state of an item.
+-   Rename `sdict` to `actual_state`: This describes the actual state of an item on a node.
+-   Both these methods need the `@property` decorator now.
+
+<br>
+
 <hr>
 
 <br>
