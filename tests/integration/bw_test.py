@@ -579,12 +579,16 @@ def test_reactor_metadata_collision_nested(tmpdir):
         f.write(
 """@metadata_reactor
 def foo(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {"foo": {"bar": "1"}}
 """)
     with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
         f.write(
 """@metadata_reactor
 def foo(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {"foo": {"bar": "2"}}
 """)
     stdout, stderr, rcode = run("bw test -M", path=str(tmpdir))
@@ -609,12 +613,16 @@ def test_reactor_metadata_collision_nested_mixed(tmpdir):
         f.write(
 """@metadata_reactor
 def foo(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {"foo": {"bar": {True}}}
 """)
     with open(join(str(tmpdir), "bundles", "bundle2", "metadata.py"), 'w') as f:
         f.write(
 """@metadata_reactor
 def foo(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {"foo": {"bar": [False]}}
 """)
     stdout, stderr, rcode = run("bw test -M", path=str(tmpdir))
@@ -638,6 +646,8 @@ def test_reactor_provides_ok(tmpdir):
         f.write(
 """@metadata_reactor.provides("foo")
 def foo(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {"foo": 1}
 """)
     stdout, stderr, rcode = run("bw test -p", path=str(tmpdir))
@@ -660,6 +670,8 @@ def test_reactor_provides_violated(tmpdir):
         f.write(
 """@metadata_reactor.provides("foo")
 def foo(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {"bar": 1}
 """)
     stdout, stderr, rcode = run("bw test -p", path=str(tmpdir))
@@ -732,6 +744,8 @@ def test_metadata_determinism_ok(tmpdir):
     with open(join(str(tmpdir), "bundles", "bundle1", "metadata.py"), 'w') as f:
         f.write("""@metadata_reactor
 def test(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {'test': 1}
 """)
     assert run("bw test -m 3", path=str(tmpdir))[2] == 0
@@ -755,6 +769,8 @@ n = randint(1, 99999)
 
 @metadata_reactor
 def test(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {'findme': n}
 """)
     stdout, stderr, rcode = run("bw test -m 3", path=str(tmpdir))

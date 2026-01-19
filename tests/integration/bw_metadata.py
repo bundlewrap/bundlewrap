@@ -189,6 +189,9 @@ def test_metadatapy_update(tmpdir):
         f.write(
 """@metadata_reactor
 def foo(metadata):
+    # only here to ensure we don't trigger "metadata reactor doesn't look
+    # at metadata, use defaults" in MetadataGenerator (tested elsewhere)
+    metadata.get('irrelevant', None)
     return {
         "baz": "foo",
         "foo": "baz",
@@ -272,6 +275,8 @@ def test_metadatapy_merge_order(tmpdir):
 
 @metadata_reactor
 def foo_reactor(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {
         "two": "reactor",
         "three": "reactor",
@@ -386,6 +391,8 @@ def test_metadatapy_reactor_keyerror_fixed(tmpdir):
 """
 @metadata_reactor
 def one(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {'one': True}
 
 @metadata_reactor
@@ -456,6 +463,8 @@ def reactor1(metadata):
 
 @metadata_reactor
 def reactor2(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     # just to make sure reactor1 runs again
     return {'again': True}
 """)
@@ -558,6 +567,8 @@ def test_reactor_provides_not_run(tmpdir):
 """
 @metadata_reactor.provides('foo')
 def reactor1(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {'foo': 1}
 
 @metadata_reactor.provides('bar')
@@ -598,6 +609,8 @@ def reactor1(metadata):
 
 @metadata_reactor.provides('bar')
 def reactor2(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {'bar': 2}
 
 @metadata_reactor.provides('something irrelevant')
@@ -606,6 +619,8 @@ def reactor3(metadata):
 
 @metadata_reactor
 def reactor4(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {}
 """)
     stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
