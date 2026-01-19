@@ -83,7 +83,7 @@ class ItemStatus:
     def __init__(self, expected_state, actual_state):
         self.expected_state = expected_state
         self.actual_state = actual_state
-        self.keys_to_fix = []
+        self.keys_to_fix = set()
         self.must_be_deleted = (self.actual_state is not None and self.expected_state is None)
         self.must_be_created = (self.expected_state is not None and self.actual_state is None)
         if not self.must_be_deleted and not self.must_be_created:
@@ -841,7 +841,7 @@ class Item:
         """
         Given expected_state and actual_state as implemented above, modify them to
         better suit interactive presentation. The keys parameter is a
-        list of keys whose values differ between expected_state and actual_state.
+        set of keys whose values differ between expected_state and actual_state.
 
         MAY be overridden by subclasses.
         """

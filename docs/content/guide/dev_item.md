@@ -83,7 +83,7 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             """
             Given expected_state and actual_state as implemented above, modify them to
             better suit interactive presentation. The keys parameter is a
-            list of keys whose values differ between expected_state and actual_state.
+            set of keys whose values differ between expected_state and actual_state.
 
             Implementing this method is optional.
             """
@@ -103,7 +103,7 @@ Create a new file called `/your/bundlewrap/repo/items/foo.py`. You can use this 
             Do whatever is necessary to correct this item. The given ItemStatus
             object has the following useful information:
 
-                status.keys_to_fix           list of expected_state keys that need fixing
+                status.keys_to_fix           set of expected_state keys that need fixing
                 status.expected_state        cached copy of self.expected_state
                 status.actual_state          cached copy of self.actual_state
             """
