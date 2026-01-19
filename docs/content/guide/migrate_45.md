@@ -42,13 +42,17 @@ Hooks are called with named arguments now. The names in your function signature 
 
 For example, you can no longer do this:
 
-    def node_apply_start(my_repo, my_node):
-        ...
+```python
+def node_apply_start(my_repo, my_node):
+    ...
+```
 
 But you must do this instead:
 
-    def node_apply_start(repo, node):
-        ...
+```python
+def node_apply_start(repo, node):
+    ...
+```
 
 <br>
 
@@ -60,19 +64,23 @@ But you must do this instead:
 
 To migrate existing code, replace this pattern:
 
-    class MyItem(Item):
-        def get_auto_deps(self, items):
-            # ...
-            return [some_item.id, another_item.id]
+```python
+class MyItem(Item):
+    def get_auto_deps(self, items):
+        # ...
+        return [some_item.id, another_item.id]
+```
 
 With this:
 
-    class MyItem(Item):
-        def get_auto_attrs(self, items):
-            # ...
-            return {
-                'needs': [some_item.id, another_item.id],
-            }
+```python
+class MyItem(Item):
+    def get_auto_attrs(self, items):
+        # ...
+        return {
+            'needs': [some_item.id, another_item.id],
+        }
+```
 
 <br>
 
@@ -102,24 +110,30 @@ This method was deprecated. Use `node.metadata.get()` instead.
 
 Suppose you have a [custom item type](dev_item.md) for an init system and you define a service like this:
 
-    svc_fancy_init['nginx'] = {
-        'tags': {'causes-downtime'},
-    }
+```python
+svc_fancy_init['nginx'] = {
+    'tags': {'causes-downtime'},
+}
+```
 
 If your item type supports canned actions like `svc_fancy_init:nginx:restart` (and if that canned action does not depend on `svc_fancy_init:nginx` itself), then running the following command will now skip both `svc_fancy_init:nginx` and the canned action `svc_fancy_init:nginx:restart`:
 
-    $ bw apply mynode -s tag:causes-downtime
+```none
+$ bw apply mynode -s tag:causes-downtime
+```
 
 Previously, this *only* skipped `svc_fancy_init:nginx`. (This does not affect item types from core BundleWrap, because all their canned actions already explicitly depend on the parent item.)
 
 The second scenario is that the following was previously impossible, because the canned actions did not inherit the `a` tag and thus a dependency loop was created:
 
-    svc_systemd = {
-        'test.service': {
-            'tags': {'a'},
-            'needed_by': {'!tag:a'},
-        },
-    }
+```python
+svc_systemd = {
+    'test.service': {
+        'tags': {'a'},
+        'needed_by': {'!tag:a'},
+    },
+}
+```
 
 <br>
 
@@ -127,21 +141,25 @@ The second scenario is that the following was previously impossible, because the
 
 Previously, you could write code like this in [metadata reactors](../repo/metadata.py.md#reactors):
 
-    @metadata_reactor
-    def my_reactor(metadata):
-        for name, config in metadata.get('something', {}).items():
-            # key 'ips' may or may not (yet) be available here
-            ips = config['ips']
+```python
+@metadata_reactor
+def my_reactor(metadata):
+    for name, config in metadata.get('something', {}).items():
+        # key 'ips' may or may not (yet) be available here
+        ips = config['ips']
+```
 
 If `ips` was not available, Python automatically raised a `KeyError` which would have been caught by BundleWrap and had triggered a reactor re-run at a later point. This is no longer the case.
 
 Instead, we recommend writing code like this:
 
-    @metadata_reactor
-    def my_reactor(metadata):
-        for name in metadata.get('something', {}):
-            # key 'ips' may or may not (yet) be available here
-            ips = metadata.get(f'something/{name}/ips')
+```python
+@metadata_reactor
+def my_reactor(metadata):
+    for name in metadata.get('something', {}):
+        # key 'ips' may or may not (yet) be available here
+        ips = metadata.get(f'something/{name}/ips')
+```
 
 Doing it this way will ensure BundleWrap will correctly know which paths were requested, but not yet available and trigger reactor runs accordingly.
 
@@ -162,11 +180,15 @@ Doing it this way will ensure BundleWrap will correctly know which paths were re
 
 This has been deprecated for a long time. If you still have dict-style access like this:
 
-    version = metadata['my_program']['version']
+```python
+version = metadata['my_program']['version']
+```
 
 Then you must replace it with this, because this is the only public API of these objects now:
 
-    version = metadata.get('my_program/version')
+```python
+version = metadata.get('my_program/version')
+```
 
 Also, `metadata.items()`, `metadata.keys()`, and `metadata.values()` is gone. (If you really must get a flat dict of a node's entire metadata, use `metadata.get(tuple())`. This is strongly discouraged for performance reasons, though.)
 
@@ -214,8 +236,10 @@ You must now explicitly set `BW_SCP_ARGS`.
 
 This is an error now:
 
-    $ bw verify hw.switch-foobar -s tag:causes-downtime
-    !!! the following selectors for --skip do not match any items: tag:causes-downtime
+```none
+$ bw verify hw.switch-foobar -s tag:causes-downtime
+!!! the following selectors for --skip do not match any items: tag:causes-downtime
+```
 
 The intention is to catch typos. For example, `-s tag:causes_downtime` (note the *underscore* instead of a *dash*) previously went unnoticed and might have unintentionally restarted some services.
 
@@ -263,9 +287,11 @@ To prevent typos and accidents, BundleWrap will now verify if these item selecto
 
 This can break your scripts, because they might block now, waiting for the pager to quit. One way to get the old behavior is to override the environment variable `PAGER` for these calls:
 
-    #!/bin/sh
+```shell
+#!/bin/sh
 
-    PAGER=cat bw lock add ...
+PAGER=cat bw lock add ...
+```
 
 <br>
 
