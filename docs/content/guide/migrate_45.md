@@ -125,16 +125,27 @@ The second scenario is that the following was previously impossible, because the
 
 ### `MetadataUnavailable` instead of `KeyError`
 
-[Metadata reactors](../repo/metadata.py.md#reactors) must now throw `MetadataUnavailable` to indicate that metadata is not available. For example in `metadata.py`:
-
-    from bundlewrap.exceptions import MetadataUnavailable
+Previously, you could write code like this in [metadata reactors](../repo/metadata.py.md#reactors):
 
     @metadata_reactor
-    def foo(metadata):
-        if some_condition:
-            raise MetadataUnavailable()
+    def my_reactor(metadata):
+        for name, config in metadata.get('something', {}).items():
+            # key 'ips' may or may not (yet) be available here
+            ips = config['ips']
 
-        return {'foo': True}
+If `ips` was not available, Python automatically raised a `KeyError` which would have been caught by BundleWrap and had triggered a reactor re-run at a later point. This is no longer the case.
+
+Instead, we recommend writing code like this:
+
+    @metadata_reactor
+    def my_reactor(metadata):
+        for name in metadata.get('something', {}):
+            # key 'ips' may or may not (yet) be available here
+            ips = metadata.get(f'something/{name}/ips')
+
+Doing it this way will ensure BundleWrap will correctly know which paths were requested, but not yet available and trigger reactor runs accordingly.
+
+(Avoid raising `MetadataUnavailable` yourself, this should rarely be needed.)
 
 <br>
 
@@ -157,7 +168,7 @@ Then you must replace it with this, because this is the only public API of these
 
     version = metadata.get('my_program/version')
 
-Also, `metadata.items()`, `metadata.keys()`, and `metadata.values()` is gone.
+Also, `metadata.items()`, `metadata.keys()`, and `metadata.values()` is gone. (If you really must get a flat dict of a node's entire metadata, use `metadata.get(tuple())`. This is strongly discouraged for performance reasons, though.)
 
 `metadata.get('foo')` now throws `MetadataUnavailable` instead of silently returning `None`. This matches the behavior of other `get()` operations. For example, `metadata.get('foo/var')` has already thrown an exception; only "root" access was different.
 
@@ -206,7 +217,7 @@ This is an error now:
     $ bw verify hw.switch-foobar -s tag:causes-downtime
     !!! the following selectors for --skip do not match any items: tag:causes-downtime
 
-The intention is to catch typos. For example, `-s tag:causes_downtime` previously went unnoticed and might have unintentionally restarted some services.
+The intention is to catch typos. For example, `-s tag:causes_downtime` (note the *underscore* instead of a *dash*) previously went unnoticed and might have unintentionally restarted some services.
 
 This check is done on the entire selection. If you apply a group and *no* node in that group has items that match the selector, then the error is raised.
 
@@ -236,6 +247,8 @@ Instead, reverse dependencies are shown with dashed lines.
 
 When a `test_with` command failed, we previously ignored this *if* its exit code was 126, 127, or 255. This is no longer the case.
 
+These special exit codes usually indicate that a command is not present on a system. The use case *was*: Run certain `test_with` commands only on automated build servers, but not on a dev's machine. The reasoning was that some `test_with` commands might have heavy dependencies that not everybody wants to install on their laptop. This asymmetry – some tests only running on a build server – was confusing, though, because people wondered why their builds failed, even though a local `bw test` was seemingly successful. Hence this special handling was removed.
+
 <br>
 
 ### `bw lock -i $selector`: Verify if `$selector` matches
@@ -244,11 +257,11 @@ To prevent typos and accidents, BundleWrap will now verify if these item selecto
 
 <br>
 
-### `bw lock add`: Warning when there are locks always uses a pager
+### `bw lock add`: Warning about existing locks might use a pager
 
-`bw lock add` shows a message like `Your lock was added, but the node was already locked by ...`, followed by a list of existing locks. This output is always piped through a pager now.
+`bw lock add` shows a message like `Your lock was added, but the node was already locked by ...`, followed by a list of existing locks. This output is piped through a pager now when `stdout` is a TTY.
 
-This can break your scripts, because they might block now, waiting for the pager to quit. Override the environment variable `PAGER` for these calls if you want the old behavior:
+This can break your scripts, because they might block now, waiting for the pager to quit. One way to get the old behavior is to override the environment variable `PAGER` for these calls:
 
     #!/bin/sh
 
