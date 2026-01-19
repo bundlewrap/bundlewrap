@@ -685,3 +685,29 @@ defaults = {
     stdout, stderr, rcode = run("bw metadata node1 node2 -k fault --resolve-faults", path=str(tmpdir))
     assert rcode == 0
     assert "must show up" in stdout.decode()
+
+
+def test_metadatapy_should_use_defaults(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"test": {}},
+        nodes={
+            "node1": {
+                'bundles': ["test"],
+                'metadata': {"foo": "bar"},
+            },
+        },
+    )
+    with open(join(str(tmpdir), "bundles", "test", "metadata.py"), 'w') as f:
+        f.write(
+"""@metadata_reactor
+def foo(metadata):
+    return {
+        "baz": "foo",
+        "foo": "baz",
+    }
+""")
+    stdout, stderr, rcode = run("bw metadata node1", path=str(tmpdir))
+    assert rcode == 1
+    assert b"node1" in stderr
+    assert b"test.foo" in stderr
