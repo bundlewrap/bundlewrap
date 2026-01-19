@@ -423,6 +423,15 @@ class MetadataGenerator:
                 reactor_name=reactor_name,
             ))
 
+        if len(self._reactors[self._current_reactor]['requested_paths']) == 0:
+            raise ValueError(_(
+                "{reactor_name} on {node_name} returned did not request "
+                "any metadata, you might want to use defaults instead"
+            ).format(
+                node_name=node.name,
+                reactor_name=reactor_name,
+            ))
+
         if self._verify_reactor_provides and getattr(reactor, '_provides', None):
             extra_paths = extra_paths_in_dict(new_metadata, reactor._provides)
             if extra_paths:
