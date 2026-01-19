@@ -251,7 +251,7 @@ These special exit codes usually indicate that a command is not present on a sys
 
 <br>
 
-### `bw lock -i $selector`: Verify if `$selector` matches
+### `bw lock -i $selector`: Verifies if `$selector` matches
 
 To prevent typos and accidents, BundleWrap will now verify if these item selectors match anything. If you don't want this, use `--skip-item-verification`.
 
