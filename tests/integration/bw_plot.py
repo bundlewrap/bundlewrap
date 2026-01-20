@@ -159,10 +159,14 @@ def test_plot_reactors(tmpdir):
 """
 @metadata_reactor.provides('foo')
 def reactor1(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {'foo': metadata.get('bar')}
 
 @metadata_reactor.provides('bar')
 def reactor2(metadata):
+    # see test_metadatapy_update
+    metadata.get('irrelevant', None)
     return {'bar': 47}
 """)
     stdout, stderr, rcode = run("bw plot reactors node1", path=str(tmpdir))
