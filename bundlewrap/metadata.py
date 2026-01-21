@@ -1,12 +1,16 @@
 from copy import copy
 from hashlib import sha256
-from json import dumps, JSONEncoder
+from json import JSONEncoder, dumps
+
+from tomlkit import comment
+from tomlkit import document as toml_document
+from tomlkit import dumps as tomlkit_dumps
 
 from .exceptions import RepositoryError
 from .utils import Fault
 from .utils.dicts import ATOMIC_TYPES, map_dict_keys, merge_dict, value_at_key_path
-from .utils.text import force_text, mark_for_translation as _, yellow
-
+from .utils.text import force_text, yellow
+from .utils.text import mark_for_translation as _
 
 METADATA_TYPES = (  # only meant for natively atomic types
     bool,
@@ -336,6 +340,31 @@ def metadata_to_json(metadata, resolve_faults=True, sort_keys=True):
         sort_keys=sort_keys,
     )
 
+def metadata_dict_to_toml(dict_obj, resolve_faults=False):
+    toml_doc = toml_document()
+    for key, value in dict_obj.items():
+        if isinstance(value, tuple):
+            toml_doc.add(key, list(value))
+        elif isinstance(value, set):
+            toml_doc.add(key, sorted(value))
+        elif isinstance(value, dict):
+            toml_doc.add(key, metadata_dict_to_toml(value, resolve_faults))
+        elif isinstance(value, Fault):
+            if resolve_faults:
+                toml_doc.add(key, value.value)
+            else:
+                toml_doc.add(key, yellow(value._repr_first()))
+        elif value is None:
+            toml_doc.add(key, "None")
+            toml_doc[key].comment("# was None, but toml can't natively handle NoneType objects")
+        else:
+            toml_doc.add(key, value)
+    return toml_doc
+
+
+def metadata_to_toml(metadata, resolve_faults=True, sort_keys=True):
+    toml_doc = metadata_dict_to_toml({"metadata": metadata}, resolve_faults=resolve_faults)
+    return tomlkit_dumps(toml_doc)
 
 def hash_metadata(actual_state):
     """

@@ -736,6 +736,12 @@ will exit with code 47 if any matching items are locked
         dest='resolve_faults',
         help=_("resolve Faults; careful, might contain sensitive data"),
     )
+    parser_metadata.add_argument(
+        "-t", "--toml",
+        action='store_true',
+        dest='toml',
+        help=_("output metadata as toml instead of json"),
+    )
 
     # bw nodes
     help_nodes = _("List nodes in this repository")
