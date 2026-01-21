@@ -86,6 +86,8 @@ class Bundle:
             base_env = {
                 'node': self.node,
                 'repo': self.repo,
+                'BUNDLE_DIR': self.bundle_dir,
+                'BUNDLE_DATA_DIR': self.bundle_data_dir,
             }
 
             # TODO prevent access to node.metadata
@@ -103,6 +105,8 @@ class Bundle:
             base_env = {
                 'node': self.node,
                 'repo': self.repo,
+                'BUNDLE_DIR': self.bundle_dir,
+                'BUNDLE_DATA_DIR': self.bundle_data_dir,
             }
             for item_class in self.repo.item_classes:
                 base_env[item_class.BUNDLE_ATTRIBUTE_NAME] = {}
