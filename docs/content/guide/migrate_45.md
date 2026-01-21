@@ -208,6 +208,28 @@ The terminology `cdict` and `sdict` has been considered confusing. To alleviate 
 
 <br>
 
+### "Non-reading" metadata reactors raise an exception
+
+When a [metadata reactor](../repo/metadata.py.md#reactors) does not read from metadata but only returns values, BundleWrap now raises an exception. This is a performance-costly anti-pattern and you should use `defaults` instead.
+
+For example, this:
+
+```python
+@metadata_reactor.provides('foo')
+def foo(metadata):
+    return {'foo': True}
+```
+
+Should be replaced with:
+
+```python
+defaults = {
+    'foo': True,
+}
+```
+
+<br>
+
 <hr>
 
 <br>
