@@ -425,8 +425,8 @@ class MetadataGenerator:
 
         if len(self._reactors[self._current_reactor]['requested_paths']) == 0:
             raise ValueError(_(
-                "{reactor_name} on {node_name} returned did not request "
-                "any metadata, you might want to use defaults instead"
+                "{reactor_name} on {node_name} did not request any "
+                "metadata, you might want to use defaults instead"
             ).format(
                 node_name=node.name,
                 reactor_name=reactor_name,
