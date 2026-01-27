@@ -166,11 +166,13 @@ def _prepare_deps(items):
                         resolved_deps = tuple(resolve_selector(dep, items))
                     except NoSuchItem:
                         raise ItemDependencyError(_(
-                            "'{item}' in bundle '{bundle}' has a dependency ({dep_type}) "
-                            "on '{dep}', which doesn't exist"
+                            "'{item}' in bundle '{bundle}' on node '{node}' "
+                            "has a dependency ({dep_type}) on '{dep}', which "
+                            "doesn't exist"
                         ).format(
                             item=item.id,
                             bundle=item.bundle.name,
+                            node=item.node.name,
                             dep=dep,
                             dep_type=dep_type,
                         ))
