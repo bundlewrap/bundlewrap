@@ -84,7 +84,7 @@ class MyItem(Item):
 
 <br>
 
-### `directory` items auto-depend on corresponding `zfs_dataset` items
+### `directory` and `file` items auto-depend on corresponding `zfs_dataset` items
 
 Suppose you have this:
 
@@ -96,9 +96,13 @@ zfs_datasets['tank/foo'] = {
 directories['/srv/foo'] = {
     'needs': {'zfs_dataset:tank/foo'},
 }
+
+files['/srv/foo/bar'] = {
+    'needs': {'zfs_dataset:tank/foo'},
+}
 ```
 
-The `needs` on the `directory` item is no longer necessary, this will be auto-detected now.
+The `needs` on the `directory` and `file` items is no longer necessary, this will be auto-detected now.
 
 (This is not a breaking change, but you should clean this up in order to keep your repo tidy.)
 

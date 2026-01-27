@@ -22,7 +22,7 @@ TODO date
 * `metadata` objects no longer try to behave like dicts, you must use `get()` now (BACKWARDS INCOMPATIBLE)
 * terminology: `cdict` and `sdict` have been renamed to `expected_state` and `actual_state`, and they need `@property` now; this affects custom items (BACKWARDS INCOMPATIBLE)
 * metadata reactors now raise an exception when they do not read any metadata; users should use `defaults` instead (BACKWARDS INCOMPATIBLE)
-* `directory` items auto-depend on corresponding `zfs_dataset` items; users should remove manual dependencies
+* `directory` and `file` items auto-depend on corresponding `zfs_dataset` items; users should remove manual dependencies
 * the `bundles/` directory is required to be present for bw to consider a directory a bw repository
 * fixed mkdocs warnings
 * removed unused attribute `can_login` from `postgres_roles.py`
