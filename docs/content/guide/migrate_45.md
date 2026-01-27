@@ -56,34 +56,6 @@ def node_apply_start(repo, node):
 
 <br>
 
-### `get_auto_deps()` has been replaced by `get_auto_attrs()`
-
-[Custom items](dev_item.md) could be instructed to auto-discover dependencies. That happened by calling `get_auto_deps()` on them.
-
-`get_auto_deps()` has now been replaced by the more generic `get_auto_attrs()`, which is able to return different kinds of attributes instead of just `needs`.
-
-To migrate existing code, replace this pattern:
-
-```python
-class MyItem(Item):
-    def get_auto_deps(self, items):
-        # ...
-        return [some_item.id, another_item.id]
-```
-
-With this:
-
-```python
-class MyItem(Item):
-    def get_auto_attrs(self, items):
-        # ...
-        return {
-            'needs': [some_item.id, another_item.id],
-        }
-```
-
-<br>
-
 ### `directory` and `file` items auto-depend on corresponding `zfs_dataset` items
 
 Suppose you have this:
@@ -105,7 +77,6 @@ files['/srv/foo/bar'] = {
 The `needs` on the `directory` and `file` items is no longer necessary, this will be auto-detected now.
 
 (This is not a breaking change, but you should clean this up in order to keep your repo tidy.)
-
 
 <br>
 
@@ -192,14 +163,6 @@ Doing it this way will ensure BundleWrap will correctly know which paths were re
 
 <br>
 
-### Items: `display_dicts()` → `display_on_fix()`, `keys` is a set
-
-[Custom items](dev_item.md) must be updated:
-
--   The method `display_dicts()` has been renamed to `display_on_fix()` for consistency.
--   `display_on_fix()`'s third argument, `keys`, is a set now instead of a list.
-
-<br>
 
 ### `metadata` objects don't try to be dicts anymore
 
@@ -218,18 +181,6 @@ version = metadata.get('my_program/version')
 Also, `metadata.items()`, `metadata.keys()`, and `metadata.values()` is gone. (If you really must get a flat dict of a node's entire metadata, use `metadata.get(tuple())`. This is strongly discouraged for performance reasons, though.)
 
 `metadata.get('foo')` now throws `MetadataUnavailable` instead of silently returning `None`. This matches the behavior of other `get()` operations. For example, `metadata.get('foo/var')` has already thrown an exception; only "root" access was different.
-
-<br>
-
-### `cdict`/`sdict` moved to properties `expected_state`/`actual_state`
-
-The terminology `cdict` and `sdict` has been considered confusing. To alleviate this pain, we use `expected_state` and `actual_state` now.
-
-[Custom items](dev_item.md) must be updated:
-
--   Rename `cdict` to `expected_state`: This describes the desired state of an item.
--   Rename `sdict` to `actual_state`: This describes the actual state of an item on a node.
--   Both these methods need the `@property` decorator now.
 
 <br>
 
@@ -252,6 +203,52 @@ defaults = {
     'foo': True,
 }
 ```
+
+<br>
+
+### Changes related to custom items
+#### `get_auto_deps()` has been replaced by `get_auto_attrs()`
+
+[Custom items](dev_item.md) could be instructed to auto-discover dependencies. That happened by calling `get_auto_deps()` on them.
+
+`get_auto_deps()` has now been replaced by the more generic `get_auto_attrs()`, which is able to return different kinds of attributes instead of just `needs`.
+
+To migrate existing code, replace this pattern:
+
+```python
+class MyItem(Item):
+    def get_auto_deps(self, items):
+        # ...
+        return [some_item.id, another_item.id]
+```
+
+With this:
+
+```python
+class MyItem(Item):
+    def get_auto_attrs(self, items):
+        # ...
+        return {
+            'needs': [some_item.id, another_item.id],
+        }
+```
+
+#### Items: `display_dicts()` → `display_on_fix()`, `keys` is a set
+
+[Custom items](dev_item.md) must be updated:
+
+-   The method `display_dicts()` has been renamed to `display_on_fix()` for consistency.
+-   `display_on_fix()`'s third argument, `keys`, is a set now instead of a list.
+
+#### `cdict`/`sdict` moved to properties `expected_state`/`actual_state`
+
+The terminology `cdict` and `sdict` has been considered confusing. To alleviate this pain, we use `expected_state` and `actual_state` now.
+
+[Custom items](dev_item.md) must be updated:
+
+-   Rename `cdict` to `expected_state`: This describes the desired state of an item.
+-   Rename `sdict` to `actual_state`: This describes the actual state of an item on a node.
+-   Both these methods need the `@property` decorator now.
 
 <br>
 
