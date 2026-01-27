@@ -1,3 +1,34 @@
+# 5.0.0
+
+TODO date
+
+* a user's identity now automatically includes the Git branch name (BACKWARDS INCOMPATIBLE)
+* support for `svc_upstart` items has been removed (BACKWARDS INCOMPATIBLE)
+* hashing (files, node hashes, ...) now uses sha256 instead of sha1 (BACKWARDS INCOMPATIBLE)
+* `BW_SCP_ARGS` no longer defaults to the value of `BW_SSH_ARGS`, because these two programs use different sets of arguments (BACKWARDS INCOMPATIBLE)
+* exit with an error if `-s` selectors don't match anything (BACKWARDS INCOMPATIBLE)
+* `repo.nodes_matching()` throws `NoSuchTarget` when expressions don't match anything (BACKWARDS INCOMPATIBLE)
+* the "Running hooks ..." line is more verbose, bw calls your hooks differently (BACKWARDS INCOMPATIBLE)
+* items: `get_auto_deps()` has been removed, always use `get_auto_attrs()` now (BACKWARDS INCOMPATIBLE)
+* dependency on passlib has been removed, this affects several hashing algorithms (BACKWARDS INCOMPATIBLE)
+* the output of `bw items` was harmonized over all subcomannds (BACKWARDS INCOMPATIBLE)
+* the deprecated API `node.metadata_get()` (note the underscore) has been removed (BACKWARDS INCOMPATIBLE)
+* canned actions inherit tags (BACKWARDS INCOMPATIBLE)
+* `bw test` no longer ignores some exit status codes of `test_with` (BACKWARDS INCOMPATIBLE)
+* item selectors in `bw lock -i ...` are now verified and raise an error if they match nothing (BACKWARDS INCOMPATIBLE)
+* `MetadataUnavailable` is raised instead of `KeyError` when `metadata.get()` cannot find the requested metadata key (BACKWARDS INCOMPATIBLE)
+* `Item.display_dicts()` replaced by `Item.display_on_fix()` and the `keys` argument is a set now (BACKWARDS INCOMPATIBLE)
+* `bw lock add`'s warning when there already are locks always uses a pager now (BACKWARDS INCOMPATIBLE)
+* `metadata` objects no longer try to behave like dicts, you must use `get()` now (BACKWARDS INCOMPATIBLE)
+* terminology: `cdict` and `sdict` have been renamed to `expected_state` and `actual_state`, and they need `@property` now; this affects custom items (BACKWARDS INCOMPATIBLE)
+* metadata reactors now raise an exception when they do not read any metadata; users should use `defaults` instead (BACKWARDS INCOMPATIBLE)
+* `directory` and `file` items auto-depend on corresponding `zfs_dataset` items; users should remove manual dependencies
+* the `bundles/` directory is required to be present for bw to consider a directory a bw repository
+* fixed mkdocs warnings
+* removed unused attribute `can_login` from `postgres_roles.py`
+* various documentation improvements
+* introduce BundlewrapError as the new base exception class for the project to standardize error handling
+
 # 4.24.0
 
 2025-11-06
