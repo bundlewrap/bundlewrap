@@ -84,6 +84,27 @@ class MyItem(Item):
 
 <br>
 
+### `directory` items auto-depend on corresponding `zfs_dataset` items
+
+Suppose you have this:
+
+```python
+zfs_datasets['tank/foo'] = {
+    'mountpoint': '/srv/foo',
+}
+
+directories['/srv/foo'] = {
+    'needs': {'zfs_dataset:tank/foo'},
+}
+```
+
+The `needs` on the `directory` item is no longer necessary, this will be auto-detected now.
+
+(This is not a breaking change, but you should clean this up in order to keep your repo tidy.)
+
+
+<br>
+
 ### bcrypt
 
 The dependency on [passlib](https://passlib.readthedocs.io/en/stable/) has been removed, becase this library is unmaintained.
