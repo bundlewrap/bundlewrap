@@ -28,11 +28,11 @@ setup(
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.8",  # remove hack in files.py import when EOL
-        "Programming Language :: Python :: 3.9",  # remove hack in repo.py (pkg_resources) and setuptools below when EOL
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Topic :: System :: Installation/Setup",
         "Topic :: System :: Systems Administration",
     ],
