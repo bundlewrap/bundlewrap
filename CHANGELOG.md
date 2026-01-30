@@ -1,6 +1,6 @@
-# 5.0.0
+# 5.0.0-rc.1
 
-TODO date
+2026-01-30
 
 * a user's identity now automatically includes the Git branch name (BACKWARDS INCOMPATIBLE)
 * support for `svc_upstart` items has been removed (BACKWARDS INCOMPATIBLE)
