@@ -7,7 +7,7 @@ from traceback import TracebackException
 from .exceptions import MetadataPersistentKeyError, MetadataUnavailable
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy
-from .utils import list_starts_with, randomize_order, NO_DEFAULT
+from .utils import NO_DEFAULT, error_context, list_starts_with, randomize_order
 from .utils.dicts import extra_paths_in_dict
 from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red
@@ -446,11 +446,12 @@ class MetadataGenerator:
                 ))
 
         try:
-            node.metadata._metastack.set_layer(
-                1,
-                reactor_name,
-                new_metadata,
-            )
+            with error_context(reactor=reactor_name, node=node.name):
+                node.metadata._metastack.set_layer(
+                    1,
+                    reactor_name,
+                    new_metadata,
+                )
         except TypeError as exc:
             # TODO catch validation errors better
             io.stderr(_(
