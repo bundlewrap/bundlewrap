@@ -105,6 +105,10 @@
 <li>
     <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../../guide/migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -368,10 +372,6 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#hash_method" class="nav-link">hash_method</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
             <li class="nav-item" data-bs-level="2"><a href="#home" class="nav-link">home</a>
               <ul class="nav flex-column">
               </ul>
@@ -441,16 +441,6 @@
 <p>List of groups (names, not GIDs) the user should belong to. Must NOT include the group referenced by <code>gid</code>.</p>
 <hr>
 
-<h2 id="hash_method">hash_method</h2>
-<p>One of:</p>
-<ul>
-<li><code>md5</code></li>
-<li><code>sha256</code></li>
-<li><code>sha512</code></li>
-</ul>
-<p>Defaults to <code>sha512</code>.</p>
-<hr>
-
 <h2 id="home">home</h2>
 <p>Path to home directory. Defaults to <code>/home/USERNAME</code>.</p>
 <hr>
@@ -468,7 +458,7 @@
 <hr>
 
 <h2 id="salt">salt</h2>
-<p>Recommended for use with the <code>password</code> attribute. BundleWrap will use 5000 rounds of SHA-512 on this salt and the provided password.</p>
+<p>Recommended for use with the <code>password</code> attribute. BundleWrap will use bcrypt with a cost factor of 8 on this salt and the provided password.</p>
 <hr>
 
 <h2 id="shell">shell</h2>

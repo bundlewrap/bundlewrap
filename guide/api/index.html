@@ -105,6 +105,10 @@
 <li>
     <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -446,13 +450,16 @@ nodes = repo.nodes_matching(&quot;loc.router-1&quot;)
 <li><code>target_strings</code> is a list of expression to select target nodes</li>
 <li><code>lambda_workers</code> is number of parallel workers used to check lambda condition on every node</li>
 </ul>
-<p>The following expressions can be used:
-- <code>my_node</code> to select a single node
-- <code>my_group</code> all nodes in this group
-- <code>bundle:my_bundle</code> all nodes with this bundle
-- <code>!bundle:my_bundle</code> all nodes without this bundle
-<code></code>!group:my_group<code>all nodes not in this group
--</code>"lambda:node.metadata_get('foo/magic', 47) &lt; 3"<code>all nodes whose</code>metadata["foo"]["magic"]` is less than three</p>
+<p>The following expressions can be used:</p>
+<ul>
+<li><code>my_node</code> to select a single node</li>
+<li><code>my_group</code> all nodes in this group</li>
+<li><code>bundle:my_bundle</code> all nodes with this bundle</li>
+<li><code>!bundle:my_bundle</code> all nodes without this bundle</li>
+<li><code>!group:my_group</code> all nodes not in this group</li>
+<li><code>"lambda:node.metadata_get('foo/magic', 47) &lt; 3"</code> all nodes whose <code>metadata.get("foo/magic")</code> is less than three</li>
+</ul>
+<p>Throws the exception <code>NoSuchTarget</code> if one of the expressions in the target string doesn't resolve to nodes.</p>
 <p><br></p>
 <h3 id="bundlewrapnodenode">bundlewrap.node.Node()</h3>
 <p>A system managed by BundleWrap.</p>
@@ -563,7 +570,7 @@ node.run_ipmitool('power status')
 &gt;&gt;&gt; repo.vault.password_for("1").b64encode().value
 'Vk9kNVA='
 &gt;&gt;&gt; repo.vault.password_for("1").as_htpasswd_entry("username").value
-'username:$apr1$8be694c7…'
+'username:$2b$12$MaZ4/O/Kaoy2Corpbb0…'
 </code></pre>
 <p>These string methods are supported on Faults: <code>format</code>, <code>lower</code>, <code>lstrip</code>, <code>replace</code>, <code>rstrip</code>, <code>strip</code>, <code>upper</code>, <code>zfill</code></p></div>
             </div>

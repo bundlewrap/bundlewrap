@@ -105,6 +105,10 @@
 <li>
     <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -376,7 +380,7 @@
 <pre><code class="nohighlight">$ bw lock add node1
 ✓ node1  locked with ID B9JS (expires in 8h)</code></pre>
 
-<p>This will prevent all other users from changing any items on the node for the next 8 hours. BundleWrap will tell users apart by their <a href="../env/#BW_IDENTITY">BW_IDENTITY</a>. Now say someone else is reviewing the pull request and wants to use <code>bw apply</code>, while still keeping others out and the original author in. This can be done by simply locking the node <em>again</em> as the reviewer. Nodes can have many soft locks. Soft locks act as an exemption from a general ban on changing items that goes into effect as soon as one or more soft locks are present on the node. Of course, if no soft locks are present, anyone can change any item.</p>
+<p>This will prevent all other users from changing any items on the node for the next 8 hours. BundleWrap will tell users apart by their <a href="../env/#bw_identity">BW_IDENTITY</a>. Now say someone else is reviewing the pull request and wants to use <code>bw apply</code>, while still keeping others out and the original author in. This can be done by simply locking the node <em>again</em> as the reviewer. Nodes can have many soft locks. Soft locks act as an exemption from a general ban on changing items that goes into effect as soon as one or more soft locks are present on the node. Of course, if no soft locks are present, anyone can change any item.</p>
 <p>You can list all soft locks on a node with:</p>
 <pre><code class="nohighlight">$ bw lock show node1
 i node1  ID    Created              Expires              User   Items  Comment

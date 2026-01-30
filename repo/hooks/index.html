@@ -105,6 +105,10 @@
 <li>
     <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../../guide/migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -377,6 +381,8 @@ def node_apply_start(repo, node, interactive=False, **kwargs):
 <p><br></p>
 <h2 id="functions">Functions</h2>
 <p>This is a list of all functions a hook file may implement.</p>
+<div class="alert alert-info">Hook functions will always get called with named arguments.</div>
+
 <hr />
 <p><strong><code>action_run_start(repo, node, item, **kwargs)</code></strong></p>
 <p>Called each time a <code>bw apply</code> command reaches a new action.</p>

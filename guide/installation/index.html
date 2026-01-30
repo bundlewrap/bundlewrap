@@ -105,6 +105,10 @@
 <li>
     <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -424,7 +428,6 @@ python setup.py develop</code></pre>
 <li><code>groupadd</code></li>
 <li><code>groupmod</code></li>
 <li><code>id</code></li>
-<li><code>initctl</code> (only used with <a href="../../items/svc_upstart/">svc_upstart</a> items)</li>
 <li><code>mkdir</code></li>
 <li><code>mv</code></li>
 <li><code>pacman</code> (only used with <a href="../../items/pkg_pacman/">pkg_pacman</a> items)</li>
@@ -432,7 +435,7 @@ python setup.py develop</code></pre>
 <li><code>rm</code></li>
 <li>sftp-enabled SSH server (your home directory must be writable)</li>
 <li><code>sudo</code></li>
-<li><code>sha1sum</code></li>
+<li><code>sha256sum</code></li>
 <li><code>stat</code></li>
 <li><code>systemctl</code> (only used with <a href="../../items/svc_systemd/">svc_systemd</a> items)</li>
 <li><code>tar</code> (only used with <a href="../../items/git_deploy/">git_deploy</a> items)</li>

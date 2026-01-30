@@ -105,6 +105,10 @@
 <li>
     <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -431,6 +435,7 @@
 <p><br></p>
 <h2 id="bw_identity"><code>BW_IDENTITY</code></h2>
 <p>When BundleWrap <a href="../locks/">locks</a> a node, it stores a short description about "you". By default, this is the string <code>$USER@$HOSTNAME</code>, e.g. <code>john@mymachine</code>. You can use <code>BW_IDENTITY</code> to specify a custom string. (No variables will be evaluated in user supplied strings.)</p>
+<p>When running inside of a Git repository, BundleWrap will append the current branch name, e.g. <code>john@mymachine:main</code>.</p>
 <p><br></p>
 <h2 id="bw_item_workers-and-bw_node_workers"><code>BW_ITEM_WORKERS</code> and <code>BW_NODE_WORKERS</code></h2>
 <p>BundleWrap attempts to parallelize work. These two options specify the number of nodes and items, respectively, which will be handled concurrently. To be more precise, when setting <code>BW_NODE_WORKERS=8</code> and <code>BW_ITEM_WORKERS=2</code>, BundleWrap will work on eight nodes in parallel, each handling two items in parallel.</p>
@@ -451,7 +456,7 @@
 <p>Extra arguments to include in every call to <code>ssh</code> BundleWrap makes. Set this to "-F ~/.ssh/otherconf" to use a different SSH config with BundleWrap. Defaults to <code>""</code>.</p>
 <p><br></p>
 <h2 id="bw_scp_args"><code>BW_SCP_ARGS</code></h2>
-<p>Extra arguments to include in every call to <code>scp</code> BundleWrap makes. Defaults to the value of <code>BW_SSH_ARGS</code>.</p>
+<p>Extra arguments to include in every call to <code>scp</code> BundleWrap makes. Defaults to <code>""</code>.</p>
 <p><br></p>
 <h2 id="bw_table_style"><code>BW_TABLE_STYLE</code></h2>
 <p>By default, BundleWrap uses Unicode box-drawing characters at various points in its output. Setting this env var to one of the following values changes that behavior:</p>

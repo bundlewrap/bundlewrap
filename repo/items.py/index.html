@@ -105,6 +105,10 @@
 <li>
     <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../../guide/migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -473,7 +477,6 @@ users = {
 <tr><td><a href="../../items/svc_openbsd">svc_openbsd</a></td><td><code>svc_openbsd</code></td><td>Starts and stops services with OpenBSD's rc</td></tr>
 <tr><td><a href="../../items/svc_systemd">svc_systemd</a></td><td><code>svc_systemd</code></td><td>Starts and stops services with systemd</td></tr>
 <tr><td><a href="../../items/svc_systemv">svc_systemv</a></td><td><code>svc_systemv</code></td><td>Starts and stops services with traditional System V init scripts</td></tr>
-<tr><td><a href="../../items/svc_upstart">svc_upstart</a></td><td><code>svc_upstart</code></td><td>Starts and stops services with Upstart</td></tr>
 <tr><td><a href="../../items/symlink">symlink</a></td><td><code>symlinks</code></td><td>Manages symbolic links and their ownership</td></tr>
 <tr><td><a href="../../items/user">user</a></td><td><code>users</code></td><td>Manages users by wrapping <code>useradd</code>, <code>usermod</code> and <code>userdel</code></td></tr>
 <tr><td><a href="../../items/zfs_dataset">zfs_dataset</a></td><td><code>zfs_datasets</code></td><td>Manages ZFS datasets</td></tr>
@@ -665,18 +668,18 @@ pkg_apt = {
 <p>These attributes are only enforced during the creation of the item on the node (this means the first run of <code>bw apply</code> after adding this item to config). They are ignored in subsequent runs of <code>bw apply</code>, and when other (non-when_creating) attributes are changed.</p>
 <h1 id="canned-actions">Canned actions</h1>
 <p>Some item types have what we call "canned actions". Those are pre-defined actions attached directly to an item. Take a look at this example:</p>
-<pre><code>svc_upstart = {'mysql': {'running': True}}
+<pre><code>svc_systemd = {'mysql': {'running': True}}
 
 files = {
     "/etc/mysql/my.cnf": {
         'source': "my.cnf",
         'triggers': [
-            "svc_upstart:mysql:reload",  # this triggers the canned action
+            "svc_systemd:mysql:reload",  # this triggers the canned action
         ],
     },
 }
 </code></pre>
-<p>Canned actions always have to be triggered in order to run. In the example above, a change in the file <code>/etc/mysql/my.cnf</code> will trigger the <code>reload</code> action defined by the <a href="../../items/svc_upstart/">svc_upstart item type</a> for the mysql service.</p></div>
+<p>Canned actions always have to be triggered in order to run. In the example above, a change in the file <code>/etc/mysql/my.cnf</code> will trigger the <code>reload</code> action defined by the <a href="../../items/svc_systemd/">svc_systemd item type</a> for the mysql service.</p></div>
             </div>
         </div>
 

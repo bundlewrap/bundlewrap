@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Migrating to 5.0 - BundleWrap</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../../bundlewrap.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">BundleWrap</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="../.." class="nav-link"><i class="fa fa-home"></i></a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Guides</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../quickstart/" class="dropdown-item">Quickstart</a>
+</li>
+                                    
+<li>
+    <a href="../installation/" class="dropdown-item">Installation</a>
+</li>
+                                    
+<li>
+    <a href="../cli/" class="dropdown-item">CLI</a>
+</li>
+                                    
+<li>
+    <a href="../env/" class="dropdown-item">Environment Variables</a>
+</li>
+                                    
+<li>
+    <a href="../item_file_templates/" class="dropdown-item">File templates</a>
+</li>
+                                    
+<li>
+    <a href="../secrets/" class="dropdown-item">Handling secrets</a>
+</li>
+                                    
+<li>
+    <a href="../locks/" class="dropdown-item">Locking</a>
+</li>
+                                    
+<li>
+    <a href="../kubernetes/" class="dropdown-item">Kubernetes</a>
+</li>
+                                    
+<li>
+    <a href="../dev_item/" class="dropdown-item">Custom items</a>
+</li>
+                                    
+<li>
+    <a href="../api/" class="dropdown-item">Python API</a>
+</li>
+                                    
+<li>
+    <a href="../os_compatibility/" class="dropdown-item">OS compatibility</a>
+</li>
+                                    
+<li>
+    <a href="../toml/" class="dropdown-item">TOML nodes and groups</a>
+</li>
+                                    
+<li>
+    <a href="../selectors/" class="dropdown-item">Selectors</a>
+</li>
+                                    
+<li>
+    <a href="../migrate_12/" class="dropdown-item">Migrating to 2.0</a>
+</li>
+                                    
+<li>
+    <a href="../migrate_23/" class="dropdown-item">Migrating to 3.0</a>
+</li>
+                                    
+<li>
+    <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
+</li>
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Migrating to 5.0</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Repository</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../../repo/layout/" class="dropdown-item">Overview</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/nodes.py/" class="dropdown-item">nodes.py</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/groups.py/" class="dropdown-item">groups.py</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/requirements.txt/" class="dropdown-item">requirements.txt</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/bundle.py/" class="dropdown-item">bundles/.../bundle.py</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/items.py/" class="dropdown-item">bundles/.../items.py</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/metadata.py/" class="dropdown-item">bundles/.../metadata.py</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/hooks/" class="dropdown-item">hooks/</a>
+</li>
+                                    
+<li>
+    <a href="../../repo/libs/" class="dropdown-item">libs/</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Items</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../../items/action/" class="dropdown-item">action</a>
+</li>
+                                    
+<li>
+    <a href="../../items/dconf/" class="dropdown-item">dconf</a>
+</li>
+                                    
+<li>
+    <a href="../../items/directory/" class="dropdown-item">directory</a>
+</li>
+                                    
+<li>
+    <a href="../../items/file/" class="dropdown-item">file</a>
+</li>
+                                    
+<li>
+    <a href="../../items/git_deploy/" class="dropdown-item">git_deploy</a>
+</li>
+                                    
+<li>
+    <a href="../../items/group/" class="dropdown-item">group</a>
+</li>
+                                    
+<li>
+    <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_apk/" class="dropdown-item">pkg_apk</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_apt/" class="dropdown-item">pkg_apt</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_dnf/" class="dropdown-item">pkg_dnf</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_freebsd/" class="dropdown-item">pkg_freebsd</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_openbsd/" class="dropdown-item">pkg_openbsd</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_opkg/" class="dropdown-item">pkg_opkg</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_pacman/" class="dropdown-item">pkg_pacman</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_pamac/" class="dropdown-item">pkg_pamac</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_pip/" class="dropdown-item">pkg_pip</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_snap/" class="dropdown-item">pkg_snap</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_yum/" class="dropdown-item">pkg_yum</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg_zypper/" class="dropdown-item">pkg_zypper</a>
+</li>
+                                    
+<li>
+    <a href="../../items/postgres_db/" class="dropdown-item">postgres_db</a>
+</li>
+                                    
+<li>
+    <a href="../../items/postgres_role/" class="dropdown-item">postgres_role</a>
+</li>
+                                    
+<li>
+    <a href="../../items/routeros/" class="dropdown-item">routeros</a>
+</li>
+                                    
+<li>
+    <a href="../../items/svc_freebsd/" class="dropdown-item">svc_freebsd</a>
+</li>
+                                    
+<li>
+    <a href="../../items/svc_openbsd/" class="dropdown-item">svc_openbsd</a>
+</li>
+                                    
+<li>
+    <a href="../../items/svc_openrc/" class="dropdown-item">svc_openrc</a>
+</li>
+                                    
+<li>
+    <a href="../../items/svc_systemd/" class="dropdown-item">svc_systemd</a>
+</li>
+                                    
+<li>
+    <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
+</li>
+                                    
+<li>
+    <a href="../../items/symlink/" class="dropdown-item">symlink</a>
+</li>
+                                    
+<li>
+    <a href="../../items/user/" class="dropdown-item">user</a>
+</li>
+                                    
+<li>
+    <a href="../../items/zfs_dataset/" class="dropdown-item">zfs_dataset</a>
+</li>
+                                    
+<li>
+    <a href="../../items/zfs_pool/" class="dropdown-item">zfs_pool</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Misc</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../../misc/about/" class="dropdown-item">About</a>
+</li>
+                                    
+<li>
+    <a href="../../misc/deciding/" class="dropdown-item">Why BundleWrap</a>
+</li>
+                                    
+<li>
+    <a href="../../misc/glossary/" class="dropdown-item">Glossary</a>
+</li>
+                                    
+<li>
+    <a href="../../misc/faq/" class="dropdown-item">FAQ</a>
+</li>
+                                    
+<li>
+    <a href="../../misc/contributing/" class="dropdown-item">Contributing</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../migrate_34/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../../repo/layout/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://github.com/bundlewrap/bundlewrap/edit/master/docs/guide/migrate_45.md" class="nav-link"><i class="fa-brands fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#migrating-from-bundlewrap-4x-to-5x" class="nav-link">Migrating from BundleWrap 4.x to 5.x</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#changes-that-require-you-to-adjust-your-repo" class="nav-link">Changes that require you to adjust your repo</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#behavioral-changes" class="nav-link">Behavioral changes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#minor-changes" class="nav-link">Minor changes</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="migrating-from-bundlewrap-4x-to-5x">Migrating from BundleWrap 4.x to 5.x</h1>
+<p>As per <a href="http://semver.org">semver</a>, BundleWrap 5.0 breaks compatibility with repositories created for BundleWrap 4.x. This document provides a guide on how to upgrade your repositories to BundleWrap 5.x. Please read the entire document before proceeding.</p>
+<p><br></p>
+<hr>
+
+<p><br></p>
+<h2 id="changes-that-require-you-to-adjust-your-repo">Changes that require you to adjust your repo</h2>
+<p><br></p>
+<h3 id="svc_upstart-items-have-been-removed"><code>svc_upstart</code> items have been removed</h3>
+<p><a href="https://en.wikipedia.org/wiki/Upstart_(software)">Upstart</a> is a discontinued project, so this item type has been removed.</p>
+<p>If you are stuck with upstart for some reason, you will have to copy <a href="https://github.com/bundlewrap/bundlewrap/blob/6d485dedbb8798b86e145d3479178e9d4de5df5e/bundlewrap/items/svc_upstart.py">the last version of <code>svc_upstart.py</code></a> to your repo as a <a href="../dev_item/">custom item type</a>.</p>
+<p><br></p>
+<h3 id="hashing-now-uses-sha256">Hashing now uses sha256</h3>
+<p>sha1 has been replaced by sha256 in the following places:</p>
+<ul>
+<li><code>content_hash</code> of <code>file</code> items. You must update your item definitions.</li>
+<li>When hashing file contents on the node, <code>sha256</code> or <code>sha256sum</code> (depending on the OS) is now used. This program must exist <em>on the node</em>.</li>
+<li>The <code>bw hash ...</code> command will print sha256 hashes now.</li>
+</ul>
+<p><br></p>
+<h3 id="reponodes_matching-throws-nosuchtarget"><code>repo.nodes_matching()</code> throws <code>NoSuchTarget</code></h3>
+<p>When expressions don't match anything, the <code>NoSuchTarget</code> exception will now be thrown. You will have to catch this exception and decide what to do. Previously, this case was silently ignored.</p>
+<p><br></p>
+<h3 id="hooks-are-called-with-named-arguments">Hooks are called with named arguments</h3>
+<p>Hooks are called with named arguments now. The names in your function signature must match the ones in <a href="../../repo/hooks/">our documentation</a>.</p>
+<p>For example, you can no longer do this:</p>
+<pre><code class="language-python">def node_apply_start(my_repo, my_node):
+    ...
+</code></pre>
+<p>But you must do this instead:</p>
+<pre><code class="language-python">def node_apply_start(repo, node):
+    ...
+</code></pre>
+<p><br></p>
+<h3 id="directory-and-file-items-auto-depend-on-corresponding-zfs_dataset-items"><code>directory</code> and <code>file</code> items auto-depend on corresponding <code>zfs_dataset</code> items</h3>
+<p>Suppose you have this:</p>
+<pre><code class="language-python">zfs_datasets['tank/foo'] = {
+    'mountpoint': '/srv/foo',
+}
+
+directories['/srv/foo'] = {
+    'needs': {'zfs_dataset:tank/foo'},
+}
+
+files['/srv/foo/bar'] = {
+    'needs': {'zfs_dataset:tank/foo'},
+}
+</code></pre>
+<p>The <code>needs</code> on the <code>directory</code> and <code>file</code> items is no longer necessary, this will be auto-detected now.</p>
+<p>(This is not a breaking change, but you should clean this up in order to keep your repo tidy.)</p>
+<p><br></p>
+<h3 id="bcrypt">bcrypt</h3>
+<p>The dependency on <a href="https://passlib.readthedocs.io/en/stable/">passlib</a> has been removed, becase this library is unmaintained.</p>
+<p>This affects <code>user</code> items and the <code>as_htpasswd_entry()</code> method of <a href="../api/#bundlewraputilsfault">Fault objects</a>. Both will use <a href="https://en.wikipedia.org/wiki/Bcrypt">bcrypt</a> for hashing now, i.e. they look like <code>$2b$12$riWuF3Oh...</code>.</p>
+<p>The <code>hash_method</code> attribute has been removed from <code>user</code> items.</p>
+<p>Current versions of nginx and Apache, and current Linux distributions as well as FreeBSD and OpenBSD should support the <code>$2b$</code> scheme in their shadow files.</p>
+<p>If you do rely on the old behavior, you can still set a <code>user</code>'s <code>password_hash</code> manually. There is no replacement regarding <code>as_htpasswd_entry()</code>, you will have to implement your own version of the old crypt algorithms.</p>
+<p><br></p>
+<h3 id="nodemetadata_get-has-been-removed"><code>node.metadata_get()</code> has been removed</h3>
+<p>This method was deprecated. Use <code>node.metadata.get()</code> instead.</p>
+<p><br></p>
+<h3 id="canned-actions-inherit-tags">Canned actions inherit tags</h3>
+<p><a href="../../repo/items.py/#canned-actions">Canned actions</a> like <code>svc_systemd:nginx:restart</code> now inherit the tags from their "parent" item. This mostly affects two scenarios.</p>
+<p>Suppose you have a <a href="../dev_item/">custom item type</a> for an init system and you define a service like this:</p>
+<pre><code class="language-python">svc_fancy_init['nginx'] = {
+    'tags': {'causes-downtime'},
+}
+</code></pre>
+<p>If your item type supports canned actions like <code>svc_fancy_init:nginx:restart</code> (and if that canned action does not depend on <code>svc_fancy_init:nginx</code> itself), then running the following command will now skip both <code>svc_fancy_init:nginx</code> and the canned action <code>svc_fancy_init:nginx:restart</code>:</p>
+<pre><code class="language-none">$ bw apply mynode -s tag:causes-downtime
+</code></pre>
+<p>Previously, this <em>only</em> skipped <code>svc_fancy_init:nginx</code>. (This does not affect item types from core BundleWrap, because all their canned actions already explicitly depend on the parent item.)</p>
+<p>The second scenario is that the following was previously impossible, because the canned actions did not inherit the <code>a</code> tag and thus a dependency loop was created:</p>
+<pre><code class="language-python">svc_systemd = {
+    'test.service': {
+        'tags': {'a'},
+        'needed_by': {'!tag:a'},
+    },
+}
+</code></pre>
+<p><br></p>
+<h3 id="metadataunavailable-instead-of-keyerror"><code>MetadataUnavailable</code> instead of <code>KeyError</code></h3>
+<p>Previously, you could write code like this in <a href="../../repo/metadata.py/#reactors">metadata reactors</a>:</p>
+<pre><code class="language-python">@metadata_reactor
+def my_reactor(metadata):
+    for name, config in metadata.get('something', {}).items():
+        # key 'ips' may or may not (yet) be available here
+        ips = config['ips']
+</code></pre>
+<p>If <code>ips</code> was not available, Python automatically raised a <code>KeyError</code> which would have been caught by BundleWrap and had triggered a reactor re-run at a later point. This is no longer the case.</p>
+<p>Instead, we recommend writing code like this:</p>
+<pre><code class="language-python">@metadata_reactor
+def my_reactor(metadata):
+    for name in metadata.get('something', {}):
+        # key 'ips' may or may not (yet) be available here
+        ips = metadata.get(f'something/{name}/ips')
+</code></pre>
+<p>Doing it this way will ensure BundleWrap will correctly know which paths were requested, but not yet available and trigger reactor runs accordingly.</p>
+<p>(Avoid raising <code>MetadataUnavailable</code> yourself, this should rarely be needed.)</p>
+<p><br></p>
+<h3 id="metadata-objects-dont-try-to-be-dicts-anymore"><code>metadata</code> objects don't try to be dicts anymore</h3>
+<p>This has been deprecated for a long time. If you still have dict-style access like this:</p>
+<pre><code class="language-python">version = metadata['my_program']['version']
+</code></pre>
+<p>Then you must replace it with this, because this is the only public API of these objects now:</p>
+<pre><code class="language-python">version = metadata.get('my_program/version')
+</code></pre>
+<p>Also, <code>metadata.items()</code>, <code>metadata.keys()</code>, and <code>metadata.values()</code> is gone. (If you really must get a flat dict of a node's entire metadata, use <code>metadata.get(tuple())</code>. This is strongly discouraged for performance reasons, though.)</p>
+<p><code>metadata.get('foo')</code> now throws <code>MetadataUnavailable</code> instead of silently returning <code>None</code>. This matches the behavior of other <code>get()</code> operations. For example, <code>metadata.get('foo/var')</code> has already thrown an exception; only "root" access was different.</p>
+<p><br></p>
+<h3 id="non-reading-metadata-reactors-raise-an-exception">"Non-reading" metadata reactors raise an exception</h3>
+<p>When a <a href="../../repo/metadata.py/#reactors">metadata reactor</a> does not read from metadata but only returns values, BundleWrap now raises an exception. This is a performance-costly anti-pattern and you should use <code>defaults</code> instead.</p>
+<p>For example, this:</p>
+<pre><code class="language-python">@metadata_reactor.provides('foo')
+def foo(metadata):
+    return {'foo': True}
+</code></pre>
+<p>Should be replaced with:</p>
+<pre><code class="language-python">defaults = {
+    'foo': True,
+}
+</code></pre>
+<p><br></p>
+<h3 id="changes-related-to-custom-items">Changes related to custom items</h3>
+<h4 id="get_auto_deps-has-been-replaced-by-get_auto_attrs"><code>get_auto_deps()</code> has been replaced by <code>get_auto_attrs()</code></h4>
+<p><a href="../dev_item/">Custom items</a> could be instructed to auto-discover dependencies. That happened by calling <code>get_auto_deps()</code> on them.</p>
+<p><code>get_auto_deps()</code> has now been replaced by the more generic <code>get_auto_attrs()</code>, which is able to return different kinds of attributes instead of just <code>needs</code>.</p>
+<p>To migrate existing code, replace this pattern:</p>
+<pre><code class="language-python">class MyItem(Item):
+    def get_auto_deps(self, items):
+        # ...
+        return [some_item.id, another_item.id]
+</code></pre>
+<p>With this:</p>
+<pre><code class="language-python">class MyItem(Item):
+    def get_auto_attrs(self, items):
+        # ...
+        return {
+            'needs': [some_item.id, another_item.id],
+        }
+</code></pre>
+<h4 id="items-display_dicts-display_on_fix-keys-is-a-set">Items: <code>display_dicts()</code> → <code>display_on_fix()</code>, <code>keys</code> is a set</h4>
+<p><a href="../dev_item/">Custom items</a> must be updated:</p>
+<ul>
+<li>The method <code>display_dicts()</code> has been renamed to <code>display_on_fix()</code> for consistency.</li>
+<li><code>display_on_fix()</code>'s third argument, <code>keys</code>, is a set now instead of a list.</li>
+</ul>
+<h4 id="cdictsdict-moved-to-properties-expected_stateactual_state"><code>cdict</code>/<code>sdict</code> moved to properties <code>expected_state</code>/<code>actual_state</code></h4>
+<p>The terminology <code>cdict</code> and <code>sdict</code> has been considered confusing. To alleviate this pain, we use <code>expected_state</code> and <code>actual_state</code> now.</p>
+<p><a href="../dev_item/">Custom items</a> must be updated:</p>
+<ul>
+<li>Rename <code>cdict</code> to <code>expected_state</code>: This describes the desired state of an item.</li>
+<li>Rename <code>sdict</code> to <code>actual_state</code>: This describes the actual state of an item on a node.</li>
+<li>Both these methods need the <code>@property</code> decorator now.</li>
+</ul>
+<p><br></p>
+<hr>
+
+<p><br></p>
+<h2 id="behavioral-changes">Behavioral changes</h2>
+<p><br></p>
+<h3 id="lock-identities-have-changed">Lock identities have changed</h3>
+<p>If you have locked a node using <code>bw lock</code> and have not overridden your identity using <code>BW_IDENTITY</code>, then the identity <code>$your_username@$your_hostname</code> was used. This has been changed to now include the Git branch name as well (assuming you're using Git): <code>$your_username@$your_hostname:$git_branch_name</code>.</p>
+<p>The migration path is to remove the old locks using <code>bw lock remove ...</code> and put new locks on the nodes using <code>bw lock add ...</code>. How <em>exactly</em> this needs to be done depends on your use case.</p>
+<p><br></p>
+<h3 id="bw_scp_args-defaults-to-the-empty-string"><code>BW_SCP_ARGS</code> defaults to the empty string</h3>
+<p><a href="../env/#bw_scp_args">This environment variable</a> used to default to the value of <code>BW_SSH_ARGS</code> or, if that was unset, to the empty string. <code>BW_SSH_ARGS</code> is used when calling the <code>ssh</code> binary on your machine, <code>BW_SCP_ARGS</code> for the <code>scp</code> binary. Since <em>some</em> arguments work for both <code>ssh</code> and <code>scp</code>, you might have gotten away with setting just <code>BW_SSH_ARGS</code> (which implicitly also affected <code>scp</code>). This will no longer work.</p>
+<p>You must now explicitly set <code>BW_SCP_ARGS</code>.</p>
+<p><br></p>
+<h3 id="bw-apply-and-bw-verify-s-without-matches-is-an-error-now"><code>bw apply</code> and <code>bw verify</code>: <code>-s</code> without matches is an error now</h3>
+<p>This is an error now:</p>
+<pre><code class="language-none">$ bw verify hw.switch-foobar -s tag:causes-downtime
+!!! the following selectors for --skip do not match any items: tag:causes-downtime
+</code></pre>
+<p>The intention is to catch typos. For example, <code>-s tag:causes_downtime</code> (note the <em>underscore</em> instead of a <em>dash</em>) previously went unnoticed and might have unintentionally restarted some services.</p>
+<p>This check is done on the entire selection. If you apply a group and <em>no</em> node in that group has items that match the selector, then the error is raised.</p>
+<p>There is no direct replacement. If you rely on the old behavior, because you regularly apply nodes where the <code>-s</code> argument doesn't match anything, then you must remove <code>-s</code> in those cases.</p>
+<p><br></p>
+<h3 id="harmonized-output-of-bw-items">Harmonized output of <code>bw items</code></h3>
+<p>The output of <code>bw items</code> was harmonized over all subcomannds. Some subcommands that previously generated JSON now default to table output and will need <code>--json</code> to switch back to JSON output.</p>
+<p>Tables printed to the CLI with only one column are now formatted as flat list without decorators.</p>
+<p>Tables printed to the CLI with the format of <code>BW_TABLE_STYLE=grep</code> were changed to repeat literal columns for every row of an array for all tables (not just some), this might require changes to your scripts if you parse <code>bw</code> command output.</p>
+<p><code>bw item NODE ITEM --state</code> is now called <code>--actual-state</code> to clarify its function.</p>
+<p><br></p>
+<h3 id="bw-plot-no-depends-reverse-has-been-removed"><code>bw plot --no-depends-reverse</code> has been removed</h3>
+<p>Instead, reverse dependencies are shown with dashed lines.</p>
+<p><br></p>
+<h3 id="bw-test-always-fails-if-test_with-fails"><code>bw test</code> always fails if <code>test_with</code> fails</h3>
+<p>When a <code>test_with</code> command failed, we previously ignored this <em>if</em> its exit code was 126, 127, or 255. This is no longer the case.</p>
+<p>These special exit codes usually indicate that a command is not present on a system. The use case <em>was</em>: Run certain <code>test_with</code> commands only on automated build servers, but not on a dev's machine. The reasoning was that some <code>test_with</code> commands might have heavy dependencies that not everybody wants to install on their laptop. This asymmetry – some tests only running on a build server – was confusing, though, because people wondered why their builds failed, even though a local <code>bw test</code> was seemingly successful. Hence this special handling was removed.</p>
+<p><br></p>
+<h3 id="bw-lock-i-selector-verifies-if-selector-matches"><code>bw lock -i $selector</code>: Verifies if <code>$selector</code> matches</h3>
+<p>To prevent typos and accidents, BundleWrap will now verify if these item selectors match anything. If you don't want this, use <code>--skip-item-verification</code>.</p>
+<p><br></p>
+<h3 id="bw-lock-add-warning-about-existing-locks-might-use-a-pager"><code>bw lock add</code>: Warning about existing locks might use a pager</h3>
+<p><code>bw lock add</code> shows a message like <code>Your lock was added, but the node was already locked by ...</code>, followed by a list of existing locks. This output is piped through a pager now when <code>stdout</code> is a TTY.</p>
+<p>This can break your scripts, because they might block now, waiting for the pager to quit. One way to get the old behavior is to override the environment variable <code>PAGER</code> for these calls:</p>
+<pre><code class="language-shell">#!/bin/sh
+
+PAGER=cat bw lock add ...
+</code></pre>
+<p><br></p>
+<hr>
+
+<p><br></p>
+<h2 id="minor-changes">Minor changes</h2>
+<p>For everything else, please consult the <a href="https://github.com/bundlewrap/bundlewrap/blob/main/CHANGELOG.md#500">changelog</a>.</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>BundleWrap is published under the <a href='https://github.com/bundlewrap/bundlewrap/blob/master/LICENSE'>GPL license</a>.</p></p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

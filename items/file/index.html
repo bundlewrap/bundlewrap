@@ -105,6 +105,10 @@
 <li>
     <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../../guide/migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -483,8 +487,8 @@
 <hr>
 
 <h2 id="content_hash">content_hash</h2>
-<p>Only valid if <code>content_type</code> is set to <code>download</code>. Specifies a <code>sha1sum</code> to compare the downloaded file to. If set, the file will only be downloaded if the remote hash does not match. Hash will be verified after downloading and after uploading to the node.</p>
-<p>If not set, bundlewrap will always download the file, then compare the <code>sha1sum</code> of the downloaded file to the one currently on the node.</p>
+<p>Only valid if <code>content_type</code> is set to <code>download</code>. Specifies a <code>sha256sum</code> to compare the downloaded file to. If set, the file will only be downloaded if the remote hash does not match. Hash will be verified after downloading and after uploading to the node.</p>
+<p>If not set, bundlewrap will always download the file, then compare the <code>sha256sum</code> of the downloaded file to the one currently on the node.</p>
 <hr>
 
 <h2 id="verify_with">verify_with</h2>

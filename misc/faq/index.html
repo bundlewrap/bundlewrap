@@ -105,6 +105,10 @@
 <li>
     <a href="../../guide/migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../../guide/migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -371,7 +375,7 @@
 <p>BundleWrap uses a <a href="../../guide/locks/">locking mechanism</a> to prevent collisions like this.</p>
 <p><br></p>
 <h3 id="how-can-i-have-bundlewrap-reload-my-services-after-config-changes">How can I have BundleWrap reload my services after config changes?</h3>
-<p>See <a href="../../repo/items.py/#canned_actions">canned actions</a> and <a href="../../repo/items.py/#triggers">triggers</a>.</p>
+<p>See <a href="../../repo/items.py/#canned-actions">canned actions</a> and <a href="../../repo/items.py/#triggers-and-triggered">triggers</a>.</p>
 <p><br></p>
 <h3 id="will-bundlewrap-keep-track-of-package-updates">Will BundleWrap keep track of package updates?</h3>
 <p>No. BundleWrap will only care about whether a package is installed or not. Updates will have to be installed through a separate mechanism (I like to create an <a href="../../items/action/">action</a> with the <code>interactive</code> attribute set to <code>True</code>). Selecting specific versions should be done through your package manager.</p>

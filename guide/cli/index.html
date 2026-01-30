@@ -105,6 +105,10 @@
 <li>
     <a href="../migrate_34/" class="dropdown-item">Migrating to 4.0</a>
 </li>
+                                    
+<li>
+    <a href="../migrate_45/" class="dropdown-item">Migrating to 5.0</a>
+</li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -178,6 +182,10 @@
                                     
 <li>
     <a href="../../items/k8s/" class="dropdown-item">k8s_*</a>
+</li>
+                                    
+<li>
+    <a href="../../items/pkg/" class="dropdown-item">pkg_*</a>
 </li>
                                     
 <li>
@@ -258,10 +266,6 @@
                                     
 <li>
     <a href="../../items/svc_systemv/" class="dropdown-item">svc_systemv</a>
-</li>
-                                    
-<li>
-    <a href="../../items/svc_upstart/" class="dropdown-item">svc_upstart</a>
 </li>
                                     
 <li>
@@ -351,7 +355,19 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-verify" class="nav-link">bw verify</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-lock" class="nav-link">bw lock</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#bw-run" class="nav-link">bw run</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-ipmi" class="nav-link">bw ipmi</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -363,7 +379,35 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-stats" class="nav-link">bw stats</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#bw-test" class="nav-link">bw test</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-nodesitemsgroupsmetadata" class="nav-link">bw nodes/items/groups/metadata</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-pw" class="nav-link">bw pw</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-repo" class="nav-link">bw repo</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-diff" class="nav-link">bw diff</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-hash" class="nav-link">bw hash</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#bw-generate-completions" class="nav-link">bw generate-completions</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -379,36 +423,82 @@
 <div class="alert alert-info">This page is not meant as a complete reference. It provides a starting point to explore the various subcommands. If you're looking for details, <code>--help</code> is your friend.</div>
 
 <h2 id="bw-apply">bw apply</h2>
-<pre><code class="nohighlight">bw apply -i mynode</code></pre>
-
+<pre><code class="language-none">bw apply [-i] mynode
+</code></pre>
 <p>The most important and most used part of BundleWrap, <code>bw apply</code> will apply your configuration to a set of <a href="../../repo/nodes.py/">nodes</a>. By default, it operates in a non-interactive mode. When you're trying something new or are otherwise unsure of some changes, use the <code>-i</code> switch to have BundleWrap interactively ask before each change is made.</p>
-<p><br></p>
+<h2 id="bw-verify">bw verify</h2>
+<p>Inspect the health or "correctness" of a node without changing it.</p>
+<pre><code class="language-none">$ bw verify mynode
+i ╭────────┬───────┬──────┬─────┬─────────┬────────┬──────────╮
+i │ node   │ items │ good │ bad │ unknown │ health │ duration │
+i ├────────┼───────┼──────┼─────┼─────────┼────────┼──────────┤
+i │ mynode │   979 │  979 │   0 │       0 │ 100.0% │      15s │
+i ╰────────┴───────┴──────┴─────┴─────────┴────────┴──────────╯
+</code></pre>
+<h2 id="bw-lock">bw lock</h2>
+<p>Manages <a href="../locks/">locks</a> on nodes.</p>
 <h2 id="bw-run">bw run</h2>
-<pre><code class="nohighlight">$ bw run mygroup "uname -a"</code></pre>
-
-<p>Unsurprisingly, the <code>run</code> subcommand is used to run commands on nodes.</p>
+<p>Directly execute commands on nodes.</p>
+<pre><code class="language-none">$ bw run mygroup &quot;uname -a&quot;
+</code></pre>
 <p>As with most commands that accept node names, you can also give a <code>group</code> name or any combination of node and group names, separated by commas (without spaces, e.g. <code>node1,group2,node3</code>). A third option is to use a bundle selector like <code>bundle:my_bundle</code>. It will select all nodes with the named <code>bundle</code>. You can freely mix and match node names, group names, and bundle selectors.</p>
 <p>Negation is also possible for bundles and groups. <code>!bundle:foo</code> will add all nodes without the foo bundle, while <code>!group:foo</code> will add all nodes that aren't in the foo group.</p>
-<p><br></p>
+<h2 id="bw-ipmi">bw ipmi</h2>
+<p>Directly execute <code>ipmitool</code> commands on nodes which have IPMI configured.</p>
+<div class="alert alert-info">Needs <a href="https://github.com/ipmitool/ipmitool">ipmitool</a> installed on the machine running <code>bw</code>.</div>
+
+<pre><code class="language-none">$ bw ipmi mynode &quot;chassis status&quot;
+› mynode System Power         : on
+› mynode Power Overload       : false
+› mynode Power Interlock      : inactive
+› mynode Main Power Fault     : false
+› mynode Power Control Fault  : false
+› mynode Power Restore Policy : always-on
+› mynode Last Power Event     :
+› mynode Chassis Intrusion    : inactive
+› mynode Front-Panel Lockout  : inactive
+› mynode Drive Fault          : false
+› mynode Cooling/Fan Fault    : false
+
+i ╭────────┬─────────────┬──────╮
+i │ node   │ return code │ time │
+i ├────────┼─────────────┼──────┤
+i │ mynode │           0 │ 0s   │
+i ╰────────┴─────────────┴──────╯
+</code></pre>
 <h2 id="bw-debug">bw debug</h2>
-<pre><code>$ bw debug
+<pre><code class="language-none">$ bw debug
 bundlewrap X.Y.Z interactive repository inspector
 &gt; You can access the current repository as 'repo'.
 &gt;&gt;&gt; len(repo.nodes)
 121
 </code></pre>
 <p>This command will drop you into a Python shell with direct access to BundleWrap's <a href="../api/">API</a>. Once you're familiar with it, it can be a very powerful tool.</p>
-<p><br></p>
 <h2 id="bw-plot">bw plot</h2>
 <div class="alert alert-info">You'll need <a href="http://www.graphviz.org">Graphviz</a> installed on your machine for this to be useful.</div>
 
-<pre><code class="nohighlight">$ bw plot node mynode | dot -Tsvg -omynode.svg</code></pre>
-
+<pre><code class="language-none">$ bw plot node mynode | dot -Tsvg -omynode.svg&lt;/code&gt;&lt;/pre&gt;
+</code></pre>
 <p>You won't be using this every day, but it's pretty cool. The above command will create an SVG file (you can open these in your browser) that shows the item dependency graph for the given node. You will see bundles as dashed rectangles, static dependencies (defined in BundleWrap itself) in green, auto-generated dependencies (calculated dynamically each time you run <code>bw apply</code>) in blue and dependencies you defined yourself in red.</p>
 <p>It offers an interesting view into the internal complexities BundleWrap has to deal with when figuring out the order in which your items can be applied to your node.</p>
-<p><br></p>
+<h2 id="bw-stats">bw stats</h2>
+<p>Show some statistics about your repository.</p>
+<pre><code>$ bw stats
+╭───────┬───────────────────╮
+│ count │ type              │
+├───────┼───────────────────┤
+│     1 │ nodes             │
+│     0 │ groups            │
+│     1 │ bundles           │
+│     0 │ metadata defaults │
+│     0 │ metadata reactors │
+│     2 │ items             │
+├───────┼───────────────────┤
+│     2 │ file              │
+╰───────┴───────────────────╯
+</code></pre>
 <h2 id="bw-test">bw test</h2>
-<pre><code class="nohighlight">$ bw test
+<pre><code class="language-none">$ bw test
 ✓ node1  samba  pkg_apt:samba
 ✘ node1  samba  file:/etc/samba/smb.conf
 
@@ -417,15 +507,125 @@ bundlewrap X.Y.Z interactive repository inspector
 +----- traceback from worker ------
 |
 |  Traceback (most recent call last):
-|    File "bundlewrap/concurrency.py", line 78, in _worker_process
+|    File &quot;bundlewrap/concurrency.py&quot;, line 78, in _worker_process
 |      return_value = target(*msg['args'], **msg['kwargs'])
-|    File "&lt;string&gt;", line 378, in test
+|    File &quot;&amp;lt;string&amp;gt;&quot;, line 378, in test
 |  BundleError: file:/etc/samba/smb.conf from bundle 'samba' refers to missing file '/path/to/bundlewrap/repo/bundles/samba/files/smb.conf'
 |
 +----------------------------------
 </code></pre>
+<p>This command is meant to be run automatically like a test suite after every commit. It will try to catch any errors in your bundles and file templates by initializing every item for every node (but without touching the network).</p>
+<h2 id="bw-nodesitemsgroupsmetadata">bw nodes/items/groups/metadata</h2>
+<p>Provides introspection into the assets in your repository.</p>
+<p>Some Examples:</p>
+<pre><code class="language-none">$  bw nodes lambda:'node.in_group(&quot;location&quot;) and not node.in_group(&quot;linux&quot;)'
+loc.dev.printer
+loc.dev.toaster
+loc.dev.pizza-oven
+</code></pre>
+<pre><code class="language-none">$ bw items --blame mynode
+╭───────────────────────────┬───────────────────────────────────╮
+│ bundle name               │ items                             │
+├───────────────────────────┼───────────────────────────────────┤
+│ apt                       │ action:apt_update                 │
+│                           │ action:apt_upgrade                │
+│                           │ directory:/etc/apt/sources.list.d │
+│                           │ file:/etc/apt/sources.list        │
+│                           │ …                                 │
+╰───────────────────────────┴───────────────────────────────────╯
+</code></pre>
+<pre><code class="language-none">$ bw groups | grep aws
+aws-customer1
+aws-customer2
+aws-customer3
+</code></pre>
+<pre><code class="language-none">$ bw metadata -k 'apt/packages' -- mynode
+{
+    &quot;apt&quot;: {
+        &quot;packages&quot;: {
+            &quot;apt-transport-https&quot;: {
+                &quot;before&quot;: [
+                    &quot;pkg_apt:&quot;
+                ]
+            },
+            &quot;at&quot;: {},
+            &quot;bash-completion&quot;: {},
+            &quot;bind9-dnsutils&quot;: {},
+            &quot;biosdevname&quot;: {
+                &quot;installed&quot;: false
+            },
+            …
+        }
+    }
+}
 
-<p>This command is meant to be run automatically like a test suite after every commit. It will try to catch any errors in your bundles and file templates by initializing every item for every node (but without touching the network).</p></div>
+$ bw metadata -k 'apt/packages/bind9-dnsutils' --blame -- mynode
+╭─────────────────────────────┬──────────────────────────╮
+│ path                        │ source                   │
+├─────────────────────────────┼──────────────────────────┤
+│ apt/packages/bind9-dnsutils │ metadata_defaults:ubuntu │
+╰─────────────────────────────┴──────────────────────────╯
+</code></pre>
+<h2 id="bw-pw">bw pw</h2>
+<p>Encodes, decodes or generates <a href="../secrets/">secrets and passwords</a> with the repo's secret keys, to be securely stored in metadata. The usual process here is to auto-generate all passwords that are only used by other managed components (i.e., database passwords which will be generated for both the database and the application) so that they can be rotated regularly without too much manual labour. The <code>bw pw</code> tools can then be used to introspect these keys in the case they are needed for manual interaction.</p>
+<p>Derive human-readable password from string (same as <code>repo.vault.human_password_for()</code>)</p>
+<pre><code class="language-none">$ bw pw -H 'root user node1'
+Faidr-Hic-Pund-Gek-89
+</code></pre>
+<p>Derive password from string (same as <code>repo.vault.encrypt()</code>)</p>
+<pre><code class="language-none">bw pw -p 'some secret'
+nwOjZXIg48OwAyqqGpwMWMdCgHGZsIRf
+</code></pre>
+<p>Encrypt secret for use in metadata (same as <code>repo.vault.encrypt()</code>):</p>
+<pre><code class="language-none">$ bw pw -e 'some secret'
+encrypt$gAAAAABpZ4vzVdXaQfwPe3-T3Pl0bkBU0cDM1uKGYVYswZ6DKwOHCxcAnDas2arGZS0kv40mtdb9a6sNEb0Fh60TB_Igu5uEAg==
+</code></pre>
+<h2 id="bw-repo">bw repo</h2>
+<p>Tools to generate a new repo or a new bundle in a repo</p>
+<pre><code class="language-none">$ bw repo create
+$ bw bundle create mybundle
+</code></pre>
+<h2 id="bw-diff">bw diff</h2>
+<p>Show differences between two or more nodes. Generates a list of items that are different together with their item hash. Use <code>bw items</code> to further inspect them.</p>
+<pre><code class="language-none">$ bw diff mynode yournode
+--- mynode
++++ yournode
+-user:root  09b3124df67ecaebae1d740f9985c3bcfa62492cf114b23026028cf1eb457c75
++user:root  90c5e492990c968838b6ea94976b1f463ccebd8cc2464921032bd5ccad752ac8
+</code></pre>
+<h2 id="bw-hash">bw hash</h2>
+<p>Generate the SHA256 hash for nodes, groups, lambdas or items. The hash can be used to indicate if a single item within the selection has changed. This can be used for automatic deployments or change notifications.</p>
+<pre><code class="language-none">$ bw hash mynode
+d063cfc437616f7753accf990e43ceece4b2fb92e51ea0314de0effc6ae1fa81
+
+$ bw hash ubuntu-24.04
+51e5099152418033e002bace2a34d612815df759b18b15106cb462af1b42bf17
+
+$ bw hash mynode user:root
+09b3124df67ecaebae1d740f9985c3bcfa62492cf114b23026028cf1eb457c75
+</code></pre>
+<h2 id="bw-generate-completions">bw generate-completions</h2>
+<div class="alert alert-info">Needs <a href="https://kislyuk.github.io/argcomplete/">argcomplete</a> to be manually installed.</div>
+
+<p>This subcommand is meant to be used with <a href="https://kislyuk.github.io/argcomplete/">argcomplete</a>. When argcomplete is installed and activated, it is activated by the bw main command and shows tab completions for all subcommands and arguments.</p>
+<pre><code class="language-none">$ bw apply &lt;TAB&gt;&lt;TAB&gt;
+--add-host-keys       -a  -- set StrictHostKeyChecking=no instead of yes for SSH
+--debug               -d  -- print debugging info
+--help                -h  -- show this help message and exit
+--repo-path           -r  -- Look for repository at this path (defaults to current working directory)
+--version                 -- show program's version number and exit
+apply                     -- Applies the configuration defined in your repository to your nodes
+debug                     -- Start an interactive Python shell for this repository
+diff                      -- Show differences between nodes
+…
+</code></pre>
+<p>To also get auto-complete options for node  and group names, <code>bw generate-completions</code> needs to be run regularly. It generates a list of available targets for bw-operations and offers them for completion:</p>
+<pre><code class="language-none">$ bw apply location.&lt;TAB&gt;&lt;TAB&gt;
+location.node-1      location.node-2
+location.node-3      location.node-4
+location.node-group
+…
+</code></pre></div>
             </div>
         </div>
 
