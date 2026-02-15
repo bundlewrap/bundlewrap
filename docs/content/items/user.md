@@ -76,6 +76,8 @@ Hashed password as it would be returned by `crypt()` and written to `/etc/shadow
 
 Recommended for use with the `password` attribute. BundleWrap will use bcrypt with a cost factor of 8 on this salt and the provided password.
 
+bcrypt expects salts to be 16 bytes encoded with the [bcrypt base64 alphabet](https://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/crypt/bcrypt.c?rev=1.1&content-type=text/x-cvsweb-markup) `./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789` without padding `=` at the end.
+
 <hr>
 
 ## shell
