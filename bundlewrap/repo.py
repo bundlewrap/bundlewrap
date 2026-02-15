@@ -696,7 +696,7 @@ class Repository(MetadataGenerator):
                 targets.update(self.nodes_without_bundle(bundle_name))
             elif name.startswith("!group:"):
                 group_name = name.split(":", 1)[1]
-                targets.update(self.nodes_in_group(group_name))
+                targets.update(self.nodes_not_in_group(group_name))
             elif name.startswith("lambda:"):
                 lambda_str = name.split(":", 1)[1]
                 targets.update(self.nodes_matching_lambda(lambda_str, lambda_workers))
