@@ -150,7 +150,7 @@ HELP_softlock_expiry = _("how long before the lock is ignored and removed automa
 def get_target_nodes(repo, target_strings, node_workers=None):
     if not node_workers:
         node_workers = DEFAULT_node_workers
-    
+
     try:
         nodes_matching = repo.nodes_matching(target_strings, node_workers)
         if not nodes_matching:
