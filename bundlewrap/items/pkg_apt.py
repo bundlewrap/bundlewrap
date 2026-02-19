@@ -16,6 +16,16 @@ class AptPkg(Pkg):
     }
     _pkg_manual_cache = {}
 
+    def get_canned_actions(self):
+        return {
+            'reinstall': {
+                'command': "DEBIAN_FRONTEND=noninteractive "
+                           "apt-get -qy -o Dpkg::Options::=--force-confold --no-install-recommends "
+                           "install --reinstall {}".format(quote(self.name.replace("_", ":"))),
+                'needs': {self.id},
+            },
+        }
+
     def pkg_all_installed(self):
         result = self.run("dpkg -l | grep '^ii'")
         for line in result.stdout.decode('utf-8').strip().split("\n"):
