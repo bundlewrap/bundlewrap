@@ -403,6 +403,7 @@ def test_bw_items_invocation_single_item_attrs(tmpdir):
 attribute\tvalue
 after\t[]
 before\t[]
+canned_actions_inherit_tags	True
 cascade_skip\tTrue
 comment\tNone
 error_on_missing_fault\tFalse
@@ -426,6 +427,7 @@ def test_bw_items_invocation_single_item_attrs_as_json(tmpdir):
 {
     "after": [],
     "before": [],
+    "canned_actions_inherit_tags": true,
     "cascade_skip": true,
     "comment": null,
     "error_on_missing_fault": false,

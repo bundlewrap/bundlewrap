@@ -44,6 +44,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'triggers': set(),
     'unless': "",
     'when_creating': {},
+    'canned_actions_inherit_tags': True,
 }
 
 wrapper = TextWrapper(

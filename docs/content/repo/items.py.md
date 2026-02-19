@@ -173,11 +173,14 @@ In this simplified example we save ourselves from duplicating the logic that get
 
 Tags also allow for optional dependencies, since items can depend on tags that don't exist. So for example if you need to do something after items from another bundle have been completed, but that bundle might not always be there, you can depend on a tag given to the items of the other bundle.
 
+By default, Tags inherit to canned actions, this is a Tag specified on a `svc_systemd:xyz`-item is also applied to the automatically generated `xyz:restart` action. This is useful in most cases because it ensures, that all aspects of the service are realized before dependent actions/items are realized,
+but sometimes you want an action or item to be realized between the service being started and it being restarted. In this niche use-case the special `canned_actions_inherit_tags`-attribute on the service can be set to `False`.
+
 <br>
 
 ## triggers and triggered
 
-In some scenarios, you may want to execute an [action](../items/action.md) only when an item is fixed (e.g. restart a daemon after a config file has changed or run `postmap` after updating an alias file). To do this, BundleWrap has the builtin atttribute `triggers`. You can use it to point to any item that has its `triggered` attribute set to `True`. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).
+In some scenarios, you may want to execute an [action](../items/action.md) only when an item is fixed (e.g. restart a daemon after a config file has changed or run `postmap` after updating an alias file). To do this, BundleWrap has the builtin attribute `triggers`. You can use it to point to any item that has its `triggered` attribute set to `True`. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).
 
 	files = {
 	    '/etc/daemon.conf': {
