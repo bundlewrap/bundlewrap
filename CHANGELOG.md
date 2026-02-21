@@ -1,3 +1,13 @@
+# 5.0.1
+
+2026-02-21
+
+* when a metadata reactor does not correctly return, the exception's stack-trace shown now shows which reactor on which bundles caused the error via an error_context
+* when a metadata reactor raises an ItemDependencyError because metadata is missing, the exception now also shows which node caused the error
+* items with canned actions to inherit their tags to said actions since 5.0.0. With 5.0.1 a new attribute `canned_actions_inherit_tags` is introduced with inhibits this behaviour on selected items
+* fixes an issue with the `!group:my_group` filter actually returning all nodes _in_ the group not the inverse
+* add documentation on the correct format of the bcrypt salt format
+
 # 5.0.0
 
 2026-01-30
