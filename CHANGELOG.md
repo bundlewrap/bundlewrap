@@ -1,3 +1,9 @@
+# 5.0.2
+
+2026-02-25
+
+* fix `bw --version` reporting "5.0.0" for the "5.0.1" release due to an incomplete release process
+
 # 5.0.1
 
 2026-02-25
