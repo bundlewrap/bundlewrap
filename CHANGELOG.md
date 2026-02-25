@@ -1,3 +1,13 @@
+# 5.0.1
+
+2026-02-25
+
+* when a metadata reactor does not correctly return a dict, the exception's stack-trace shown now shows which reactor on which bundles caused the error via an error_context
+* when a metadata reactor raises an ItemDependencyError because of circular dependencies, the exception now also shows which node caused the error
+* since 5.0.0, canned actions in items will inherit the tags of the item itself. 5.0.1 introduces a new attribute `canned_actions_inherit_tags` (defaulting to True) to optionally disable that behaviour
+* fixes an issue with the `!group:my_group` filter actually returning all nodes _in_ the group not the inverse
+* add documentation on the correct format of the bcrypt salt format
+
 # 5.0.0
 
 2026-01-30
