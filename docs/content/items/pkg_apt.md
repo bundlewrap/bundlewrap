@@ -41,3 +41,11 @@ These attributes are only enforced during the creation of the item on the node (
 ### start\_service
 
 By default, daemons will be auto-started on systems like Debian or Ubuntu. This happens right after the package has been installed. You might want to set `start_service` to `False` to avoid this. This might be necessary if BundleWrap must place some more config files on the node before a daemon can actually be started.
+
+# Canned actions
+
+See also: [Explanation of how canned actions work](../repo/items.py.md#canned-actions)
+
+## reinstall
+
+Force a reinstall of the package. This is helpful if you pinned a package to a specific version and want to update it during `bw apply`.
