@@ -8,7 +8,7 @@ from sys import argv, exit
 from traceback import format_exc
 
 
-from ..exceptions import NoSuchRepository, MissingRepoDependency
+from ..exceptions import NoSuchRepository, MissingRepoDependency, ValidatorError
 from ..repo import Repository
 from ..utils.cmdline import suppress_broken_pipe_msg
 from ..utils.text import force_text, mark_for_translation as _, red
@@ -61,6 +61,11 @@ def main(*args, **kwargs):
                 "{x} {path} "
                 "is not a BundleWrap repository."
             ).format(path=quote(abspath(pargs.repo_path)), x=red("!!!")))
+            io.deactivate()
+            exit(1)
+        except ValidatorError as exc:
+            io.stderr(_("{x} failed to validate bundlewrap version").format(x=red("!!!")))
+            io.stderr(str(exc))
             io.deactivate()
             exit(1)
         except MissingRepoDependency as exc:

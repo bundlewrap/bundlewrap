@@ -6,10 +6,11 @@ from os import environ
 from os.path import join
 from string import ascii_letters, punctuation, digits
 from subprocess import PIPE, run
+from threading import Lock
 
 from cryptography.fernet import Fernet
 
-from .exceptions import FaultUnavailable
+from .exceptions import FaultUnavailable, ValidatorError
 from .utils import Fault, get_file_contents
 from .utils.text import force_text, mark_for_translation as _
 from .utils.ui import io
@@ -70,6 +71,30 @@ class SecretProxy:
     def __init__(self, repo):
         self.repo = repo
         self.keys = self._load_keys()
+        self.validator_cache = {}
+        self.validator_locks = {}
+        self.validator_locks_lock = Lock()
+
+    def __validate_key(self, key):
+        with self.validator_locks_lock:
+            if key not in self.validator_locks:
+                self.validator_locks[key] = Lock()
+
+        # We need this lock to ensure we only run validators once per
+        # key. After all, validators might take a long time or use a
+        # lot of resources depending on what users are doing.
+        with self.validator_locks[key]:
+            if key in self.validator_cache:
+                if not self.validator_cache[key]:
+                    raise FaultUnavailable(_("validator for key '{}' failed").format(key))
+                return
+
+            try:
+                self.repo.run_validator('validate_secret_key', key=key)
+                self.validator_cache[key] = True
+            except ValidatorError as exc:
+                self.validator_cache[key] = False
+                raise FaultUnavailable(_("validator for key '{}' failed: {}").format(key, str(exc)))
 
     def _decrypt(self, cryptotext=None, key=None):
         """
@@ -79,6 +104,7 @@ class SecretProxy:
             return "decrypted text"
 
         key, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
+        self.__validate_key(key)
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file(self, source_path=None, binary=False, key=None):
@@ -91,6 +117,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        self.__validate_key(key)
 
         f = Fernet(key)
         if binary:
@@ -108,6 +135,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        self.__validate_key(key)
 
         f = Fernet(key)
         return b64encode(f.decrypt(cryptotext)).decode('utf-8')
@@ -234,6 +262,7 @@ class SecretProxy:
                 key=key,
                 password=identifier,
             ))
+        self.__validate_key(key)
 
         h = hmac.new(urlsafe_b64decode(key_encoded), digestmod=hashlib.sha512)
         h.update(identifier.encode('utf-8'))

@@ -36,6 +36,7 @@ nav:
   - bundles/.../metadata.py: repo/metadata.py.md
   - hooks/: repo/hooks.md
   - libs/: repo/libs.md
+  - validators.py: repo/validators.py.md
 - Items:
   - action: items/action.md
   - dconf: items/dconf.md

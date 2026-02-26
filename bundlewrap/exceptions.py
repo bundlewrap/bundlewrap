@@ -184,3 +184,9 @@ class NodeLockedException(BundlewrapError):
     Raised when a node is already locked during an 'apply' run.
     """
     pass
+
+class ValidatorError(BundlewrapError):
+    """
+    Raised when a validator fails.
+    """
+    pass

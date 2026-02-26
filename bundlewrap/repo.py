@@ -17,7 +17,7 @@ if version_info >= VERSION_NEW_PACKAGING:
 else:
     from pkg_resources import DistributionNotFound, require, VersionConflict  # needs setuptools
 
-from . import items, VERSION_STRING
+from . import items, VERSION, VERSION_STRING
 from .bundle import FILENAME_ITEMS
 from .exceptions import (
     NoSuchGroup,
@@ -52,6 +52,7 @@ FILENAME_GROUPS = "groups.py"
 FILENAME_MAGIC_STRINGS = "magic_strings.py"
 FILENAME_NODES = "nodes.py"
 FILENAME_REQUIREMENTS = "requirements.txt"
+FILENAME_VALIDATORS = "validators.py"
 
 HOOK_EVENTS = (
     'action_run_end',
@@ -280,6 +281,7 @@ class Repository(MetadataGenerator):
         self.node_dict = {}
         self.node_attribute_functions = {}
         self.magic_string_functions = {}
+        self.validators = {}
         self._get_all_attr_code_cache = {}
         self._get_all_attr_result_cache = {}
 
@@ -497,6 +499,36 @@ class Repository(MetadataGenerator):
                 'vault': self.vault,
             },
         )
+
+    def load_validators(self):
+        if not isfile(self.validators_file):
+            return
+
+        for name, obj in self.get_all_attrs_from_file(
+            self.validators_file,
+            base_env={
+                'repo_path': self.path,
+            },
+        ).items():
+            if name.startswith("_"):
+                continue
+            self.validators[name] = obj
+
+    def run_validator(self, validator_name, **kwargs):
+        """
+        Runs a validator. Calling code MUST catch raised ValidatorError
+        exceptions and properly handle them. Calling code also SHOULD
+        cache the result if it's expected that validators run more than
+        once during a `bw` run.
+        """
+        try:
+            func = self.validators[validator_name]
+        except KeyError:
+            # if the function is not defined, return early
+            return
+
+        func(**kwargs)
+
 
     def items_from_dir(self, path):
         """
@@ -746,6 +778,9 @@ class Repository(MetadataGenerator):
             else:
                 _check_requirements_legacy(lines)
 
+        self.load_validators()
+        self.run_validator('validate_bundlewrap_version', version=VERSION)
+
         self.vault = SecretProxy(self)
 
         # populate bundles
@@ -788,6 +823,7 @@ class Repository(MetadataGenerator):
         self.libs_dir = join(self.path, DIRNAME_LIBS)
         self.magic_strings_file = join(self.path, FILENAME_MAGIC_STRINGS)
         self.nodes_file = join(self.path, FILENAME_NODES)
+        self.validators_file = join(self.path, FILENAME_VALIDATORS)
 
         self.hooks = HooksProxy(self, self.hooks_dir)
         self.libs = LibsProxy(self.libs_dir)
