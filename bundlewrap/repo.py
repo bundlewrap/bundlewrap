@@ -68,8 +68,10 @@ HOOK_EVENTS = (
     'node_apply_start',
     'node_run_end',
     'node_run_start',
+    'repo_init',
     'run_end',
     'run_start',
+    'secret_key_use',
     'test',
     'test_node',
 )
@@ -178,7 +180,7 @@ class HooksProxy:
 
     def __getattr__(self, attrname):
         if attrname not in HOOK_EVENTS:
-            raise AttributeError
+            raise AttributeError(attrname)
 
         if self.__registered_hooks is None:
             self._register_hooks()
@@ -288,6 +290,11 @@ class Repository(MetadataGenerator):
                 self.populate_from_path(self.path)
             else:
                 self.item_classes = list(self.items_from_dir(items.__path__[0]))
+
+        self.hooks.repo_init(
+            repo=self,
+            version=VERSION_STRING,
+        )
 
     def __eq__(self, other):
         if self.path == "/dev/null":
