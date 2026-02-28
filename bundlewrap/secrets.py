@@ -79,6 +79,10 @@ class SecretProxy:
             return "decrypted text"
 
         key, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
+        self.repo.hooks.secret_key_use(
+            repo=self.repo,
+            key=key,
+        )
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file(self, source_path=None, binary=False, key=None):
@@ -91,6 +95,10 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        self.repo.hooks.secret_key_use(
+            repo=self.repo,
+            key=key,
+        )
 
         f = Fernet(key)
         if binary:
@@ -108,6 +116,10 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        self.repo.hooks.secret_key_use(
+            repo=self.repo,
+            key=key,
+        )
 
         f = Fernet(key)
         return b64encode(f.decrypt(cryptotext)).decode('utf-8')
@@ -159,6 +171,11 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "generatedpassword"
 
+        self.repo.hooks.secret_key_use(
+            repo=self.repo,
+            key=key,
+        )
+
         prng = self._get_prng(identifier, key)
 
         pwd = ""
@@ -208,6 +225,11 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return ("generatedpassword"*length)[:length]
 
+        self.repo.hooks.secret_key_use(
+            repo=self.repo,
+            key=key,
+        )
+
         prng = self._get_prng(identifier, key)
 
         alphabet = ascii_letters + digits
@@ -219,6 +241,11 @@ class SecretProxy:
     def _generate_random_bytes_as_base64(self, identifier=None, key='generate', length=32):
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return b64encode(bytearray([ord("a") for i in range(length)])).decode()
+
+        self.repo.hooks.secret_key_use(
+            repo=self.repo,
+            key=key,
+        )
 
         prng = self._get_prng(identifier, key)
         return b64encode(bytearray([next(prng) for i in range(length)])).decode()
