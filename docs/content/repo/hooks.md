@@ -247,13 +247,15 @@ Called each time a `bw run` command finishes on a node.
 
 ---
 
-**`repo_init(repo, version, **kwargs)`**
+**`repo_init(repo, version_string, version_tuple, **kwargs)`**
 
 Called once after the bundlewrap repo has been initialized.
 
 `repo` The current repository (instance of `bundlewrap.repo.Repository`).
 
-`version` The running bundlewrap version as string (e. g. `5.0.2`)
+`version_string` The running bundlewrap version as string (e. g. `5.0.2`)
+
+`version_tuple` The running bundlewrap version as tuple (e. g. `(5, 0, 2)`)
 
 ---
 
