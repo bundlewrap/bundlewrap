@@ -17,7 +17,7 @@ if version_info >= VERSION_NEW_PACKAGING:
 else:
     from pkg_resources import DistributionNotFound, require, VersionConflict  # needs setuptools
 
-from . import items, VERSION_STRING
+from . import items, VERSION, VERSION_STRING
 from .bundle import FILENAME_ITEMS
 from .exceptions import (
     NoSuchGroup,
@@ -293,7 +293,8 @@ class Repository(MetadataGenerator):
 
         self.hooks.repo_init(
             repo=self,
-            version=VERSION_STRING,
+            version_string=VERSION_STRING,
+            version_tuple=VERSION,
         )
 
     def __eq__(self, other):
