@@ -247,6 +247,41 @@ Called each time a `bw run` command finishes on a node.
 
 ---
 
+**`node_verify_start(repo, node, interactive=False, **kwargs)`**
+
+Called each time a `bw verify` command reaches a new node.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`node` The current node (instance of `bundlewrap.node.Node`).
+
+`interactive` Always `False`.
+
+To skip a node:
+
+```
+from bundlewrap.exceptions import SkipNode
+raise SkipNode("reason goes here")
+```
+
+---
+
+**`node_verify_end(repo, node, duration=None, interactive=False, result=None, **kwargs)`**
+
+Called each time a `bw verify` command finishes processing a node.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`node` The current node (instance of `bundlewrap.node.Node`).
+
+`duration` How long the verify took (timedelta).
+
+`interactive` Always `False`.
+
+`result` Result of verify (`bool`).
+
+---
+
 **`run_start(repo, target, nodes, command, **kwargs)`**
 
 Called each time a `bw run` command starts.
@@ -292,3 +327,38 @@ Called during `bw test` for each node.
 `repo` The current repository (instance of `bundlewrap.repo.Repository`).
 
 `node` The current node (instance of `bundlewrap.node.Node`).
+
+---
+
+**`verify_start(repo, target, nodes, interactive=False, **kwargs)`**
+
+Called when you start a `bw verify` command.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`target` The group or node name you gave on the command line.
+
+`nodes` A list of node objects affected (list of `bundlewrap.node.Node` instances).
+
+`interactive` Always `False`.
+
+To abort the entire verify operation:
+
+```
+from bundlewrap.exceptions import GracefulApplyException
+raise GracefulApplyException("reason goes here")
+```
+
+---
+
+**`verify_end(repo, target, nodes, duration=None, **kwargs)`**
+
+Called when a `bw verify` command completes.
+
+`repo` The current repository (instance of `bundlewrap.repo.Repository`).
+
+`target` The group or node name you gave on the command line.
+
+`nodes` A list of node objects affected (list of `bundlewrap.node.Node` instances).
+
+`duration` How long the verify took (timedelta).
