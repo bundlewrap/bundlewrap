@@ -1040,6 +1040,20 @@ class Node:
         elif not self.check_connection():
             io.stdout(_("{x} {node}  Connection error (details above)").format(node=bold(self.name), x=red("!")))
         else:
+            try:
+                self.repo.hooks.node_verify_start(
+                    repo=self.repo,
+                    node=self,
+                    interactive=False,
+                )
+            except SkipNode as exc:
+                io.stdout(_("{x} {node}  skipped by hook ({reason})").format(
+                    node=bold(self.name),
+                    reason=str(exc) or _("no reason given"),
+                    x=yellow("»"),
+                ))
+                return None
+
             result = verify_items(
                 self,
                 autoskip_selector=autoskip_selector,
@@ -1047,6 +1061,14 @@ class Node:
                 show_all=show_all,
                 show_diff=show_diff,
                 workers=workers,
+            )
+
+            self.repo.hooks.node_verify_end(
+                repo=self.repo,
+                node=self,
+                duration= datetime.now() - start,
+                interactive=False,
+                result=result,
             )
 
         return {

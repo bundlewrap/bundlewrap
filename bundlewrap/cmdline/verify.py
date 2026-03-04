@@ -2,6 +2,7 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
+from ..exceptions import GracefulApplyException
 from ..utils.cmdline import count_items, get_target_nodes, verify_autoskip_selectors
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
@@ -113,8 +114,23 @@ def stats_summary(node_stats, total_duration):
 def bw_verify(repo, args):
     errors = []
     node_stats = {}
-    pending_nodes = get_target_nodes(repo, args['targets'])
-    start_time = datetime.now()
+    target_nodes = get_target_nodes(repo, args['targets'])
+    pending_nodes = target_nodes.copy()
+
+    try:
+        repo.hooks.verify_start(
+            repo=repo,
+            target=args['targets'],
+            nodes=target_nodes,
+            interactive=False,
+        )
+    except GracefulApplyException as exc:
+        io.stderr(_("{x} apply aborted by hook ({reason})").format(
+            reason=str(exc) or _("no reason given"),
+            x=red("!!!"),
+        ))
+        exit(1)
+
     io.progress_set_total(count_items(pending_nodes))
 
     selectors_not_matching = verify_autoskip_selectors(pending_nodes, args['autoskip'])
@@ -124,6 +140,8 @@ def bw_verify(repo, args):
             selectors=' '.join(sorted(selectors_not_matching)),
         ))
         exit(1)
+
+    start_time = datetime.now()
 
     def tasks_available():
         return bool(pending_nodes)
@@ -143,6 +161,8 @@ def bw_verify(repo, args):
         }
 
     def handle_result(task_id, return_value, duration):
+        if return_value is None: # node skipped
+            return
         node_stats[task_id] = return_value
 
     def handle_exception(task_id, exception, traceback):
@@ -165,9 +185,18 @@ def bw_verify(repo, args):
     )
     worker_pool.run()
 
+    total_duration = datetime.now() - start_time
+
     if args['summary'] and node_stats:
-        stats_summary(node_stats, datetime.now() - start_time)
+        stats_summary(node_stats, total_duration)
 
     error_summary(errors)
+
+    repo.hooks.verify_end(
+        repo=repo,
+        target=args['targets'],
+        nodes=target_nodes,
+        duration=total_duration,
+    )
 
     exit(1 if errors else 0)
