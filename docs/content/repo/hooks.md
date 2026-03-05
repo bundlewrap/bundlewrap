@@ -247,15 +247,13 @@ Called each time a `bw run` command finishes on a node.
 
 ---
 
-**`node_verify_start(repo, node, interactive=False, **kwargs)`**
+**`node_verify_start(repo, node, **kwargs)`**
 
 Called each time a `bw verify` command reaches a new node.
 
 `repo` The current repository (instance of `bundlewrap.repo.Repository`).
 
 `node` The current node (instance of `bundlewrap.node.Node`).
-
-`interactive` Always `False`.
 
 To skip a node:
 
@@ -266,7 +264,7 @@ raise SkipNode("reason goes here")
 
 ---
 
-**`node_verify_end(repo, node, duration=None, interactive=False, result=None, **kwargs)`**
+**`node_verify_end(repo, node, duration=None, result=None, **kwargs)`**
 
 Called each time a `bw verify` command finishes processing a node.
 
@@ -276,9 +274,7 @@ Called each time a `bw verify` command finishes processing a node.
 
 `duration` How long the verify took (timedelta).
 
-`interactive` Always `False`.
-
-`result` Result of verify (`bool`).
+`result` Result of verify (`List(bool)`).
 
 ---
 
@@ -330,7 +326,7 @@ Called during `bw test` for each node.
 
 ---
 
-**`verify_start(repo, target, nodes, interactive=False, **kwargs)`**
+**`verify_start(repo, target, nodes, **kwargs)`**
 
 Called when you start a `bw verify` command.
 
@@ -339,8 +335,6 @@ Called when you start a `bw verify` command.
 `target` The group or node name you gave on the command line.
 
 `nodes` A list of node objects affected (list of `bundlewrap.node.Node` instances).
-
-`interactive` Always `False`.
 
 To abort the entire verify operation:
 
