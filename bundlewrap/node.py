@@ -1065,7 +1065,6 @@ class Node:
                 self.repo.hooks.node_verify_start(
                     repo=self.repo,
                     node=self,
-                    interactive=False,
                 )
             except SkipNode as exc:
                 io.stdout(_("{x} {node}  skipped by hook ({reason})").format(
@@ -1088,7 +1087,6 @@ class Node:
                 repo=self.repo,
                 node=self,
                 duration= datetime.now() - start,
-                interactive=False,
                 result=result,
             )
 

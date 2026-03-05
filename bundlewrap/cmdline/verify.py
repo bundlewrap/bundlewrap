@@ -122,10 +122,9 @@ def bw_verify(repo, args):
             repo=repo,
             target=args['targets'],
             nodes=target_nodes,
-            interactive=False,
         )
     except GracefulApplyException as exc:
-        io.stderr(_("{x} apply aborted by hook ({reason})").format(
+        io.stderr(_("{x} verify aborted by hook ({reason})").format(
             reason=str(exc) or _("no reason given"),
             x=red("!!!"),
         ))
