@@ -21,49 +21,7 @@ from ..utils.text import (
 from ..utils.ui import io
 
 
-def stats_summary(node_stats, total_duration):
-    for node in node_stats.keys():
-        node_stats[node]['total'] = sum([
-            node_stats[node]['good'],
-            node_stats[node]['bad'],
-            node_stats[node]['unknown'],
-        ])
-        try:
-            node_stats[node]['health'] = \
-                (node_stats[node]['good'] / float(node_stats[node]['total'])) * 100.0
-        except ZeroDivisionError:
-            node_stats[node]['health'] = 0
-
-    totals = {
-        'items': 0,
-        'good': 0,
-        'bad': 0,
-        'unknown': 0,
-    }
-    node_ranking = []
-
-    for node_name, stats in node_stats.items():
-        totals['items'] += stats['total']
-        totals['good'] += stats['good']
-        totals['bad'] += stats['bad']
-        totals['unknown'] += stats['unknown']
-        node_ranking.append((
-            stats['health'],
-            node_name,
-            stats['total'],
-            stats['good'],
-            stats['bad'],
-            stats['unknown'],
-            stats['duration'],
-        ))
-
-    node_ranking = sorted(node_ranking, reverse=True)
-
-    try:
-        totals['health'] = (totals['good'] / float(totals['items'])) * 100.0
-    except ZeroDivisionError:
-        totals['health'] = 0
-
+def stats_summary(results, totals, total_duration):
     rows = [[
         bold(_("node")),
         _("items"),
@@ -74,23 +32,24 @@ def stats_summary(node_stats, total_duration):
         _("duration"),
     ], ROW_SEPARATOR]
 
-    for health, node_name, items, good, bad, unknown, duration in node_ranking:
+    for result in sorted(results):
         rows.append([
-            node_name,
-            str(items),
-            green_unless_zero(good),
-            red_unless_zero(bad),
-            cyan_unless_zero(unknown),
-            "{0:.1f}%".format(health),
-            format_duration(duration),
+            result.node_name,
+            str(result.total),
+            green_unless_zero(result.correct),
+            red_unless_zero(result.bad),
+            cyan_unless_zero(result.unknown),
+            "{0:.1f}%".format(result.health),
+            format_duration(result.duration),
         ])
 
-    if len(node_ranking) > 1:
+
+    if len(results) > 1:
         rows.append(ROW_SEPARATOR)
         rows.append([
-            bold(_("total ({} nodes)").format(len(node_stats.keys()))),
+            bold(_("total ({} nodes)").format(len(results))),
             str(totals['items']),
-            green_unless_zero(totals['good']),
+            green_unless_zero(totals['correct']),
             red_unless_zero(totals['bad']),
             cyan_unless_zero(totals['unknown']),
             "{0:.1f}%".format(totals['health']),
@@ -113,7 +72,6 @@ def stats_summary(node_stats, total_duration):
 
 def bw_verify(repo, args):
     errors = []
-    node_stats = {}
     target_nodes = get_target_nodes(repo, args['targets'])
     pending_nodes = target_nodes.copy()
 
@@ -141,6 +99,7 @@ def bw_verify(repo, args):
         exit(1)
 
     start_time = datetime.now()
+    results = []
 
     def tasks_available():
         return bool(pending_nodes)
@@ -162,7 +121,7 @@ def bw_verify(repo, args):
     def handle_result(task_id, return_value, duration):
         if return_value is None: # node skipped
             return
-        node_stats[task_id] = return_value
+        results.append(return_value)
 
     def handle_exception(task_id, exception, traceback):
         msg = "{}: {}".format(
@@ -185,9 +144,10 @@ def bw_verify(repo, args):
     worker_pool.run()
 
     total_duration = datetime.now() - start_time
+    totals = stats(results)
 
-    if args['summary'] and node_stats:
-        stats_summary(node_stats, total_duration)
+    if args['summary'] and results:
+        stats_summary(results, totals, total_duration)
 
     error_summary(errors)
 
@@ -199,3 +159,21 @@ def bw_verify(repo, args):
     )
 
     exit(1 if errors else 0)
+
+
+def stats(results):
+    totals = {
+        'items': 0,
+        'correct': 0,
+        'bad': 0,
+        'unknown': 0,
+        'health': 0,
+    }
+    for result in results:
+        totals['items'] += result.total
+        for metric in ('correct', 'bad', 'unknown', 'health'):
+            totals[metric] += getattr(result, metric)
+
+    totals['health'] = totals['health'] / len(results)
+
+    return totals
