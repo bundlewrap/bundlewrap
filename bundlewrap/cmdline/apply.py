@@ -2,7 +2,7 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..exceptions import GracefulApplyException
+from ..exceptions import GracefulException
 from ..utils import SkipList
 from ..utils.cmdline import count_items, get_target_nodes, verify_autoskip_selectors
 from ..utils.table import ROW_SEPARATOR, render_table
@@ -34,7 +34,7 @@ def bw_apply(repo, args):
             nodes=target_nodes,
             interactive=args['interactive'],
         )
-    except GracefulApplyException as exc:
+    except GracefulException as exc:
         io.stderr(_("{x} apply aborted by hook ({reason})").format(
             reason=str(exc) or _("no reason given"),
             x=red("!!!"),
@@ -87,7 +87,7 @@ def bw_apply(repo, args):
             msg=exception,
             x=red("!"),
         )
-        if isinstance(exception, GracefulApplyException):
+        if isinstance(exception, GracefulException):
             errors.append(msg)
         else:
             io.stderr(traceback)

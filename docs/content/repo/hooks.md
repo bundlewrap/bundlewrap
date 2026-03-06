@@ -339,8 +339,8 @@ Called when you start a `bw verify` command.
 To abort the entire verify operation:
 
 ```
-from bundlewrap.exceptions import GracefulApplyException
-raise GracefulApplyException("reason goes here")
+from bundlewrap.exceptions import GracefulVerifyException
+raise GracefulVerifyException("reason goes here")
 ```
 
 ---
