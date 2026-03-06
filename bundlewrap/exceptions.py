@@ -31,16 +31,34 @@ class MetadataUnavailable(BundlewrapError):
         if self.path is None:
             return "path: <unknown>"
         return f"path: {'/'.join(self.path)}"
-    
+
     def __repr__(self):
         if self.path is None:
             return "<MetadataUnavailable>"
         return f"<MetadataUnavailable path={'/'.join(self.path)}>"
 
-class GracefulApplyException(BundlewrapError):
+
+class GracefulException(BundlewrapError):
+    """
+    Superclass for GracefulApplyException and GracefulVerifyException to
+    catch problems that were encountered in either `bw apply` or
+    `bw verify`.
+    """
+    pass
+
+
+class GracefulApplyException(GracefulException):
     """
     Raised when a problem has been encountered in `bw apply`, but a more
     verbose error has already been printed.
+    """
+    pass
+
+
+class GracefulVerifyException(GracefulException):
+    """
+    Raised when a problem has been encountered in `bw verify`, but a
+    more verbose error has already been printed.
     """
     pass
 
@@ -83,7 +101,7 @@ class NoSuchTarget(BundlewrapError):
     """
     Raised when a target matches neither bundle nor group, item or node.
     """
-    
+
     def __init__(self, target):
         self.target = target
 

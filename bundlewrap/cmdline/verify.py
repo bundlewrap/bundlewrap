@@ -2,7 +2,7 @@ from datetime import datetime
 from sys import exit
 
 from ..concurrency import WorkerPool
-from ..exceptions import GracefulApplyException
+from ..exceptions import GracefulException
 from ..utils.cmdline import count_items, get_target_nodes, verify_autoskip_selectors
 from ..utils.table import ROW_SEPARATOR, render_table
 from ..utils.text import (
@@ -123,7 +123,7 @@ def bw_verify(repo, args):
             target=args['targets'],
             nodes=target_nodes,
         )
-    except GracefulApplyException as exc:
+    except GracefulException as exc:
         io.stderr(_("{x} verify aborted by hook ({reason})").format(
             reason=str(exc) or _("no reason given"),
             x=red("!!!"),
