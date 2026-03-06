@@ -14,6 +14,7 @@ from .deps import find_item, ItemDependencyLoop
 from .exceptions import (
     BundleError,
     GracefulApplyException,
+    GracefulVerifyException,
     ItemSkipped,
     NodeLockedException,
     NoSuchBundle,
@@ -98,6 +99,44 @@ class ApplyResult:
                 raise RuntimeError(_(
                     "can't make sense of results for {} on {}: {}"
                 ).format(item_id, self.node_name, result))
+
+        self.start = None
+        self.end = None
+
+    def __lt__(self, other):
+        return self.node_name < other.node_name
+
+    @property
+    def duration(self):
+        return self.end - self.start
+
+
+class VerifyResult:
+    """
+    Holds information about an verify run for a node.
+    """
+    def __init__(self, node, item_results):
+        self.node_name = node.name
+        self.correct = 0
+        self.bad = 0
+        self.unknown = 0
+        self.total = 0
+
+        for item_id, result, duration in item_results:
+            self.total += 1
+            if result == Item.STATUS_OK:
+                self.correct += 1
+            elif result == Item.STATUS_NEEDS_FIX:
+                self.bad += 1
+            else:
+                raise RuntimeError(_(
+                    "can't make sense of results for {} on {}: {}"
+                ).format(item_id, self.node_name, result))
+
+        try:
+            self.health = self.correct / float(self.total) * 100.0
+        except ZeroDivisionError:
+            self.health = 0
 
         self.start = None
         self.end = None
@@ -1032,15 +1071,31 @@ class Node:
         show_diff=True,
         workers=4,
     ):
-        result = []
+        item_results = []
         start = datetime.now()
+
+        error = None
 
         if not self.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
         elif not self.check_connection():
-            io.stdout(_("{x} {node}  Connection error (details above)").format(node=bold(self.name), x=red("!")))
+            error = _("Connection error (details above)")
+            item_results = []
         else:
-            result = verify_items(
+            try:
+                self.repo.hooks.node_verify_start(
+                    repo=self.repo,
+                    node=self,
+                )
+            except SkipNode as exc:
+                io.stdout(_("{x} {node}  skipped by hook ({reason})").format(
+                    node=bold(self.name),
+                    reason=str(exc) or _("no reason given"),
+                    x=yellow("»"),
+                ))
+                return None
+
+            item_results = verify_items(
                 self,
                 autoskip_selector=autoskip_selector,
                 autoonly_selector=autoonly_selector,
@@ -1049,12 +1104,21 @@ class Node:
                 workers=workers,
             )
 
-        return {
-            'good': result.count(True),
-            'bad': result.count(False),
-            'unknown': result.count(None),
-            'duration': datetime.now() - start,
-        }
+            result = VerifyResult(self, item_results)
+            result.start = start
+            result.end = datetime.now()
+
+            self.repo.hooks.node_verify_end(
+                repo=self.repo,
+                node=self,
+                duration=result.duration,
+                result=result,
+            )
+
+        if error:
+            raise GracefulVerifyException(error)
+        else:
+            return result
 
 
 def build_attr_property(attr, default):
@@ -1177,7 +1241,7 @@ def verify_items(
                 # free up memory
                 del item._command_results
             io.stderr(output)
-        return None  # count this result as "unknown"
+        return (item_id, Item.STATUS_UNKNOWN, timedelta(0))
 
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
@@ -1217,7 +1281,7 @@ def verify_items(
                     node=bold(node_name),
                     x=red("✘"),
                 ))
-            return False
+            return (item_id, Item.STATUS_NEEDS_FIX, duration)
         else:
             if show_all:
                 io.stdout("{x} {node}  {bundle}  {item}".format(
@@ -1226,7 +1290,7 @@ def verify_items(
                     node=bold(node_name),
                     x=green("✓"),
                 ))
-            return True
+            return (item_id, Item.STATUS_OK, duration)
 
     worker_pool = WorkerPool(
         tasks_available,
