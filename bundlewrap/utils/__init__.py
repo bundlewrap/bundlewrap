@@ -190,7 +190,7 @@ class Fault:
             return format_string.format(self.value)
         return Fault(self.id_list + ['format_into ' + format_string], callback)
 
-    def as_htpasswd_entry(self, username):
+    def as_htpasswd_entry(self, username, cost=None):
         def callback():
             # bcrypt demands to have a salt (16 random bytes, encoded
             # with a special `b64encode_bcrypt()` function).
@@ -227,7 +227,7 @@ class Fault:
 
             return '{}:{}'.format(
                 username,
-                bcrypt(self.value, salt=salt),
+                bcrypt(self.value, cost=cost, salt=salt),
             )
         return Fault(self.id_list + ['as_htpasswd_entry ' + username], callback)
 

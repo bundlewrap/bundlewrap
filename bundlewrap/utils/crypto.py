@@ -32,7 +32,7 @@ def b64encode_bcrypt(payload_bytes):
 def bcrypt(
     payload,
     encoding='UTF-8',
-    cost=_DEFAULT_BCRYPT_COST,
+    cost=None,
     salt=None,
 ):
     """
@@ -42,9 +42,12 @@ def bcrypt(
     servers.
 
     -   `encoding`: `payload` will be encoded using this encoding.
-    -   `cost`: Use this cost factor instead of bcrypt's default.
-    -   `salt`: Must be a valid bcrypt salt.
+    -   `cost`: Use this cost factor, or `None` for bcrypt's default.
+    -   `salt`: Must be a valid bcrypt salt, or `None` for bcrypt's default.
     """
+
+    if cost is None:
+        cost = _DEFAULT_BCRYPT_COST
 
     if salt is None:
         salt = _DEFAULT_BCRYPT_SALT
