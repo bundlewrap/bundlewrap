@@ -1,3 +1,9 @@
+# 5.0.3
+
+2026-03-17
+
+* `as_htpasswd_entry()` of `Fault` objects now supports the argument `cost=...` (defaults to `12`) to set the bcrypt Cost Factor. The default value was found to be too expensive for some webserver deployments.
+
 # 5.0.2
 
 2026-02-25
