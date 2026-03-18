@@ -558,9 +558,11 @@ svc_systemd = {
 </code></pre>
 <p>In this simplified example we save ourselves from duplicating the logic that gets the current MySQL version from metadata (which is probably overkill here, but you might encounter more complex situations).</p>
 <p>Tags also allow for optional dependencies, since items can depend on tags that don't exist. So for example if you need to do something after items from another bundle have been completed, but that bundle might not always be there, you can depend on a tag given to the items of the other bundle.</p>
+<p>By default, Tags inherit to canned actions, this is a Tag specified on a <code>svc_systemd:xyz</code>-item is also applied to the automatically generated <code>xyz:restart</code> action. This is useful in most cases because it ensures, that all aspects of the service are realized before dependent actions/items are realized,
+but sometimes you want an action or item to be realized between the service being started and it being restarted. In this niche use-case the special <code>canned_actions_inherit_tags</code>-attribute on the service can be set to <code>False</code>.</p>
 <p><br></p>
 <h2 id="triggers-and-triggered">triggers and triggered</h2>
-<p>In some scenarios, you may want to execute an <a href="../../items/action/">action</a> only when an item is fixed (e.g. restart a daemon after a config file has changed or run <code>postmap</code> after updating an alias file). To do this, BundleWrap has the builtin atttribute <code>triggers</code>. You can use it to point to any item that has its <code>triggered</code> attribute set to <code>True</code>. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).</p>
+<p>In some scenarios, you may want to execute an <a href="../../items/action/">action</a> only when an item is fixed (e.g. restart a daemon after a config file has changed or run <code>postmap</code> after updating an alias file). To do this, BundleWrap has the builtin attribute <code>triggers</code>. You can use it to point to any item that has its <code>triggered</code> attribute set to <code>True</code>. Such items will only be checked (or in the case of actions: run) if the triggering item is fixed (or a triggering action completes successfully).</p>
 <pre><code>files = {
     '/etc/daemon.conf': {
         [...]

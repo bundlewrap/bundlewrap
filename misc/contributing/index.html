@@ -411,13 +411,14 @@
 <h2 id="release">Release</h2>
 <p>If you have been given the required access, to release a new version, do the following:</p>
 <ul>
-<li>Check out the current <code>main</code> branch</li>
+<li>Create a new branch based on the current <code>main</code> branch</li>
 <li>Bump the version number in <code>setup.py</code> and <code>bundlewrap/__init__.py</code>, observing semantic versioning</li>
 <li>Add an entry to <code>CHANGELOG.md</code>, taking care to list all changes relevant to users and to order them with the most important changes on top (generally: new features, changes/improvements, bug fixes)</li>
 <li>Commit these changes into a new commit titled <code>release X.Y.Z</code>, replacing X.Y.Z with the new version</li>
-<li>Push to GitHub</li>
-<li>Wait for GitHub Actions to successfully build (use your best judgment for DeepSource failures, some are very acceptable; in case of other failures, rebase fixes below the release commit)</li>
-<li>Tag the release commit with the version number and push the tag</li>
+<li>Push to GitHub, open a pull request</li>
+<li>Wait for GitHub Actions to successfully build (use your best judgment for DeepSource failures, some are very acceptable; in case of other failures, rebase fixes below the release commit), fix any mistakes if needed</li>
+<li>Merge your PR if everything looks good</li>
+<li>Tag the merge commit with the version number and push the tag</li>
 <li>Create a <a href="https://github.com/bundlewrap/bundlewrap/releases/new">new release on GitHub</a> referencing the tag, using the version number as the title and the content from the <code>CHANGELOG.md</code> entry as the description</li>
 <li>Run <code>rm -rf build dist</code>, just in case</li>
 <li>Run <code>python -m build</code></li>

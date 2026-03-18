@@ -459,6 +459,7 @@
 
 <h2 id="salt">salt</h2>
 <p>Recommended for use with the <code>password</code> attribute. BundleWrap will use bcrypt with a cost factor of 8 on this salt and the provided password.</p>
+<p>bcrypt expects salts to be 16 bytes encoded with the <a href="https://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/crypt/bcrypt.c?rev=1.1&amp;content-type=text/x-cvsweb-markup">bcrypt base64 alphabet</a> <code>./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789</code> without padding <code>=</code> at the end.</p>
 <hr>
 
 <h2 id="shell">shell</h2>
