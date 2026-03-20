@@ -174,6 +174,9 @@ def stats(results):
         for metric in ('correct', 'bad', 'unknown', 'health'):
             totals[metric] += getattr(result, metric)
 
-    totals['health'] = totals['health'] / len(results)
+    try:
+        totals['health'] = totals['health'] / len(results)
+    except ZeroDivisionError:
+        totals['health'] = 0
 
     return totals
