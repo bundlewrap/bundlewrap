@@ -274,7 +274,7 @@ Called each time a `bw verify` command finishes processing a node.
 
 `duration` How long the verify took (timedelta).
 
-`result` Result of verify (`List(bool)`).
+`result` An instance of `bundlewrap.node.VerifyResult`.
 
 ---
 
