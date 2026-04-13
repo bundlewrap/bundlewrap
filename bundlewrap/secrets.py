@@ -6,6 +6,7 @@ from os import environ
 from os.path import join
 from string import ascii_letters, punctuation, digits
 from subprocess import PIPE, run
+from threading import Lock
 
 from cryptography.fernet import Fernet
 
@@ -70,6 +71,20 @@ class SecretProxy:
     def __init__(self, repo):
         self.repo = repo
         self.keys = self._load_keys()
+        self.key_hook_lock = Lock()
+        self.key_hook_in_use = {}
+
+    def __hook(self, key):
+        with self.key_hook_lock:
+            if key not in self.key_hook_in_use:
+                self.key_hook_in_use[key] = Lock()
+        if self.key_hook_in_use[key].locked():
+           return
+        with self.key_hook_in_use[key]:
+            self.repo.hooks.secret_key_use(
+                repo=self.repo,
+                key=key,
+            )
 
     def _decrypt(self, cryptotext=None, key=None):
         """
@@ -79,10 +94,7 @@ class SecretProxy:
             return "decrypted text"
 
         key, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
-        self.repo.hooks.secret_key_use(
-            repo=self.repo,
-            key=key,
-        )
+        self.__hook(key)
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file(self, source_path=None, binary=False, key=None):
@@ -95,10 +107,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.repo.hooks.secret_key_use(
-            repo=self.repo,
-            key=key,
-        )
+        self.__hook(key)
 
         f = Fernet(key)
         if binary:
@@ -116,10 +125,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.repo.hooks.secret_key_use(
-            repo=self.repo,
-            key=key,
-        )
+        self.__hook(key)
 
         f = Fernet(key)
         return b64encode(f.decrypt(cryptotext)).decode('utf-8')
@@ -171,10 +177,7 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "generatedpassword"
 
-        self.repo.hooks.secret_key_use(
-            repo=self.repo,
-            key=key,
-        )
+        self.__hook(key)
 
         prng = self._get_prng(identifier, key)
 
@@ -225,10 +228,7 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return ("generatedpassword"*length)[:length]
 
-        self.repo.hooks.secret_key_use(
-            repo=self.repo,
-            key=key,
-        )
+        self.__hook(key)
 
         prng = self._get_prng(identifier, key)
 
@@ -242,10 +242,7 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return b64encode(bytearray([ord("a") for i in range(length)])).decode()
 
-        self.repo.hooks.secret_key_use(
-            repo=self.repo,
-            key=key,
-        )
+        self.__hook(key)
 
         prng = self._get_prng(identifier, key)
         return b64encode(bytearray([next(prng) for i in range(length)])).decode()
