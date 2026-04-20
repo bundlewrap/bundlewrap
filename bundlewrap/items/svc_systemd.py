@@ -87,11 +87,8 @@ class SvcSystemd(Item):
         return state
 
     def fix(self, status):
-        if 'masked' in status.keys_to_fix:
-            if self.attributes['masked']:
-                svc_mask(self.node, self.name)
-            else:
-                svc_unmask(self.node, self.name)
+        if 'masked' in status.keys_to_fix and not self.attributes['masked']:
+            svc_unmask(self.node, self.name)
 
         if 'enabled' in status.keys_to_fix:
             if self.attributes['enabled']:
@@ -104,6 +101,9 @@ class SvcSystemd(Item):
                 svc_start(self.node, self.name)
             else:
                 svc_stop(self.node, self.name)
+
+        if 'masked' in status.keys_to_fix and self.attributes['masked']:
+            svc_mask(self.node, self.name)
 
     def get_canned_actions(self):
         return {
