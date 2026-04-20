@@ -206,11 +206,16 @@ class KubernetesItem(Item, metaclass=ABCMeta):
     def validate_attributes(cls, bundle, item_id, attributes):
         if attributes.get('delete', False):
             for attr in attributes.keys():
-                if attr not in ['delete'] + list(BUILTIN_ITEM_ATTRIBUTES.keys()):
-                    raise BundleError(_(
-                        "{item} from bundle '{bundle}' cannot have other "
-                        "attributes besides 'delete'"
-                    ).format(item=item_id, bundle=bundle.name))
+                if attr in ['delete'] + list(BUILTIN_ITEM_ATTRIBUTES.keys()):
+                    continue
+
+                if attr == 'manifest' and set(attributes['manifest'].keys()) == {'apiVersion'}:
+                    continue
+
+                raise BundleError(_(
+                    "{item} from bundle '{bundle}' cannot have other "
+                    "attributes besides 'delete' and 'manifest/apiVersion'"
+                ).format(item=item_id, bundle=bundle.name))
         if attributes.get('manifest') and attributes.get('manifest_file'):
             raise BundleError(_(
                 "{item} from bundle '{bundle}' cannot have both 'manifest' and 'manifest_file'"
