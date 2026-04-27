@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 from .deps import (
-    find_item,
     prepare_dependencies,
     remove_item_dependents,
     remove_dep_from_items,
