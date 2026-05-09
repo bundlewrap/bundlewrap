@@ -809,7 +809,7 @@ class Node:
                         items_to_lock = set()
 
                         for item in item_results:
-                            item_id, status_code, _ = item
+                            item_id, status_code, _duration = item
                             if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
                                 items_to_lock.add(item_id)
 
