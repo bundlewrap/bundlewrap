@@ -182,7 +182,7 @@ def bw_metadata(repo, args):
                 page_lines(
                     force_text(line).replace("\\u001b", "\033")
                     for line in metadata_to_toml(
-                        metadata_sorted,
+                        {"metadata": metadata_sorted},
                         resolve_faults=args['resolve_faults'],
                         sort_keys=False,
                     ).splitlines()

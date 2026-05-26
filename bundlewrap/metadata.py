@@ -363,7 +363,7 @@ def metadata_dict_to_toml(dict_obj, resolve_faults=False):
 
 
 def metadata_to_toml(metadata, resolve_faults=True, sort_keys=True):
-    toml_doc = metadata_dict_to_toml({"metadata": metadata}, resolve_faults=resolve_faults)
+    toml_doc = metadata_dict_to_toml(metadata, resolve_faults=resolve_faults)
     return tomlkit_dumps(toml_doc)
 
 def hash_metadata(actual_state):
