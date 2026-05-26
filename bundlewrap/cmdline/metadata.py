@@ -180,7 +180,7 @@ def bw_metadata(repo, args):
             metadata_sorted = _sort_dict_colorblind(metadata)
             if args["toml"]:
                 page_lines(
-                    force_text(line).replace("\\u001b", "\033")
+                    force_text(line).replace("\\e", "\033")
                     for line in metadata_to_toml(
                         {"metadata": metadata_sorted},
                         resolve_faults=args['resolve_faults'],
