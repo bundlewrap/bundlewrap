@@ -82,6 +82,7 @@ class PathInfo:
             self.desc in (
                 "empty",
                 "JSON data",
+                "OpenSSH ECDSA public key",
                 "OpenSSH ED25519 public key",
                 "OpenSSH RSA public key",
                 "OpenSSH DSA public key",
