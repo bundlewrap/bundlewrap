@@ -221,6 +221,15 @@ bundle:my_bundle  # items in this bundle
         metavar=_("PATH"),
         type=str,
     )
+    parser_apply.add_argument(
+        "--add-lock-for-fixed-items",
+        default="",
+        const=DEFAULT_softlock_expiry,
+        nargs='?',
+        dest='expiry',
+        help=HELP_softlock_expiry,
+        type=str,
+    )
 
     # bw debug
     help_debug = _("Start an interactive Python shell for this repository")

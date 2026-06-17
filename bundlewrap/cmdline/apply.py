@@ -72,6 +72,8 @@ def bw_apply(repo, args):
                 'show_skipped_items': args['show_skipped_items'],
                 'skip_list': skip_list,
                 'workers': args['item_workers'],
+                'add_lock_for_fixed_items': bool(args['expiry']),
+                'lock_expiry': args['expiry'],
             },
         }
 

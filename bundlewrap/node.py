@@ -26,7 +26,7 @@ from .exceptions import (
 from .group import GROUP_ATTR_DEFAULTS, GROUP_ATTR_TYPES, GROUP_ATTR_TYPES_ENFORCED
 from .itemqueue import ItemQueue
 from .items import Item
-from .lock import NodeLock
+from .lock import NodeLock, softlock_add
 from .metadata import hash_metadata
 from .utils import (
     cached_property,
@@ -55,6 +55,7 @@ from .utils.text import (
     green,
     mark_for_translation as _,
     prefix_lines,
+    randstr,
     red,
     toml_clean,
     validate_name,
@@ -739,6 +740,8 @@ class Node:
         show_skipped_items=True,
         skip_list=(),
         workers=4,
+        add_lock_for_fixed_items=False,
+        lock_expiry="8h",
     ):
         if not list(self.items):
             io.stdout(_("{x} {node}  has no items").format(
@@ -801,6 +804,23 @@ class Node:
                         show_diff=show_diff,
                         show_skipped_items=show_skipped_items,
                     )
+
+                    if add_lock_for_fixed_items:
+                        items_to_lock = set()
+
+                        for item in item_results:
+                            item_id, status_code, _duration = item
+                            if status_code in (Item.STATUS_FIXED, Item.STATUS_ACTION_SUCCEEDED):
+                                items_to_lock.add(item_id)
+
+                        if items_to_lock:
+                            lock_id = "APPLY_" + randstr(length=4).upper()
+                            softlock_add(
+                                self,
+                                lock_id,
+                                item_selectors=sorted(items_to_lock),
+                                expiry=lock_expiry,
+                            )
             except NodeLockedException as e:
                 if not interactive:
                     io.stderr(_(
