@@ -141,20 +141,26 @@ class ItemQueue(BaseQueue):
 
     def _fire_triggers_for_item(self, item):
         for triggered_item_id in item.triggers:
-            try:
-                triggered_item = find_item(
-                    triggered_item_id,
-                    self.all_items,
-                )
-                triggered_item.has_been_triggered = True
-            except NoSuchItem:
-                io.debug(_(
-                    "{item} tried to trigger {triggered_item}, "
-                    "but it wasn't available. It must have been skipped previously."
-                ).format(
-                    item=item.id,
-                    triggered_item=triggered_item_id,
-                ))
+            if triggered_item_id.startswith('tag:'):
+                tag = triggered_item_id.split(':', maxsplit=1)[1]
+                for tagged_item in self.all_items:
+                    if tag in tagged_item.tags:
+                        tagged_item.has_been_triggered = True
+            else:
+                try:
+                    triggered_item = find_item(
+                        triggered_item_id,
+                        self.all_items,
+                    )
+                    triggered_item.has_been_triggered = True
+                except NoSuchItem:
+                    io.debug(_(
+                        "{item} tried to trigger {triggered_item}, "
+                        "but it wasn't available. It must have been skipped previously."
+                    ).format(
+                        item=item.id,
+                        triggered_item=triggered_item_id,
+                    ))
 
 
 class ItemTestQueue(BaseQueue):
