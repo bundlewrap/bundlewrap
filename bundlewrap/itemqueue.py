@@ -1,10 +1,10 @@
 from collections import defaultdict
 
 from .deps import (
-    find_item,
     prepare_dependencies,
     remove_item_dependents,
     remove_dep_from_items,
+    resolve_selector,
     split_items_without_deps,
 )
 from .exceptions import NoSuchItem, MetadataUnavailable
@@ -142,12 +142,9 @@ class ItemQueue(BaseQueue):
     def _fire_triggers_for_item(self, item):
         for triggered_item_id in item.triggers:
             try:
-                triggered_item = find_item(
-                    triggered_item_id,
-                    self.all_items,
-                )
-                triggered_item.has_been_triggered = True
-            except NoSuchItem:
+                for triggered_item in resolve_selector(triggered_item_id, self.all_items):
+                    triggered_item.has_been_triggered = True
+            except (NoSuchItem, ValueError):
                 io.debug(_(
                     "{item} tried to trigger {triggered_item}, "
                     "but it wasn't available. It must have been skipped previously."
