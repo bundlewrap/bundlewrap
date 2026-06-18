@@ -6,6 +6,7 @@ from os import environ
 from os.path import join
 from string import ascii_letters, punctuation, digits
 from subprocess import PIPE, run
+from threading import Lock
 
 from cryptography.fernet import Fernet
 
@@ -70,6 +71,20 @@ class SecretProxy:
     def __init__(self, repo):
         self.repo = repo
         self.keys = self._load_keys()
+        self.key_hook_lock = Lock()
+        self.key_hook_in_use = {}
+
+    def __hook(self, key):
+        with self.key_hook_lock:
+            if key not in self.key_hook_in_use:
+                self.key_hook_in_use[key] = Lock()
+        if self.key_hook_in_use[key].locked():
+           return
+        with self.key_hook_in_use[key]:
+            self.repo.hooks.secret_key_use(
+                repo=self.repo,
+                key=key,
+            )
 
     def _decrypt(self, cryptotext=None, key=None):
         """
@@ -78,7 +93,8 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "decrypted text"
 
-        key, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
+        key, key_name, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
+        self.__hook(key_name)
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file(self, source_path=None, binary=False, key=None):
@@ -90,7 +106,8 @@ class SecretProxy:
             return "decrypted file"
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
-        key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        self.__hook(key_name)
 
         f = Fernet(key)
         if binary:
@@ -107,12 +124,13 @@ class SecretProxy:
             return b64encode(b"decrypted file as base64").decode('utf-8')
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
-        key, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
+        self.__hook(key_name)
 
         f = Fernet(key)
         return b64encode(f.decrypt(cryptotext)).decode('utf-8')
 
-    def _determine_key_to_use(self, cryptotext, key, entity_description):
+    def _determine_key_to_use(self, cryptotext, key_name, entity_description):
         key_delim = cryptotext.find(b'$')
         if key_delim > -1:
             key_from_text = cryptotext[:key_delim].decode('utf-8')
@@ -120,14 +138,15 @@ class SecretProxy:
         else:
             key_from_text = None
 
-        if key is None:
+        if key_name is None:
             if key_from_text is not None:
-                key = key_from_text
+                key_name = key_from_text
             else:
-                key = 'encrypt'
+                key_name = 'encrypt'
 
+        key = None
         try:
-            key = self.keys[key]
+            key = self.keys[key_name]
         except KeyError:
             raise FaultUnavailable(_(
                 "Key '{key}' not available for decryption of the following entity, "
@@ -138,7 +157,7 @@ class SecretProxy:
                 entity_description=entity_description,
             ))
 
-        return key, cryptotext
+        return key, key_name, cryptotext
 
     def _generate_human_password(
         self, identifier=None, digits=2, key='generate', per_word=3, words=4,
@@ -158,6 +177,8 @@ class SecretProxy:
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "generatedpassword"
+
+        self.__hook(key)
 
         prng = self._get_prng(identifier, key)
 
@@ -208,6 +229,8 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return ("generatedpassword"*length)[:length]
 
+        self.__hook(key)
+
         prng = self._get_prng(identifier, key)
 
         alphabet = ascii_letters + digits
@@ -219,6 +242,8 @@ class SecretProxy:
     def _generate_random_bytes_as_base64(self, identifier=None, key='generate', length=32):
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return b64encode(bytearray([ord("a") for i in range(length)])).decode()
+
+        self.__hook(key)
 
         prng = self._get_prng(identifier, key)
         return b64encode(bytearray([next(prng) for i in range(length)])).decode()

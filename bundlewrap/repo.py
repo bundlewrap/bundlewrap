@@ -17,7 +17,7 @@ if version_info >= VERSION_NEW_PACKAGING:
 else:
     from pkg_resources import DistributionNotFound, require, VersionConflict  # needs setuptools
 
-from . import items, VERSION_STRING
+from . import items, VERSION, VERSION_STRING
 from .bundle import FILENAME_ITEMS
 from .exceptions import (
     NoSuchGroup,
@@ -68,8 +68,10 @@ HOOK_EVENTS = (
     'node_apply_start',
     'node_run_end',
     'node_run_start',
+    'repo_init',
     'run_end',
     'run_start',
+    'secret_key_use',
     'test',
     'test_node',
 )
@@ -178,7 +180,7 @@ class HooksProxy:
 
     def __getattr__(self, attrname):
         if attrname not in HOOK_EVENTS:
-            raise AttributeError
+            raise AttributeError(attrname)
 
         if self.__registered_hooks is None:
             self._register_hooks()
@@ -288,6 +290,12 @@ class Repository(MetadataGenerator):
                 self.populate_from_path(self.path)
             else:
                 self.item_classes = list(self.items_from_dir(items.__path__[0]))
+
+        self.hooks.repo_init(
+            repo=self,
+            version_string=VERSION_STRING,
+            version_tuple=VERSION,
+        )
 
     def __eq__(self, other):
         if self.path == "/dev/null":
