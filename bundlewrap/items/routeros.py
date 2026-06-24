@@ -97,6 +97,12 @@ class RouterOS(Item):
         if state:
             # API doesn't return comment at all if emtpy
             state.setdefault('comment', '')
+
+            # Set all expected keys to default to empty string
+            for key in self.expected_state:
+                if key not in state:
+                    state.setdefault(key, '')
+
             # undo automatic type conversion in librouteros
             for key, value in tuple(state.items()):
                 if value is True:
