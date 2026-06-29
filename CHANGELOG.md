@@ -1,3 +1,15 @@
+# 5.1.0
+
+2026-06-18
+
+* added [new hooks](https://docs.bundlewrap.org/repo/hooks/) `repo_init` and `secret_key_use`
+* added `bw apply --add-lock-for-fixed-items` to automatically lock all items that were changed during an apply
+* `BUNDLE_DIR` and `BUNDLE_DATA_DIR` are now available as variables inside bundles
+* fixed triggers, items can now trigger `tag:foo` or any other valid [item selector](https://docs.bundlewrap.org/guide/selectors/)
+* fixed `svc_systemd` items so masking happens only after disabling (and unmasking before enabling); the previous order left orphaned `.wants` symlinks and broke units with `Also=` dependencies such as `NetworkManager`
+* fixed `kubernetes` items so `delete: True` works on its own without requiring `manifest` or `apiVersion`
+* fixed `PathInfo` so `OpenSSH ECDSA public key` is also recognized as text
+
 # 5.0.3
 
 2026-03-17
