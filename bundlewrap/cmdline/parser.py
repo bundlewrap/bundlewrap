@@ -1,4 +1,5 @@
-from argparse import ArgumentParser, RawTextHelpFormatter, SUPPRESS
+from argparse import (ArgumentParser, BooleanOptionalAction,
+                      RawTextHelpFormatter, SUPPRESS)
 from os import environ, getcwd
 from os.path import join
 
@@ -581,7 +582,8 @@ bundle:my_bundle  # items in this bundle
     )
     parser_lock_add.add_argument(
         "--skip-item-verification",
-        action='store_true',
+        action=BooleanOptionalAction,
+        default=bool(int(environ.get('BW_LOCK_ADD_SKIP_ITEM_VERIFICATION', 0))),
         dest='skip_item_verification',
         help=_("disable verification of item selector (-i)"),
     )
