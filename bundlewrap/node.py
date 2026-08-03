@@ -1201,9 +1201,9 @@ def verify_items(
 
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
-        unless_result, item_status, display = return_value
+        unless_result, ok_when_result, item_status, display = return_value
         node_name, bundle_name, item_id = task_id.split(":", 2)
-        if not unless_result and not item_status.correct:
+        if not unless_result and not ok_when_result and not item_status.correct:
             if item_status.must_be_created:
                 details_text = red(_("missing"))
             elif item_status.must_be_deleted:
