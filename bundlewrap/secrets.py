@@ -1,11 +1,11 @@
 from base64 import b64encode, urlsafe_b64decode
-from configparser import ConfigParser, NoOptionError
+from configparser import ConfigParser, NoOptionError, NoSectionError
 import hashlib
 import hmac
 from os import environ
 from os.path import join
 from string import ascii_letters, punctuation, digits
-from subprocess import PIPE, run
+from subprocess import CalledProcessError, PIPE, run
 from threading import Lock
 
 from cryptography.fernet import Fernet
@@ -60,21 +60,22 @@ def random(seed):
                 yield character
 
 
-class SecretProxy:
-    @staticmethod
-    def random_key():
-        """
-        Provided as a helper to generate new keys from `bw debug`.
-        """
-        return Fernet.generate_key().decode('utf-8')
-
+class SecretKeyProxy:
     def __init__(self, repo):
-        self.repo = repo
-        self.keys = self._load_keys()
+        self.keys = {}
+        self.key_read_lock = Lock()
         self.key_hook_lock = Lock()
         self.key_hook_in_use = {}
+        self.repo = repo
 
-    def __hook(self, key):
+        self.config = ConfigParser()
+        secrets_file = join(self.repo.path, FILENAME_SECRETS)
+        try:
+            self.config.read(secrets_file)
+        except IOError:
+            io.debug(_("unable to read {}").format(secrets_file))
+
+    def _hook(self, key):
         with self.key_hook_lock:
             if key not in self.key_hook_in_use:
                 self.key_hook_in_use[key] = Lock()
@@ -86,6 +87,51 @@ class SecretProxy:
                 key=key,
             )
 
+    def __getitem__(self, item):
+        return self.get_key(item)
+
+    def get_key(self, key):
+        self._hook(key)
+
+        if key in self.keys:
+            if isinstance(self.keys[key], FaultUnavailable):
+                raise self.keys[key]
+            return self.keys[key]
+
+        with io.job(_("determining value for secret {}").format(key)), self.key_read_lock:
+            exc_message = _("neither key nor key_command available for secret {}").format(key)
+            try:
+                self.keys[key] = self.config.get(key, 'key').encode('utf-8')
+                return self.keys[key]
+            except NoOptionError:
+                try:
+                    self.keys[key] = run(
+                        self.config.get(key, "key_command"),
+                        check=True,
+                        shell=True,
+                        capture_output=True,
+                    ).stdout.strip()
+                    return self.keys[key]
+                except (NoOptionError, CalledProcessError):
+                    self.keys[key] = FaultUnavailable(exc_message)
+                    raise self.keys[key]
+            except NoSectionError:
+                self.keys[key] = FaultUnavailable(exc_message)
+                raise self.keys[key]
+
+
+class SecretProxy:
+    @staticmethod
+    def random_key():
+        """
+        Provided as a helper to generate new keys from `bw debug`.
+        """
+        return Fernet.generate_key().decode('utf-8')
+
+    def __init__(self, repo):
+        self.repo = repo
+        self.keys = SecretKeyProxy(repo)
+
     def _decrypt(self, cryptotext=None, key=None):
         """
         Decrypts a given encrypted password.
@@ -93,8 +139,7 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "decrypted text"
 
-        key, key_name, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
-        self.__hook(key_name)
+        key, _, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file(self, source_path=None, binary=False, key=None):
@@ -106,8 +151,7 @@ class SecretProxy:
             return "decrypted file"
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
-        key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.__hook(key_name)
+        key, _, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
 
         f = Fernet(key)
         if binary:
@@ -124,8 +168,7 @@ class SecretProxy:
             return b64encode(b"decrypted file as base64").decode('utf-8')
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
-        key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.__hook(key_name)
+        key, _, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
 
         f = Fernet(key)
         return b64encode(f.decrypt(cryptotext)).decode('utf-8')
@@ -146,7 +189,7 @@ class SecretProxy:
 
         key = None
         try:
-            key = self.keys[key_name]
+            key = self.keys[key]
         except KeyError:
             raise FaultUnavailable(_(
                 "Key '{key}' not available for decryption of the following entity, "
@@ -177,8 +220,6 @@ class SecretProxy:
         """
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "generatedpassword"
-
-        self.__hook(key)
 
         prng = self._get_prng(identifier, key)
 
@@ -229,8 +270,6 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return ("generatedpassword"*length)[:length]
 
-        self.__hook(key)
-
         prng = self._get_prng(identifier, key)
 
         alphabet = ascii_letters + digits
@@ -242,8 +281,6 @@ class SecretProxy:
     def _generate_random_bytes_as_base64(self, identifier=None, key='generate', length=32):
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return b64encode(bytearray([ord("a") for i in range(length)])).decode()
-
-        self.__hook(key)
 
         prng = self._get_prng(identifier, key)
         return b64encode(bytearray([next(prng) for i in range(length)])).decode()
@@ -263,29 +300,6 @@ class SecretProxy:
         h = hmac.new(urlsafe_b64decode(key_encoded), digestmod=hashlib.sha512)
         h.update(identifier.encode('utf-8'))
         return random(h.digest())
-
-    def _load_keys(self):
-        with io.job(_("Loading secret keys")):
-            config = ConfigParser()
-            secrets_file = join(self.repo.path, FILENAME_SECRETS)
-            try:
-                config.read(secrets_file)
-            except IOError:
-                io.debug(_("unable to read {}").format(secrets_file))
-                return {}
-            result = {}
-            for section in config.sections():
-                try:
-                    result[section] = config.get(section, 'key').encode('utf-8')
-                except NoOptionError:
-                    result[section] = run(
-                        config.get(section, 'key_command'),
-                        check=True,
-                        shell=True,
-                        stdout=PIPE,  # replace with capture_output=True
-                                      # when dropping support for Python 3.6
-                    ).stdout.strip()
-            return result
 
     @staticmethod
     def cmd(cmdline, as_text=True, strip=True):
