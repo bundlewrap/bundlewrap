@@ -13,6 +13,7 @@ from .concurrency import WorkerPool
 from .deps import find_item, ItemDependencyLoop
 from .exceptions import (
     BundleError,
+    FaultUnavailable,
     GracefulApplyException,
     ItemSkipped,
     NodeLockedException,
@@ -605,7 +606,16 @@ class Node:
         node_dict = {}
         for item in self.items:
             if item.ITEM_TYPE_NAME != 'action':  # actions have no expected_state
-                node_dict[item.id] = item.hash()
+                try:
+                    node_dict[item.id] = item.hash()
+                except FaultUnavailable:
+                    io.stderr(_("{x} {node}  {bundle}  {item}  ({msg})").format(
+                        bundle=bold(item.bundle.name),
+                        item=item.id,
+                        msg=yellow(_("Fault unavailable")),
+                        node=bold(self.name),
+                        x=yellow("»"),
+                    ))
         return node_dict
 
     def covered_by_autoskip_selector(self, autoskip_selector):
@@ -676,7 +686,21 @@ class Node:
         return False
 
     def hash(self):
-        return hash_state_dict(self.expected_state)
+        expected_state = self.expected_state
+        items_missing_faults = [
+            item for item in self.items
+            if item.ITEM_TYPE_NAME != 'action' and item.id not in expected_state
+        ]
+        if items_missing_faults:
+            # the affected items have already been reported by expected_state
+            raise FaultUnavailable(_(
+                "Faults unavailable for {count} of {total} items on {node}"
+            ).format(
+                count=len(items_missing_faults),
+                node=self.name,
+                total=len([i for i in self.items if i.ITEM_TYPE_NAME != 'action']),
+            ))
+        return hash_state_dict(expected_state)
 
     def in_any_group(self, group_list):
         for group_name in group_list:
