@@ -349,3 +349,38 @@ def test_groups_node_dict(tmpdir):
     stdout, stderr, rcode = run("bw hash -dg node1", path=str(tmpdir))
     assert rcode == 0
     assert stdout == b"group1\n"
+
+
+def test_fault_unavailable(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "${repo.vault.password_for('test', key='404')}",
+                            'content_type': 'mako',
+                        },
+                    },
+                },
+            },
+        },
+    )
+
+    for command in (
+        "bw hash",
+        "bw hash node1",
+        "bw hash -d node1",
+        "bw hash node1 file:/test",
+        "bw hash -d node1 file:/test",
+    ):
+        stdout, stderr, rcode = run(command, path=str(tmpdir))
+        assert rcode == 1, command
+        assert b"Fault unavailable" in stderr, command
+        assert b"Traceback" not in stderr, command

@@ -1,8 +1,8 @@
 from sys import exit
 
-from ..exceptions import NoSuchGroup, NoSuchNode
+from ..exceptions import FaultUnavailable, NoSuchGroup, NoSuchNode
 from ..utils.cmdline import get_item
-from ..utils.text import mark_for_translation as _, red
+from ..utils.text import bold, mark_for_translation as _, red
 from ..utils.ui import io
 
 
@@ -48,6 +48,20 @@ def bw_hash(repo, args):
         io.stdout(_("{x} Cannot select item for group").format(x=red("!!!")))
         exit(1)
 
+    try:
+        _hash_or_dict(target, target_type, args)
+    except FaultUnavailable as exc:
+        io.stderr(_(
+            "{x} cannot hash {target} (Fault unavailable): {exc}"
+        ).format(
+            exc=exc,
+            target=bold(args['item'] or args['node_or_group'] or _("repo")),
+            x=red("!!!"),
+        ))
+        exit(1)
+
+
+def _hash_or_dict(target, target_type, args):
     if args['dict']:
         if args['group_membership']:
             if target_type in ('node', 'repo'):
@@ -60,7 +74,11 @@ def bw_hash(repo, args):
             for node in sorted(target.nodes):
                 io.stdout("{}\t{}".format(node.name, node.metadata_hash()))
         else:
-            expected_state = target.cached_expected_state if args['item'] else target.expected_state
+            if args['item']:
+                expected_state = target.cached_expected_state
+            else:
+                target.hash()  # raises FaultUnavailable for incomplete expected_state
+                expected_state = target.expected_state
             if expected_state is None:
                 io.stdout("REMOVE")
             else:
