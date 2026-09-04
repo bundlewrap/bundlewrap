@@ -1,3 +1,5 @@
+from os.path import join
+
 from bundlewrap.utils.testing import make_repo, run
 
 
@@ -453,3 +455,51 @@ def test_bw_items_invocation_single_item_preview(tmpdir):
     _test_bw_items_invocation_succeeds(tmpdir, 'bw items --preview node1 file:/foo/bar/moo', """
 bar
 """.lstrip())
+
+
+def test_fault_unavailable_expected_state(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {
+                'bundles': ["bundle1"],
+            },
+        },
+        bundles={
+            "bundle1": {
+                'items': {
+                    'files': {
+                        "/test": {
+                            'content': "${repo.vault.password_for('test', key='404')}",
+                            'content_type': 'mako',
+                        },
+                    },
+                },
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw items node1 file:/test", path=str(tmpdir))
+    assert rcode == 1
+    assert b"Fault unavailable" in stderr
+    assert b"Traceback" not in stderr
+
+
+def test_fault_unavailable_attribute(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={"node1": {'bundles': ["bundle1"]}},
+        bundles={"bundle1": {}},
+    )
+    with open(join(str(tmpdir), "bundles", "bundle1", "items.py"), 'w') as f:
+        f.write("""
+files = {
+    "/test": {
+        'content': repo.vault.password_for('test', key='404'),
+    },
+}
+""")
+    stdout, stderr, rcode = run("bw items node1 file:/test", path=str(tmpdir))
+    assert rcode == 1
+    assert b"Fault unavailable" in stderr
+    assert b"Traceback" not in stderr

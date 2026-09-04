@@ -147,7 +147,13 @@ def show_single_item(node, item, representation, args):
         data = item.actual_state
 
     elif representation == ItemRepresentation.EXPECTED_STATE:
-        data = item.expected_state
+        try:
+            data = item.cached_expected_state
+        except FaultUnavailable:
+            io.stderr(_(
+                "{x} cannot show expected state of {item} on {node} (Fault unavailable)"
+            ).format(x=red("!!!"), item=item.id, node=node.name))
+            exit(1)
 
     elif representation == ItemRepresentation.REPR:
         data = [repr(item)]
