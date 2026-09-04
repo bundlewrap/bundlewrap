@@ -2,11 +2,11 @@ from copy import copy
 from difflib import unified_diff
 from sys import exit
 
-from ..exceptions import NoSuchItem
+from ..exceptions import FaultUnavailable, NoSuchItem
 from ..metadata import metadata_to_json
 from ..repo import Repository
 from ..utils.cmdline import get_target_nodes
-from ..utils.dicts import diff_dict, dict_to_text
+from ..utils.dicts import diff_dict, dict_to_text, hash_state_dict
 from ..utils.scm import get_git_branch, get_git_rev, set_git_rev
 from ..utils.text import (
     bold,
@@ -23,9 +23,86 @@ from ..utils.ui import io, QUIT_EVENT
 from subprocess import check_call
 
 
+def _report_fault_unavailable(item):
+    io.stderr(_("{x} {node}  {bundle}  {item}  ({msg})").format(
+        bundle=bold(item.bundle.name),
+        item=item.id,
+        msg=yellow(_("Fault unavailable")),
+        node=bold(item.node.name),
+        x=yellow("»"),
+    ))
+
+
+def _metadata_lines_pair(node_a, node_b):
+    """
+    Returns the metadata of both nodes as JSON lines. If a Fault cannot
+    be resolved on either side, *both* sides are rendered with
+    unresolved Faults so the diff doesn't show spurious differences.
+    """
+    try:
+        return (
+            metadata_to_json(node_a.metadata).splitlines(),
+            metadata_to_json(node_b.metadata).splitlines(),
+        )
+    except FaultUnavailable:
+        io.stderr(_("{x} Fault unavailable, showing unresolved Faults").format(
+            x=yellow("»"),
+        ))
+        return (
+            metadata_to_json(node_a.metadata, resolve_faults=False).splitlines(),
+            metadata_to_json(node_b.metadata, resolve_faults=False).splitlines(),
+        )
+
+
+def _metadata_hashes(node):
+    """
+    Returns (hash_resolved, hash_unresolved) for the node's metadata.
+    hash_resolved is None if a Fault is unavailable.
+    """
+    hash_unresolved = hash_state_dict(metadata_to_json(node.metadata, resolve_faults=False))
+    try:
+        return (node.metadata_hash(), hash_unresolved)
+    except FaultUnavailable:
+        io.stderr(_("{x} {node}  Fault unavailable, hashing unresolved Faults").format(
+            node=bold(node.name),
+            x=yellow("»"),
+        ))
+        return (None, hash_unresolved)
+
+
+def _pick_comparable_hashes(before, after):
+    """
+    Given two dicts of {node_name: (hash_resolved, hash_unresolved)},
+    return two dicts of {node_name: hash} using the resolved hash only
+    where it is available on both sides.
+    """
+    picked_before = {}
+    picked_after = {}
+    for node_name in before:
+        resolved_before, unresolved_before = before[node_name]
+        resolved_after, unresolved_after = after[node_name]
+        if resolved_before is None or resolved_after is None:
+            picked_before[node_name] = unresolved_before
+            picked_after[node_name] = unresolved_after
+        else:
+            picked_before[node_name] = resolved_before
+            picked_after[node_name] = resolved_after
+    return picked_before, picked_after
+
+
+def _item_display_dict(item):
+    """
+    Returns the expected_state of an item prepared for display, or None
+    for items that are to be deleted. Raises FaultUnavailable.
+    """
+    expected_state = item.cached_expected_state
+    if expected_state is None:
+        return None
+    return item.display_on_create(copy(expected_state))
+
+
 def diff_metadata(node_a, node_b):
-    node_a_metadata = metadata_to_json(node_a.metadata).splitlines()
-    node_b_metadata = metadata_to_json(node_b.metadata).splitlines()
+    node_a_metadata, node_b_metadata = _metadata_lines_pair(node_a, node_b)
     io.stdout("\n".join(unified_diff(
         node_a_metadata,
         node_b_metadata,
@@ -36,11 +113,15 @@ def diff_metadata(node_a, node_b):
 
 
 def diff_item(node_a, node_b, item):
-    item_a = node_a.get_item(item)
-    item_a_dict = item_a.display_on_create(item_a.expected_state.copy())
-    item_b = node_b.get_item(item)
-    item_b_dict = item_b.display_on_create(item_b.expected_state.copy())
-    io.stdout(diff_dict(item_a_dict, item_b_dict))
+    dicts = []
+    for node in (node_a, node_b):
+        node_item = node.get_item(item)
+        try:
+            dicts.append(_item_display_dict(node_item) or {})
+        except FaultUnavailable:
+            _report_fault_unavailable(node_item)
+            exit(1)
+    io.stdout(diff_dict(*dicts))
 
 
 def diff_node(node_a, node_b):
@@ -93,14 +174,19 @@ def git_checkout_closure(rev, detach=False):
 
 
 def hooked_diff_metadata_single_node(repo, node, intermissions, epilogues):
-    node_before_metadata = metadata_to_json(node.metadata).splitlines()
+    node.metadata.get(tuple())  # build metadata before the repo changes
 
-    for intermission in intermissions:
-        intermission()
+    try:
+        for intermission in intermissions:
+            intermission()
 
-    after_repo = Repository(repo.path)
-    node_after = after_repo.get_node(node.name)
-    node_after_metadata = metadata_to_json(node_after.metadata).splitlines()
+        after_repo = Repository(repo.path)
+        node_after = after_repo.get_node(node.name)
+        node_before_metadata, node_after_metadata = _metadata_lines_pair(node, node_after)
+    finally:
+        for epilogue in epilogues:
+            epilogue()
+
     io.stdout("\n".join(unified_diff(
         node_before_metadata,
         node_after_metadata,
@@ -109,27 +195,33 @@ def hooked_diff_metadata_single_node(repo, node, intermissions, epilogues):
         lineterm='',
     )))
 
-    for epilogue in epilogues:
-        epilogue()
-
 
 def hooked_diff_metadata_multiple_nodes(repo, nodes, intermissions, epilogues):
     nodes_metadata_before = {}
     for node in nodes:
         if QUIT_EVENT.is_set():
             exit(1)
-        nodes_metadata_before[node.name] = node.metadata_hash()
+        nodes_metadata_before[node.name] = _metadata_hashes(node)
 
-    for intermission in intermissions:
-        intermission()
+    try:
+        for intermission in intermissions:
+            intermission()
 
-    after_repo = Repository(repo.path)
-    nodes_metadata_after = {}
-    for node_name in nodes_metadata_before:
-        if QUIT_EVENT.is_set():
-            exit(1)
-        nodes_metadata_after[node_name] = \
-            after_repo.get_node(node_name).metadata_hash()
+        after_repo = Repository(repo.path)
+        nodes_metadata_after = {}
+        for node_name in nodes_metadata_before:
+            if QUIT_EVENT.is_set():
+                exit(1)
+            nodes_metadata_after[node_name] = \
+                _metadata_hashes(after_repo.get_node(node_name))
+    finally:
+        for epilogue in epilogues:
+            epilogue()
+
+    nodes_metadata_before, nodes_metadata_after = _pick_comparable_hashes(
+        nodes_metadata_before,
+        nodes_metadata_after,
+    )
 
     node_hashes_before = sorted(
         ["{}\t{}".format(i, h) for i, h in nodes_metadata_before.items()]
@@ -151,38 +243,47 @@ def hooked_diff_metadata_multiple_nodes(repo, nodes, intermissions, epilogues):
         ),
     ))
 
-    for epilogue in epilogues:
-        epilogue()
-
 
 def hooked_diff_single_item(repo, node, item, intermissions, epilogues):
+    fault_unavailable = False
     try:
         item_before = node.get_item(item)
     except NoSuchItem:
         item_before = None
         item_before_dict = None
     else:
-        item_before_dict = item_before.expected_state
-        if item_before_dict:
-            item_before_dict = item_before.display_on_create(copy(item_before_dict))
+        try:
+            item_before_dict = _item_display_dict(item_before)
+        except FaultUnavailable:
+            _report_fault_unavailable(item_before)
+            fault_unavailable = True
+            item_before_dict = None
 
-    for intermission in intermissions:
-        intermission()
-
-    repo_after = Repository(repo.path)
-    node_after = repo_after.get_node(node.name)
     try:
-        item_after = node_after.get_item(item)
-    except NoSuchItem:
-        item_after = None
-        item_after_dict = None
-    else:
-        item_after_dict = item_after.expected_state
-        if item_after_dict:
-            item_after_dict = item_after.display_on_create(copy(item_after_dict))
+        for intermission in intermissions:
+            intermission()
 
-    for epilogue in epilogues:
-        epilogue()
+        repo_after = Repository(repo.path)
+        node_after = repo_after.get_node(node.name)
+        try:
+            item_after = node_after.get_item(item)
+        except NoSuchItem:
+            item_after = None
+            item_after_dict = None
+        else:
+            try:
+                item_after_dict = _item_display_dict(item_after)
+            except FaultUnavailable:
+                _report_fault_unavailable(item_after)
+                fault_unavailable = True
+                item_after_dict = None
+    finally:
+        for epilogue in epilogues:
+            epilogue()
+
+    if fault_unavailable:
+        # showing only one side would look like the item was added or removed
+        exit(1)
 
     if item_before is None and item_after is None:
         io.stderr(_("{x} {node}  {item}  not found anywhere").format(
@@ -233,24 +334,18 @@ def hooked_diff_single_item(repo, node, item, intermissions, epilogues):
 
 
 def hooked_diff_config_single_node(repo, node, intermissions, epilogues):
-    item_hashes_before = {
-        item.id: item.hash() for item in node.items
-        if item.ITEM_TYPE_NAME != 'action'
-    }
+    item_hashes_before = node.expected_state
 
-    for intermission in intermissions:
-        intermission()
+    try:
+        for intermission in intermissions:
+            intermission()
 
-    after_repo = Repository(repo.path)
-    after_node = after_repo.get_node(node.name)
-
-    item_hashes_after = {
-        item.id: item.hash() for item in after_node.items
-        if item.ITEM_TYPE_NAME != 'action'
-    }
-
-    for epilogue in epilogues:
-        epilogue()
+        after_repo = Repository(repo.path)
+        after_node = after_repo.get_node(node.name)
+        item_hashes_after = after_node.expected_state
+    finally:
+        for epilogue in epilogues:
+            epilogue()
 
     item_hashes_before = sorted(
         ["{}\t{}".format(i, h) for i, h in item_hashes_before.items()]
@@ -278,18 +373,22 @@ def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):
     for node in nodes:
         if QUIT_EVENT.is_set():
             exit(1)
-        nodes_config_before[node.name] = node.hash()
+        nodes_config_before[node.name] = hash_state_dict(node.expected_state)
 
-    for intermission in intermissions:
-        intermission()
+    try:
+        for intermission in intermissions:
+            intermission()
 
-    after_repo = Repository(repo.path)
-    nodes_config_after = {}
-    for node_name in nodes_config_before:
-        if QUIT_EVENT.is_set():
-            exit(1)
-        nodes_config_after[node_name] = \
-            after_repo.get_node(node_name).hash()
+        after_repo = Repository(repo.path)
+        nodes_config_after = {}
+        for node_name in nodes_config_before:
+            if QUIT_EVENT.is_set():
+                exit(1)
+            nodes_config_after[node_name] = \
+                hash_state_dict(after_repo.get_node(node_name).expected_state)
+    finally:
+        for epilogue in epilogues:
+            epilogue()
 
     node_hashes_before = sorted(
         ["{}\t{}".format(i, h) for i, h in nodes_config_before.items()]
@@ -310,9 +409,6 @@ def hooked_diff_config_multiple_nodes(repo, nodes, intermissions, epilogues):
             ),
         ),
     ))
-
-    for epilogue in epilogues:
-        epilogue()
 
 
 def bw_diff(repo, args):
