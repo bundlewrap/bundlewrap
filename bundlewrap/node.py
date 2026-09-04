@@ -1169,38 +1169,38 @@ def verify_items(
         return bool(items)
 
     def next_task():
-        while True:
-            try:
-                item = items.pop()
-            except IndexError:
-                return None
-            if item._faults_missing_for_attributes:
-                if item.error_on_missing_fault:
-                    item._raise_for_faults()
-                else:
-                    io.progress_advance()
-                    io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
-                        bundle=bold(item.bundle.name),
-                        item=item.id,
-                        msg=yellow(_("Fault unavailable")),
-                        node=bold(node.name),
-                        x=yellow("»"),
-                    ))
-            else:
-                return {
-                    'task_id': node.name + ":" + item.bundle.name + ":" + item.id,
-                    'target': item.verify,
-                    'kwargs': {
-                        'autoskip_selector': autoskip_selector,
-                        'autoonly_selector': autoonly_selector,
-                    },
-                }
+        try:
+            item = items.pop()
+        except IndexError:
+            return None
+        return {
+            'task_id': node.name + ":" + item.bundle.name + ":" + item.id,
+            'target': item.verify,
+            'kwargs': {
+                'autoskip_selector': autoskip_selector,
+                'autoonly_selector': autoonly_selector,
+            },
+        }
 
     def handle_exception(task_id, exception, traceback):
         node_name, bundle_name, item_id = task_id.split(":", 2)
         io.progress_advance()
         if isinstance(exception, (ItemSkipped, NotImplementedError)):
             pass
+        elif (
+            isinstance(exception, FaultUnavailable) and
+            not node.get_item(item_id).error_on_missing_fault
+        ):
+            # Same as in Item.apply(): a missing Fault (typically a key
+            # missing from .secrets.cfg) means we can't know the expected
+            # state, not that the item is broken. Counts as "unknown".
+            io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
+                bundle=bold(bundle_name),
+                item=item_id,
+                msg=yellow(_("Fault unavailable")),
+                node=bold(node_name),
+                x=yellow("»"),
+            ))
         else:
             # Unlike with `bw apply`, it is OK for `bw verify` to encounter
             # exceptions when getting an item's status. `bw verify` doesn't
