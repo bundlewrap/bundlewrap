@@ -130,12 +130,85 @@ def test_empty_groups(repo):
         exit(1)
 
 
-def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet):
+def _report_missing_fault(node, exc, ignore_missing_faults):
+    if ignore_missing_faults:
+        io.stderr(_("{x} {node}  cannot check determinism ({msg}: {exc})").format(
+            exc=exc,
+            msg=yellow(_("Fault unavailable")),
+            node=bold(node.name),
+            x=yellow("»"),
+        ))
+    else:
+        io.stderr(_("{x} {node}  cannot check determinism, Fault unavailable: {exc}").format(
+            exc=exc,
+            node=bold(node.name),
+            x=red("✘"),
+        ))
+        exit(1)
+
+
+def _report_config_changed(node, first_run_node):
+    io.stderr(_(
+        "{x} Configuration for node {node} changed when generated repeatedly"
+    ).format(node=node.name, x=red("✘")))
+    heisenitems = set(node.items).symmetric_difference(set(first_run_node.items))
+    if heisenitems:
+        io.stderr(_(
+            "{x} These items appeared or disappeared on {node} between runs:\n"
+            "\t{items}"
+        ).format(
+            x=red("✘"),
+            node=node.name,
+            items="\n\t".join(sorted({item.id for item in heisenitems})),
+        ))
+        exit(1)
+    for item in node.items:
+        previous_item = first_run_node.get_item(item.id)
+        if item.ITEM_TYPE_NAME == "action":
+            continue  # actions don't hash :'(
+        if item.hash() != previous_item.hash():
+            current_expected_state = item.display_on_create(item.expected_state.copy())
+            previous_expected_state = previous_item.display_on_create(
+                previous_item.expected_state.copy()
+            )
+            output = _("{x} {node}  {item} changed:\n").format(
+                x=red("✘"),
+                node=bold(node.name),
+                item=item.id,
+            )
+            diff = diff_dict(current_expected_state, previous_expected_state)
+            output += prefix_lines(diff, red("│ "))
+            output += red("╵")
+            io.stderr(output)
+    exit(1)
+
+
+def _report_metadata_changed(node, first_run_node):
+    io.stderr(_(
+        "{x} Metadata for node {node} changed when generated repeatedly"
+    ).format(node=bold(node.name), x=red("✘")))
+    previous_json = metadata_to_json(first_run_node.metadata)
+    current_json = metadata_to_json(node.metadata)
+    io.stderr(diff_text(previous_json, current_json))
+    exit(1)
+
+
+def test_determinism(
+    repo,
+    nodes,
+    iterations_config,
+    iterations_metadata,
+    ignore_missing_faults,
+    quiet,
+):
     """
     Generate configuration a couple of times for every node and see if
     anything changes between iterations
     """
     first_run_nodes = {}
+    # nodes reported once for missing Faults are not rendered again
+    config_missing_faults = set()
+    metadata_missing_faults = set()
     io.progress_set_total(len(nodes) * (iterations_config + iterations_metadata))
 
     iter_config_todo = iterations_config
@@ -154,63 +227,42 @@ def test_determinism(repo, nodes, iterations_config, iterations_metadata, quiet)
 
             first_run_nodes.setdefault(node.name, node)
 
-            if iter_config_todo > 0:
-                with io.job(_("{node}  generating configuration ({i}/{n})").format(
-                    i=iterations_config - iter_config_todo,
-                    n=iterations_config,
-                    node=bold(node.name),
-                )):
-                    result = node.hash()
-                if first_run_nodes[node.name].hash() != result:
-                    io.stderr(_(
-                        "{x} Configuration for node {node} changed when generated repeatedly"
-                    ).format(node=node.name, x=red("✘")))
-                    heisenitems = set(node.items).symmetric_difference(
-                        set(first_run_nodes[node.name].items))
-                    if heisenitems:
-                        io.stderr(_(
-                            "{x} These items appeared or disappeared on {node} between runs:\n"
-                            "\t{items}"
-                        ).format(
-                            x=red("✘"),
-                            node=node.name,
-                            items="\n\t".join(sorted({item.id for item in heisenitems})),
-                        ))
-                        exit(1)
-                    for item in node.items:
-                        previous_item = first_run_nodes[node.name].get_item(item.id)
-                        if item.ITEM_TYPE_NAME == "action":
-                            continue  # actions don't hash :'(
-                        if item.hash() != previous_item.hash():
-                            current_expected_state = item.display_on_create(item.expected_state.copy())
-                            previous_expected_state = previous_item.display_on_create(previous_item.expected_state.copy())
-                            output = _("{x} {node}  {item} changed:\n").format(
-                                x=red("✘"),
-                                node=bold(node.name),
-                                item=item.id,
-                            )
-                            diff = diff_dict(current_expected_state, previous_expected_state)
-                            output += prefix_lines(diff, red("│ "))
-                            output += red("╵")
-                            io.stderr(output)
-                    exit(1)
+            if iter_config_todo > 0 and node.name in config_missing_faults:
+                io.progress_advance()
+            elif iter_config_todo > 0:
+                try:
+                    with io.job(_("{node}  generating configuration ({i}/{n})").format(
+                        i=iterations_config - iter_config_todo,
+                        n=iterations_config,
+                        node=bold(node.name),
+                    )):
+                        result = node.hash()
+                    previous_result = first_run_nodes[node.name].hash()
+                except FaultUnavailable as exc:
+                    _report_missing_fault(node, exc, ignore_missing_faults)
+                    config_missing_faults.add(node.name)
+                else:
+                    if previous_result != result:
+                        _report_config_changed(node, first_run_nodes[node.name])
                 io.progress_advance()
 
-            if iter_metadata_todo > 0:
-                with io.job(_("{node}  generating metadata ({i}/{n})").format(
-                    i=iterations_metadata - iter_metadata_todo,
-                    n=iterations_metadata,
-                    node=bold(node.name),
-                )):
-                    result = node.metadata_hash()
-                if first_run_nodes[node.name].metadata_hash() != result:
-                    io.stderr(_(
-                        "{x} Metadata for node {node} changed when generated repeatedly"
-                    ).format(node=bold(node.name), x=red("✘")))
-                    previous_json = metadata_to_json(first_run_nodes[node.name].metadata)
-                    current_json = metadata_to_json(node.metadata)
-                    io.stderr(diff_text(previous_json, current_json))
-                    exit(1)
+            if iter_metadata_todo > 0 and node.name in metadata_missing_faults:
+                io.progress_advance()
+            elif iter_metadata_todo > 0:
+                try:
+                    with io.job(_("{node}  generating metadata ({i}/{n})").format(
+                        i=iterations_metadata - iter_metadata_todo,
+                        n=iterations_metadata,
+                        node=bold(node.name),
+                    )):
+                        result = node.metadata_hash()
+                    previous_result = first_run_nodes[node.name].metadata_hash()
+                except FaultUnavailable as exc:
+                    _report_missing_fault(node, exc, ignore_missing_faults)
+                    metadata_missing_faults.add(node.name)
+                else:
+                    if previous_result != result:
+                        _report_metadata_changed(node, first_run_nodes[node.name])
                 io.progress_advance()
 
         if iter_config_todo > 0:
@@ -310,6 +362,7 @@ def bw_test(repo, args):
             nodes,
             args['determinism_config'],
             args['determinism_metadata'],
+            args['ignore_missing_faults'],
             args['quiet'],
         )
 

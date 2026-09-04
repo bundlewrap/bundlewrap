@@ -1116,3 +1116,74 @@ def test_file_test_with_succeds(tmpdir):
     stdout, stderr, rcode = run("bw test localhost", path=str(tmpdir))
     assert rcode == 0
     assert b'failed local validation using: true' not in stderr
+
+
+def test_fault_missing_determinism(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "bundle1": {
+                'items': {
+                    "files": {
+                        "/foo": {
+                            'content_type': 'mako',
+                            'content': "${repo.vault.decrypt('bzzt', key='unavailable')}",
+                        },
+                    },
+                },
+            },
+        },
+    )
+    with open(join(str(tmpdir), "nodes.py"), 'w') as f:
+        f.write("""
+nodes = {
+    'node1': {
+        'bundles': ["bundle1"],
+        'metadata': {'foo': vault.password_for("test", key="unavailable")},
+    },
+}
+""")
+    for command in ("bw test -d 2", "bw test -m 2"):
+        stdout, stderr, rcode = run(command, path=str(tmpdir))
+        assert rcode == 1, command
+        assert b"Fault unavailable" in stderr, command
+        assert b"Traceback" not in stderr, command
+    for command in ("bw test -i -d 3", "bw test -i -m 3"):
+        stdout, stderr, rcode = run(command, path=str(tmpdir))
+        assert rcode == 0, command
+        # reported once per node, not once per iteration
+        assert stderr.count(b"cannot check determinism") == 1, command
+
+
+def test_fault_missing_determinism_still_checks_metadata(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "bundle1": {
+                'items': {
+                    "files": {
+                        "/foo": {
+                            'content_type': 'mako',
+                            'content': "${repo.vault.decrypt('bzzt', key='unavailable')}",
+                        },
+                    },
+                },
+            },
+        },
+    )
+    with open(join(str(tmpdir), "nodes.py"), 'w') as f:
+        f.write("""
+from random import random
+nodes = {
+    'node1': {
+        'bundles': ["bundle1"],
+        'metadata': {'rnd': repr(random())},
+    },
+}
+""")
+    # the config check is skipped because of the missing Fault,
+    # the metadata check must still run and catch the nondeterminism
+    stdout, stderr, rcode = run("bw test -i -d 2 -m 2", path=str(tmpdir))
+    assert rcode == 1
+    assert b"Metadata for node node1 changed" in stderr
+    assert b"Traceback" not in stderr
