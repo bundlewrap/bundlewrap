@@ -13,6 +13,7 @@ from .concurrency import WorkerPool
 from .deps import find_item, ItemDependencyLoop
 from .exceptions import (
     BundleError,
+    FaultUnavailable,
     GracefulApplyException,
     ItemSkipped,
     NodeLockedException,
@@ -1145,38 +1146,44 @@ def verify_items(
         return bool(items)
 
     def next_task():
-        while True:
-            try:
-                item = items.pop()
-            except IndexError:
-                return None
-            if item._faults_missing_for_attributes:
-                if item.error_on_missing_fault:
-                    item._raise_for_faults()
-                else:
-                    io.progress_advance()
-                    io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
-                        bundle=bold(item.bundle.name),
-                        item=item.id,
-                        msg=yellow(_("Fault unavailable")),
-                        node=bold(node.name),
-                        x=yellow("»"),
-                    ))
-            else:
-                return {
-                    'task_id': node.name + ":" + item.bundle.name + ":" + item.id,
-                    'target': item.verify,
-                    'kwargs': {
-                        'autoskip_selector': autoskip_selector,
-                        'autoonly_selector': autoonly_selector,
-                    },
-                }
+        try:
+            item = items.pop()
+        except IndexError:
+            return None
+        return {
+            'task_id': node.name + ":" + item.bundle.name + ":" + item.id,
+            'target': item.verify,
+            'kwargs': {
+                'autoskip_selector': autoskip_selector,
+                'autoonly_selector': autoonly_selector,
+            },
+        }
 
     def handle_exception(task_id, exception, traceback):
         node_name, bundle_name, item_id = task_id.split(":", 2)
         io.progress_advance()
         if isinstance(exception, (ItemSkipped, NotImplementedError)):
             pass
+        elif isinstance(exception, FaultUnavailable):
+            item = node.get_item(item_id)
+            if item.error_on_missing_fault:
+                io.stderr(_("{x} {node}  {bundle}  {item}  ({msg})").format(
+                    bundle=bold(bundle_name),
+                    item=item_id,
+                    msg=red(_("Fault unavailable")),
+                    node=bold(node_name),
+                    x=red("!"),
+                ))
+                return False
+            else:
+                io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
+                    bundle=bold(bundle_name),
+                    item=item_id,
+                    msg=yellow(_("Fault unavailable")),
+                    node=bold(node_name),
+                    x=yellow("»"),
+                ))
+                return None
         else:
             # Unlike with `bw apply`, it is OK for `bw verify` to encounter
             # exceptions when getting an item's status. `bw verify` doesn't
