@@ -1,5 +1,6 @@
 from os import makedirs
 from os.path import join
+from textwrap import dedent
 
 from bundlewrap.utils.testing import make_repo, run
 
@@ -209,3 +210,66 @@ def test_node_vault_dummy_mode(tmpdir):
     assert stdout.strip() == (b"generatedpassword" * 32)[:32]
     assert stderr == b""
     assert rcode == 0
+
+
+def _hook(tmpdir, source):
+    with open(join(tmpdir, "hooks", "secret_key_use.py"), 'w') as f:
+        f.write(dedent(source))
+
+
+def _hook_log(tmpdir):
+    with open(join(tmpdir, "hook.log")) as f:
+        return f.read().strip().split("\n")
+
+
+def test_secret_key_use_hook_receives_node(tmpdir):
+    _make_vault_repo(tmpdir)
+    _hook(tmpdir, """
+        from os.path import join
+
+        def secret_key_use(repo, key, node=None, **kwargs):
+            with open(join(repo.path, "hook.log"), 'a') as f:
+                f.write("{} {}\\n".format(key, node.name if node else None))
+    """)
+
+    _debug(tmpdir, "keyed", 'node.vault.password_for("x")')
+    assert _hook_log(tmpdir) == ["command keyed"]
+
+    _debug(tmpdir, "keyed", 'repo.vault.password_for("x")')
+    assert _hook_log(tmpdir) == ["command keyed", "generate None"]
+
+    _debug(tmpdir, "keyed", 'node.vault.decrypt(node.vault.encrypt("foo"))')
+    assert _hook_log(tmpdir)[-1] == "generate keyed"
+
+
+def test_secret_key_use_hook_with_kwargs_only(tmpdir):
+    _make_vault_repo(tmpdir)
+    _hook(tmpdir, """
+        from os.path import join
+
+        def secret_key_use(repo, key, **kwargs):
+            with open(join(repo.path, "hook.log"), 'a') as f:
+                f.write("{} {}\\n".format(key, sorted(kwargs)))
+    """)
+
+    _debug(tmpdir, "keyed", 'node.vault.password_for("x")')
+    _debug(tmpdir, "keyed", 'repo.vault.password_for("x")')
+    # node is present for node.vault and absent (not None) for repo.vault
+    assert _hook_log(tmpdir) == ["command ['node']", "generate []"]
+
+
+def test_secret_key_use_hook_can_block_key_for_node_sequential(tmpdir):
+    # sequential on purpose: the hook's re-entrancy guard is per key and
+    # shared between threads, so concurrent uses of one key may skip it
+    _make_vault_repo(tmpdir)
+    _hook(tmpdir, """
+        from bundlewrap.exceptions import FaultUnavailable
+
+        def secret_key_use(repo, key, node=None, **kwargs):
+            if node is not None and node.name == "keyed":
+                raise FaultUnavailable("not for this node")
+    """)
+
+    assert _debug(tmpdir, "keyed", 'node.vault.password_for("x").is_available') == "False"
+    assert _debug(tmpdir, "plain", 'node.vault.password_for("x").is_available') == "True"
+    assert _debug(tmpdir, "keyed", 'repo.vault.password_for("x").is_available') == "True"

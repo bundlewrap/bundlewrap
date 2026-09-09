@@ -74,17 +74,17 @@ class SecretProxy:
         self.key_hook_lock = Lock()
         self.key_hook_in_use = {}
 
-    def __hook(self, key):
+    def __hook(self, key, node=None):
         with self.key_hook_lock:
             if key not in self.key_hook_in_use:
                 self.key_hook_in_use[key] = Lock()
         if self.key_hook_in_use[key].locked():
-           return
+            return
         with self.key_hook_in_use[key]:
-            self.repo.hooks.secret_key_use(
-                repo=self.repo,
-                key=key,
-            )
+            kwargs = {'repo': self.repo, 'key': key}
+            if node is not None:  # only for node.vault
+                kwargs['node'] = node
+            self.repo.hooks.secret_key_use(**kwargs)
 
     def _decrypt(self, cryptotext=None, key=None, node=None):
         """
@@ -94,7 +94,7 @@ class SecretProxy:
             return "decrypted text"
 
         key, key_name, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
-        self.__hook(key_name)
+        self.__hook(key_name, node=node)
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
     def _decrypt_file(self, source_path=None, binary=False, key=None, node=None):
@@ -107,7 +107,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.__hook(key_name)
+        self.__hook(key_name, node=node)
 
         f = Fernet(key)
         if binary:
@@ -125,7 +125,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.__hook(key_name)
+        self.__hook(key_name, node=node)
 
         f = Fernet(key)
         return b64encode(f.decrypt(cryptotext)).decode('utf-8')
@@ -180,7 +180,7 @@ class SecretProxy:
 
         if key is None:  # node.vault
             key = node.generate_key or 'generate'
-        self.__hook(key)
+        self.__hook(key, node=node)
 
         prng = self._get_prng(identifier, key)
 
@@ -235,7 +235,7 @@ class SecretProxy:
 
         if key is None:  # node.vault
             key = node.generate_key or 'generate'
-        self.__hook(key)
+        self.__hook(key, node=node)
 
         prng = self._get_prng(identifier, key)
 
@@ -253,7 +253,7 @@ class SecretProxy:
 
         if key is None:  # node.vault
             key = node.generate_key or 'generate'
-        self.__hook(key)
+        self.__hook(key, node=node)
 
         prng = self._get_prng(identifier, key)
         return b64encode(bytearray([next(prng) for i in range(length)])).decode()
