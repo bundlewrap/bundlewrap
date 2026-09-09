@@ -237,6 +237,13 @@ rt+Dgv0yA10DS3ux94mmtEg+isChTJvgkfklzmWkvyg=
 
 Further options: `-k NAME` selects a key from `.secrets.cfg`, `-l INT` sets the length for `-p` and `-b`, and `-f TARGET_PATH` switches `-e` and `-d` to files: with `-e`, STRING is the source file (relative to the working directory or absolute); with `-d`, STRING is the encrypted file relative to `data/`. The result is written to `data/TARGET_PATH` in both cases.
 
+`-n NODE` uses the keys configured for a node via its `generate_key` and `encrypt_key` attributes (same as [`node.vault`](secrets.md#nodevault-per-node-and-per-group-keys)). `-k` still overrides them, and decryption behaves as without `-n`:
+
+```none
+$ bw pw -n node1 -e 'some secret'
+team_a_encrypt$gAAAAABpZ4v...
+```
+
 ## bw repo
 
 Tools to generate a new repo or a new bundle in a repo

@@ -1,3 +1,13 @@
+# Unreleased
+
+* added node and group attributes `generate_key` and `encrypt_key` to select the keys from `.secrets.cfg` a node uses by default
+* added `node.vault`, a counterpart to `repo.vault` that uses those keys unless `key=` is given explicitly
+* added `bw pw -n NODE` to derive and encrypt with a node's keys (decryption is unchanged)
+* magic strings in TOML nodes now receive the node as keyword argument if the function accepts `node`; `@magic_string(name=...)` allows names that are not valid identifiers
+* the argument part of a magic string may now be empty (`"!none:"`); as a consequence, `"!unknown:"` with an unregistered name now raises `InvalidMagicStringException` instead of being kept as a literal string
+* magic string names are now validated (`[a-zA-Z0-9_]+`) and must be unique; a `magic_strings.py` that registered the same name twice or used a non-ASCII function name now raises `RepositoryError`
+* the `secret_key_use` hook now receives `node=` when the key is used via `node.vault`
+
 # 5.1.0
 
 2026-06-18

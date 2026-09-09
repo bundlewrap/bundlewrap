@@ -38,7 +38,7 @@ This section is a reference for all possible attributes you can define for a gro
 	    },
 	}
 
-Note that many attributes from [nodes.py](nodes.py.md) (e.g. `bundles`) may also be set at group level, but aren't explicitly documented here again.
+Note that many attributes from [nodes.py](nodes.py.md) (e.g. `bundles`, `generate_key`, `encrypt_key`) may also be set at group level, but aren't explicitly documented here again.
 
 <br>
 
