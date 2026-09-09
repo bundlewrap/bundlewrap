@@ -37,3 +37,9 @@ Username of the directory's owner. Defaults to `'root'`. Set to `None` if you do
 ## purge
 
 Set this to `True` to remove everything from this directory that is not managed by BundleWrap. Defaults to `False`.
+
+<hr>
+
+## pre_purge_command
+
+Command that will get run on the node prior to `purge` removing a file. Use placeholders `{path}` to get the full path or `{file}` to only get the file name of the file that's getting removed.

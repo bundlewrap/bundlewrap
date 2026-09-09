@@ -49,6 +49,7 @@ class Directory(Item):
         'mode': "0755",
         'owner': "root",
         'purge': False,
+        'pre_purge_command': None,
     }
     ITEM_TYPE_NAME = "directory"
 
@@ -98,6 +99,11 @@ class Directory(Item):
             return
 
         for path in status.actual_state.get('paths_to_purge', set()):
+            if self.attributes['pre_purge_command']:
+                self.run(self.attributes['pre_purge_command'].format(
+                    path=quote(path),
+                    file=quote(path.split('/')[-1]),
+                ))
             self.run("rm -rf -- {}".format(quote(path)))
 
         for fix_type in ('mode', 'owner', 'group'):
@@ -279,6 +285,14 @@ class Directory(Item):
     def validate_attributes(cls, bundle, item_id, attributes):
         for key, value in attributes.items():
             ATTRIBUTE_VALIDATORS[key](item_id, value)
+
+        if attributes.get('pre_purge_command') and not attributes.get('purge'):
+            raise BundleError(_(
+                "{b}  {i}  cannot use pre_purge_command if not purging"
+            ).format(
+                n=bundle.name,
+                i=item_id,
+            ))
 
     @classmethod
     def validate_name(cls, bundle, name):
