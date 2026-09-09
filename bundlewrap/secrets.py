@@ -74,19 +74,19 @@ class SecretProxy:
         self.key_hook_lock = Lock()
         self.key_hook_in_use = {}
 
-    def __hook(self, key):
+    def __hook(self, key, node=None):
         with self.key_hook_lock:
             if key not in self.key_hook_in_use:
                 self.key_hook_in_use[key] = Lock()
         if self.key_hook_in_use[key].locked():
-           return
+            return
         with self.key_hook_in_use[key]:
-            self.repo.hooks.secret_key_use(
-                repo=self.repo,
-                key=key,
-            )
+            kwargs = {'repo': self.repo, 'key': key}
+            if node is not None:  # only for node.vault
+                kwargs['node'] = node
+            self.repo.hooks.secret_key_use(**kwargs)
 
-    def _decrypt(self, cryptotext=None, key=None):
+    def _decrypt(self, cryptotext=None, key=None, node=None):
         """
         Decrypts a given encrypted password.
         """
@@ -94,10 +94,10 @@ class SecretProxy:
             return "decrypted text"
 
         key, key_name, cryptotext = self._determine_key_to_use(cryptotext.encode('utf-8'), key, cryptotext)
-        self.__hook(key_name)
+        self.__hook(key_name, node=node)
         return Fernet(key).decrypt(cryptotext).decode('utf-8')
 
-    def _decrypt_file(self, source_path=None, binary=False, key=None):
+    def _decrypt_file(self, source_path=None, binary=False, key=None, node=None):
         """
         Decrypts the file at source_path (relative to data/) and
         returns the plaintext as unicode.
@@ -107,7 +107,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.__hook(key_name)
+        self.__hook(key_name, node=node)
 
         f = Fernet(key)
         if binary:
@@ -115,7 +115,7 @@ class SecretProxy:
         else:
             return f.decrypt(cryptotext).decode('utf-8')
 
-    def _decrypt_file_as_base64(self, source_path=None, key=None):
+    def _decrypt_file_as_base64(self, source_path=None, key=None, node=None):
         """
         Decrypts the file at source_path (relative to data/) and
         returns the plaintext as base64.
@@ -125,7 +125,7 @@ class SecretProxy:
 
         cryptotext = get_file_contents(join(self.repo.data_dir, source_path))
         key, key_name, cryptotext = self._determine_key_to_use(cryptotext, key, source_path)
-        self.__hook(key_name)
+        self.__hook(key_name, node=node)
 
         f = Fernet(key)
         return b64encode(f.decrypt(cryptotext)).decode('utf-8')
@@ -160,7 +160,7 @@ class SecretProxy:
         return key, key_name, cryptotext
 
     def _generate_human_password(
-        self, identifier=None, digits=2, key='generate', per_word=3, words=4,
+        self, identifier=None, digits=2, key='generate', per_word=3, words=4, node=None,
     ):
         """
         Like _generate_password(), but creates a password which can be
@@ -178,7 +178,9 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return "generatedpassword"
 
-        self.__hook(key)
+        if key is None:  # node.vault
+            key = node.generate_key or 'generate'
+        self.__hook(key, node=node)
 
         prng = self._get_prng(identifier, key)
 
@@ -216,7 +218,9 @@ class SecretProxy:
 
         return pwd
 
-    def _generate_password(self, identifier=None, key='generate', length=32, symbols=False):
+    def _generate_password(
+        self, identifier=None, key='generate', length=32, symbols=False, node=None,
+    ):
         """
         Derives a password from the given identifier and the shared key
         in the repository.
@@ -229,7 +233,9 @@ class SecretProxy:
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return ("generatedpassword"*length)[:length]
 
-        self.__hook(key)
+        if key is None:  # node.vault
+            key = node.generate_key or 'generate'
+        self.__hook(key, node=node)
 
         prng = self._get_prng(identifier, key)
 
@@ -239,11 +245,15 @@ class SecretProxy:
 
         return "".join([choice_prng(alphabet, prng) for i in range(length)])
 
-    def _generate_random_bytes_as_base64(self, identifier=None, key='generate', length=32):
+    def _generate_random_bytes_as_base64(
+        self, identifier=None, key='generate', length=32, node=None,
+    ):
         if environ.get("BW_VAULT_DUMMY_MODE", "0") != "0":
             return b64encode(bytearray([ord("a") for i in range(length)])).decode()
 
-        self.__hook(key)
+        if key is None:  # node.vault
+            key = node.generate_key or 'generate'
+        self.__hook(key, node=node)
 
         prng = self._get_prng(identifier, key)
         return b64encode(bytearray([next(prng) for i in range(length)])).decode()
@@ -403,6 +413,94 @@ class SecretProxy:
         return Fault(
             'bw secrets random_bytes_as_base64 ' + identifier,
             self._generate_random_bytes_as_base64,
+            identifier=identifier,
+            key=key,
+            length=length,
+        )
+
+
+class NodeVault:
+    """
+    Like repo.vault, but fills in the node's generate_key/encrypt_key
+    when the caller passes no key=. Keys are resolved inside the Fault
+    callbacks, so this is safe to use while the node is still loading.
+    """
+    def __init__(self, node):
+        self.node = node
+        self.proxy = node.repo.vault
+
+    def __getattr__(self, name):
+        # cmd(), random_key(), keys: nothing key-related to fill in
+        return getattr(self.proxy, name)
+
+    def _fault(self, fault_id, callback, **kwargs):
+        return Fault(
+            [fault_id, 'node ' + self.node.name],
+            callback,
+            node=self.node,
+            **kwargs,
+        )
+
+    def decrypt(self, cryptotext, key=None):
+        return self._fault(
+            'bw secrets decrypt',
+            self.proxy._decrypt,
+            cryptotext=cryptotext,
+            key=key,
+        )
+
+    def decrypt_file(self, source_path, binary=False, key=None):
+        return self._fault(
+            'bw secrets decrypt_file ' + source_path,
+            self.proxy._decrypt_file,
+            source_path=source_path,
+            binary=binary,
+            key=key,
+        )
+
+    def decrypt_file_as_base64(self, source_path, key=None):
+        return self._fault(
+            'bw secrets decrypt_file_as_base64 ' + source_path,
+            self.proxy._decrypt_file_as_base64,
+            source_path=source_path,
+            key=key,
+        )
+
+    def encrypt(self, plaintext, key=None):
+        return self.proxy.encrypt(plaintext, key=key or self.node.encrypt_key or 'encrypt')
+
+    def encrypt_file(self, source_path, target_path, key=None):
+        return self.proxy.encrypt_file(
+            source_path,
+            target_path,
+            key=key or self.node.encrypt_key or 'encrypt',
+        )
+
+    def human_password_for(self, identifier, digits=2, key=None, per_word=3, words=4):
+        return self._fault(
+            'bw secrets human_password_for ' + identifier,
+            self.proxy._generate_human_password,
+            identifier=identifier,
+            digits=digits,
+            key=key,
+            per_word=per_word,
+            words=words,
+        )
+
+    def password_for(self, identifier, key=None, length=32, symbols=False):
+        return self._fault(
+            'bw secrets password_for ' + identifier,
+            self.proxy._generate_password,
+            identifier=identifier,
+            key=key,
+            length=length,
+            symbols=symbols,
+        )
+
+    def random_bytes_as_base64_for(self, identifier, key=None, length=32):
+        return self._fault(
+            'bw secrets random_bytes_as_base64 ' + identifier,
+            self.proxy._generate_random_bytes_as_base64,
             identifier=identifier,
             key=key,
             length=length,

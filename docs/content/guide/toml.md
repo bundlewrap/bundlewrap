@@ -109,8 +109,38 @@ mysecret = "!decrypt:encrypt$gAAAAABo90x3H..."
 ```
 
 The part between `!` and `:` is used as the function name, everything after the `:` will be passed
-as argument to the called function. Bundlewrap will raise `InvalidMagicStringException` if the
-function cannot be found.
+as argument to the called function (this may be an empty string, e.g. `"!none:"`). Bundlewrap will
+raise `InvalidMagicStringException` if the function cannot be found.
+
+Names must match `[a-zA-Z0-9_]+` and be unique. They default to the function name; pass `name=` to
+the decorator for names that are not valid Python identifiers:
+
+```python
+@magic_string(name="32_random_bytes_as_base64_for")
+def random_bytes(identifier):
+    return vault.random_bytes_as_base64_for(identifier)
+```
+
+### Node-specific secrets
+
+For magic strings in nodes (not groups), BundleWrap passes the node to your function if the
+function's signature has a `node` parameter. Combine this with
+[`node.vault`](secrets.md#nodevault-per-node-and-per-group-keys) to use the node's own keys:
+
+```python
+@magic_string
+def password_for(identifier, node=None):
+    # `node` is None for magic strings in groups
+    return (node.vault if node else vault).password_for(identifier)
+```
+
+The node is still being loaded at this point. `node.name` and the lazy `node.vault` functions
+(`password_for()`, `human_password_for()`, `random_bytes_as_base64_for()`, `decrypt()`,
+`decrypt_file()`, `decrypt_file_as_base64()`, `cmd()`) are safe to use; `node.vault.encrypt()` and
+`encrypt_file()` are not lazy and cannot be used here. Reading node attributes such as
+`node.generate_key` or `node.os` raises an error, `node.metadata` fails because the node is not
+registered yet, and `node.groups` must not be used because it would be cached from the unconverted
+attributes.
 
 ### `atomic()` in TOML
 

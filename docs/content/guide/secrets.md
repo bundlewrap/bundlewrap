@@ -129,6 +129,26 @@ The encrypted data will be prefixed by `yourkeyname$...` to indicate that the ke
 
 <br>
 
+### node.vault: per-node and per-group keys
+
+Instead of passing `key=` everywhere, name the keys a node should use with the [`generate_key` and `encrypt_key`](../repo/nodes.py.md#generate_key) attributes on the node or one of its groups:
+
+	# groups/team_a.toml
+	generate_key = "team_a_generate"
+	encrypt_key = "team_a_encrypt"
+
+Then use `node.vault` instead of `repo.vault`. It has the same functions and arguments, but fills in the node's keys when you don't pass `key=`:
+
+	node.vault.password_for("my database")   # derived with key "team_a_generate"
+	node.vault.encrypt("some secret")        # "team_a_encrypt$..."
+	node.vault.password_for("x", key="foo")  # explicit key= always wins
+
+Decryption is unaffected: the key name embedded in the data decides, and data without one is decrypted with `encrypt`. Nodes without these attributes get the same values from `node.vault` as from `repo.vault` (the `Fault` objects are not equal though, their identity includes the node).
+
+`node.vault` is available wherever you have a node: in `items.py`, in metadata reactors, in `bw debug -n` and in [magic strings](toml.md#node-specific-secrets). On the command line, `bw pw -n NODE` uses the node's keys.
+
+<br>
+
 ### Rotating keys
 
 You can generate a new key by running `bw debug -c "print(repo.vault.random_key())"`. Place the result in your `.secrets.cfg`. Then you need to distribute the new key to your team and run `bw apply` for all your nodes.

@@ -24,11 +24,17 @@ from .exceptions import (
     RepositoryError,
     SkipNode,
 )
-from .group import GROUP_ATTR_DEFAULTS, GROUP_ATTR_TYPES, GROUP_ATTR_TYPES_ENFORCED
+from .group import (
+    GROUP_ATTR_DEFAULTS,
+    GROUP_ATTR_TYPES,
+    GROUP_ATTR_TYPES_ENFORCED,
+    validate_secret_key_attrs,
+)
 from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock, softlock_add
 from .metadata import hash_metadata
+from .secrets import NodeVault
 from .utils import (
     cached_property,
     cached_property_set,
@@ -541,6 +547,7 @@ class Node:
 
         with error_context(node_name=name):
             validate_dict(attributes, NODE_ATTR_TYPES)
+            validate_secret_key_attrs(attributes)
 
         attributes = normalize_dict(attributes, GROUP_ATTR_TYPES_ENFORCED)
 
@@ -562,6 +569,12 @@ class Node:
     def __getattr__(self, name):
         with suppress(KeyError):
             return self._dynamic_attribute_cache[name]
+        if name.startswith("_") and name[1:] in GROUP_ATTR_DEFAULTS:
+            # the backing fields are only set at the end of __init__
+            raise RepositoryError(_(
+                "node attribute '{attr}' of node '{node}' is not available yet "
+                "while the node is being loaded (use node.vault instead)"
+            ).format(attr=name[1:], node=self.name))
         try:
             func = self.repo.node_attribute_functions[name]
         except KeyError:
@@ -625,7 +638,7 @@ class Node:
     @io.job_wrapper(_("{}  converting magic strings").format(bold("{0.name}")))
     def convert_magic_strings(self):
         # Lives in its own function so we can use `io.job_wrapper()`
-        self._attributes = convert_magic_strings(self.repo, self._attributes)
+        self._attributes = convert_magic_strings(self.repo, self._attributes, node=self)
 
     def group_membership_hash(self):
         return hash_state_dict(sorted(names(self.groups)))
@@ -1044,6 +1057,11 @@ class Node:
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
+
+    @cached_property
+    def vault(self):
+        """Like repo.vault, but with this node's keys."""
+        return NodeVault(self)
 
     def verify(
         self,

@@ -32,6 +32,9 @@ GROUP_ATTR_DEFAULTS = {
     'cmd_wrapper_outer': "sudo -u {1} sh -c {0}",
     'lock_dir': "/var/lib/bundlewrap",
     'dummy': False,
+    # key names in .secrets.cfg for node.vault; None means 'generate'/'encrypt'
+    'encrypt_key': None,
+    'generate_key': None,
     'ipmi_hostname': None,
     'ipmi_interface': None,
     'ipmi_username': None,
@@ -68,7 +71,9 @@ GROUP_ATTR_TYPES = {
     'cmd_wrapper_inner': str,
     'cmd_wrapper_outer': str,
     'dummy': bool,
+    'encrypt_key': (str, type(None)),
     'file_path': str,
+    'generate_key': (str, type(None)),
     'ipmi_hostname': (str, type(None)),
     'ipmi_interface': (str, type(None)),
     'ipmi_username': (str, Fault, type(None)),
@@ -93,6 +98,13 @@ GROUP_ATTR_TYPES = {
 GROUP_ATTR_TYPES_ENFORCED = {
     'os_version': tuple,
 }
+
+
+def validate_secret_key_attrs(attributes):
+    # an empty string would silently select the default key
+    for attr in ('generate_key', 'encrypt_key'):
+        if attributes.get(attr) == "":
+            raise RepositoryError(_("'{}' must not be an empty string").format(attr))
 
 
 def _build_error_chain(loop_node, last_node, nodes_in_between):
@@ -128,6 +140,7 @@ class Group:
 
         with error_context(group_name=group_name):
             validate_dict(attributes, GROUP_ATTR_TYPES)
+            validate_secret_key_attrs(attributes)
 
         attributes = normalize_dict(attributes, GROUP_ATTR_TYPES_ENFORCED)
 

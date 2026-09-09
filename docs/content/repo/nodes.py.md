@@ -84,6 +84,18 @@ Set this to `True` to prevent BundleWrap from creating items for and connecting 
 
 <br>
 
+### encrypt_key
+
+Name of the key in [`.secrets.cfg`](../guide/secrets.md#nodevault-per-node-and-per-group-keys) that `node.vault` uses for `encrypt()` and `encrypt_file()` unless `key=` is given. Defaults to `None`, meaning `encrypt`. Can also be set on groups.
+
+<br>
+
+### generate_key
+
+Name of the key in [`.secrets.cfg`](../guide/secrets.md#nodevault-per-node-and-per-group-keys) that `node.vault` uses for `password_for()`, `human_password_for()` and `random_bytes_as_base64_for()` unless `key=` is given. Defaults to `None`, meaning `generate`. Can also be set on groups.
+
+<br>
+
 ### groups
 
 A list of group names this node should be added to. Be aware that you can also define group members at the group itself and you probably should not use both methods in parallel to avoid confusion.

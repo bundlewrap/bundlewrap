@@ -981,7 +981,8 @@ will exit with code 47 if any matching items are locked
         help=_(
             "which key from .secrets.cfg to use "
             "(defaults to 'encrypt' for -d and -e, 'generate' otherwise; "
-            "overrides key name embedded in STRING)"
+            "overrides the node's keys given with -n; for -d it only applies to "
+            "strings without an embedded key name)"
         ),
     )
     parser_pw.add_argument(
@@ -991,6 +992,14 @@ will exit with code 47 if any matching items are locked
         metavar=_("INT"),
         type=int,
         help=_("length for --password and --bytes (defaults to 32)"),
+    )
+    parser_pw.add_argument(
+        "-n", "--node",
+        default=None,
+        dest='node',
+        metavar=_("NODE"),
+        type=str,
+        help=_("use the given node's generate_key and encrypt_key (`node.vault`)"),
     )
     parser_pw.add_argument(
         "-p", "--password",
