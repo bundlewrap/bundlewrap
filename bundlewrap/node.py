@@ -569,6 +569,12 @@ class Node:
     def __getattr__(self, name):
         with suppress(KeyError):
             return self._dynamic_attribute_cache[name]
+        if name.startswith("_") and name[1:] in GROUP_ATTR_DEFAULTS:
+            # the backing fields are only set at the end of __init__
+            raise RepositoryError(_(
+                "node attribute '{attr}' of node '{node}' is not available yet "
+                "while the node is being loaded (use node.vault instead)"
+            ).format(attr=name[1:], node=self.name))
         try:
             func = self.repo.node_attribute_functions[name]
         except KeyError:
@@ -632,7 +638,7 @@ class Node:
     @io.job_wrapper(_("{}  converting magic strings").format(bold("{0.name}")))
     def convert_magic_strings(self):
         # Lives in its own function so we can use `io.job_wrapper()`
-        self._attributes = convert_magic_strings(self.repo, self._attributes)
+        self._attributes = convert_magic_strings(self.repo, self._attributes, node=self)
 
     def group_membership_hash(self):
         return hash_state_dict(sorted(names(self.groups)))

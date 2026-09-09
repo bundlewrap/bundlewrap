@@ -38,6 +38,7 @@ from .utils import (
     names,
 )
 from .utils.dicts import hash_state_dict
+from .utils.magic_strings import MAGIC_STRING_NAME_PATTERN
 from .utils.scm import get_git_branch, get_git_clean, get_rev
 from .utils.node_lambda import parallel_node_eval
 from .utils.text import bold, mark_for_translation as _, red, validate_name
@@ -490,9 +491,28 @@ class Repository(MetadataGenerator):
         if not isfile(self.magic_strings_file):
             return
 
-        def magic_string(func):
-            self.magic_string_functions[func.__name__] = func
-            return func
+        def magic_string(func=None, name=None):
+            # used as @magic_string or as @magic_string(name="...")
+            def register(func):
+                func_name = name or func.__name__
+                if not MAGIC_STRING_NAME_PATTERN.match(func_name):
+                    raise RepositoryError(_(
+                        "invalid magic string name '{name}' in {file}"
+                    ).format(name=func_name, file=self.magic_strings_file))
+                if func_name in self.magic_string_functions:
+                    raise RepositoryError(_(
+                        "magic string '{name}' defined more than once in {file}"
+                    ).format(name=func_name, file=self.magic_strings_file))
+                self.magic_string_functions[func_name] = func
+                return func
+            if func is None:
+                return register
+            if not callable(func):
+                raise RepositoryError(_(
+                    "@magic_string takes no positional argument, "
+                    "use @magic_string(name=\"{name}\") in {file}"
+                ).format(name=func, file=self.magic_strings_file))
+            return register(func)
 
         # We do not store the gotten attrs anywhere, because we're
         # only interested in the defined magic strings.
