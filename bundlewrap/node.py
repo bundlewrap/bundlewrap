@@ -24,7 +24,12 @@ from .exceptions import (
     RepositoryError,
     SkipNode,
 )
-from .group import GROUP_ATTR_DEFAULTS, GROUP_ATTR_TYPES, GROUP_ATTR_TYPES_ENFORCED
+from .group import (
+    GROUP_ATTR_DEFAULTS,
+    GROUP_ATTR_TYPES,
+    GROUP_ATTR_TYPES_ENFORCED,
+    validate_secret_key_attrs,
+)
 from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock, softlock_add
@@ -541,6 +546,7 @@ class Node:
 
         with error_context(node_name=name):
             validate_dict(attributes, NODE_ATTR_TYPES)
+            validate_secret_key_attrs(attributes)
 
         attributes = normalize_dict(attributes, GROUP_ATTR_TYPES_ENFORCED)
 
