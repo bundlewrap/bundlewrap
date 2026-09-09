@@ -70,7 +70,7 @@ class SecretProxy:
 
     def __init__(self, repo):
         self.repo = repo
-        self.keys = self._load_keys()
+        self._keys = self._load_keys()
         self.key_hook_lock = Lock()
         self.key_hook_in_use = {}
 
@@ -146,7 +146,7 @@ class SecretProxy:
 
         key = None
         try:
-            key = self.keys[key_name]
+            key = self._get_key(key)
         except KeyError:
             raise FaultUnavailable(_(
                 "Key '{key}' not available for decryption of the following entity, "
@@ -250,7 +250,7 @@ class SecretProxy:
 
     def _get_prng(self, identifier, key):
         try:
-            key_encoded = self.keys[key]
+            key_encoded = self._get_key(key)
         except KeyError:
             raise FaultUnavailable(_(
                 "Key '{key}' not available to generate password '{password}', check your {file}"
@@ -275,6 +275,9 @@ class SecretProxy:
                 return {}
             result = {}
             for section in config.sections():
+                if section == '__fallback__':
+                    result[section] = config.get(section, 'key_command')
+                    continue
                 try:
                     result[section] = config.get(section, 'key').encode('utf-8')
                 except NoOptionError:
@@ -286,6 +289,21 @@ class SecretProxy:
                                       # when dropping support for Python 3.6
                     ).stdout.strip()
             return result
+
+    def _get_key(self, key):
+        if key in self._keys:
+            return self._keys[key]
+
+        if self._keys.get('__fallback__'):
+            self._keys[key] = run(
+                self._keys['__fallback__'].format(key=key),
+                check=True,
+                shell=True,
+                stdout=PIPE,  # replace with capture_output=True
+                              # when dropping support for Python 3.6
+            ).stdout.strip()
+            return self._keys[key]
+        raise KeyError(key)
 
     @staticmethod
     def cmd(cmdline, as_text=True, strip=True):
@@ -340,7 +358,7 @@ class SecretProxy:
         """
         key_name = key
         try:
-            key = self.keys[key]
+            key = self._get_key(key)
         except KeyError:
             raise KeyError(_(
                 "Key '{key}' not available for encryption, check your {file}"
@@ -359,7 +377,7 @@ class SecretProxy:
         """
         key_name = key
         try:
-            key = self.keys[key]
+            key = self._get_key(key)
         except KeyError:
             raise KeyError(_(
                 "Key '{key}' not available for file encryption, check your {file}"

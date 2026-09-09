@@ -145,3 +145,14 @@ If you'd rather not have plaintext keys in your `.secrets.cfg`, you can use `key
 	key_command = curl localhost:12345/secret
 
 If both `key` and `key_command` are present, `key_command` will be ignored.
+
+
+### Fallback keys
+
+If you have a lot of secret keys, you can provide a fallback entry which bundlewrap will use to determine which key to use.
+
+    [__fallback__]
+    # {key} will be replaced by the key name
+    key_command = curl localhost:12345/secret/{key}
+
+The fallback key will only be used if there's no matching key in your `.secrets.cfg`. It only supports `key_command`.
