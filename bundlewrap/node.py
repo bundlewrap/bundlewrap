@@ -34,6 +34,7 @@ from .itemqueue import ItemQueue
 from .items import Item
 from .lock import NodeLock, softlock_add
 from .metadata import hash_metadata
+from .secrets import NodeVault
 from .utils import (
     cached_property,
     cached_property_set,
@@ -1050,6 +1051,11 @@ class Node:
             wrapper_inner=self.cmd_wrapper_inner,
             wrapper_outer=self.cmd_wrapper_outer,
         )
+
+    @cached_property
+    def vault(self):
+        """Like repo.vault, but with this node's keys."""
+        return NodeVault(self)
 
     def verify(
         self,
