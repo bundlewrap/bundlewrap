@@ -1,6 +1,7 @@
 from os.path import join
 from sys import exit
 
+from ..utils.cmdline import get_node
 from ..utils.text import mark_for_translation as _, red
 from ..utils.ui import io
 
@@ -36,16 +37,26 @@ def bw_pw(repo, args):
 
     op = get_operation(args)
 
+    if args['node'] is None:
+        vault = repo.vault
+        generate_key = args['key'] or 'generate'
+        encrypt_key = args['key'] or 'encrypt'
+    else:
+        # node.vault fills in the node's keys for key=None
+        vault = get_node(repo, args['node']).vault
+        generate_key = args['key']
+        encrypt_key = args['key']
+
     if op == 'bytes':
-        io.stdout(repo.vault.random_bytes_as_base64_for(
+        io.stdout(vault.random_bytes_as_base64_for(
             args['string'],
-            key=args['key'] or 'generate',
+            key=generate_key,
             length=args['length'],
         ).value)
 
     elif op == 'decrypt':
         if args['file']:
-            content = repo.vault.decrypt_file(
+            content = vault.decrypt_file(
                 args['string'],
                 key=args['key'],
                 binary=True,
@@ -57,34 +68,34 @@ def bw_pw(repo, args):
                 key, cryptotext = args['string'].split("$", 1)
             except ValueError:
                 cryptotext = args['string']
-                key = args['key'] or 'encrypt'
-            io.stdout(repo.vault.decrypt(
+                key = encrypt_key
+            io.stdout(vault.decrypt(
                 cryptotext,
                 key=key,
             ).value)
 
     elif op == 'encrypt':
         if args['file']:
-            repo.vault.encrypt_file(
+            vault.encrypt_file(
                 args['string'],
                 args['file'],
-                key=args['key'] or 'encrypt',
+                key=encrypt_key,
             )
         else:
-            io.stdout(repo.vault.encrypt(
+            io.stdout(vault.encrypt(
                 args['string'],
-                key=args['key'] or 'encrypt',
+                key=encrypt_key,
             ))
 
     elif op == 'human':
-        io.stdout(repo.vault.human_password_for(
+        io.stdout(vault.human_password_for(
             args['string'],
-            key=args['key'] or 'generate',
+            key=generate_key,
         ).value)
 
     elif op == 'password':
-        io.stdout(repo.vault.password_for(
+        io.stdout(vault.password_for(
             args['string'],
-            key=args['key'] or 'generate',
+            key=generate_key,
             length=args['length'],
         ).value)
