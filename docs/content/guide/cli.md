@@ -207,7 +207,7 @@ $ bw pw -H 'root user node1'
 Faidr-Hic-Pund-Gek-89
 ```
 
-Derive password from string (same as `repo.vault.encrypt()`)
+Derive password from string (same as `repo.vault.password_for()`)
 
 ```none
 bw pw -p 'some secret'
@@ -220,6 +220,22 @@ Encrypt secret for use in metadata (same as `repo.vault.encrypt()`):
 $ bw pw -e 'some secret'
 encrypt$gAAAAABpZ4vzVdXaQfwPe3-T3Pl0bkBU0cDM1uKGYVYswZ6DKwOHCxcAnDas2arGZS0kv40mtdb9a6sNEb0Fh60TB_Igu5uEAg==
 ```
+
+Decrypt a secret (same as `repo.vault.decrypt()`; the key name embedded in the string is used, `-k` only applies to strings without one):
+
+```none
+$ bw pw -d 'encrypt$gAAAAABpZ4vzVdXaQfwPe3-T3Pl0bkBU0cDM1uKGYVYswZ6DKwOHCxcAnDas2arGZS0kv40mtdb9a6sNEb0Fh60TB_Igu5uEAg=='
+some secret
+```
+
+Derive random bytes as base64 (same as `repo.vault.random_bytes_as_base64_for()`):
+
+```none
+$ bw pw -b 'some seed'
+rt+Dgv0yA10DS3ux94mmtEg+isChTJvgkfklzmWkvyg=
+```
+
+Further options: `-k NAME` selects a key from `.secrets.cfg`, `-l INT` sets the length for `-p` and `-b`, and `-f TARGET_PATH` switches `-e` and `-d` to files: with `-e`, STRING is the source file (relative to the working directory or absolute); with `-d`, STRING is the encrypted file relative to `data/`. The result is written to `data/TARGET_PATH` in both cases.
 
 ## bw repo
 
