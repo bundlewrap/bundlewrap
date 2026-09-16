@@ -386,6 +386,14 @@ class MetadataGenerator:
             return False
         except DoNotRunAgain:
             self._reactors[self._current_reactor]['raised_donotrunagain'] = True
+            if len(self._reactors[self._current_reactor]['requested_paths']) > 0:
+                raise ValueError(_(
+                    "{reactor_name} on {node_name} did request metadata, "
+                    "but raised DoNotRunAgain. You should `return {{}}` instead."
+                ).format(
+                    node_name=node.name,
+                    reactor_name=reactor_name,
+                ))
             # clear any previously stored exception
             with suppress(KeyError):
                 del self._reactors_with_keyerrors[self._current_reactor]
