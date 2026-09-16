@@ -114,6 +114,24 @@ class Action(Item):
                 ))
                 return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS, None, None)
 
+        if self.ok_when:
+            with io.job(_("{node}  {bundle}  {item}  checking 'ok_when' condition").format(
+                bundle=bold(self.bundle.name),
+                item=self.id,
+                node=bold(self.node.name),
+            )):
+                ok_when_result = self.bundle.node.run(
+                    self.ok_when,
+                    may_fail=True,
+                )
+            if ok_when_result.return_code == 0:
+                io.debug(_("{node}:{bundle}:action:{name}: succeeded 'ok_when', not running").format(
+                    bundle=self.bundle.name,
+                    name=self.name,
+                    node=self.bundle.node.name,
+                ))
+                return (self.STATUS_OK, None, None, None)
+
         question_body = ""
         if self.attributes['data_stdin'] is not None:
             question_body += "<" + _("data") + "> | "
@@ -250,7 +268,7 @@ class Action(Item):
             ).format(item=self.id, node=self.node.name))
             raise ItemSkipped
 
-        if self.unless and self.cached_unless_result:
-            return self.cached_unless_result, None, None
+        if (self.unless and self.cached_unless_result) or (self.ok_when and self.cached_ok_when_result):
+            return self.cached_unless_result, self.cached_ok_when_result, None, None
         else:
             raise NotImplementedError
