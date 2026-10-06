@@ -24,6 +24,18 @@ def test_nonexistent(tmpdir):
     assert b"Target string node2 does match neither bundle, nor group, node or lambda." in stderr
     assert rcode == 1
 
+def test_wrong_lambdas(tmpdir):
+    make_repo(tmpdir, nodes={"node1": {}})
+    stdout, stderr, rcode = run("bw nodes 'lambda:node.thisdoesnotexist()'", path=str(tmpdir))
+    assert b"AttributeError" in stderr
+    assert rcode == 1
+
+def test_nonexistent_lambdas(tmpdir):
+    make_repo(tmpdir, nodes={"node1": {}})
+    stdout, stderr, rcode = run("bw nodes 'lambda:len(node.name) == 1'", path=str(tmpdir))
+    assert b"Target string lambda:len(node.name) == 1 does match neither bundle, nor group, node or lambda." in stderr
+    assert rcode == 1
+
 def test_hostname(tmpdir):
     make_repo(
         tmpdir,
