@@ -1,9 +1,4 @@
-from traceback import format_exc
-
 from bundlewrap.concurrency import WorkerPool
-from bundlewrap.exceptions import RepositoryError
-from bundlewrap.utils.text import red, bold, prefix_lines, _
-from bundlewrap.utils.ui import io
 
 
 def parallel_node_eval(
