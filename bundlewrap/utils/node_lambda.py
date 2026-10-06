@@ -20,23 +20,7 @@ def parallel_node_eval(
         node = nodes.pop()
 
         def get_values():
-            try:
-                return eval("lambda node: " + expression)(node)
-            except RepositoryError:
-                raise
-            except Exception:
-                traceback = format_exc()
-                io.stderr(_(
-                    "{x}  {node}  Exception while evaluating `{expression}`, returning as None:\n{traceback}"
-                ).format(
-                    x=red("✘"),
-                    node=bold(node),
-                    expression=expression,
-                    traceback=prefix_lines("\n" + traceback, f"{red('│')} ") + red("╵"),
-                ))
-                # Returning None here is kinda meh. But it's the only alternative
-                # to failing hard by re-raising, which would be very annoying.
-                return None
+            return eval("lambda node: " + expression)(node)
 
         return {
             'task_id': node.name,
