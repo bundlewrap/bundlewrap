@@ -696,27 +696,34 @@ class Repository(MetadataGenerator):
         targets = set()
         for name in target_strings:
             name = name.strip()
+            targets_for_name = set()
             if name.startswith("bundle:"):
                 bundle_name = name.split(":", 1)[1]
-                targets.update(self.nodes_with_bundle(bundle_name))
+                targets_for_name.update(self.nodes_with_bundle(bundle_name))
             elif name.startswith("!bundle:"):
                 bundle_name = name.split(":", 1)[1]
-                targets.update(self.nodes_without_bundle(bundle_name))
+                targets_for_name.update(self.nodes_without_bundle(bundle_name))
             elif name.startswith("!group:"):
                 group_name = name.split(":", 1)[1]
-                targets.update(self.nodes_not_in_group(group_name))
+                targets_for_name.update(self.nodes_not_in_group(group_name))
             elif name.startswith("lambda:"):
                 lambda_str = name.split(":", 1)[1]
-                targets.update(self.nodes_matching_lambda(lambda_str, lambda_workers))
+                targets_for_name.update(self.nodes_matching_lambda(lambda_str, lambda_workers))
             else:
                 try:
-                    targets.add(self.get_node(name))
+                    targets_for_name.add(self.get_node(name))
                 except NoSuchNode:
                     try:
                         group = self.get_group(name)
-                        targets.update(group.nodes)
+                        targets_for_name.update(group.nodes)
                     except NoSuchGroup:
                         raise NoSuchTarget(name)
+
+            # Puplic API docs demand this.
+            if not targets_for_name:
+                raise NoSuchTarget(name)
+
+            targets |= targets_for_name
 
         return list(targets)
 
