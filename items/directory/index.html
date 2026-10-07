@@ -372,6 +372,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#pre_purge_command" class="nav-link">pre_purge_command</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -406,7 +410,11 @@
 <hr>
 
 <h2 id="purge">purge</h2>
-<p>Set this to <code>True</code> to remove everything from this directory that is not managed by BundleWrap. Defaults to <code>False</code>.</p></div>
+<p>Set this to <code>True</code> to remove everything from this directory that is not managed by BundleWrap. Defaults to <code>False</code>.</p>
+<hr>
+
+<h2 id="pre_purge_command">pre_purge_command</h2>
+<p>Command that will get run on the node prior to <code>purge</code> removing a file. Use placeholders <code>{path}</code> to get the full path or <code>{file}</code> to only get the file name of the file that's getting removed.</p></div>
             </div>
         </div>
 
