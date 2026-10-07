@@ -1,3 +1,12 @@
+# 5.2.0
+
+2026-10-07
+
+* added `$BW_LOCK_ADD_SKIP_ITEM_VERIFICATION`: This sets a default for the `--skip-item-verification` option of `bw lock`
+* `bw verify` will skip items when Faults are unavailable (instead of showing long stack traces), now matches the behavior of `bw apply`
+* added `pre_purge_command` to `directory` items
+* fixed `repo.nodes_matching()`: No longer swallows errors and now raises `NoSuchTarget` as documented
+
 # 5.1.0
 
 2026-06-18
