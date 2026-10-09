@@ -54,6 +54,12 @@ Note that you should not set these variables to very high values. First, it can 
 
 <br>
 
+## `BW_METADATA_ORDER`
+
+BundleWrap processes metadata defaults and reactors in random order to increase the chance of exposing metadata that depends on that order (e.g. lists or dict keys merged from several defaults, or reactors that read metadata other reactors have not provided yet). Set this to `sorted` or `reversed` to use a fixed order instead: defaults and reactors sorted by name, and reactors triggered in the same round run sorted by node and reactor name. Comparing the output of a run with `sorted` against one with `reversed` exposes such order dependencies reliably instead of by chance. Defaults to `random`.
+
+<br>
+
 ## `BW_MAX_METADATA_ITERATIONS`
 
 Sets the limit of how often metadata reactors will be run for a node before BundleWrap calls it a loop and terminates with an exception. Defaults to `1000`.
