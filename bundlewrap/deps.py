@@ -83,11 +83,10 @@ def find_item(item_id, items):
     Returns the first item with the given ID within the given list of
     items.
     """
-    try:
-        item = list(filter(lambda item: item.id == item_id, items))[0]
-    except IndexError:
-        raise NoSuchItem(_("item not found: {}").format(item_id))
-    return item
+    for item in items:
+        if item.id == item_id:
+            return item
+    raise NoSuchItem(_("item not found: {}").format(item_id))
 
 
 def _flatten_dependencies(items):
