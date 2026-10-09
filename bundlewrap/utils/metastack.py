@@ -4,6 +4,30 @@ from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
 
 
 UNMERGEABLE = tuple(METADATA_TYPES) + tuple(ATOMIC_TYPES.values())
+_MISSING = object()
+
+
+def _value_at_key_path_or_missing(layer, path):
+    """
+    Like value_at_key_path(), but returns _MISSING instead of raising
+    MetadataUnavailable. Most layers do not contain most paths, so
+    avoiding an exception per miss matters in Metastack.get().
+    """
+    value = layer
+    for depth, key in enumerate(path):
+        if type(value) is not dict:
+            # dict subclasses may implement __getitem__/__missing__,
+            # let value_at_key_path() handle them exactly as before
+            if depth and not isinstance(value, dict):
+                return _MISSING
+            try:
+                return value_at_key_path(value, path[depth:])
+            except MetadataUnavailable:
+                return _MISSING
+        value = value.get(key, _MISSING)
+        if value is _MISSING:
+            return _MISSING
+    return value
 
 
 class Metastack:
@@ -23,37 +47,46 @@ class Metastack:
             {},  # defaults
         )
         self._cached_partitions = {}
+        # merged (but not yet copied) results of get(), by path
+        self._get_cache = {}
 
     def get(self, path):
         """
         Get the value at the given path, merging all layers together.
         """
+        cache_key = tuple(path)
+        try:
+            value = self._get_cache[cache_key]
+        except KeyError:
+            value = self._get_cache[cache_key] = self._merge_path(path)
+        if value is _MISSING:
+            raise MetadataUnavailable(path)
+        return deepcopy_metadata(value)
+
+    def _merge_path(self, path):
         result = None
         undef = True
 
         for part_index, partition in enumerate(self._partitions):
             # prefer cached partitions if available
             partition = self._cached_partitions.get(part_index, partition)
-            for layer in reversed(list(partition.values())):
-                try:
-                    value = value_at_key_path(layer, path)
-                except MetadataUnavailable:
-                    pass
-                else:
+            for layer in reversed(partition.values()):
+                value = _value_at_key_path_or_missing(layer, path)
+                if value is not _MISSING:
                     if undef:
                         # First time we see anything. If we can't merge
                         # it anyway, then return early.
                         if isinstance(value, UNMERGEABLE):
-                            return deepcopy_metadata(value)
+                            return value
                         result = {'data': value}
                         undef = False
                     else:
                         result = merge_dict({'data': value}, result)
 
         if undef:
-            raise MetadataUnavailable(path)
+            return _MISSING
         else:
-            return deepcopy_metadata(result['data'])
+            return result['data']
 
     def as_dict(self, partitions=None):
         final_dict = {}
@@ -86,6 +119,7 @@ class Metastack:
         return blame
 
     def pop_layer(self, partition_index, identifier):
+        self._get_cache.clear()
         try:
             return self._partitions[partition_index].pop(identifier)
         except (KeyError, IndexError):
@@ -93,9 +127,11 @@ class Metastack:
 
     def set_layer(self, partition_index, identifier, new_layer):
         validate_metadata(new_layer)
+        self._get_cache.clear()
         self._partitions[partition_index][identifier] = new_layer
 
     def cache_partition(self, partition_index):
+        self._get_cache.clear()
         self._cached_partitions[partition_index] = {
             'merged layers': self.as_dict(partitions=[partition_index]),
         }

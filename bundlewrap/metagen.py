@@ -7,13 +7,15 @@ from traceback import TracebackException
 from .exceptions import MetadataPersistentKeyError, MetadataUnavailable
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy
-from .utils import NO_DEFAULT, error_context, list_starts_with, randomize_order
+from .utils import NO_DEFAULT, error_context, randomize_order
 from .utils.dicts import extra_paths_in_dict
 from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red
 from .utils.ui import io, QUIT_EVENT
 
 MAX_METADATA_ITERATIONS = int(environ.get("BW_MAX_METADATA_ITERATIONS", "1000"))
+
+_NOT_IN_TREE = object()
 
 
 class ReactorTree:
@@ -23,13 +25,13 @@ class ReactorTree:
         self._reactors = set()
 
     def add(self, reactor, path):
-        if path:
-            self._children.setdefault(
-                path[0],
-                ReactorTree(path_location=path[0]),
-            ).add(reactor, path[1:])
-        else:
-            self._reactors.add(reactor)
+        tree = self
+        for key in path:
+            child = tree._children.get(key)
+            if child is None:
+                child = tree._children[key] = ReactorTree(path_location=key)
+            tree = child
+        tree._reactors.add(reactor)
 
     def reactors_for(self, path=None):
         yield from self._reactors
@@ -58,8 +60,11 @@ class PathSet:
     """
 
     def __init__(self, paths=()):
-        self._covers_cache = {}
         self._paths = set()
+        # Prefix tree of stored paths: nested dicts keyed by path
+        # component, with None marking the end of a stored path. A
+        # root of None means the empty path (i.e. everything) is stored.
+        self._tree = {}
         for path in paths:
             self.add(path)
 
@@ -74,29 +79,45 @@ class PathSet:
         return "<PathSet: {}>".format(repr(self._paths))
 
     def add(self, new_path):
+        new_path = tuple(new_path)
         if self.covers(new_path):
             return False
-        for existing_path in self._paths.copy():
-            if list_starts_with(existing_path, new_path):
+        if not new_path:
+            self._paths.clear()
+            self._tree = None
+        else:
+            subtree = self._tree
+            for key in new_path[:-1]:
+                subtree = subtree.setdefault(key, {})
+            # drop stored paths below new_path, new_path covers them now
+            for existing_path in self._paths_in(subtree.get(new_path[-1]), new_path):
                 self._paths.remove(existing_path)
-        self._covers_cache = {}
+            subtree[new_path[-1]] = None
         self._paths.add(new_path)
         return True
+
+    @classmethod
+    def _paths_in(cls, subtree, prefix):
+        if subtree is None:
+            return
+        for key, child in subtree.items():
+            if child is None:
+                yield prefix + (key,)
+            else:
+                yield from cls._paths_in(child, prefix + (key,))
 
     def covers(self, candidate_path):
         """
         Returns True if the given path is already included.
         """
-        try:
-            return self._covers_cache[candidate_path]
-        except KeyError:
-            result = False
-            for existing_path in self._paths:
-                if list_starts_with(candidate_path, existing_path):
-                    result = True
-                    break
-            self._covers_cache[candidate_path] = result
-            return result
+        subtree = self._tree
+        for key in candidate_path:
+            if subtree is None:
+                return True
+            subtree = subtree.get(key, _NOT_IN_TREE)
+            if subtree is _NOT_IN_TREE:
+                return False
+        return subtree is None
 
 
 class NodeMetadataProxy:
