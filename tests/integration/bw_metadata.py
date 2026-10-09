@@ -726,3 +726,52 @@ def foo(metadata):
     assert rcode == 1
     assert b"node1" in stderr
     assert b"test.foo" in stderr
+
+
+def test_metadata_order_fixed(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={"b1": {}, "b2": {}},
+        nodes={
+            "node1": {
+                'bundles': ["b1", "b2"],
+            },
+        },
+    )
+    for bundle in ("b1", "b2"):
+        with open(join(str(tmpdir), "bundles", bundle, "metadata.py"), 'w') as f:
+            f.write(
+f"""defaults = {{
+    "defaults": ["{bundle}"],
+}}
+
+
+@metadata_reactor
+def reactor(metadata):
+    return {{"reactors": [metadata.get("defaults")[0] and "{bundle}"]}}
+""")
+    results = {}
+    for order in ("sorted", "reversed"):
+        for attempt in range(3):
+            stdout, stderr, rcode = run(
+                f"BW_METADATA_ORDER={order} bw metadata node1",
+                path=str(tmpdir),
+            )
+            assert stderr == b""
+            assert rcode == 0
+            result = loads(stdout.decode())
+            assert results.setdefault(order, result) == result
+    for key in ("defaults", "reactors"):
+        assert sorted(results["sorted"][key]) == ["b1", "b2"]
+        assert results["sorted"][key] == list(reversed(results["reversed"][key]))
+
+
+def test_metadata_order_invalid(tmpdir):
+    make_repo(
+        tmpdir,
+        nodes={
+            "node1": {},
+        },
+    )
+    stdout, stderr, rcode = run("BW_METADATA_ORDER=foo bw metadata node1", path=str(tmpdir))
+    assert rcode != 0
