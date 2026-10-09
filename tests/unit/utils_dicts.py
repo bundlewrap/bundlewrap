@@ -259,3 +259,50 @@ def test_extra_paths_ok():
             ('d',),
         },
     )) == set()
+
+
+def test_merge_dict():
+    from bundlewrap.metadata import atomic
+    from bundlewrap.utils.dicts import merge_dict
+
+    base = {
+        'only_base': 1,
+        'dict': {'a': 1, 'nested': {'x': [1]}},
+        'list': [1],
+        'list_with_str': [1],
+        'tuple': (1,),
+        'set': {1},
+        'atomic_base': atomic([1]),
+        'atomic_update': [1],
+        'conflict': 'base',
+        'dict_vs_str': {'a': 1},
+    }
+    update = {
+        'only_update': 2,
+        'dict': {'b': 2, 'nested': {'x': [2], 'y': 3}},
+        'list': {2},
+        'list_with_str': 'two',
+        'tuple': [2],
+        'set': (2,),
+        'atomic_base': [2],
+        'atomic_update': atomic([2]),
+        'conflict': ['update'],
+        'dict_vs_str': 'update',
+    }
+    merged = merge_dict(base, update)
+    assert merged == {
+        'only_base': 1,
+        'only_update': 2,
+        'dict': {'a': 1, 'b': 2, 'nested': {'x': [1, 2], 'y': 3}},
+        'list': [1, 2],
+        'list_with_str': 'two',
+        'tuple': (1, 2),
+        'set': {1, 2},
+        'atomic_base': [2],
+        'atomic_update': [2],
+        'conflict': ['update'],
+        'dict_vs_str': 'update',
+    }
+    assert base['list'] == [1]
+    assert base['dict'] == {'a': 1, 'nested': {'x': [1]}}
+    assert merged['conflict'] is not update['conflict']
