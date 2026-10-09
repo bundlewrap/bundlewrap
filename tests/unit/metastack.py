@@ -271,3 +271,31 @@ def test_miss_in_some_layers():
     assert stack.get(('something', 'a')) == {'b': 4, 'c': 3}
     with raises(MetadataUnavailable):
         stack.get(('something', 'a', 'd'))
+
+
+def test_get_returns_fresh_copies():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': {'a_list': [1], 'a_dict': {'x': 1}}})
+    stack.set_layer(0, 'overlay', {'something': {'a_list': [2]}})
+    first = stack.get(('something',))
+    first['a_list'].append(3)
+    first['a_dict']['y'] = 2
+    assert stack.get(('something',)) == {'a_list': [1, 2], 'a_dict': {'x': 1}}
+
+
+def test_get_sees_layer_changes():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': 1})
+    with raises(MetadataUnavailable):
+        stack.get(('other',))
+    assert stack.get(('something',)) == 1
+    stack.set_layer(1, 'reactor', {'something': 2, 'other': 3})
+    assert stack.get(('something',)) == 1
+    assert stack.get(('other',)) == 3
+    stack.pop_layer(1, 'reactor')
+    with raises(MetadataUnavailable):
+        stack.get(('other',))
+    stack.set_layer(0, 'overlay', {'something': 4})
+    assert stack.get(('something',)) == 4
+    stack.cache_partition(0)
+    assert stack.get(('something',)) == 4

@@ -47,11 +47,23 @@ class Metastack:
             {},  # defaults
         )
         self._cached_partitions = {}
+        # merged (but not yet copied) results of get(), by path
+        self._get_cache = {}
 
     def get(self, path):
         """
         Get the value at the given path, merging all layers together.
         """
+        cache_key = tuple(path)
+        try:
+            value = self._get_cache[cache_key]
+        except KeyError:
+            value = self._get_cache[cache_key] = self._merge_path(path)
+        if value is _MISSING:
+            raise MetadataUnavailable(path)
+        return deepcopy_metadata(value)
+
+    def _merge_path(self, path):
         result = None
         undef = True
 
@@ -65,16 +77,16 @@ class Metastack:
                         # First time we see anything. If we can't merge
                         # it anyway, then return early.
                         if isinstance(value, UNMERGEABLE):
-                            return deepcopy_metadata(value)
+                            return value
                         result = {'data': value}
                         undef = False
                     else:
                         result = merge_dict({'data': value}, result)
 
         if undef:
-            raise MetadataUnavailable(path)
+            return _MISSING
         else:
-            return deepcopy_metadata(result['data'])
+            return result['data']
 
     def as_dict(self, partitions=None):
         final_dict = {}
@@ -107,6 +119,7 @@ class Metastack:
         return blame
 
     def pop_layer(self, partition_index, identifier):
+        self._get_cache.clear()
         try:
             return self._partitions[partition_index].pop(identifier)
         except (KeyError, IndexError):
@@ -114,9 +127,11 @@ class Metastack:
 
     def set_layer(self, partition_index, identifier, new_layer):
         validate_metadata(new_layer)
+        self._get_cache.clear()
         self._partitions[partition_index][identifier] = new_layer
 
     def cache_partition(self, partition_index):
+        self._get_cache.clear()
         self._cached_partitions[partition_index] = {
             'merged layers': self.as_dict(partitions=[partition_index]),
         }
