@@ -403,6 +403,8 @@ class File(Item):
 
     def get_auto_attrs(self, items):
         deps = set()
+        if hasattr(items, 'path_candidates'):
+            items = items.path_candidates(self.name, self.attributes['owner'], self.attributes['group'])
         for item in items:
             if item.ITEM_TYPE_NAME == 'file' and is_subdirectory(item.name, self.name):
                 raise BundleError(_(
