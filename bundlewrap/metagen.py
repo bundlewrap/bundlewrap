@@ -25,13 +25,13 @@ class ReactorTree:
         self._reactors = set()
 
     def add(self, reactor, path):
-        if path:
-            self._children.setdefault(
-                path[0],
-                ReactorTree(path_location=path[0]),
-            ).add(reactor, path[1:])
-        else:
-            self._reactors.add(reactor)
+        tree = self
+        for key in path:
+            child = tree._children.get(key)
+            if child is None:
+                child = tree._children[key] = ReactorTree(path_location=key)
+            tree = child
+        tree._reactors.add(reactor)
 
     def reactors_for(self, path=None):
         yield from self._reactors
