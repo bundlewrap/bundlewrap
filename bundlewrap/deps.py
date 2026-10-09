@@ -1,7 +1,7 @@
 from contextlib import suppress
 
 from .exceptions import BundleError, ItemDependencyError, NoSuchItem
-from .items import ALLOWED_ITEM_AUTO_ATTRIBUTES, Item
+from .items import ALLOWED_ITEM_AUTO_ATTRIBUTES, Item, ItemSet
 from .items.actions import Action
 from .utils.plot import explain_item_dependency_loop
 from .utils.text import bold, mark_for_translation as _
@@ -83,11 +83,10 @@ def find_item(item_id, items):
     Returns the first item with the given ID within the given list of
     items.
     """
-    try:
-        item = list(filter(lambda item: item.id == item_id, items))[0]
-    except IndexError:
-        raise NoSuchItem(_("item not found: {}").format(item_id))
-    return item
+    for item in items:
+        if item.id == item_id:
+            return item
+    raise NoSuchItem(_("item not found: {}").format(item_id))
 
 
 def _flatten_dependencies(items):
@@ -137,8 +136,9 @@ def _add_incoming_needs(items):
 
 
 def _prepare_auto_attrs(items):
+    indexed_items = ItemSet(items)
     for item in items:
-        auto_attrs = item.get_auto_attrs(items)
+        auto_attrs = item.get_auto_attrs(indexed_items)
         for key, value in auto_attrs.items():
             if key not in ALLOWED_ITEM_AUTO_ATTRIBUTES:
                 raise ValueError(_("get_auto_attrs() on {item} returned illegal key {key}").format(

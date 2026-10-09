@@ -21,6 +21,54 @@ from bundlewrap.utils.text import blue, bold, green, italic, red, wrap_question
 from bundlewrap.utils.text import force_text, mark_for_translation as _
 from bundlewrap.utils.ui import io
 
+
+class ItemSet(set):
+    """
+    The items of a node as passed to Item.get_auto_attrs(), with an index
+    that lets path-based items find the few items they can depend on
+    instead of comparing themselves to every other item.
+    """
+    _path_index = None
+
+    def _build_path_index(self):
+        from os.path import normpath
+        paths = {}
+        named = {}
+        zfs = []
+        for item in self:
+            if item.ITEM_TYPE_NAME in ('file', 'directory', 'symlink'):
+                paths.setdefault(normpath(item.name), []).append(item)
+            elif item.ITEM_TYPE_NAME in ('user', 'group'):
+                named.setdefault((item.ITEM_TYPE_NAME, item.name), []).append(item)
+            elif item.ITEM_TYPE_NAME == 'zfs_dataset':
+                zfs.append(item)
+        self._path_index = (paths, named, zfs)
+
+    def path_candidates(self, path, owner, group):
+        """
+        Returns all items that are relevant to a file, directory or
+        symlink at the given path: files, directories and symlinks at
+        the path itself or at one of its parents, the given owner and
+        group and all ZFS datasets.
+        """
+        from os.path import dirname, normpath
+        if self._path_index is None:
+            self._build_path_index()
+        paths, named, zfs = self._path_index
+        candidates = []
+        current = normpath(path)
+        while True:
+            candidates.extend(paths.get(current, ()))
+            parent = dirname(current)
+            if parent == current:
+                break
+            current = parent
+        candidates.extend(named.get(('user', owner), ()))
+        candidates.extend(named.get(('group', group), ()))
+        candidates.extend(zfs)
+        return candidates
+
+
 ALLOWED_ITEM_AUTO_ATTRIBUTES = {
     'after',
     'before',
