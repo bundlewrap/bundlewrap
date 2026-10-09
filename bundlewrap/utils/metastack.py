@@ -4,6 +4,30 @@ from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
 
 
 UNMERGEABLE = tuple(METADATA_TYPES) + tuple(ATOMIC_TYPES.values())
+_MISSING = object()
+
+
+def _value_at_key_path_or_missing(layer, path):
+    """
+    Like value_at_key_path(), but returns _MISSING instead of raising
+    MetadataUnavailable. Most layers do not contain most paths, so
+    avoiding an exception per miss matters in Metastack.get().
+    """
+    value = layer
+    for depth, key in enumerate(path):
+        if type(value) is not dict:
+            # dict subclasses may implement __getitem__/__missing__,
+            # let value_at_key_path() handle them exactly as before
+            if depth and not isinstance(value, dict):
+                return _MISSING
+            try:
+                return value_at_key_path(value, path[depth:])
+            except MetadataUnavailable:
+                return _MISSING
+        value = value.get(key, _MISSING)
+        if value is _MISSING:
+            return _MISSING
+    return value
 
 
 class Metastack:
@@ -34,12 +58,9 @@ class Metastack:
         for part_index, partition in enumerate(self._partitions):
             # prefer cached partitions if available
             partition = self._cached_partitions.get(part_index, partition)
-            for layer in reversed(list(partition.values())):
-                try:
-                    value = value_at_key_path(layer, path)
-                except MetadataUnavailable:
-                    pass
-                else:
+            for layer in reversed(partition.values()):
+                value = _value_at_key_path_or_missing(layer, path)
+                if value is not _MISSING:
                     if undef:
                         # First time we see anything. If we can't merge
                         # it anyway, then return early.

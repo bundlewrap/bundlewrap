@@ -237,3 +237,37 @@ def test_as_blame():
         ('something', 'a_value'): ['base'],
         ('something', 'another_value'): ['unrelated'],
     }
+
+
+def test_path_through_non_dict():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': 'a string'})
+    stack.set_layer(0, 'overlay', {'something': ['a', 'list']})
+    with raises(MetadataUnavailable):
+        stack.get(('something', 'in'))
+
+
+def test_get_through_dict_subclass():
+    class MissingDict(dict):
+        def __missing__(self, key):
+            return f"default for {key}"
+
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': MissingDict({'a': 1})})
+    stack.set_layer(0, 'overlay', {'other': 2})
+    assert stack.get(('something', 'a')) == 1
+    assert stack.get(('something', 'b')) == "default for b"
+    with raises(MetadataUnavailable):
+        stack.get(('other', 'a'))
+
+
+def test_miss_in_some_layers():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': {'a': {'b': 1}}})
+    stack.set_layer(0, 'miss_top', {'other': {'a': 2}})
+    stack.set_layer(0, 'miss_deep', {'something': {'a': {'c': 3}}})
+    stack.set_layer(0, 'overlay', {'something': {'a': {'b': 4}}})
+    assert stack.get(('something', 'a', 'b')) == 4
+    assert stack.get(('something', 'a')) == {'b': 4, 'c': 3}
+    with raises(MetadataUnavailable):
+        stack.get(('something', 'a', 'd'))
