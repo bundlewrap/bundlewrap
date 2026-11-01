@@ -98,7 +98,14 @@ class SecretKeyProxy:
                 raise self.keys[key]
             return self.keys[key]
 
-        with io.job(_("determining value for secret {}").format(key)), self.key_read_lock:
+        with self.key_read_lock, io.job(_("determining value for secret {}").format(key)):
+            # re-try reading from the keys dict, another thread might already
+            # have resolved the secret so we don't need to re-resolve it
+            if key in self.keys:
+                if isinstance(self.keys[key], KeyError):
+                    raise self.keys[key]
+                return self.keys[key]
+
             try:
                 self.keys[key] = self.config.get(key, 'key').encode('utf-8')
                 return self.keys[key]
