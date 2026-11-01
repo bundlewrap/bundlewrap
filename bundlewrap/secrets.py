@@ -94,12 +94,11 @@ class SecretKeyProxy:
         self._hook(key)
 
         if key in self.keys:
-            if isinstance(self.keys[key], FaultUnavailable):
+            if isinstance(self.keys[key], KeyError):
                 raise self.keys[key]
             return self.keys[key]
 
         with io.job(_("determining value for secret {}").format(key)), self.key_read_lock:
-            exc_message = _("neither key nor key_command available for secret {}").format(key)
             try:
                 self.keys[key] = self.config.get(key, 'key').encode('utf-8')
                 return self.keys[key]
@@ -113,10 +112,10 @@ class SecretKeyProxy:
                     ).stdout.strip()
                     return self.keys[key]
                 except (NoOptionError, CalledProcessError):
-                    self.keys[key] = FaultUnavailable(exc_message)
+                    self.keys[key] = KeyError(key)
                     raise self.keys[key]
             except NoSectionError:
-                self.keys[key] = FaultUnavailable(exc_message)
+                self.keys[key] = KeyError(key)
                 raise self.keys[key]
 
 
@@ -189,7 +188,7 @@ class SecretProxy:
 
         key = None
         try:
-            key = self.keys[key]
+            key = self.keys[key_name]
         except KeyError:
             raise FaultUnavailable(_(
                 "Key '{key}' not available for decryption of the following entity, "
