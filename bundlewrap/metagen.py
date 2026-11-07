@@ -7,7 +7,7 @@ from traceback import TracebackException
 from .exceptions import MetadataPersistentKeyError, MetadataUnavailable
 from .metadata import DoNotRunAgain
 from .node import _flatten_group_hierarchy
-from .utils import NO_DEFAULT, error_context, list_starts_with, randomize_order
+from .utils import NO_DEFAULT, error_context, list_starts_with, metadata_order, randomize_order
 from .utils.dicts import extra_paths_in_dict
 from .utils.metastack import Metastack
 from .utils.text import bold, mark_for_translation as _, red
@@ -294,7 +294,7 @@ class MetadataGenerator:
 
     def _trigger_reactors_for_path(self, path, source):
         result = set()
-        for reactor in self._provides_tree.reactors_for(path):
+        for reactor in metadata_order(self._provides_tree.reactors_for(path)):
             if self._reactors[reactor]['raised_donotrunagain']:
                 continue
             if reactor != source:  # we don't want to trigger ourselves
@@ -323,14 +323,16 @@ class MetadataGenerator:
         reactors_with_keyerrors = self._reactors_with_keyerrors
         self._reactors_with_keyerrors = {}
 
-        for reactor_id, triggers in reactors_triggered.items():
+        for reactor_id in metadata_order(reactors_triggered):
+            triggers = reactors_triggered[reactor_id]
             yield (
                 reactor_id,
                 f"running reactor {reactor_id} because "
                 f"it was triggered by: {triggers}",
             )
 
-        for reactor_id, path_exc in reactors_with_keyerrors.items():
+        for reactor_id in metadata_order(reactors_with_keyerrors):
+            path_exc = reactors_with_keyerrors[reactor_id]
             yield (
                 reactor_id,
                 f"running reactor {reactor_id} because "
@@ -406,7 +408,7 @@ class MetadataGenerator:
             self._in_a_reactor = False
             with suppress(KeyError):
                 del self._reactors_triggered[self._current_reactor]
-            for path in self._current_reactor_newly_requested_paths:
+            for path in metadata_order(self._current_reactor_newly_requested_paths):
                 for needed_reactor in self._trigger_reactors_for_path(path, self._current_reactor):
                     self._reactors[needed_reactor]['trigger_on_change'].add(self._current_reactor)
 
@@ -467,7 +469,7 @@ class MetadataGenerator:
         if old_metadata != new_metadata:
             io.debug(f"{self._current_reactor} returned changed result")
             self._reactor_changes[self._current_reactor] += 1
-            for triggered_reactor in self._reactors[self._current_reactor]['trigger_on_change']:
+            for triggered_reactor in metadata_order(self._reactors[self._current_reactor]['trigger_on_change']):
                 io.debug(f"rerun of {triggered_reactor} triggered by {self._current_reactor}")
                 self._reactors_triggered[triggered_reactor].add(self._current_reactor)
         else:

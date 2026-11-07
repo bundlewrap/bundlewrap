@@ -4,7 +4,7 @@ from base64 import b64encode
 from codecs import getwriter
 from contextlib import contextmanager
 from inspect import isgenerator
-from os import chmod, close, makedirs, remove
+from os import chmod, close, environ, makedirs, remove
 from os.path import dirname, exists
 from random import shuffle
 from sys import stderr, stdout
@@ -321,13 +321,35 @@ def names(obj_list):
         yield obj.name
 
 
+# "random" (default) shuffles metadata defaults and reactors to expose
+# order-dependent metadata by chance. "sorted" and "reversed" make the order
+# reproducible, so that two runs with opposite orders expose it for sure.
+METADATA_ORDER = environ.get("BW_METADATA_ORDER", "random")
+if METADATA_ORDER not in ("random", "sorted", "reversed"):
+    raise ValueError(f"BW_METADATA_ORDER must be random, sorted or reversed, not {METADATA_ORDER!r}")
+
+
 def randomize_order(obj):
     if isinstance(obj, dict):
         result = list(obj.items())
     else:
         result = list(obj)
-    shuffle(result)
+    if METADATA_ORDER == "random":
+        shuffle(result)
+    else:
+        result.sort(key=lambda item: item[0], reverse=METADATA_ORDER == "reversed")
     return result
+
+
+def metadata_order(iterable):
+    """
+    Iterates a set of reactor IDs or paths in the order given by
+    BW_METADATA_ORDER. With "random", the native set order is kept.
+    """
+    if METADATA_ORDER == "random":
+        return iterable
+    # repr() so that paths with mixed component types still sort
+    return sorted(iterable, key=repr, reverse=METADATA_ORDER == "reversed")
 
 
 def sha256(data):
