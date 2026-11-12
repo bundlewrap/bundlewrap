@@ -275,17 +275,20 @@ If `action:download_thing` would not set `cascade_skip` to `False`, `action:run_
 
 ## if
 
-The counterpart to `unless` is `if`. BundleWrap will only apply an item if the `if` command **succeeds** (exit code 0). If the command fails, the item is skipped.
-
+The counterpart to `unless` is `if`: BundleWrap will only apply the item if the given command succeeds. If the command does not return 0, the item is skipped.
 
 	actions = {
 	    'only_when_ready': {
-	    	'if': "test -f /opt/ready.flag",
-	    	'command': "do-the-thing",
+	        'command': "do-the-thing",
+	        'if': "test -f /opt/ready.flag",
 	    },
 	}
 
-`unless` and `if` are evaluated together: an item will only run when `unless` fails **and** `if` succeeds. Both commands should be idempotent and side-effect free because they may also be executed during `bw verify`.
+Apart from the inverted condition, `if` behaves exactly like `unless`. It is the safer choice of the two when a broken condition must not cause changes on your node: a command that fails for an unexpected reason will make an item with `unless` run, while an item with `if` is skipped.
+
+An item cannot use both `if` and `unless`.
+
+<div class="alert alert-warning">The commands you choose for <code>if</code> should not change the state of your node. Otherwise, running <code>bw verify</code> might unexpectedly interfere with your nodes.</div>
 
 <br>
 
@@ -321,7 +324,7 @@ The following example will offer to run an `apt-get update` before installing a 
 	    },
 	}
 
-`cascade_skip` defaults to `True`. However, if the item uses the `unless` or `if` attributes, sets `skip`, or is triggered, the default changes to `False`. Most of the time, this is what you'll want.
+`cascade_skip` defaults to `True`. However, if the item uses the `unless`, `if` or `skip` attributes or is triggered, the default changes to `False`. Most of the time, this is what you'll want.
 
 <br>
 

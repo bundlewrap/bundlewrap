@@ -243,8 +243,19 @@ class Item:
                         continue
                 self.attributes.setdefault(key, value)
 
+        # 'if' is a reserved word, so `self.if` would be a syntax error
+        if_command = getattr(self, 'if')
+
+        if if_command and self.unless:
+            raise BundleError(_(
+                "item {item} in bundle '{bundle}' can't use both 'if' and 'unless'"
+            ).format(
+                bundle=self.bundle.name,
+                item=self.id,
+            ))
+
         if self.cascade_skip is None:
-            self.cascade_skip = not (self.skip or self.triggered or self.unless or getattr(self, 'if'))
+            self.cascade_skip = not (self.skip or self.triggered or self.unless or if_command)
 
         if self.id in self.triggers:
             raise BundleError(_(
@@ -343,17 +354,20 @@ class Item:
     @cached_property
     def cached_if_result(self):
         """
-        Returns True if 'if' allows this item to run.
+        Returns False if 'if' wants to skip this item.
         """
-        if getattr(self, 'if') and (self.ITEM_TYPE_NAME == 'action' or not self.cached_status.correct):
+        # 'if' is a reserved word, so `self.if` would be a syntax error
+        if_command = getattr(self, 'if')
+        if if_command and (self.ITEM_TYPE_NAME == 'action' or not self.cached_status.correct):
             with io.job(_("{node}  {bundle}  {item}  running 'if' ...").format(
                 bundle=bold(self.bundle.name),
                 item=self.id,
                 node=bold(self.node.name),
             )):
-                if_result = self.node.run(getattr(self, 'if'), may_fail=True)
+                if_result = self.node.run(if_command, may_fail=True)
                 return if_result.return_code == 0
-        return True
+        else:
+            return True
 
     def _triggers_preceding_items(self, interactive=False):
         """
@@ -367,8 +381,9 @@ class Item:
             # 'if' says we must not run
             return False
         if self.ITEM_TYPE_NAME == 'action':
-            # so we have an action where 'unless' says it must be run
-            # but the 'interactive' attribute might still override that
+            # so we have an action where 'unless' or 'if' says it must
+            # be run but the 'interactive' attribute might still
+            # override that
             if self.attributes['interactive'] and not interactive:
                 return False
             else:
