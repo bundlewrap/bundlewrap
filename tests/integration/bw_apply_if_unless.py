@@ -175,6 +175,7 @@ def test_if_fails_verify(tmpdir):
     )
     stdout, stderr, rcode = run("bw verify localhost", path=str(tmpdir))
     assert rcode == 0
+    assert b"unable to get status" not in stderr
     assert "file:{}".format(join(str(tmpdir), "skipped")).encode() not in stderr
     assert "file:{}".format(join(str(tmpdir), "checked")).encode() in stderr
 
