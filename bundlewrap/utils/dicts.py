@@ -270,48 +270,39 @@ def merge_dict(base, update):
     merged = base.copy()
 
     for key, value in update.items():
-        merge = (
-            key in base and
-            not isinstance(value, _Atomic) and
-            not isinstance(base[key], _Atomic)
-        )
-        if merge and isinstance(base[key], dict):
-            merged[key] = merge_dict(base[key], value)
-        elif (
-            merge and
-            isinstance(base[key], list) and
-            isinstance(value, (list, set, tuple))
-        ):
-            extended = base[key][:]
-            extended.extend(value)
-            merged[key] = extended
-        elif (
-            merge and
-            isinstance(base[key], tuple) and
-            isinstance(value, (list, set, tuple))
-        ):
-            merged[key] = base[key] + tuple(value)
-        elif (
-            merge and
-            isinstance(base[key], set) and
-            isinstance(value, (list, set, tuple))
-        ):
-            merged[key] = base[key].union(set(value))
-        else:
-            # If we don't copy here, we end up with dicts from groups in
-            # node metadata. Not an issue per se, but a nasty pitfall
-            # when users do things like this in items.py:
-            #
-            #    my_dict = node.metadata.get('foo', {})
-            #    my_dict['bar'] = 'baz'
-            #
-            # The expectation here is to be able to mangle my_dict
-            # because it is only relevant for the current node. However,
-            # if 'foo' has only been defined in a group, we end up
-            # mangling that dict for every node in the group.
-            # Since we can't really force users to .copy() in this case
-            # (although they should!), we have to do it here.
-            merged[key] = copy(value)
+        if key in base and not isinstance(value, _Atomic):
+            base_value = base[key]
+            if isinstance(base_value, _Atomic):
+                pass
+            elif isinstance(base_value, dict):
+                merged[key] = merge_dict(base_value, value)
+                continue
+            elif isinstance(value, (list, set, tuple)):
+                if isinstance(base_value, list):
+                    extended = base_value[:]
+                    extended.extend(value)
+                    merged[key] = extended
+                    continue
+                elif isinstance(base_value, tuple):
+                    merged[key] = base_value + tuple(value)
+                    continue
+                elif isinstance(base_value, set):
+                    merged[key] = base_value.union(set(value))
+                    continue
+        # If we don't copy here, we end up with dicts from groups in
+        # node metadata. Not an issue per se, but a nasty pitfall
+        # when users do things like this in items.py:
+        #
+        #    my_dict = node.metadata.get('foo', {})
+        #    my_dict['bar'] = 'baz'
+        #
+        # The expectation here is to be able to mangle my_dict
+        # because it is only relevant for the current node. However,
+        # if 'foo' has only been defined in a group, we end up
+        # mangling that dict for every node in the group.
+        # Since we can't really force users to .copy() in this case
+        # (although they should!), we have to do it here.
+        merged[key] = copy(value)
 
     return merged
 

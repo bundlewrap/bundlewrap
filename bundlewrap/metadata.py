@@ -30,6 +30,16 @@ def deepcopy_metadata(obj):
     Our own version of deepcopy.copy that doesn't pickle since some
     Fault callbacks are unpicklable.
     """
+    # fast paths for the most common types, same result as below
+    obj_type = type(obj)
+    if obj_type is dict:
+        return {
+            (key if type(key) is str else copy(key)): deepcopy_metadata(value)
+            for key, value in obj.items()
+        }
+    elif obj_type is list:
+        return [deepcopy_metadata(value) for value in obj]
+
     if isinstance(obj, METADATA_TYPES):
         return obj
     elif isinstance(obj, dict):

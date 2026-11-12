@@ -331,18 +331,20 @@ def _flatten_group_hierarchy(groups):
     Takes a list of groups and returns a list of group names ordered so
     that parent groups will appear before any of their subgroups.
     """
-    # dict mapping groups to subgroups
-    child_groups = {}
+    # dict mapping group names to groups (preserving order)
+    groups_by_name = {}
     for group in groups:
-        child_groups[group.name] = list(names(group.subgroups))
+        groups_by_name[group.name] = group
 
-    # dict mapping groups to parent groups
+    # dict mapping groups to those of their parent groups that are
+    # included in `groups` (parent_groups is the inverse of subgroups)
     parent_groups = {}
-    for child_group in child_groups:
-        parent_groups[child_group] = []
-        for parent_group, subgroups in child_groups.items():
-            if child_group in subgroups:
-                parent_groups[child_group].append(parent_group)
+    for group_name, group in groups_by_name.items():
+        parent_groups[group_name] = [
+            parent_group
+            for parent_group in names(group.parent_groups)
+            if parent_group in groups_by_name
+        ]
 
     order = []
 

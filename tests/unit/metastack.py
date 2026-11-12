@@ -237,3 +237,65 @@ def test_as_blame():
         ('something', 'a_value'): ['base'],
         ('something', 'another_value'): ['unrelated'],
     }
+
+
+def test_path_through_non_dict():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': 'a string'})
+    stack.set_layer(0, 'overlay', {'something': ['a', 'list']})
+    with raises(MetadataUnavailable):
+        stack.get(('something', 'in'))
+
+
+def test_get_through_dict_subclass():
+    class MissingDict(dict):
+        def __missing__(self, key):
+            return f"default for {key}"
+
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': MissingDict({'a': 1})})
+    stack.set_layer(0, 'overlay', {'other': 2})
+    assert stack.get(('something', 'a')) == 1
+    assert stack.get(('something', 'b')) == "default for b"
+    with raises(MetadataUnavailable):
+        stack.get(('other', 'a'))
+
+
+def test_miss_in_some_layers():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': {'a': {'b': 1}}})
+    stack.set_layer(0, 'miss_top', {'other': {'a': 2}})
+    stack.set_layer(0, 'miss_deep', {'something': {'a': {'c': 3}}})
+    stack.set_layer(0, 'overlay', {'something': {'a': {'b': 4}}})
+    assert stack.get(('something', 'a', 'b')) == 4
+    assert stack.get(('something', 'a')) == {'b': 4, 'c': 3}
+    with raises(MetadataUnavailable):
+        stack.get(('something', 'a', 'd'))
+
+
+def test_get_returns_fresh_copies():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': {'a_list': [1], 'a_dict': {'x': 1}}})
+    stack.set_layer(0, 'overlay', {'something': {'a_list': [2]}})
+    first = stack.get(('something',))
+    first['a_list'].append(3)
+    first['a_dict']['y'] = 2
+    assert stack.get(('something',)) == {'a_list': [1, 2], 'a_dict': {'x': 1}}
+
+
+def test_get_sees_layer_changes():
+    stack = Metastack()
+    stack.set_layer(0, 'base', {'something': 1})
+    with raises(MetadataUnavailable):
+        stack.get(('other',))
+    assert stack.get(('something',)) == 1
+    stack.set_layer(1, 'reactor', {'something': 2, 'other': 3})
+    assert stack.get(('something',)) == 1
+    assert stack.get(('other',)) == 3
+    stack.pop_layer(1, 'reactor')
+    with raises(MetadataUnavailable):
+        stack.get(('other',))
+    stack.set_layer(0, 'overlay', {'something': 4})
+    assert stack.get(('something',)) == 4
+    stack.cache_partition(0)
+    assert stack.get(('something',)) == 4
