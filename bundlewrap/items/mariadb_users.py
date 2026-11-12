@@ -4,16 +4,20 @@ from re import match
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
 from bundlewrap.items.mariadb_dbs import quote_identifier, quote_string, run_query
-from bundlewrap.utils.text import mark_for_translation as _
+from bundlewrap.utils.text import force_text, mark_for_translation as _
 
 
 def hash_password(plaintext):
-    first_hash_interation = sha1()
-    first_hash_interation.update(plaintext.encode())
+    """
+    Returns the hash MariaDB's mysql_native_password plugin would store
+    for the given password (equivalent to `SELECT PASSWORD(…)`).
+    """
+    first_hash_iteration = sha1()
+    first_hash_iteration.update(force_text(plaintext).encode('UTF-8'))
 
-    second_hash_interation = sha1()
-    second_hash_interation.update(first_hash_interation.digest())
-    return '*' + second_hash_interation.hexdigest().upper()
+    second_hash_iteration = sha1()
+    second_hash_iteration.update(first_hash_iteration.digest())
+    return '*' + second_hash_iteration.hexdigest().upper()
 
 
 def parse_all_privileges_grant(grant):
@@ -35,21 +39,25 @@ class MariadbUser(Item):
     ITEM_ATTRIBUTES = {
         'delete': False,
         'password': None,
+        'password_hash': None,
         'all_privileges': set(),
     }
     ITEM_TYPE_NAME = "mariadb_user"
 
     def __repr__(self):
-        return "<MariadbUser name:{} delete:{} password_hash:{} all_privileges:{}>".format(
+        return "<MariadbUser name:{} delete:{} all_privileges:{}>".format(
             self.name,
             self.attributes['delete'],
-            hash_password(self.attributes['password']),
             sorted(self.attributes['all_privileges']),
         )
 
+    @property
+    def _account(self):
+        return f"{quote_string(self.name)}@'%'"
+
     def _get_all_privileges(self):
         databases = set()
-        grants = run_query(self, f"SHOW GRANTS FOR {quote_string(self.name)};")
+        grants = run_query(self, f"SHOW GRANTS FOR {self._account};")
         for grant in grants.splitlines():
             database = parse_all_privileges_grant(grant)
             if database is not None:
@@ -61,19 +69,23 @@ class MariadbUser(Item):
         if self.attributes['delete']:
             return None
         return {
-            'password_hash': hash_password(self.attributes['password']),
-            'all_privileges': set(self.attributes['all_privileges']),
+            'password_hash': self.attributes['password_hash'],
+            'all_privileges': self.attributes['all_privileges'],
         }
 
     def fix(self, status):
         if status.must_be_deleted:
-            run_query(self, f"DROP USER {quote_string(self.name)};")
+            run_query(self, f"DROP USER {self._account};")
+            return
         elif status.must_be_created:
-            run_query(self, f"CREATE USER {quote_string(self.name)};")
+            run_query(self, f"CREATE USER {self._account};")
 
         if status.must_be_created or 'password_hash' in status.keys_to_fix:
-            password_hash = hash_password(self.attributes['password'])
-            run_query(self, f"SET PASSWORD FOR {quote_string(self.name)} = {quote_string(password_hash)};")
+            run_query(
+                self,
+                f"ALTER USER {self._account} IDENTIFIED VIA mysql_native_password "
+                f"USING {quote_string(self.attributes['password_hash'])};",
+            )
 
         if status.must_be_created or 'all_privileges' in status.keys_to_fix:
             old_grants = self._get_all_privileges()
@@ -81,23 +93,25 @@ class MariadbUser(Item):
             to_be_added = self.attributes['all_privileges'] - old_grants
 
             for database in to_be_removed:
-                run_query(self, f"REVOKE ALL PRIVILEGES ON {quote_identifier(database)}.* FROM {quote_string(self.name)};")
+                run_query(self, f"REVOKE ALL PRIVILEGES ON {quote_identifier(database)}.* FROM {self._account};")
             for database in to_be_added:
-                run_query(self, f"GRANT ALL PRIVILEGES ON {quote_identifier(database)}.* TO {quote_string(self.name)};")
-            run_query(self, "FLUSH PRIVILEGES;")
+                run_query(self, f"GRANT ALL PRIVILEGES ON {quote_identifier(database)}.* TO {self._account};")
 
     @property
     def actual_state(self):
-        user_exists = run_query(self, f"SELECT EXISTS(SELECT 1 FROM mysql.user WHERE User = {quote_string(self.name)}) AS user_exists;") == "1"
-
-        if user_exists:
-            password_hash = run_query(self, f"SELECT `Password` FROM `mysql`.`user` WHERE `User` = {quote_string(self.name)};")
-            return {
-                'password_hash': password_hash,
-                'all_privileges': set(self._get_all_privileges()),
-            }
-        else:
+        result = run_query(
+            self,
+            f"SELECT 1, authentication_string FROM mysql.user "
+            f"WHERE User = {quote_string(self.name)} AND Host = '%';",
+        )
+        if not result:
             return None
+
+        password_hash = result.split("\t", 1)[1] if "\t" in result else ""
+        return {
+            'password_hash': password_hash,
+            'all_privileges': self._get_all_privileges(),
+        }
 
     def get_auto_attrs(self, items):
         needs = set()
@@ -108,16 +122,28 @@ class MariadbUser(Item):
             'needs': needs,
         }
 
+    def patch_attributes(self, attributes):
+        if attributes.get('password') is not None:
+            attributes['password_hash'] = hash_password(attributes['password'])
+        return attributes
+
     @classmethod
     def validate_attributes(cls, bundle, item_id, attributes):
         if not attributes.get('delete', False):
-            if attributes.get('password') is None:
+            if attributes.get('password') is None and attributes.get('password_hash') is None:
                 raise BundleError(_(
-                    "expected 'password' on {item} in bundle '{bundle}'"
+                    "expected either 'password' or 'password_hash' on {item} in bundle '{bundle}'"
                 ).format(
                     bundle=bundle.name,
                     item=item_id,
                 ))
+        if attributes.get('password') is not None and attributes.get('password_hash') is not None:
+            raise BundleError(_(
+                "can't define both 'password' and 'password_hash' on {item} in bundle '{bundle}'"
+            ).format(
+                bundle=bundle.name,
+                item=item_id,
+            ))
         if not isinstance(attributes.get('delete', True), bool):
             raise BundleError(_(
                 "expected boolean for 'delete' on {item} in bundle '{bundle}'"
