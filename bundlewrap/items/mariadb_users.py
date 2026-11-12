@@ -1,9 +1,9 @@
 from hashlib import sha1
-from re import search
-from shlex import quote
+from re import match
 
 from bundlewrap.exceptions import BundleError
 from bundlewrap.items import Item
+from bundlewrap.items.mariadb_dbs import quote_identifier, quote_string, run_query
 from bundlewrap.utils.text import mark_for_translation as _
 
 
@@ -14,6 +14,17 @@ def hash_password(plaintext):
     second_hash_interation = sha1()
     second_hash_interation.update(first_hash_interation.digest())
     return '*' + second_hash_interation.hexdigest().upper()
+
+
+def parse_all_privileges_grant(grant):
+    """
+    Given a line of `SHOW GRANTS` output, returns the name of the database
+    if it grants ALL PRIVILEGES on that database, otherwise None.
+    """
+    result = match(r"GRANT ALL PRIVILEGES ON `((?:[^`]|``)+)`\.\* TO ", grant)
+    if not result:
+        return None
+    return result.group(1).replace("``", "`")
 
 
 class MariadbUser(Item):
@@ -36,25 +47,17 @@ class MariadbUser(Item):
             sorted(self.attributes['all_privileges']),
         )
 
-    def _query(self, sql):
-        result = self.run(f'mariadb -Bsr --execute {quote(sql)}')
-        return result.stdout.decode().strip()
-
     def _get_all_privileges(self):
         databases = set()
-        grants = self._query(f"SHOW GRANTS FOR `{self.name}`;")
+        grants = run_query(self, f"SHOW GRANTS FOR {quote_string(self.name)};")
         for grant in grants.splitlines():
-            if not grant.startswith("GRANT ALL PRIVILEGES ON "):
-                continue
-
-            results = search(r'ON `(.+)`\.', grant)
-            if not results:
-                continue
-
-            databases.add(results.groups()[0])
+            database = parse_all_privileges_grant(grant)
+            if database is not None:
+                databases.add(database)
         return databases
 
-    def cdict(self):
+    @property
+    def expected_state(self):
         if self.attributes['delete']:
             return None
         return {
@@ -64,13 +67,13 @@ class MariadbUser(Item):
 
     def fix(self, status):
         if status.must_be_deleted:
-            self._query(f"DROP USER '{self.name}';")
+            run_query(self, f"DROP USER {quote_string(self.name)};")
         elif status.must_be_created:
-            self._query(f"CREATE USER '{self.name}';")
+            run_query(self, f"CREATE USER {quote_string(self.name)};")
 
         if status.must_be_created or 'password_hash' in status.keys_to_fix:
             password_hash = hash_password(self.attributes['password'])
-            self._query(f"SET PASSWORD FOR '{self.name}' = '{password_hash}';")
+            run_query(self, f"SET PASSWORD FOR {quote_string(self.name)} = {quote_string(password_hash)};")
 
         if status.must_be_created or 'all_privileges' in status.keys_to_fix:
             old_grants = self._get_all_privileges()
@@ -78,16 +81,17 @@ class MariadbUser(Item):
             to_be_added = self.attributes['all_privileges'] - old_grants
 
             for database in to_be_removed:
-                self._query(f"REVOKE ALL PRIVILEGES ON `{database}`.* FROM '{self.name}';")
+                run_query(self, f"REVOKE ALL PRIVILEGES ON {quote_identifier(database)}.* FROM {quote_string(self.name)};")
             for database in to_be_added:
-                self._query(f"GRANT ALL PRIVILEGES ON `{database}`.* TO '{self.name}';")
-            self._query("FLUSH PRIVILEGES;")
+                run_query(self, f"GRANT ALL PRIVILEGES ON {quote_identifier(database)}.* TO {quote_string(self.name)};")
+            run_query(self, "FLUSH PRIVILEGES;")
 
-    def sdict(self):
-        user_exists = self._query(f"SELECT EXISTS(SELECT 1 FROM mysql.user WHERE User = '{self.name}') AS user_exists;") == "1"
+    @property
+    def actual_state(self):
+        user_exists = run_query(self, f"SELECT EXISTS(SELECT 1 FROM mysql.user WHERE User = {quote_string(self.name)}) AS user_exists;") == "1"
 
         if user_exists:
-            password_hash = self._query(f"SELECT `Password` FROM `mysql`.`user` WHERE `User` = '{self.name}';")
+            password_hash = run_query(self, f"SELECT `Password` FROM `mysql`.`user` WHERE `User` = {quote_string(self.name)};")
             return {
                 'password_hash': password_hash,
                 'all_privileges': set(self._get_all_privileges()),

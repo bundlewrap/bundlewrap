@@ -5,6 +5,25 @@ from bundlewrap.items import Item
 from bundlewrap.utils.text import mark_for_translation as _
 
 
+def quote_identifier(name):
+    """
+    Quotes a database, table or column name for use in SQL statements.
+    """
+    return "`" + name.replace("`", "``") + "`"
+
+
+def quote_string(value):
+    """
+    Quotes a value for use as a string literal in SQL statements.
+    """
+    return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def run_query(item, sql):
+    result = item.run(f'mariadb -Bsr --execute {quote(sql)}')
+    return result.stdout.decode().strip()
+
+
 class MariadbDB(Item):
     """
     A mariadb database.
@@ -21,11 +40,8 @@ class MariadbDB(Item):
             self.attributes['delete'],
         )
 
-    def _query(self, sql):
-        result = self.run(f'mariadb -Bsr --execute {quote(sql)}')
-        return result.stdout.decode().strip()
-
-    def cdict(self):
+    @property
+    def expected_state(self):
         if self.attributes['delete']:
             return None
         else:
@@ -33,12 +49,13 @@ class MariadbDB(Item):
 
     def fix(self, status):
         if status.must_be_deleted:
-            self._query(f"DROP DATABASE `{self.name}`;")
+            run_query(self, f"DROP DATABASE {quote_identifier(self.name)};")
         elif status.must_be_created:
-            self._query(f"CREATE DATABASE `{self.name}`;")
+            run_query(self, f"CREATE DATABASE {quote_identifier(self.name)};")
 
-    def sdict(self):
-        databases = self._query("SHOW DATABASES;").splitlines()
+    @property
+    def actual_state(self):
+        databases = run_query(self, "SHOW DATABASES;").splitlines()
         if self.name not in databases:
             return None
         else:
