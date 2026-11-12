@@ -407,6 +407,7 @@ canned_actions_inherit_tags	True
 cascade_skip\tTrue
 comment\tNone
 error_on_missing_fault\tFalse
+if\t
 needed_by\t[]
 needs\taction:
 preceded_by\t[]
@@ -431,6 +432,7 @@ def test_bw_items_invocation_single_item_attrs_as_json(tmpdir):
     "cascade_skip": true,
     "comment": null,
     "error_on_missing_fault": false,
+    "if": "",
     "needed_by": [],
     "needs": [
         "action:"
