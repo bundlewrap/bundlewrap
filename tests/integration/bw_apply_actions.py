@@ -1,4 +1,5 @@
 from bundlewrap.utils.testing import host_os, make_repo, run
+from os.path import join
 
 
 def test_action_success(tmpdir):
@@ -141,3 +142,78 @@ def test_action_return_codes(tmpdir):
     )
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
+
+
+def test_action_ok_when(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'actions': {
+                        "action1": {
+                            'command': "echo 1 >> {}".format(join(str(tmpdir), "file")),
+                            'ok_when': 'true',
+                        },
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+							'ok_when': 'false',
+                            'needs': ["action:action1"],
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
+    with open(join(str(tmpdir), "file")) as f:
+        content = f.read()
+    assert content == "2\n"
+
+
+def test_action_ok_when2(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'actions': {
+                        "action1": {
+                            'command': "false",
+							'ok_when': 'false',
+                        },
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'needs': ["action:action1"],
+                        },
+						"action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'after': ["action:action2"],
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 1
+
+    with open(join(str(tmpdir), "file")) as f:
+        content = f.read()
+    assert content == "3\n"
