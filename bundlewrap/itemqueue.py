@@ -159,8 +159,19 @@ class ItemTestQueue(BaseQueue):
     A simpler variation of ItemQueue that is used by `bw test` to check
     for circular dependencies.
     """
+    def __init__(self, node):
+        super().__init__(node)
+        self._dependents = defaultdict(set)
+        for item in self.items_with_deps:
+            for dep in item._deps:
+                self._dependents[dep].add(item)
+
     def pop(self):
         item = self.items_without_deps.pop()
-        self.items_with_deps = remove_dep_from_items(self.items_with_deps, item)
-        self._split()
+        for dependent in self._dependents.pop(item, ()):
+            if dependent in self.items_with_deps:
+                dependent._deps.discard(item)
+                if not dependent._deps:
+                    self.items_with_deps.remove(dependent)
+                    self.items_without_deps.add(dependent)
         return item

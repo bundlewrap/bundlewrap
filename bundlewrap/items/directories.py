@@ -199,6 +199,8 @@ class Directory(Item):
 
     def get_auto_attrs(self, items):
         deps = set()
+        if hasattr(items, 'path_candidates'):
+            items = items.path_candidates(self.name, self.attributes['owner'], self.attributes['group'])
         for item in items:
             if item == self:
                 continue
