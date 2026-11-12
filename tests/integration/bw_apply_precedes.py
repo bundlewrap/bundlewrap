@@ -253,6 +253,7 @@ def test_precedes_action(tmpdir):
 
 
 def test_precedes_if(tmpdir):
+    file = join(str(tmpdir), "file")
     make_repo(
         tmpdir,
         bundles={
@@ -260,12 +261,12 @@ def test_precedes_if(tmpdir):
                 'items': {
                     'actions': {
                         "action1": {
-                            'command': "echo 1 > {}".format(join(str(tmpdir), "file")),
+                            'command': f"echo 1 > {file}",
                             'precedes': ["action:action2"],
                             'triggered': True,
                         },
                         "action2": {
-                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'command': f"echo 2 >> {file}",
                             'if': 'false',
                         },
                     },
@@ -282,10 +283,11 @@ def test_precedes_if(tmpdir):
 
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
-    assert not exists(join(str(tmpdir), "file"))
+    assert not exists(file)
 
 
 def test_precedes_if2(tmpdir):
+    file = join(str(tmpdir), "file")
     make_repo(
         tmpdir,
         bundles={
@@ -293,12 +295,12 @@ def test_precedes_if2(tmpdir):
                 'items': {
                     'actions': {
                         "action1": {
-                            'command': "echo 1 > {}".format(join(str(tmpdir), "file")),
+                            'command': f"echo 1 > {file}",
                             'precedes': ["action:action2"],
                             'triggered': True,
                         },
                         "action2": {
-                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'command': f"echo 2 >> {file}",
                             'if': 'true',
                         },
                     },
@@ -316,6 +318,6 @@ def test_precedes_if2(tmpdir):
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
 
-    with open(join(str(tmpdir), "file")) as f:
+    with open(file) as f:
         content = f.read()
     assert content == "1\n2\n"

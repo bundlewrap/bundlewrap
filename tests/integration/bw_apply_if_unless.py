@@ -4,6 +4,7 @@ from bundlewrap.utils.testing import host_os, make_repo, run
 
 
 def test_if_succeeds_runs_action(tmpdir):
+    marker = join(str(tmpdir), "marker")
     make_repo(
         tmpdir,
         bundles={
@@ -11,7 +12,7 @@ def test_if_succeeds_runs_action(tmpdir):
                 'items': {
                     'actions': {
                         "guarded": {
-                            'command': "touch {}".format(join(str(tmpdir), "marker")),
+                            'command': f"touch {marker}",
                             'if': "true",
                         },
                     },
@@ -27,10 +28,11 @@ def test_if_succeeds_runs_action(tmpdir):
     )
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
-    assert exists(join(str(tmpdir), "marker"))
+    assert exists(marker)
 
 
 def test_if_fails_skips_action(tmpdir):
+    marker = join(str(tmpdir), "marker")
     make_repo(
         tmpdir,
         bundles={
@@ -38,7 +40,7 @@ def test_if_fails_skips_action(tmpdir):
                 'items': {
                     'actions': {
                         "guarded": {
-                            'command': "touch {}".format(join(str(tmpdir), "marker")),
+                            'command': f"touch {marker}",
                             'if': "false",
                         },
                     },
@@ -54,19 +56,20 @@ def test_if_fails_skips_action(tmpdir):
     )
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
-    assert not exists(join(str(tmpdir), "marker"))
+    assert not exists(marker)
     # just like with 'unless', these skips are not worth mentioning
     assert b"action:guarded" not in stdout
 
 
 def test_if_succeeds_fixes_item(tmpdir):
+    file = join(str(tmpdir), "file")
     make_repo(
         tmpdir,
         bundles={
             "test": {
                 'items': {
                     'files': {
-                        join(str(tmpdir), "file"): {
+                        file: {
                             'content': "1\n",
                             'if': "true",
                         },
@@ -84,19 +87,20 @@ def test_if_succeeds_fixes_item(tmpdir):
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
 
-    with open(join(str(tmpdir), "file")) as f:
+    with open(file) as f:
         content = f.read()
     assert content == "1\n"
 
 
 def test_if_fails_skips_item(tmpdir):
+    file = join(str(tmpdir), "file")
     make_repo(
         tmpdir,
         bundles={
             "test": {
                 'items': {
                     'files': {
-                        join(str(tmpdir), "file"): {
+                        file: {
                             'content': "1\n",
                             'if': "false",
                         },
@@ -113,10 +117,11 @@ def test_if_fails_skips_item(tmpdir):
     )
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
-    assert not exists(join(str(tmpdir), "file"))
+    assert not exists(file)
 
 
 def test_if_fails_does_not_skip_dependents(tmpdir):
+    marker = join(str(tmpdir), "marker")
     make_repo(
         tmpdir,
         bundles={
@@ -128,7 +133,7 @@ def test_if_fails_does_not_skip_dependents(tmpdir):
                             'if': "false",
                         },
                         "dependent": {
-                            'command': "touch {}".format(join(str(tmpdir), "marker")),
+                            'command': f"touch {marker}",
                             'needs': ["action:guarded"],
                         },
                     },
@@ -144,21 +149,23 @@ def test_if_fails_does_not_skip_dependents(tmpdir):
     )
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 0
-    assert exists(join(str(tmpdir), "marker"))
+    assert exists(marker)
 
 
 def test_if_fails_verify(tmpdir):
+    skipped = join(str(tmpdir), "skipped")
+    checked = join(str(tmpdir), "checked")
     make_repo(
         tmpdir,
         bundles={
             "test": {
                 'items': {
                     'files': {
-                        join(str(tmpdir), "skipped"): {
+                        skipped: {
                             'content': "1\n",
                             'if': "false",
                         },
-                        join(str(tmpdir), "checked"): {
+                        checked: {
                             'content': "1\n",
                             'if': "true",
                         },
@@ -176,11 +183,12 @@ def test_if_fails_verify(tmpdir):
     stdout, stderr, rcode = run("bw verify localhost", path=str(tmpdir))
     assert rcode == 0
     assert b"unable to get status" not in stderr
-    assert "file:{}".format(join(str(tmpdir), "skipped")).encode() not in stderr
-    assert "file:{}".format(join(str(tmpdir), "checked")).encode() in stderr
+    assert f"file:{skipped}".encode() not in stderr
+    assert f"file:{checked}".encode() in stderr
 
 
 def test_if_and_unless_are_mutually_exclusive(tmpdir):
+    marker = join(str(tmpdir), "marker")
     make_repo(
         tmpdir,
         bundles={
@@ -188,7 +196,7 @@ def test_if_and_unless_are_mutually_exclusive(tmpdir):
                 'items': {
                     'actions': {
                         "guarded": {
-                            'command': "touch {}".format(join(str(tmpdir), "marker")),
+                            'command': f"touch {marker}",
                             'if': "true",
                             'unless': "false",
                         },
@@ -206,4 +214,4 @@ def test_if_and_unless_are_mutually_exclusive(tmpdir):
     stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
     assert rcode == 1
     assert b"can't use both 'if' and 'unless'" in stderr
-    assert not exists(join(str(tmpdir), "marker"))
+    assert not exists(marker)
