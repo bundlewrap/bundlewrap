@@ -3,6 +3,7 @@ from base64 import b64decode
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from datetime import datetime
+from functools import lru_cache
 
 try:
     from functools import cache
@@ -90,12 +91,24 @@ def content_processor_jinja2(item):
     return content.encode(item.attributes['encoding'])
 
 
-def content_processor_mako(item):
-    template = Template(
-        item._template_content.encode('utf-8'),
+@lru_cache(maxsize=None)
+def _mako_template(content, item_data_dir, item_dir, encoding):
+    # the same template is often used by many items and nodes, compiling
+    # it is much more expensive than rendering it
+    return Template(
+        content.encode('utf-8'),
         input_encoding='utf-8',
-        lookup=TemplateLookup(directories=[item.item_data_dir, item.item_dir]),
-        output_encoding=item.attributes['encoding'],
+        lookup=TemplateLookup(directories=[item_data_dir, item_dir]),
+        output_encoding=encoding,
+    )
+
+
+def content_processor_mako(item):
+    template = _mako_template(
+        item._template_content,
+        item.item_data_dir,
+        item.item_dir,
+        item.attributes['encoding'],
     )
     io.debug(f"{item.node.name}:{item.bundle.name}:{item.id}: rendering with Mako...")
     start = datetime.now()
