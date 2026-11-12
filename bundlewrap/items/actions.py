@@ -96,23 +96,21 @@ class Action(Item):
             io.debug(_("skipping {} because it wasn't triggered").format(self.id))
             return (self.STATUS_SKIPPED, self.SKIP_REASON_NO_TRIGGER, None, None)
 
-        if self.unless:
-            if self.cached_unless_result:
-                io.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
-                    bundle=self.bundle.name,
-                    name=self.name,
-                    node=self.bundle.node.name,
-                ))
-                return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS, None, None)
+        if self.cached_unless_result:
+            io.debug(_("{node}:{bundle}:action:{name}: failed 'unless', not running").format(
+                bundle=self.bundle.name,
+                name=self.name,
+                node=self.bundle.node.name,
+            ))
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_UNLESS, None, None)
 
-        if getattr(self, 'if'):
-            if not self.cached_if_result:
-                io.debug(_("{node}:{bundle}:action:{name}: failed 'if', not running").format(
-                    bundle=self.bundle.name,
-                    name=self.name,
-                    node=self.bundle.node.name,
-                ))
-                return (self.STATUS_SKIPPED, self.SKIP_REASON_IF, None, None)
+        if not self.cached_if_result:
+            io.debug(_("{node}:{bundle}:action:{name}: failed 'if', not running").format(
+                bundle=self.bundle.name,
+                name=self.name,
+                node=self.bundle.node.name,
+            ))
+            return (self.STATUS_SKIPPED, self.SKIP_REASON_IF, None, None)
 
         question_body = ""
         if self.attributes['data_stdin'] is not None:
@@ -250,10 +248,7 @@ class Action(Item):
             ).format(item=self.id, node=self.node.name))
             raise ItemSkipped
 
-        if self.unless and self.cached_unless_result:
+        if self.cached_unless_result or not self.cached_if_result:
             return True, None, None
-
-        if getattr(self, 'if') and not self.cached_if_result:
-            return True, None, None
-
-        raise NotImplementedError
+        else:
+            raise NotImplementedError
