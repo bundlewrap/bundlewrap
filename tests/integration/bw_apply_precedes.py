@@ -250,3 +250,74 @@ def test_precedes_action(tmpdir):
     with open(join(str(tmpdir), "file")) as f:
         content = f.read()
     assert content == "1\n2\n"
+
+
+def test_precedes_if(tmpdir):
+    file = join(str(tmpdir), "file")
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'actions': {
+                        "action1": {
+                            'command': f"echo 1 > {file}",
+                            'precedes': ["action:action2"],
+                            'triggered': True,
+                        },
+                        "action2": {
+                            'command': f"echo 2 >> {file}",
+                            'if': 'false',
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+    assert not exists(file)
+
+
+def test_precedes_if2(tmpdir):
+    file = join(str(tmpdir), "file")
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'actions': {
+                        "action1": {
+                            'command': f"echo 1 > {file}",
+                            'precedes': ["action:action2"],
+                            'triggered': True,
+                        },
+                        "action2": {
+                            'command': f"echo 2 >> {file}",
+                            'if': 'true',
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
+    with open(file) as f:
+        content = f.read()
+    assert content == "1\n2\n"

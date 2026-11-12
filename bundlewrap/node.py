@@ -146,10 +146,11 @@ def handle_apply_result(
     show_skipped_items=True,
 ):
     if status_code == Item.STATUS_SKIPPED and details in (
+        Item.SKIP_REASON_IF,
         Item.SKIP_REASON_NO_TRIGGER,
         Item.SKIP_REASON_UNLESS,
     ):
-        # skipped for "unless" or "not triggered", don't output those
+        # skipped for "if", "unless" or "not triggered", don't output those
         return
 
     if status_code == Item.STATUS_SKIPPED and not show_skipped_items:
