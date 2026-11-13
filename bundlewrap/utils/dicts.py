@@ -8,7 +8,7 @@ from tomlkit import document as toml_document
 from ..exceptions import MetadataUnavailable
 
 from . import Fault
-from .text import bold, green, red, yellow
+from .text import ansi_clean, bold, green, red, yellow
 from .text import force_text, mark_for_translation as _
 
 
@@ -39,6 +39,24 @@ ATOMIC_TYPES = {
     set: _AtomicSet,
     tuple: _AtomicTuple,
 }
+
+
+def decolorize_dict(dict_obj):
+    new_dict = {}
+    for key, value in dict_obj.items():
+        key_uncolored = ansi_clean(key)
+
+        if isinstance(value, tuple):
+            new_dict[key_uncolored] = tuple(ansi_clean(i) for i in value)
+        elif isinstance(value, set):
+            new_dict[key_uncolored] = set(ansi_clean(i) for i in value)
+        elif isinstance(value, dict):
+            new_dict[key_uncolored] = decolorize_dict(value)
+        elif isinstance(value, str):
+            new_dict[key_uncolored] = ansi_clean(value)
+        else:
+            new_dict[key_uncolored] = value
+    return new_dict
 
 
 def dict_to_toml(dict_obj):
