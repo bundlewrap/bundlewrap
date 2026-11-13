@@ -2,7 +2,6 @@ from copy import copy
 from hashlib import sha256
 from json import JSONEncoder, dumps
 
-from tomlkit import comment
 from tomlkit import document as toml_document
 from tomlkit import dumps as tomlkit_dumps
 
