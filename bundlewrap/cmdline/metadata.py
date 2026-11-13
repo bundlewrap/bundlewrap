@@ -184,7 +184,6 @@ def bw_metadata(repo, args):
                     for line in metadata_to_toml(
                         {"metadata": metadata_sorted},
                         resolve_faults=args['resolve_faults'],
-                        sort_keys=False,
                     ).splitlines()
                 )
             else:

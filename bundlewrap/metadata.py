@@ -362,7 +362,7 @@ def metadata_dict_to_toml(dict_obj, resolve_faults=False):
     return toml_doc
 
 
-def metadata_to_toml(metadata, resolve_faults=True, sort_keys=True):
+def metadata_to_toml(metadata, resolve_faults=True):
     toml_doc = metadata_dict_to_toml(decolorize_dict(metadata), resolve_faults=resolve_faults)
     return tomlkit_dumps(toml_doc)
 
