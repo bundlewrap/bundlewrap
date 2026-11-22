@@ -353,7 +353,7 @@ bundle:my_bundle  # items in this bundle
         nargs='+',
         type=str,
         help=_("show table with the given attributes for each group "
-               "(e.g. 'all', 'members', 'os', ...)"),
+               "(e.g. 'all', 'nodes', 'os', ...)"),
     )
     parser_groups.add_argument(
         "-i",
