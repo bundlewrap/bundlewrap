@@ -144,7 +144,11 @@ class VerifyResult:
         self.end = None
 
     def __lt__(self, other):
-        return self.node_name < other.node_name
+        # Keep sorting from bw 5.2.0 and earlier: Healthy nodes on top,
+        # broken nodes further down. Use node names to break ties.
+        # (These are floats, though, we probably won't see ties very
+        # often.)
+        return (-self.health, self.node_name) < (-other.health, other.node_name)
 
     @property
     def duration(self):
