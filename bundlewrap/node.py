@@ -1105,7 +1105,6 @@ class Node:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
         elif not self.check_connection():
             error = _("Connection error (details above)")
-            item_results = []
         else:
             try:
                 self.repo.hooks.node_verify_start(
@@ -1129,10 +1128,11 @@ class Node:
                 workers=workers,
             )
 
-            result = VerifyResult(self, item_results)
-            result.start = start
-            result.end = datetime.now()
+        result = VerifyResult(self, item_results)
+        result.start = start
+        result.end = datetime.now()
 
+        if self.items and not error:
             self.repo.hooks.node_verify_end(
                 repo=self.repo,
                 node=self,
@@ -1140,10 +1140,12 @@ class Node:
                 result=result,
             )
 
-        if error:
-            raise GracefulVerifyException(error)
-        else:
-            return result
+        # TODO bw 6: Raise exception to allow skipping nodes.
+        # This is a change in behavior that we can't introduce in the 5
+        # series.
+        #if error:
+        #    raise GracefulVerifyException(error)
+        return result
 
 
 def build_attr_property(attr, default):
