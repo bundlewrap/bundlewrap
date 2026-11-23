@@ -15,6 +15,7 @@ from .exceptions import (
     BundleError,
     FaultUnavailable,
     GracefulApplyException,
+    GracefulVerifyException,
     ItemSkipped,
     NodeLockedException,
     NoSuchBundle,
@@ -106,6 +107,50 @@ class ApplyResult:
 
     def __lt__(self, other):
         return self.node_name < other.node_name
+
+    @property
+    def duration(self):
+        return self.end - self.start
+
+
+class VerifyResult:
+    """
+    Holds information about an verify run for a node.
+    """
+    def __init__(self, node, item_results):
+        self.node_name = node.name
+        self.correct = 0
+        self.bad = 0
+        self.unknown = 0
+        self.total = 0
+
+        for item_id, result, duration in item_results:
+            self.total += 1
+            if result == Item.STATUS_OK:
+                self.correct += 1
+            elif result == Item.STATUS_NEEDS_FIX:
+                self.bad += 1
+            elif result == Item.STATUS_UNKNOWN:
+                self.unknown += 1
+            else:
+                raise RuntimeError(_(
+                    "can't make sense of results for {} on {}: {}"
+                ).format(item_id, self.node_name, result))
+
+        try:
+            self.health = self.correct / float(self.total) * 100.0
+        except ZeroDivisionError:
+            self.health = 0
+
+        self.start = None
+        self.end = None
+
+    def __lt__(self, other):
+        # Keep sorting from bw 5.2.0 and earlier: Healthy nodes on top,
+        # broken nodes further down. Use node names to break ties.
+        # (These are floats, though, we probably won't see ties very
+        # often.)
+        return (-self.health, self.node_name) < (-other.health, other.node_name)
 
     @property
     def duration(self):
@@ -1053,15 +1098,30 @@ class Node:
         show_diff=True,
         workers=4,
     ):
-        result = []
+        item_results = []
         start = datetime.now()
+
+        error = None
 
         if not self.items:
             io.stdout(_("{x} {node}  has no items").format(node=bold(self.name), x=yellow("!")))
         elif not self.check_connection():
-            io.stdout(_("{x} {node}  Connection error (details above)").format(node=bold(self.name), x=red("!")))
+            error = _("Connection error (details above)")
         else:
-            result = verify_items(
+            try:
+                self.repo.hooks.node_verify_start(
+                    repo=self.repo,
+                    node=self,
+                )
+            except SkipNode as exc:
+                io.stdout(_("{x} {node}  skipped by hook ({reason})").format(
+                    node=bold(self.name),
+                    reason=str(exc) or _("no reason given"),
+                    x=yellow("»"),
+                ))
+                return None
+
+            item_results = verify_items(
                 self,
                 autoskip_selector=autoskip_selector,
                 autoonly_selector=autoonly_selector,
@@ -1070,12 +1130,24 @@ class Node:
                 workers=workers,
             )
 
-        return {
-            'good': result.count(True),
-            'bad': result.count(False),
-            'unknown': result.count(None),
-            'duration': datetime.now() - start,
-        }
+        result = VerifyResult(self, item_results)
+        result.start = start
+        result.end = datetime.now()
+
+        if self.items and not error:
+            self.repo.hooks.node_verify_end(
+                repo=self.repo,
+                node=self,
+                duration=result.duration,
+                result=result,
+            )
+
+        # TODO bw 6: Raise exception to allow skipping nodes.
+        # This is a change in behavior that we can't introduce in the 5
+        # series.
+        #if error:
+        #    raise GracefulVerifyException(error)
+        return result
 
 
 def build_attr_property(attr, default):
@@ -1128,20 +1200,6 @@ def verify_items(
         else:
             io.progress_advance()
 
-    try:
-        # See comment in node.apply().
-        if node.os in node.OS_FAMILY_UNIX:
-            node.run("true")
-    except (RemoteException, TransportException) as exc:
-        io.stdout(_("{x} {node}  Connection error: {msg}").format(
-            msg=exc,
-            node=bold(node.name),
-            x=red("!"),
-        ))
-        for item in items:
-            io.progress_advance()
-        return [None for item in items]
-
     def tasks_available():
         return bool(items)
 
@@ -1174,7 +1232,7 @@ def verify_items(
                     node=bold(node_name),
                     x=red("!"),
                 ))
-                return False
+                return (item_id, Item.STATUS_NEEDS_FIX, timedelta(0))
             else:
                 io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
                     bundle=bold(bundle_name),
@@ -1183,7 +1241,17 @@ def verify_items(
                     node=bold(node_name),
                     x=yellow("»"),
                 ))
-                return None
+                # FaultUnavailable is traditionally treated as "unknown"
+                # in verify runs. Note the asymmetry with "bw apply": It
+                # is treated as "skipped" there.
+                #
+                # The reason is (probably) that "bw verify" cannot fix
+                # items in the first place, so they cannot be *skipped*,
+                # either.
+                #
+                # TODO bw 6: Do we want to change this to "skipped" for
+                # more consistency?
+                return (item_id, Item.STATUS_UNKNOWN, timedelta(0))
         else:
             # Unlike with `bw apply`, it is OK for `bw verify` to encounter
             # exceptions when getting an item's status. `bw verify` doesn't
@@ -1204,7 +1272,7 @@ def verify_items(
                 # free up memory
                 del item._command_results
             io.stderr(output)
-        return None  # count this result as "unknown"
+        return (item_id, Item.STATUS_UNKNOWN, timedelta(0))
 
     def handle_result(task_id, return_value, duration):
         io.progress_advance()
@@ -1244,7 +1312,7 @@ def verify_items(
                     node=bold(node_name),
                     x=red("✘"),
                 ))
-            return False
+            return (item_id, Item.STATUS_NEEDS_FIX, duration)
         else:
             if show_all:
                 io.stdout("{x} {node}  {bundle}  {item}".format(
@@ -1253,7 +1321,7 @@ def verify_items(
                     node=bold(node_name),
                     x=green("✓"),
                 ))
-            return True
+            return (item_id, Item.STATUS_OK, duration)
 
     worker_pool = WorkerPool(
         tasks_available,

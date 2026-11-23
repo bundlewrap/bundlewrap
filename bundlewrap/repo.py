@@ -63,17 +63,21 @@ HOOK_EVENTS = (
     'lock_add',
     'lock_remove',
     'lock_show',
-    'node_ssh_connect',
     'node_apply_end',
     'node_apply_start',
     'node_run_end',
     'node_run_start',
+    'node_ssh_connect',
+    'node_verify_end',
+    'node_verify_start',
     'repo_init',
     'run_end',
     'run_start',
     'secret_key_use',
     'test',
     'test_node',
+    'verify_end',
+    'verify_start',
 )
 
 INITIAL_CONTENT = {
