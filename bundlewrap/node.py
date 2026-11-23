@@ -130,6 +130,8 @@ class VerifyResult:
                 self.correct += 1
             elif result == Item.STATUS_NEEDS_FIX:
                 self.bad += 1
+            elif result == Item.STATUS_UNKNOWN:
+                self.unknown += 1
             else:
                 raise RuntimeError(_(
                     "can't make sense of results for {} on {}: {}"
@@ -1230,7 +1232,7 @@ def verify_items(
                     node=bold(node_name),
                     x=red("!"),
                 ))
-                return False
+                return (item_id, Item.STATUS_NEEDS_FIX, timedelta(0))
             else:
                 io.stdout(_("{x} {node}  {bundle}  {item}  ({msg})").format(
                     bundle=bold(bundle_name),
@@ -1239,7 +1241,17 @@ def verify_items(
                     node=bold(node_name),
                     x=yellow("»"),
                 ))
-                return None
+                # FaultUnavailable is traditionally treated as "unknown"
+                # in verify runs. Note the asymmetry with "bw apply": It
+                # is treated as "skipped" there.
+                #
+                # The reason is (probably) that "bw verify" cannot fix
+                # items in the first place, so they cannot be *skipped*,
+                # either.
+                #
+                # TODO bw 6: Do we want to change this to "skipped" for
+                # more consistency?
+                return (item_id, Item.STATUS_UNKNOWN, timedelta(0))
         else:
             # Unlike with `bw apply`, it is OK for `bw verify` to encounter
             # exceptions when getting an item's status. `bw verify` doesn't
