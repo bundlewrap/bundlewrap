@@ -1198,20 +1198,6 @@ def verify_items(
         else:
             io.progress_advance()
 
-    try:
-        # See comment in node.apply().
-        if node.os in node.OS_FAMILY_UNIX:
-            node.run("true")
-    except (RemoteException, TransportException) as exc:
-        io.stdout(_("{x} {node}  Connection error: {msg}").format(
-            msg=exc,
-            node=bold(node.name),
-            x=red("!"),
-        ))
-        for item in items:
-            io.progress_advance()
-        return [None for item in items]
-
     def tasks_available():
         return bool(items)
 
