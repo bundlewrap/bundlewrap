@@ -217,6 +217,135 @@ def test_precedes_unless4(tmpdir):
     assert content == "1\n"
 
 
+def test_precedes_ok_when(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["tag:tag1"],
+                        },
+                    },
+                    'actions': {
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'ok_when': 'true',
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'needs': ["action:action2"],
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
+    with open(join(str(tmpdir), "file")) as f:
+        content = f.read()
+    assert content == "1\n3\n"
+
+
+def test_precedes_ok_whens2(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["tag:tag1"],
+                        },
+                    },
+                    'actions': {
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'ok_when': 'true',
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'needs': ["action:action2"],
+                            'ok_when': 'true',
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+    assert not exists(join(str(tmpdir), "file"))
+
+
+def test_precedes_ok_when3(tmpdir):
+    make_repo(
+        tmpdir,
+        bundles={
+            "test": {
+                'items': {
+                    'files': {
+                        join(str(tmpdir), "file"): {
+                            'content': "1\n",
+                            'triggered': True,
+                            'precedes': ["tag:tag1"],
+                            'ok_when': 'true',
+                        },
+                    },
+                    'actions': {
+                        "action2": {
+                            'command': "echo 2 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                        },
+                        "action3": {
+                            'command': "echo 3 >> {}".format(join(str(tmpdir), "file")),
+                            'tags': ["tag1"],
+                            'needs': ["action:action2"],
+                        },
+                    },
+                },
+            },
+        },
+        nodes={
+            "localhost": {
+                'bundles': ["test"],
+                'os': host_os(),
+            },
+        },
+    )
+
+    stdout, stderr, rcode = run("bw apply localhost", path=str(tmpdir))
+    assert rcode == 0
+
+    with open(join(str(tmpdir), "file")) as f:
+        content = f.read()
+    assert content == "2\n3\n"
+
+
 def test_precedes_action(tmpdir):
     make_repo(
         tmpdir,

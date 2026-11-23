@@ -34,6 +34,7 @@ BUILTIN_ITEM_ATTRIBUTES = {
     'comment': None,
     'needed_by': set(),
     'needs': set(),
+    'ok_when': "",
     'preceded_by': set(),
     'precedes': set(),
     'error_on_missing_fault': False,
@@ -337,16 +338,32 @@ class Item:
         else:
             return False
 
+    @cached_property
+    def cached_ok_when_result(self):
+        """
+        Returns True if 'ok_when' wants to skip this item.
+        """
+        if self.ok_when and (self.ITEM_TYPE_NAME == 'action' or not self.cached_status.correct):
+            with io.job(_("{node}  {bundle}  {item}  running 'ok_when' ...").format(
+                bundle=bold(self.bundle.name),
+                item=self.id,
+                node=bold(self.node.name),
+            )):
+                ok_when_result = self.node.run(self.ok_when, may_fail=True)
+                return ok_when_result.return_code == 0
+        else:
+            return False
+
     def _triggers_preceding_items(self, interactive=False):
         """
         Preceding items will execute this to figure out if they're
         triggered.
         """
-        if self.cached_unless_result:
-            # 'unless' says we don't need to run
+        if self.cached_unless_result or self.cached_ok_when_result:
+            # 'unless' or 'ok_when' says we don't need to run
             return False
         if self.ITEM_TYPE_NAME == 'action':
-            # so we have an action where 'unless' says it must be run
+            # so we have an action where 'unless' and 'ok_when' says it must be run
             # but the 'interactive' attribute might still override that
             if self.attributes['interactive'] and not interactive:
                 return False
@@ -578,6 +595,11 @@ class Item:
                     ).format(item=self.id, node=self.node.name))
                     status_code = self.STATUS_SKIPPED
                     details = self.SKIP_REASON_UNLESS
+                elif self.cached_ok_when_result:
+                    io.debug(_(
+                        "'ok_when' for {item} on {node} succeeded, not fixing"
+                    ).format(item=self.id, node=self.node.name))
+                    status_code = self.STATUS_OK
                 elif status_before.correct:
                     status_code = self.STATUS_OK
                 elif show_diff or interactive:
@@ -825,7 +847,7 @@ class Item:
                 copy(self.cached_status.actual_state),
                 copy(self.cached_status.keys_to_fix),
             )
-        return self.cached_unless_result, self.cached_status, display
+        return self.cached_unless_result, self.cached_ok_when_result, self.cached_status, display
 
     def display_on_create(self, expected_state):
         """

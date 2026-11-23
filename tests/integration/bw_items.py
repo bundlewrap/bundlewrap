@@ -409,6 +409,7 @@ comment\tNone
 error_on_missing_fault\tFalse
 needed_by\t[]
 needs\taction:
+ok_when\t
 preceded_by\t[]
 precedes\t[]
 skip\tFalse
@@ -435,6 +436,7 @@ def test_bw_items_invocation_single_item_attrs_as_json(tmpdir):
     "needs": [
         "action:"
     ],
+    "ok_when": "",
     "preceded_by": [],
     "precedes": [],
     "skip": false,
